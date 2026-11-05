@@ -53,6 +53,11 @@ export type Viewport = { from: number; to: number }
 export type Geometry = { width: number; height: number; dpr: number; axisRight: number; axisBottom: number }
 
 export type TextAlign = "left" | "right" | "center"
+/**
+ * Nhãn cố định của trục ngang `flashback` ở khung mặc định (Flashback v2.3: "Lịch sử 60 phiên", "Phiên 1", ...). `index` là chỉ số ô
+ * (0 là nến đầu tiên được hiện); `anchor` là phía của nhãn so với tâm ô: `start` chữ chạy sang phải, `end` chữ chạy sang trái.
+ */
+export type SessionAxisLabel = { index: number; label: string; anchor: "start" | "middle" | "end" }
 export type Layer = "base" | "data" | "drawings" | "top"
 
 /**

@@ -48,6 +48,88 @@ async function layerInk(page: Page, layer: string): Promise<number> {
   }, layer)
 }
 
+/**
+ * Ghi lại mọi chữ canvas đã vẽ (canvas không có DOM để đọc): bọc `fillText` trước khi trang chạy. Canvas vẽ số từng ký tự nên
+ * `drawnLabels` ghép các ký tự liền nhau cùng dòng lại thành nhãn.
+ */
+async function recordCanvasText(page: Page) {
+  await page.addInitScript(() => {
+    const store: [string, number, number][] = []
+    ;(window as unknown as { __fillTexts: typeof store }).__fillTexts = store
+    const original = CanvasRenderingContext2D.prototype.fillText
+    CanvasRenderingContext2D.prototype.fillText = function (text: string, x: number, y: number, ...rest: [number?]) {
+      store.push([String(text), x, y])
+      return original.call(this, text, x, y, ...rest)
+    }
+  })
+}
+
+async function drawnLabels(page: Page, reset = false): Promise<string[]> {
+  return page.evaluate((clear) => {
+    const store = (window as unknown as { __fillTexts: [string, number, number][] }).__fillTexts
+    const out: string[] = []
+    let current = ""
+    let last: [number, number] | null = null
+    for (const [text, x, y] of store) {
+      if (last && y === last[1] && x > last[0] && x - last[0] < 16) current += text
+      else {
+        if (current) out.push(current)
+        current = text
+      }
+      last = [x, y]
+    }
+    if (current) out.push(current)
+    if (clear) store.length = 0
+    return out
+  }, reset)
+}
+
+/**
+ * Độ mờ thật của nến: giá trị alpha (0-255) xuất hiện nhiều nhất trong dải ô `from`..`to` (theo chỉ số ô) và dải cao `top`..`bottom`
+ * (CSS pixel, tính từ đỉnh biểu đồ) của lớp `data`. Nến vẽ bằng ô chữ nhật căn pixel nên alpha của chúng là đúng số đã đặt.
+ */
+async function dominantAlpha(page: Page, from: number, to: number, top: number, bottom: number): Promise<number> {
+  const box = (await canvasTop(page).boundingBox())!
+  const [vFrom, vTo] = await viewportOf(page)
+  const plotWidth = box.width - AXIS_RIGHT
+  const x0 = ((from - vFrom) / (vTo - vFrom)) * plotWidth
+  const x1 = ((to - vFrom) / (vTo - vFrom)) * plotWidth
+  return page.evaluate(
+    ([left, right, y0, y1]) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('[data-iqline-mode="flashback"] canvas[data-iqline-layer="data"]')!
+      const scale = canvas.width / canvas.clientWidth
+      const context = canvas.getContext("2d")!
+      const width = Math.max(1, Math.round((right - left) * scale))
+      const height = Math.max(1, Math.round((y1 - y0) * scale))
+      const { data } = context.getImageData(Math.round(left * scale), Math.round(y0 * scale), width, height)
+      const counts = new Map<number, number>()
+      for (let index = 3; index < data.length; index += 4) if (data[index] > 0) counts.set(data[index], (counts.get(data[index]) ?? 0) + 1)
+      let best = 0
+      let bestCount = 0
+      for (const [alpha, count] of counts) if (count > bestCount) { best = alpha; bestCount = count }
+      return best
+    },
+    [x0, x1, top, bottom] as const,
+  )
+}
+
+/** Số điểm ảnh có nội dung của một lớp trong ô vuông quanh một điểm màn hình. */
+async function inkAround(page: Page, layer: string, point: { x: number; y: number }, radius: number): Promise<number> {
+  const box = (await canvasTop(page).boundingBox())!
+  return page.evaluate(
+    ([name, cx, cy, r]) => {
+      const canvas = document.querySelector<HTMLCanvasElement>(`[data-iqline-mode="flashback"] canvas[data-iqline-layer="${name}"]`)!
+      const scale = canvas.width / canvas.clientWidth
+      const context = canvas.getContext("2d")!
+      const { data } = context.getImageData(Math.max(0, Math.round((cx - r) * scale)), Math.max(0, Math.round((cy - r) * scale)), Math.round(2 * r * scale), Math.round(2 * r * scale))
+      let ink = 0
+      for (let index = 3; index < data.length; index += 4) if (data[index] > 0) ink += 1
+      return ink
+    },
+    [layer, point.x - box.x, point.y - box.y, radius] as const,
+  )
+}
+
 async function inkOf(page: Page): Promise<number> {
   return (await Promise.all(["base", "data"].map((layer) => layerInk(page, layer)))).reduce((sum, value) => sum + value, 0)
 }
@@ -74,6 +156,7 @@ async function pointOf(page: Page, session: number, y: number) {
 
 /** Mở màn chơi: sảnh, tạo phòng, bắt đầu. `iqline` thêm `?iqline=1`. */
 async function openMatch(page: Page, iqline: boolean) {
+  await recordCanvasText(page)
   await seedMember(page)
   await mockFlashback(page)
   await page.goto(`/demo-trading?view=flashback${iqline ? "&iqline=1" : ""}`)
@@ -121,6 +204,29 @@ for (const scheme of ["dark", "light"] as const) {
       await shot(page, `iqline-${width}-${scheme}`)
       await shotOf(page.locator('[data-iqline-root="flashback"]'), `iqline-${width}-${scheme}-chart`)
 
+      // Nhãn trục ngang như bản SVG: "Lịch sử 60 phiên", "Phiên 1", phiên giữa, "Phiên 30" (điện thoại: rút gọn, bỏ nhãn giữa).
+      const labels = await drawnLabels(page)
+      if (narrow) {
+        for (const label of ["Lịch sử", "Phiên 1", "Phiên 30"]) expect(labels).toContain(label)
+        expect(labels).not.toContain("Lịch sử 60 phiên")
+        expect(labels).not.toContain("Phiên 15")
+      } else {
+        for (const label of ["Lịch sử 60 phiên", "Phiên 1", "Phiên 15", "Phiên 30"]) expect(labels).toContain(label)
+      }
+      expect(labels.join("|")).not.toContain(SECRET_DATE)
+      expect(labels.join("|")).not.toContain(SECRET_SYMBOL)
+
+      // Nến và khối lượng lịch sử mờ đúng alpha của bản SVG: nến 0.75 (191/255), khối lượng 0.45 (115/255); phần chơi nến 1 (255), khối lượng 0.7 (178/255).
+      const priceHeight = Number(await legend(page).locator('[data-pane="price"]').getAttribute("data-plot-height"))
+      const volumeHeight = Number(await legend(page).locator('[data-pane="volume"]').getAttribute("data-plot-height"))
+      const priceTop = 4
+      const volumeTop = priceTop + priceHeight + 10
+      const near = (value: number, expected: number) => expect(Math.abs(value - expected), `alpha ${value} so với ${expected}`).toBeLessThanOrEqual(2)
+      near(await dominantAlpha(page, 5, 50, priceTop + 2, priceTop + priceHeight - 2), Math.round(0.75 * 255))
+      near(await dominantAlpha(page, 60, 66, priceTop + 2, priceTop + priceHeight - 2), 255)
+      near(await dominantAlpha(page, 5, 50, volumeTop + 2, volumeTop + volumeHeight - 2), Math.round(0.45 * 255))
+      near(await dominantAlpha(page, 60, 66, volumeTop + 2, volumeTop + volumeHeight - 2), Math.round(0.7 * 255))
+
       // Cùng dữ liệu, biểu đồ SVG cũ (mặc định): để so bằng mắt.
       await page.goto("/demo-trading?view=flashback")
       await expect(page.getByRole("img", { name: "Biểu đồ nến Flashback" })).toBeVisible()
@@ -141,6 +247,7 @@ test("zoom, kéo và về khung mặc định chỉ trong các nến đã mở",
   const initial = await dataHash(page)
 
   // Lăn chuột thường không zoom (để trang cuộn); Ctrl + lăn thì zoom quanh con trỏ.
+  await drawnLabels(page, true)
   await page.mouse.move(centre.x, centre.y)
   await page.mouse.wheel(0, -400)
   expect(await viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
@@ -150,6 +257,9 @@ test("zoom, kéo và về khung mặc định chỉ trong các nến đã mở",
   await expect.poll(async () => (await viewportOf(page))[1] - (await viewportOf(page))[0]).toBeLessThan(TOTAL_SLOTS - 5)
   await expect.poll(() => dataHash(page)).not.toBe(initial)
   await shot(page, "iqline-zoomed")
+  // Đã zoom thì trục đổi sang nhãn theo phiên ("n phiên trước", "Phiên n"), nhãn cố định của khung mặc định biến mất.
+  await expect.poll(async () => (await drawnLabels(page)).some((label) => /phiên trước$/.test(label))).toBe(true)
+  expect(await drawnLabels(page)).not.toContain("Lịch sử 60 phiên")
 
   // Nút Về khung mặc định đang sáng khi đã zoom.
   const fit = page.getByRole("button", { name: "Về khung mặc định" })
@@ -187,9 +297,12 @@ test("zoom, kéo và về khung mặc định chỉ trong các nến đã mở",
   // Nhấp đúp vào khung vẽ về khung mặc định; nút phóng to cũng hoạt động.
   await page.getByRole("button", { name: "Phóng to biểu đồ" }).click({ force: true })
   expect((await viewportOf(page))[1] - (await viewportOf(page))[0]).toBeLessThan(TOTAL_SLOTS)
+  await drawnLabels(page, true)
   await page.mouse.dblclick(centre.x, centre.y)
   await expect.poll(() => viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
   await expect(fit).toBeDisabled()
+  // Về khung mặc định thì nhãn cố định trở lại.
+  await expect.poll(() => drawnLabels(page)).toContain("Lịch sử 60 phiên")
 })
 
 test("vẽ đường xu hướng bằng hai cú bấm, xoá bằng Delete; Fibonacci và đường ngang; Esc huỷ; nút Xoá", async ({ page }) => {
@@ -349,10 +462,55 @@ test("nến tương lai không đọc được: crosshair và chú giải dừng
   expect(await page.locator("body").innerText()).not.toContain(SECRET_DATE)
 })
 
+test("kéo neo và kéo cả đường xu hướng: hình vẽ đi theo con trỏ", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await openMatch(page, true)
+  const trend = page.getByTestId("flashback-draw-trend")
+  const A = await pointOf(page, 20, 120)
+  const B = await pointOf(page, 45, 200)
+  await trend.click()
+  await page.mouse.click(A.x, A.y)
+  await page.mouse.move((A.x + B.x) / 2, (A.y + B.y) / 2, { steps: 4 })
+  await page.mouse.click(B.x, B.y)
+  await expect(trend).toHaveAttribute("aria-pressed", "false")
+  await expect.poll(() => inkAround(page, "drawings", B, 8)).toBeGreaterThan(30)
+  expect(await inkAround(page, "drawings", { x: B.x, y: B.y + 90 }, 8)).toBe(0)
+
+  // Kéo neo cuối B xuống C: mực biến khỏi B và xuất hiện ở C.
+  const C = await pointOf(page, 45, 290)
+  await page.mouse.move(B.x, B.y)
+  await page.mouse.down()
+  await page.mouse.move(B.x, (B.y + C.y) / 2, { steps: 6 })
+  await page.mouse.move(C.x, C.y, { steps: 6 })
+  await page.mouse.up()
+  await expect.poll(() => inkAround(page, "drawings", C, 8)).toBeGreaterThan(30)
+  expect(await inkAround(page, "drawings", B, 8)).toBe(0)
+  await shot(page, "iqline-drag-anchor")
+
+  // Kéo cả đường: nắm giữa đoạn A-C, dời sang phải 12 phiên; đầu A cũ trống, đầu A mới có mực.
+  const middle = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 }
+  const shifted = await pointOf(page, 32, 0)
+  const origin = await pointOf(page, 20, 0)
+  const dx = shifted.x - origin.x
+  expect(await inkAround(page, "drawings", middle, 6)).toBeGreaterThan(5)
+  await page.mouse.move(middle.x, middle.y)
+  await page.mouse.down()
+  await page.mouse.move(middle.x + dx / 2, middle.y, { steps: 6 })
+  await page.mouse.move(middle.x + dx, middle.y, { steps: 6 })
+  await page.mouse.up()
+  await expect.poll(() => inkAround(page, "drawings", { x: A.x + dx, y: A.y }, 8)).toBeGreaterThan(30)
+  expect(await inkAround(page, "drawings", A, 8)).toBe(0)
+  await shot(page, "iqline-drag-line")
+
+  // Hình vẫn một hình duy nhất: Delete xoá hết.
+  await page.keyboard.press("Delete")
+  await expect.poll(() => layerInk(page, "drawings")).toBe(0)
+})
+
 test.describe("điện thoại cảm ứng", () => {
-  test.use({ hasTouch: true })
-  test("chạm dòng chú giải hiện nút; bật công cụ vẽ thì canvas chặn cuộn trang", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 })
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } })
+
+  test("chạm dòng chú giải hiện nút ở dòng riêng, không đè dấu mua bán; bật công cụ vẽ thì canvas chặn cuộn trang", async ({ page }) => {
     await openMatch(page, true)
     await page.getByRole("button", { name: "Các chỉ báo" }).click()
     await page.getByTestId("indicator-picker").getByRole("button", { name: /^MA \/ SMA/ }).click()
@@ -360,13 +518,79 @@ test.describe("điện thoại cảm ứng", () => {
     await row.scrollIntoViewIfNeeded()
     await expect(row.locator("[data-legend-buttons]")).toBeHidden()
     await row.tap()
-    await expect(row.locator("[data-legend-buttons]")).toBeVisible()
+    const buttons = row.locator("[data-legend-buttons]")
+    await expect(buttons).toBeVisible()
     await expect(row.getByRole("button", { name: /^Xóa MA/ })).toBeVisible()
     await shot(page, "iqline-phone-legend-buttons")
+    await shotOf(page.locator('[data-iqline-root="flashback"]'), "iqline-phone-legend-buttons-chart")
     expect(await noHorizontalOverflow(page)).toBe(true)
+
+    // Ba nút to cho ngón tay (tối thiểu 32px) và nằm bên trái, dưới tên chỉ báo: dấu mua (phiên 61) và bán (phiên 64) ở phần chơi bên phải
+    // nên không bị che. Kiểm theo toạ độ thật của nút so với toạ độ thật của dấu.
+    const rects = await row.getByRole("button").evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()))
+    expect(rects).toHaveLength(3)
+    for (const rect of rects) {
+      expect(rect.width).toBeGreaterThanOrEqual(32)
+      expect(rect.height).toBeGreaterThanOrEqual(32)
+    }
+    const nameBox = (await row.locator("span").first().boundingBox())!
+    expect(rects[0].top).toBeGreaterThanOrEqual(nameBox.y + nameBox.height - 1)
+    const markers = [await pointOf(page, VIEW_BARS - 1 + 2, 0), await pointOf(page, VIEW_BARS - 1 + 5, 0)]
+    const buttonsRight = Math.max(...rects.map((rect) => rect.right))
+    for (const marker of markers) expect(buttonsRight + 8).toBeLessThan(marker.x)
+    // Chạm ra ngoài thì ba nút ẩn.
+    await page.mouse.click(5, 5)
+    await expect(buttons).toBeHidden()
+
     // Bật công cụ vẽ thì canvas chặn cuộn trang.
     await page.getByTestId("flashback-draw-trend").tap()
     expect(await canvasTop(page).evaluate((element) => getComputedStyle(element).touchAction)).toBe("none")
+  })
+
+  test("nút zoom luôn hiện ở khung mặc định: phóng to, thu nhỏ, về khung mặc định bằng một chạm", async ({ page }) => {
+    await openMatch(page, true)
+    const controls = page.getByTestId("flashback-zoom-controls")
+    const zoomIn = page.getByRole("button", { name: "Phóng to biểu đồ" })
+    const zoomOut = page.getByRole("button", { name: "Thu nhỏ biểu đồ" })
+    const fit = page.getByRole("button", { name: "Về khung mặc định" })
+    await root(page).scrollIntoViewIfNeeded()
+    await expect(controls).toHaveCSS("opacity", "1")
+    for (const button of [zoomIn, zoomOut, fit]) {
+      const box = (await button.boundingBox())!
+      expect(box.width).toBeGreaterThanOrEqual(36)
+      expect(box.height).toBeGreaterThanOrEqual(36)
+    }
+    await expect(fit).toBeDisabled()
+    expect(await viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
+    await zoomIn.tap()
+    const zoomed = await viewportOf(page)
+    expect(zoomed[1] - zoomed[0]).toBeLessThan(TOTAL_SLOTS)
+    await expect(fit).toBeEnabled()
+    await shot(page, "iqline-phone-zoomed")
+    await shotOf(page.locator('[data-iqline-root="flashback"]'), "iqline-phone-zoomed-chart")
+    await zoomOut.tap()
+    await zoomIn.tap()
+    await zoomIn.tap()
+    await fit.tap()
+    await expect.poll(() => viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
+    await expect(fit).toBeDisabled()
+  })
+})
+
+test.describe("máy tính bảng cảm ứng nằm ngang (1366px, khung biểu đồ rộng hơn 600px)", () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 1366, height: 1024 } })
+
+  test("không rê chuột được: nút zoom vẫn hiện ở khung mặc định và dùng được", async ({ page }) => {
+    await openMatch(page, true)
+    await root(page).scrollIntoViewIfNeeded()
+    expect(await root(page).getAttribute("data-narrow")).toBe("false")
+    expect(await page.evaluate(() => matchMedia("(hover: none)").matches)).toBe(true)
+    await expect(page.getByTestId("flashback-zoom-controls")).toHaveCSS("opacity", "1")
+    await page.getByRole("button", { name: "Phóng to biểu đồ" }).tap()
+    const zoomed = await viewportOf(page)
+    expect(zoomed[1] - zoomed[0]).toBeLessThan(TOTAL_SLOTS)
+    await page.getByRole("button", { name: "Về khung mặc định" }).tap()
+    await expect.poll(() => viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
   })
 })
 

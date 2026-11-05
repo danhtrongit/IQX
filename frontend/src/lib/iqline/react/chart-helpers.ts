@@ -9,7 +9,7 @@ import type { InteractionState, PointerTarget } from "../interaction"
 import { manualPriceRange } from "../interaction"
 import { SceneBuilder, type Pointer } from "../scene/builder"
 import { createFrame, type ChartData, type ChartFrame, type SceneIndicator, type ViewState } from "../scene/model"
-import type { AiOverlay, Bar, ChartIndicatorInput, ColorToken, IndicatorDefinition, IndicatorPlot, Layer, PriceScaleMode, Scene } from "../types"
+import type { AiOverlay, SessionAxisLabel, Bar, ChartIndicatorInput, ColorToken, IndicatorDefinition, IndicatorPlot, Layer, PriceScaleMode, Scene } from "../types"
 
 /** Độ rộng cột giá bên phải (CSS pixel), như `PAD_RIGHT` của biểu đồ Flashback hiện tại. */
 export const AXIS_RIGHT = 62
@@ -66,6 +66,8 @@ export type FrameInputs = {
   labelToken?: "muted-foreground" | "academy-label"
   formatPrice?: (price: number) => string
   formatX?: (session: number) => string
+  /** Nhãn cố định của trục ngang ở khung mặc định (xem `ViewState.axisLabels`). */
+  axisLabels?: (narrow: boolean) => readonly SessionAxisLabel[]
   /** Bố cục điện thoại do trang quyết (cửa sổ hẹp dù biểu đồ rộng); bỏ trống thì theo độ rộng biểu đồ. */
   mobile?: boolean
 }
@@ -84,6 +86,7 @@ export function buildFrame(data: ChartData, viewport: InteractionState["viewport
     labelToken: inputs.labelToken,
     formatPrice: inputs.formatPrice,
     formatX: inputs.formatX,
+    axisLabels: inputs.axisLabels,
     mobile: inputs.mobile,
   }
   const auto = createFrame(data, view)

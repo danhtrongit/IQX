@@ -6,6 +6,7 @@
  * 4 cho mỗi đoạn hoặc hình chữ nhật, 2 cho mỗi đỉnh.
  * Chữ dùng đường cơ sở (baseline) tại `y`.
  */
+import { annotationWidth, placeLabels, type LabelRequest } from "../labels/placement"
 import type { Anchor, ColorToken, DrawCommand, Drawing, DrawingStyle, DrawingTool, PaneCoords } from "../types"
 import {
   FIB_EXTENSION_LEVELS,
@@ -101,6 +102,11 @@ function widthOf(style: DrawingStyle, ctx: Ctx): number {
   return style.width + (ctx.selected ? SELECT_EXTRA_WIDTH : 0)
 }
 
+/** Cỡ chữ của nhãn mức Fibonacci (CSS pixel), khớp `text()`. */
+const FIB_LABEL_SIZE = 11
+/** Số cột tối đa mà nhãn được dời sang phải khi các mức quá sát nhau. */
+const FIB_LABEL_COLUMNS = 7
+
 function fibLevels(
   levels: readonly FibLevel[],
   priceAt: (level: number) => number,
@@ -110,13 +116,27 @@ function fibLevels(
 ): DrawCommand[] {
   const out: DrawCommand[] = []
   const base = style.width * 0.65 + (ctx.selected ? 0.7 : 0)
+  const rows: { token: ColorToken; y: number; label: string }[] = []
   for (const { level, token } of levels) {
     const price = priceAt(level)
     const y = ctx.coords.yOfPrice(price)
     if (!Number.isFinite(y)) continue
     out.push(...lines(token, base, [[left, y, ctx.plot.right, y]], ctx.dpr))
-    out.push(...text(token, fibLabel(level, price, ctx.format), left + 4, y - 3, "left", ctx.dpr, true))
+    rows.push({ token, y, label: fibLabel(level, price, ctx.format) })
   }
+  // Khoảng giá hẹp thì các mức sát nhau hơn một dòng chữ: nhãn nào đè lên nhãn đứng trước thì dời sang cột bên phải (vẫn nằm trên
+  // đường của nó). Khoảng giá bình thường thì mọi nhãn ở cột đầu như cũ.
+  const step = Math.max(0, ...rows.map((row) => annotationWidth(row.label, FIB_LABEL_SIZE, undefined, 600))) + 10
+  const requests: LabelRequest[] = rows.map((row, index) => ({
+    key: String(index),
+    text: row.label,
+    size: FIB_LABEL_SIZE,
+    weight: 600,
+    candidates: Array.from({ length: FIB_LABEL_COLUMNS }, (_, column) => ({ x: left + 4 + column * step, y: row.y - 3, anchor: "start" as const })),
+  }))
+  const { plot } = ctx
+  const placed = placeLabels(requests, { bounds: { l: plot.left, t: plot.top, r: plot.right, b: plot.bottom }, segments: [], obstacles: [], pad: 0 })
+  for (const label of placed) out.push(...text(rows[Number(label.key)].token, label.text, label.x, label.y, "left", ctx.dpr, true))
   return out
 }
 

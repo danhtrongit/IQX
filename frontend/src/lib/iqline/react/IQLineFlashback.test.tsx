@@ -203,6 +203,95 @@ describe("IQLineFlashback: vỏ và chú giải nổi", () => {
   })
 })
 
+describe("IQLineFlashback: nhãn trục như SVG, nến lịch sử mờ, nút cho máy cảm ứng (đối chiếu Flashback v2.3)", () => {
+  const axisLabels = (narrow: boolean) =>
+    narrow
+      ? [
+          { index: 0, label: "Lịch sử", anchor: "start" as const },
+          { index: 60, label: "Phiên 1", anchor: "middle" as const },
+          { index: 89, label: "Phiên 30", anchor: "end" as const },
+        ]
+      : [
+          { index: 0, label: "Lịch sử 60 phiên", anchor: "start" as const },
+          { index: 60, label: "Phiên 1", anchor: "middle" as const },
+          { index: 74, label: "Phiên 15", anchor: "middle" as const },
+          { index: 89, label: "Phiên 30", anchor: "end" as const },
+        ]
+
+  it("khung mặc định: nhãn của trang ('Lịch sử 60 phiên', 'Phiên 1', phiên giữa, 'Phiên 30'); điện thoại rút gọn", () => {
+    const desktop = setup({ axisLabels, divider: 60 })
+    const labels = drawnTexts(env.context)
+    for (const label of ["Lịch sử 60 phiên", "Phiên 1", "Phiên 15", "Phiên 30"]) expect(labels).toContain(label)
+    desktop.unmount()
+    env.context.calls.length = 0
+    setup({ axisLabels, divider: 60 }, 390)
+    const phone = drawnTexts(env.context)
+    expect(phone).toContain("Lịch sử")
+    expect(phone).not.toContain("Lịch sử 60 phiên")
+  })
+
+  it("zoom thì nhãn cố định nhường chỗ cho nhãn theo phiên; Về khung mặc định trả nhãn cố định lại", async () => {
+    const user = userEvent.setup()
+    setup({ axisLabels, divider: 60 })
+    env.context.calls.length = 0
+    await user.click(screen.getByRole("button", { name: "Phóng to biểu đồ" }))
+    env.flush()
+    expect(drawnTexts(env.context)).not.toContain("Lịch sử 60 phiên")
+    env.context.calls.length = 0
+    await user.click(screen.getByRole("button", { name: "Về khung mặc định" }))
+    env.flush()
+    expect(drawnTexts(env.context)).toContain("Lịch sử 60 phiên")
+  })
+
+  it("có vạch ngăn thì nến lịch sử vẽ mờ 0.75 và khối lượng 0.45/0.7; không có vạch ngăn thì không mờ", () => {
+    // Bốn mươi nến lịch sử và hai mươi nến đã chơi; 0.4 là mặt nạ phần chưa mở.
+    setup({ divider: 40 })
+    const alphas = new Set(named(env.context, "set globalAlpha").map((call) => call[1]))
+    expect([...alphas].sort()).toEqual([0.4, 0.45, 0.7, 0.75, 1].sort())
+    env.context.calls.length = 0
+    document.body.innerHTML = ""
+    setup({})
+    expect(new Set(named(env.context, "set globalAlpha").map((call) => call[1]))).toEqual(new Set([0.4, 0.55, 1]))
+  })
+
+  it("máy tính: nút zoom chỉ hiện khi rê chuột hoặc đã zoom; điện thoại: luôn hiện, to 36px, vẫn có nút Về khung mặc định", () => {
+    const desktop = setup()
+    const group = () => screen.getByTestId("flashback-zoom-controls")
+    expect(group().className).toContain("opacity-0")
+    expect(screen.getByRole("button", { name: "Phóng to biểu đồ" }).className).toContain("size-6")
+    desktop.unmount()
+    setup({ pageNarrow: true })
+    expect(group().className).not.toContain("opacity-0")
+    expect(group().className).toContain("opacity-100")
+    for (const name of ["Thu nhỏ biểu đồ", "Phóng to biểu đồ", "Về khung mặc định"]) expect(screen.getByRole("button", { name }).className).toContain("size-9")
+    // Ở khung mặc định nút Về khung mặc định chưa dùng được, nhưng vẫn hiện để người chơi biết có đường về.
+    expect((screen.getByRole("button", { name: "Về khung mặc định" }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it("điện thoại: ba nút của dòng chú giải nằm ở dòng riêng dưới tên chỉ báo, không cùng dòng với giá trị", async () => {
+    const user = userEvent.setup()
+    setup({ indicators: [ma()], pageNarrow: true })
+    const row = document.querySelector<HTMLElement>("[data-legend-row]")!
+    const buttons = row.querySelector<HTMLElement>("[data-legend-buttons]")!
+    expect(row.children).toHaveLength(2)
+    expect(row.children[0].contains(buttons)).toBe(false)
+    expect(row.children[1]).toBe(buttons)
+    expect(buttons.classList.contains("flex")).toBe(false)
+    await user.click(row)
+    expect(buttons.classList.contains("flex")).toBe(true)
+    for (const button of buttons.querySelectorAll("button")) expect(button.className).toContain("size-8")
+    // Máy tính: cùng dòng với tên và giá trị.
+    document.body.innerHTML = ""
+  })
+
+  it("máy tính: ba nút cùng dòng với tên chỉ báo", () => {
+    setup({ indicators: [ma()] })
+    const row = document.querySelector<HTMLElement>("[data-legend-row]")!
+    expect(row.children).toHaveLength(1)
+    expect(row.children[0].contains(row.querySelector("[data-legend-buttons]"))).toBe(true)
+  })
+})
+
 describe("IQLineFlashback: luật công bằng (§12) ở DOM và crosshair", () => {
   /** Dữ liệu thô như server có thể gửi nhầm: thêm ngày, mã, và nến warmup cực đoan. */
   function leakyBars(): Bar[] {

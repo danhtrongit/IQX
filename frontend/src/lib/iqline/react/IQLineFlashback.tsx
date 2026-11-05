@@ -20,7 +20,7 @@ import { Maximize2, ZoomIn, ZoomOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import { NARROW_WIDTH } from "../core/layout"
-import type { Bar, ChartIndicatorInput, SessionMarker } from "../types"
+import type { SessionAxisLabel, Bar, ChartIndicatorInput, SessionMarker } from "../types"
 import { FlashbackLegend } from "./flashback-legend"
 import { IQLineCanvasView } from "./IQLineCanvas"
 import type { SessionDrawingController } from "./session-drawings"
@@ -43,6 +43,11 @@ export type IQLineFlashbackProps = {
   totalSlots: number
   /** Nhãn của một phiên (chỉ số 0 là nến đầu tiên được hiện): trục ngang, crosshair và chú giải dùng chung. */
   formatX: (session: number) => string
+  /**
+   * Nhãn cố định của trục ngang khi đang nhìn hết mọi ô ("Lịch sử 60 phiên", "Phiên 1", ..., như Flashback v2.3). `narrow` là biểu đồ hẹp
+   * hơn 600px. Giữ hàm ổn định giữa các lần render (useMemo). Đã zoom hoặc kéo thì trục dùng nhãn theo `formatX`.
+   */
+  axisLabels?: (narrow: boolean) => readonly SessionAxisLabel[]
   markers?: readonly SessionMarker[]
   /** Chỉ số ô bắt đầu phần chơi: vạch đứt ngăn giữa phần xem và phần chơi. */
   divider?: number
@@ -71,10 +76,10 @@ export type IQLineFlashbackProps = {
 const defaultFormatPrice = (price: number): string => new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(price)
 
 const ZOOM_BUTTON =
-  "inline-flex size-6 items-center justify-center rounded-sm text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+  "inline-flex items-center justify-center rounded-sm text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:opacity-40"
 
 export function IQLineFlashback(props: IQLineFlashbackProps) {
-  const { ref, theme, bars, warmup, totalSlots, formatX, markers, divider, drawings, interaction, indicators, onIndicatorsChange, onIndicatorSettings, indicatorTitle, available, pageNarrow, className } = props
+  const { ref, theme, bars, warmup, totalSlots, formatX, axisLabels, markers, divider, drawings, interaction, indicators, onIndicatorsChange, onIndicatorSettings, indicatorTitle, available, pageNarrow, className } = props
   const labelToken = props.labelToken ?? "academy-label"
   const formatPrice = props.formatPrice ?? defaultFormatPrice
 
@@ -85,6 +90,7 @@ export function IQLineFlashback(props: IQLineFlashbackProps) {
     warmup,
     totalSlots,
     formatX,
+    axisLabels,
     markers,
     divider,
     available,
@@ -123,6 +129,9 @@ export function IQLineFlashback(props: IQLineFlashbackProps) {
   const canZoom = chart.config.zoom
   const canFit = chart.config.zoom || chart.config.pan
   const priceBox = chart.frame?.price.box
+  // Điện thoại: nút to 36px cho ngón tay; máy tính 24px.
+  const buttonSize = touch ? 36 : 24
+  const buttonClass = cn(ZOOM_BUTTON, touch ? "size-9" : "size-6")
 
   return (
     <div
@@ -151,21 +160,22 @@ export function IQLineFlashback(props: IQLineFlashbackProps) {
           data-zoomed={zoomed}
           className={cn(
             "absolute flex items-center rounded-sm bg-background/80 transition-opacity",
-            zoomed ? "opacity-100" : "opacity-0 group-hover/fb:opacity-100 focus-within:opacity-100 [@media(pointer:coarse)]:pointer-events-none",
+            // Máy cảm ứng không có rê chuột: nút luôn hiện để zoom và về khung mặc định bằng một chạm (không chờ đã zoom bằng hai ngón).
+            zoomed || touch ? "opacity-100" : "opacity-0 group-hover/fb:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 [@media(pointer:coarse)]:opacity-100",
           )}
-          style={{ top: priceBox.top + priceBox.height - 30, right: AXIS_RIGHT + 6 }}
+          style={{ top: priceBox.top + priceBox.height - buttonSize - 6, right: AXIS_RIGHT + 6 }}
         >
           {canZoom ? (
             <>
-              <button type="button" className={ZOOM_BUTTON} aria-label="Thu nhỏ biểu đồ" title="Thu nhỏ" onClick={handle.zoomOut}>
+              <button type="button" className={buttonClass} aria-label="Thu nhỏ biểu đồ" title="Thu nhỏ" onClick={handle.zoomOut}>
                 <ZoomOut className="size-3.5" aria-hidden="true" />
               </button>
-              <button type="button" className={ZOOM_BUTTON} aria-label="Phóng to biểu đồ" title="Phóng to" onClick={handle.zoomIn}>
+              <button type="button" className={buttonClass} aria-label="Phóng to biểu đồ" title="Phóng to" onClick={handle.zoomIn}>
                 <ZoomIn className="size-3.5" aria-hidden="true" />
               </button>
             </>
           ) : null}
-          <button type="button" className={ZOOM_BUTTON} aria-label="Về khung mặc định" title="Về khung mặc định" disabled={!zoomed} onClick={handle.fitContent}>
+          <button type="button" className={buttonClass} aria-label="Về khung mặc định" title="Về khung mặc định" disabled={!zoomed} onClick={handle.fitContent}>
             <Maximize2 className="size-3.5" aria-hidden="true" />
           </button>
         </div>

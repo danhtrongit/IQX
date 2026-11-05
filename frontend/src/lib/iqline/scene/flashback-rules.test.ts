@@ -8,7 +8,7 @@ import { clampViewport, panViewport, viewportLimits, visibleIndexRange, zoomView
 import { createChartData, createFrame, naturalHeight } from "./model"
 import { indexAtPointer, SceneBuilder } from "./builder"
 import { valuesAtIndex } from "./values"
-import { build, flashbackInput, frameOf, makeBars, ops, rectsOf, series, texts } from "./test-support"
+import { build, flashbackInput, frameOf, makeBars, marketInput, ops, rectsOf, series, texts, tokens } from "./test-support"
 import type { Bar, IndicatorPlot } from "../types"
 
 const WARMUP = 10
@@ -194,5 +194,124 @@ describe("Flashback: chiều cao ô v2.3", () => {
   it("scene chỉ có hai nhóm clip (giá, khối lượng) khi chưa có chỉ báo riêng", () => {
     const scene = build(input()).scene()
     expect(ops(scene, "clip")).toHaveLength(2)
+  })
+})
+
+describe("Flashback: nến và khối lượng lịch sử mờ hơn phần chơi (v2.3, như biểu đồ SVG cũ)", () => {
+  const HISTORY = 40
+  const withDivider = () => build(input({ divider: HISTORY }), { viewport: { from: -0.5, to: SLOTS - 0.5 } })
+  const candleRects = (scene: ReturnType<typeof build>["scene"] extends () => infer S ? S : never) =>
+    scene.filter((command): command is Extract<typeof command, { op: "rects" }> => command.op === "rects" && (command.token === "price-up" || command.token === "price-down") && (command.alpha === undefined || command.alpha === 0.75))
+
+  it("nến trước vạch ngăn mờ 0.75, nến sau vạch ngăn đậm hẳn; token vẫn chỉ là price-up và price-down", () => {
+    const out = withDivider()
+    const scene = out.scene()
+    const edge = out.frame.price.coords.xOfIndex(HISTORY) - out.frame.barPx / 2
+    const dim = candleRects(scene).filter((command) => command.alpha === 0.75)
+    const solid = candleRects(scene).filter((command) => command.alpha === undefined)
+    expect(dim.length).toBeGreaterThan(0)
+    expect(solid.length).toBeGreaterThan(0)
+    for (const command of dim) for (let index = 0; index < command.count; index += 4) expect(command.data[index]).toBeLessThan(edge)
+    for (const command of solid) for (let index = 0; index < command.count; index += 4) expect(command.data[index]).toBeGreaterThanOrEqual(edge - out.frame.barPx)
+    // Không có độ mờ nào khác trên nến, không có màu ngoài hai token tăng giảm.
+    const alphas = new Set(scene.filter((command) => command.op === "rects").map((command) => (command.op === "rects" ? command.alpha : 0)))
+    expect([...alphas].sort()).toEqual([0.45, 0.7, 0.75, undefined].sort())
+    // Chỉ có nhãn giá đóng cửa (chart-1) là ngoài hai token tăng giảm.
+    expect(new Set(tokens(scene, "rects"))).toEqual(new Set(["price-up", "price-down", "chart-1"]))
+    const dimmed = scene.filter((command) => command.op === "rects" && command.alpha !== undefined)
+    expect(new Set(tokens(dimmed))).toEqual(new Set(["price-up", "price-down"]))
+  })
+
+  it("nến mờ: bấc chỉ ở trên và dưới thân, không chồng lên thân (chồng sẽ đậm hơn ở giữa nến)", () => {
+    const dim = candleRects(withDivider().scene()).filter((command) => command.alpha === 0.75)
+    const rects: number[][] = []
+    for (const command of dim) for (let index = 0; index < command.count; index += 4) rects.push(Array.from(command.data.subarray(index, index + 4)))
+    for (let a = 0; a < rects.length; a += 1) {
+      for (let b = a + 1; b < rects.length; b += 1) {
+        const [ax, ay, aw, ah] = rects[a]
+        const [bx, by, bw, bh] = rects[b]
+        const overlap = Math.min(ax + aw, bx + bw) > Math.max(ax, bx) && Math.min(ay + ah, by + bh) > Math.max(ay, by)
+        expect(overlap).toBe(false)
+      }
+    }
+  })
+
+  it("khối lượng: cột lịch sử 0.45, cột phần chơi 0.7; không vạch ngăn thì giữ 0.55 như market", () => {
+    const out = withDivider()
+    const edge = out.frame.price.coords.xOfIndex(HISTORY) - out.frame.barPx / 2
+    const volume = out.scene().filter((command): command is Extract<typeof command, { op: "rects" }> => command.op === "rects" && (command.alpha === 0.45 || command.alpha === 0.7))
+    const history = volume.filter((command) => command.alpha === 0.45)
+    const play = volume.filter((command) => command.alpha === 0.7)
+    expect(history.length).toBeGreaterThan(0)
+    expect(play.length).toBeGreaterThan(0)
+    for (const command of history) for (let index = 0; index < command.count; index += 4) expect(command.data[index]).toBeLessThan(edge)
+    for (const command of play) for (let index = 0; index < command.count; index += 4) expect(command.data[index]).toBeGreaterThanOrEqual(edge - out.frame.barPx)
+    const plain = build(input(), { viewport: { from: -0.5, to: SLOTS - 0.5 } }).scene()
+    expect(plain.some((command) => command.op === "rects" && command.alpha === 0.55)).toBe(true)
+    expect(candleRects(plain).every((command) => command.alpha === undefined)).toBe(true)
+  })
+
+  it("khung hẹp (điện thoại, ô rộng chừng 3,6px): thân nến 2px chứ không co về 1px bằng bấc, như bản SVG", () => {
+    const out = build(input({ divider: 40 }), { geometry: { width: 390 }, viewport: { from: -0.5, to: SLOTS - 0.5 } })
+    expect(out.frame.barPx).toBeGreaterThan(3)
+    expect(out.frame.barPx).toBeLessThan(4)
+    // Chỉ nến (độ mờ 0.75 hoặc đậm hẳn); cột khối lượng có độ mờ riêng.
+    const rects: number[][] = []
+    for (const command of candleRects(out.scene())) for (let index = 0; index < command.count; index += 4) rects.push(Array.from(command.data.subarray(index, index + 4)))
+    const widths = new Set(rects.map((rect) => rect[2]))
+    expect(widths.has(1)).toBe(true)
+    expect(Math.max(...widths)).toBe(2)
+    // Thân là các hình chữ nhật rộng 2px (bấc rộng 1px): mỗi nến một thân, ở cả phần lịch sử lẫn phần chơi.
+    expect(rects.filter((rect) => rect[2] === 2)).toHaveLength(COUNT)
+  })
+
+  it("market không bị mờ: nến đậm hẳn, khối lượng 0.55", () => {
+    const scene = build(marketInput()).scene()
+    expect(scene.some((command) => command.op === "rects" && command.alpha === 0.75)).toBe(false)
+    expect(scene.some((command) => command.op === "rects" && command.alpha === 0.55)).toBe(true)
+  })
+})
+
+describe("Flashback: nhãn trục ngang cố định ở khung mặc định (v2.3)", () => {
+  const axisLabels = (narrow: boolean) =>
+    narrow
+      ? [
+          { index: 0, label: "Lịch sử", anchor: "start" as const },
+          { index: 60, label: "Phiên 1", anchor: "middle" as const },
+          { index: 89, label: "Phiên 30", anchor: "end" as const },
+        ]
+      : [
+          { index: 0, label: "Lịch sử 60 phiên", anchor: "start" as const },
+          { index: 60, label: "Phiên 1", anchor: "middle" as const },
+          { index: 74, label: "Phiên 15", anchor: "middle" as const },
+          { index: 89, label: "Phiên 30", anchor: "end" as const },
+        ]
+  const baselineTexts = (out: ReturnType<typeof build>) => {
+    const baseline = Math.max(...texts(out.base()).map((command) => command.y))
+    return texts(out.base()).filter((command) => command.y === baseline)
+  }
+
+  it("nhìn hết mọi ô thì dùng nhãn của trang, neo trái, giữa và phải đúng như bản SVG", () => {
+    const out = build(input({ divider: 60 }), { axisLabels })
+    const labels = baselineTexts(out)
+    expect(labels.map((command) => command.text)).toEqual(["Lịch sử 60 phiên", "Phiên 1", "Phiên 15", "Phiên 30"])
+    expect(labels.map((command) => command.align)).toEqual(["left", "center", "center", "right"])
+  })
+
+  it("biểu đồ hẹp hơn 600px xin nhãn rút gọn", () => {
+    const labels = baselineTexts(build(input({ divider: 60 }), { axisLabels, geometry: { width: 390 } }))
+    expect(labels.map((command) => command.text)).toEqual(["Lịch sử", "Phiên 1", "Phiên 30"])
+  })
+
+  it("đã zoom hoặc kéo thì bỏ nhãn cố định và dùng nhãn theo phiên", () => {
+    const out = build(input({ divider: 60 }), { axisLabels, formatX: (session) => `P${session}`, viewport: { from: 20, to: 50 } })
+    const labels = baselineTexts(out).map((command) => command.text)
+    expect(labels.length).toBeGreaterThan(1)
+    expect(labels.every((text) => /^P\d+$/.test(text))).toBe(true)
+  })
+
+  it("không có axisLabels thì giữ nhãn theo phiên như trước", () => {
+    const labels = baselineTexts(build(input(), { formatX: (session) => `P${session}` })).map((command) => command.text)
+    expect(labels.every((text) => /^P\d+$/.test(text))).toBe(true)
   })
 })

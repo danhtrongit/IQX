@@ -14,6 +14,13 @@ export type PaneDraw = {
   /** Dải nến thật còn thấy trong viewport. */
   first: number
   last: number
+  /**
+   * Nến có chỉ số nhỏ hơn số này là phần lịch sử của Flashback, vẽ mờ hơn (0 là không có phần nào mờ). Chỉ đổi độ mờ, không đổi
+   * token màu: nến và khối lượng vẫn chỉ dùng `price-up` và `price-down`.
+   */
+  dimBefore: number
+  /** Trục theo phiên (Flashback): thân nến rộng theo tỷ lệ 0,62 ô như biểu đồ SVG cũ, cho phép thân chẵn pixel dù bấc lẻ. */
+  session: boolean
   left: number
   right: number
   top: number
@@ -38,6 +45,8 @@ export function createPaneDraw(frame: ChartFrame, pane: PaneFrame, bufs: Buffers
     merged: barPx < 1,
     first: visible.first,
     last: visible.last,
+    dimBefore: frame.data.mode === "flashback" && frame.data.divider !== null ? frame.data.divider : 0,
+    session: frame.data.mode === "flashback",
     left,
     right: frame.plot.right * dpr,
     top: pane.box.top * dpr,

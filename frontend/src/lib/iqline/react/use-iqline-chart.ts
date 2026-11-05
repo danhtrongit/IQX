@@ -38,7 +38,7 @@ import { SceneBuilder } from "../scene/builder"
 import { createChartData, naturalHeight, type ChartData, type ChartDataInput, type ChartFrame, type SceneIndicator } from "../scene/model"
 import { valuesAtIndex, type IndexValues } from "../scene/values"
 import { resolveDpr, type CanvasStack } from "../render/canvas-stack"
-import type { AiOverlay, Bar, ChartIndicatorInput, ChartMark, ChartMode, ChartType, Interval, Layer, PaneCoords, PriceScaleMode, Scene, SessionMarker, TimedBar, Viewport } from "../types"
+import type { AiOverlay, SessionAxisLabel, Bar, ChartIndicatorInput, ChartMark, ChartMode, ChartType, Interval, Layer, PaneCoords, PriceScaleMode, Scene, SessionMarker, TimedBar, Viewport } from "../types"
 import { AXIS_RIGHT, buildFrame, layerScene, sceneIndicatorsFor, targetAt, type FrameInputs } from "./chart-helpers"
 
 export { AXIS_RIGHT } from "./chart-helpers"
@@ -97,6 +97,7 @@ export type MarketChartOptions = ChartCommon & {
   warmup?: never
   totalSlots?: never
   formatX?: never
+  axisLabels?: never
   markers?: never
   divider?: never
   available?: never
@@ -111,6 +112,11 @@ export type FlashbackChartOptions = ChartCommon & {
   warmup: number
   totalSlots: number
   formatX: (session: number) => string
+  /**
+   * Nhãn cố định của trục ngang khi đang nhìn hết mọi ô, như Flashback v2.3 ("Lịch sử 60 phiên", "Phiên 1", "Phiên 15", "Phiên 30"). Hàm cần
+   * ổn định giữa các lần render (useMemo). Đã zoom hoặc kéo thì trục tự đổi sang nhãn theo `formatX`. Bỏ trống thì luôn theo `formatX`.
+   */
+  axisLabels?: (narrow: boolean) => readonly SessionAxisLabel[]
   markers?: readonly SessionMarker[]
   divider?: number
   /** Chiều cao màn hình còn trống cho biểu đồ (null khi chưa đo): ô giá lấy phần còn lại. */
@@ -305,9 +311,10 @@ export function useIQLineChart(options: IQLineChartOptions): IQLineChart {
   const priceScaleMode = options.priceScaleMode ?? "linear"
   const { labelToken, formatPrice } = options
   const formatX = options.mode === "flashback" ? options.formatX : undefined
+  const axisLabels = options.mode === "flashback" ? options.axisLabels : undefined
   const frame = useMemo(
-    () => buildFrame(data, state.viewport, state.priceScale, { width: size.width, height, dpr: size.dpr, priceScaleMode, paneHeights, labelToken, formatPrice, formatX, mobile: market ? undefined : mobile }),
-    [data, state.viewport, state.priceScale, size.width, size.dpr, height, priceScaleMode, paneHeights, labelToken, formatPrice, formatX, market, mobile],
+    () => buildFrame(data, state.viewport, state.priceScale, { width: size.width, height, dpr: size.dpr, priceScaleMode, paneHeights, labelToken, formatPrice, formatX, axisLabels, mobile: market ? undefined : mobile }),
+    [data, state.viewport, state.priceScale, size.width, size.dpr, height, priceScaleMode, paneHeights, labelToken, formatPrice, formatX, axisLabels, market, mobile],
   )
 
   // Trình xử lý sự kiện đọc trạng thái mới nhất qua ref; ghi ref chỉ trong effect và trong trình xử lý.
@@ -377,6 +384,7 @@ function frameInputsOf(l: Live): FrameInputs {
     labelToken: l.options.labelToken,
     formatPrice: l.options.formatPrice,
     formatX: l.options.mode === "flashback" ? l.options.formatX : undefined,
+    axisLabels: l.options.mode === "flashback" ? l.options.axisLabels : undefined,
     mobile: l.options.mode === "flashback" ? l.size.width < NARROW_WIDTH || l.options.pageNarrow === true : undefined,
   }
 }

@@ -103,6 +103,27 @@ describe("lệnh vẽ", () => {
     expect(commands.filter((command) => command.op === "lines")).toHaveLength(8)
   })
 
+  it("Fibonacci: khoảng giá bình thường thì mọi nhãn cùng một cột; khoảng giá hẹp thì nhãn dời sang phải, không đè nhau", () => {
+    const labelsOf = (commands: DrawCommand[]) => commands.flatMap((command) => (command.op === "text" ? [command] : []))
+    const wide = labelsOf(drawingCommands([shape("f", "fib-retracement", [[5, 100], [30, 200]])], COORDS))
+    expect(new Set(wide.map((label) => label.x)).size).toBe(1)
+
+    // Chênh 20 đơn vị giá = 20px cho bảy mức: nhiều mức sát nhau hơn một dòng chữ (11px).
+    const narrow = labelsOf(drawingCommands([shape("f", "fib-retracement", [[5, 100], [30, 120]])], COORDS))
+    expect(narrow).toHaveLength(7)
+    expect(new Set(narrow.map((label) => label.x)).size).toBeGreaterThan(1)
+    // Hộp sát chữ thật (cỡ 11px: chữ số cao 8px trên đường cơ sở, dấu phẩy xuống 2px).
+    const boxes = narrow.map((label) => ({ l: label.x, r: label.x + label.text.length * 6.6, t: label.y - 8, b: label.y + 2 }))
+    for (let a = 0; a < boxes.length; a += 1) {
+      for (let b = a + 1; b < boxes.length; b += 1) {
+        const overlap = boxes[a].l < boxes[b].r && boxes[b].l < boxes[a].r && boxes[a].t < boxes[b].b && boxes[b].t < boxes[a].b
+        expect(overlap, `${narrow[a].text} với ${narrow[b].text}`).toBe(false)
+      }
+    }
+    // Nhãn vẫn nằm trong khung vẽ và vẫn đủ bảy mức.
+    for (const label of narrow) expect(label.x).toBeLessThan(500)
+  })
+
   it("Fibonacci mở rộng chỉ có mức khi đủ ba điểm; thước đo ghi chênh lệch, phần trăm và số nến", () => {
     const partial = previewCommands({ tool: "fib-extension", anchors: [{ session: 5, price: 100 }, { session: 20, price: 200 }] }, null, COORDS)
     expect(partial.some((command) => command.op === "text")).toBe(false)

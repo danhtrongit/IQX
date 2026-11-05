@@ -12,6 +12,7 @@
  * Lệnh của một lần gọi dùng chung bộ đệm với lần gọi sau của cùng `SceneBuilder`: adapter phải vẽ xong cảnh
  * trước khi dựng lại.
  */
+import { NARROW_WIDTH } from "../core/layout"
 import { dayBreaks } from "../core/time-scale"
 import {
   formatCompact,
@@ -37,6 +38,13 @@ import { drawIndicatorPlot } from "./plots"
 export type Pointer = { x: number; y: number }
 
 export const VOLUME_ALPHA = 0.55
+/** Khối lượng của Flashback: phần lịch sử mờ hơn phần đang chơi (Flashback v2.3, cùng độ mờ với biểu đồ SVG cũ). */
+export const FLASHBACK_VOLUME_ALPHA = { history: 0.45, play: 0.7 } as const
+
+/** Đang nhìn hết mọi ô của trục (khung mặc định của Flashback). */
+function showsEveryAxisSlot(viewport: { from: number; to: number }, slots: number): boolean {
+  return Math.abs(viewport.from + 0.5) < 1e-6 && Math.abs(viewport.to - (slots - 0.5)) < 1e-6
+}
 /** Ô cách đáy ô giá ít hơn mức này (CSS pixel) thì nhãn lưới nhường chỗ cho nhãn giá khác. */
 const LABEL_CLEARANCE = 14
 const OFFSCALE_IDS: ReadonlySet<string> = new Set(["ma", "ema", "ma_cross"])
@@ -145,6 +153,13 @@ export class SceneBuilder {
           verticals[verticalCount++] = x
           verticals[verticalCount++] = px(pane.box.top + pane.box.height, dpr)
         }
+      }
+    } else if (frame.view.axisLabels && showsEveryAxisSlot(viewport, data.slots)) {
+      // Khung mặc định: nhãn cố định của trang ("Lịch sử 60 phiên", "Phiên 1", ...) như Flashback v2.3.
+      for (const tick of frame.view.axisLabels(frame.view.geometry.width < NARROW_WIDTH)) {
+        if (tick.index < 0 || tick.index >= data.slots) continue
+        const align = tick.anchor === "start" ? "left" : tick.anchor === "end" ? "right" : "center"
+        timeLabels.push(textCommand(frame.labelToken, tick.label, Math.round(frame.price.coords.xOfIndex(tick.index) * dpr), baseline, align, dpr))
       }
     } else if (frame.view.formatX) {
       for (const tick of sessionTicks(viewport, data.slots, plotWidth, frame.view.formatX)) {
@@ -264,19 +279,30 @@ export class SceneBuilder {
     const count = d.last - d.first + 1
     const up = this.bufs.get("vol.up", count * 4 + 4)
     const down = this.bufs.get("vol.down", count * 4 + 4)
+    // Flashback: cột của phần lịch sử (trước `divider`) mờ hơn cột phần chơi; mỗi nhóm một độ mờ, token vẫn là price-up/price-down.
+    const dimBefore = d.dimBefore
+    const upHistory = dimBefore > 0 ? this.bufs.get("vol.upHistory", count * 4 + 4) : up
+    const downHistory = dimBefore > 0 ? this.bufs.get("vol.downHistory", count * 4 + 4) : down
     let u = 0
     let n = 0
+    let uh = 0
+    let nh = 0
     const baseline = d.yOf(0)
     const width = Math.max(1, Math.floor(d.barPx * 0.7))
     let column = -1
     let peak = 0
     let rising = true
+    let history = false
     const flush = () => {
       if (column < 0 || peak <= 0) return
       const top = Math.round(d.yOf(peak))
       const height = Math.max(1, Math.round(baseline) - top)
-      if (rising) {
+      if (rising && history) {
+        upHistory[uh++] = column; upHistory[uh++] = top; upHistory[uh++] = width; upHistory[uh++] = height
+      } else if (rising) {
         up[u++] = column; up[u++] = top; up[u++] = width; up[u++] = height
+      } else if (history) {
+        downHistory[nh++] = column; downHistory[nh++] = top; downHistory[nh++] = width; downHistory[nh++] = height
       } else {
         down[n++] = column; down[n++] = top; down[n++] = width; down[n++] = height
       }
@@ -292,11 +318,19 @@ export class SceneBuilder {
       if (bar.volume >= peak) {
         peak = bar.volume
         rising = bar.close >= bar.open
+        history = index < dimBefore
       }
     }
     flush()
-    pushRects(scene, UP_TOKEN, up, u, VOLUME_ALPHA)
-    pushRects(scene, DOWN_TOKEN, down, n, VOLUME_ALPHA)
+    if (dimBefore > 0) {
+      pushRects(scene, UP_TOKEN, upHistory, uh, FLASHBACK_VOLUME_ALPHA.history)
+      pushRects(scene, DOWN_TOKEN, downHistory, nh, FLASHBACK_VOLUME_ALPHA.history)
+      pushRects(scene, UP_TOKEN, up, u, FLASHBACK_VOLUME_ALPHA.play)
+      pushRects(scene, DOWN_TOKEN, down, n, FLASHBACK_VOLUME_ALPHA.play)
+    } else {
+      pushRects(scene, UP_TOKEN, up, u, VOLUME_ALPHA)
+      pushRects(scene, DOWN_TOKEN, down, n, VOLUME_ALPHA)
+    }
     for (const indicator of pane.indicators) if (!indicator.hidden) drawIndicatorPlot(scene, after, frame, pane, d, indicator)
   }
 

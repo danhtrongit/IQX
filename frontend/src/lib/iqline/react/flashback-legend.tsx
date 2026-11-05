@@ -38,6 +38,9 @@ export type FlashbackLegendProps = {
 
 const BUTTON =
   "inline-flex size-6 shrink-0 items-center justify-center rounded-sm text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+/** Điện thoại: nút to hơn cho ngón tay, có nền để đọc được khi nằm trên nến. */
+const TOUCH_BUTTON =
+  "inline-flex size-8 shrink-0 items-center justify-center rounded-sm bg-background/90 text-foreground active:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
 
 /** Số của một giá trị chỉ báo: lớn thì làm tròn, nhỏ thì hai chữ số thập phân (như bản SVG cũ). */
 function flashbackIndicatorValue(value: number | null): string {
@@ -96,40 +99,46 @@ function IndicatorRow({
   onRemove?: (key: string) => void
 }) {
   const { key, name, hidden } = indicator
+  const button = touch ? TOUCH_BUTTON : BUTTON
+  const buttons = (
+    <span className={cn("shrink-0 items-center", touch ? (active ? "flex" : "hidden") : "hidden group-focus-within:flex group-hover:flex")} data-legend-buttons>
+      <button type="button" className={button} aria-label={hidden ? `Hiện ${name}` : `Ẩn ${name}`} title={hidden ? "Hiện" : "Ẩn"} onClick={() => onToggle?.(key)}>
+        {hidden ? <EyeOff className="size-3.5" aria-hidden="true" /> : <Eye className="size-3.5" aria-hidden="true" />}
+      </button>
+      <button type="button" className={button} aria-label={`Cài đặt ${name}`} title="Cài đặt" onClick={() => onEdit?.(key)}>
+        <Settings2 className="size-3.5" aria-hidden="true" />
+      </button>
+      <button type="button" className={button} aria-label={`Xóa ${name}`} title="Xóa" onClick={() => onRemove?.(key)}>
+        <Trash2 className="size-3.5" aria-hidden="true" />
+      </button>
+    </span>
+  )
   return (
     <div
-      className={cn(
-        "fb-legend group pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden text-[12.5px] font-bold whitespace-nowrap tabular-nums",
-        hidden && "opacity-45",
-      )}
-      style={{ height: LEGEND_ROW }}
+      className={cn("fb-legend group pointer-events-auto flex max-w-full flex-col items-start text-[12.5px] font-bold whitespace-nowrap tabular-nums", hidden && "opacity-45")}
       data-legend-row={key}
       data-active={active || undefined}
+      data-touch={touch || undefined}
       onClick={touch ? () => onActivate(key) : undefined}
     >
-      {/* Hẹp chỗ thì các giá trị co lại (có dấu ba chấm) trước tên chỉ báo; 3 nút luôn còn đủ. */}
-      <span className="min-w-0 truncate font-bold text-foreground">{name}</span>
-      <span className="min-w-0 shrink-[1000] truncate">
-        {series.map((item, index) => {
-          const tone = item.seriesKey === "histogram" ? (item.token === "price-down" ? "text-price-down" : "text-price-up") : null
-          return (
-            <span key={item.seriesKey} style={tone ? undefined : { color: `var(--${item.token})` }} className={cn(index > 0 && "ml-2", tone ?? "text-foreground")}>
-              {flashbackIndicatorValue(item.value)}
-            </span>
-          )
-        })}
-      </span>
-      <span className={cn("shrink-0 items-center", touch ? (active ? "flex" : "hidden") : "hidden group-focus-within:flex group-hover:flex")} data-legend-buttons>
-        <button type="button" className={BUTTON} aria-label={hidden ? `Hiện ${name}` : `Ẩn ${name}`} title={hidden ? "Hiện" : "Ẩn"} onClick={() => onToggle?.(key)}>
-          {hidden ? <EyeOff className="size-3.5" aria-hidden="true" /> : <Eye className="size-3.5" aria-hidden="true" />}
-        </button>
-        <button type="button" className={BUTTON} aria-label={`Cài đặt ${name}`} title="Cài đặt" onClick={() => onEdit?.(key)}>
-          <Settings2 className="size-3.5" aria-hidden="true" />
-        </button>
-        <button type="button" className={BUTTON} aria-label={`Xóa ${name}`} title="Xóa" onClick={() => onRemove?.(key)}>
-          <Trash2 className="size-3.5" aria-hidden="true" />
-        </button>
-      </span>
+      <div className="flex max-w-full items-center gap-x-2 overflow-hidden" style={{ height: LEGEND_ROW }}>
+        {/* Hẹp chỗ thì các giá trị co lại (có dấu ba chấm) trước tên chỉ báo. */}
+        <span className="min-w-0 truncate font-bold text-foreground">{name}</span>
+        <span className="min-w-0 shrink-[1000] truncate">
+          {series.map((item, index) => {
+            const tone = item.seriesKey === "histogram" ? (item.token === "price-down" ? "text-price-down" : "text-price-up") : null
+            return (
+              <span key={item.seriesKey} style={tone ? undefined : { color: `var(--${item.token})` }} className={cn(index > 0 && "ml-2", tone ?? "text-foreground")}>
+                {flashbackIndicatorValue(item.value)}
+              </span>
+            )
+          })}
+        </span>
+        {/* Máy tính: ba nút cùng dòng, hiện khi rê chuột hoặc focus. */}
+        {touch ? null : buttons}
+      </div>
+      {/* Điện thoại: ba nút nằm ở dòng riêng bên trái, dưới tên chỉ báo, nên không bao giờ đè lên dấu mua bán ở phần chơi (bên phải). */}
+      {touch ? buttons : null}
     </div>
   )
 }

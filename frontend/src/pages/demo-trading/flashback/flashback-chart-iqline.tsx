@@ -3,7 +3,7 @@
  * (biểu đồ SVG cũ) file này và toàn bộ thư viện Canvas không được tải.
  *
  * Giữ nguyên luật Flashback v2.3 và v2.4: kho chỉ báo của Flashback (ẩn, cài đặt, xóa, tối đa 12), chiều cao ô và chú giải nổi
- * (do `IQLineFlashback`), nhãn trục "n phiên trước" / "Phiên n" không có ngày thật hay tên mã, dấu mua bán của các lệnh đã
+ * (do `IQLineFlashback`), nhãn trục ở khung mặc định như SVG ("Lịch sử n phiên", "Phiên 1", ...) và "n phiên trước" / "Phiên n" khi zoom, không có ngày thật hay tên mã, dấu mua bán của các lệnh đã
  * khớp, hình vẽ theo ván chỉ trong bộ nhớ (Xu hướng, Fibonacci, thêm Đường ngang). Thanh công cụ vẽ nằm cùng hàng với nút
  * "Các chỉ báo" do màn chơi đưa vào (`leading`).
  */
@@ -26,6 +26,7 @@ import {
   toChartInputs,
   toLibBars,
 } from "./flashback-iqline-adapter"
+import { axisTicks } from "./flashback-chart-layout"
 import { formatNumber, sessionLabel } from "./flashback-model"
 import { useChartFit } from "./use-chart-fit"
 import { useSessionDrawings } from "./use-session-drawings"
@@ -85,6 +86,8 @@ export default function FlashbackIqlineChart({
   const inputs = useMemo(() => toChartInputs(indicators), [indicators])
   const title = useMemo(() => indicatorTitleOf(indicators), [indicators])
   const formatX = useCallback((session: number) => sessionLabel(session, viewBars), [viewBars])
+  // Khung mặc định: đúng nhãn của biểu đồ SVG cũ ("Lịch sử 60 phiên", "Phiên 1", phiên giữa, "Phiên n"); zoom thì trục tự đổi nhãn theo phiên.
+  const axisLabels = useCallback((narrow: boolean) => axisTicks(viewBars, playBars, narrow), [viewBars, playBars])
   const markers = useMemo(() => ordersToMarkers(orders, viewBars, bars.length - 1), [orders, viewBars, bars.length])
   const onIndicatorsChange = useCallback(
     (next: readonly ChartIndicatorInput[]) => applyIndicatorChange(inputs, next, { toggle: onToggle, remove: onRemove }),
@@ -105,6 +108,7 @@ export default function FlashbackIqlineChart({
           warmup={warmup.length}
           totalSlots={viewBars + playBars}
           formatX={formatX}
+          axisLabels={axisLabels}
           markers={markers}
           divider={viewBars}
           drawings={controller}

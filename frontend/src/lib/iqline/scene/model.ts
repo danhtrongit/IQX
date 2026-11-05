@@ -16,6 +16,7 @@ import { createPriceScale, padPriceRange, type PriceRange, type PriceScale } fro
 import { createMarketTimeScale, createSessionTimeScale, type MarketTimeScale, type SessionTimeScale } from "../core/time-scale"
 import { visibleIndexRange } from "../core/viewport"
 import type {
+  SessionAxisLabel,
   Bar,
   ChartMark,
   ChartType,
@@ -185,6 +186,11 @@ export type ViewState = {
   formatPrice?: (price: number) => string
   /** Nhãn trục ngang của `flashback`: số phiên sang chữ ("Phiên 3"). */
   formatX?: (session: number) => string
+  /**
+   * Nhãn cố định của trục ngang khi đang nhìn hết mọi ô (khung mặc định); `narrow` là biểu đồ hẹp hơn `NARROW_WIDTH`. Đã zoom hoặc
+   * kéo thì bỏ nhãn này và dùng nhãn theo `formatX`.
+   */
+  axisLabels?: (narrow: boolean) => readonly SessionAxisLabel[]
   labelToken?: "muted-foreground" | "academy-label"
 }
 

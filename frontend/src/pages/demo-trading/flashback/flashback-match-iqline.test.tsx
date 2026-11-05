@@ -3,14 +3,15 @@
  *
  * Phần 1 chạy cùng một bộ kiểm tra cho cả hai đường: chiều cao các ô theo v2.3 §2, chú giải nổi, thêm, ẩn, cài đặt, xóa chỉ báo,
  * phiên tiếp. Phần 2 chỉ cho IQLine: công tắc, thanh công cụ ba nút, hình vẽ qua con trỏ trên canvas, trần 12 chỉ báo, và
- * luật công bằng (§12) ở mức trang: DOM của biểu đồ không có ngày thật hay tên mã. Các test chỉ có ở SVG (nhãn trục "Lịch sử n
- * phiên", công cụ vẽ trên SVG) vẫn nằm ở `flashback-match.test.tsx` và `flashback-match-v21.test.tsx`.
+ * luật công bằng (§12) ở mức trang: DOM của biểu đồ không có ngày thật hay tên mã. Phần 3 kiểm tra nhãn trục "Lịch sử n phiên" và độ mờ nến lịch sử giống bản SVG.
+ * Các test chỉ có ở SVG (nhãn trục đọc từ DOM SVG, công cụ vẽ trên SVG) vẫn nằm ở `flashback-match.test.tsx` và `flashback-match-v21.test.tsx`.
  */
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { named } from "@/lib/iqline/render/test-support"
 import { installCanvasEnv, type CanvasEnv } from "@/lib/iqline/react/test-env"
 
 import { AXIS_HEIGHT, CHART_TOP, PANE_GAP } from "./flashback-chart-layout"
@@ -609,5 +610,64 @@ describe("Flashback IQLine: luật công bằng (§12) ở DOM của trang", () 
     // Rê vào phần phiên chưa mở: chú giải trở về nến cuối, không đọc được tương lai.
     act(() => void top.dispatchEvent(new MouseEvent("pointermove", { clientX: 80 * ((1000 - 62) / 90), clientY: 100, bubbles: true })))
     expect(screen.getByTestId("flashback-session").textContent).toBe("Phiên 0")
+  })
+})
+
+describe("Flashback IQLine: trục ngang và độ mờ như biểu đồ SVG (v2.3)", () => {
+  /** Canvas vẽ số từng ký tự: ghép các ký tự liền nhau cùng dòng lại thành nhãn. */
+  function drawnTexts(): string[] {
+    const out: string[] = []
+    let current = ""
+    let last: { x: number; y: number } | null = null
+    for (const call of named(env.context, "fillText")) {
+      const text = String(call[1])
+      const x = Number(call[2])
+      const y = Number(call[3])
+      if (last && y === last.y && x > last.x && x - last.x < 16) current += text
+      else {
+        if (current) out.push(current)
+        current = text
+      }
+      last = { x, y }
+    }
+    if (current) out.push(current)
+    return out
+  }
+
+  async function open(width: number, extra: Parameters<typeof setup>[0] = {}) {
+    window.history.replaceState(null, "", "/?iqline=1")
+    stubChartWidth(width)
+    stubViewportHeight(900)
+    setup(extra)
+    renderGame()
+    await findGame()
+    env.measure(width, 700)
+    env.flush()
+  }
+
+  it("máy tính: nhãn Lịch sử 60 phiên, Phiên 1, Phiên 15, Phiên 30 như bản SVG", async () => {
+    await open(1000)
+    for (const label of ["Lịch sử 60 phiên", "Phiên 1", "Phiên 15", "Phiên 30"]) expect(drawnTexts()).toContain(label)
+  })
+
+  it("điện thoại: nhãn rút gọn, bỏ nhãn giữa", async () => {
+    await open(390)
+    const labels = drawnTexts()
+    expect(labels).toContain("Lịch sử")
+    expect(labels).not.toContain("Lịch sử 60 phiên")
+    expect(labels).not.toContain("Phiên 15")
+    for (const label of ["Phiên 1", "Phiên 30"]) expect(labels).toContain(label)
+  })
+
+  it("số phiên theo đúng phòng: 45 xem, 40 chơi thì trục ghi Lịch sử 45 phiên và Phiên 40", async () => {
+    await open(1000, { room: { status: "playing", owner: ME, members: [ME, MINH], settings: { view_bars: 45, play_bars: 40 } } })
+    for (const label of ["Lịch sử 45 phiên", "Phiên 1", "Phiên 20", "Phiên 40"]) expect(drawnTexts()).toContain(label)
+  })
+
+  it("nến lịch sử mờ 0.75 và khối lượng lịch sử 0.45 như bản SVG", async () => {
+    await open(1000)
+    const alphas = new Set(named(env.context, "set globalAlpha").map((call) => call[1]))
+    expect(alphas.has(0.75)).toBe(true)
+    expect(alphas.has(0.45)).toBe(true)
   })
 })
