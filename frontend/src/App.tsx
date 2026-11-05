@@ -4,7 +4,7 @@ import { createBrowserRouter, Navigate, RouterProvider, useLocation, useParams, 
 import { AdminLayout } from "@/components/layout/admin-layout"
 import { AdminScopeRoute } from "@/components/layout/admin-scope-route"
 import { AppShell } from "@/components/layout/app-shell"
-import { demoChrome, emptyChrome } from "@/config/chrome"
+import { SHOW_VIRTUAL_OFFICE, demoChrome, emptyChrome } from "@/config/chrome"
 import { demoRouteRedirect } from "@/lib/demo-route-redirect"
 import { AcademyMetricRedirect, AcademyRedirect } from "@/pages/demo-trading/academy-redirect"
 import { demoTradingLoader } from "@/pages/demo-trading/workspace-url"
@@ -116,7 +116,9 @@ export const routes: RouteObject[] = [
       { path: "canh-bao", element: <RedirectWithSearch to="/chien-luoc" tab="canh-bao" />, handle: { chrome: emptyChrome } },
       { path: "backtest", element: <RedirectWithSearch to="/chien-luoc" tab="backtest" />, handle: { chrome: emptyChrome } },
       { path: "backtest/:symbol", Component: BacktestSymbolRedirect, handle: { chrome: emptyChrome } },
-      { path: "van-phong-ao", Component: VirtualOfficePage, handle: { chrome: emptyChrome } },
+      SHOW_VIRTUAL_OFFICE
+        ? { path: "van-phong-ao", Component: VirtualOfficePage, handle: { chrome: emptyChrome } }
+        : { path: "van-phong-ao", element: <Navigate to="/" replace />, handle: { chrome: emptyChrome } },
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug", Component: CourseDetailPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug/:episodeId", Component: EpisodeViewerPage, handle: { chrome: emptyChrome } },
