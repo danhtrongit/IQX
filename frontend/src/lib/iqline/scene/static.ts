@@ -4,7 +4,7 @@
  * thước, khoảng đệm và cách đặt nhãn của biểu đồ SVG `series-panels-chart.tsx` mà nó thay.
  *
  * Đơn vị: `layoutStatic` tính theo CSS pixel (cho tương tác và chú giải DOM); mọi lệnh vẽ trong `Scene` đã nhân
- * `geometry.dpr` (toạ độ, độ dày nét, nét đứt, bán kính và cỡ chữ), theo hợp đồng ở `types.ts`. Với chữ,
+ * `geometry.dpr` (toạ độ, độ dày nét, nét đứt, bán kính và cỡ chữ), theo hợp đồng ở `types.ts`. `count` là số số thực dùng trong `data` (như `render/paint.ts`). Với chữ,
  * `y` là đường cơ sở. Màu chữ luôn là `academy-label` (hoặc màu ngữ nghĩa), không bao giờ token chữ xám của giao diện chung.
  */
 import {
@@ -370,16 +370,16 @@ function createEmitter(dpr: number) {
   return {
     commands,
     rects(token: ColorToken, alpha: number | undefined, list: readonly number[]) {
-      if (list.length >= 4) commands.push({ op: "rects", token, alpha, data: scaled(list), count: list.length / 4 })
+      if (list.length >= 4) commands.push({ op: "rects", token, alpha, data: scaled(list), count: list.length })
     },
     lines(token: ColorToken, width: number, dash: readonly number[] | undefined, list: readonly number[]) {
-      if (list.length >= 4) commands.push({ op: "lines", token, width: width * dpr, dash: dashed(dash), data: scaled(list), count: list.length / 4 })
+      if (list.length >= 4) commands.push({ op: "lines", token, width: width * dpr, dash: dashed(dash), data: scaled(list), count: list.length })
     },
     polyline(token: ColorToken, width: number, dash: readonly number[] | undefined, list: readonly number[]) {
-      if (list.length >= 4) commands.push({ op: "polyline", token, width: width * dpr, dash: dashed(dash), data: scaled(list), count: list.length / 2 })
+      if (list.length >= 4) commands.push({ op: "polyline", token, width: width * dpr, dash: dashed(dash), data: scaled(list), count: list.length })
     },
     polygon(token: ColorToken, alpha: number, list: readonly number[]) {
-      if (list.length >= 6) commands.push({ op: "polygon", token, alpha, data: scaled(list), count: list.length / 2 })
+      if (list.length >= 6) commands.push({ op: "polygon", token, alpha, data: scaled(list), count: list.length })
     },
     circle(token: ColorToken, x: number, y: number, radius: number, fill: boolean, width?: number) {
       commands.push({ op: "circle", token, x: x * dpr, y: y * dpr, radius: radius * dpr, fill, width: width === undefined ? undefined : width * dpr })

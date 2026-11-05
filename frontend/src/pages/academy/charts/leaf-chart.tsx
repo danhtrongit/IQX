@@ -9,12 +9,18 @@ import { ScaleChart } from "./scale-chart"
 import { SchematicChart } from "./schematic-chart"
 import { SegmentBarChart } from "./segment-bar-chart"
 import { SeriesPanelsChart } from "./series-panels-chart"
+import { iqlineStaticEnabled } from "./iqline-flag"
+import { SeriesPanelsIQLineChart } from "./series-panels-iqline-chart"
 
 /** Draws one non-compare chart model. `autoLegend` is off when the block already carries a legend. */
 export function LeafChart({ model, label, autoLegend = true }: { model: LeafChartModel; label: string; autoLegend?: boolean }) {
   switch (model.kind) {
     case "series_panels":
-      return <SeriesPanelsChart model={model} label={label} autoLegend={autoLegend} />
+      return iqlineStaticEnabled() ? (
+        <SeriesPanelsIQLineChart model={model} label={label} autoLegend={autoLegend} />
+      ) : (
+        <SeriesPanelsChart model={model} label={label} autoLegend={autoLegend} />
+      )
     case "category":
       return <CategoryChart model={model} label={label} autoLegend={autoLegend} />
     case "segment_bar":

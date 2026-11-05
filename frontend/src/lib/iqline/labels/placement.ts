@@ -91,7 +91,14 @@ export function polylineSegments(points: readonly ([number, number] | null)[], w
 }
 
 /** `measure` đo chữ khi dựng hộp nhãn; không truyền thì dùng `estimateText`. */
-export type PlacementScene = { bounds: Box; segments: Segment[]; obstacles: Obstacle[]; measure?: MeasureText }
+export type PlacementScene = {
+  bounds: Box
+  segments: Segment[]
+  obstacles: Obstacle[]
+  measure?: MeasureText
+  /** Đệm quanh hộp mỗi nhãn (px); mặc định 2. Đặt 0 khi cần hộp sát chữ (nhãn mức Fibonacci xếp dày). */
+  pad?: number
+}
 
 /** Chi phí của một hộp nhãn: nhãn khác và việc ra khỏi khung vẽ nặng nhất, rồi tới chuỗi số liệu, rồi đường và dấu nhẹ. */
 function cost(box: Box, owner: string | undefined, scene: PlacementScene, placed: PlacedLabel[]): number {
@@ -130,7 +137,7 @@ export function placeLabels(requests: LabelRequest[], scene: PlacementScene): Pl
     const weight = request.weight ?? 400
     return request.candidates.map((candidate) => {
       const lines = candidate.lines ?? fallback
-      const box = labelBox(lines, request.size, candidate.x, candidate.y, candidate.anchor, PAD, measure, weight)
+      const box = labelBox(lines, request.size, candidate.x, candidate.y, candidate.anchor, scene.pad ?? PAD, measure, weight)
       const label: PlacedLabel = { key: request.key, text: request.text, size: request.size, weight, x: candidate.x, y: candidate.y, anchor: candidate.anchor, lines, box }
       return { label, base: cost(box, request.owner, scene, []) }
     })

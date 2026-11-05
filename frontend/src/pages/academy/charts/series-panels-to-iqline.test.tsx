@@ -245,11 +245,12 @@ function assertWellFormed(scene: readonly DrawCommand[]) {
       expect(command.token).not.toBe("muted-foreground")
     }
     if (command.op === "rects") {
-      expect(command.data.length).toBeGreaterThanOrEqual(command.count * 4)
+      expect(command.data.length).toBeGreaterThanOrEqual(command.count)
+      expect(command.count % 4).toBe(0)
       expect(command.count).toBeGreaterThan(0)
     }
-    if (command.op === "lines") expect(command.data.length).toBeGreaterThanOrEqual(command.count * 4)
-    if (command.op === "polyline" || command.op === "polygon") expect(command.data.length).toBeGreaterThanOrEqual(command.count * 2)
+    if (command.op === "lines") expect(command.data.length).toBeGreaterThanOrEqual(command.count)
+    if (command.op === "polyline" || command.op === "polygon") expect(command.data.length).toBeGreaterThanOrEqual(command.count)
     if ("data" in command) for (const value of command.data) expect(Number.isFinite(value)).toBe(true)
     if (command.op === "text") for (const value of [command.x, command.y]) expect(Number.isFinite(value)).toBe(true)
   }
@@ -293,10 +294,18 @@ describe("tương đương trực quan với series-panels-chart.tsx", () => {
     cleanup()
     const rectKey = (node: Element) => ["x", "y", "width", "height"].map((name) => Number(node.getAttribute(name)).toFixed(2)).join(",")
     const rects = (pattern: RegExp) => [...svg.querySelectorAll("rect")].filter((node) => pattern.test(node.getAttribute("class") ?? "")).map(rectKey)
+    const fixed = (values: number[]) => values.map((value) => value.toFixed(2)).join(",")
+    const pointsOf = (d: string) => [...d.matchAll(/(-?[\d.]+),(-?[\d.]+)/g)].flatMap((match) => [Number(match[1]), Number(match[2])])
+    const paths = [...svg.querySelectorAll("path")].map((node) => ({ d: node.getAttribute("d") ?? "", stroked: node.getAttribute("fill") === "none" }))
     return {
       height,
       lines,
       placed,
+      segments: [...svg.querySelectorAll("line")].map((node) => fixed(["x1", "y1", "x2", "y2"].map((name) => Number(node.getAttribute(name))))),
+      polylines: paths.filter((path) => path.stroked).flatMap((path) => path.d.split("M").filter(Boolean).map(pointsOf)).filter((points) => points.length >= 4).map(fixed),
+      polygons: paths.filter((path) => !path.stroked).flatMap((path) => path.d.split("Z").filter((part) => part.includes("M")).map(pointsOf)).map(fixed),
+      circles: [...svg.querySelectorAll("circle")].map((node) => fixed(["cx", "cy", "r"].map((name) => Number(node.getAttribute(name))))),
+      shades: rects(/opacity-\[0\.1\]/).map((key) => `0.1|${key}`).concat(rects(/opacity-\[0\.14\]/).map((key) => `0.14|${key}`)),
       candleBodies: rects(/^fill-price-(up|down)$/),
       bars: rects(/fill-(price-up|price-down|chart-5) opacity-\[?0?\.?75/),
     }
@@ -351,7 +360,7 @@ describe("tương đương trực quan với series-panels-chart.tsx", () => {
       const rectsOf = (alpha: number | undefined, tokens: readonly string[]) =>
         scene.flatMap((command) => {
           if (command.op !== "rects" || command.alpha !== alpha || !tokens.includes(command.token)) return []
-          return Array.from({ length: command.count }, (_, k) => [...command.data.slice(k * 4, k * 4 + 4)].map((value) => value.toFixed(2)).join(","))
+          return Array.from({ length: command.count / 4 }, (_, k) => [...command.data.slice(k * 4, k * 4 + 4)].map((value) => value.toFixed(2)).join(","))
         })
       const svg = svgOf(chart.model, width)
       const bodies = rectsOf(undefined, ["price-up", "price-down"]).sort()
@@ -363,6 +372,41 @@ describe("tương đương trực quan với series-panels-chart.tsx", () => {
     expect(differing).toEqual([])
     // Không rỗng: 40 biểu đồ có nến và 20 có cột, mỗi biểu đồ vài chục phần tử.
     expect(compared).toBeGreaterThan(1500)
+  })
+
+  it.each([358, 760])("đường chuỗi, dải, mức, đoạn, Fibonacci, vùng và dấu có cùng toạ độ với SVG ở %ipx", (width) => {
+    const differing: string[] = []
+    let compared = 0
+    const fixed = (values: ArrayLike<number>) => Array.from(values, (value) => value.toFixed(2)).join(",")
+    for (const chart of real) {
+      const panels = seriesPanelsToIQLine(chart.model)
+      const scene = buildStaticScene(panels, { width, dpr: 1 }, {})
+      const svg = svgOf(chart.model, width)
+      const segments = scene.flatMap((command) => {
+        if (command.op !== "lines") return []
+        return Array.from({ length: command.count / 4 }, (_, k) => fixed(command.data.slice(k * 4, k * 4 + 4)))
+      })
+      const polylines = scene.flatMap((command) => (command.op === "polyline" ? [fixed(command.data.slice(0, command.count))] : []))
+      const polygons = scene.flatMap((command) => (command.op === "polygon" ? [fixed(command.data.slice(0, command.count))] : []))
+      const circles = scene.flatMap((command) => (command.op === "circle" && command.token !== "background" ? [fixed([command.x, command.y, command.radius])] : []))
+      const shades = scene.flatMap((command) => {
+        if (command.op !== "rects" || (command.alpha !== 0.1 && command.alpha !== 0.14)) return []
+        return Array.from({ length: command.count / 4 }, (_, k) => `${command.alpha}|${fixed(command.data.slice(k * 4, k * 4 + 4))}`)
+      })
+      const same = (name: string, ours: string[], theirs: string[]) => {
+        compared += ours.length
+        if (JSON.stringify([...ours].sort()) !== JSON.stringify([...theirs].sort())) differing.push(`${chart.lessonId} ${chart.id}: ${name} ${ours.length} khác ${theirs.length}`)
+      }
+      // Hình thu nhỏ vẽ khung viền bằng bốn đoạn thay cho một hình chữ nhật: chỉ so các loại còn lại.
+      if (chart.model.axes !== false) same("đoạn thẳng", segments, svg.segments)
+      same("đường gấp khúc", polylines, svg.polylines)
+      same("đa giác", polygons, svg.polygons)
+      same("dấu", circles, svg.circles)
+      same("vùng mờ", shades, svg.shades)
+    }
+    expect(differing).toEqual([])
+    // Không rỗng: hàng nghìn phần tử qua so sánh.
+    expect(compared).toBeGreaterThan(3000)
   })
 
   it("giá trị crosshair khớp bảng đọc của SVG", () => {

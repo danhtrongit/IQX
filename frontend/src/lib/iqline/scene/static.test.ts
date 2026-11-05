@@ -155,13 +155,13 @@ describe("buildStaticScene: danh sách lệnh", () => {
     expect(ops(scene)).toEqual(["text", "lines", "text", "text", "text", "clip", "polyline", "unclip"])
     const [title, grid, ...rest] = scene
     expect(title).toMatchObject({ op: "text", token: "academy-label", text: "Giá", align: "left", size: 11, weight: 600, x: 6 })
-    expect(grid).toMatchObject({ op: "lines", token: "border", width: 0.8, count: 3 })
+    expect(grid).toMatchObject({ op: "lines", token: "border", width: 0.8, count: 12 })
     expect(rest.slice(0, 3).map((command) => command.op === "text" && [command.text, command.align, command.tabular])).toEqual([
       ["0", "left", true],
       ["5", "left", true],
       ["10", "left", true],
     ])
-    expect(scene[6]).toMatchObject({ op: "polyline", token: "chart-1", width: 1.5, count: 5 })
+    expect(scene[6]).toMatchObject({ op: "polyline", token: "chart-1", width: 1.5, count: 10 })
   })
 
   it("nến: râu và thân theo price-up và price-down, bề rộng thân theo bước, thân tối thiểu 1px", () => {
@@ -169,13 +169,13 @@ describe("buildStaticScene: danh sách lệnh", () => {
     const scene = buildStaticScene([{ frame: frame({ start: 0, end: 1 }), title: "", bounds: [8, 14], series: [], candles }], geometry)
     const bodies = scene.flatMap((command) => (command.op === "rects" ? [command] : []))
     expect(bodies.map((command) => [command.token, command.count, command.alpha])).toEqual([
-      ["price-up", 1, undefined],
-      ["price-down", 1, undefined],
+      ["price-up", 4, undefined],
+      ["price-down", 4, undefined],
     ])
     const wicks = scene.flatMap((command) => (command.op === "lines" && (command.token === "price-up" || command.token === "price-down") ? [command] : []))
     expect(wicks.map((command) => [command.token, command.width, command.count])).toEqual([
-      ["price-up", 1, 1],
-      ["price-down", 1, 1],
+      ["price-up", 1, 4],
+      ["price-down", 1, 4],
     ])
     // Nến thiếu số liệu bị bỏ cả râu lẫn thân.
     const gap = buildStaticScene([{ frame: frame({ start: 0, end: 1 }), title: "", bounds: [8, 14], series: [], candles: { ...candles, high: [13, null] } }], geometry)
@@ -185,12 +185,12 @@ describe("buildStaticScene: danh sách lệnh", () => {
   it("giá trị thiếu làm đứt đường: mỗi đoạn liên tục là một polyline, đoạn một điểm bị bỏ", () => {
     const scene = buildStaticScene([{ frame: frame({ start: 0, end: 7 }), title: "", series: [{ name: "A", token: "chart-1", values: [1, 2, 3, null, 5, null, 7, 8] }] }], geometry)
     const lines = scene.flatMap((command) => (command.op === "polyline" ? [command.count] : []))
-    expect(lines).toEqual([3, 2])
+    expect(lines).toEqual([6, 4])
   })
 
   it("dải có hai mép là hai đường riêng cộng phần tô một màu", () => {
     const scene = buildStaticScene([{ frame: frame({ start: 0, end: 3 }), title: "", series: [], band: { upper: [5, 6, 7, 8], lower: [1, 2, 3, 4], token: "chart-1" } }], geometry)
-    expect(scene.flatMap((command) => (command.op === "polygon" ? [[command.token, command.alpha, command.count]] : []))).toEqual([["chart-1", 0.12, 8]])
+    expect(scene.flatMap((command) => (command.op === "polygon" ? [[command.token, command.alpha, command.count]] : []))).toEqual([["chart-1", 0.12, 16]])
     expect(scene.filter((command) => command.op === "polyline" && command.token === "chart-1")).toHaveLength(2)
   })
 
@@ -219,7 +219,7 @@ describe("buildStaticScene: danh sách lệnh", () => {
   it("cột tô một màu theo từng cột, nhóm theo token, trong suốt 0,75", () => {
     const scene = buildStaticScene(sample(), geometry)
     const bars = scene.flatMap((command) => (command.op === "rects" && command.alpha === 0.75 ? [[command.token, command.count]] : []))
-    expect(bars.reduce((sum, [, count]) => sum + (count as number), 0)).toBe(30)
+    expect(bars.reduce((sum, [, count]) => sum + (count as number), 0)).toBe(30 * 4)
     expect(new Set(bars.map(([token]) => token))).toEqual(new Set(["price-up", "price-down"]))
   })
 
@@ -266,7 +266,7 @@ describe("buildStaticScene: danh sách lệnh", () => {
     const thumb: StaticPanel = { frame: frame({ axes: false, start: 0, end: 4 }), title: "Bị bỏ", series: [{ name: "A", token: "chart-1", values: [1, 2, 3, 4, 5] }] }
     const scene = buildStaticScene([thumb], geometry)
     expect(texts(scene)).toHaveLength(0)
-    expect(scene[0]).toMatchObject({ op: "lines", token: "border", count: 4 })
+    expect(scene[0]).toMatchObject({ op: "lines", token: "border", count: 16 })
   })
 
   it("hàm thuần: cùng đầu vào cho cùng danh sách lệnh và không sửa dữ liệu vào", () => {
@@ -436,7 +436,7 @@ describe("crosshair và chú giải", () => {
     const crosshair = buildStaticCrosshair(panels, geometry, {}, 10)
     expect(crosshair?.x).toBeCloseTo(layout.xOfIndex(10), 10)
     const line = crosshair?.scene.find((command) => command.op === "lines")
-    expect(line).toMatchObject({ token: "foreground", width: 1, dash: [3, 3], count: 1 })
+    expect(line).toMatchObject({ token: "foreground", width: 1, dash: [3, 3], count: 4 })
     if (line?.op === "lines") expect([...line.data]).toEqual([layout.xOfIndex(10), layout.plot.top, layout.xOfIndex(10), layout.plot.bottom])
     const dots = crosshair?.scene.flatMap((command) => (command.op === "circle" && command.fill ? [command] : [])) ?? []
     // 2 chuỗi ở ô giá, 2 ở ô MACD.
