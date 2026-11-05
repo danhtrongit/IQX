@@ -36,6 +36,11 @@ vi.mock("@/hooks/use-auth", () => ({
 }))
 vi.mock("../shop/use-shop", () => ({ useShopState: () => ({ data: { wallet: { balance: 5_000 } } }) }))
 vi.mock("sonner", () => ({ toast: mocks.toast }))
+// Khoá 5 giây của cửa sổ kết quả có bài kiểm tra riêng (flashback-chat.test.tsx); ở đây các nút mở ngay.
+vi.mock("./flashback-model", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./flashback-model")>()),
+  RESULT_LOCK_SECONDS: 0,
+}))
 
 let backend: FlashbackBackend
 
@@ -214,14 +219,14 @@ describe("Flashback: thanh người chơi và đồng hồ chung", () => {
 })
 
 describe("Flashback: số liệu và biểu đồ", () => {
-  it("ba ô: Phiên, Tổng tài sản, Tiền mặt; không có ô Lợi nhuận", async () => {
+  it("bốn ô: Phiên, Tổng tài sản, Tiền mặt, Lợi nhuận (v2.4 §2)", async () => {
     setup()
     renderGame()
     await findGame()
     expect(tileValue("Phiên")).toBe("0 / 30")
     expect(tileValue("Tổng tài sản")).toBe("10.000.000")
     expect(tileValue("Tiền mặt")).toBe("10.000.000")
-    expect(within(tiles()).queryByText("Lợi nhuận")).toBeNull()
+    expect(tileValue("Lợi nhuận")).toBe("0,00%")
     const progress = within(tiles()).getByRole("progressbar", { name: "Tiến độ phiên" })
     expect(progress.getAttribute("aria-valuenow")).toBe("0")
     expect(progress.getAttribute("aria-valuemax")).toBe("30")
@@ -425,7 +430,7 @@ describe("Flashback: cửa sổ kết quả", () => {
     expect(screen.queryByTestId("flashback-result")).toBeNull()
 
     // Sau ván "Sẵn sàng" bị xoá: Minh phải bấm lại thì chủ phòng mới bắt đầu được.
-    expect(screen.getByRole("button", { name: "Bắt đầu" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.getByRole("button", { name: /^Bắt đầu/ }).hasAttribute("disabled")).toBe(true)
     backend.setReady(MINH.user_id)
     await waitFor(() => expect(screen.getByRole("button", { name: "Bắt đầu" }).hasAttribute("disabled")).toBe(false), {
       timeout: 4_000,

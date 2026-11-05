@@ -73,6 +73,8 @@ export interface FbRoomSettingsInput {
   readonly max_players?: number | null;
   readonly stake_xu?: number | null;
   readonly password?: string | null;
+  /** Mặc định bật (v2.4 §3.5). */
+  readonly chat_enabled?: boolean | null;
 }
 
 export interface FbRoomSettings {
@@ -84,6 +86,7 @@ export interface FbRoomSettings {
   readonly stakeXu: number;
   /** Mật khẩu đã cắt khoảng trắng hai đầu; null = không khoá. */
   readonly password: string | null;
+  readonly chatEnabled: boolean;
 }
 
 export type FbValidation<T> =
@@ -135,7 +138,15 @@ export function validateRoomSettings(
     return { ok: false, message: 'Mật khẩu từ 4 đến 12 ký tự' };
   return {
     ok: true,
-    value: { viewBars, playBars, minutes, maxPlayers, stakeXu, password: password || null },
+    value: {
+      viewBars,
+      playBars,
+      minutes,
+      maxPlayers,
+      stakeXu,
+      password: password || null,
+      chatEnabled: input.chat_enabled ?? true,
+    },
   };
 }
 
@@ -237,9 +248,7 @@ export function membersNotReady<T extends FbReadyMember>(
 
 /** Dòng báo khi chủ phòng bấm Bắt đầu mà còn người chưa sẵn sàng. */
 export function playersNotReadyMessage(count: number): string {
-  return count === 1
-    ? 'Còn 1 người chơi chưa sẵn sàng'
-    : `Còn ${count} người chơi chưa sẵn sàng`;
+  return count === 1 ? 'Còn 1 người chơi chưa sẵn sàng' : `Còn ${count} người chơi chưa sẵn sàng`;
 }
 
 export interface FbRandomJoinRoom {

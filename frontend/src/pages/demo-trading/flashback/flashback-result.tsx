@@ -3,9 +3,10 @@
  * xếp hạng (hạng, avatar kèm cấp và vương miện, tên, % lợi nhuận; CHỈ dòng người thắng có thêm số xu
  * nhận; cột "+10 điểm" / "+3 điểm", ván 1 mình để trống) cao tối đa khoảng nửa màn hình và cuộn
  * được cho phòng 30 người, dòng tiến độ cấp của mình, mã cổ phiếu và thời gian của ván, rồi ba nút:
- * Xem lại biểu đồ, Về sảnh, Chơi lại.
+ * Xem lại biểu đồ, Về sảnh, Chơi lại. Về sảnh và Chơi lại khoá 5 giây khi cửa sổ hiện lần đầu (v2.4 §4),
+ * để cả phòng kịp xem kết quả và chat; Xem lại biểu đồ và Chat với phòng bấm được ngay.
  */
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, MessageCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
@@ -13,12 +14,25 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { COIN_TEXT } from "../shop/shop-ui"
 import type { FlashbackMatchResult } from "./flashback-api"
-import type { MatchApi } from "./flashback-context"
+import type { ChatApi, MatchApi } from "./flashback-context"
+import { useChatOpener } from "./use-flashback-chat"
 import { PlayerAvatar } from "./flashback-avatar"
 import { formatMatchDate, formatSignedPercent, pointsLabel, progressLine } from "./flashback-model"
 
-export function FlashbackResult({ match, result }: { match: MatchApi; result: FlashbackMatchResult }) {
+export function FlashbackResult({
+  match,
+  result,
+  chat,
+  lockSeconds,
+}: {
+  match: MatchApi
+  result: FlashbackMatchResult
+  chat: ChatApi
+  lockSeconds: number
+}) {
   const progress = progressLine(result)
+  const openChat = useChatOpener(chat)
+  const locked = lockSeconds > 0
   return (
     <Dialog open={match.resultOpen} onOpenChange={(open) => !open && match.setResultOpen(false)}>
       <DialogContent
@@ -114,13 +128,32 @@ export function FlashbackResult({ match, result }: { match: MatchApi; result: Fl
           <Button type="button" variant="outline" onClick={() => match.setResultOpen(false)}>
             Xem lại biểu đồ
           </Button>
-          <Button type="button" variant="outline" disabled={match.backBusy} onClick={match.backToLobby}>
-            Về sảnh
+          <Button type="button" variant="outline" disabled={locked || match.backBusy} onClick={match.backToLobby}>
+            {locked ? `Về sảnh (${lockSeconds})` : "Về sảnh"}
           </Button>
-          <Button type="button" disabled={match.playAgainBusy} onClick={match.playAgain}>
-            Chơi lại
+          <Button type="button" disabled={locked || match.playAgainBusy} onClick={match.playAgain}>
+            {locked ? `Chơi lại (${lockSeconds})` : "Chơi lại"}
           </Button>
         </div>
+        {locked ? (
+          <p className="m-0 text-[13px] font-semibold" data-testid="flashback-result-lock">
+            Xem kết quả và chat với cả phòng. Sau {lockSeconds} giây mới về sảnh hoặc chơi lại được.
+          </p>
+        ) : null}
+        {chat.enabled ? (
+          <Button
+            type="button"
+            variant="outline"
+            data-testid="flashback-result-chat"
+            onClick={() => {
+              match.setResultOpen(false)
+              openChat(true)
+            }}
+          >
+            <MessageCircle className="size-4" aria-hidden="true" />
+            Chat với phòng
+          </Button>
+        ) : null}
       </DialogContent>
     </Dialog>
   )

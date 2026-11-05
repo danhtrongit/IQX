@@ -71,7 +71,15 @@ describe('§3 tạo phòng: validateRoomSettings', () => {
   it('chọn 1 người thì khoá ô cược: không cược kể cả khi gửi giá trị lẻ hay không có xu', () => {
     expect(validateRoomSettings({ ...ok, max_players: 1, stake_xu: 15 }, 0)).toEqual({
       ok: true,
-      value: { viewBars: 60, playBars: 30, minutes: 10, maxPlayers: 1, stakeXu: 0, password: null },
+      value: {
+        viewBars: 60,
+        playBars: 30,
+        minutes: 10,
+        maxPlayers: 1,
+        stakeXu: 0,
+        password: null,
+        chatEnabled: true,
+      },
     });
   });
 
@@ -103,6 +111,7 @@ describe('§3 tạo phòng: validateRoomSettings', () => {
         maxPlayers: 4,
         stakeXu: 100,
         password: null,
+        chatEnabled: true,
       },
     });
   });

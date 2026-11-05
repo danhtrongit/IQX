@@ -29,6 +29,8 @@ export interface FbRoomRow {
   readonly maxPlayers: number;
   readonly stakeXu: number;
   readonly passwordHash: string | null;
+  /** Chủ phòng bật chat khi tạo phòng (v2.4 §3.5). */
+  readonly chatEnabled: boolean;
   readonly status: FbRoomStatus;
   readonly currentMatchId: string | null;
   readonly matchCount: number;
@@ -132,6 +134,7 @@ export interface NewFbRoom {
   readonly maxPlayers: number;
   readonly stakeXu: number;
   readonly passwordHash: string | null;
+  readonly chatEnabled: boolean;
   readonly now: Date;
 }
 
@@ -502,6 +505,7 @@ const mapRoom = (row: Row): FbRoomRow => ({
   maxPlayers: toInt(row.max_players, 'max_players'),
   stakeXu: toInt(row.stake_xu, 'stake_xu'),
   passwordHash: toText(row.password_hash),
+  chatEnabled: row.chat_enabled !== false,
   status: String(row.status) as FbRoomStatus,
   currentMatchId: toText(row.current_match_id),
   matchCount: toInt(row.match_count, 'match_count'),
@@ -585,7 +589,7 @@ const mapOrder = (row: Row): FlashbackOrderRow => ({
 });
 
 const ROOM_COLUMNS = `r.id, r.code, r.owner_id, r.view_bars, r.play_bars, r.minutes, r.max_players,
-  r.stake_xu, r.password_hash, r.status, r.current_match_id, r.match_count, r.created_at,
+  r.stake_xu, r.password_hash, r.chat_enabled, r.status, r.current_match_id, r.match_count, r.created_at,
   r.waiting_since, r.closed_at`;
 
 const MATCH_COLUMNS = `id, room_id, symbol, to_char(start_date, 'YYYY-MM-DD') as start_date_text,
@@ -630,8 +634,8 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
     const rows = await tx.query<Row>(
       `insert into fb_rooms as r
          (code, owner_id, view_bars, play_bars, minutes, max_players, stake_xu, password_hash,
-          status, created_at, waiting_since, updated_at)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, 'waiting', $9, $9, $9)
+          chat_enabled, status, created_at, waiting_since, updated_at)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $10, 'waiting', $9, $9, $9)
        on conflict (code) where status <> 'closed' do nothing
        returning ${ROOM_COLUMNS}`,
       [
@@ -644,6 +648,7 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
         input.stakeXu,
         input.passwordHash,
         input.now,
+        input.chatEnabled,
       ],
     );
     return rows[0] ? mapRoom(rows[0]) : null;
@@ -851,9 +856,7 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
     const latest = [...rows].sort(
       (left, right) => toDate(right.left_at).getTime() - toDate(left.left_at).getTime(),
     )[0];
-    return latest
-      ? { notice: String(latest.notice), reason: toText(latest.left_reason) }
-      : null;
+    return latest ? { notice: String(latest.notice), reason: toText(latest.left_reason) } : null;
   }
 
   async balance(db: SqlClient, userId: string): Promise<number> {

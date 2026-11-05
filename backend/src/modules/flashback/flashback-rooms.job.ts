@@ -8,6 +8,7 @@
 import { Injectable } from '@nestjs/common';
 
 import type { JobOutcome } from '../runtime/runtime.types.js';
+import { FlashbackChatService } from './flashback-chat.service.js';
 import { FlashbackRoomsService } from './flashback-rooms.service.js';
 
 /** Tên job trong runtime. */
@@ -15,10 +16,15 @@ export const FLASHBACK_ROOMS_JOB_NAME = 'flashback.rooms-sweep';
 
 @Injectable()
 export class FlashbackRoomsJob {
-  constructor(private readonly rooms: FlashbackRoomsService) {}
+  constructor(
+    private readonly rooms: FlashbackRoomsService,
+    private readonly chat: FlashbackChatService,
+  ) {}
 
   async run(now?: Date): Promise<JobOutcome> {
     const detail = await this.rooms.sweep(now);
-    return { status: 'completed', detail };
+    // Chat phòng lưu 7 ngày rồi xoá (v2.4 §3.6).
+    const chatPurged = await this.chat.purgeExpired(now);
+    return { status: 'completed', detail: { ...detail, chat_purged: chatPurged } };
   }
 }

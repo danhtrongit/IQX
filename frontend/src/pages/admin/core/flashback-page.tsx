@@ -39,6 +39,7 @@ import {
   usePauseFlashback,
   useRevealFlashbackRound,
 } from "./flashback-hooks"
+import { FlashbackChatSection } from "./flashback-chat-section"
 import { FlashbackDatasetSection } from "./flashback-dataset-section"
 import type { StatusTone } from "./labels"
 
@@ -558,6 +559,8 @@ export function FlashbackPage() {
       </Section>
 
       <FlashbackDatasetSection />
+
+      <FlashbackChatSection />
 
       {confirm.element}
 

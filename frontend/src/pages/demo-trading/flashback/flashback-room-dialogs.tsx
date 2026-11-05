@@ -150,6 +150,17 @@ export function CreateRoomDialog({
                 className="tabular-nums"
               />
             </Field>
+            <Field label="Chat trong phòng" htmlFor="flashback-chat-enabled">
+              <Select value={form.chat} onValueChange={(value) => update("chat", value as RoomForm["chat"])}>
+                <SelectTrigger id="flashback-chat-enabled" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="on">Bật</SelectItem>
+                  <SelectItem value="off">Tắt</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
             <Field label="Mật khẩu phòng" htmlFor="flashback-password">
               <Input
                 id="flashback-password"

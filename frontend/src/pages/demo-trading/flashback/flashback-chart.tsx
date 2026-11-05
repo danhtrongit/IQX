@@ -321,7 +321,7 @@ export const FlashbackChart = memo(function FlashbackChart({
 
   const changeClass = changePct > 0 ? "text-price-up" : changePct < 0 ? "text-price-down" : "text-foreground"
   const ohlc = (
-    <span className="text-academy-label">
+    <span className="text-foreground">
       O<b className={toneClass}>{formatNumber(last.open)}</b> H<b className={toneClass}>{formatNumber(last.high)}</b> L
       <b className={toneClass}>{formatNumber(last.low)}</b> C<b className={toneClass}>{formatNumber(last.close)}</b>
     </span>
@@ -565,7 +565,7 @@ export const FlashbackChart = memo(function FlashbackChart({
         <Legend pane={volumePane} name="volume">
           <LegendLine>
             <span className="font-bold text-foreground">Khối lượng</span>
-            <span className={cn("font-semibold", toneClass)}>{formatNumber(last.volume)}</span>
+            <span className={toneClass}>{formatNumber(last.volume)}</span>
           </LegendLine>
           {volumeIndicators.map((indicator) => (
             <LegendRow
@@ -623,7 +623,7 @@ function Legend({ pane, name, children }: { pane: PaneBox; name: string; childre
 function LegendLine({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden rounded-sm bg-black/40 px-1.5 text-[12.5px] leading-6 whitespace-nowrap tabular-nums"
+      className="fb-legend pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden text-[12.5px] leading-6 font-bold whitespace-nowrap tabular-nums"
       style={{ height: LEGEND_ROW }}
     >
       {children}
@@ -924,7 +924,7 @@ function indicatorValue(value: number | null): string {
 }
 
 const LEGEND_BUTTON =
-  "inline-flex size-6 shrink-0 items-center justify-center rounded-sm text-academy-label hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+  "inline-flex size-6 shrink-0 items-center justify-center rounded-sm text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
 
 function LegendRow({
   indicator,
@@ -949,7 +949,7 @@ function LegendRow({
   return (
     <div
       className={cn(
-        "group pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden rounded-sm bg-black/40 px-1.5 text-[12.5px] whitespace-nowrap tabular-nums",
+        "fb-legend group pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden text-[12.5px] font-bold whitespace-nowrap tabular-nums",
         indicator.hidden && "opacity-45",
       )}
       style={{ height: LEGEND_ROW }}
@@ -968,9 +968,8 @@ function LegendRow({
               key={value.key}
               style={color ? { color } : undefined}
               className={cn(
-                "font-semibold",
                 idx > 0 && "ml-2",
-                value.tone === "up" ? "text-price-up" : value.tone === "down" ? "text-price-down" : "text-academy-label",
+                value.tone === "up" ? "text-price-up" : value.tone === "down" ? "text-price-down" : "text-foreground",
               )}
             >
               {indicatorValue(value.value)}

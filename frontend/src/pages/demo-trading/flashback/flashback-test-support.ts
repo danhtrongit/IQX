@@ -9,6 +9,8 @@ import { ApiError } from "@/lib/api"
 
 import type {
   FlashbackBar,
+  FlashbackChat,
+  FlashbackChatMessage,
   FlashbackCrown,
   FlashbackHistoryItem,
   FlashbackIndicatorMeta,
@@ -96,13 +98,14 @@ type RoomSim = {
   ready: Set<string>
   settings: RoomSettings
   password: string | null
+  chatEnabled: boolean
   status: "waiting" | "playing"
   match: MatchSim | null
 }
 
 export type BackendOptions = {
   /** Phòng đang ở lúc vào màn hình. */
-  room?: Partial<Pick<RoomSim, "code" | "owner" | "members" | "password" | "status">> & {
+  room?: Partial<Pick<RoomSim, "code" | "owner" | "members" | "password" | "status" | "chatEnabled">> & {
     settings?: Partial<RoomSettings>
     /** Những người (không phải chủ phòng) đã sẵn sàng lúc vào màn hình. */
     ready?: string[]
@@ -330,6 +333,9 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     /** Biểu cảm đã gửi trong ván (của mình và của người khác); server giả giữ 4 giây như server thật. */
     reactions: [] as { id: string; user_id: string; emoji: string; at: number }[],
     reactionSeq: 0,
+    chat: [] as FlashbackChatMessage[],
+    chatMuted: new Set<string>(),
+    chatSeq: 0,
     /** Người bị đưa ra khỏi phòng lúc bắt đầu (thiếu xu). */
     removedOnStart: [] as { message: string; name: string; user_id: string }[],
     room: null as RoomSim | null,
@@ -346,6 +352,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       ready: new Set(options.room.ready ?? []),
       settings,
       password: options.room.password ?? null,
+      chatEnabled: options.room.chatEnabled ?? true,
       status: options.room.status ?? "waiting",
       match: null,
     }
@@ -464,6 +471,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
   function roomView(room: RoomSim): FlashbackRoom {
     return {
       auto_close_at: null,
+      chat_enabled: room.chatEnabled,
       created_at: "2026-10-30T01:00:00.000Z",
       id: room.code,
       is_owner: room.owner.user_id === ME.user_id,
@@ -691,6 +699,39 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       .replace(/\/flashback\/matches\/[0-9a-f-]{36}/, "/flashback/matches/:id")
   }
 
+  /** Như server (v2.4 §3.4): tin của ván đang chơi chỉ tới khi mình đã tới phiên của tin. */
+  function chatView(room: RoomSim): FlashbackChat {
+    if (!room.chatEnabled) return { enabled: false, messages: [], muted: [] }
+    const live = room.status === "playing" && room.match?.status === "playing" ? room.match : null
+    const messages = state.chat.filter((message) => {
+      if (state.chatMuted.has(message.user_id)) return false
+      if (message.waiting || message.is_me || !live) return true
+      return (live.finished ? room.settings.play_bars : live.step) >= message.phien
+    })
+    const muted = [...state.chatMuted].map((id) => ({
+      user_id: id,
+      name: room.members.find((person) => person.user_id === id)?.name ?? "Người chơi",
+    }))
+    return { enabled: true, messages, muted }
+  }
+
+  function pushChat(room: RoomSim, person: Person, text: string, phien?: number): FlashbackChatMessage {
+    state.chatSeq += 1
+    const live = room.status === "playing" && room.match ? room.match : null
+    const message: FlashbackChatMessage = {
+      created_at: new Date(Date.now()).toISOString(),
+      id: `chat-${state.chatSeq}`,
+      is_me: person.user_id === ME.user_id,
+      name: person.name,
+      phien: phien ?? (live ? live.step : 0),
+      text,
+      user_id: person.user_id,
+      waiting: live === null,
+    }
+    state.chat.push(message)
+    return message
+  }
+
   function route(call: Call): unknown {
     const key = `${call.method} ${normalize(call.path)}`
     const pending = state.failures.findIndex((entry) => entry.key === key)
@@ -719,6 +760,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
           max_players: number
           stake_xu: number | null
           password: string | null
+          chat_enabled?: boolean
         }
         state.room = {
           code: ROOM_CODE,
@@ -733,6 +775,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
             stake_xu: body.stake_xu ?? 0,
           },
           password: body.password,
+          chatEnabled: body.chat_enabled ?? true,
           status: "waiting",
           match: null,
         }
@@ -766,6 +809,18 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         }
         return roomView(room)
       }
+      case "GET /flashback/rooms/:code/chat":
+        return chatView(currentRoom())
+      case "POST /flashback/rooms/:code/chat":
+        return pushChat(currentRoom(), ME, (call.body as { text: string }).text)
+      case "POST /flashback/rooms/:code/chat/mute": {
+        const body = call.body as { user_id: string; muted: boolean }
+        if (body.muted) state.chatMuted.add(body.user_id)
+        else state.chatMuted.delete(body.user_id)
+        return { muted: chatView(currentRoom()).muted }
+      }
+      case "POST /flashback/rooms/:code/chat/report":
+        return { reported: true }
       case "POST /flashback/rooms/:code/kick": {
         const room = currentRoom()
         const targetId = (call.body as { user_id: string }).user_id
@@ -917,6 +972,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         stake_xu: row.stake_xu,
       },
       password: secret ?? null,
+      chatEnabled: true,
       status: "waiting",
       match: null,
     }
@@ -948,6 +1004,8 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       room.members = room.members.filter((member) => member.user_id !== userId)
       room.ready.delete(userId)
     },
+    /** Một người khác gửi tin chat; `phien` là phiên của họ lúc gửi (bỏ trống ở phòng chờ). */
+    rivalChats: (person: Person, text: string, phien?: number) => pushChat(currentRoom(), person, text, phien),
     /** Người khác (không phải chủ phòng) bấm Sẵn sàng hoặc Huỷ sẵn sàng. */
     setReady: (userId: string, ready = true) => {
       const room = currentRoom()

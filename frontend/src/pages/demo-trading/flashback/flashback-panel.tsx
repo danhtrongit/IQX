@@ -9,12 +9,14 @@
 import { useEffect, useRef } from "react"
 
 import { SidebarPanel } from "@/components/layout/sidebar-panel"
+import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import { FlashbackChatBox } from "./flashback-chat"
 import { useFlashback, type MatchApi } from "./flashback-context"
 import {
   FLASHBACK_FEE_RATE,
@@ -30,18 +32,27 @@ import {
 } from "./flashback-model"
 
 export function FlashbackPanel() {
-  const { match } = useFlashback()
+  const { match, chat } = useFlashback()
+  const frame = useWorkspaceFrame()
   return (
-    <SidebarPanel title="Flashback">
-      {match ? (
-        <OrderSections match={match} />
-      ) : (
-        <div className="space-y-3" role="status" aria-label="Đang tải ván chơi">
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-20 w-full" />
+    <div className="relative h-full min-h-0">
+      <SidebarPanel title="Flashback">
+        {match ? (
+          <OrderSections match={match} />
+        ) : (
+          <div className="space-y-3" role="status" aria-label="Đang tải ván chơi">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        )}
+      </SidebarPanel>
+      {/* Máy tính: khung chat trượt ra đè lên panel Đặt lệnh (v2.4 §3.2); điện thoại dùng khung kéo từ dưới lên. */}
+      {chat.open && frame && !frame.overlay ? (
+        <div className="absolute inset-0 z-20 animate-in duration-200 slide-in-from-right-4 motion-reduce:animate-none">
+          <FlashbackChatBox chat={chat} inMatch onClose={() => chat.setOpen(false)} className="h-full rounded-none border-0" />
         </div>
-      )}
-    </SidebarPanel>
+      ) : null}
+    </div>
   )
 }
 

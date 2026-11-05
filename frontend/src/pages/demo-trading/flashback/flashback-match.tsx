@@ -1,6 +1,6 @@
 /**
- * Màn chơi Flashback v2 (spec v2 §6, v2.1 §6, §7): thanh người chơi với đồng hồ chung ở giữa, ba ô
- * số liệu (Phiên, Tổng tài sản, Tiền mặt), biểu đồ kèm nút "Các chỉ báo" và công cụ vẽ, nút "Phiên
+ * Màn chơi Flashback v2 (spec v2 §6, v2.1 §6, §7, v2.4 §2): thanh người chơi với đồng hồ chung ở giữa,
+ * bốn ô số liệu (Phiên, Tổng tài sản, Tiền mặt, Lợi nhuận của mình), biểu đồ kèm nút "Các chỉ báo" và công cụ vẽ, nút "Phiên
  * tiếp" và các phím tắt. Trên điện thoại có thanh nút cố định ở đáy. Mỗi người tự bấm "Phiên tiếp",
  * không chờ người khác; ở phiên cuối nút đổi thành "Hoàn thành".
  */
@@ -12,20 +12,24 @@ import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import { ChatUnreadBadge } from "./flashback-chat"
+import { useChatOpener } from "./use-flashback-chat"
+import { FlashbackChatSheet } from "./flashback-chat-sheet"
 import { FlashbackChart } from "./flashback-chart"
-import { useFlashback, type MatchApi } from "./flashback-context"
+import { useFlashback, type ChatApi, type MatchApi } from "./flashback-context"
 import { DrawingToolbar } from "./flashback-drawing-toolbar"
 import { IndicatorPicker, IndicatorSettings } from "./flashback-indicator-dialogs"
 import { defaultParams } from "./flashback-indicators"
-import { formatMoney } from "./flashback-model"
+import { formatMoney, formatSignedPercent, profitPercent } from "./flashback-model"
 import { PlayerBar } from "./flashback-player-bar"
 import { FlashbackResult } from "./flashback-result"
+import { useResultLock } from "./use-result-lock"
 import { useChartDrawings } from "./use-chart-drawings"
 
 export function FlashbackMatchScreen() {
-  const { match, matchLoading, matchFailed, retryMatch } = useFlashback()
+  const { match, chat, matchLoading, matchFailed, retryMatch } = useFlashback()
   // `key` theo ID ván: sang ván mới thì hình vẽ và các hộp thoại bắt đầu lại (v2.1 §7.5).
-  if (match) return <MatchView key={match.snapshot.match_id} match={match} />
+  if (match) return <MatchView key={match.snapshot.match_id} match={match} chat={chat} />
   if (matchFailed) {
     return (
       <PanelState
@@ -45,7 +49,7 @@ export function FlashbackMatchScreen() {
   )
 }
 
-function MatchView({ match }: { match: MatchApi }) {
+function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
   const frame = useWorkspaceFrame()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [settingsKey, setSettingsKey] = useState<string | null>(null)
@@ -54,6 +58,9 @@ function MatchView({ match }: { match: MatchApi }) {
   const atLastBar = match.step >= match.playBars
   const { setSide, requestQtyFocus, nextSession, finish } = match
   const resultOpen = match.resultOpen
+  const lockSeconds = useResultLock(resultOpen)
+  const openChat = useChatOpener(chat)
+  const closeChat = chat.setOpen
   // Hình vẽ của riêng mình, giữ trong suốt ván (kể cả khi "Xem lại biểu đồ"); phím tắt tắt khi có hộp thoại.
   const drawings = useChartDrawings(!pickerOpen && settingsKey === null && !resultOpen)
 
@@ -64,11 +71,13 @@ function MatchView({ match }: { match: MatchApi }) {
    */
   const openOrder = useCallback(
     (side: "buy" | "sell") => {
+      // Khung chat đè lên panel Đặt lệnh: đặt lệnh thì đóng lại.
+      closeChat(false)
       setSide(side)
       frame?.revealPanel()
       window.setTimeout(() => requestQtyFocus(), frame?.overlay ? 350 : 0)
     },
-    [frame, setSide, requestQtyFocus],
+    [closeChat, frame, setSide, requestQtyFocus],
   )
 
   // Phím tắt: Space = phiên tiếp (hoặc Hoàn thành ở phiên cuối), B/S = chọn Mua/Bán và đưa con trỏ
@@ -106,13 +115,15 @@ function MatchView({ match }: { match: MatchApi }) {
   const settingsMeta = match.indicatorMetas.find((indicator) => indicator.id === settingsInstance?.id) ?? null
 
   const next = nextButton(match, atLastBar)
+  // Chỉ của mình, tính từ tài khoản của mình; server không trả % của người khác trong lúc chơi (v2.4 §2).
+  const profit = profitPercent(match.totalAssets, match.initialCash)
 
   return (
     <div className="space-y-3 max-[900px]:pb-16">
-      <PlayerBar match={match} />
+      <PlayerBar match={match} chat={chat} />
 
-      <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-3" aria-label="Số liệu ván chơi">
-        <StatTile label="Phiên" value={`${match.step} / ${match.playBars}`} className="col-span-2 sm:col-span-1">
+      <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4" aria-label="Số liệu ván chơi">
+        <StatTile label="Phiên" value={`${match.step} / ${match.playBars}`}>
           <div
             className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"
             role="progressbar"
@@ -126,6 +137,12 @@ function MatchView({ match }: { match: MatchApi }) {
         </StatTile>
         <StatTile label="Tổng tài sản" value={formatMoney(match.totalAssets)} />
         <StatTile label="Tiền mặt" value={formatMoney(match.cash)} />
+        <StatTile
+          label="Lợi nhuận"
+          value={formatSignedPercent(profit)}
+          valueClassName={profit > 0 ? "text-price-up" : profit < 0 ? "text-price-down" : "text-foreground"}
+          testId="flashback-profit"
+        />
       </section>
 
       <section className="relative flex flex-col gap-2 rounded-lg border border-border bg-card p-2.5">
@@ -166,7 +183,7 @@ function MatchView({ match }: { match: MatchApi }) {
         </Button>
       </div>
 
-      {/* Thanh cố định đáy trên điện thoại: Mua · Bán · Phiên tiếp */}
+      {/* Thanh cố định đáy trên điện thoại: Mua · Bán · Chat · Phiên tiếp */}
       <div className="fixed inset-x-0 bottom-0 z-20 hidden items-center gap-2 border-t border-border bg-card/95 px-3 py-2 backdrop-blur max-[900px]:flex">
         <Button
           type="button"
@@ -190,6 +207,20 @@ function MatchView({ match }: { match: MatchApi }) {
         >
           Bán
         </Button>
+        {chat.enabled ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="relative flex-1"
+            aria-pressed={chat.open}
+            data-testid="flashback-chat-mobile"
+            onClick={() => openChat(!chat.open)}
+          >
+            Chat
+            <ChatUnreadBadge count={chat.unread} />
+          </Button>
+        ) : null}
         <Button
           type="button"
           size="lg"
@@ -227,7 +258,9 @@ function MatchView({ match }: { match: MatchApi }) {
         }}
       />
 
-      {match.result ? <FlashbackResult match={match} result={match.result} /> : null}
+      <FlashbackChatSheet chat={chat} />
+
+      {match.result ? <FlashbackResult match={match} result={match.result} chat={chat} lockSeconds={lockSeconds} /> : null}
     </div>
   )
 }
@@ -264,18 +297,22 @@ function nextButton(match: MatchApi, atLastBar: boolean): {
 function StatTile({
   label,
   value,
-  className,
+  valueClassName = "text-foreground",
+  testId,
   children,
 }: {
   label: string
   value: string
-  className?: string
+  valueClassName?: string
+  testId?: string
   children?: ReactNode
 }) {
   return (
-    <div className={cn("min-w-0 rounded-lg border border-border bg-card p-3", className)}>
+    <div className="min-w-0 rounded-lg border border-border bg-card p-3">
       <span className="block text-[11px] font-semibold text-text-secondary">{label}</span>
-      <b className="mt-1 block truncate font-heading text-lg font-bold text-foreground tabular-nums">{value}</b>
+      <b className={cn("mt-1 block truncate font-heading text-lg font-bold tabular-nums", valueClassName)} data-testid={testId}>
+        {value}
+      </b>
       {children}
     </div>
   )

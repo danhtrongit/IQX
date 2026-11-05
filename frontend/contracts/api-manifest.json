@@ -157,6 +157,16 @@
       "requestType": "FlashbackAdminAlertsData",
       "responseType": "FlashbackAdminAlertsResponses"
     },
+    "GET /api/v2/admin/flashback/chat/banned-words": {
+      "operationId": "flashbackAdminChatBannedWords",
+      "requestType": "FlashbackAdminChatBannedWordsData",
+      "responseType": "FlashbackAdminChatBannedWordsResponses"
+    },
+    "GET /api/v2/admin/flashback/chat/reports": {
+      "operationId": "flashbackAdminChatReports",
+      "requestType": "FlashbackAdminChatReportsData",
+      "responseType": "FlashbackAdminChatReportsResponses"
+    },
     "GET /api/v2/admin/flashback/dataset": {
       "operationId": "flashbackAdminDataset",
       "requestType": "FlashbackAdminDatasetData",
@@ -761,6 +771,11 @@
       "operationId": "flashbackRoomsGet",
       "requestType": "FlashbackRoomsGetData",
       "responseType": "FlashbackRoomsGetResponses"
+    },
+    "GET /api/v2/flashback/rooms/{code}/chat": {
+      "operationId": "flashbackChatList",
+      "requestType": "FlashbackChatListData",
+      "responseType": "FlashbackChatListResponses"
     },
     "GET /api/v2/flashback/rooms/me": {
       "operationId": "flashbackRoomsMine",
@@ -1597,6 +1612,11 @@
       "requestType": "AdminAlertsControllerSetupTelegramWebhook1Data",
       "responseType": "AdminAlertsControllerSetupTelegramWebhook1Responses"
     },
+    "POST /api/v2/admin/flashback/chat/reports/{id}/decide": {
+      "operationId": "flashbackAdminChatReportDecide",
+      "requestType": "FlashbackAdminChatReportDecideData",
+      "responseType": "FlashbackAdminChatReportDecideResponses"
+    },
     "POST /api/v2/admin/flashback/dataset/refresh": {
       "operationId": "flashbackAdminDatasetRefresh",
       "requestType": "FlashbackAdminDatasetRefreshData",
@@ -2082,6 +2102,21 @@
       "requestType": "FlashbackRoomsCreateData",
       "responseType": "FlashbackRoomsCreateResponses"
     },
+    "POST /api/v2/flashback/rooms/{code}/chat": {
+      "operationId": "flashbackChatSend",
+      "requestType": "FlashbackChatSendData",
+      "responseType": "FlashbackChatSendResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/chat/mute": {
+      "operationId": "flashbackChatMute",
+      "requestType": "FlashbackChatMuteData",
+      "responseType": "FlashbackChatMuteResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/chat/report": {
+      "operationId": "flashbackChatReport",
+      "requestType": "FlashbackChatReportData",
+      "responseType": "FlashbackChatReportResponses"
+    },
     "POST /api/v2/flashback/rooms/{code}/join": {
       "operationId": "flashbackRoomsJoin",
       "requestType": "FlashbackRoomsJoinData",
@@ -2336,6 +2371,11 @@
       "operationId": "AdminAlertsController_update[1]",
       "requestType": "AdminAlertsControllerUpdate1Data",
       "responseType": "AdminAlertsControllerUpdate1Responses"
+    },
+    "PUT /api/v2/admin/flashback/chat/banned-words": {
+      "operationId": "flashbackAdminChatBannedWordsReplace",
+      "requestType": "FlashbackAdminChatBannedWordsReplaceData",
+      "responseType": "FlashbackAdminChatBannedWordsReplaceResponses"
     },
     "PUT /api/v2/admin/flashback/dataset/config": {
       "operationId": "flashbackAdminDatasetConfig",
