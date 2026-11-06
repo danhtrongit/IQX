@@ -1,4 +1,22 @@
-import { createContext, useContext } from "react"
+import { createContext, useContext, useSyncExternalStore } from "react"
+
+const OVERLAY_QUERY = "(max-width: 900px)"
+
+function subscribeOverlay(onChange: () => void) {
+  if (typeof window.matchMedia !== "function") return () => {}
+  const media = window.matchMedia(OVERLAY_QUERY)
+  media.addEventListener("change", onChange)
+  return () => media.removeEventListener("change", onChange)
+}
+
+function overlaySnapshot() {
+  return typeof window.matchMedia === "function" && window.matchMedia(OVERLAY_QUERY).matches
+}
+
+/** `true` at 900px and below, where the panel is a layer. Works outside the frame too. */
+export function useWorkspaceOverlay(): boolean {
+  return useSyncExternalStore(subscribeOverlay, overlaySnapshot, () => false)
+}
 
 export type WorkspaceFrameState = {
   /** Slide-over panel (≤900px). Always `false` on wider screens, where the panel is a column. */

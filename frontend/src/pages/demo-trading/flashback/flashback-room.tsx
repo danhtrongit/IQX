@@ -2,13 +2,16 @@
  * Phòng chờ Flashback (spec v2 §4, v2.1 §1, v2.4 §3.2 và §5): ID phòng cỡ lớn kèm ổ khoá, nút Sao chép ID, 4 ô thông
  * số, các ô người chơi (bằng số người tối đa, tối thiểu 4; từ 9 người trở lên ô thu nhỏ, lưới 6 cột
  * và cuộn trong khung; mỗi ô có avatar kèm cấp và vương miện, v2.1 §3.3 và §4.3), Rời phòng và Bắt
- * đầu (chỉ chủ phòng, mở khi mọi người đã Sẵn sàng). Khung chat luôn mở ở cột phải (máy tính) hoặc dưới
- * các nút (điện thoại). Thanh gọi nhóm (v2.5) nằm ngay dưới ID phòng.
+ * đầu (chỉ chủ phòng, mở khi mọi người đã Sẵn sàng). Thanh gọi nhóm (v2.5) nằm ngay dưới ID phòng.
+ *
+ * Máy tính: khung chat luôn mở ở cột phải. Điện thoại: Rời phòng, Chat và Sẵn sàng hoặc Bắt đầu ghim ở
+ * đáy màn hình (danh sách người chơi dài không đẩy chúng khuất đi), Chat mở khung kéo từ dưới lên.
  */
 import { useState } from "react"
 import { Copy, Lock, UserX } from "lucide-react"
 
 import { PanelState } from "@/components/layout/panel-state"
+import { useWorkspaceOverlay } from "@/components/layout/workspace-frame-context"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -16,18 +19,25 @@ import { cn } from "@/lib/utils"
 import { COIN_TEXT } from "../shop/shop-ui"
 import type { FlashbackRoom, FlashbackRoomMember } from "./flashback-api"
 import { FlashbackCallBar } from "./flashback-call-bar"
-import { FlashbackChatBox } from "./flashback-chat"
+import { ChatUnreadBadge, FlashbackChatBox } from "./flashback-chat"
+import { FlashbackChatSheet } from "./flashback-chat-sheet"
 import { useFlashback } from "./flashback-context"
+import { useChatOpener } from "./use-flashback-chat"
 import { PlayerAvatar } from "./flashback-avatar"
 import { KickMemberDialog } from "./flashback-room-dialogs"
 import { ROOM_MANY_PLAYERS, formatNumber, roomReadiness, roomSlotCount } from "./flashback-model"
 
 type KickTarget = { userId: string; name: string }
 
+const ACTION_BUTTON = "flex-1 max-[900px]:h-9 min-[901px]:flex-none"
+const ACTION_HINT = "w-full text-[13px] font-semibold max-[900px]:order-first min-[901px]:w-auto"
+
 export function FlashbackRoomScreen() {
   const { room: api, chat } = useFlashback()
   const room = api.room
   const [kickTarget, setKickTarget] = useState<KickTarget | null>(null)
+  const overlay = useWorkspaceOverlay()
+  const openChat = useChatOpener(chat)
 
   if (!room) {
     if (api.failed) {
@@ -57,7 +67,7 @@ export function FlashbackRoomScreen() {
   return (
     <div
       className={cn(
-        "mx-auto grid w-full items-start gap-3",
+        "mx-auto grid w-full items-start gap-3 max-[900px]:pb-28",
         chat.enabled ? "max-w-[1240px] min-[901px]:grid-cols-[minmax(0,1fr)_360px]" : "max-w-[820px]",
       )}
     >
@@ -95,8 +105,9 @@ export function FlashbackRoomScreen() {
         />
       </section>
 
-      {/* Phòng đông (từ 9 người): lưới thu nhỏ cuộn bằng ScrollArea (DESIGN: không dùng thanh cuộn mặc định). */}
-      <ScrollArea className={compact ? "max-h-[52vh]" : undefined}>
+      {/* Phòng đông (từ 9 người): lưới thu nhỏ cuộn bằng ScrollArea (DESIGN: không dùng thanh cuộn mặc định).
+          Cuộn hết lưới thì cuộn tiếp ra trang, không kẹt ở trong lưới trên điện thoại. */}
+      <ScrollArea className={compact ? "max-h-[52vh]" : undefined} viewportClassName="overscroll-auto">
       <section
         aria-label="Người chơi"
         data-testid="flashback-slots"
@@ -118,17 +129,34 @@ export function FlashbackRoomScreen() {
       </section>
       </ScrollArea>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" className="flex-1 sm:flex-none" disabled={api.leaveBusy} onClick={api.leave}>
+      {/* Điện thoại: ghim ở đáy màn hình như thanh nút của màn chơi. */}
+      <div
+        className="flex flex-wrap items-center gap-2 max-[900px]:fixed max-[900px]:inset-x-0 max-[900px]:bottom-0 max-[900px]:z-20 max-[900px]:border-t max-[900px]:border-border max-[900px]:bg-card/95 max-[900px]:px-3 max-[900px]:py-2 max-[900px]:backdrop-blur"
+        data-testid="flashback-room-actions"
+      >
+        <Button type="button" variant="outline" className={ACTION_BUTTON} disabled={api.leaveBusy} onClick={api.leave}>
           Rời phòng
         </Button>
+        {chat.enabled && overlay ? (
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(ACTION_BUTTON, "relative")}
+            aria-pressed={chat.open}
+            data-testid="flashback-chat-room-mobile"
+            onClick={() => openChat(!chat.open)}
+          >
+            Chat
+            <ChatUnreadBadge count={chat.unread} />
+          </Button>
+        ) : null}
         {me && !room.is_owner ? (
           <>
             <Button
               type="button"
               variant="outline"
               className={cn(
-                "flex-1 sm:flex-none",
+                ACTION_BUTTON,
                 me.ready
                   ? "border-emerald-600 text-emerald-700 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-400"
                   : "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 hover:text-white dark:bg-emerald-600 dark:hover:bg-emerald-700",
@@ -137,9 +165,15 @@ export function FlashbackRoomScreen() {
               aria-pressed={me.ready}
               onClick={() => api.setReady(!me.ready)}
             >
-              {me.ready ? "✓ Đã sẵn sàng · Huỷ" : "Sẵn sàng"}
+              {me.ready ? (
+                <>
+                  ✓ Đã sẵn sàng<span className="max-[400px]:hidden"> · Huỷ</span>
+                </>
+              ) : (
+                "Sẵn sàng"
+              )}
             </Button>
-            <span className="w-full text-[13px] font-semibold sm:w-auto" data-testid="flashback-ready-hint" role="status">
+            <span className={ACTION_HINT} data-testid="flashback-ready-hint" role="status">
               {readiness.playerHint}
             </span>
           </>
@@ -148,13 +182,20 @@ export function FlashbackRoomScreen() {
           <>
             <Button
               type="button"
-              className="flex-1 sm:flex-none"
+              className={ACTION_BUTTON}
+              aria-label={readiness.startLabel}
               disabled={api.startBusy || readiness.waiting > 0}
               onClick={api.start}
             >
-              {readiness.startLabel}
+              {readiness.waiting > 0 ? (
+                <>
+                  Bắt đầu<span className="max-[400px]:hidden"> (chờ {readiness.waiting} người)</span>
+                </>
+              ) : (
+                readiness.startLabel
+              )}
             </Button>
-            <span className="w-full text-[13px] font-semibold sm:w-auto" data-testid="flashback-ready-hint" role="status">
+            <span className={ACTION_HINT} data-testid="flashback-ready-hint" role="status">
               {readiness.ownerHint}
             </span>
           </>
@@ -162,7 +203,8 @@ export function FlashbackRoomScreen() {
       </div>
       </div>
 
-      {chat.enabled ? <FlashbackChatBox chat={chat} inMatch={false} className="h-[440px] min-[901px]:h-[600px]" /> : null}
+      {chat.enabled && !overlay ? <FlashbackChatBox chat={chat} inMatch={false} className="h-[600px]" /> : null}
+      {overlay ? <FlashbackChatSheet chat={chat} inMatch={false} /> : null}
 
       {kickTarget ? (
         <KickMemberDialog

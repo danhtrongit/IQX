@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react"
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react"
 import { PanelRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -13,24 +13,12 @@ import {
   WorkspaceFrameContext,
   WorkspaceToggleRegistryContext,
   useWorkspaceFrame,
+  useWorkspaceOverlay,
   useWorkspaceToggleRegistry,
   type WorkspaceFrameState,
 } from "./workspace-frame-context"
 
 export type { WorkspaceRail } from "@/components/layout/rail-menu"
-
-const OVERLAY_QUERY = "(max-width: 900px)"
-
-function subscribeOverlay(onChange: () => void) {
-  if (typeof window.matchMedia !== "function") return () => {}
-  const media = window.matchMedia(OVERLAY_QUERY)
-  media.addEventListener("change", onChange)
-  return () => media.removeEventListener("change", onChange)
-}
-
-function overlaySnapshot() {
-  return typeof window.matchMedia === "function" && window.matchMedia(OVERLAY_QUERY).matches
-}
 
 /** The route's rail as before: every visible tool, selected through the URL. */
 function useRouteRail(): WorkspaceRail {
@@ -99,7 +87,7 @@ export function WorkspaceFrame({
   const [toggleElement, setToggleElement] = useState<HTMLButtonElement | null>(null)
   // The control that last opened the layer; Escape and the close button return focus to it.
   const triggerRef = useRef<HTMLElement | null>(null)
-  const overlay = useSyncExternalStore(subscribeOverlay, overlaySnapshot, () => false)
+  const overlay = useWorkspaceOverlay()
   const [openState, setOpenState] = useState(defaultPanelOpen)
   const [wasOverlay, setWasOverlay] = useState(overlay)
   if (wasOverlay !== overlay) {
