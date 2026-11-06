@@ -43,7 +43,7 @@ export function FlashbackResult({
         <DialogTitle className="font-heading text-xl font-extrabold">{result.title}</DialogTitle>
         <DialogDescription className="sr-only">Kết quả ván Flashback</DialogDescription>
 
-        <ScrollArea className="max-h-[46vh]">
+        <ScrollArea className="max-h-[46vh]" viewportClassName="overscroll-auto">
         <ol
           className="m-0 list-none space-y-1.5 p-0 pt-2 pr-2.5"
           aria-label="Bảng xếp hạng"

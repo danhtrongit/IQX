@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
-import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
+import { useWorkspaceFrame, useWorkspaceOverlay } from "@/components/layout/workspace-frame-context"
 import { ApiError } from "@/lib/api"
 import {
   fetchChat,
@@ -75,11 +75,19 @@ export function useFlashbackChat({
     setReadIds(null)
     setOpen(false)
   }
-  // Phòng chờ luôn hiện sẵn khung chat nên không có khung nào để mở.
-  if (phase === "room" && open) setOpen(false)
+  // Đổi màn thì khung trượt đóng lại: chủ phòng bắt đầu ván thì người chơi thấy ngay biểu đồ.
+  const [trackedPhase, setTrackedPhase] = useState(phase)
+  if (trackedPhase !== phase) {
+    setTrackedPhase(phase)
+    setOpen(false)
+  }
+  // Phòng chờ trên máy tính luôn hiện sẵn khung chat nên không có khung nào để mở; điện thoại mở bằng nút ở thanh đáy.
+  const overlay = useWorkspaceOverlay()
+  const inlineRoomChat = phase === "room" && !overlay
+  if (inlineRoomChat && open) setOpen(false)
 
   // Tin có sẵn lúc mới vào coi như đã đọc; từ đó, khung đang hiện thì mọi tin đều đã đọc.
-  const watching = open || phase === "room"
+  const watching = open || inlineRoomChat
   if (data && (readIds === null || (watching && messages.some((message) => !readIds.has(message.id))))) {
     setReadIds(new Set(messages.map((message) => message.id)))
   }

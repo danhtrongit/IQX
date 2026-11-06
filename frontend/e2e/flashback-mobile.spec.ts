@@ -387,15 +387,21 @@ for (const theme of ["dark", "light"] as const) {
       await expect(page.getByLabel("Chat trong phòng")).toBeVisible()
       await page.getByTestId("flashback-create-room").getByRole("button", { name: "Tạo phòng" }).click()
 
-      // Phòng chờ: khung chat luôn mở, cao 600 px ở cột phải (máy tính) hoặc 440 px dưới các nút (điện thoại).
+      // Phòng chờ: máy tính có khung chat luôn mở cao 600 px ở cột phải; điện thoại mở bằng nút Chat ở thanh đáy.
       const lobbyChat = page.getByTestId("flashback-chat")
+      if (width <= 900) {
+        await expect(lobbyChat).toHaveCount(0)
+        await page.getByTestId("flashback-chat-room-mobile").click()
+      }
       await expect(lobbyChat).toBeVisible()
       await expect(lobbyChat.getByText("Chào cả phòng, chơi đẹp nhé!")).toBeVisible()
       const box = await lobbyChat.boundingBox()
-      expect(box?.height).toBe(width > 900 ? 600 : 440)
-      if (width > 900) expect(box?.width).toBe(360)
-      const start = await page.getByRole("button", { name: /^Bắt đầu/ }).boundingBox()
-      if (width <= 900) expect(box!.y).toBeGreaterThan(start!.y)
+      if (width > 900) {
+        expect(box?.height).toBe(600)
+        expect(box?.width).toBe(360)
+      } else {
+        await lobbyChat.getByRole("button", { name: "Đóng chat" }).click()
+      }
       expect(await noHorizontalOverflow(page)).toBe(true)
       expect(await lowContrastTexts(page)).toEqual([])
       if (shot) await page.screenshot({ path: `${shot}/room-${width}-${theme}.png`, fullPage: true })
