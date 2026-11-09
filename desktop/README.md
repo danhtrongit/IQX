@@ -25,5 +25,10 @@ desktop/
 Phụ thuộc: `app` → `api`, `chart`, `indicator` → `model`.
 
 ```sh
-cargo run -p app
+cargo run -p app            # bản dev
+cargo build -p app --release # bản tối ưu: target/release/app
 ```
+
+Cần Rust stable (máy dev dùng `rustup` của Homebrew: thêm `/opt/homebrew/opt/rustup/bin` vào `PATH`). GPUI bật `runtime_shaders` để không cần Metal Toolchain của Xcode; muốn biên dịch shader sẵn thì chạy `xcodebuild -downloadComponent MetalToolchain` rồi bỏ feature này.
+
+API mặc định `https://iqx.vn/api/v2`, đổi bằng biến môi trường `IQX_API_URL`.

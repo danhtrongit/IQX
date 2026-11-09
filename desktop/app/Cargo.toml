@@ -10,3 +10,4 @@ api.workspace = true
 chart.workspace = true
 indicator.workspace = true
 model.workspace = true
+gpui.workspace = true

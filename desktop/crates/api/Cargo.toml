@@ -7,3 +7,5 @@ publish.workspace = true
 
 [dependencies]
 model.workspace = true
+serde.workspace = true
+ureq.workspace = true

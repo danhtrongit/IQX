@@ -13,6 +13,10 @@ api = { path = "crates/api" }
 chart = { path = "crates/chart" }
 indicator = { path = "crates/indicator" }
 model = { path = "crates/model" }
+gpui = { version = "0.2.2", features = ["runtime_shaders"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "3", features = ["json"] }
 
 [profile.release]
 lto = "thin"
