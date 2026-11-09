@@ -1,10 +1,12 @@
 # IQX Desktop
 
 App desktop viết bằng Rust, ưu tiên hiệu năng. Gọi thẳng backend `/api/v2` (Bearer token).
+Thiết kế giao diện (Liquid Glass): xem [DESIGN.md](DESIGN.md).
 
 ```
 desktop/
 ├── Cargo.toml        workspace, profile release
+├── DESIGN.md         design system Liquid Glass
 ├── app/              binary: giao diện
 │   ├── assets/       fonts/, icons/
 │   └── src/
