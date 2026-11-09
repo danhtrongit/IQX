@@ -9,12 +9,18 @@
 import { useCallback, useState, type RefCallback } from "react"
 
 import { PAGE_NARROW_WIDTH } from "./flashback-chart-layout"
+import { CARDS_TRAY_HEIGHT } from "./flashback-cards-model"
+
+/** Nút "Phiên tiếp" cao 36px: trước Candle Dojo, hàng dưới biểu đồ chỉ cao bằng nút. */
+const NEXT_BUTTON_HEIGHT = 36
 
 /**
- * Phần bên dưới biểu đồ trên máy tính: lề dưới khung chứa (10) + viền (1) + khoảng cách (12) + nút
- * "Phiên tiếp" cao 36 + lề trang (20, màn rất rộng) = 79, làm tròn lên cho gọn.
+ * Phần bên dưới biểu đồ trên máy tính: lề dưới khung chứa (10) + viền (1) + khoảng cách (12) + hàng dưới biểu đồ + lề trang (20, màn rất
+ * rộng). Hàng dưới biểu đồ giờ có nút "Phiên tiếp" và khối "Thẻ trong ván" (Candle Dojo §9.3) nên cao bằng khối thẻ (thẻ 52px cao 73px không
+ * lọt vừa hàng cao 36px): 79 - 36 + chiều cao khối thẻ, để màn chơi vẫn vừa một màn hình (v2.1 §8). Hàng này không thêm hàng nào dưới
+ * biểu đồ, và cao cố định kể cả khi chưa có thẻ nên biểu đồ không nhảy khi gặp thẻ đầu tiên.
  */
-export const CHART_BOTTOM_RESERVE = 80
+export const CHART_BOTTOM_RESERVE = 80 - NEXT_BUTTON_HEIGHT + CARDS_TRAY_HEIGHT
 
 export type ChartFit = {
   /** Chiều cao còn trống cho biểu đồ (px); null khi chưa đo được. */

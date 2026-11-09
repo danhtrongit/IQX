@@ -88,6 +88,8 @@ type MatchSim = {
   deadline: number
   rivals: Rival[]
   sequence: number
+  /** Thẻ nến mình sở hữu và đã gặp trong ván (Candle Dojo §9), theo phiên tăng dần. */
+  cards: { card_id: string; card_n: number; play_idx: number }[]
 }
 
 type RoomSim = {
@@ -111,11 +113,13 @@ export type BackendOptions = {
     ready?: string[]
   }
   /** Ván đang dở của phòng (bước đã chơi...) khi `room.status` là "playing". */
-  match?: Partial<Pick<MatchSim, "step" | "finished" | "cash" | "holdings" | "status">> & {
+  match?: Partial<Pick<MatchSim, "step" | "finished" | "cash" | "holdings" | "status" | "cards">> & {
     /** Còn bao nhiêu mili giây lúc vào ván. */
     remainingMs?: number
     rivals?: Rival[]
   }
+  /** Thẻ nến mà phiên `k` của ván có (mình sở hữu): phản hồi "Phiên tiếp" ở phiên đó trả `card`, các lần sau ảnh chụp ván có thẻ này. */
+  cardAtStep?: Record<number, { id: string; n: number }>
   /** Các dòng ở sảnh. */
   listing?: FlashbackRoomListItem[]
   /** Mật khẩu của các phòng ở sảnh, theo ID. */
@@ -376,6 +380,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       deadline: Date.now() + (from?.remainingMs ?? 600_000),
       rivals: from?.rivals ?? [{ person: MINH, pnl: 0, finished: false }],
       sequence: 0,
+      cards: from?.cards ?? [],
     }
   }
 
@@ -510,7 +515,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
   function snapshot(room: RoomSim, match: MatchSim): FlashbackSnapshot {
     const view = room.settings.view_bars
     return {
-      cards: [],
+      cards: match.cards.filter((card) => card.play_idx <= match.step),
       ends_at: "2026-10-30T01:10:00.000Z",
       history_bars: historyBars(view),
       initial_cash: String(INITIAL_CASH),
@@ -924,7 +929,9 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
           if (match.finished) throw new ApiError("Bạn đã hoàn thành", 409, "ALREADY_FINISHED")
           if (match.step >= room.settings.play_bars) throw new ApiError("Đã ở phiên cuối", 409, "AT_LAST_BAR")
           match.step += 1
-          return { bar: playedBar(room.settings.view_bars, match.step - 1), me: me(room, match) }
+          const shown = options.cardAtStep?.[match.step] ?? null
+          if (shown) match.cards.push({ card_id: shown.id, card_n: shown.n, play_idx: match.step })
+          return { bar: playedBar(room.settings.view_bars, match.step - 1), card: shown, me: me(room, match) }
         }
         case "POST /flashback/matches/:id/orders":
           return placeOrder(room, match, call.body as { side: "buy" | "sell"; qty: number })

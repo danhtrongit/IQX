@@ -16,6 +16,7 @@ import {
   type FlashbackNextResult,
   type FlashbackSnapshot,
 } from "./flashback-api"
+import { appendSnapshotCard } from "./flashback-cards-model"
 
 const NO_USER = ""
 
@@ -43,11 +44,15 @@ export function useFlashbackIndicators(enabled: boolean) {
   })
 }
 
-/** Sang phiên tiếp theo: thêm nến mới và thay toàn bộ `me`. */
+/**
+ * Sang phiên tiếp theo: thêm nến mới và thay toàn bộ `me`. Phiên vừa mở có thẻ nến mình sở hữu (`result.card`) thì thêm vào
+ * danh sách thẻ của ván (Candle Dojo §9.3); server chỉ trả thẻ mình có, client không tự nhận diện.
+ */
 export function applyNext(snapshot: FlashbackSnapshot, result: FlashbackNextResult): FlashbackSnapshot {
   return {
     ...snapshot,
     played_bars: [...snapshot.played_bars, result.bar],
+    cards: result.card ? appendSnapshotCard(snapshot.cards, result.card, result.me.step) : snapshot.cards,
     my_step: result.me.step,
     my_finished: result.me.finished || snapshot.my_finished,
     me: result.me,

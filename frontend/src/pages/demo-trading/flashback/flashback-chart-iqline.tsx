@@ -19,14 +19,18 @@ import { useResolvedTheme } from "@/hooks/use-resolved-theme"
 import { DrawingStyleBar, HorizontalToolExtras, HorizontalToolGroups } from "@/lib/iqline/react/drawing-toolbar"
 import { IQLineFlashback } from "@/lib/iqline/react/IQLineFlashback"
 import { useSessionToolbarChart } from "@/lib/iqline/react/session-toolbar"
+import type { ChartFrame } from "@/lib/iqline/scene/model"
 import type { ChartIndicatorInput, DrawingTool } from "@/lib/iqline/types"
 import { currentOwner } from "@/pages/charts/chart/drawing-persistence"
 
 import type { FlashbackBar, FlashbackOrder } from "./flashback-api"
 import type { ChartIndicator } from "./flashback-context"
 import type { Drawing as LegacyDrawing } from "./flashback-drawings"
+import { FlashbackCardOverlay } from "./flashback-card-boxes"
+import type { MetCard } from "./flashback-cards-model"
 import {
   applyIndicatorChange,
+  frameToCardProjection,
   indicatorTitleOf,
   legacyDrawingsToLib,
   ordersToMarkers,
@@ -68,6 +72,10 @@ export type FlashbackIqlineChartProps = {
   legacyShapes: readonly LegacyDrawing[]
   /** Phím tắt Esc, Delete: tắt khi có hộp thoại mở. */
   drawingKeys: boolean
+  /** Thẻ nến đã gặp trong ván: khung và nhãn mẫu nến (Candle Dojo §9.2), lớp phủ DOM không nhận con trỏ. */
+  cards?: readonly MetCard[]
+  /** Phiên của thẻ có khung đang đậm (thẻ vừa bật lên hoặc vừa bấm trong khay). */
+  cardHighlight?: number | null
   onToggle: (key: string) => void
   onSettings: (key: string) => void
   onRemove: (key: string) => void
@@ -83,6 +91,8 @@ export default function FlashbackIqlineChart({
   playBars,
   legacyShapes,
   drawingKeys,
+  cards,
+  cardHighlight = null,
   onToggle,
   onSettings,
   onRemove,
@@ -108,6 +118,14 @@ export default function FlashbackIqlineChart({
   const onIndicatorsChange = useCallback(
     (next: readonly ChartIndicatorInput[]) => applyIndicatorChange(inputs, next, { toggle: onToggle, remove: onRemove }),
     [inputs, onToggle, onRemove],
+  )
+
+  const renderCards = useCallback(
+    (frame: ChartFrame | null) =>
+      frame && cards && cards.length > 0 ? (
+        <FlashbackCardOverlay cards={cards} bars={bars} viewBars={viewBars} highlight={cardHighlight} projection={frameToCardProjection(frame)} />
+      ) : null,
+    [cards, bars, viewBars, cardHighlight],
   )
 
   return (
@@ -147,6 +165,7 @@ export default function FlashbackIqlineChart({
           formatPrice={formatPrice}
           available={fit.available}
           pageNarrow={fit.pageNarrow}
+          renderOverlay={renderCards}
         />
         {toolbarChart.state.drawings.selectedId !== null || toolbarChart.state.drawings.pending !== null ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center px-2">

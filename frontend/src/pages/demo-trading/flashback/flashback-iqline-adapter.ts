@@ -9,9 +9,11 @@
  * - hình vẽ cũ (nếu còn trong bộ nhớ của ván) thành hình của IQLine.
  */
 import { TOOL_SPECS } from "@/lib/iqline/drawings/tools"
+import type { ChartFrame } from "@/lib/iqline/scene/model"
 import type { Bar, ChartIndicatorInput, Drawing, IndicatorParams, SessionMarker } from "@/lib/iqline/types"
 
 import type { FlashbackBar, FlashbackIndicatorParams, FlashbackOrder } from "./flashback-api"
+import type { CardProjection } from "./flashback-cards-model"
 import type { ChartIndicator } from "./flashback-context"
 import type { Drawing as LegacyDrawing } from "./flashback-drawings"
 import { MAX_INDICATORS } from "./flashback-indicator-store"
@@ -96,4 +98,19 @@ export function legacyDrawingsToLib(shapes: readonly LegacyDrawing[]): Drawing[]
       style: { ...TOOL_SPECS[tool].defaultStyle },
     }
   })
+}
+
+/**
+ * Phép đổi toạ độ của khung hình IQLine cho khung và nhãn mẫu nến (Candle Dojo §9.2). Chỉ số nến của thư viện là chỉ số trong danh sách nến
+ * đã hiện (không tính warmup), cùng hệ với `ordersToMarkers`; khung giá là phần vẽ của ô giá, nên khung và nhãn không ra ngoài ô giá. Khung hình
+ * đổi theo zoom, kéo, kích thước và nến mới nên lớp phủ dựng từ đây luôn khớp biểu đồ.
+ */
+export function frameToCardProjection(frame: ChartFrame): CardProjection {
+  const { coords, box } = frame.price
+  return {
+    xOfIndex: coords.xOfIndex,
+    yOfPrice: coords.yOfPrice,
+    barPx: frame.barPx,
+    plot: { left: frame.plot.left, top: box.top, right: frame.plot.right, bottom: box.top + box.height },
+  }
 }

@@ -3,8 +3,11 @@
  * bốn ô số liệu (Phiên, Tổng tài sản, Tiền mặt, Lợi nhuận của mình), biểu đồ kèm nút "Các chỉ báo" và công cụ vẽ, nút "Phiên
  * tiếp" và các phím tắt. Trên điện thoại có thanh nút cố định ở đáy. Mỗi người tự bấm "Phiên tiếp",
  * không chờ người khác; ở phiên cuối nút đổi thành "Hoàn thành".
+ *
+ * Thẻ nến (Candle Dojo v1.2 §9): khung và nhãn mẫu nến trên biểu đồ, thẻ bật lên rồi lướt vào khối "Thẻ trong ván" cùng hàng với nút
+ * "Phiên tiếp" (điện thoại: một hàng dưới biểu đồ). Chỉ thêm các phần này, màn chơi giữ nguyên.
  */
-import { Suspense, lazy, useCallback, useEffect, useState, type ReactNode } from "react"
+import { Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { Play, Sigma } from "lucide-react"
 
 import { PanelState } from "@/components/layout/panel-state"
@@ -14,6 +17,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { FlashbackCallBar } from "./flashback-call-bar"
+import { FlashbackCardPopup, type CardPopupHandle } from "./flashback-card-popup"
+import { FlashbackCardsTray } from "./flashback-cards-tray"
 import { ChatUnreadBadge } from "./flashback-chat"
 import { useChatOpener } from "./use-flashback-chat"
 import { FlashbackChatSheet } from "./flashback-chat-sheet"
@@ -29,6 +34,7 @@ import { PlayerBar } from "./flashback-player-bar"
 import { FlashbackResult } from "./flashback-result"
 import { useResultLock } from "./use-result-lock"
 import { useChartDrawings } from "./use-chart-drawings"
+import { useMatchCards } from "./use-flashback-cards"
 
 /** Biểu đồ IQLine (`?iqline=1`) tải chậm: ở đường mặc định thư viện Canvas không được tải. */
 const FlashbackIqlineChart = lazy(() => import("./flashback-chart-iqline"))
@@ -74,6 +80,11 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
   // Hình vẽ của riêng mình, giữ trong suốt ván (kể cả khi "Xem lại biểu đồ"); phím tắt tắt khi có hộp thoại.
   // Biểu đồ IQLine giữ hình ở bộ điều khiển riêng của nó nên hook này tắt phím tắt để không xử lý hai lần.
   const drawings = useChartDrawings(!iqline && dialogsClosed)
+  // Thẻ nến đã gặp (server chỉ trả thẻ mình sở hữu): khung trên biểu đồ, khay, thẻ bật lên và bay vào khay.
+  const cards = useMatchCards(match.snapshot.cards, match.step)
+  const chartRef = useRef<HTMLElement>(null)
+  const trayRef = useRef<HTMLElement>(null)
+  const popupRef = useRef<CardPopupHandle>(null)
 
   /**
    * Hiện khung đặt lệnh (mở lớp trên điện thoại, bung lại cột đã thu gọn trên màn hình rộng) và đưa
@@ -103,6 +114,8 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
         // Space trên một nút là bấm chính nút đó.
         if (target?.closest("button, a, [role='button'], [role='combobox']")) return
         event.preventDefault()
+        // Thẻ chưa bay xong thì vào khay ngay, rồi mới xử lý phiên mới (Candle Dojo §9.3).
+        popupRef.current?.finish()
         if (atLastBar) finish()
         else nextSession()
         return
@@ -133,6 +146,10 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
   )
 
   const next = nextButton(match, atLastBar)
+  const onNext = () => {
+    popupRef.current?.finish()
+    next.onClick()
+  }
   // Chỉ của mình, tính từ tài khoản của mình; server không trả % của người khác trong lúc chơi (v2.4 §2).
   const profit = profitPercent(match.totalAssets, match.initialCash)
 
@@ -165,7 +182,7 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
         />
       </section>
 
-      <section className="relative flex flex-col gap-2 rounded-lg border border-border bg-card p-2.5">
+      <section ref={chartRef} className="relative flex flex-col gap-2 rounded-lg border border-border bg-card p-2.5">
         {iqline ? (
           <Suspense
             fallback={
@@ -185,6 +202,8 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
               playBars={match.playBars}
               legacyShapes={drawings.state.shapes}
               drawingKeys={dialogsClosed}
+              cards={cards.cards}
+              cardHighlight={cards.focus}
               onToggle={match.toggleIndicator}
               onSettings={setSettingsKey}
               onRemove={match.removeIndicator}
@@ -204,6 +223,8 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
               viewBars={match.viewBars}
               playBars={match.playBars}
               drawings={drawings}
+              cards={cards.cards}
+              cardHighlight={cards.focus}
               onToggle={match.toggleIndicator}
               onSettings={setSettingsKey}
               onRemove={match.removeIndicator}
@@ -221,11 +242,26 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
         ) : null}
       </section>
 
-      <div className="flex flex-wrap items-center gap-2 max-[900px]:hidden">
-        <Button type="button" size="lg" data-testid="flashback-next" onClick={next.onClick} disabled={next.disabled}>
+      {/* Máy tính: nút "Phiên tiếp" và khối "Thẻ trong ván" chung một hàng. Điện thoại: nút nằm ở thanh đáy, khối thẻ là một hàng dưới biểu đồ. */}
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          size="lg"
+          className="max-[900px]:hidden"
+          data-testid="flashback-next"
+          onClick={onNext}
+          disabled={next.disabled}
+        >
           {next.label}
           {next.shortcut ? <kbd className="rounded-sm border border-primary-foreground/40 px-1 text-[11px] font-semibold">Space</kbd> : null}
         </Button>
+        <FlashbackCardsTray
+          ref={trayRef}
+          cards={cards.cards}
+          hidden={cards.flying}
+          landed={cards.landed}
+          onSelect={cards.flash}
+        />
       </div>
 
       {/* Thanh cố định đáy trên điện thoại: Mua · Bán · Chat · Phiên tiếp */}
@@ -271,7 +307,7 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
           size="lg"
           className="flex-[1.4]"
           data-testid="flashback-next-mobile"
-          onClick={next.onClick}
+          onClick={onNext}
           disabled={next.disabled}
         >
           {next.label}
@@ -307,6 +343,16 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
           if (settingsKey) match.updateIndicator(settingsKey, params)
           setSettingsKey(null)
         }}
+      />
+
+      <FlashbackCardPopup
+        ref={popupRef}
+        arrival={cards.arrival}
+        chartRef={chartRef}
+        trayRef={trayRef}
+        onFocus={cards.setFocus}
+        onFlying={cards.setFlying}
+        onLanded={cards.land}
       />
 
       <FlashbackChatSheet chat={chat} />

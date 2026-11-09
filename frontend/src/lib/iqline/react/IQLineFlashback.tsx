@@ -15,12 +15,13 @@
  * hoặc Shift + lăn để kéo, phím + và -, chụm hai ngón; nút "Về khung mặc định" và nhấp đúp vào biểu đồ đưa về khung mặc định.
  * Hình vẽ (đủ 36 công cụ như `market`) nằm ở `drawings` (`SessionDrawingController`), chỉ trong bộ nhớ của ván.
  */
-import { useEffect, useImperativeHandle, useLayoutEffect, type Ref } from "react"
+import { useEffect, useImperativeHandle, useLayoutEffect, type ReactNode, type Ref } from "react"
 import { Maximize2, ZoomIn, ZoomOut } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
 import { NARROW_WIDTH } from "../core/layout"
+import type { ChartFrame } from "../scene/model"
 import type { SessionAxisLabel, Bar, ChartIndicatorInput, SessionMarker } from "../types"
 import { FlashbackLegend } from "./flashback-legend"
 import { IQLineCanvasView } from "./IQLineCanvas"
@@ -70,6 +71,12 @@ export type IQLineFlashbackProps = {
   pageNarrow?: boolean
   className?: string
   ariaLabel?: string
+  /**
+   * Lớp phủ DOM của trang (ví dụ khung và nhãn mẫu nến của Flashback): nằm trên canvas, dưới chú giải, không nhận con trỏ. Hàm nhận khung
+   * hình mới nhất (đổi theo zoom, kéo, kích thước, nến mới; null khi chưa đo được) nên lớp phủ luôn khớp toạ độ của biểu đồ. Thư viện không
+   * biết gì về nội dung lớp phủ.
+   */
+  renderOverlay?: (frame: ChartFrame | null) => ReactNode
   /** React 19: `ref` là một prop thường. */
   ref?: Ref<IQLineFlashbackHandle>
 }
@@ -80,7 +87,7 @@ const ZOOM_BUTTON =
   "inline-flex items-center justify-center rounded-sm text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:opacity-40"
 
 export function IQLineFlashback(props: IQLineFlashbackProps) {
-  const { ref, theme, bars, warmup, totalSlots, formatX, axisLabels, markers, divider, drawings, interaction, indicators, onIndicatorsChange, onIndicatorSettings, indicatorTitle, available, pageNarrow, className } = props
+  const { ref, theme, bars, warmup, totalSlots, formatX, axisLabels, markers, divider, drawings, interaction, indicators, onIndicatorsChange, onIndicatorSettings, indicatorTitle, available, pageNarrow, className, renderOverlay } = props
   const labelToken = props.labelToken ?? "academy-label"
   const formatPrice = props.formatPrice ?? defaultFormatPrice
 
@@ -145,6 +152,11 @@ export function IQLineFlashback(props: IQLineFlashbackProps) {
       style={{ height: chart.height || undefined, minHeight: chart.height || undefined }}
     >
       <IQLineCanvasView chart={chart} />
+      {renderOverlay ? (
+        <div className="pointer-events-none absolute inset-0" data-iqline-overlay>
+          {renderOverlay(chart.frame)}
+        </div>
+      ) : null}
       <FlashbackLegend
         chart={chart}
         touch={touch}

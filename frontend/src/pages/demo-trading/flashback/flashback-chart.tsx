@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils"
 import { useChartWidth } from "@/pages/academy/charts/use-chart-width"
 import type { FlashbackBar, FlashbackOrder } from "./flashback-api"
 import { LEGEND_ROW, NARROW_WIDTH, PANE_GAP, axisTicks, chartLayout, offscaleLabels, priceRange, type PaneBox } from "./flashback-chart-layout"
+import { FlashbackCardOverlay } from "./flashback-card-boxes"
+import type { MetCard } from "./flashback-cards-model"
 import type { ChartIndicator } from "./flashback-context"
 import {
   FIB_LEVELS,
@@ -49,6 +51,10 @@ type Props = {
   viewBars: number
   playBars: number
   drawings: ChartDrawings
+  /** Thẻ nến đã gặp trong ván: khung và nhãn mẫu nến (Candle Dojo §9.2). Bỏ trống thì không có gì thêm trên biểu đồ. */
+  cards?: readonly MetCard[]
+  /** Phiên của thẻ có khung đang đậm (thẻ vừa bật lên hoặc vừa bấm trong khay). */
+  cardHighlight?: number | null
   onToggle: (key: string) => void
   onSettings: (key: string) => void
   onRemove: (key: string) => void
@@ -96,6 +102,8 @@ export const FlashbackChart = memo(function FlashbackChart({
   viewBars,
   playBars,
   drawings,
+  cards,
+  cardHighlight = null,
   onToggle,
   onSettings,
   onRemove,
@@ -524,6 +532,24 @@ export const FlashbackChart = memo(function FlashbackChart({
           </text>
         ))}
       </svg>
+
+      {/* Khung và nhãn mẫu nến của các thẻ đã gặp: lớp phủ không nhận con trỏ, dưới chú giải */}
+      {cards && cards.length > 0 ? (
+        <div className="pointer-events-none absolute inset-0">
+          <FlashbackCardOverlay
+            cards={cards}
+            bars={bars}
+            viewBars={viewBars}
+            highlight={cardHighlight}
+            projection={{
+              xOfIndex: x,
+              yOfPrice: priceY,
+              barPx: slot,
+              plot: { left: PAD_LEFT, top: pricePane.top, right: PAD_LEFT + plotWidth, bottom: pricePane.top + pricePane.height },
+            }}
+          />
+        </div>
+      ) : null}
 
       {/* Chú giải nổi kiểu TradingView: góc trên bên trái mỗi khung, đè lên phần vẽ (v2.3 §1) */}
       <div className="pointer-events-none absolute inset-0">
