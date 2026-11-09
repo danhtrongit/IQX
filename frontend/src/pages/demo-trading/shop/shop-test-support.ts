@@ -55,7 +55,15 @@ export function ledgerItem(seq: number, overrides: Partial<LedgerItem> = {}): Le
     delta: 100,
     balance_after: seq * 100,
     created_at: new Date(Date.UTC(2026, 9, 8, 2, seq % 60)).toISOString(),
-    label: { lesson_key: null, lesson_id: `ch01-l0${(seq % 5) + 1}`, mascot_id: null, mascot_name: null },
+    label: {
+      lesson_key: null,
+      lesson_id: `ch01-l0${(seq % 5) + 1}`,
+      mascot_id: null,
+      mascot_name: null,
+      card_id: null,
+      card_name: null,
+      reward_key: null,
+    },
     ...overrides,
   }
 }
@@ -142,7 +150,7 @@ export function createShopBackend(options: BackendOptions = {}) {
     state.purchases.set(key, { mascot_id: mascotId, price_xu: state.price })
     state.ledger.push(ledgerItem(state.seq, {
       kind: "mascot_purchase", delta: -state.price, balance_after: state.balance,
-      label: { lesson_key: null, lesson_id: null, mascot_id: mascotId, mascot_name: null },
+      label: { lesson_key: null, lesson_id: null, mascot_id: mascotId, mascot_name: null, card_id: null, card_name: null, reward_key: null },
     }))
   }
 
@@ -170,7 +178,7 @@ export function createShopBackend(options: BackendOptions = {}) {
     state.petLevels[mascotId] = body.target_level
     state.ledger.push(ledgerItem(state.seq, {
       kind: "pet_evolve", delta: -price, balance_after: state.balance,
-      label: { lesson_key: null, lesson_id: null, mascot_id: mascotId, mascot_name: null },
+      label: { lesson_key: null, lesson_id: null, mascot_id: mascotId, mascot_name: null, card_id: null, card_name: null, reward_key: null },
     }))
     return {
       status: "evolved", replayed: false, mascot_id: mascotId, level: body.target_level,
@@ -191,7 +199,7 @@ export function createShopBackend(options: BackendOptions = {}) {
     state.seq += 1
     state.ledger.push(ledgerItem(state.seq, {
       kind: "premium_purchase", delta: -state.premiumPrice, balance_after: state.balance,
-      label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null },
+      label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null },
     }))
     return {
       status: "purchased", replayed: false, price_xu: state.premiumPrice, days_granted: state.premiumDays,
@@ -211,7 +219,7 @@ export function createShopBackend(options: BackendOptions = {}) {
       state.seq += 1
       state.ledger.push(ledgerItem(state.seq, {
         kind: "demo_withdraw", delta: -body.amount, balance_after: state.balance,
-        label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null },
+        label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null },
       }))
       return {
         direction: body.direction, amount: body.amount, xu_delta: -body.amount,
@@ -235,7 +243,7 @@ export function createShopBackend(options: BackendOptions = {}) {
     state.seq += 1
     state.ledger.push(ledgerItem(state.seq, {
       kind: "demo_deposit", delta: xu, balance_after: state.balance,
-      label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null },
+      label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null },
     }))
     return {
       direction: body.direction, amount: body.amount, xu_delta: xu, cash_delta_vnd: -body.amount,

@@ -310,3 +310,43 @@
   }
 }
 
+/* Thẻ nến Candle Dojo: vệt sáng lướt qua mỗi ~4 giây, thẻ lật khi mở (spec v1.2 §3). */
+@keyframes cd-shine {
+  0% { background-position: 130% 0; }
+  60%, 100% { background-position: -60% 0; }
+}
+
+@keyframes cd-flip {
+  0% { transform: perspective(600px) rotateY(180deg) scale(0.6); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+
+.cd-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 47%, rgba(255, 255, 255, 0) 58%);
+  background-size: 260% 100%;
+  mix-blend-mode: overlay;
+  animation: cd-shine 3.8s ease-in-out infinite;
+}
+
+@keyframes cd-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes cd-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.cd-card-back::after { display: none; }
+.cd-reveal { animation: cd-flip 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-card::after { animation: none; display: none; }
+  .cd-reveal { animation: none; }
+}

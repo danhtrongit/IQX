@@ -2049,7 +2049,7 @@
     },
     {
       "file": "src/pages/charts/chart/datafeed.ts",
-      "line": 204,
+      "line": 191,
       "callee": "api",
       "raw": "/market-data/quotes/{encodeURIComponent(symbol.toUpperCase())}/ohlcv?{params.toString()}",
       "method": "GET",
@@ -2062,20 +2062,7 @@
     },
     {
       "file": "src/pages/charts/chart/datafeed.ts",
-      "line": 267,
-      "callee": "api",
-      "raw": "/market-data/news/ai?{params.toString()}",
-      "method": "GET",
-      "route": "/api/v2/market-data/news/ai",
-      "matchedOperation": "GET /api/v2/market-data/news/ai",
-      "matchedOperations": [
-        "GET /api/v2/market-data/news/ai"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/charts/chart/datafeed.ts",
-      "line": 451,
+      "line": 321,
       "callee": "api",
       "raw": "/instruments?{params.toString()}",
       "method": "GET",
@@ -2109,6 +2096,58 @@
       "matchedOperation": "PUT /api/v2/chart-drawings/{symbol}",
       "matchedOperations": [
         "PUT /api/v2/chart-drawings/{symbol}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/charts/chart/iqline-datafeed.ts",
+      "line": 105,
+      "callee": "api",
+      "raw": "/market-data/quotes/{encodeURIComponent(symbol.toUpperCase())}/ohlcv?{params.toString()}",
+      "method": "GET",
+      "route": "/api/v2/market-data/quotes/{encodeURIComponent(symbol.toUpperCase())}/ohlcv",
+      "matchedOperation": "GET /api/v2/market-data/quotes/{symbol}/ohlcv",
+      "matchedOperations": [
+        "GET /api/v2/market-data/quotes/{symbol}/ohlcv"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/charts/chart/iqline-store.ts",
+      "line": 46,
+      "callee": "api",
+      "raw": "/chart-drawings/{encodeURIComponent(symbol)}",
+      "method": "GET",
+      "route": "/api/v2/chart-drawings/{encodeURIComponent(symbol)}",
+      "matchedOperation": "GET /api/v2/chart-drawings/{symbol}",
+      "matchedOperations": [
+        "GET /api/v2/chart-drawings/{symbol}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/charts/chart/iqline-store.ts",
+      "line": 48,
+      "callee": "api",
+      "raw": "/chart-drawings/{encodeURIComponent(symbol)}",
+      "method": "PUT",
+      "route": "/api/v2/chart-drawings/{encodeURIComponent(symbol)}",
+      "matchedOperation": "PUT /api/v2/chart-drawings/{symbol}",
+      "matchedOperations": [
+        "PUT /api/v2/chart-drawings/{symbol}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/charts/chart/news-marks.ts",
+      "line": 77,
+      "callee": "api",
+      "raw": "/market-data/news/ai?{params.toString()}",
+      "method": "GET",
+      "route": "/api/v2/market-data/news/ai",
+      "matchedOperation": "GET /api/v2/market-data/news/ai",
+      "matchedOperations": [
+        "GET /api/v2/market-data/news/ai"
       ],
       "classification": "api-call"
     },
@@ -4281,6 +4320,9 @@
     "DELETE /api/v2/chart-drawings/{symbol}",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
+    "GET /api/v2/admin/flashback/dataset/patterns/lookup",
+    "GET /api/v2/admin/flashback/dataset/patterns/overview",
+    "GET /api/v2/admin/flashback/dataset/patterns/status",
     "GET /api/v2/admin/metrics/plan-distribution",
     "GET /api/v2/admin/users/{user_id}/subscriptions/history",
     "GET /api/v2/admin/vt/accounts",
@@ -4296,6 +4338,8 @@
     "GET /api/v2/bot/mascot",
     "GET /api/v2/bot/performance",
     "GET /api/v2/bot/status",
+    "GET /api/v2/candle-dojo/cards",
+    "GET /api/v2/candle-dojo/state",
     "GET /api/v2/cap0/kehoach",
     "GET /api/v2/cap0/placement",
     "GET /api/v2/cap0/progress",
@@ -4418,6 +4462,7 @@
     "PATCH /api/v2/cap5/task",
     "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
     "POST /api/v2/admin/alerts/telegram/webhook",
+    "POST /api/v2/admin/flashback/dataset/patterns/recompute",
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
     "POST /api/v2/admin/lessons/episodes/{episodeId}/file",
@@ -4431,6 +4476,12 @@
     "POST /api/v2/backtest/run",
     "POST /api/v2/backtest/strategies",
     "POST /api/v2/bot/mascot/ui-events",
+    "POST /api/v2/candle-dojo/cards/{cardId}/purchase",
+    "POST /api/v2/candle-dojo/drill/complete",
+    "POST /api/v2/candle-dojo/exams",
+    "POST /api/v2/candle-dojo/exams/{attemptId}/answers",
+    "POST /api/v2/candle-dojo/intro/complete",
+    "POST /api/v2/candle-dojo/lessons/{lessonId}/complete",
     "POST /api/v2/cap0/enter",
     "POST /api/v2/cap0/graduate",
     "POST /api/v2/cap0/kehoach",

@@ -172,6 +172,21 @@
       "requestType": "FlashbackAdminDatasetData",
       "responseType": "FlashbackAdminDatasetResponses"
     },
+    "GET /api/v2/admin/flashback/dataset/patterns/lookup": {
+      "operationId": "flashbackAdminDatasetPatternLookup",
+      "requestType": "FlashbackAdminDatasetPatternLookupData",
+      "responseType": "FlashbackAdminDatasetPatternLookupResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset/patterns/overview": {
+      "operationId": "flashbackAdminDatasetPatternOverview",
+      "requestType": "FlashbackAdminDatasetPatternOverviewData",
+      "responseType": "FlashbackAdminDatasetPatternOverviewResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset/patterns/status": {
+      "operationId": "flashbackAdminDatasetPatternStatus",
+      "requestType": "FlashbackAdminDatasetPatternStatusData",
+      "responseType": "FlashbackAdminDatasetPatternStatusResponses"
+    },
     "GET /api/v2/admin/flashback/dataset/symbols": {
       "operationId": "flashbackAdminDatasetSymbols",
       "requestType": "FlashbackAdminDatasetSymbolsData",
@@ -511,6 +526,16 @@
       "operationId": "getBotUniverse",
       "requestType": "GetBotUniverseData",
       "responseType": "GetBotUniverseResponses"
+    },
+    "GET /api/v2/candle-dojo/cards": {
+      "operationId": "listCandleDojoCards",
+      "requestType": "ListCandleDojoCardsData",
+      "responseType": "ListCandleDojoCardsResponses"
+    },
+    "GET /api/v2/candle-dojo/state": {
+      "operationId": "getCandleDojoState",
+      "requestType": "GetCandleDojoStateData",
+      "responseType": "GetCandleDojoStateResponses"
     },
     "GET /api/v2/cap0/kehoach": {
       "operationId": "Cap0Controller_getKehoach[1]",
@@ -1617,6 +1642,11 @@
       "requestType": "FlashbackAdminChatReportDecideData",
       "responseType": "FlashbackAdminChatReportDecideResponses"
     },
+    "POST /api/v2/admin/flashback/dataset/patterns/recompute": {
+      "operationId": "flashbackAdminDatasetPatternRecompute",
+      "requestType": "FlashbackAdminDatasetPatternRecomputeData",
+      "responseType": "FlashbackAdminDatasetPatternRecomputeResponses"
+    },
     "POST /api/v2/admin/flashback/dataset/refresh": {
       "operationId": "flashbackAdminDatasetRefresh",
       "requestType": "FlashbackAdminDatasetRefreshData",
@@ -1851,6 +1881,36 @@
       "operationId": "revertBotUniverseToVn30",
       "requestType": "RevertBotUniverseToVn30Data",
       "responseType": "RevertBotUniverseToVn30Responses"
+    },
+    "POST /api/v2/candle-dojo/cards/{cardId}/purchase": {
+      "operationId": "purchaseCandleDojoCard",
+      "requestType": "PurchaseCandleDojoCardData",
+      "responseType": "PurchaseCandleDojoCardResponses"
+    },
+    "POST /api/v2/candle-dojo/drill/complete": {
+      "operationId": "completeCandleDojoDrill",
+      "requestType": "CompleteCandleDojoDrillData",
+      "responseType": "CompleteCandleDojoDrillResponses"
+    },
+    "POST /api/v2/candle-dojo/exams": {
+      "operationId": "startCandleDojoExam",
+      "requestType": "StartCandleDojoExamData",
+      "responseType": "StartCandleDojoExamResponses"
+    },
+    "POST /api/v2/candle-dojo/exams/{attemptId}/answers": {
+      "operationId": "answerCandleDojoExam",
+      "requestType": "AnswerCandleDojoExamData",
+      "responseType": "AnswerCandleDojoExamResponses"
+    },
+    "POST /api/v2/candle-dojo/intro/complete": {
+      "operationId": "completeCandleDojoIntro",
+      "requestType": "CompleteCandleDojoIntroData",
+      "responseType": "CompleteCandleDojoIntroResponses"
+    },
+    "POST /api/v2/candle-dojo/lessons/{lessonId}/complete": {
+      "operationId": "completeCandleDojoLesson",
+      "requestType": "CompleteCandleDojoLessonData",
+      "responseType": "CompleteCandleDojoLessonResponses"
     },
     "POST /api/v2/cap0/enter": {
       "operationId": "Cap0Controller_enter[1]",

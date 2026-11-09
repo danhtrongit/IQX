@@ -510,6 +510,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
   function snapshot(room: RoomSim, match: MatchSim): FlashbackSnapshot {
     const view = room.settings.view_bars
     return {
+      cards: [],
       ends_at: "2026-10-30T01:10:00.000Z",
       history_bars: historyBars(view),
       initial_cash: String(INITIAL_CASH),

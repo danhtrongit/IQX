@@ -36,6 +36,9 @@ export interface OperationMap {
   "GET /api/v2/admin/flashback/chat/banned-words": { request: T.FlashbackAdminChatBannedWordsData; response: T.FlashbackAdminChatBannedWordsResponses[keyof T.FlashbackAdminChatBannedWordsResponses] }
   "GET /api/v2/admin/flashback/chat/reports": { request: T.FlashbackAdminChatReportsData; response: T.FlashbackAdminChatReportsResponses[keyof T.FlashbackAdminChatReportsResponses] }
   "GET /api/v2/admin/flashback/dataset": { request: T.FlashbackAdminDatasetData; response: T.FlashbackAdminDatasetResponses[keyof T.FlashbackAdminDatasetResponses] }
+  "GET /api/v2/admin/flashback/dataset/patterns/lookup": { request: T.FlashbackAdminDatasetPatternLookupData; response: T.FlashbackAdminDatasetPatternLookupResponses[keyof T.FlashbackAdminDatasetPatternLookupResponses] }
+  "GET /api/v2/admin/flashback/dataset/patterns/overview": { request: T.FlashbackAdminDatasetPatternOverviewData; response: T.FlashbackAdminDatasetPatternOverviewResponses[keyof T.FlashbackAdminDatasetPatternOverviewResponses] }
+  "GET /api/v2/admin/flashback/dataset/patterns/status": { request: T.FlashbackAdminDatasetPatternStatusData; response: T.FlashbackAdminDatasetPatternStatusResponses[keyof T.FlashbackAdminDatasetPatternStatusResponses] }
   "GET /api/v2/admin/flashback/dataset/symbols": { request: T.FlashbackAdminDatasetSymbolsData; response: T.FlashbackAdminDatasetSymbolsResponses[keyof T.FlashbackAdminDatasetSymbolsResponses] }
   "GET /api/v2/admin/flashback/dataset/versions": { request: T.FlashbackAdminDatasetVersionsData; response: T.FlashbackAdminDatasetVersionsResponses[keyof T.FlashbackAdminDatasetVersionsResponses] }
   "GET /api/v2/admin/flashback/pause": { request: T.FlashbackAdminPauseStatusData; response: T.FlashbackAdminPauseStatusResponses[keyof T.FlashbackAdminPauseStatusResponses] }
@@ -104,6 +107,8 @@ export interface OperationMap {
   "GET /api/v2/bot/status": { request: T.GetBotStatusGetApiV2BotStatusData; response: T.GetBotStatusGetApiV2BotStatusResponses[keyof T.GetBotStatusGetApiV2BotStatusResponses] }
   "GET /api/v2/bot/trades": { request: T.GetBotTradesData; response: T.GetBotTradesResponses[keyof T.GetBotTradesResponses] }
   "GET /api/v2/bot/universe": { request: T.GetBotUniverseData; response: T.GetBotUniverseResponses[keyof T.GetBotUniverseResponses] }
+  "GET /api/v2/candle-dojo/cards": { request: T.ListCandleDojoCardsData; response: T.ListCandleDojoCardsResponses[keyof T.ListCandleDojoCardsResponses] }
+  "GET /api/v2/candle-dojo/state": { request: T.GetCandleDojoStateData; response: T.GetCandleDojoStateResponses[keyof T.GetCandleDojoStateResponses] }
   "GET /api/v2/cap0/kehoach": { request: T.Cap0ControllerGetKehoach1Data; response: T.Cap0ControllerGetKehoach1Responses[keyof T.Cap0ControllerGetKehoach1Responses] }
   "GET /api/v2/cap0/placement": { request: T.Cap0ControllerGetPlacement1Data; response: T.Cap0ControllerGetPlacement1Responses[keyof T.Cap0ControllerGetPlacement1Responses] }
   "GET /api/v2/cap0/progress": { request: T.Cap0ControllerProgress1Data; response: T.Cap0ControllerProgress1Responses[keyof T.Cap0ControllerProgress1Responses] }
@@ -325,6 +330,7 @@ export interface OperationMap {
   "POST /api/v2/admin/alerts/signals": { request: T.AdminAlertsControllerCreate1Data; response: T.AdminAlertsControllerCreate1Responses[keyof T.AdminAlertsControllerCreate1Responses] }
   "POST /api/v2/admin/alerts/telegram/webhook": { request: T.AdminAlertsControllerSetupTelegramWebhook1Data; response: T.AdminAlertsControllerSetupTelegramWebhook1Responses[keyof T.AdminAlertsControllerSetupTelegramWebhook1Responses] }
   "POST /api/v2/admin/flashback/chat/reports/{id}/decide": { request: T.FlashbackAdminChatReportDecideData; response: T.FlashbackAdminChatReportDecideResponses[keyof T.FlashbackAdminChatReportDecideResponses] }
+  "POST /api/v2/admin/flashback/dataset/patterns/recompute": { request: T.FlashbackAdminDatasetPatternRecomputeData; response: T.FlashbackAdminDatasetPatternRecomputeResponses[keyof T.FlashbackAdminDatasetPatternRecomputeResponses] }
   "POST /api/v2/admin/flashback/dataset/refresh": { request: T.FlashbackAdminDatasetRefreshData; response: T.FlashbackAdminDatasetRefreshResponses[keyof T.FlashbackAdminDatasetRefreshResponses] }
   "POST /api/v2/admin/flashback/pause": { request: T.FlashbackAdminPauseData; response: T.FlashbackAdminPauseResponses[keyof T.FlashbackAdminPauseResponses] }
   "POST /api/v2/admin/flashback/reward-holds/{id}/release": { request: T.FlashbackAdminReleaseRewardHoldData; response: T.FlashbackAdminReleaseRewardHoldResponses[keyof T.FlashbackAdminReleaseRewardHoldResponses] }
@@ -372,6 +378,12 @@ export interface OperationMap {
   "POST /api/v2/bot/universe/apply-list": { request: T.ApplyBotUniverseListData; response: T.ApplyBotUniverseListResponses[keyof T.ApplyBotUniverseListResponses] }
   "POST /api/v2/bot/universe/pending/cancel": { request: T.CancelBotUniversePendingData; response: T.CancelBotUniversePendingResponses[keyof T.CancelBotUniversePendingResponses] }
   "POST /api/v2/bot/universe/revert-vn30": { request: T.RevertBotUniverseToVn30Data; response: T.RevertBotUniverseToVn30Responses[keyof T.RevertBotUniverseToVn30Responses] }
+  "POST /api/v2/candle-dojo/cards/{cardId}/purchase": { request: T.PurchaseCandleDojoCardData; response: T.PurchaseCandleDojoCardResponses[keyof T.PurchaseCandleDojoCardResponses] }
+  "POST /api/v2/candle-dojo/drill/complete": { request: T.CompleteCandleDojoDrillData; response: T.CompleteCandleDojoDrillResponses[keyof T.CompleteCandleDojoDrillResponses] }
+  "POST /api/v2/candle-dojo/exams": { request: T.StartCandleDojoExamData; response: T.StartCandleDojoExamResponses[keyof T.StartCandleDojoExamResponses] }
+  "POST /api/v2/candle-dojo/exams/{attemptId}/answers": { request: T.AnswerCandleDojoExamData; response: T.AnswerCandleDojoExamResponses[keyof T.AnswerCandleDojoExamResponses] }
+  "POST /api/v2/candle-dojo/intro/complete": { request: T.CompleteCandleDojoIntroData; response: T.CompleteCandleDojoIntroResponses[keyof T.CompleteCandleDojoIntroResponses] }
+  "POST /api/v2/candle-dojo/lessons/{lessonId}/complete": { request: T.CompleteCandleDojoLessonData; response: T.CompleteCandleDojoLessonResponses[keyof T.CompleteCandleDojoLessonResponses] }
   "POST /api/v2/cap0/enter": { request: T.Cap0ControllerEnter1Data; response: T.Cap0ControllerEnter1Responses[keyof T.Cap0ControllerEnter1Responses] }
   "POST /api/v2/cap0/graduate": { request: T.Cap0ControllerGraduate1Data; response: T.Cap0ControllerGraduate1Responses[keyof T.Cap0ControllerGraduate1Responses] }
   "POST /api/v2/cap0/kehoach": { request: T.Cap0ControllerKehoach1Data; response: T.Cap0ControllerKehoach1Responses[keyof T.Cap0ControllerKehoach1Responses] }
@@ -525,6 +537,9 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/admin/flashback/chat/banned-words": { request: "FlashbackAdminChatBannedWordsData", response: "FlashbackAdminChatBannedWordsResponses" },
   "GET /api/v2/admin/flashback/chat/reports": { request: "FlashbackAdminChatReportsData", response: "FlashbackAdminChatReportsResponses" },
   "GET /api/v2/admin/flashback/dataset": { request: "FlashbackAdminDatasetData", response: "FlashbackAdminDatasetResponses" },
+  "GET /api/v2/admin/flashback/dataset/patterns/lookup": { request: "FlashbackAdminDatasetPatternLookupData", response: "FlashbackAdminDatasetPatternLookupResponses" },
+  "GET /api/v2/admin/flashback/dataset/patterns/overview": { request: "FlashbackAdminDatasetPatternOverviewData", response: "FlashbackAdminDatasetPatternOverviewResponses" },
+  "GET /api/v2/admin/flashback/dataset/patterns/status": { request: "FlashbackAdminDatasetPatternStatusData", response: "FlashbackAdminDatasetPatternStatusResponses" },
   "GET /api/v2/admin/flashback/dataset/symbols": { request: "FlashbackAdminDatasetSymbolsData", response: "FlashbackAdminDatasetSymbolsResponses" },
   "GET /api/v2/admin/flashback/dataset/versions": { request: "FlashbackAdminDatasetVersionsData", response: "FlashbackAdminDatasetVersionsResponses" },
   "GET /api/v2/admin/flashback/pause": { request: "FlashbackAdminPauseStatusData", response: "FlashbackAdminPauseStatusResponses" },
@@ -593,6 +608,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/bot/status": { request: "GetBotStatusGetApiV2BotStatusData", response: "GetBotStatusGetApiV2BotStatusResponses" },
   "GET /api/v2/bot/trades": { request: "GetBotTradesData", response: "GetBotTradesResponses" },
   "GET /api/v2/bot/universe": { request: "GetBotUniverseData", response: "GetBotUniverseResponses" },
+  "GET /api/v2/candle-dojo/cards": { request: "ListCandleDojoCardsData", response: "ListCandleDojoCardsResponses" },
+  "GET /api/v2/candle-dojo/state": { request: "GetCandleDojoStateData", response: "GetCandleDojoStateResponses" },
   "GET /api/v2/cap0/kehoach": { request: "Cap0ControllerGetKehoach1Data", response: "Cap0ControllerGetKehoach1Responses" },
   "GET /api/v2/cap0/placement": { request: "Cap0ControllerGetPlacement1Data", response: "Cap0ControllerGetPlacement1Responses" },
   "GET /api/v2/cap0/progress": { request: "Cap0ControllerProgress1Data", response: "Cap0ControllerProgress1Responses" },
@@ -814,6 +831,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/admin/alerts/signals": { request: "AdminAlertsControllerCreate1Data", response: "AdminAlertsControllerCreate1Responses" },
   "POST /api/v2/admin/alerts/telegram/webhook": { request: "AdminAlertsControllerSetupTelegramWebhook1Data", response: "AdminAlertsControllerSetupTelegramWebhook1Responses" },
   "POST /api/v2/admin/flashback/chat/reports/{id}/decide": { request: "FlashbackAdminChatReportDecideData", response: "FlashbackAdminChatReportDecideResponses" },
+  "POST /api/v2/admin/flashback/dataset/patterns/recompute": { request: "FlashbackAdminDatasetPatternRecomputeData", response: "FlashbackAdminDatasetPatternRecomputeResponses" },
   "POST /api/v2/admin/flashback/dataset/refresh": { request: "FlashbackAdminDatasetRefreshData", response: "FlashbackAdminDatasetRefreshResponses" },
   "POST /api/v2/admin/flashback/pause": { request: "FlashbackAdminPauseData", response: "FlashbackAdminPauseResponses" },
   "POST /api/v2/admin/flashback/reward-holds/{id}/release": { request: "FlashbackAdminReleaseRewardHoldData", response: "FlashbackAdminReleaseRewardHoldResponses" },
@@ -861,6 +879,12 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/bot/universe/apply-list": { request: "ApplyBotUniverseListData", response: "ApplyBotUniverseListResponses" },
   "POST /api/v2/bot/universe/pending/cancel": { request: "CancelBotUniversePendingData", response: "CancelBotUniversePendingResponses" },
   "POST /api/v2/bot/universe/revert-vn30": { request: "RevertBotUniverseToVn30Data", response: "RevertBotUniverseToVn30Responses" },
+  "POST /api/v2/candle-dojo/cards/{cardId}/purchase": { request: "PurchaseCandleDojoCardData", response: "PurchaseCandleDojoCardResponses" },
+  "POST /api/v2/candle-dojo/drill/complete": { request: "CompleteCandleDojoDrillData", response: "CompleteCandleDojoDrillResponses" },
+  "POST /api/v2/candle-dojo/exams": { request: "StartCandleDojoExamData", response: "StartCandleDojoExamResponses" },
+  "POST /api/v2/candle-dojo/exams/{attemptId}/answers": { request: "AnswerCandleDojoExamData", response: "AnswerCandleDojoExamResponses" },
+  "POST /api/v2/candle-dojo/intro/complete": { request: "CompleteCandleDojoIntroData", response: "CompleteCandleDojoIntroResponses" },
+  "POST /api/v2/candle-dojo/lessons/{lessonId}/complete": { request: "CompleteCandleDojoLessonData", response: "CompleteCandleDojoLessonResponses" },
   "POST /api/v2/cap0/enter": { request: "Cap0ControllerEnter1Data", response: "Cap0ControllerEnter1Responses" },
   "POST /api/v2/cap0/graduate": { request: "Cap0ControllerGraduate1Data", response: "Cap0ControllerGraduate1Responses" },
   "POST /api/v2/cap0/kehoach": { request: "Cap0ControllerKehoach1Data", response: "Cap0ControllerKehoach1Responses" },

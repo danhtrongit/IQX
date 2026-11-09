@@ -132,7 +132,7 @@ describe("Shop main: collection", () => {
 
   it("keeps a balance and a history entry point inside the main view for when the panel is closed", async () => {
     const user = userEvent.setup()
-    setup({ balance: 1_250, lessons: 2, ledger: [{ id: "a", seq: 1, kind: "lesson_first_completion", delta: 100, balance_after: 100, created_at: "2026-10-08T02:00:00.000Z", label: { lesson_key: null, lesson_id: "ch01-l01", mascot_id: null, mascot_name: null } }] })
+    setup({ balance: 1_250, lessons: 2, ledger: [{ id: "a", seq: 1, kind: "lesson_first_completion", delta: 100, balance_after: 100, created_at: "2026-10-08T02:00:00.000Z", label: { lesson_key: null, lesson_id: "ch01-l01", mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null } }] })
     const strip = await screen.findByTestId("shop-mobile-wallet")
     expect(strip.textContent).toContain("1.250 xu")
     await user.click(within(strip).getByRole("button", { name: "Lịch sử xu" }))

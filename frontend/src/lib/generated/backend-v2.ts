@@ -31019,6 +31019,293 @@ export type FlashbackAdminDatasetConfigResponses = {
 export type FlashbackAdminDatasetConfigResponse =
   FlashbackAdminDatasetConfigResponses[keyof FlashbackAdminDatasetConfigResponses];
 
+export type FlashbackAdminDatasetPatternLookupData = {
+  body?: never;
+  path?: never;
+  query: {
+    symbol?: string;
+    from: string;
+    to: string;
+    version?: number;
+  };
+  url: "/api/v2/admin/flashback/dataset/patterns/lookup";
+};
+
+export type FlashbackAdminDatasetPatternLookupErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetPatternLookupError =
+  FlashbackAdminDatasetPatternLookupErrors[keyof FlashbackAdminDatasetPatternLookupErrors];
+
+export type FlashbackAdminDatasetPatternLookupResponses = {
+  200: {
+    detector_version: number | null;
+    from: string;
+    rows: Array<{
+      card_id: string;
+      count: number;
+      name: string;
+      tier: number;
+    }>;
+    symbol: string | null;
+    tiers: Array<{
+      tier: number;
+      total: number;
+    }>;
+    to: string;
+    total: number;
+    version: number | null;
+  };
+};
+
+export type FlashbackAdminDatasetPatternLookupResponse =
+  FlashbackAdminDatasetPatternLookupResponses[keyof FlashbackAdminDatasetPatternLookupResponses];
+
+export type FlashbackAdminDatasetPatternOverviewData = {
+  body?: never;
+  path?: never;
+  query?: {
+    version?: number;
+  };
+  url: "/api/v2/admin/flashback/dataset/patterns/overview";
+};
+
+export type FlashbackAdminDatasetPatternOverviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetPatternOverviewError =
+  FlashbackAdminDatasetPatternOverviewErrors[keyof FlashbackAdminDatasetPatternOverviewErrors];
+
+export type FlashbackAdminDatasetPatternOverviewResponses = {
+  200: {
+    cards: Array<{
+      candles: number;
+      card_id: string;
+      count: number;
+      name: string;
+      tier: number;
+      vn: boolean;
+      zero: boolean;
+    }>;
+    detector_version: number | null;
+    total: number;
+    version: number | null;
+    zero_count: number;
+  };
+};
+
+export type FlashbackAdminDatasetPatternOverviewResponse =
+  FlashbackAdminDatasetPatternOverviewResponses[keyof FlashbackAdminDatasetPatternOverviewResponses];
+
+export type FlashbackAdminDatasetPatternRecomputeData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset/patterns/recompute";
+};
+
+export type FlashbackAdminDatasetPatternRecomputeErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetPatternRecomputeError =
+  FlashbackAdminDatasetPatternRecomputeErrors[keyof FlashbackAdminDatasetPatternRecomputeErrors];
+
+export type FlashbackAdminDatasetPatternRecomputeResponses = {
+  200: {
+    accepted: true;
+    detector_version: number;
+    mode: "inline";
+    version: number;
+  };
+};
+
+export type FlashbackAdminDatasetPatternRecomputeResponse =
+  FlashbackAdminDatasetPatternRecomputeResponses[keyof FlashbackAdminDatasetPatternRecomputeResponses];
+
+export type FlashbackAdminDatasetPatternStatusData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset/patterns/status";
+};
+
+export type FlashbackAdminDatasetPatternStatusErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetPatternStatusError =
+  FlashbackAdminDatasetPatternStatusErrors[keyof FlashbackAdminDatasetPatternStatusErrors];
+
+export type FlashbackAdminDatasetPatternStatusResponses = {
+  200: {
+    detector_version: number;
+    latest: {
+      detector_version: number;
+      duration_ms: number | null;
+      failed_count: number;
+      finished_at: string | null;
+      id: number;
+      log: {
+        [key: string]: unknown;
+      };
+      patterns_count: number;
+      requested_by: string | null;
+      started_at: string;
+      status: "running" | "done" | "failed";
+      symbols_done: number;
+      symbols_total: number;
+      trigger: "build" | "backfill" | "admin" | "detector";
+      version: number;
+    } | null;
+    outdated: boolean;
+    raw: {
+      sessions: number;
+      symbols: number;
+    };
+    running: {
+      detector_version: number;
+      duration_ms: number | null;
+      failed_count: number;
+      finished_at: string | null;
+      id: number;
+      log: {
+        [key: string]: unknown;
+      };
+      patterns_count: number;
+      requested_by: string | null;
+      started_at: string;
+      status: "running" | "done" | "failed";
+      symbols_done: number;
+      symbols_total: number;
+      trigger: "build" | "backfill" | "admin" | "detector";
+      version: number;
+    } | null;
+    used: {
+      detector_version: number;
+      duration_ms: number | null;
+      failed_count: number;
+      finished_at: string | null;
+      id: number;
+      log: {
+        [key: string]: unknown;
+      };
+      patterns_count: number;
+      requested_by: string | null;
+      started_at: string;
+      status: "running" | "done" | "failed";
+      symbols_done: number;
+      symbols_total: number;
+      trigger: "build" | "backfill" | "admin" | "detector";
+      version: number;
+    } | null;
+    version: number | null;
+    warnings: Array<{
+      at: string | null;
+      code: string;
+      level: "high" | "medium";
+      message: string;
+    }>;
+  };
+};
+
+export type FlashbackAdminDatasetPatternStatusResponse =
+  FlashbackAdminDatasetPatternStatusResponses[keyof FlashbackAdminDatasetPatternStatusResponses];
+
 export type FlashbackAdminDatasetRefreshData = {
   body?: never;
   path?: never;
@@ -38017,6 +38304,512 @@ export type RevertBotUniverseToVn30Responses = {
 export type RevertBotUniverseToVn30Response =
   RevertBotUniverseToVn30Responses[keyof RevertBotUniverseToVn30Responses];
 
+export type ListCandleDojoCardsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/candle-dojo/cards";
+};
+
+export type ListCandleDojoCardsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListCandleDojoCardsError =
+  ListCandleDojoCardsErrors[keyof ListCandleDojoCardsErrors];
+
+export type ListCandleDojoCardsResponses = {
+  200: {
+    catalog_version: string;
+    items: Array<{
+      acquired_at: string | null;
+      card_id: string;
+      dojo: number;
+      lesson_id: string;
+      lesson_title: string;
+      name: string;
+      owned: boolean;
+      price_xu: number;
+      seen: boolean;
+      tier: number;
+      unlocked: boolean;
+    }>;
+    owned_count: number;
+    total_count: 47;
+    wallet: {
+      balance: number;
+    };
+  };
+};
+
+export type ListCandleDojoCardsResponse =
+  ListCandleDojoCardsResponses[keyof ListCandleDojoCardsResponses];
+
+export type PurchaseCandleDojoCardData = {
+  body: {
+    catalog_version: string;
+    expected_price_xu: number;
+  };
+  path: {
+    cardId: string;
+  };
+  query?: never;
+  url: "/api/v2/candle-dojo/cards/{cardId}/purchase";
+};
+
+export type PurchaseCandleDojoCardErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * CARD_OWNED, CARD_LOCKED, PRICE_CHANGED, CATALOG_CHANGED, INSUFFICIENT_XU (details[0] có balance_xu/price_xu/shortfall_xu)
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PurchaseCandleDojoCardError =
+  PurchaseCandleDojoCardErrors[keyof PurchaseCandleDojoCardErrors];
+
+export type PurchaseCandleDojoCardResponses = {
+  200: {
+    acquired_at: string;
+    balance: number;
+    card_id: string;
+    name: string;
+    price_xu: number;
+    status: "purchased";
+  };
+};
+
+export type PurchaseCandleDojoCardResponse =
+  PurchaseCandleDojoCardResponses[keyof PurchaseCandleDojoCardResponses];
+
+export type CompleteCandleDojoDrillData = {
+  body: {
+    lesson_id: string;
+    taps: Array<number>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/candle-dojo/drill/complete";
+};
+
+export type CompleteCandleDojoDrillErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * DRILL_LOCKED (chưa có đai vàng) hoặc LESSON_LOCKED
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CompleteCandleDojoDrillError =
+  CompleteCandleDojoDrillErrors[keyof CompleteCandleDojoDrillErrors];
+
+export type CompleteCandleDojoDrillResponses = {
+  200: {
+    balance: number;
+    first_time: boolean;
+    found: number;
+    lesson_id: string;
+    miss: number;
+    reward_xu: number;
+    streak_days: number;
+    total: number;
+  };
+};
+
+export type CompleteCandleDojoDrillResponse =
+  CompleteCandleDojoDrillResponses[keyof CompleteCandleDojoDrillResponses];
+
+export type StartCandleDojoExamData = {
+  body: {
+    dojo: number;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/candle-dojo/exams";
+};
+
+export type StartCandleDojoExamErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * EXAM_LOCKED: chưa học xong mọi bài của Dojo
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StartCandleDojoExamError =
+  StartCandleDojoExamErrors[keyof StartCandleDojoExamErrors];
+
+export type StartCandleDojoExamResponses = {
+  200: {
+    attempt_id: string;
+    belt_name: string;
+    dojo: number;
+    pass_mark: number;
+    questions: Array<{
+      bars: Array<{
+        c: number;
+        h: number;
+        l: number;
+        o: number;
+        v: number;
+      }>;
+      index: number;
+      n: number;
+      options: Array<string>;
+    }>;
+    total: number;
+  };
+};
+
+export type StartCandleDojoExamResponse =
+  StartCandleDojoExamResponses[keyof StartCandleDojoExamResponses];
+
+export type AnswerCandleDojoExamData = {
+  body: {
+    index: number;
+    option: string;
+  };
+  path: {
+    attemptId: string;
+  };
+  query?: never;
+  url: "/api/v2/candle-dojo/exams/{attemptId}/answers";
+};
+
+export type AnswerCandleDojoExamErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * EXAM_CLOSED hoặc EXAM_ALREADY_ANSWERED
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AnswerCandleDojoExamError =
+  AnswerCandleDojoExamErrors[keyof AnswerCandleDojoExamErrors];
+
+export type AnswerCandleDojoExamResponses = {
+  200: {
+    answer: string;
+    answered: number;
+    attempt_id: string;
+    correct: boolean;
+    finished: boolean;
+    index: number;
+    result: {
+      balance: number;
+      belt: number;
+      belt_up: boolean;
+      pass_mark: number;
+      passed: boolean;
+      reward_xu: number;
+      score: number;
+      total: number;
+    } | null;
+  };
+};
+
+export type AnswerCandleDojoExamResponse =
+  AnswerCandleDojoExamResponses[keyof AnswerCandleDojoExamResponses];
+
+export type CompleteCandleDojoIntroData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/candle-dojo/intro/complete";
+};
+
+export type CompleteCandleDojoIntroErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CompleteCandleDojoIntroError =
+  CompleteCandleDojoIntroErrors[keyof CompleteCandleDojoIntroErrors];
+
+export type CompleteCandleDojoIntroResponses = {
+  200: {
+    balance: number;
+    belt: number;
+    first_time: boolean;
+    reward_xu: number;
+  };
+};
+
+export type CompleteCandleDojoIntroResponse =
+  CompleteCandleDojoIntroResponses[keyof CompleteCandleDojoIntroResponses];
+
+export type CompleteCandleDojoLessonData = {
+  body: {
+    hunt?: {
+      taps: Array<number>;
+    };
+    twins?: Array<"a" | "b">;
+  };
+  path: {
+    lessonId: string;
+  };
+  query?: never;
+  url: "/api/v2/candle-dojo/lessons/{lessonId}/complete";
+};
+
+export type CompleteCandleDojoLessonErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * LESSON_LOCKED: bài chưa mở
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CompleteCandleDojoLessonError =
+  CompleteCandleDojoLessonErrors[keyof CompleteCandleDojoLessonErrors];
+
+export type CompleteCandleDojoLessonResponses = {
+  200: {
+    balance: number;
+    best_stars: number;
+    card_ids: Array<string>;
+    first_time: boolean;
+    hunt: {
+      found: number;
+      miss: number;
+      star: boolean;
+      total: number;
+    };
+    lesson_id: string;
+    previous_stars: number;
+    reward_xu: number;
+    stars: number;
+    twins: {
+      right: number;
+      star: boolean;
+      total: number;
+    };
+  };
+};
+
+export type CompleteCandleDojoLessonResponse =
+  CompleteCandleDojoLessonResponses[keyof CompleteCandleDojoLessonResponses];
+
+export type GetCandleDojoStateData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/candle-dojo/state";
+};
+
+export type GetCandleDojoStateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetCandleDojoStateError =
+  GetCandleDojoStateErrors[keyof GetCandleDojoStateErrors];
+
+export type GetCandleDojoStateResponses = {
+  200: {
+    cards: {
+      owned: Array<{
+        acquired_at: string;
+        card_id: string;
+        seen_at: string | null;
+      }>;
+      owned_count: number;
+      total: number;
+    };
+    catalog_version: string;
+    dojos: Array<{
+      exam_ready: boolean;
+      lessons_done: number;
+      lessons_total: number;
+      n: number;
+      passed: boolean;
+      unlocked: boolean;
+    }>;
+    lessons: Array<{
+      attempts: number;
+      completed_at: string;
+      dojo: number;
+      hunt_star: boolean;
+      lesson_id: string;
+      stars: number;
+      twin_star: boolean;
+    }>;
+    open_lessons: Array<string>;
+    progress: {
+      belt: number;
+      belt_name: string | null;
+      best_streak: number;
+      drill_done_today: boolean;
+      drill_unlocked: boolean;
+      drills_total: number;
+      intro_completed: boolean;
+      streak_days: number;
+    };
+    rewards: {
+      belt_xu: number;
+      drill_xu: number;
+      intro_xu: number;
+      lesson_xu: number;
+    };
+    wallet: {
+      balance: number;
+    };
+  };
+};
+
+export type GetCandleDojoStateResponse =
+  GetCandleDojoStateResponses[keyof GetCandleDojoStateResponses];
+
 export type Cap0ControllerEnter1Data = {
   body?: never;
   path?: never;
@@ -43022,6 +43815,11 @@ export type FlashbackMatchGetError =
 
 export type FlashbackMatchGetResponses = {
   200: {
+    cards: Array<{
+      card_id: string;
+      card_n: number;
+      play_idx: number;
+    }>;
     ends_at: string;
     history_bars: Array<{
       close: number;
@@ -43246,6 +44044,10 @@ export type FlashbackMatchNextResponses = {
       session: number;
       volume: number;
     };
+    card: {
+      id: string;
+      n: number;
+    } | null;
     me: {
       auto_finished: boolean;
       cash: string;
@@ -44747,6 +45549,11 @@ export type FlashbackRoomsStartError =
 export type FlashbackRoomsStartResponses = {
   200: {
     match: {
+      cards: Array<{
+        card_id: string;
+        card_n: number;
+        play_idx: number;
+      }>;
       ends_at: string;
       history_bars: Array<{
         close: number;
@@ -52034,12 +52841,17 @@ export type ListShopCoinLedgerResponses = {
         | "flashback_stake"
         | "flashback_win"
         | "flashback_refund"
-        | "signup_bonus";
+        | "signup_bonus"
+        | "card_purchase"
+        | "dojo_reward";
       label: {
+        card_id: string | null;
+        card_name: string | null;
         lesson_id: string | null;
         lesson_key: string | null;
         mascot_id: string | null;
         mascot_name: string | null;
+        reward_key: string | null;
       };
       seq: number;
     }>;

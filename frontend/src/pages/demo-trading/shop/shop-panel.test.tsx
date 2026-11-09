@@ -92,7 +92,7 @@ describe("Shop panel", () => {
 
   it("opens the coin history from the wallet card", async () => {
     const user = userEvent.setup()
-    setup({ balance: 100, lessons: 1, ledger: [{ id: "a", seq: 1, kind: "lesson_first_completion", delta: 100, balance_after: 100, created_at: "2026-10-08T02:00:00.000Z", label: { lesson_key: null, lesson_id: "ch01-l01", mascot_id: null, mascot_name: null } }] })
+    setup({ balance: 100, lessons: 1, ledger: [{ id: "a", seq: 1, kind: "lesson_first_completion", delta: 100, balance_after: 100, created_at: "2026-10-08T02:00:00.000Z", label: { lesson_key: null, lesson_id: "ch01-l01", mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null } }] })
     await screen.findByTestId("shop-balance")
     await user.click(screen.getByRole("button", { name: /Lịch sử xu/ }))
     const dialog = await screen.findByRole("dialog", { name: "Lịch sử xu" })

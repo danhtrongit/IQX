@@ -90,17 +90,17 @@ describe("ledger labels", () => {
   const names = new Map([["ch01-l01", "RSI"], ["technical:rsi", "RSI"]])
 
   it("names the lesson for a reward and the mascot for a purchase", () => {
-    expect(ledgerRowLabel(ledgerItem(1, { label: { lesson_key: "technical:rsi", lesson_id: "ch01-l01", mascot_id: null, mascot_name: null } }), names)).toEqual({ title: "Hoàn thành bài RSI", detail: null })
-    expect(ledgerRowLabel(ledgerItem(2, { kind: "mascot_purchase", delta: -500, label: { lesson_key: null, lesson_id: null, mascot_id: "thanh_long", mascot_name: "Thanh Long" } }), names)).toEqual({ title: "Mua Thanh Long", detail: null })
-    expect(ledgerRowLabel(ledgerItem(3, { kind: "mascot_purchase", delta: -500, label: { lesson_key: null, lesson_id: null, mascot_id: "kim_quy", mascot_name: null } }), undefined).title).toBe("Mua Kim Quy")
+    expect(ledgerRowLabel(ledgerItem(1, { label: { lesson_key: "technical:rsi", lesson_id: "ch01-l01", mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null } }), names)).toEqual({ title: "Hoàn thành bài RSI", detail: null })
+    expect(ledgerRowLabel(ledgerItem(2, { kind: "mascot_purchase", delta: -500, label: { lesson_key: null, lesson_id: null, mascot_id: "thanh_long", mascot_name: "Thanh Long", card_id: null, card_name: null, reward_key: null } }), names)).toEqual({ title: "Mua Thanh Long", detail: null })
+    expect(ledgerRowLabel(ledgerItem(3, { kind: "mascot_purchase", delta: -500, label: { lesson_key: null, lesson_id: null, mascot_id: "kim_quy", mascot_name: null, card_id: null, card_name: null, reward_key: null } }), undefined).title).toBe("Mua Kim Quy")
   })
 
   it("keeps a reward readable before the lesson names arrive", () => {
-    expect(ledgerRowLabel(ledgerItem(4, { label: { lesson_key: "technical:macd", lesson_id: "ch01-l02", mascot_id: null, mascot_name: null } }), undefined)).toEqual({ title: "Hoàn thành bài học", detail: "ch01-l02" })
+    expect(ledgerRowLabel(ledgerItem(4, { label: { lesson_key: "technical:macd", lesson_id: "ch01-l02", mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null } }), undefined)).toEqual({ title: "Hoàn thành bài học", detail: "ch01-l02" })
   })
 
   it("names every kind of the coin ledger in Vietnamese", () => {
-    const label = { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null }
+    const label = { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null }
     expect(ledgerRowLabel(ledgerItem(5, { kind: "pet_purchase", label }), names).title).toBe("Mua linh thú")
     expect(ledgerRowLabel(ledgerItem(6, { kind: "pet_evolve", label }), names).title).toBe("Tiến hoá linh thú")
     expect(ledgerRowLabel(ledgerItem(7, { kind: "premium_purchase", label }), names).title).toBe("Mua Premium")

@@ -36,12 +36,12 @@ describe("coin history", () => {
   it("shows time, content, signed xu and the balance after each entry, newest first", async () => {
     const purchase = ledgerItem(3, {
       kind: "mascot_purchase", delta: -500, balance_after: 0, created_at: "2026-10-08T09:18:00.000Z",
-      label: { lesson_key: null, lesson_id: null, mascot_id: "thanh_long", mascot_name: "Thanh Long" },
+      label: { lesson_key: null, lesson_id: null, mascot_id: "thanh_long", mascot_name: "Thanh Long", card_id: null, card_name: null, reward_key: null },
     })
     setup({
       balance: 0,
       ledger: [
-        ledgerItem(1, { balance_after: 100, label: { lesson_key: "technical:l1", lesson_id: "ch01-l01", mascot_id: null, mascot_name: null } }),
+        ledgerItem(1, { balance_after: 100, label: { lesson_key: "technical:l1", lesson_id: "ch01-l01", mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null } }),
         ledgerItem(2, { balance_after: 500, delta: 400 }),
         purchase,
       ],
@@ -63,7 +63,7 @@ describe("coin history", () => {
   })
 
   it("summarises balance, received and spent from the server's totals over the whole history", async () => {
-    setup({ balance: 200, ledger: [...rewards(25), ledgerItem(26, { kind: "mascot_purchase", delta: -500, balance_after: 200, label: { lesson_key: null, lesson_id: null, mascot_id: "kim_quy", mascot_name: "Kim Quy" } })] })
+    setup({ balance: 200, ledger: [...rewards(25), ledgerItem(26, { kind: "mascot_purchase", delta: -500, balance_after: 200, label: { lesson_key: null, lesson_id: null, mascot_id: "kim_quy", mascot_name: "Kim Quy", card_id: null, card_name: null, reward_key: null } })] })
     await screen.findAllByRole("row")
     const dialog = screen.getByRole("dialog", { name: "Lịch sử xu" })
     expect(within(dialog).getAllByText("Số dư")[0].nextElementSibling?.textContent).toBe("200 xu")
