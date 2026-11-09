@@ -7,6 +7,7 @@ const ASSET_DIRECTORIES = [
   'src/modules/analysis/prompts',
   'src/modules/research/prompts',
   'src/modules/academy/content',
+  'src/modules/candle-dojo/content',
   'src/modules/quant/v2/registry',
   'src/modules/screener/registry',
 ] as const;

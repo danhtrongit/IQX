@@ -154,6 +154,8 @@ export const ledgerItemSchema = z.object({
     'flashback_win',
     'flashback_refund',
     'signup_bonus',
+    'card_purchase',
+    'dojo_reward',
   ]),
   delta: z.number().int(),
   balance_after: z.number().int(),
@@ -163,6 +165,9 @@ export const ledgerItemSchema = z.object({
     lesson_id: z.string().nullable(),
     mascot_id: z.string().nullable(),
     mascot_name: z.string().nullable(),
+    card_id: z.string().nullable(),
+    card_name: z.string().nullable(),
+    reward_key: z.string().nullable(),
   }),
 });
 

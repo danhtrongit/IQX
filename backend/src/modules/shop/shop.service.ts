@@ -163,6 +163,9 @@ function ledgerView(row: LedgerRow) {
       lesson_id: text('lesson_id'),
       mascot_id: mascotId,
       mascot_name: mascotId ? (findMascot(mascotId)?.name ?? null) : null,
+      card_id: text('card_id'),
+      card_name: text('card_name'),
+      reward_key: text('reward_key'),
     },
   };
 }
