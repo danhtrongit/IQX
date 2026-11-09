@@ -118,6 +118,35 @@ export interface FbDatasetPort {
 
 export const FB_DATASET = Symbol('FB_DATASET');
 
+/** Thẻ nến hiện ở phiên vừa mở (Candle Dojo v1.3 §5). */
+export interface FbShownCard {
+  readonly id: string;
+  readonly n: number;
+}
+
+/** Thẻ đã hiện của người chơi trong ván, để dựng lại khối "Thẻ trong ván" khi vào lại hoặc xem lại. */
+export interface FbMatchCardView {
+  readonly play_idx: number;
+  readonly card_id: string;
+  readonly card_n: number;
+}
+
+/**
+ * Tra mẫu nến tính sẵn lúc chơi (Candle Dojo v1.3 §5). Không ném lỗi: thiếu dữ liệu hoặc lỗi tra thì
+ * không có thẻ, ván vẫn chơi bình thường.
+ */
+export interface FbCardsPort {
+  /**
+   * Thẻ của Phiên `step` (1..P) cho người chơi: mẫu tính sẵn của phiên đó nếu người chơi sở hữu thẻ.
+   * Ghi lại thẻ đã hiện (và "Đã gặp"). Chỉ phiên vừa mở, không bao giờ phiên chưa mở.
+   */
+  cardAt(input: { match: FbMatchRow; userId: string; step: number }): Promise<FbShownCard | null>;
+  /** Thẻ đã hiện của người chơi từ Phiên 1 tới `upToStep`, tăng dần. */
+  matchCards(input: { matchId: string; userId: string; upToStep: number }): Promise<FbMatchCardView[]>;
+}
+
+export const FB_CARDS = Symbol('FB_CARDS');
+
 // ------------------------------------------------------------------ lỗi
 
 const fail = (status: number, code: string, message: string, details?: unknown[]) =>
@@ -272,6 +301,8 @@ export interface FbMatchSnapshot extends FbStateView {
   /** Phiên chơi đã mở: 1..phiên của tôi (sau khi kết thúc: đủ mọi phiên). */
   readonly played_bars: FbPublicBar[];
   readonly me: FbEntryView;
+  /** Candle Dojo v1.3 §5: thẻ đã hiện cho tôi trong ván (rỗng khi chưa có thẻ nào hoặc chưa tính mẫu). */
+  readonly cards: FbMatchCardView[];
 }
 
 export interface FbResultRow extends FbPlayerRef {
@@ -486,6 +517,7 @@ export class FlashbackRoomsService {
     @Inject(FB_DATASET) private readonly dataset: FbDatasetPort,
     @Inject(FLASHBACK_CLOCK) private readonly clock: FlashbackClock,
     @Optional() private readonly events?: FlashbackRoomEvents,
+    @Optional() @Inject(FB_CARDS) private readonly cards?: FbCardsPort,
   ) {}
 
   // ================================================================== sảnh
@@ -973,11 +1005,19 @@ export class FlashbackRoomsService {
       history_bars: chart.history,
       played_bars: chart.played,
       me: await this.entryView(this.database, match, entry),
+      cards: (await this.cards?.matchCards({
+        matchId: match.id,
+        userId,
+        upToStep: ended ? match.playBars : entry.step,
+      })) ?? [],
     };
   }
 
   /** Phiên tiếp (§6.2, §9): ghi nhận bước mới rồi mới trả nến của bước đó. */
-  async next(userId: string, matchId: string): Promise<{ bar: FbPublicBar; me: FbEntryView }> {
+  async next(
+    userId: string,
+    matchId: string,
+  ): Promise<{ bar: FbPublicBar; me: FbEntryView; card: FbShownCard | null }> {
     await this.settleIfDue(matchId);
     let roomId = '';
     const result = await this.database.transaction(async (tx) => {
@@ -1000,11 +1040,16 @@ export class FlashbackRoomsService {
       return {
         bar: toPublicBar(barAtStep(match.bars, match.viewBars, step), step),
         me: await this.entryView(tx, match, updated),
+        match,
+        step,
       };
     });
     // Sang phiên mới: ảnh trong chat của người đi trước có thể tới lượt (v2.4 §3.4).
     this.events?.positionChanged({ roomId, userId });
-    return result;
+    // Candle Dojo v1.3 §5: tra mẫu tính sẵn của đúng phiên vừa mở, sau khi bước đã được ghi nhận.
+    // Mua thẻ giữa ván có hiệu lực từ lần bấm này vì quyền sở hữu được kiểm ngay lúc tra.
+    const card = (await this.cards?.cardAt({ match: result.match, userId, step: result.step })) ?? null;
+    return { bar: result.bar, me: result.me, card };
   }
 
   /** Đặt lệnh (§6.3): giá đóng cửa phiên đang hiện, phí 0,15%, thuế bán 0,1%, T+2. */

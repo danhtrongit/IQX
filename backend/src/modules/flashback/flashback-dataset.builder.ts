@@ -10,6 +10,8 @@
  * 4. kiểm cả kho: từ `min_symbols` (80) mã hợp lệ trở lên thì chuyển sang `active` trong một
  *    transaction (phiên bản cũ thành `retired`); ít hơn thì đánh dấu `failed`, GIỮ kho đang dùng và
  *    báo quản trị;
+ *    - bước 2b (Candle Dojo v1.3 §4) chen vào trước khi kích hoạt: tính sẵn mẫu nến của mọi mã; kho chỉ
+ *      được kích hoạt khi bước này `done` (mã lỗi riêng lẻ không chặn, chỉ ghi nhật ký);
  * 5. ghi nhật ký: thời gian chạy, số mã thành công, mã bị loại và lý do.
  *
  * Idempotent: chỉ một lần tạo kho `building` tại một thời điểm (ràng buộc duy nhất của CSDL), lần
@@ -48,6 +50,7 @@ import {
   FLASHBACK_DATASET_SOURCE,
   type FlashbackDatasetSourcePort,
 } from './flashback-dataset.source.js';
+import { FLASHBACK_PATTERN_STEP, type FlashbackPatternStepPort } from './flashback-patterns.compute.js';
 
 /** Lần tạo kho không báo nhịp quá chừng này thì coi là bị ngắt. */
 export const DATASET_STALE_BUILD_MS = 10 * 60_000;
@@ -128,6 +131,10 @@ export class FlashbackDatasetBuilder {
     @Optional()
     @Inject(FLASHBACK_OPS_ALERTS)
     private readonly opsAlerts: FlashbackOpsAlertPort = noopFlashbackOpsAlerts,
+    /** Bước 2b "Tính mẫu nến"; không có thì bộ dựng bỏ qua bước này (đường cũ, test cũ). */
+    @Optional()
+    @Inject(FLASHBACK_PATTERN_STEP)
+    private readonly patternStep?: FlashbackPatternStepPort,
   ) {}
 
   async build(options: DatasetBuildOptions): Promise<DatasetBuildResult> {
@@ -174,6 +181,7 @@ export class FlashbackDatasetBuilder {
     let basketInfo: DatasetBuildLog['basket'] = { index: config.basket, count: 0, source: '' };
     let symbolsWithCut = 0;
     let totalCuts = 0;
+    let patternsInfo: DatasetBuildLog['patterns'];
 
     const publish = async (phase: DatasetProgress['phase'], force = false): Promise<void> => {
       progress = { phase, total: state.total, done: state.done, ok: state.ok, excluded: state.excluded };
@@ -210,6 +218,7 @@ export class FlashbackDatasetBuilder {
           symbols_with_cut: symbolsWithCut,
           total_cuts: totalCuts,
         },
+        ...(patternsInfo ? { patterns: patternsInfo } : {}),
       };
     };
 
@@ -397,6 +406,40 @@ export class FlashbackDatasetBuilder {
           `Kho mới chỉ có ${state.ok} mã hợp lệ, ít hơn ${config.minSymbols} mã tối thiểu; giữ kho đang dùng`,
           'too_few_symbols',
         );
+      }
+      // Bước 2b (v1.3 §4): chỉ chạy khi thật sự ghi kho; chạy thử không có nến trong CSDL để đọc.
+      if (!dryRun && this.patternStep) {
+        const step = await this.patternStep.run({
+          version,
+          trigger: 'build',
+          requestedBy: options.requestedBy ?? null,
+          now: startedAt,
+          concurrency: options.concurrency,
+          onProgress: () => {
+            void publish('finalize');
+          },
+        });
+        if (step.status === 'already_running') {
+          return await fail(
+            `Bước 2b "Tính mẫu nến" không chạy được: phiên bản ${version} đang có một lần tính khác`,
+            'pattern_failed',
+          );
+        }
+        patternsInfo = {
+          run_id: step.runId,
+          detector_version: step.detectorVersion,
+          symbols_done: step.symbolsDone,
+          symbols_total: step.symbolsTotal,
+          patterns_count: step.patternsCount,
+          failed_symbols: step.failed.length,
+          missing_raw_sessions: step.log.missing_raw_sessions ?? 0,
+        };
+        if (step.status !== 'done') {
+          return await fail(
+            `Bước 2b "Tính mẫu nến" lỗi nên kho mới không được kích hoạt: ${step.reason ?? 'không rõ lý do'}`,
+            'pattern_failed',
+          );
+        }
       }
       const log = buildLog('active');
       if (!dryRun) {

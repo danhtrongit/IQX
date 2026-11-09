@@ -90,6 +90,12 @@ export interface FbMatchRow {
   readonly endedAt: Date | null;
   readonly endReason: 'all_finished' | 'timeout' | null;
   readonly paidAt: Date | null;
+  /**
+   * v2.2 §3.5: phiên bản kho và điểm cắt của đoạn dữ liệu (null hoặc thiếu với ván không cắt từ kho).
+   * Chỉ server: dùng để tra mẫu nến tính sẵn (Candle Dojo v1.3 §5).
+   */
+  readonly datasetVersion?: number | null;
+  readonly startIdx?: number | null;
 }
 
 export interface FbEntryRow {
@@ -536,6 +542,12 @@ const mapMatch = (row: Row): FbMatchRow => ({
   endedAt: toDateOrNull(row.ended_at),
   endReason: (toText(row.end_reason) as FbMatchRow['endReason']) ?? null,
   paidAt: toDateOrNull(row.paid_at),
+  datasetVersion:
+    row.dataset_version === null || row.dataset_version === undefined
+      ? null
+      : toInt(row.dataset_version, 'dataset_version'),
+  startIdx:
+    row.start_idx === null || row.start_idx === undefined ? null : toInt(row.start_idx, 'start_idx'),
 });
 
 const mapEntry = (row: Row): FbEntryRow => ({
@@ -595,7 +607,7 @@ const ROOM_COLUMNS = `r.id, r.code, r.owner_id, r.view_bars, r.play_bars, r.minu
 const MATCH_COLUMNS = `id, room_id, symbol, to_char(start_date, 'YYYY-MM-DD') as start_date_text,
   to_char(end_date, 'YYYY-MM-DD') as end_date_text, price_source, fallback_level, view_bars,
   play_bars, warmup_bars, bars, minutes, stake_xu, player_count, pot_xu, started_at, ends_at,
-  status, ended_at, end_reason, paid_at`;
+  status, ended_at, end_reason, paid_at, dataset_version, start_idx`;
 
 const ENTRY_COLUMNS = `e.id, e.match_id, e.user_id, e.stake_xu, e.step, e.cash, e.initial_cash,
   e.nav_by_step::text[] as nav_by_step, e.joined_at, e.finished_at, e.auto_finished, e.final_nav,

@@ -29,6 +29,7 @@ import type {
   DatasetBasket,
   DatasetCalendarData,
   DatasetHistory,
+  DatasetRawPrice,
   FlashbackDatasetSourcePort,
 } from '../../../src/modules/flashback/flashback-dataset.source.js';
 import type { DatasetPriceSource } from '../../../src/modules/flashback/flashback-dataset.config.js';
@@ -443,6 +444,8 @@ export class FakeDatasetSource implements FlashbackDatasetSourcePort {
   matchedCalls = 0;
   /** Đặt để bật bước lấy giá trị khớp thật; trả `null` = nguồn không có dữ liệu của mã. */
   matchedValues?: (symbol: string, beforeDate: string) => Promise<ReadonlyMap<string, number> | null>;
+  /** Đặt để bật bước lấy giá gốc và giá tham chiếu (Candle Dojo v1.3 §2.3); `null` = nguồn không có của mã. */
+  rawPrices?: (symbol: string, beforeDate: string) => Promise<ReadonlyMap<string, DatasetRawPrice> | null>;
 
   async basket(): Promise<DatasetBasket> {
     if (this.basketError) throw this.basketError;

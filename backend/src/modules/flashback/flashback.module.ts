@@ -8,6 +8,10 @@
  * (DNSE, dự phòng VCI) theo phiên bản và cắt đề từ kho thay cho bộ dựng đề v1 trên đường của phòng
  * chơi; `FlashbackDatasetAdminController` là mục "Kho dữ liệu Flashback" của trang Quản trị.
  *
+ * Candle Dojo v1.3 · Mẫu nến tính sẵn: `FlashbackPatternsCompute` (bước 2b của bộ dựng kho, lệnh
+ * `flashback:patterns:compute`, nút "Tính lại mẫu nến"), `FlashbackRoomCards` (tra thẻ lúc bấm Phiên
+ * tiếp) và `FlashbackPatternsAdminService` (khối "Mẫu nến" của trang Quản trị).
+ *
  * Module này dùng `MarketDataModule` (nến ngày), `MarketIntegrationModule` (rổ chỉ số) và
  * `DatabaseModule` (kho Flashback + ví xu). Nó không sửa dữ liệu của các module khác ngoài hai bảng
  * `coin_wallets` / `coin_ledger` với kind riêng (`flashback_fee`, `flashback_reward` của v1;
@@ -32,6 +36,13 @@ import { FLASHBACK_REPOSITORY, PgFlashbackRepository } from './flashback.reposit
 import { FlashbackRoundBuilder, FLASHBACK_VN30 } from './flashback.round-builder.js';
 import { FLASHBACK_CLOCK, FlashbackService, systemFlashbackClock } from './flashback.service.js';
 import { FlashbackDatasetAdminService } from './flashback-dataset-admin.service.js';
+import { FLASHBACK_PATTERN_STEP, FlashbackPatternsCompute } from './flashback-patterns.compute.js';
+import { FlashbackPatternsAdminService } from './flashback-patterns-admin.service.js';
+import {
+  FLASHBACK_PATTERNS_REPOSITORY,
+  PgFlashbackPatternsRepository,
+} from './flashback-patterns.repository.js';
+import { FlashbackRoomCards } from './flashback-rooms.cards.js';
 import { FlashbackDatasetBuilder } from './flashback-dataset.builder.js';
 import { FlashbackDatasetAdminController } from './flashback-dataset.controller.js';
 import { FlashbackDatasetCuts } from './flashback-dataset.cuts.js';
@@ -67,7 +78,7 @@ import {
   FLASHBACK_ROOMS_REPOSITORY,
   PgFlashbackRoomsRepository,
 } from './flashback-rooms.repository.js';
-import { FB_DATASET, FlashbackRoomsService } from './flashback-rooms.service.js';
+import { FB_CARDS, FB_DATASET, FlashbackRoomsService } from './flashback-rooms.service.js';
 
 /** Token của nguồn nến ngày dùng cho Flashback. */
 export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
@@ -117,12 +128,19 @@ export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
     { provide: FLASHBACK_DATASET_REPOSITORY, useExisting: PgFlashbackDatasetRepository },
     MarketFlashbackDatasetSource,
     { provide: FLASHBACK_DATASET_SOURCE, useExisting: MarketFlashbackDatasetSource },
+    PgFlashbackPatternsRepository,
+    { provide: FLASHBACK_PATTERNS_REPOSITORY, useExisting: PgFlashbackPatternsRepository },
+    FlashbackPatternsCompute,
+    { provide: FLASHBACK_PATTERN_STEP, useExisting: FlashbackPatternsCompute },
     FlashbackDatasetBuilder,
     FlashbackDatasetCuts,
     FlashbackDatasetJob,
     FlashbackDatasetAdminService,
+    FlashbackPatternsAdminService,
     FlashbackRoomDataset,
     { provide: FB_DATASET, useExisting: FlashbackRoomDataset },
+    FlashbackRoomCards,
+    { provide: FB_CARDS, useExisting: FlashbackRoomCards },
     FlashbackRoomsService,
     PgFlashbackChatRepository,
     { provide: FLASHBACK_CHAT_REPOSITORY, useExisting: PgFlashbackChatRepository },

@@ -259,3 +259,118 @@ describe('MarketFlashbackDatasetSource.matchedValues (giá trị khớp thật c
     await expect(source.matchedValues('FPT', '2026-11-04')).rejects.toThrow('VCI 429');
   });
 });
+
+describe('MarketFlashbackDatasetSource.rawPrices (giá gốc và giá tham chiếu của VCI, Candle Dojo v1.3 §2.3)', () => {
+  /** Dòng `price-history` của VCI sau `snakeObject`: giá chưa điều chỉnh, đồng nguyên, kèm bản điều chỉnh. */
+  const priceRow = (date: string, over: Record<string, unknown> = {}) => ({
+    trading_date: `${date}T00:00:00`,
+    open_price: 23_850,
+    highest_price: 24_050,
+    lowest_price: 23_600,
+    close_price: 23_850,
+    reference_price: 23_500,
+    open_price_adjusted: 16_000,
+    close_price_adjusted: 16_129.64,
+    reference_price_adjusted: 15_892.93,
+    total_match_value: 9_000_000_000,
+    ...over,
+  });
+
+  it('lấy giá gốc (không phải giá điều chỉnh) và giá tham chiếu theo ngày, đồng nguyên', async () => {
+    const { source, fetchTradingHistory } = setup({
+      tradingHistory: async () => ({
+        data: [priceRow('2022-08-25'), priceRow('2022-08-26', { close_price: 23_500.4 })],
+      }),
+    });
+    const prices = (await source.rawPrices('HPG', '2026-11-04'))!;
+    expect([...prices]).toEqual([
+      ['2022-08-25', { open: 23_850, high: 24_050, low: 23_600, close: 23_850, ref: 23_500 }],
+      ['2022-08-26', { open: 23_850, high: 24_050, low: 23_600, close: 23_500, ref: 23_500 }],
+    ]);
+    expect(fetchTradingHistory).toHaveBeenCalledWith('HPG', {
+      resolution: '1D',
+      start: '1995-01-01',
+      end: '2026-11-04',
+      page: 0,
+      size: 1_000,
+    });
+  });
+
+  it('phân trang như giá trị khớp thật: tới khi gặp trang ngắn', async () => {
+    const all = weekdaysFrom('2014-01-06', 1_300);
+    const { source, fetchTradingHistory } = setup({
+      tradingHistory: async (_symbol, options) => ({
+        data: all
+          .slice(Number(options.page) * 1_000, Number(options.page) * 1_000 + 1_000)
+          .map((date) => priceRow(date)),
+      }),
+    });
+    expect((await source.rawPrices('HPG', '2026-11-04'))!.size).toBe(1_300);
+    expect(fetchTradingHistory).toHaveBeenCalledTimes(2);
+  });
+
+  it('phiên thiếu một trong năm giá (VCI trả 0, null hoặc chữ) bị bỏ cả phiên; không có phiên nào thì null', async () => {
+    const { source } = setup({
+      tradingHistory: async () => ({
+        data: [
+          priceRow('2024-03-04'),
+          priceRow('2024-03-05', { open_price: 0 }),
+          priceRow('2024-03-06', { reference_price: null }),
+          priceRow('2024-03-07', { close_price: 'abc' }),
+          priceRow('2024-03-08', { highest_price: -5 }),
+          { ...priceRow('2024-03-09'), trading_date: null },
+          priceRow('2024-03-11', { lowest_price: '23600' }),
+        ],
+      }),
+    });
+    const prices = (await source.rawPrices('HPG', '2026-11-04'))!;
+    expect([...prices.keys()]).toEqual(['2024-03-04', '2024-03-11']);
+    expect(await setup().source.rawPrices('HPG', '2026-11-04')).toBeNull();
+    const allBad = setup({
+      tradingHistory: async () => ({ data: [priceRow('2024-03-05', { open_price: 0 })] }),
+    });
+    expect(await allBad.source.rawPrices('HPG', '2026-11-04')).toBeNull();
+  });
+
+  it('không lấy phiên hôm nay trở đi (chưa chốt) và ngày rác trước 1995', async () => {
+    const { source } = setup({
+      tradingHistory: async () => ({
+        data: [
+          priceRow('1970-01-01'),
+          priceRow('2026-11-03'),
+          priceRow('2026-11-04'),
+          priceRow('2026-11-05'),
+        ],
+      }),
+    });
+    expect([...(await source.rawPrices('HPG', '2026-11-04'))!.keys()]).toEqual(['2026-11-03']);
+  });
+
+  it('giá gốc ngoài khoảng 1.000đ-1.000.000đ (nguồn đổi đơn vị) bị từ chối, không ghi giá sai', async () => {
+    const { source } = setup({
+      tradingHistory: async () => ({
+        data: [
+          priceRow('2024-03-04', {
+            open_price: 23.8,
+            highest_price: 24,
+            lowest_price: 23.6,
+            close_price: 23.85,
+            reference_price: 23.5,
+          }),
+        ],
+      }),
+    });
+    await expect(source.rawPrices('HPG', '2026-11-04')).rejects.toThrow(
+      /ngoài khoảng 1\.000đ-1\.000\.000đ/,
+    );
+  });
+
+  it('lỗi nguồn được ném ra để bước tính mẫu ghi log và dùng lại giá gốc đã lưu', async () => {
+    const { source } = setup({
+      tradingHistory: async () => {
+        throw new Error('VCI 403');
+      },
+    });
+    await expect(source.rawPrices('HPG', '2026-11-04')).rejects.toThrow('VCI 403');
+  });
+});

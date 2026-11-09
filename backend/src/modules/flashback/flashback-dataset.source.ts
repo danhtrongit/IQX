@@ -7,6 +7,7 @@
  * | Nến ngày của một mã | DNSE (`DnseMarketProvider`): một lần gọi trả toàn bộ lịch sử, giá đã điều chỉnh, nghìn đồng, từ 2012-03 | VCI `gap-chart` (đồng, từ ngày lên sàn), phân trang 1.000 nến |
  * | Lịch phiên của sàn | chỉ số VNINDEX của DNSE (từ 2000) | VNINDEX của VCI |
  * | Giá trị khớp thật mỗi phiên | VCI `price-history` (`totalMatchValue`, giá chưa điều chỉnh) | không có: bộ dựng dùng giá đóng điều chỉnh × khối lượng |
+ * | Giá gốc và giá tham chiếu mỗi phiên (4 thẻ Việt Nam, Candle Dojo v1.3 §2.3) | VCI `price-history` (`openPrice`, `highestPrice`, `lowestPrice`, `closePrice`, `referencePrice`: đồng, chưa điều chỉnh, giá tham chiếu do sở công bố) | không có: phiên đó không xét 4 thẻ Việt Nam |
  *
  * DNSE là nguồn chính theo chỉ đạo của chủ sản phẩm; VCI chỉ dùng khi DNSE lỗi hoặc không có dữ
  * liệu của mã đó. Không đổi chuỗi nguồn mặc định của `MarketDataService` (Bot, bảng giá).
@@ -23,7 +24,11 @@ import {
   flashbarDate,
 } from './flashback.market-data.js';
 import type { DatasetPriceSource } from './flashback-dataset.config.js';
-import { normalizeVendorRows, type DatasetRawRow } from './flashback-dataset.logic.js';
+import {
+  DATASET_EARLIEST_DATE,
+  normalizeVendorRows,
+  type DatasetRawRow,
+} from './flashback-dataset.logic.js';
 
 export const FLASHBACK_DATASET_SOURCE = Symbol('FLASHBACK_DATASET_SOURCE');
 
@@ -36,6 +41,15 @@ export interface DatasetCalendarData {
   /** Các ngày giao dịch của sàn, YYYY-MM-DD. */
   readonly dates: string[];
   readonly source: string;
+}
+
+/** Giá gốc chưa điều chỉnh và giá tham chiếu của sở trong một phiên, đồng nguyên (Candle Dojo v1.3 §2.3). */
+export interface DatasetRawPrice {
+  readonly open: number;
+  readonly high: number;
+  readonly low: number;
+  readonly close: number;
+  readonly ref: number;
 }
 
 export interface DatasetHistory {
@@ -63,6 +77,12 @@ export interface FlashbackDatasetSourcePort {
    * `null` nếu nguồn không có dữ liệu của mã; ném lỗi nếu nguồn không gọi được.
    */
   matchedValues?(symbol: string, beforeDate: string): Promise<ReadonlyMap<string, number> | null>;
+  /**
+   * Giá gốc (chưa điều chỉnh) và giá tham chiếu của sở theo ngày, đồng nguyên. Chỉ giữ ngày có đủ
+   * năm giá trị hợp lệ (> 0). `null` nếu nguồn không có dữ liệu của mã; ném lỗi nếu nguồn không
+   * gọi được. Không khai báo cổng này thì mọi phiên đều thiếu giá gốc (4 thẻ Việt Nam không xét).
+   */
+  rawPrices?(symbol: string, beforeDate: string): Promise<ReadonlyMap<string, DatasetRawPrice> | null>;
 }
 
 /** Lịch phiên ít nhất phải có chừng này ngày, nếu không coi như nguồn hỏng. */
@@ -94,6 +114,21 @@ function assertPriceUnit(source: string, rows: readonly DatasetRawRow[]): void {
     // Không ghi tên mã để nhật ký không lộ mã của đề.
     throw new Error(`Giá ${source} sau chuẩn hoá có trung vị ${center}đ, ngoài khoảng 1.000đ-1.000.000đ`);
   }
+}
+
+/** Giá đồng nguyên dương, làm tròn; 0 nếu thiếu hoặc không hợp lệ (VCI trả 0 cho phiên không khớp). */
+function positiveVnd(value: unknown): number {
+  if (value === null || value === undefined || value === '') return 0;
+  if (typeof value !== 'number' && typeof value !== 'string') return 0;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0;
+}
+
+/** Giá gốc cũng phải ở khoảng 1.000đ-1.000.000đ (VCI trả đồng); ngoài khoảng là nguồn đổi đơn vị. */
+function assertRawUnit(prices: ReadonlyMap<string, DatasetRawPrice>): void {
+  const center = median([...prices.values()].map((price) => price.close));
+  if (center < FLASHBACK_PRICE_MIN_VND || center > FLASHBACK_PRICE_MAX_VND)
+    throw new Error(`Giá gốc VCI có trung vị ${center}đ, ngoài khoảng 1.000đ-1.000.000đ`);
 }
 
 @Injectable()
@@ -171,6 +206,40 @@ export class MarketFlashbackDatasetSource implements FlashbackDatasetSourcePort 
     beforeDate: string,
   ): Promise<ReadonlyMap<string, number> | null> {
     const values = new Map<string, number>();
+    for (const row of await this.tradingRows(symbol, beforeDate)) {
+      const date = flashbarDate(row.trading_date);
+      const value = Number(row.total_match_value);
+      if (date && Number.isFinite(value) && value >= 0) values.set(date, value);
+    }
+    return values.size > 0 ? values : null;
+  }
+
+  async rawPrices(
+    symbol: string,
+    beforeDate: string,
+  ): Promise<ReadonlyMap<string, DatasetRawPrice> | null> {
+    const prices = new Map<string, DatasetRawPrice>();
+    for (const row of await this.tradingRows(symbol, beforeDate)) {
+      const date = flashbarDate(row.trading_date);
+      if (!date || date < DATASET_EARLIEST_DATE || date >= beforeDate) continue;
+      const price = {
+        open: positiveVnd(row.open_price),
+        high: positiveVnd(row.highest_price),
+        low: positiveVnd(row.lowest_price),
+        close: positiveVnd(row.close_price),
+        ref: positiveVnd(row.reference_price),
+      };
+      // Thiếu một giá thì bỏ cả phiên: phiên đó không xét 4 thẻ Việt Nam.
+      if (Object.values(price).every((value) => value > 0)) prices.set(date, price);
+    }
+    if (prices.size === 0) return null;
+    assertRawUnit(prices);
+    return prices;
+  }
+
+  /** Mọi dòng `price-history` ngày của VCI (giá chưa điều chỉnh), từng trang 1.000 phiên tới khi gặp trang ngắn. */
+  private async tradingRows(symbol: string, beforeDate: string): Promise<Array<Record<string, unknown>>> {
+    const rows: Array<Record<string, unknown>> = [];
     for (let page = 0; page < MAX_MATCHED_VALUE_PAGES; page += 1) {
       const result = await this.market.vci.fetchTradingHistory(symbol, {
         resolution: '1D',
@@ -179,14 +248,10 @@ export class MarketFlashbackDatasetSource implements FlashbackDatasetSourcePort 
         page,
         size: MATCHED_VALUE_PAGE_SIZE,
       });
-      for (const row of result.data) {
-        const date = flashbarDate(row.trading_date);
-        const value = Number(row.total_match_value);
-        if (date && Number.isFinite(value) && value >= 0) values.set(date, value);
-      }
+      rows.push(...result.data);
       if (result.data.length < MATCHED_VALUE_PAGE_SIZE) break;
     }
-    return values.size > 0 ? values : null;
+    return rows;
   }
 
   private dates(rows: readonly unknown[]): string[] {

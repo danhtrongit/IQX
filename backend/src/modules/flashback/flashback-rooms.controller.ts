@@ -247,6 +247,13 @@ const stateShape = {
 };
 const stateSchema = z.object(stateShape);
 
+/** Thẻ nến đã hiện cho người xem trong ván (Candle Dojo v1.3 §5): chỉ thẻ của phiên đã mở và thẻ mình sở hữu. */
+const matchCardSchema = z.object({
+  play_idx: z.number(),
+  card_id: z.string(),
+  card_n: z.number(),
+});
+
 const snapshotSchema = z.object({
   ...stateShape,
   view_bars: z.number(),
@@ -259,7 +266,11 @@ const snapshotSchema = z.object({
   history_bars: z.array(barSchema),
   played_bars: z.array(barSchema),
   me: entrySchema,
+  cards: z.array(matchCardSchema),
 });
+
+/** Thẻ hiện ở phiên vừa mở (Candle Dojo v1.3 §5): `null` khi phiên không có mẫu hoặc người chơi chưa có thẻ. */
+const shownCardSchema = z.object({ id: z.string(), n: z.number() });
 
 const resultSchema = z.object({
   match_id: z.string(),
@@ -569,7 +580,9 @@ export class FlashbackRoomsController {
   @Post('matches/:id/next')
   @HttpCode(200)
   @ApiOperation({ operationId: 'flashbackMatchNext', summary: 'Phiên tiếp' })
-  @ApiOkResponse({ schema: openapi(z.object({ bar: barSchema, me: entrySchema })) })
+  @ApiOkResponse({
+    schema: openapi(z.object({ bar: barSchema, me: entrySchema, card: shownCardSchema.nullable() })),
+  })
   async next(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', { schema: fbMatchIdParamSchema }) id: string,

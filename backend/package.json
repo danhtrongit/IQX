@@ -27,6 +27,7 @@
     "test:frontend": "vitest run --config vitest.browser.config.ts",
     "db:migrate": "node dist/scripts/migrate.js",
     "flashback:dataset:build": "node dist/scripts/flashback-dataset-build.js",
+    "flashback:patterns:compute": "node dist/scripts/flashback-patterns-compute.js",
     "api:coverage": "node dist/scripts/api-coverage.js",
     "api:coverage:check": "node dist/scripts/api-coverage.js --check",
     "contracts:generate": "npm run build && node dist/scripts/export-openapi.js && node dist/scripts/generate-client.js",

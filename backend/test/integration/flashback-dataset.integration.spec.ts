@@ -3,7 +3,7 @@
  *
  * Cơ sở dữ liệu: `TEST_DATABASE_URL` (tên bắt đầu `iqx_v2_test_`, máy cục bộ) kèm
  * `IQX_TEST_EXTERNAL_SERVICES=1`; không có thì chạy container Postgres. Test tạo một cơ sở dữ
- * liệu riêng, chạy toàn bộ migration (0001-0039) rồi xoá khi xong. Pool dùng đúng giới hạn thời
+ * liệu riêng, chạy toàn bộ migration (đến 0046) rồi xoá khi xong. Pool dùng đúng giới hạn thời
  * gian câu lệnh mặc định của sản xuất (3 giây) để kiểm chứng ghi theo mã và đọc theo mã đủ nhanh.
  */
 
@@ -131,9 +131,13 @@ describe('Flashback dataset trên PostgreSQL thật', () => {
       `select table_name from information_schema.tables
         where table_schema = 'public' and table_name like 'fb_dataset_%' order by 1`,
     );
+    // 0039 tạo bốn bảng gốc; 0046 (Candle Dojo v1.3) thêm ba bảng mẫu nến và giá gốc.
     expect(tables.map((row) => row.table_name)).toEqual([
       'fb_dataset_bars',
+      'fb_dataset_pattern_runs',
+      'fb_dataset_patterns',
       'fb_dataset_prefix',
+      'fb_dataset_raw',
       'fb_dataset_symbols',
       'fb_dataset_versions',
     ]);

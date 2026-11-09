@@ -99,7 +99,7 @@ describe.skipIf(!URL)('Candle Dojo trên PostgreSQL', () => {
 
     const sit = async (right: number) => {
       const started = await service.startExam(userId, 1);
-      const attempt = (await repo.findAttempt(harness.database, started.attempt_id, userId))!;
+      const attempt = (await repo.findAttempt(harness.database, started.attempt_id, userId, false))!;
       let last;
       for (let index = 0; index < attempt.questions.length; index++) {
         const question = attempt.questions[index]!;
@@ -125,7 +125,7 @@ describe.skipIf(!URL)('Candle Dojo trên PostgreSQL', () => {
     await service.completeIntro(userId);
     for (const lesson of cdLessonsOfDojo(1)) await learn(userId, lesson.id);
     const started = await service.startExam(userId, 1);
-    const attempt = (await repo.findAttempt(harness.database, started.attempt_id, userId))!;
+    const attempt = (await repo.findAttempt(harness.database, started.attempt_id, userId, false))!;
     for (let index = 0; index < attempt.questions.length; index++) {
       await service.answerExam(userId, started.attempt_id, {
         index,

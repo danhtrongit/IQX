@@ -66,6 +66,16 @@ export interface DatasetBuildLog {
   };
   /** Số điểm cắt hợp lệ của phòng (view_bars/play_bars) tại lúc tạo kho, để quản trị ước lượng. */
   cuts?: { view_bars: number; play_bars: number; symbols_with_cut: number; total_cuts: number };
+  /** Bước 2b "Tính mẫu nến" (Candle Dojo v1.3 §4); thiếu với kho dựng khi chưa có bước này. */
+  patterns?: {
+    run_id: number;
+    detector_version: number;
+    symbols_done: number;
+    symbols_total: number;
+    patterns_count: number;
+    failed_symbols: number;
+    missing_raw_sessions: number;
+  };
 }
 
 export interface DatasetVersionRow {
@@ -125,7 +135,8 @@ export type DatasetAlertCode =
   | 'too_few_symbols'
   | 'no_cut'
   | 'no_active_version'
-  | 'data_error';
+  | 'data_error'
+  | 'pattern_failed';
 
 export interface DatasetAlertRow {
   readonly runAt: Date;
@@ -306,6 +317,8 @@ export class PgFlashbackDatasetRepository extends FlashbackDatasetRepository {
       for (const { symbol } of symbols) {
         await this.database.transaction(async (tx) => {
           await tx.query(`delete from fb_dataset_prefix where version = $1 and symbol = $2`, [version, symbol]);
+          // Mẫu nến tính sẵn (0046) trỏ tới dòng mã chứ không tới nến; `fb_dataset_raw` tự xoá cùng nến.
+          await tx.query(`delete from fb_dataset_patterns where version = $1 and symbol = $2`, [version, symbol]);
           await tx.query(`delete from fb_dataset_bars where version = $1 and symbol = $2`, [version, symbol]);
         });
       }

@@ -93,6 +93,31 @@ describe('flashback-dataset-build · báo cáo', () => {
     expect(report).toContain('BBB\tLỗi tải dữ liệu: timeout');
   });
 
+  it('có bước 2b: báo bộ nhận diện, số mã, số mẫu, mã lỗi và phiên thiếu giá gốc; không có thì không thêm dòng', () => {
+    const base = { status: 'active' as const, version: 3, okCount: 97, excludedCount: 3, durationMs: 60_000 };
+    expect(formatReport({ ...base, log: log() }, true)).not.toContain('mẫu nến');
+    const withPatterns = formatReport(
+      {
+        ...base,
+        log: log({
+          patterns: {
+            run_id: 9,
+            detector_version: 1,
+            symbols_done: 96,
+            symbols_total: 97,
+            patterns_count: 41_250,
+            failed_symbols: 1,
+            missing_raw_sessions: 310,
+          },
+        }),
+      },
+      true,
+    );
+    expect(withPatterns).toContain(
+      'mẫu nến (bước 2b): bộ nhận diện 1, 96/97 mã, 41250 mẫu, 1 mã lỗi, 310 phiên thiếu giá gốc',
+    );
+  });
+
   it('chạy thử: nói rõ không ghi gì; thất bại nêu lý do; đang chạy thì báo đang có lần dựng khác', () => {
     const base = { okCount: 97, excludedCount: 3, durationMs: 1_000, log: log() };
     expect(formatReport({ status: 'active', version: 0, ...base }, false)).toContain('MODE: DRY RUN (no writes)');

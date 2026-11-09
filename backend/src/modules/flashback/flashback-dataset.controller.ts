@@ -23,6 +23,7 @@ import { CurrentUser, Roles, RolesGuard, type AuthenticatedUser } from '../auth/
 import { auditContext } from '../users/audit.js';
 import { flashbackDatasetConfigPatchSchema } from './flashback-dataset.config.js';
 import { FlashbackDatasetAdminService } from './flashback-dataset-admin.service.js';
+import { FlashbackPatternsAdminService } from './flashback-patterns-admin.service.js';
 
 const openapi = (schema: z.ZodType): SchemaObject =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
@@ -135,6 +136,99 @@ const configResponseSchema = z.object({
   config_invalid: z.array(z.string()),
 });
 
+// ------------------------------------------------------------------ Mẫu nến tính sẵn (Candle Dojo v1.3 §7)
+
+const patternRunSchema = z.object({
+  id: z.number(),
+  version: z.number(),
+  detector_version: z.number(),
+  status: z.enum(['running', 'done', 'failed']),
+  trigger: z.enum(['build', 'backfill', 'admin', 'detector']),
+  requested_by: z.string().nullable(),
+  started_at: z.string(),
+  finished_at: z.string().nullable(),
+  symbols_done: z.number(),
+  symbols_total: z.number(),
+  patterns_count: z.number(),
+  failed_count: z.number(),
+  duration_ms: z.number().nullable(),
+  log: z.record(z.string(), z.unknown()),
+});
+
+const patternStatusSchema = z.object({
+  version: z.number().nullable(),
+  detector_version: z.number(),
+  running: patternRunSchema.nullable(),
+  latest: patternRunSchema.nullable(),
+  used: patternRunSchema.nullable(),
+  outdated: z.boolean(),
+  raw: z.object({ symbols: z.number(), sessions: z.number() }),
+  warnings: z.array(
+    z.object({
+      code: z.string(),
+      level: z.enum(['high', 'medium']),
+      message: z.string(),
+      at: z.string().nullable(),
+    }),
+  ),
+});
+
+const patternLookupSchema = z.object({
+  version: z.number().nullable(),
+  detector_version: z.number().nullable(),
+  symbol: z.string().nullable(),
+  from: z.string(),
+  to: z.string(),
+  rows: z.array(
+    z.object({ card_id: z.string(), name: z.string(), tier: z.number(), count: z.number() }),
+  ),
+  tiers: z.array(z.object({ tier: z.number(), total: z.number() })),
+  total: z.number(),
+});
+
+const patternOverviewSchema = z.object({
+  version: z.number().nullable(),
+  detector_version: z.number().nullable(),
+  total: z.number(),
+  zero_count: z.number(),
+  cards: z.array(
+    z.object({
+      card_id: z.string(),
+      name: z.string(),
+      tier: z.number(),
+      candles: z.number(),
+      vn: z.boolean(),
+      count: z.number(),
+      zero: z.boolean(),
+    }),
+  ),
+});
+
+const patternRecomputeSchema = z.object({
+  accepted: z.literal(true),
+  mode: z.literal('inline'),
+  version: z.number(),
+  detector_version: z.number(),
+});
+
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ngày phải có dạng YYYY-MM-DD');
+
+/** Tra cứu mẫu nến: mã (bỏ trống hoặc `all` = mọi mã), khoảng ngày gồm hai đầu, phiên bản kho (mặc định đang dùng). */
+export const flashbackPatternLookupQuerySchema = z.object({
+  symbol: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9]{1,16}$/)
+    .optional(),
+  from: isoDate,
+  to: isoDate,
+  version: z.coerce.number().int().min(1).optional(),
+});
+
+export const flashbackPatternOverviewQuerySchema = z.object({
+  version: z.coerce.number().int().min(1).optional(),
+});
+
 /** Truy vấn danh sách mã: phiên bản (mặc định là phiên bản đang dùng). */
 export const flashbackDatasetSymbolsQuerySchema = z.object({
   version: z.coerce.number().int().min(1).optional(),
@@ -145,7 +239,10 @@ export const flashbackDatasetSymbolsQuerySchema = z.object({
 @UseGuards(RolesGuard)
 @Roles('admin')
 export class FlashbackDatasetAdminController {
-  constructor(private readonly dataset: FlashbackDatasetAdminService) {}
+  constructor(
+    private readonly dataset: FlashbackDatasetAdminService,
+    private readonly patterns: FlashbackPatternsAdminService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -204,5 +301,54 @@ export class FlashbackDatasetAdminController {
     body: z.infer<typeof flashbackDatasetConfigPatchSchema>,
   ) {
     return this.dataset.updateConfig(body, auditContext(user, request));
+  }
+
+  // ------------------------------------------------------------------ mẫu nến tính sẵn
+
+  @Get('patterns/status')
+  @ApiOperation({
+    operationId: 'flashbackAdminDatasetPatternStatus',
+    summary: 'Mẫu nến tính sẵn: lần chạy, bộ nhận diện, tổng số mẫu, số mã lỗi và cảnh báo',
+  })
+  @ApiOkResponse({ schema: openapi(patternStatusSchema) })
+  async patternStatus() {
+    return this.patterns.status();
+  }
+
+  @Get('patterns/lookup')
+  @ApiOperation({
+    operationId: 'flashbackAdminDatasetPatternLookup',
+    summary: 'Số lần theo từng thẻ của một mã (hoặc mọi mã) trong một khoảng ngày',
+  })
+  @ApiOkResponse({ schema: openapi(patternLookupSchema) })
+  async patternLookup(
+    @Query({ schema: flashbackPatternLookupQuerySchema })
+    query: z.infer<typeof flashbackPatternLookupQuerySchema>,
+  ) {
+    return this.patterns.lookup(query);
+  }
+
+  @Get('patterns/overview')
+  @ApiOperation({
+    operationId: 'flashbackAdminDatasetPatternOverview',
+    summary: 'Số lần gặp của 47 thẻ trên cả kho (thẻ có 0 lần được đánh dấu)',
+  })
+  @ApiOkResponse({ schema: openapi(patternOverviewSchema) })
+  async patternOverview(
+    @Query({ schema: flashbackPatternOverviewQuerySchema })
+    query: z.infer<typeof flashbackPatternOverviewQuerySchema>,
+  ) {
+    return this.patterns.overview(query);
+  }
+
+  @Post('patterns/recompute')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'flashbackAdminDatasetPatternRecompute',
+    summary: 'Tính lại mẫu nến của kho đang dùng (chạy nền; 409 nếu đang có một lần tính)',
+  })
+  @ApiOkResponse({ schema: openapi(patternRecomputeSchema) })
+  async patternRecompute(@CurrentUser() user: AuthenticatedUser, @Req() request: FastifyRequest) {
+    return this.patterns.recompute(auditContext(user, request));
   }
 }

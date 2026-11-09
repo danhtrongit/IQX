@@ -26,6 +26,8 @@ import {
   type DatasetBuildResult,
 } from '../src/modules/flashback/flashback-dataset.builder.js';
 import { PgFlashbackDatasetRepository } from '../src/modules/flashback/flashback-dataset.repository.js';
+import { FlashbackPatternsCompute } from '../src/modules/flashback/flashback-patterns.compute.js';
+import { PgFlashbackPatternsRepository } from '../src/modules/flashback/flashback-patterns.repository.js';
 import { MarketFlashbackDatasetSource } from '../src/modules/flashback/flashback-dataset.source.js';
 import { TelegramFlashbackOpsAlerts } from '../src/modules/flashback/flashback.alerts.js';
 import {
@@ -80,7 +82,7 @@ export function requireSafeTarget(): string {
   return databaseUrl;
 }
 
-function configLike(values: Record<string, unknown>): ConfigService<Environment, true> {
+export function configLike(values: Record<string, unknown>): ConfigService<Environment, true> {
   return { get: (key: string) => values[key] } as unknown as ConfigService<Environment, true>;
 }
 
@@ -99,6 +101,9 @@ export function formatReport(result: DatasetBuildResult, apply: boolean): string
     `nguồn giá: ${JSON.stringify(log.sources)}   giá trị giao dịch: ${JSON.stringify(log.value_basis)}`,
     log.cuts
       ? `điểm cắt phòng ${log.cuts.view_bars}/${log.cuts.play_bars}: ${log.cuts.symbols_with_cut} mã có điểm cắt, ${log.cuts.total_cuts} điểm cắt`
+      : '',
+    log.patterns
+      ? `mẫu nến (bước 2b): bộ nhận diện ${log.patterns.detector_version}, ${log.patterns.symbols_done}/${log.patterns.symbols_total} mã, ${log.patterns.patterns_count} mẫu, ${log.patterns.failed_symbols} mã lỗi, ${log.patterns.missing_raw_sessions} phiên thiếu giá gốc`
       : '',
   );
   if (log.excluded.length > 0) {
@@ -138,10 +143,12 @@ async function main(): Promise<void> {
         OPS_ALERT_TELEGRAM_CHAT_ID: process.env.OPS_ALERT_TELEGRAM_CHAT_ID,
       }),
     );
+    // Bước 2b "Tính mẫu nến" (Candle Dojo v1.3 §4): kho dựng bằng lệnh này cũng có mẫu nến trước khi kích hoạt.
     const builder = new FlashbackDatasetBuilder(
       new PgFlashbackDatasetRepository(database),
       source,
       alerts,
+      new FlashbackPatternsCompute(new PgFlashbackPatternsRepository(database), source),
     );
     let lastReported = 0;
     const result = await builder.build({
@@ -166,7 +173,9 @@ async function main(): Promise<void> {
   } catch (error) {
     const code = (error as { code?: string }).code;
     if (code === '42P01') {
-      process.stderr.write('Thiếu các bảng fb_dataset_* (chạy migration 0039_flashback_dataset.sql trước).\n');
+      process.stderr.write(
+        'Thiếu các bảng fb_dataset_* (chạy migration 0039_flashback_dataset.sql và 0046_candle_dojo_flashback_patterns.sql trước).\n',
+      );
       process.exitCode = 2;
     } else {
       throw error;
