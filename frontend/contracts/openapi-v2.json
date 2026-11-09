@@ -35149,7 +35149,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 832 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 844 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -80102,6 +80102,904 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/admin/flashback/dataset/patterns/lookup": {
+      "get": {
+        "operationId": "flashbackAdminDatasetPatternLookup",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "symbol",
+            "required": false,
+            "schema": {
+              "pattern": "^[A-Za-z0-9]{1,16}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detector_version": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "from": {
+                      "type": "string"
+                    },
+                    "rows": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "card_id": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "tier": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "card_id",
+                          "name",
+                          "tier",
+                          "count"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "symbol": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "tiers": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "tier": {
+                            "type": "number"
+                          },
+                          "total": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "tier",
+                          "total"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "to": {
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "version": {
+                      "nullable": true,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "detector_version",
+                    "symbol",
+                    "from",
+                    "to",
+                    "rows",
+                    "tiers",
+                    "total"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Số lần theo từng thẻ của một mã (hoặc mọi mã) trong một khoảng ngày",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/dataset/patterns/overview": {
+      "get": {
+        "operationId": "flashbackAdminDatasetPatternOverview",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cards": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "candles": {
+                            "type": "number"
+                          },
+                          "card_id": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "tier": {
+                            "type": "number"
+                          },
+                          "vn": {
+                            "type": "boolean"
+                          },
+                          "zero": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "card_id",
+                          "name",
+                          "tier",
+                          "candles",
+                          "vn",
+                          "count",
+                          "zero"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "detector_version": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "version": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "zero_count": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "detector_version",
+                    "total",
+                    "zero_count",
+                    "cards"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Số lần gặp của 47 thẻ trên cả kho (thẻ có 0 lần được đánh dấu)",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/dataset/patterns/recompute": {
+      "post": {
+        "operationId": "flashbackAdminDatasetPatternRecompute",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "accepted": {
+                      "enum": [
+                        true
+                      ],
+                      "type": "boolean"
+                    },
+                    "detector_version": {
+                      "type": "number"
+                    },
+                    "mode": {
+                      "enum": [
+                        "inline"
+                      ],
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "accepted",
+                    "mode",
+                    "version",
+                    "detector_version"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tính lại mẫu nến của kho đang dùng (chạy nền; 409 nếu đang có một lần tính)",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/dataset/patterns/status": {
+      "get": {
+        "operationId": "flashbackAdminDatasetPatternStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "detector_version": {
+                      "type": "number"
+                    },
+                    "latest": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "detector_version": {
+                          "type": "number"
+                        },
+                        "duration_ms": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "failed_count": {
+                          "type": "number"
+                        },
+                        "finished_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "log": {
+                          "additionalProperties": {},
+                          "type": "object"
+                        },
+                        "patterns_count": {
+                          "type": "number"
+                        },
+                        "requested_by": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "running",
+                            "done",
+                            "failed"
+                          ],
+                          "type": "string"
+                        },
+                        "symbols_done": {
+                          "type": "number"
+                        },
+                        "symbols_total": {
+                          "type": "number"
+                        },
+                        "trigger": {
+                          "enum": [
+                            "build",
+                            "backfill",
+                            "admin",
+                            "detector"
+                          ],
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "detector_version",
+                        "status",
+                        "trigger",
+                        "requested_by",
+                        "started_at",
+                        "finished_at",
+                        "symbols_done",
+                        "symbols_total",
+                        "patterns_count",
+                        "failed_count",
+                        "duration_ms",
+                        "log"
+                      ],
+                      "type": "object"
+                    },
+                    "outdated": {
+                      "type": "boolean"
+                    },
+                    "raw": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "sessions": {
+                          "type": "number"
+                        },
+                        "symbols": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "symbols",
+                        "sessions"
+                      ],
+                      "type": "object"
+                    },
+                    "running": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "detector_version": {
+                          "type": "number"
+                        },
+                        "duration_ms": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "failed_count": {
+                          "type": "number"
+                        },
+                        "finished_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "log": {
+                          "additionalProperties": {},
+                          "type": "object"
+                        },
+                        "patterns_count": {
+                          "type": "number"
+                        },
+                        "requested_by": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "running",
+                            "done",
+                            "failed"
+                          ],
+                          "type": "string"
+                        },
+                        "symbols_done": {
+                          "type": "number"
+                        },
+                        "symbols_total": {
+                          "type": "number"
+                        },
+                        "trigger": {
+                          "enum": [
+                            "build",
+                            "backfill",
+                            "admin",
+                            "detector"
+                          ],
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "detector_version",
+                        "status",
+                        "trigger",
+                        "requested_by",
+                        "started_at",
+                        "finished_at",
+                        "symbols_done",
+                        "symbols_total",
+                        "patterns_count",
+                        "failed_count",
+                        "duration_ms",
+                        "log"
+                      ],
+                      "type": "object"
+                    },
+                    "used": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "detector_version": {
+                          "type": "number"
+                        },
+                        "duration_ms": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "failed_count": {
+                          "type": "number"
+                        },
+                        "finished_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "log": {
+                          "additionalProperties": {},
+                          "type": "object"
+                        },
+                        "patterns_count": {
+                          "type": "number"
+                        },
+                        "requested_by": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "running",
+                            "done",
+                            "failed"
+                          ],
+                          "type": "string"
+                        },
+                        "symbols_done": {
+                          "type": "number"
+                        },
+                        "symbols_total": {
+                          "type": "number"
+                        },
+                        "trigger": {
+                          "enum": [
+                            "build",
+                            "backfill",
+                            "admin",
+                            "detector"
+                          ],
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "detector_version",
+                        "status",
+                        "trigger",
+                        "requested_by",
+                        "started_at",
+                        "finished_at",
+                        "symbols_done",
+                        "symbols_total",
+                        "patterns_count",
+                        "failed_count",
+                        "duration_ms",
+                        "log"
+                      ],
+                      "type": "object"
+                    },
+                    "version": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "warnings": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "level": {
+                            "enum": [
+                              "high",
+                              "medium"
+                            ],
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "level",
+                          "message",
+                          "at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "detector_version",
+                    "running",
+                    "latest",
+                    "used",
+                    "outdated",
+                    "raw",
+                    "warnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mẫu nến tính sẵn: lần chạy, bộ nhận diện, tổng số mẫu, số mã lỗi và cảnh báo",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/admin/flashback/dataset/refresh": {
       "post": {
         "operationId": "flashbackAdminDatasetRefresh",
@@ -103517,6 +104415,1583 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/candle-dojo/cards": {
+      "get": {
+        "operationId": "listCandleDojoCards",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "catalog_version": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "acquired_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "card_id": {
+                            "type": "string"
+                          },
+                          "dojo": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "lesson_id": {
+                            "type": "string"
+                          },
+                          "lesson_title": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "owned": {
+                            "type": "boolean"
+                          },
+                          "price_xu": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "seen": {
+                            "type": "boolean"
+                          },
+                          "tier": {
+                            "maximum": 5,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "unlocked": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "card_id",
+                          "name",
+                          "tier",
+                          "price_xu",
+                          "lesson_id",
+                          "lesson_title",
+                          "dojo",
+                          "owned",
+                          "acquired_at",
+                          "seen",
+                          "unlocked"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "owned_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "total_count": {
+                      "enum": [
+                        47
+                      ],
+                      "type": "number"
+                    },
+                    "wallet": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "balance": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "balance"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "catalog_version",
+                    "wallet",
+                    "total_count",
+                    "owned_count",
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bộ 47 thẻ nến kèm giá, trạng thái sở hữu và mở khoá của tôi (mục Thẻ nến trong Shop)",
+        "tags": [
+          "Candle Dojo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/candle-dojo/cards/{cardId}/purchase": {
+      "post": {
+        "operationId": "purchaseCandleDojoCard",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cardId",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "pattern": "^[a-z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "catalog_version": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "expected_price_xu": {
+                    "maximum": 1000000,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "expected_price_xu",
+                  "catalog_version"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "acquired_at": {
+                      "type": "string"
+                    },
+                    "balance": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "card_id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "price_xu": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "status": {
+                      "enum": [
+                        "purchased"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "card_id",
+                    "name",
+                    "price_xu",
+                    "balance",
+                    "acquired_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "CARD_OWNED, CARD_LOCKED, PRICE_CHANGED, CATALOG_CHANGED, INSUFFICIENT_XU (details[0] có balance_xu/price_xu/shortfall_xu)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mua một thẻ nến bằng xu: đã học xong bài của thẻ, chưa có thẻ, đủ xu (khoá duy nhất theo thẻ)",
+        "tags": [
+          "Candle Dojo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/candle-dojo/drill/complete": {
+      "post": {
+        "operationId": "completeCandleDojoDrill",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "lesson_id": {
+                    "maxLength": 40,
+                    "minLength": 1,
+                    "pattern": "^[a-z0-9_]+$",
+                    "type": "string"
+                  },
+                  "taps": {
+                    "items": {
+                      "maximum": 200,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 200,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "lesson_id",
+                  "taps"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "balance": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "first_time": {
+                      "type": "boolean"
+                    },
+                    "found": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "lesson_id": {
+                      "type": "string"
+                    },
+                    "miss": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "reward_xu": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "streak_days": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "reward_xu",
+                    "first_time",
+                    "balance",
+                    "lesson_id",
+                    "found",
+                    "total",
+                    "miss",
+                    "streak_days"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "DRILL_LOCKED (chưa có đai vàng) hoặc LESSON_LOCKED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Luyện công mỗi ngày: +20 xu một lần mỗi ngày (giờ Việt Nam), giữ chuỗi ngày",
+        "tags": [
+          "Candle Dojo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/candle-dojo/exams": {
+      "post": {
+        "operationId": "startCandleDojoExam",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "dojo": {
+                    "maximum": 5,
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "dojo"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attempt_id": {
+                      "type": "string"
+                    },
+                    "belt_name": {
+                      "type": "string"
+                    },
+                    "dojo": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "pass_mark": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "questions": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "bars": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "c": {
+                                  "type": "number"
+                                },
+                                "h": {
+                                  "type": "number"
+                                },
+                                "l": {
+                                  "type": "number"
+                                },
+                                "o": {
+                                  "type": "number"
+                                },
+                                "v": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "o",
+                                "h",
+                                "l",
+                                "c",
+                                "v"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "index": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "n": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "options": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "index",
+                          "n",
+                          "bars",
+                          "options"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "total": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "attempt_id",
+                    "dojo",
+                    "belt_name",
+                    "pass_mark",
+                    "total",
+                    "questions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "EXAM_LOCKED: chưa học xong mọi bài của Dojo"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mở lượt thi đai của một Dojo: 8 câu do server ra đề, không kèm đáp án",
+        "tags": [
+          "Candle Dojo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/candle-dojo/exams/{attemptId}/answers": {
+      "post": {
+        "operationId": "answerCandleDojoExam",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "index": {
+                    "maximum": 7,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "option": {
+                    "maxLength": 32,
+                    "minLength": 1,
+                    "pattern": "^[a-z0-9_]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "index",
+                  "option"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "answer": {
+                      "type": "string"
+                    },
+                    "answered": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "attempt_id": {
+                      "type": "string"
+                    },
+                    "correct": {
+                      "type": "boolean"
+                    },
+                    "finished": {
+                      "type": "boolean"
+                    },
+                    "index": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "result": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "balance": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "belt": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "belt_up": {
+                          "type": "boolean"
+                        },
+                        "pass_mark": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "passed": {
+                          "type": "boolean"
+                        },
+                        "reward_xu": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "score": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "score",
+                        "total",
+                        "pass_mark",
+                        "passed",
+                        "belt",
+                        "belt_up",
+                        "reward_xu",
+                        "balance"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attempt_id",
+                    "index",
+                    "correct",
+                    "answer",
+                    "answered",
+                    "finished",
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "EXAM_CLOSED hoặc EXAM_ALREADY_ANSWERED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Trả lời một câu thi đai: server báo đúng/sai kèm đáp án; câu cuối chốt điểm, lên đai và +300 xu lần đầu",
+        "tags": [
+          "Candle Dojo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/candle-dojo/intro/complete": {
+      "post": {
+        "operationId": "completeCandleDojoIntro",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "balance": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "belt": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "first_time": {
+                      "type": "boolean"
+                    },
+                    "reward_xu": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "reward_xu",
+                    "first_time",
+                    "balance",
+                    "belt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xong Nhập môn: đai trắng, mở Dojo 1, +100 xu lần đầu (idempotent)",
+        "tags": [
+          "Candle Dojo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/candle-dojo/lessons/{lessonId}/complete": {
+      "post": {
+        "operationId": "completeCandleDojoLesson",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lessonId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "hunt": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "taps": {
+                        "items": {
+                          "maximum": 200,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "maxItems": 200,
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "taps"
+                    ],
+                    "type": "object"
+                  },
+                  "twins": {
+                    "items": {
+                      "enum": [
+                        "a",
+                        "b"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "maxItems": 3,
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "balance": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "best_stars": {
+                      "maximum": 3,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "card_ids": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "first_time": {
+                      "type": "boolean"
+                    },
+                    "hunt": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "found": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "miss": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "star": {
+                          "type": "boolean"
+                        },
+                        "total": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "found",
+                        "total",
+                        "miss",
+                        "star"
+                      ],
+                      "type": "object"
+                    },
+                    "lesson_id": {
+                      "type": "string"
+                    },
+                    "previous_stars": {
+                      "maximum": 3,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "reward_xu": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "stars": {
+                      "maximum": 3,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "twins": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "right": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "star": {
+                          "type": "boolean"
+                        },
+                        "total": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "right",
+                        "total",
+                        "star"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "reward_xu",
+                    "first_time",
+                    "balance",
+                    "lesson_id",
+                    "stars",
+                    "best_stars",
+                    "previous_stars",
+                    "hunt",
+                    "twins",
+                    "card_ids"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "LESSON_LOCKED: bài chưa mở"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xong một bài: server chấm Săn nến và Song sinh, lưu sao cao nhất, +100 xu lần đầu (idempotent)",
+        "tags": [
+          "Candle Dojo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/candle-dojo/state": {
+      "get": {
+        "operationId": "getCandleDojoState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cards": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "owned": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "acquired_at": {
+                                "type": "string"
+                              },
+                              "card_id": {
+                                "type": "string"
+                              },
+                              "seen_at": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "card_id",
+                              "acquired_at",
+                              "seen_at"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "owned_count": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "owned_count",
+                        "owned"
+                      ],
+                      "type": "object"
+                    },
+                    "catalog_version": {
+                      "type": "string"
+                    },
+                    "dojos": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "exam_ready": {
+                            "type": "boolean"
+                          },
+                          "lessons_done": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "lessons_total": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "n": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "passed": {
+                            "type": "boolean"
+                          },
+                          "unlocked": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "n",
+                          "unlocked",
+                          "lessons_total",
+                          "lessons_done",
+                          "exam_ready",
+                          "passed"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "lessons": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "attempts": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "completed_at": {
+                            "type": "string"
+                          },
+                          "dojo": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "hunt_star": {
+                            "type": "boolean"
+                          },
+                          "lesson_id": {
+                            "type": "string"
+                          },
+                          "stars": {
+                            "maximum": 3,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "twin_star": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "lesson_id",
+                          "dojo",
+                          "stars",
+                          "hunt_star",
+                          "twin_star",
+                          "attempts",
+                          "completed_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "open_lessons": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "progress": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "belt": {
+                          "maximum": 5,
+                          "minimum": -1,
+                          "type": "integer"
+                        },
+                        "belt_name": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "best_streak": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "drill_done_today": {
+                          "type": "boolean"
+                        },
+                        "drill_unlocked": {
+                          "type": "boolean"
+                        },
+                        "drills_total": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "intro_completed": {
+                          "type": "boolean"
+                        },
+                        "streak_days": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "belt",
+                        "belt_name",
+                        "intro_completed",
+                        "streak_days",
+                        "best_streak",
+                        "drills_total",
+                        "drill_unlocked",
+                        "drill_done_today"
+                      ],
+                      "type": "object"
+                    },
+                    "rewards": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "belt_xu": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "drill_xu": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "intro_xu": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "lesson_xu": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "intro_xu",
+                        "lesson_xu",
+                        "belt_xu",
+                        "drill_xu"
+                      ],
+                      "type": "object"
+                    },
+                    "wallet": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "balance": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "balance"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "catalog_version",
+                    "wallet",
+                    "progress",
+                    "lessons",
+                    "open_lessons",
+                    "dojos",
+                    "cards",
+                    "rewards"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đai, bài đã học, kho thẻ và chuỗi luyện công của tôi (chỉ đọc)",
+        "tags": [
+          "Candle Dojo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/cap0/enter": {
       "post": {
         "operationId": "Cap0Controller_enter[1]",
@@ -114643,6 +117118,29 @@
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
+                    "cards": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "card_id": {
+                            "type": "string"
+                          },
+                          "card_n": {
+                            "type": "number"
+                          },
+                          "play_idx": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "play_idx",
+                          "card_id",
+                          "card_n"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "ends_at": {
                       "type": "string"
                     },
@@ -115080,7 +117578,8 @@
                     "warmup_bars",
                     "history_bars",
                     "played_bars",
-                    "me"
+                    "me",
+                    "cards"
                   ],
                   "type": "object"
                 }
@@ -115466,6 +117965,23 @@
                       ],
                       "type": "object"
                     },
+                    "card": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "n": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "n"
+                      ],
+                      "type": "object"
+                    },
                     "me": {
                       "additionalProperties": false,
                       "properties": {
@@ -115625,7 +118141,8 @@
                   },
                   "required": [
                     "bar",
-                    "me"
+                    "me",
+                    "card"
                   ],
                   "type": "object"
                 }
@@ -120397,6 +122914,29 @@
                     "match": {
                       "additionalProperties": false,
                       "properties": {
+                        "cards": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "card_id": {
+                                "type": "string"
+                              },
+                              "card_n": {
+                                "type": "number"
+                              },
+                              "play_idx": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "play_idx",
+                              "card_id",
+                              "card_n"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
                         "ends_at": {
                           "type": "string"
                         },
@@ -120834,7 +123374,8 @@
                         "warmup_bars",
                         "history_bars",
                         "played_bars",
-                        "me"
+                        "me",
+                        "cards"
                       ],
                       "type": "object"
                     },
@@ -141975,13 +144516,23 @@
                               "flashback_stake",
                               "flashback_win",
                               "flashback_refund",
-                              "signup_bonus"
+                              "signup_bonus",
+                              "card_purchase",
+                              "dojo_reward"
                             ],
                             "type": "string"
                           },
                           "label": {
                             "additionalProperties": false,
                             "properties": {
+                              "card_id": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "card_name": {
+                                "nullable": true,
+                                "type": "string"
+                              },
                               "lesson_id": {
                                 "nullable": true,
                                 "type": "string"
@@ -141997,13 +144548,20 @@
                               "mascot_name": {
                                 "nullable": true,
                                 "type": "string"
+                              },
+                              "reward_key": {
+                                "nullable": true,
+                                "type": "string"
                               }
                             },
                             "required": [
                               "lesson_key",
                               "lesson_id",
                               "mascot_id",
-                              "mascot_name"
+                              "mascot_name",
+                              "card_id",
+                              "card_name",
+                              "reward_key"
                             ],
                             "type": "object"
                           },
@@ -177680,11 +180238,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 638,
+    "authenticatedOperations": 650,
     "noContentResponses": 18,
-    "operations": 850,
+    "operations": 862,
     "publicOperations": 212,
-    "responseSchemas": 832,
+    "responseSchemas": 844,
     "untypedResponses": 0
   }
 }
