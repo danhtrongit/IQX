@@ -10,6 +10,7 @@ const ASSET_DIRECTORIES = [
   'src/modules/candle-dojo/content',
   'src/modules/quant/v2/registry',
   'src/modules/screener/registry',
+  'src/modules/market-bulletins/render/fonts',
 ] as const;
 
 for (const relative of ASSET_DIRECTORIES) {

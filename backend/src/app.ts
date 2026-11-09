@@ -41,6 +41,7 @@ import { AnalysisModule } from './modules/analysis/index.js';
 import { ForecastsModule } from './modules/forecasts/forecasts.module.js';
 import { PatternsModule } from './modules/patterns/patterns.module.js';
 import { ReportsModule } from './modules/reports/index.js';
+import { MarketBulletinsModule } from './modules/market-bulletins/index.js';
 import { PortfolioManagerModule } from './modules/portfolio-manager/index.js';
 import { BotsModule } from './modules/bots/index.js';
 import { NotificationsModule } from './modules/notifications/index.js';
@@ -95,6 +96,7 @@ export function createApiModule(
       ForecastsModule,
       PatternsModule,
       ReportsModule,
+      MarketBulletinsModule,
       PortfolioManagerModule,
       BotsModule,
       AcademyModule,

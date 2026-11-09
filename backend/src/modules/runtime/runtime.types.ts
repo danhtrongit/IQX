@@ -16,6 +16,7 @@ export const RUNTIME_JOB_NAMES = [
   'market.index-membership',
   'market.daily-bars',
   'market.symbol-attributes',
+  'market.bulletin-draft',
   'trading.rights-sync',
   'research.reports-sync',
   'market.snapshot-wave-1',

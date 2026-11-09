@@ -56,10 +56,10 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     },
     {
       name: 'reports.premarket',
-      description: 'Generate the pre-market report',
+      description: 'Generate the pre-market report (retired by Bản tin v4: off unless JOB_REPORTS_PREMARKET_ENABLED=true)',
       everyMs: 900_000,
       tradingDay: true,
-      enabled: enabled('reports.premarket'),
+      enabled: enabled('reports.premarket', false),
     },
     {
       name: 'market.snapshot-wave-1',
@@ -84,10 +84,10 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     },
     {
       name: 'reports.midday',
-      description: 'Generate the midday report',
+      description: 'Generate the midday report (retired by Bản tin v4: off unless JOB_REPORTS_MIDDAY_ENABLED=true)',
       everyMs: 900_000,
       tradingDay: true,
-      enabled: enabled('reports.midday'),
+      enabled: enabled('reports.midday', false),
     },
     {
       name: 'journey.cap2-close-scan',
@@ -145,6 +145,16 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       everyMs: 600_000,
       tradingDay: false,
       enabled: enabled('market.symbol-attributes'),
+    },
+    {
+      name: 'market.bulletin-draft',
+      description:
+        'Bản tin thị trường v4: create the session draft, fill VN-Index and market stats, apply tracking rules, expire old bulletins',
+      // Ticks all day, every day, like market.daily-bars: the handler is idempotent and only acts once the
+      // VN-Index has a closed bar newer than the stored draft (Bot readiness 15:15).
+      everyMs: 300_000,
+      tradingDay: false,
+      enabled: enabled('market.bulletin-draft'),
     },
     {
       name: 'bot.session-eod',

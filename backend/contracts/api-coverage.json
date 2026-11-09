@@ -3834,6 +3834,11 @@
       "GET /api/v2/market-data/trading/{symbol}/summary",
       "GET /api/v2/market-data/trading/{symbol}/supply-demand",
       "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
+      "GET /api/v2/market/bulletins",
+      "GET /api/v2/market/bulletins/archive",
+      "GET /api/v2/market/bulletins/latest",
+      "GET /api/v2/market/bulletins/{date}/files/{variant}/{revision}",
+      "GET /api/v2/market/tracking",
       "GET /api/v2/media/{token}",
       "GET /api/v2/premium/plans",
       "GET /api/v2/valuation/{symbol}",
@@ -3880,10 +3885,10 @@
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 835,
-    "registeredHttp": 1327,
+    "documentedHttp": 849,
+    "registeredHttp": 1349,
     "websocketAdapter": "WsAdapter",
-    "websocketGateways": 2
+    "websocketGateways": 3
   },
   "schemaVersion": 1,
   "verdict": {

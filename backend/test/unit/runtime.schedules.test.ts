@@ -27,6 +27,20 @@ describe('runtime schedules', () => {
     });
   });
 
+  it('retires the pre-market and midday report jobs by default and schedules the bulletin draft job', () => {
+    const find = (name: string) =>
+      defaultRuntimeSchedules().find((schedule) => schedule.name === name);
+    expect(find('reports.premarket')?.enabled).toBe(false);
+    expect(find('reports.midday')?.enabled).toBe(false);
+    expect(find('reports.daily')?.enabled).toBe(true);
+    expect(find('market.bulletin-draft')).toMatchObject({ everyMs: 300_000, enabled: true });
+    // The old jobs stay available behind their explicit flags (data is kept, nothing is deleted).
+    vi.stubEnv('JOB_REPORTS_MIDDAY_ENABLED', 'true');
+    expect(find('reports.midday')?.enabled).toBe(true);
+    vi.stubEnv('JOB_MARKET_BULLETIN_DRAFT_ENABLED', 'false');
+    expect(find('market.bulletin-draft')?.enabled).toBe(false);
+  });
+
   it('stores the VN30 membership on trading days before the Bot session runs', () => {
     const schedules = defaultRuntimeSchedules();
     const membership = schedules.find((schedule) => schedule.name === 'market.index-membership');

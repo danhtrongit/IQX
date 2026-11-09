@@ -16,6 +16,7 @@ import {
   MASCOT_RULES_VERSION,
   type EvidenceRecord,
 } from '../modules/journey/identity/index.js';
+import { MarketBulletinsJob, MarketBulletinsModule } from '../modules/market-bulletins/index.js';
 import { MarketDataModule, MarketDataService } from '../modules/market-data/index.js';
 import { MarketExtendedModule, MarketExtendedService } from '../modules/market-extended/index.js';
 import {
@@ -105,6 +106,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly dailyBars?: DailyBarsService,
     private readonly symbolAttributes?: SymbolAttributesService,
     private readonly indexMembership?: IndexMembershipService,
+    private readonly marketBulletins?: MarketBulletinsJob,
   ) {}
 
   handlers(): RuntimeJobHandlers {
@@ -179,6 +181,10 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
         return outcome.due === 0
           ? { status: 'skipped', reason: 'nothing-due' }
           : this.complete(outcome);
+      },
+      'market.bulletin-draft': async ({ scheduledFor }) => {
+        if (!this.marketBulletins) return { status: 'skipped', reason: 'market-bulletins-unavailable' };
+        return this.marketBulletins.run(scheduledFor);
       },
       'bot.session-eod': async ({ scheduledFor }) =>
         this.complete(await this.bot.runScheduledSession(ictDate(scheduledFor))),
@@ -593,6 +599,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     TradingModule,
     ResearchModule,
     FlashbackModule,
+    MarketBulletinsModule,
   ],
   providers: [DomainRuntimeJobs],
   exports: [DomainRuntimeJobs],
