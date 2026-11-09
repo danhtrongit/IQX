@@ -3,6 +3,8 @@
  * ledger rows read, and the Vietnamese messages of Shop spec section 11.
  * Nothing here touches the network or React.
  */
+import { cdCard } from "@/lib/candle-dojo/cards"
+import { CD_DOJOS, cdLesson } from "@/lib/candle-dojo/lessons"
 import { MASCOT_MANIFEST } from "../journey/config"
 import { mascotAssetRoot } from "../journey/mascot-2d/mascotManifest"
 import type { MascotId } from "../journey/types"
@@ -163,6 +165,32 @@ export type LedgerRowInput = Omit<LedgerItem, "kind"> & {
   kind: LedgerItem["kind"] | "flashback_fee" | "flashback_reward" | (string & {})
 }
 
+/**
+ * Title of a Candle Dojo reward row from its reward key: `intro`, `lesson:<lessonId>`, `belt:<n>`,
+ * `drill:<yyyy-mm-dd>`. An id this client cannot map still reads as a sentence, never as a raw key.
+ */
+export function dojoRewardTitle(rewardKey: string | null | undefined): string {
+  if (!rewardKey) return "Thưởng Candle Dojo"
+  const [kind, ...rest] = rewardKey.split(":")
+  const arg = rest.join(":")
+  switch (kind) {
+    case "intro":
+      return "Hoàn thành Nhập môn Candle Dojo"
+    case "lesson": {
+      const lesson = cdLesson(arg)
+      return lesson ? `Hoàn thành bài ${lesson.title}` : "Hoàn thành bài Candle Dojo"
+    }
+    case "belt": {
+      const dojo = CD_DOJOS.find((item) => item.n === Number(arg) && item.n > 0)
+      return dojo ? `Lên đai ${dojo.belt}` : "Lên đai Candle Dojo"
+    }
+    case "drill":
+      return "Luyện công mỗi ngày"
+    default:
+      return "Thưởng Candle Dojo"
+  }
+}
+
 /** What a ledger row says: lesson name or mascot name, never a raw id when a name is known. */
 export function ledgerRowLabel(item: LedgerRowInput, lessonNames: ReadonlyMap<string, string> | undefined): { title: string; detail: string | null } {
   switch (item.kind) {
@@ -184,6 +212,12 @@ export function ledgerRowLabel(item: LedgerRowInput, lessonNames: ReadonlyMap<st
       const name = item.label.mascot_name ?? mascotDisplayName(item.label.mascot_id, "")
       return { title: "Tiến hoá linh thú", detail: name || null }
     }
+    case "card_purchase": {
+      const name = item.label.card_name ?? (item.label.card_id ? cdCard(item.label.card_id)?.name : undefined)
+      return { title: name ? `Mua thẻ nến ${name}` : "Mua thẻ nến", detail: null }
+    }
+    case "dojo_reward":
+      return { title: dojoRewardTitle(item.label.reward_key), detail: null }
     case "premium_purchase":
       return { title: "Mua Premium", detail: null }
     case "demo_deposit":

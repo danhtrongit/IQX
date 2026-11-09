@@ -5,10 +5,12 @@
  */
 import { createElement, type ReactElement, type ReactNode } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { render } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
 
 import { ApiError } from "@/lib/api"
+import { CD_CARDS, CD_CARD_COUNT, CD_TIER_INFO, cdCard } from "@/lib/candle-dojo/cards"
+import { CD_CATALOG_VERSION, cdLesson } from "@/lib/candle-dojo/lessons"
 import type { LedgerItem, ShopState } from "./shop-api"
 
 export const CATALOG_VERSION = "iqx-mascot-shop-v1"
@@ -45,6 +47,12 @@ export type BackendOptions = {
   minExchangeCash?: number
   /** Tiền mặt của tài khoản Demo Trading. */
   demoCash?: number
+  /** Mã bài Candle Dojo đã học xong (mở khoá thẻ của bài đó), ví dụ `marubozu`. */
+  learnedLessons?: string[]
+  /** Mã thẻ nến đang sở hữu, ví dụ `doji`. */
+  ownedCards?: string[]
+  /** Thẻ đã từng hiện trong Flashback ("Đã gặp"). */
+  seenCards?: string[]
 }
 
 export function ledgerItem(seq: number, overrides: Partial<LedgerItem> = {}): LedgerItem {
@@ -89,6 +97,9 @@ export function createShopBackend(options: BackendOptions = {}) {
     cashPerXu: options.cashPerXu ?? 10_000,
     minExchangeCash: options.minExchangeCash ?? 10_000,
     demoCash: options.demoCash ?? 0,
+    learnedLessons: [...(options.learnedLessons ?? [])],
+    ownedCards: [...(options.ownedCards ?? [])],
+    seenCards: [...(options.seenCards ?? [])],
   }
   const calls: Call[] = []
   const rules: Rule[] = []
@@ -252,6 +263,57 @@ export function createShopBackend(options: BackendOptions = {}) {
     }
   }
 
+  /** `GET /candle-dojo/cards`: all 47 cards with ownership and unlocking, as the server lists them. */
+  function cardsView() {
+    const learned = new Set(state.learnedLessons)
+    return {
+      catalog_version: CD_CATALOG_VERSION,
+      wallet: { balance: state.balance },
+      total_count: CD_CARD_COUNT,
+      owned_count: state.ownedCards.length,
+      items: CD_CARDS.map((card) => {
+        const owned = state.ownedCards.includes(card.id)
+        return {
+          card_id: card.id,
+          name: card.name,
+          tier: card.tier,
+          price_xu: CD_TIER_INFO[card.tier].priceXu,
+          lesson_id: card.lessonId,
+          lesson_title: cdLesson(card.lessonId)?.title ?? card.lessonId,
+          dojo: card.dojo,
+          owned,
+          acquired_at: owned ? "2026-11-08T03:00:00.000Z" : null,
+          seen: owned && state.seenCards.includes(card.id),
+          unlocked: learned.has(card.lessonId),
+        }
+      }),
+    }
+  }
+
+  /** `POST /candle-dojo/cards/{cardId}/purchase` with the server's checks in the server's order. */
+  function purchaseCard(call: Call) {
+    const cardId = decodeURIComponent(call.path.split("/")[3])
+    const body = call.body as { expected_price_xu: number; catalog_version: string }
+    const card = cdCard(cardId)
+    if (!card) throw apiError(404, "CARD_NOT_FOUND", "Không tìm thấy thẻ nến")
+    const price = CD_TIER_INFO[card.tier].priceXu
+    if (body.catalog_version !== CD_CATALOG_VERSION) throw apiError(409, "CATALOG_CHANGED", "Bộ thẻ đã thay đổi", [{ catalog_version: CD_CATALOG_VERSION }])
+    if (body.expected_price_xu !== price) throw apiError(409, "PRICE_CHANGED", "Giá đã thay đổi", [{ current_price_xu: price, catalog_version: CD_CATALOG_VERSION }])
+    if (state.ownedCards.includes(cardId)) throw apiError(409, "CARD_OWNED", "Bạn đã có thẻ này. Không trừ thêm xu.")
+    if (!state.learnedLessons.includes(card.lessonId)) throw apiError(409, "CARD_LOCKED", "Học xong bài ở Candle Dojo để mở thẻ này.")
+    if (state.balance < price) {
+      throw apiError(409, "INSUFFICIENT_XU", "Số xu hiện tại không đủ. Không thực hiện giao dịch.", [{ balance_xu: state.balance, price_xu: price, shortfall_xu: price - state.balance }])
+    }
+    state.balance -= price
+    state.seq += 1
+    state.ownedCards.push(cardId)
+    state.ledger.push(ledgerItem(state.seq, {
+      kind: "card_purchase", delta: -price, balance_after: state.balance,
+      label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null, card_id: cardId, card_name: card.name, reward_key: null },
+    }))
+    return { status: "purchased", card_id: cardId, name: card.name, price_xu: price, balance: state.balance, acquired_at: "2026-11-08T03:00:00.000Z" }
+  }
+
   function route(call: Call): unknown {
     const url = new URL(call.path, "http://x")
     const path = url.pathname
@@ -265,6 +327,8 @@ export function createShopBackend(options: BackendOptions = {}) {
       const more = start + limit < sorted.length
       return { items, next_cursor: more ? String(items[items.length - 1].seq) : null }
     }
+    if (path === "/candle-dojo/cards" && call.method === "GET") return cardsView()
+    if (path.startsWith("/candle-dojo/cards/") && path.endsWith("/purchase") && call.method === "POST") return purchaseCard(call)
     if (path === "/shop/purchases" && call.method === "POST") return purchase(call)
     if (path.startsWith("/shop/pets/") && path.endsWith("/evolve") && call.method === "POST") return evolve(call)
     if (path === "/shop/premium-purchases" && call.method === "POST") return premium(call)
@@ -343,4 +407,14 @@ export function renderWithProviders(ui: ReactElement, client: QueryClient = newQ
     createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, children))
   const view = render(wrap(ui))
   return { ...view, client, rerenderUi: (next: ReactElement) => view.rerender(wrap(next)) }
+}
+
+/** A tab of the Linh thú collection (the Thẻ nến section has tabs of the same names). */
+export function mascotTab(name: string) {
+  return within(screen.getByRole("tablist", { name: "Bộ sưu tập linh thú" })).getByRole("tab", { name })
+}
+
+/** A tab of the Thẻ nến section. */
+export function cardsTab(name: string) {
+  return within(screen.getByRole("tablist", { name: "Thẻ nến" })).getByRole("tab", { name })
 }

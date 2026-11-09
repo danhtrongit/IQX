@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { useWorkspace } from "../workspace/use-workspace"
 import { resetEnsuredWorkspaces } from "../workspace/workspace-api"
 import { ShopMain } from "./shop-main"
-import { createShopBackend, renderWithProviders, type BackendOptions, type ShopBackend } from "./shop-test-support"
+import { createShopBackend, mascotTab, renderWithProviders, type BackendOptions, type ShopBackend } from "./shop-test-support"
 
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
@@ -66,7 +66,7 @@ describe("Sử dụng", () => {
   it("switching back to Bạch Hổ is free and keeps every owned mascot", async () => {
     const user = userEvent.setup()
     await setup({ owned: ["bach_ho", "thanh_long"], active: "thanh_long" })
-    await user.click(screen.getByRole("tab", { name: "Đã sở hữu" }))
+    await user.click(mascotTab("Đã sở hữu"))
     await user.click(within(card("bach_ho")).getByRole("button", { name: "Sử dụng" }))
     await waitFor(() => expect(screen.getByTestId("stage-mascot").textContent).toBe("bach_ho"))
     expect(backend.state.owned).toEqual(["bach_ho", "thanh_long"])

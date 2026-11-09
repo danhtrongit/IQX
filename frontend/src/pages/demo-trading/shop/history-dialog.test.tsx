@@ -62,6 +62,28 @@ describe("coin history", () => {
     expect(screen.getByRole("columnheader", { name: "Số dư" })).toBeTruthy()
   })
 
+  it("reads a card purchase as a debit and a Candle Dojo reward as a credit, in the Shop's own style", async () => {
+    const blank = { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null }
+    setup({
+      balance: 300,
+      ledger: [
+        ledgerItem(1, { kind: "dojo_reward", delta: 100, balance_after: 100, label: { ...blank, lesson_id: "marubozu", reward_key: "lesson:marubozu" } }),
+        ledgerItem(2, { kind: "dojo_reward", delta: 300, balance_after: 400, label: { ...blank, reward_key: "belt:1" } }),
+        ledgerItem(3, { kind: "card_purchase", delta: -100, balance_after: 300, label: { ...blank, card_id: "doji", card_name: "Doji" } }),
+      ],
+    })
+    const rows = await screen.findAllByRole("row")
+    const cells = (row: HTMLElement) => within(row).getAllByRole("cell")
+    expect(cells(rows[1])[1].textContent).toBe("Mua thẻ nến Doji")
+    expect(cells(rows[1])[2].textContent).toBe("−100")
+    expect(cells(rows[1])[2].className).not.toContain("text-price-up")
+    expect(cells(rows[2])[1].textContent).toBe("Lên đai Vàng")
+    expect(cells(rows[2])[2].textContent).toBe("+300")
+    expect(cells(rows[2])[2].className).toContain("text-price-up")
+    expect(cells(rows[3])[1].textContent).toBe("Hoàn thành bài Marubozu")
+    expect(cells(rows[3])[2].textContent).toBe("+100")
+  })
+
   it("summarises balance, received and spent from the server's totals over the whole history", async () => {
     setup({ balance: 200, ledger: [...rewards(25), ledgerItem(26, { kind: "mascot_purchase", delta: -500, balance_after: 200, label: { lesson_key: null, lesson_id: null, mascot_id: "kim_quy", mascot_name: "Kim Quy", card_id: null, card_name: null, reward_key: null } })] })
     await screen.findAllByRole("row")

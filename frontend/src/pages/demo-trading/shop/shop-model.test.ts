@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { CatalogEntry, ShopState } from "./shop-api"
+import type { CatalogEntry, LedgerItem, ShopState } from "./shop-api"
 import {
   PET_EVOLVE_TOTAL_XU,
   deriveCardState,
@@ -112,6 +112,32 @@ describe("ledger labels", () => {
     expect(ledgerRowLabel({ ...ledgerItem(16, { label }), kind: "flashback_win" }, names)).toEqual({ title: "Thắng Flashback", detail: null })
     expect(ledgerRowLabel({ ...ledgerItem(17, { label }), kind: "flashback_refund" }, names)).toEqual({ title: "Hoàn xu cược Flashback", detail: null })
     expect(ledgerRowLabel(ledgerItem(12, { kind: "adjustment", label }), names).title).toBe("Điều chỉnh xu")
+  })
+})
+
+describe("ledger labels: Candle Dojo", () => {
+  const blank: LedgerItem["label"] = { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null, card_id: null, card_name: null, reward_key: null }
+  const reward = (rewardKey: string | null) => ledgerRowLabel(ledgerItem(1, { kind: "dojo_reward", label: { ...blank, reward_key: rewardKey } }), undefined)
+
+  it("names a card purchase after the card: the server's name, then the catalog's, then a plain sentence", () => {
+    const row = (label: Partial<LedgerItem["label"]>) => ledgerItem(1, { kind: "card_purchase", delta: -300, label: { ...blank, ...label } })
+    expect(ledgerRowLabel(row({ card_id: "doji", card_name: "Doji (máy chủ)" }), undefined)).toEqual({ title: "Mua thẻ nến Doji (máy chủ)", detail: null })
+    expect(ledgerRowLabel(row({ card_id: "nhan_chim_tang" }), undefined)).toEqual({ title: "Mua thẻ nến Bullish Engulfing", detail: null })
+    expect(ledgerRowLabel(row({ card_id: "khong_co_the_nay" }), undefined)).toEqual({ title: "Mua thẻ nến", detail: null })
+    expect(ledgerRowLabel(row({}), undefined)).toEqual({ title: "Mua thẻ nến", detail: null })
+  })
+
+  it("titles a Candle Dojo reward from its reward key, never a raw key", () => {
+    expect(reward("intro").title).toBe("Hoàn thành Nhập môn Candle Dojo")
+    expect(reward("lesson:marubozu").title).toBe("Hoàn thành bài Marubozu")
+    expect(reward("lesson:bai-la").title).toBe("Hoàn thành bài Candle Dojo")
+    expect(reward("belt:1").title).toBe("Lên đai Vàng")
+    expect(reward("belt:5").title).toBe("Lên đai Đen")
+    expect(reward("belt:9").title).toBe("Lên đai Candle Dojo")
+    expect(reward("drill:2026-11-08").title).toBe("Luyện công mỗi ngày")
+    expect(reward("gi-do").title).toBe("Thưởng Candle Dojo")
+    expect(reward(null).title).toBe("Thưởng Candle Dojo")
+    expect(reward("lesson:marubozu").detail).toBeNull()
   })
 })
 

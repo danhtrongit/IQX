@@ -56,7 +56,7 @@ type Phase =
 
 type Attempt = { key: string; signature: string }
 
-function BreakdownRow({ label, children }: { label: string; children: React.ReactNode }) {
+export function BreakdownRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3 py-2.5 text-xs">
       <dt className="text-muted-foreground">{label}</dt>
@@ -65,7 +65,7 @@ function BreakdownRow({ label, children }: { label: string; children: React.Reac
   )
 }
 
-function Breakdown({ children }: { children: React.ReactNode }) {
+export function Breakdown({ children }: { children: React.ReactNode }) {
   return <dl className="divide-y divide-border rounded-lg border border-border bg-background/40 px-3.5">{children}</dl>
 }
 

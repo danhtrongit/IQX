@@ -8,6 +8,12 @@ import { SHOP_COPY, formatXu } from "./shop-model"
 /** Coin colour: the accent in dark mode, a darker amber in light mode so text stays readable. */
 export const COIN_TEXT = "text-amber-700 dark:text-chart-2"
 
+/** Frame of one collection cell (a Linh thú card, a Thẻ nến card); the contents decide the rest. */
+export const SHOP_CELL_FRAME = "min-w-0 overflow-hidden rounded-xl border bg-card transition-colors motion-reduce:transition-none"
+
+/** Text button used in the panel and the main area ("Xem kho thẻ", "Xem trong Bot"). */
+export const LINK_BUTTON = "inline-flex items-center gap-1 rounded-sm text-xs font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+
 export function CoinAmount({ value, className, iconClassName }: { value: number; className?: string; iconClassName?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-1 font-semibold tabular-nums", COIN_TEXT, className)}>

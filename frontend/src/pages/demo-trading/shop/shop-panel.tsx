@@ -1,6 +1,7 @@
 /**
  * «Shop» tool panel (Shop spec 3.3). Order: Xu của bạn -> balance -> completed
- * lessons -> Lịch sử xu -> Đang sử dụng -> Đã sở hữu -> Vào Học viện.
+ * lessons -> Lịch sử xu -> Đang sử dụng -> Đã sở hữu -> Thẻ nến (Candle Dojo spec
+ * 8.3) -> Vào Học viện.
  *
  * The balance and the owned list come from the same query as the main view and
  * the header chip. Each region reports its own loading or error; none of them
@@ -16,15 +17,14 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { ActivePreview } from "./active-preview"
+import { CandleCardsPanelBlock } from "./candle-cards-panel"
 import { DemoExchangeDialog } from "./demo-exchange-dialog"
 import { HistoryDialog } from "./history-dialog"
 import { MascotArt } from "./mascot-art"
 import { PremiumPurchaseDialog } from "./premium-dialog"
 import { SHOP_COPY, findEntry, formatXu, ownedEntries, petLevelOf } from "./shop-model"
-import { COIN_TEXT, RegionError, RegionLoading, SideTitle } from "./shop-ui"
+import { COIN_TEXT, LINK_BUTTON, RegionError, RegionLoading, SideTitle } from "./shop-ui"
 import { useAcademyProgress, useActivateMascot, useShopState } from "./use-shop"
-
-const LINK_BUTTON = "inline-flex items-center gap-1 rounded-sm text-xs font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
 
 export function ShopPanel({ onNavigate }: { onNavigate: (panel: string) => void }) {
   const shop = useShopState()
@@ -146,6 +146,8 @@ export function ShopPanel({ onNavigate }: { onNavigate: (panel: string) => void 
           <Skeleton className="h-[118px] rounded-xl" />
         )}
       </section>
+
+      <CandleCardsPanelBlock />
 
       <div className="flex items-center gap-2.5 border-t border-border pt-4">
         <BookOpen className="size-6 shrink-0 text-primary" aria-hidden="true" />

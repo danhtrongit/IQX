@@ -6,6 +6,7 @@
  * Đang sử dụng, derived only from the server's balance, ownership and active
  * mascot. Cards carry no stats, rarity or trading advantage. While the panel is a
  * slide-over (<= 900px) the balance and the coin history are reachable here too.
+ * Under the grid sits the Thẻ nến section (candle-cards-section.tsx, spec 8.1).
  */
 import { useState, type CSSProperties } from "react"
 import { Check, Coins } from "lucide-react"
@@ -16,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { MASCOT_MANIFEST } from "../journey/config"
+import { CandleCardsSection } from "./candle-cards-section"
 import { DemoExchangeDialog } from "./demo-exchange-dialog"
 import { EvolveDialog } from "./evolve-dialog"
 import { HistoryDialog } from "./history-dialog"
@@ -35,7 +37,7 @@ import {
   storeEntries,
   type CardState,
 } from "./shop-model"
-import { COIN_TEXT, CoinAmount, RegionError } from "./shop-ui"
+import { COIN_TEXT, CoinAmount, RegionError, SHOP_CELL_FRAME } from "./shop-ui"
 import { useActivateMascot, useShopState } from "./use-shop"
 
 type View = "store" | "owned"
@@ -65,7 +67,7 @@ function ShopCard({ entry, state, onBuy, onUse, onEvolve, busy, pendingMascotId 
       tabIndex={-1}
       style={{ "--mascot-accent": accent } as CSSProperties}
       className={cn(
-        "min-w-0 overflow-hidden rounded-xl border bg-card transition-colors motion-reduce:transition-none",
+        SHOP_CELL_FRAME,
         card === "active" ? "border-primary" : "border-border hover:border-primary/40",
       )}
     >
@@ -229,6 +231,8 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
           </TabsContent>
         ))}
       </Tabs>
+
+      <CandleCardsSection balance={state.wallet.balance} />
 
       {buying && (
         <PurchaseDialog

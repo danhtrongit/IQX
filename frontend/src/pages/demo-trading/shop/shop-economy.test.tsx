@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ShopMain } from "./shop-main"
-import { apiError, createShopBackend, renderWithProviders, type BackendOptions, type ShopBackend } from "./shop-test-support"
+import { apiError, createShopBackend, mascotTab, renderWithProviders, type BackendOptions, type ShopBackend } from "./shop-test-support"
 
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
@@ -40,7 +40,7 @@ describe("Shop: tiến hoá linh thú", () => {
     const user = userEvent.setup()
     setup({ balance: 50_000, owned: ["bach_ho", "thanh_long"], active: "bach_ho" })
     await screen.findByRole("heading", { name: "Linh thú" })
-    await user.click(screen.getByRole("tab", { name: "Đã sở hữu" }))
+    await user.click(mascotTab("Đã sở hữu"))
 
     const evolve = within(card("thanh_long")).getByRole("button", { name: "Tiến hoá · 10.000 xu" })
     await user.click(evolve)
@@ -68,7 +68,7 @@ describe("Shop: tiến hoá linh thú", () => {
     const user = userEvent.setup()
     setup({ balance: 90_000, owned: ["bach_ho", "thanh_long"], active: "bach_ho", petLevels: { thanh_long: 2 } })
     await screen.findByRole("heading", { name: "Linh thú" })
-    await user.click(screen.getByRole("tab", { name: "Đã sở hữu" }))
+    await user.click(mascotTab("Đã sở hữu"))
 
     await user.click(within(card("thanh_long")).getByRole("button", { name: "Tiến hoá · 30.000 xu" }))
     const dialog = await screen.findByRole("dialog")
@@ -84,7 +84,7 @@ describe("Shop: tiến hoá linh thú", () => {
     const user = userEvent.setup()
     setup({ balance: 90_000, owned: ["bach_ho", "thanh_long"], active: "bach_ho", petLevels: { thanh_long: 3 } })
     await screen.findByRole("heading", { name: "Linh thú" })
-    await user.click(screen.getByRole("tab", { name: "Đã sở hữu" }))
+    await user.click(mascotTab("Đã sở hữu"))
     expect(within(card("thanh_long")).queryByRole("button", { name: /Tiến hoá/ })).toBeNull()
     expect(within(card("thanh_long")).getByText("Cấp 3")).toBeTruthy()
   })

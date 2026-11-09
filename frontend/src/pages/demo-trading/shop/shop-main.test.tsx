@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ShopMain } from "./shop-main"
-import { apiError, createShopBackend, renderWithProviders, type BackendOptions, type ShopBackend } from "./shop-test-support"
+import { apiError, createShopBackend, mascotTab, renderWithProviders, type BackendOptions, type ShopBackend } from "./shop-test-support"
 
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
@@ -35,7 +35,7 @@ describe("Shop main: collection", () => {
     setup({ balance: 500 })
     expect(await screen.findByRole("heading", { name: "Linh thú" })).toBeTruthy()
     expect(screen.getByTestId("shop-owned-count").textContent).toBe("1 / 5 đã sở hữu")
-    const tabs = screen.getAllByRole("tab")
+    const tabs = within(screen.getByRole("tablist", { name: "Bộ sưu tập linh thú" })).getAllByRole("tab")
     expect(tabs.map((tab) => tab.textContent)).toEqual(["Cửa hàng", "Đã sở hữu"])
     expect(tabs[0].getAttribute("aria-selected")).toBe("true")
     expect(Array.from(document.querySelectorAll("[data-shop-card]")).map((node) => node.getAttribute("data-shop-card"))).toEqual(["thanh_long", "loc_huou", "phung_hoang", "kim_quy"])
@@ -104,7 +104,7 @@ describe("Shop main: collection", () => {
     const user = userEvent.setup()
     setup({ balance: 100, owned: ["bach_ho", "thanh_long"], active: "bach_ho" })
     await screen.findByRole("heading", { name: "Linh thú" })
-    await user.click(screen.getByRole("tab", { name: "Đã sở hữu" }))
+    await user.click(mascotTab("Đã sở hữu"))
 
     expect(Array.from(document.querySelectorAll("[data-shop-card]")).map((node) => node.getAttribute("data-shop-card"))).toEqual(["bach_ho", "thanh_long"])
     const bachHo = card("bach_ho")
@@ -119,7 +119,7 @@ describe("Shop main: collection", () => {
     const user = userEvent.setup()
     setup({ owned: ["bach_ho", "loc_huou"], active: "loc_huou" })
     await screen.findByRole("heading", { name: "Linh thú" })
-    await user.click(screen.getByRole("tab", { name: "Đã sở hữu" }))
+    await user.click(mascotTab("Đã sở hữu"))
     expect(within(card("bach_ho")).getByRole("button", { name: "Sử dụng" }).textContent).toBe("Sử dụng")
     expect(card("bach_ho").textContent).toContain("Linh thú mặc định")
   })
