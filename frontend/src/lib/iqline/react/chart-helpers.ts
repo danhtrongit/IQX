@@ -49,6 +49,9 @@ export function sceneIndicatorsFor(
   },
 ): SceneIndicator[] {
   const out: SceneIndicator[] = []
+  // Chỉ báo phủ lên ô giá (MA, EMA, BB...) nối tiếp nhau trong bảng màu để mỗi đường một màu; chỉ báo ô riêng bắt
+  // đầu lại từ màu đầu vì đã nằm ở ô khác.
+  let overlayOffset = 0
   for (const input of inputs) {
     const definition = getIndicator(input.id)
     if (!definition) continue
@@ -58,7 +61,11 @@ export function sceneIndicatorsFor(
       const rows = typeof input.params.rows === "number" ? input.params.rows : DEFAULT_PROFILE_ROWS
       plot = options.profile && !input.hidden ? cache.profile(bars, options.profile, rows) : { kind: "over", series: [], profile: { rows: [] } }
     } else {
-      plot = cache.get(input, bars, palette, options.flashback ? undefined : (options.time ?? undefined))
+      const overlay = definition.kind === "over" && palette.length > 0
+      const shift = overlay ? overlayOffset % palette.length : 0
+      const rotated = shift ? [...palette.slice(shift), ...palette.slice(0, shift)] : palette
+      plot = cache.get(input, bars, rotated, options.flashback ? undefined : (options.time ?? undefined))
+      if (plot && overlay && !input.hidden) overlayOffset += Math.max(1, new Set(plot.series.map((series) => series.color)).size)
     }
     if (!plot) continue
     const title = indicatorTitle(definition, input, definition.params)

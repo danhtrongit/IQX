@@ -30,6 +30,21 @@ describe("indicatorTitle", () => {
 })
 
 describe("sceneIndicatorsFor", () => {
+  it("chỉ báo phủ giá nối tiếp màu nhau, chỉ báo ô riêng bắt đầu lại từ màu đầu", () => {
+    const inputs = [
+      { ...input("ma", { period: 20 }), key: "a" },
+      { ...input("ma", { period: 50 }), key: "b" },
+      { ...input("bollinger"), key: "c" },
+      { ...input("rsi"), key: "d" },
+    ]
+    const [ma20, ma50, bb, rsi] = sceneIndicatorsFor(inputs, bars, createIndicatorCache(), palette, { profile: null })
+    expect(ma20.plot.series[0].color).toBe(palette[0])
+    expect(ma50.plot.series[0].color).toBe(palette[1])
+    const bbColors = new Set(bb.plot.series.map((series) => series.color))
+    expect(bbColors.has(palette[0]) || bbColors.has(palette[1])).toBe(false)
+    expect(rsi.plot.series[0].color).toBe(palette[0])
+  })
+
   it("tính chỉ báo, đặt tên kèm tham số và giữ trạng thái ẩn", () => {
     const [rsi] = sceneIndicatorsFor([input("rsi", { period: 9 }, { hidden: true })], bars, createIndicatorCache(), palette, { profile: null })
     expect(rsi).toMatchObject({ key: "rsi-1", id: "rsi", name: "RSI (9)", hidden: true })

@@ -103,7 +103,7 @@ export class SceneBuilder {
       }
     }
 
-    // Lưới ngang theo vạch giá của từng ô, và nhãn ở trục phải.
+    // Nhãn trục phải theo vạch giá của từng ô (không vẽ lưới ngang).
     const paneTicks = frame.panes.map((pane) => priceTicks(pane.scale, Math.max(2, Math.floor(pane.box.height / 60))))
     const grid = this.bufs.get("base.grid", 4 * (paneTicks.reduce((sum, ticks) => sum + ticks.length, 0) + frame.panes.length))
     let gridCount = 0
@@ -115,11 +115,8 @@ export class SceneBuilder {
 
     frame.panes.forEach((pane, paneIndex) => {
       for (const tick of paneTicks[paneIndex]) {
+        // Không vẽ lưới ngang (chỉ giữ nhãn trục phải) để biểu đồ gọn.
         const y = px(tick.y, dpr)
-        grid[gridCount++] = left
-        grid[gridCount++] = y
-        grid[gridCount++] = right
-        grid[gridCount++] = y
         if (pane.box.kind === "price" && avoid.some((other) => Math.abs(other - tick.y) < LABEL_CLEARANCE)) continue
         const text = pane.box.kind === "price" && pane.scale.mode === "percent" ? formatPercentAxis(tick.value, tick.step) : formatPaneValue(frame, pane, tick.price, tick.step)
         labels.push(textCommand(frame.labelToken, text, right + 6 * dpr, y + 4 * dpr, "left", dpr))
