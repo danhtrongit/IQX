@@ -295,7 +295,7 @@ export function runBulletinChecks(input: CheckInput): BulletinChecks {
       level: 'info',
       code: 'data_ready',
       message: `Số liệu VN-Index phiên ${dmy(tradeDate)} đã chốt lúc ${
-        input.dataReadyAt ? vnTime(input.dataReadyAt) : '—'
+        input.dataReadyAt ? vnTime(input.dataReadyAt) : 'chưa rõ giờ'
       }.`,
       field: 'data',
     });

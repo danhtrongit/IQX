@@ -297,6 +297,26 @@ describe.skipIf(!URL)('Bản tin thị trường v4 trên PostgreSQL', () => {
     });
   });
 
+  it('Danh sách chọn của hộp Đẩy: mọi mã đạt xếp theo GTGD giảm dần, số liệu từ kho nến, chỉ quản trị viên', async () => {
+    const result = await slots.candidates(admin, runPass);
+    expect(result).toMatchObject({
+      result_id: runPass,
+      session_date: FIXTURE_DATE,
+      passed_count: 5,
+    });
+    expect(result.items.map((item) => item.symbol)).toEqual(['T04', 'T01', 'T02', 'T03', 'T05']);
+    expect(result.items[0]).toMatchObject({ symbol: 'T04', close: 39 });
+    expect(result.items[0]!.change_pct).toBeCloseTo(-2.5, 5);
+    expect(result.items[0]!.value_bn).toBeCloseTo(156, 5);
+    expect(result.items[3]!.change_pct).toBeCloseTo(0, 5);
+    await expect(slots.candidates(admin, runZero)).resolves.toMatchObject({
+      passed_count: 0,
+      items: [],
+    });
+    await expect(slots.candidates(plain, runPass)).rejects.toMatchObject({ status: 403 });
+    await expect(slots.candidates(admin, randomUUID())).rejects.toMatchObject({ status: 404 });
+  });
+
   it('Đẩy hợp lệ: lưu bản chụp xếp theo GTGD, biểu đồ của mã lớn nhất, đẩy lại thì thay và ghi lịch sử', async () => {
     const first = await push(admin, 1);
     expect(first).toMatchObject({ slot: 1, picks: 3, passed_count: 5 });
@@ -314,12 +334,12 @@ describe.skipIf(!URL)('Bản tin thị trường v4 trên PostgreSQL', () => {
     const replaced = (await repo.slots(db, FIXTURE_DATE))[1]!;
     expect(replaced.picks.map((pick) => pick.symbol)).toEqual(['T02']);
     expect(replaced.display_name).toBe('Tên mới');
-    const [{ n }] = (
+    const n = (
       await pool.query(
         `select jsonb_array_length(history) as n from market_bulletin_slots where trade_date = $1 and slot = 1`,
         [FIXTURE_DATE],
       )
-    ).rows as Array<{ n: number }>;
+    ).rows[0].n as number;
     expect(n).toBe(2);
 
     await push(admin, 1);
@@ -458,11 +478,11 @@ describe.skipIf(!URL)('Bản tin thị trường v4 trên PostgreSQL', () => {
     expect((await publicBulletins.latest()).bulletin).toBeNull();
     await expect(publicBulletins.byDate(FIXTURE_DATE)).rejects.toMatchObject({ status: 404 });
     expect((await tracking.view(null)).items).toHaveLength(0);
-    const [{ n }] = (
+    const n = (
       await pool.query(
         `select count(*)::int as n from market_tracking where exit_reason = 'unpublished'`,
       )
-    ).rows as Array<{ n: number }>;
+    ).rows[0].n as number;
     expect(n).toBe(4);
     await expect(bulletins.unpublish(admin, FIXTURE_DATE, audit, NOW)).rejects.toMatchObject({
       response: { code: 'BULLETIN_NOT_PUBLIC' },
@@ -541,13 +561,11 @@ describe.skipIf(!URL)('Bản tin thị trường v4 trên PostgreSQL', () => {
     const farFuture = new Date('2027-07-01T00:00:00.000Z');
     expect(await bulletins.sweepExpired(farFuture)).toEqual([FIXTURE_DATE]);
     for (const table of ['market_bulletins', 'market_bulletin_files', 'market_bulletin_slots']) {
-      const [{ n }] = (await pool.query(`select count(*)::int as n from ${table}`)).rows as Array<{
-        n: number;
-      }>;
+      const n = (await pool.query(`select count(*)::int as n from ${table}`)).rows[0].n as number;
       expect(n).toBe(0);
     }
-    const [{ kept }] = (await pool.query(`select count(*)::int as kept from market_tracking`))
-      .rows as Array<{ kept: number }>;
+    const kept = (await pool.query(`select count(*)::int as kept from market_tracking`)).rows[0]
+      .kept as number;
     expect(kept).toBeGreaterThan(0);
   });
 });

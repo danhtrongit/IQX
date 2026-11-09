@@ -50,6 +50,9 @@ export const pushSlotBodySchema = z.object({
 });
 export type PushSlotBody = z.infer<typeof pushSlotBodySchema>;
 
+export const pushCandidatesQuerySchema = z.object({ result_id: z.uuid() });
+export type PushCandidatesQuery = z.infer<typeof pushCandidatesQuerySchema>;
+
 export const bulletinByDateQuerySchema = z.object({ date: tradeDateSchema.optional() });
 export type BulletinByDateQuery = z.infer<typeof bulletinByDateQuerySchema>;
 

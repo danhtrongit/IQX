@@ -25,6 +25,7 @@ import {
   bulletinContentSchema,
   fileQuerySchema,
   previewBodySchema,
+  pushCandidatesQuerySchema,
   pushSlotBodySchema,
   slotParamSchema,
   tradeDateSchema,
@@ -35,6 +36,7 @@ import {
   type BulletinContentInput,
   type FileQuery,
   type PreviewBody,
+  type PushCandidatesQuery,
   type PushSlotBody,
   type TrackingQuery,
 } from './bulletin.schemas.js';
@@ -47,6 +49,7 @@ import {
   bulletinByDateResponseSchema,
   latestBulletinResponseSchema,
   openApi,
+  pushCandidatesResponseSchema,
   pushContextResponseSchema,
   pushSlotResponseSchema,
   trackingResponseSchema,
@@ -156,7 +159,10 @@ export class MarketBulletinsPublicController {
 @Roles('admin')
 @Controller('api/v2/admin/market-bulletins')
 export class MarketBulletinsAdminController {
-  constructor(private readonly bulletins: MarketBulletinsService) {}
+  constructor(
+    private readonly bulletins: MarketBulletinsService,
+    private readonly slots: BulletinSlotsService,
+  ) {}
 
   @Get()
   @ApiOperation({ operationId: 'listAdminMarketBulletins', summary: 'Danh sách bản tin (6 tháng)' })
@@ -173,6 +179,19 @@ export class MarketBulletinsAdminController {
   @ApiOkResponse({ schema: openApi(pushContextResponseSchema) })
   pushContext() {
     return this.bulletins.pushContext();
+  }
+
+  @Get('push-candidates')
+  @ApiOperation({
+    operationId: 'getMarketBulletinPushCandidates',
+    summary: 'Mã đạt của một kết quả lọc, xếp theo GTGD hôm nay, để chọn khi đẩy vào bản tin',
+  })
+  @ApiOkResponse({ schema: openApi(pushCandidatesResponseSchema) })
+  pushCandidates(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query({ schema: pushCandidatesQuerySchema }) query: PushCandidatesQuery,
+  ) {
+    return this.slots.candidates(user, query.result_id);
   }
 
   @Get(':date')

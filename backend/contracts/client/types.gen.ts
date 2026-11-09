@@ -32762,6 +32762,62 @@ export type ListAdminMarketBulletinsResponses = {
 export type ListAdminMarketBulletinsResponse =
   ListAdminMarketBulletinsResponses[keyof ListAdminMarketBulletinsResponses];
 
+export type GetMarketBulletinPushCandidatesData = {
+  body?: never;
+  path?: never;
+  query: {
+    result_id: string;
+  };
+  url: "/api/v2/admin/market-bulletins/push-candidates";
+};
+
+export type GetMarketBulletinPushCandidatesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetMarketBulletinPushCandidatesError =
+  GetMarketBulletinPushCandidatesErrors[keyof GetMarketBulletinPushCandidatesErrors];
+
+export type GetMarketBulletinPushCandidatesResponses = {
+  200: {
+    items: Array<{
+      change_pct: number | null;
+      close: number | null;
+      symbol: string;
+      value_bn: number | null;
+    }>;
+    passed_count: number;
+    result_id: string;
+    session_date: string | null;
+  };
+};
+
+export type GetMarketBulletinPushCandidatesResponse =
+  GetMarketBulletinPushCandidatesResponses[keyof GetMarketBulletinPushCandidatesResponses];
+
 export type GetMarketBulletinPushContextData = {
   body?: never;
   path?: never;

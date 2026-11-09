@@ -248,3 +248,17 @@ export const pushContextResponseSchema = z.object({
     }),
   ),
 });
+
+export const pushCandidatesResponseSchema = z.object({
+  result_id: z.string(),
+  session_date: date.nullable(),
+  passed_count: z.number().int(),
+  items: z.array(
+    z.object({
+      symbol: z.string(),
+      close: nullableNum,
+      change_pct: nullableNum,
+      value_bn: nullableNum,
+    }),
+  ),
+});

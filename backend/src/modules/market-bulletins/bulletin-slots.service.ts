@@ -33,6 +33,43 @@ type RunRow = {
 
 type VersionRow = { definition: unknown; name: string };
 
+type Columns =
+  Awaited<ReturnType<DailyBarsService['loadColumns']>> extends Map<string, infer Series>
+    ? Series
+    : never;
+
+/** Số liệu của một mã tại phiên `date`; null khi nến phiên đó chưa có hoặc không có khối lượng. */
+function sessionPoint(
+  series: Columns | undefined,
+  date: string,
+): { close: number; change_pct: number | null; value_bn: number; index: number } | null {
+  const index = series ? series.d.indexOf(date) : -1;
+  if (!series || index < 0 || !(series.v[index]! > 0)) return null;
+  const close = series.c[index]!;
+  const previous = index > 0 ? series.c[index - 1]! : null;
+  return {
+    close,
+    change_pct: previous && previous > 0 ? (close / previous - 1) * 100 : null,
+    value_bn: (close * series.v[index]!) / 1e6,
+    index,
+  };
+}
+
+/** Tối đa số mã đạt trả về cho danh sách chọn (kết quả không có điều kiện có thể đạt cả thị trường). */
+const MAX_CANDIDATES = 2000;
+
+export type PushCandidates = {
+  result_id: string;
+  session_date: string | null;
+  passed_count: number;
+  items: Array<{
+    symbol: string;
+    close: number | null;
+    change_pct: number | null;
+    value_bn: number | null;
+  }>;
+};
+
 const unprocessable = (code: string, message: string, details?: unknown) =>
   new UnprocessableEntityException({
     code,
@@ -106,7 +143,7 @@ export class BulletinSlotsService {
     if (sessionDate !== date)
       throw unprocessable(
         'SESSION_MISMATCH',
-        `Kết quả là của phiên ${sessionDate ? dm(sessionDate) : '—'}, khác phiên bản tin ${dm(date)}. Chạy lại bộ lọc.`,
+        `Kết quả là của phiên ${sessionDate ? dm(sessionDate) : 'chưa rõ'}, khác phiên bản tin ${dm(date)}. Chạy lại bộ lọc.`,
       );
     const pending = await this.bulletins.pushContext();
     if (pending.trade_date !== date) {
@@ -114,7 +151,7 @@ export class BulletinSlotsService {
       if (latestSession !== date)
         throw unprocessable(
           'SESSION_MISMATCH',
-          `Kết quả là của phiên ${dm(date)}, khác phiên bản tin ${pending.trade_date ? dm(pending.trade_date) : '—'}. Chạy lại bộ lọc.`,
+          `Kết quả là của phiên ${dm(date)}, khác phiên bản tin ${pending.trade_date ? dm(pending.trade_date) : 'chưa có'}. Chạy lại bộ lọc.`,
         );
     }
 
@@ -200,6 +237,48 @@ export class BulletinSlotsService {
     };
   }
 
+  /**
+   * Mọi mã đạt của một kết quả lọc kèm giá đóng cửa, ±% và GTGD của phiên kết quả, xếp theo GTGD giảm dần:
+   * danh sách chọn của hộp "Đẩy vào bản tin". Cùng nguồn số liệu với bản chụp của ô nên số trên màn hình
+   * khớp số in trong bản tin. Mã chưa có nến phiên đó vẫn hiện (giá trị trống, xếp cuối) để người chọn thấy lý do.
+   */
+  async candidates(user: AuthenticatedUser, resultId: string): Promise<PushCandidates> {
+    if (user.role !== 'admin')
+      throw new ForbiddenException({
+        code: 'FORBIDDEN',
+        message: 'Chỉ quản trị viên được đẩy vào bản tin.',
+      });
+    const [run] = await this.database.query<RunRow>(
+      `select id, definition, session_date, results from screener_runs where id = $1::uuid and user_id = $2::uuid`,
+      [resultId, user.id],
+    );
+    if (!run)
+      throw new NotFoundException({
+        code: 'SCREENER_RESULT_NOT_FOUND',
+        message: 'Không tìm thấy kết quả lọc (có thể đã hết hạn lưu); hãy chạy lại bộ lọc.',
+      });
+    const rows = Array.isArray(run.results) ? run.results : [];
+    const passed = [...new Set(rows.filter((row) => row.passed).map((row) => row.symbol))];
+    const sessionDate = run.session_date ? String(run.session_date).slice(0, 10) : null;
+    const columns =
+      sessionDate && passed.length
+        ? await this.dailyBars.loadColumns(passed.slice(0, MAX_CANDIDATES))
+        : new Map<string, Columns>();
+    const items = passed.slice(0, MAX_CANDIDATES).map((symbol) => {
+      const point = sessionDate ? sessionPoint(columns.get(symbol), sessionDate) : null;
+      return {
+        symbol,
+        close: point?.close ?? null,
+        change_pct: point?.change_pct ?? null,
+        value_bn: point?.value_bn ?? null,
+      };
+    });
+    items.sort(
+      (a, b) => (b.value_bn ?? -1) - (a.value_bn ?? -1) || a.symbol.localeCompare(b.symbol),
+    );
+    return { result_id: run.id, session_date: sessionDate, passed_count: passed.length, items };
+  }
+
   /** Giá đóng cửa, ±% và GTGD của từng mã tại phiên T từ kho nến, xếp theo GTGD giảm dần, cùng biểu đồ của mã đầu. */
   private async snapshotPicks(
     symbols: readonly string[],
@@ -209,18 +288,15 @@ export class BulletinSlotsService {
     const columns = await this.dailyBars.loadColumns(symbols);
     const picks: Array<SlotPick & { index: number }> = [];
     for (const symbol of symbols) {
-      const series = columns.get(symbol);
-      const index = series ? series.d.indexOf(date) : -1;
-      if (!series || index < 0 || !(series.v[index]! > 0))
+      const point = sessionPoint(columns.get(symbol), date);
+      if (!point)
         throw unprocessable('NO_SESSION_DATA', `Mã ${symbol} chưa có dữ liệu phiên ${dmy(date)}.`);
-      const close = series.c[index]!;
-      const previous = index > 0 ? series.c[index - 1]! : null;
       picks.push({
         symbol,
-        close,
-        change_pct: previous && previous > 0 ? (close / previous - 1) * 100 : null,
-        value_bn: (close * series.v[index]!) / 1e6,
-        index,
+        close: point.close,
+        change_pct: point.change_pct,
+        value_bn: point.value_bn,
+        index: point.index,
       });
     }
     picks.sort(
