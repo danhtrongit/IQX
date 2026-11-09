@@ -13,6 +13,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { FileCheck, Filter, FolderOpen, List, LoaderCircle, Play, Save, SlidersHorizontal } from "lucide-react"
+import { useSearchParams } from "react-router"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -27,15 +28,17 @@ import { ErrorLine, FeatureState } from "../shared/controls"
 import { FEATURE_DISABLED_COPY } from "../shared/ui-text"
 import { DialogShell } from "../shared/dialog-shell"
 import { errorDetails, errorMessage, isApiError, isCapabilityLocked, isFeatureDisabled, newKey } from "../shared/errors"
-import { RESULT_PAGE_SIZE, getAllPassedSymbols, runScreener } from "./api"
+import { RESULT_PAGE_SIZE, getAllPassedSymbols, getFilter, runScreener } from "./api"
 import { ApplyBotDialog, type ApplySource } from "./apply-bot-dialog"
 import { BotSourceCard } from "./bot-source"
 import { CatalogDialog } from "./catalog-dialog"
+import { PushBulletinDialog } from "./push-bulletin-dialog"
 import { BasicSection, MarketSection, RulesEditor, TechnicalSection } from "./conditions"
 import {
   buildDefinition,
   conditionCount,
   criteriaSignature,
+  criteriaParts,
   criteriaSummary,
   draftsFromFilter,
   isMetricUsable,
@@ -70,7 +73,7 @@ import type {
 } from "./types"
 
 type Dialog =
-  | { kind: "saved-filters" | "saved-lists" | "saved-results" | "catalog" | "save-filter" | "quality" | "apply-result" }
+  | { kind: "saved-filters" | "saved-lists" | "saved-results" | "catalog" | "save-filter" | "quality" | "apply-result" | "push-bulletin" }
   | { kind: "save-result"; save: ResultSaveKind }
   | { kind: "cell"; row: ResultRow; metric: ScreenerMetric }
   | { kind: "technical-cell"; row: ResultRow; column: TechnicalQuality }
@@ -158,6 +161,43 @@ function ApplyFromResult({
     savedList,
   }
   return <ApplyBotDialog source={source} candidates={candidates} defaultSelected={selection} currentSource={currentSource} actions={actions} onApplied={onApplied} onClose={onClose} />
+}
+
+/**
+ * Deep link `?tab=bo-loc&filter=<id>` (từ "Mở trong Bộ lọc" của màn soạn bản tin): nạp bộ lọc đã lưu đó một lần
+ * rồi bỏ tham số khỏi URL để tải lại trang không nạp lại. Chỉ nạp được phiên bản hiện tại của bộ lọc.
+ */
+function DeepLinkedFilter({ onLoad }: { onLoad: (filter: Parameters<typeof draftsFromFilter>[0]) => void }) {
+  const [params, setParams] = useSearchParams()
+  const filterId = params.get("filter")
+  const handled = useRef<string | null>(null)
+  const query = useQuery({
+    queryKey: [...filterKeys.all, "deep-link", filterId],
+    queryFn: ({ signal }) => getFilter(filterId as string, signal),
+    enabled: filterId !== null,
+    staleTime: 0,
+    retry: false,
+  })
+
+  useEffect(() => {
+    if (!filterId || handled.current === filterId) return
+    if (query.data) {
+      handled.current = filterId
+      onLoad(query.data)
+    } else if (query.isError) {
+      handled.current = filterId
+      toast.error("Không mở được bộ lọc đã đẩy vào bản tin. Có thể bộ lọc đã bị xoá.")
+    } else {
+      return
+    }
+    setParams((previous) => {
+      const next = new URLSearchParams(previous)
+      next.delete("filter")
+      return next
+    }, { replace: true })
+  }, [filterId, query.data, query.isError, onLoad, setParams])
+
+  return null
 }
 
 export function FilterTab() {
@@ -374,6 +414,7 @@ export function FilterTab() {
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
+      <DeepLinkedFilter onLoad={loadSavedFilter} />
       <MetricLibrary
         metrics={metrics}
         addedIds={addedIds}
@@ -456,6 +497,7 @@ export function FilterTab() {
               onSaveList={() => openDialog({ kind: "save-result", save: "list" })}
               onSaveResult={() => openDialog({ kind: "save-result", save: "snapshot" })}
               onApply={() => openDialog({ kind: "apply-result" })}
+              onPushBulletin={user?.role === "admin" ? () => openDialog({ kind: "push-bulletin" }) : undefined}
               onCell={(row, metric) => openDialog({ kind: "cell", row, metric })}
               onTechnicalCell={(row, column) => openDialog({ kind: "technical-cell", row, column })}
               onQuality={() => openDialog({ kind: "quality" })}
@@ -522,6 +564,18 @@ export function FilterTab() {
           currentSource={effectiveSource}
           actions={actions}
           onApplied={applied}
+          onClose={closeDialog}
+        />
+      )}
+      {dialog?.kind === "push-bulletin" && run && (
+        <PushBulletinDialog
+          resultId={run.resultId}
+          sessionDate={run.header.session_date ?? run.header.as_of}
+          runSignature={criteriaSignature(run.header.definition)}
+          loaded={loaded}
+          draftSignature={currentSignature}
+          tableSelection={selection}
+          criteriaParts={criteriaParts(run.header.definition, metrics, registry)}
           onClose={closeDialog}
         />
       )}

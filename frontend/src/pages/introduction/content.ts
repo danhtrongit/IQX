@@ -10,7 +10,7 @@
  * - 38 indicators .......... `backend-v2/src/modules/ta/catalog.ts`, `backend/app/services/ta/`.
  * - 10 alert presets ....... `backend-v2/src/modules/alerts/alerts.service.ts`.
  * - 10-minute alert scan ... `ALERT_SCAN_INTERVAL_MINUTES` default in `backend-v2/src/config/env.ts`.
- * - 3 briefings per day .... premarket 07:15, midday 11:30, EOD 16:30 (env defaults).
+ * - 1 bulletin per session ... Bản tin cuối phiên v4 (premarket and midday retired, backend/docs/ban-tin-v4).
  * - 7 journey levels ....... Cấp 0 «Nhập môn» → Cấp 6 «Bậc thầy» (`cap0..cap6` routes,
  *                            `frontend-v2/src/pages/demo-trading/journey/journey-state.ts`).
  * - 100,000,000 VND ........ `journey-stage.tsx` copy of the seeded virtual account.
@@ -410,7 +410,7 @@ export const TIERS: readonly Tier[] = [
     period: "trọn đời",
     note: "Đủ để theo dõi thị trường mỗi ngày.",
     features: [
-      "Ba bản nhận định thị trường mỗi phiên",
+      "Bản tin thị trường cuối mỗi phiên",
       "Bảng giá realtime, biểu đồ và bản vẽ",
       "Báo cáo tài chính: DuPont, chỉ số gian lận, dải định giá",
       "Danh sách theo dõi và săn mã",

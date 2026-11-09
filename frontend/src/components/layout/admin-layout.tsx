@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Navigate, NavLink, Outlet, useLocation } from "react-router"
-import { BellRing, BookOpen, Copy, CreditCard, GraduationCap, History, LayoutDashboard, Menu, Network, Package, ReceiptText, ServerCog, SlidersHorizontal, Timer, Users, WalletCards, Webhook, type LucideIcon } from "lucide-react"
+import { BellRing, BookOpen, Copy, Newspaper, CreditCard, GraduationCap, History, LayoutDashboard, Menu, Network, Package, ReceiptText, ServerCog, SlidersHorizontal, Timer, Users, WalletCards, Webhook, type LucideIcon } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { BrainWaveLogo } from "@/components/brand/brain-wave-logo"
@@ -26,6 +26,9 @@ const adminGroups: NavGroup[] = [
     { to: "/admin/lessons", label: "Khoá học", icon: BookOpen },
     { to: "/admin/academy", label: "Học viện", icon: GraduationCap },
     { to: "/admin/alerts", label: "Tín hiệu cảnh báo", icon: BellRing },
+  ] },
+  { label: "Nội dung", items: [
+    { to: "/admin/market-bulletins", label: "Bản tin cuối phiên", icon: Newspaper },
   ] },
   { label: "Doanh thu", items: [
     { to: "/admin/plans", label: "Gói Premium", icon: Package },

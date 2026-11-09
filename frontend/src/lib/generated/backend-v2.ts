@@ -32706,6 +32706,956 @@ export type AdminLearningControllerEpisodeFile1Responses = {
 export type AdminLearningControllerEpisodeFile1Response =
   AdminLearningControllerEpisodeFile1Responses[keyof AdminLearningControllerEpisodeFile1Responses];
 
+export type ListAdminMarketBulletinsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/market-bulletins";
+};
+
+export type ListAdminMarketBulletinsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListAdminMarketBulletinsError =
+  ListAdminMarketBulletinsErrors[keyof ListAdminMarketBulletinsErrors];
+
+export type ListAdminMarketBulletinsResponses = {
+  200: {
+    items: Array<{
+      actor_name: string | null;
+      data_ready: boolean;
+      edited_at: string | null;
+      error_count: number | null;
+      published_at: string | null;
+      status: "draft" | "public" | "unpublic";
+      trade_date: string;
+      updated_at: string | null;
+    }>;
+    retention_months: number;
+  };
+};
+
+export type ListAdminMarketBulletinsResponse =
+  ListAdminMarketBulletinsResponses[keyof ListAdminMarketBulletinsResponses];
+
+export type GetMarketBulletinPushCandidatesData = {
+  body?: never;
+  path?: never;
+  query: {
+    result_id: string;
+  };
+  url: "/api/v2/admin/market-bulletins/push-candidates";
+};
+
+export type GetMarketBulletinPushCandidatesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetMarketBulletinPushCandidatesError =
+  GetMarketBulletinPushCandidatesErrors[keyof GetMarketBulletinPushCandidatesErrors];
+
+export type GetMarketBulletinPushCandidatesResponses = {
+  200: {
+    items: Array<{
+      change_pct: number | null;
+      close: number | null;
+      symbol: string;
+      value_bn: number | null;
+    }>;
+    passed_count: number;
+    result_id: string;
+    session_date: string | null;
+  };
+};
+
+export type GetMarketBulletinPushCandidatesResponse =
+  GetMarketBulletinPushCandidatesResponses[keyof GetMarketBulletinPushCandidatesResponses];
+
+export type GetMarketBulletinPushContextData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/market-bulletins/push-context";
+};
+
+export type GetMarketBulletinPushContextErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetMarketBulletinPushContextError =
+  GetMarketBulletinPushContextErrors[keyof GetMarketBulletinPushContextErrors];
+
+export type GetMarketBulletinPushContextResponses = {
+  200: {
+    locked: boolean;
+    slots: Array<{
+      default_name: string | null;
+      pushed: {
+        display_name: string;
+        passed_count: number;
+        picks: number;
+        pushed_at: string;
+      } | null;
+      slot: number;
+    }>;
+    status: "draft" | "public" | "unpublic";
+    trade_date: string | null;
+  };
+};
+
+export type GetMarketBulletinPushContextResponse =
+  GetMarketBulletinPushContextResponses[keyof GetMarketBulletinPushContextResponses];
+
+export type GetAdminMarketBulletinData = {
+  body?: never;
+  path: {
+    date: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/market-bulletins/{date}";
+};
+
+export type GetAdminMarketBulletinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetAdminMarketBulletinError =
+  GetAdminMarketBulletinErrors[keyof GetAdminMarketBulletinErrors];
+
+export type GetAdminMarketBulletinResponses = {
+  200: {
+    can_publish: boolean;
+    checks: {
+      checked_at: string;
+      errors: number;
+      items: Array<{
+        code: string;
+        field?: string;
+        level: "error" | "warn" | "info";
+        message: string;
+      }>;
+      warnings: number;
+    };
+    content: {
+      levels: {
+        na: number | null;
+        nt: number | null;
+        pa: number | null;
+        pt: number | null;
+        r1: number | null;
+        r2: number | null;
+        s1: number | null;
+        s2: number | null;
+      };
+      liquidity: string;
+      momentum: string;
+      trend: string;
+    };
+    data_ready: boolean;
+    data_ready_at: string | null;
+    files: Array<{
+      byte_size: number;
+      download_url: string;
+      file_name: string;
+      page_count: number;
+      page_height: number;
+      page_width: number;
+      revision: number;
+      url: string;
+      variant: "desktop" | "mobile";
+    }>;
+    has_changes: boolean;
+    history: Array<{
+      action: "publish" | "republish" | "unpublish";
+      at: string;
+      by: string | null;
+      previous_revision: number | null;
+      revision: number | null;
+    }>;
+    metrics: {
+      advances: number | null;
+      change: number;
+      change_pct: number;
+      close: number;
+      declines: number | null;
+      histogram: number | null;
+      macd: number | null;
+      rsi: number | null;
+      rsi_previous: number | null;
+      signal: number | null;
+      sma20: number | null;
+      sma200: number | null;
+      sma50: number | null;
+      unchanged: number | null;
+      value_bn: number | null;
+      volume_ma20_millions: number | null;
+      volume_millions: number;
+    } | null;
+    model_available: boolean;
+    published_at: string | null;
+    published_by_name: string | null;
+    published_revision: number | null;
+    retention_months: number;
+    slots: Array<{
+      slot: number;
+      snapshot: {
+        chart: {
+          c: Array<number>;
+          d: Array<string>;
+          h: Array<number>;
+          l: Array<number>;
+          o: Array<number>;
+          symbol: string;
+          v: Array<number>;
+        } | null;
+        conditions: Array<string>;
+        display_name: string;
+        filter_id: string;
+        filter_name: string;
+        filter_version: number;
+        passed_count: number;
+        picks: Array<{
+          change_pct: number | null;
+          close: number;
+          symbol: string;
+          value_bn: number | null;
+        }>;
+        pushed_at: string;
+        pushed_by: string | null;
+        result_id: string;
+        slot: number;
+        trade_date: string;
+      } | null;
+    }>;
+    slots_locked: boolean;
+    status: "draft" | "public" | "unpublic";
+    suggestions: Array<{
+      label: string;
+      side: "resistance" | "support";
+      value: number;
+    }>;
+    trade_date: string;
+    updated_at: string | null;
+  };
+};
+
+export type GetAdminMarketBulletinResponse =
+  GetAdminMarketBulletinResponses[keyof GetAdminMarketBulletinResponses];
+
+export type CheckAdminMarketBulletinData = {
+  body?: never;
+  path: {
+    date: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/market-bulletins/{date}/check";
+};
+
+export type CheckAdminMarketBulletinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CheckAdminMarketBulletinError =
+  CheckAdminMarketBulletinErrors[keyof CheckAdminMarketBulletinErrors];
+
+export type CheckAdminMarketBulletinResponses = {
+  200: {
+    checks: {
+      checked_at: string;
+      errors: number;
+      items: Array<{
+        code: string;
+        field?: string;
+        level: "error" | "warn" | "info";
+        message: string;
+      }>;
+      warnings: number;
+    };
+  };
+};
+
+export type CheckAdminMarketBulletinResponse =
+  CheckAdminMarketBulletinResponses[keyof CheckAdminMarketBulletinResponses];
+
+export type SaveAdminMarketBulletinContentData = {
+  body: {
+    levels: {
+      na: number | null;
+      nt: number | null;
+      pa: number | null;
+      pt: number | null;
+      r1: number | null;
+      r2: number | null;
+      s1: number | null;
+      s2: number | null;
+    };
+    liquidity: string;
+    momentum: string;
+    trend: string;
+  };
+  path: {
+    date: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/market-bulletins/{date}/content";
+};
+
+export type SaveAdminMarketBulletinContentErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type SaveAdminMarketBulletinContentError =
+  SaveAdminMarketBulletinContentErrors[keyof SaveAdminMarketBulletinContentErrors];
+
+export type SaveAdminMarketBulletinContentResponses = {
+  200: {
+    can_publish: boolean;
+    checks: {
+      checked_at: string;
+      errors: number;
+      items: Array<{
+        code: string;
+        field?: string;
+        level: "error" | "warn" | "info";
+        message: string;
+      }>;
+      warnings: number;
+    };
+    content: {
+      levels: {
+        na: number | null;
+        nt: number | null;
+        pa: number | null;
+        pt: number | null;
+        r1: number | null;
+        r2: number | null;
+        s1: number | null;
+        s2: number | null;
+      };
+      liquidity: string;
+      momentum: string;
+      trend: string;
+    };
+    data_ready: boolean;
+    data_ready_at: string | null;
+    files: Array<{
+      byte_size: number;
+      download_url: string;
+      file_name: string;
+      page_count: number;
+      page_height: number;
+      page_width: number;
+      revision: number;
+      url: string;
+      variant: "desktop" | "mobile";
+    }>;
+    has_changes: boolean;
+    history: Array<{
+      action: "publish" | "republish" | "unpublish";
+      at: string;
+      by: string | null;
+      previous_revision: number | null;
+      revision: number | null;
+    }>;
+    metrics: {
+      advances: number | null;
+      change: number;
+      change_pct: number;
+      close: number;
+      declines: number | null;
+      histogram: number | null;
+      macd: number | null;
+      rsi: number | null;
+      rsi_previous: number | null;
+      signal: number | null;
+      sma20: number | null;
+      sma200: number | null;
+      sma50: number | null;
+      unchanged: number | null;
+      value_bn: number | null;
+      volume_ma20_millions: number | null;
+      volume_millions: number;
+    } | null;
+    model_available: boolean;
+    published_at: string | null;
+    published_by_name: string | null;
+    published_revision: number | null;
+    retention_months: number;
+    slots: Array<{
+      slot: number;
+      snapshot: {
+        chart: {
+          c: Array<number>;
+          d: Array<string>;
+          h: Array<number>;
+          l: Array<number>;
+          o: Array<number>;
+          symbol: string;
+          v: Array<number>;
+        } | null;
+        conditions: Array<string>;
+        display_name: string;
+        filter_id: string;
+        filter_name: string;
+        filter_version: number;
+        passed_count: number;
+        picks: Array<{
+          change_pct: number | null;
+          close: number;
+          symbol: string;
+          value_bn: number | null;
+        }>;
+        pushed_at: string;
+        pushed_by: string | null;
+        result_id: string;
+        slot: number;
+        trade_date: string;
+      } | null;
+    }>;
+    slots_locked: boolean;
+    status: "draft" | "public" | "unpublic";
+    suggestions: Array<{
+      label: string;
+      side: "resistance" | "support";
+      value: number;
+    }>;
+    trade_date: string;
+    updated_at: string | null;
+  };
+};
+
+export type SaveAdminMarketBulletinContentResponse =
+  SaveAdminMarketBulletinContentResponses[keyof SaveAdminMarketBulletinContentResponses];
+
+export type PreviewAdminMarketBulletinData = {
+  body: {
+    content?: {
+      levels: {
+        na: number | null;
+        nt: number | null;
+        pa: number | null;
+        pt: number | null;
+        r1: number | null;
+        r2: number | null;
+        s1: number | null;
+        s2: number | null;
+      };
+      liquidity: string;
+      momentum: string;
+      trend: string;
+    };
+    variant: "desktop" | "mobile";
+  };
+  path: {
+    date: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/market-bulletins/{date}/preview";
+};
+
+export type PreviewAdminMarketBulletinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PreviewAdminMarketBulletinError =
+  PreviewAdminMarketBulletinErrors[keyof PreviewAdminMarketBulletinErrors];
+
+export type PreviewAdminMarketBulletinResponses = {
+  200: {
+    overflow: Array<"trend" | "momentum" | "liquidity">;
+    pages: Array<{
+      height: number;
+      svg: string;
+      width: number;
+    }>;
+    ready: boolean;
+    variant: "desktop" | "mobile";
+  };
+};
+
+export type PreviewAdminMarketBulletinResponse =
+  PreviewAdminMarketBulletinResponses[keyof PreviewAdminMarketBulletinResponses];
+
+export type PublishAdminMarketBulletinData = {
+  body?: never;
+  path: {
+    date: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/market-bulletins/{date}/publish";
+};
+
+export type PublishAdminMarketBulletinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PublishAdminMarketBulletinError =
+  PublishAdminMarketBulletinErrors[keyof PublishAdminMarketBulletinErrors];
+
+export type PublishAdminMarketBulletinResponses = {
+  200: {
+    can_publish: boolean;
+    checks: {
+      checked_at: string;
+      errors: number;
+      items: Array<{
+        code: string;
+        field?: string;
+        level: "error" | "warn" | "info";
+        message: string;
+      }>;
+      warnings: number;
+    };
+    content: {
+      levels: {
+        na: number | null;
+        nt: number | null;
+        pa: number | null;
+        pt: number | null;
+        r1: number | null;
+        r2: number | null;
+        s1: number | null;
+        s2: number | null;
+      };
+      liquidity: string;
+      momentum: string;
+      trend: string;
+    };
+    data_ready: boolean;
+    data_ready_at: string | null;
+    files: Array<{
+      byte_size: number;
+      download_url: string;
+      file_name: string;
+      page_count: number;
+      page_height: number;
+      page_width: number;
+      revision: number;
+      url: string;
+      variant: "desktop" | "mobile";
+    }>;
+    has_changes: boolean;
+    history: Array<{
+      action: "publish" | "republish" | "unpublish";
+      at: string;
+      by: string | null;
+      previous_revision: number | null;
+      revision: number | null;
+    }>;
+    metrics: {
+      advances: number | null;
+      change: number;
+      change_pct: number;
+      close: number;
+      declines: number | null;
+      histogram: number | null;
+      macd: number | null;
+      rsi: number | null;
+      rsi_previous: number | null;
+      signal: number | null;
+      sma20: number | null;
+      sma200: number | null;
+      sma50: number | null;
+      unchanged: number | null;
+      value_bn: number | null;
+      volume_ma20_millions: number | null;
+      volume_millions: number;
+    } | null;
+    model_available: boolean;
+    published_at: string | null;
+    published_by_name: string | null;
+    published_revision: number | null;
+    retention_months: number;
+    slots: Array<{
+      slot: number;
+      snapshot: {
+        chart: {
+          c: Array<number>;
+          d: Array<string>;
+          h: Array<number>;
+          l: Array<number>;
+          o: Array<number>;
+          symbol: string;
+          v: Array<number>;
+        } | null;
+        conditions: Array<string>;
+        display_name: string;
+        filter_id: string;
+        filter_name: string;
+        filter_version: number;
+        passed_count: number;
+        picks: Array<{
+          change_pct: number | null;
+          close: number;
+          symbol: string;
+          value_bn: number | null;
+        }>;
+        pushed_at: string;
+        pushed_by: string | null;
+        result_id: string;
+        slot: number;
+        trade_date: string;
+      } | null;
+    }>;
+    slots_locked: boolean;
+    status: "draft" | "public" | "unpublic";
+    suggestions: Array<{
+      label: string;
+      side: "resistance" | "support";
+      value: number;
+    }>;
+    trade_date: string;
+    updated_at: string | null;
+  };
+};
+
+export type PublishAdminMarketBulletinResponse =
+  PublishAdminMarketBulletinResponses[keyof PublishAdminMarketBulletinResponses];
+
+export type UnpublishAdminMarketBulletinData = {
+  body?: never;
+  path: {
+    date: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/market-bulletins/{date}/unpublish";
+};
+
+export type UnpublishAdminMarketBulletinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type UnpublishAdminMarketBulletinError =
+  UnpublishAdminMarketBulletinErrors[keyof UnpublishAdminMarketBulletinErrors];
+
+export type UnpublishAdminMarketBulletinResponses = {
+  200: {
+    can_publish: boolean;
+    checks: {
+      checked_at: string;
+      errors: number;
+      items: Array<{
+        code: string;
+        field?: string;
+        level: "error" | "warn" | "info";
+        message: string;
+      }>;
+      warnings: number;
+    };
+    content: {
+      levels: {
+        na: number | null;
+        nt: number | null;
+        pa: number | null;
+        pt: number | null;
+        r1: number | null;
+        r2: number | null;
+        s1: number | null;
+        s2: number | null;
+      };
+      liquidity: string;
+      momentum: string;
+      trend: string;
+    };
+    data_ready: boolean;
+    data_ready_at: string | null;
+    files: Array<{
+      byte_size: number;
+      download_url: string;
+      file_name: string;
+      page_count: number;
+      page_height: number;
+      page_width: number;
+      revision: number;
+      url: string;
+      variant: "desktop" | "mobile";
+    }>;
+    has_changes: boolean;
+    history: Array<{
+      action: "publish" | "republish" | "unpublish";
+      at: string;
+      by: string | null;
+      previous_revision: number | null;
+      revision: number | null;
+    }>;
+    metrics: {
+      advances: number | null;
+      change: number;
+      change_pct: number;
+      close: number;
+      declines: number | null;
+      histogram: number | null;
+      macd: number | null;
+      rsi: number | null;
+      rsi_previous: number | null;
+      signal: number | null;
+      sma20: number | null;
+      sma200: number | null;
+      sma50: number | null;
+      unchanged: number | null;
+      value_bn: number | null;
+      volume_ma20_millions: number | null;
+      volume_millions: number;
+    } | null;
+    model_available: boolean;
+    published_at: string | null;
+    published_by_name: string | null;
+    published_revision: number | null;
+    retention_months: number;
+    slots: Array<{
+      slot: number;
+      snapshot: {
+        chart: {
+          c: Array<number>;
+          d: Array<string>;
+          h: Array<number>;
+          l: Array<number>;
+          o: Array<number>;
+          symbol: string;
+          v: Array<number>;
+        } | null;
+        conditions: Array<string>;
+        display_name: string;
+        filter_id: string;
+        filter_name: string;
+        filter_version: number;
+        passed_count: number;
+        picks: Array<{
+          change_pct: number | null;
+          close: number;
+          symbol: string;
+          value_bn: number | null;
+        }>;
+        pushed_at: string;
+        pushed_by: string | null;
+        result_id: string;
+        slot: number;
+        trade_date: string;
+      } | null;
+    }>;
+    slots_locked: boolean;
+    status: "draft" | "public" | "unpublic";
+    suggestions: Array<{
+      label: string;
+      side: "resistance" | "support";
+      value: number;
+    }>;
+    trade_date: string;
+    updated_at: string | null;
+  };
+};
+
+export type UnpublishAdminMarketBulletinResponse =
+  UnpublishAdminMarketBulletinResponses[keyof UnpublishAdminMarketBulletinResponses];
+
 export type AdminMetricsControllerOverview1Data = {
   body?: never;
   path?: never;
@@ -49618,6 +50568,361 @@ export type MarketDataControllerSupplySummary1Responses = {
 
 export type MarketDataControllerSupplySummary1Response =
   MarketDataControllerSupplySummary1Responses[keyof MarketDataControllerSupplySummary1Responses];
+
+export type GetMarketBulletinByDateData = {
+  body?: never;
+  path?: never;
+  query?: {
+    date?: string;
+  };
+  url: "/api/v2/market/bulletins";
+};
+
+export type GetMarketBulletinByDateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetMarketBulletinByDateError =
+  GetMarketBulletinByDateErrors[keyof GetMarketBulletinByDateErrors];
+
+export type GetMarketBulletinByDateResponses = {
+  200: {
+    bulletin: {
+      files: Array<{
+        byte_size: number;
+        download_url: string;
+        file_name: string;
+        page_count: number;
+        page_height: number;
+        page_width: number;
+        revision: number;
+        url: string;
+        variant: "desktop" | "mobile";
+      }>;
+      published_at: string;
+      revision: number;
+      summary: {
+        change: number;
+        change_pct: number;
+        close: number;
+        pick_count: number;
+        slot_counts: Array<number>;
+      } | null;
+      trade_date: string;
+      updated_at: string | null;
+    } | null;
+  };
+};
+
+export type GetMarketBulletinByDateResponse =
+  GetMarketBulletinByDateResponses[keyof GetMarketBulletinByDateResponses];
+
+export type ListMarketBulletinArchiveData = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number;
+  };
+  url: "/api/v2/market/bulletins/archive";
+};
+
+export type ListMarketBulletinArchiveErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListMarketBulletinArchiveError =
+  ListMarketBulletinArchiveErrors[keyof ListMarketBulletinArchiveErrors];
+
+export type ListMarketBulletinArchiveResponses = {
+  200: {
+    has_more: boolean;
+    items: Array<{
+      files: Array<{
+        byte_size: number;
+        download_url: string;
+        file_name: string;
+        page_count: number;
+        page_height: number;
+        page_width: number;
+        revision: number;
+        url: string;
+        variant: "desktop" | "mobile";
+      }>;
+      published_at: string;
+      revision: number;
+      summary: {
+        change: number;
+        change_pct: number;
+        close: number;
+        pick_count: number;
+        slot_counts: Array<number>;
+      } | null;
+      trade_date: string;
+      updated_at: string | null;
+    }>;
+    page: number;
+    retention_months: number;
+    total: number;
+  };
+};
+
+export type ListMarketBulletinArchiveResponse =
+  ListMarketBulletinArchiveResponses[keyof ListMarketBulletinArchiveResponses];
+
+export type GetLatestMarketBulletinData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/market/bulletins/latest";
+};
+
+export type GetLatestMarketBulletinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetLatestMarketBulletinError =
+  GetLatestMarketBulletinErrors[keyof GetLatestMarketBulletinErrors];
+
+export type GetLatestMarketBulletinResponses = {
+  200: {
+    bulletin: {
+      files: Array<{
+        byte_size: number;
+        download_url: string;
+        file_name: string;
+        page_count: number;
+        page_height: number;
+        page_width: number;
+        revision: number;
+        url: string;
+        variant: "desktop" | "mobile";
+      }>;
+      published_at: string;
+      revision: number;
+      summary: {
+        change: number;
+        change_pct: number;
+        close: number;
+        pick_count: number;
+        slot_counts: Array<number>;
+      } | null;
+      trade_date: string;
+      updated_at: string | null;
+    } | null;
+  };
+};
+
+export type GetLatestMarketBulletinResponse =
+  GetLatestMarketBulletinResponses[keyof GetLatestMarketBulletinResponses];
+
+export type DownloadMarketBulletinFileData = {
+  body?: never;
+  path: {
+    date: string;
+    variant: "desktop" | "mobile";
+    revision: number;
+  };
+  query?: {
+    download?: "0" | "1";
+  };
+  url: "/api/v2/market/bulletins/{date}/files/{variant}/{revision}";
+};
+
+export type DownloadMarketBulletinFileErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DownloadMarketBulletinFileError =
+  DownloadMarketBulletinFileErrors[keyof DownloadMarketBulletinFileErrors];
+
+export type DownloadMarketBulletinFileResponses = {
+  /**
+   * File PDF của bản tin
+   */
+  200: Blob | File;
+};
+
+export type DownloadMarketBulletinFileResponse =
+  DownloadMarketBulletinFileResponses[keyof DownloadMarketBulletinFileResponses];
+
+export type PushMarketBulletinSlotData = {
+  body: {
+    conditions: Array<string>;
+    display_name: string;
+    filter_id: string;
+    filter_version: number;
+    picks: Array<string>;
+    result_id: string;
+  };
+  path: {
+    date: string;
+    slot: number;
+  };
+  query?: never;
+  url: "/api/v2/market/bulletins/{date}/slots/{slot}";
+};
+
+export type PushMarketBulletinSlotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PushMarketBulletinSlotError =
+  PushMarketBulletinSlotErrors[keyof PushMarketBulletinSlotErrors];
+
+export type PushMarketBulletinSlotResponses = {
+  200: {
+    passed_count: number;
+    picks: number;
+    pushed_at: string;
+    slot: number;
+    trade_date: string;
+  };
+};
+
+export type PushMarketBulletinSlotResponse =
+  PushMarketBulletinSlotResponses[keyof PushMarketBulletinSlotResponses];
+
+export type GetMarketTrackingData = {
+  body?: never;
+  path?: never;
+  query?: {
+    slot?: number;
+  };
+  url: "/api/v2/market/tracking";
+};
+
+export type GetMarketTrackingErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetMarketTrackingError =
+  GetMarketTrackingErrors[keyof GetMarketTrackingErrors];
+
+export type GetMarketTrackingResponses = {
+  200: {
+    as_of: string | null;
+    items: Array<{
+      entry_price: number;
+      first_trade_date: string;
+      is_today: boolean;
+      price: number | null;
+      return_pct: number | null;
+      sessions: number;
+      slot: number;
+      symbol: string;
+    }>;
+    slot: number | null;
+    summary: {
+      average_return: number | null;
+      index_return: number | null;
+      profit_base: number;
+      profit_count: number;
+      today_count: number;
+      tracking_count: number;
+    };
+  };
+};
+
+export type GetMarketTrackingResponse =
+  GetMarketTrackingResponses[keyof GetMarketTrackingResponses];
 
 export type MediaControllerDownloadData = {
   body?: never;

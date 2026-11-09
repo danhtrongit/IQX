@@ -166,6 +166,12 @@ export function conditionCount(rules: readonly unknown[], technical: readonly Te
  * then each fundamental condition, then each indicator with its switched-on rows, for saved items and confirmations.
  */
 export function criteriaSummary(definition: CriteriaDefinition, metrics: readonly ScreenerMetric[], registry?: Pick<TechnicalRegistry, "indicators">): string {
+  const parts = criteriaParts(definition, metrics, registry)
+  return parts.length > 0 ? parts.join(" · ") : "Chưa áp tiêu chí: toàn bộ doanh nghiệp trong phạm vi"
+}
+
+/** The pieces `criteriaSummary` joins with " · ": Thị trường, each fundamental condition, each indicator. Empty when no criteria. */
+export function criteriaParts(definition: CriteriaDefinition, metrics: readonly ScreenerMetric[], registry?: Pick<TechnicalRegistry, "indicators">): string[] {
   const byId = new Map(metrics.map((metric) => [metric.id, metric]))
   const conditions = definition.rules.map((rule) => {
     const metric = byId.get(rule.metric_id)
@@ -173,8 +179,7 @@ export function criteriaSummary(definition: CriteriaDefinition, metrics: readonl
     const label = metric ? periodLabel(metric, rule.period) : rule.period
     return `${metric ? metricName(metric) : rule.metric_id} (${label}) ${rule.operator} ${formatDisplayNumber(toDisplayValue(rule.value, rule.api_unit))}${unit ? ` ${unit}` : ""}`
   })
-  const parts = [...marketSummary(definition.market), ...conditions, ...technicalSummary(definition.technical, registry)]
-  return parts.length > 0 ? parts.join(" · ") : "Chưa áp tiêu chí: toàn bộ doanh nghiệp trong phạm vi"
+  return [...marketSummary(definition.market), ...conditions, ...technicalSummary(definition.technical, registry)]
 }
 
 export function metricChapter(metric: Pick<ScreenerMetric, "lesson_id">): number {

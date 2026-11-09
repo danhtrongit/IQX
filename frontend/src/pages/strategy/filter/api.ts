@@ -76,6 +76,10 @@ export async function listFilters(signal?: AbortSignal): Promise<SavedFilter[]> 
   return (await requestOperation("GET /api/v2/strategy/filters", {}, { signal })).items
 }
 
+export function getFilter(id: string, signal?: AbortSignal): Promise<SavedFilter> {
+  return requestOperation("GET /api/v2/strategy/filters/{filterId}", { path: { filterId: id } }, { signal })
+}
+
 export function createFilter(body: { name: string; definition: FilterDefinition; idempotency_key?: string }) {
   return requestOperation("POST /api/v2/strategy/filters", { body })
 }

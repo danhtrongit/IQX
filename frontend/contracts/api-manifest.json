@@ -247,6 +247,26 @@
       "requestType": "AdminLearningControllerCourse1Data",
       "responseType": "AdminLearningControllerCourse1Responses"
     },
+    "GET /api/v2/admin/market-bulletins": {
+      "operationId": "listAdminMarketBulletins",
+      "requestType": "ListAdminMarketBulletinsData",
+      "responseType": "ListAdminMarketBulletinsResponses"
+    },
+    "GET /api/v2/admin/market-bulletins/{date}": {
+      "operationId": "getAdminMarketBulletin",
+      "requestType": "GetAdminMarketBulletinData",
+      "responseType": "GetAdminMarketBulletinResponses"
+    },
+    "GET /api/v2/admin/market-bulletins/push-candidates": {
+      "operationId": "getMarketBulletinPushCandidates",
+      "requestType": "GetMarketBulletinPushCandidatesData",
+      "responseType": "GetMarketBulletinPushCandidatesResponses"
+    },
+    "GET /api/v2/admin/market-bulletins/push-context": {
+      "operationId": "getMarketBulletinPushContext",
+      "requestType": "GetMarketBulletinPushContextData",
+      "responseType": "GetMarketBulletinPushContextResponses"
+    },
     "GET /api/v2/admin/metrics/overview": {
       "operationId": "AdminMetricsController_overview[1]",
       "requestType": "AdminMetricsControllerOverview1Data",
@@ -1247,6 +1267,31 @@
       "requestType": "MarketDataControllerSupplySummary1Data",
       "responseType": "MarketDataControllerSupplySummary1Responses"
     },
+    "GET /api/v2/market/bulletins": {
+      "operationId": "getMarketBulletinByDate",
+      "requestType": "GetMarketBulletinByDateData",
+      "responseType": "GetMarketBulletinByDateResponses"
+    },
+    "GET /api/v2/market/bulletins/{date}/files/{variant}/{revision}": {
+      "operationId": "downloadMarketBulletinFile",
+      "requestType": "DownloadMarketBulletinFileData",
+      "responseType": "DownloadMarketBulletinFileResponses"
+    },
+    "GET /api/v2/market/bulletins/archive": {
+      "operationId": "listMarketBulletinArchive",
+      "requestType": "ListMarketBulletinArchiveData",
+      "responseType": "ListMarketBulletinArchiveResponses"
+    },
+    "GET /api/v2/market/bulletins/latest": {
+      "operationId": "getLatestMarketBulletin",
+      "requestType": "GetLatestMarketBulletinData",
+      "responseType": "GetLatestMarketBulletinResponses"
+    },
+    "GET /api/v2/market/tracking": {
+      "operationId": "getMarketTracking",
+      "requestType": "GetMarketTrackingData",
+      "responseType": "GetMarketTrackingResponses"
+    },
     "GET /api/v2/media/{token}": {
       "operationId": "MediaController_download",
       "requestType": "MediaControllerDownloadData",
@@ -1701,6 +1746,26 @@
       "operationId": "AdminLearningController_episodeFile[1]",
       "requestType": "AdminLearningControllerEpisodeFile1Data",
       "responseType": "AdminLearningControllerEpisodeFile1Responses"
+    },
+    "POST /api/v2/admin/market-bulletins/{date}/check": {
+      "operationId": "checkAdminMarketBulletin",
+      "requestType": "CheckAdminMarketBulletinData",
+      "responseType": "CheckAdminMarketBulletinResponses"
+    },
+    "POST /api/v2/admin/market-bulletins/{date}/preview": {
+      "operationId": "previewAdminMarketBulletin",
+      "requestType": "PreviewAdminMarketBulletinData",
+      "responseType": "PreviewAdminMarketBulletinResponses"
+    },
+    "POST /api/v2/admin/market-bulletins/{date}/publish": {
+      "operationId": "publishAdminMarketBulletin",
+      "requestType": "PublishAdminMarketBulletinData",
+      "responseType": "PublishAdminMarketBulletinResponses"
+    },
+    "POST /api/v2/admin/market-bulletins/{date}/unpublish": {
+      "operationId": "unpublishAdminMarketBulletin",
+      "requestType": "UnpublishAdminMarketBulletinData",
+      "responseType": "UnpublishAdminMarketBulletinResponses"
     },
     "POST /api/v2/admin/payments/{order_id}/mark-paid": {
       "operationId": "adminMarkPaymentPaid_post_api_v2_admin_payments_order_id_mark_paid",
@@ -2252,6 +2317,11 @@
       "requestType": "MarketDataControllerPriceBoard1Data",
       "responseType": "MarketDataControllerPriceBoard1Responses"
     },
+    "POST /api/v2/market/bulletins/{date}/slots/{slot}": {
+      "operationId": "pushMarketBulletinSlot",
+      "requestType": "PushMarketBulletinSlotData",
+      "responseType": "PushMarketBulletinSlotResponses"
+    },
     "POST /api/v2/portfolio-manager/analyze": {
       "operationId": "analyzePortfolioV2",
       "requestType": "AnalyzePortfolioV2Data",
@@ -2441,6 +2511,11 @@
       "operationId": "flashbackAdminDatasetConfig",
       "requestType": "FlashbackAdminDatasetConfigData",
       "responseType": "FlashbackAdminDatasetConfigResponses"
+    },
+    "PUT /api/v2/admin/market-bulletins/{date}/content": {
+      "operationId": "saveAdminMarketBulletinContent",
+      "requestType": "SaveAdminMarketBulletinContentData",
+      "responseType": "SaveAdminMarketBulletinContentResponses"
     },
     "PUT /api/v2/admin/team-leads/{leadId}/policy": {
       "operationId": "AdminTeamLeadsController_updatePolicy[1]",

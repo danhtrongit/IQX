@@ -57,6 +57,8 @@ const TeamUserDetailPage = lazyPage(() => import("@/pages/admin/team/team-user-d
 const TeamLeadsPage = lazyPage(() => import("@/pages/admin/team-leads/team-leads-page").then(module => ({ default: module.TeamLeadsPage })))
 const TeamLeadDetailPage = lazyPage(() => import("@/pages/admin/team-leads/team-lead-detail-page").then(module => ({ default: module.TeamLeadDetailPage })))
 const AcademyConfigsPage = lazyPage(() => import("@/pages/admin/academy/academy-configs-page").then(module => ({ default: module.AcademyConfigsPage })))
+const BulletinsPage = lazyPage(() => import("@/pages/admin/bulletins/bulletins-page").then(module => ({ default: module.BulletinsPage })))
+const BulletinEditorPage = lazyPage(() => import("@/pages/admin/bulletins/bulletin-editor-page").then(module => ({ default: module.BulletinEditorPage })))
 const SystemPage = lazyPage(() => import("@/pages/admin/core/system-page").then(module => ({ default: module.SystemPage })))
 const AuditPage = lazyPage(() => import("@/pages/admin/core/audit-page").then(module => ({ default: module.AuditPage })))
 const FlashbackPage = lazyPage(() => import("@/pages/admin/core/flashback-page").then(module => ({ default: module.FlashbackPage })))
@@ -149,6 +151,8 @@ export const routes: RouteObject[] = [
           { path: "team-leads", Component: TeamLeadsPage },
           { path: "team-leads/:leadId", Component: TeamLeadDetailPage },
           { path: "academy", Component: AcademyConfigsPage },
+          { path: "market-bulletins", Component: BulletinsPage },
+          { path: "market-bulletins/:date", Component: BulletinEditorPage },
           { path: "plans", Component: PlansPage },
           { path: "subscriptions", Component: SubscriptionsPage },
           { path: "subscriptions/:subId", Component: SubscriptionDetailPage },

@@ -12,8 +12,8 @@ export function MarketBriefing() {
     <Section id="thi-truong" className="bg-muted/30">
       <Container className="py-12 sm:py-16">
         <SectionHead
-          title="Ba bản nhận định mỗi phiên."
-          lead="Bản trước phiên lúc 07:15, bản giữa phiên lúc 11:30 và bản tổng kết sau ATC lúc 16:30, từ thứ Hai đến thứ Sáu. Mỗi bản có chỉ số, độ rộng, dòng tiền và kịch bản cho phiên kế tiếp."
+          title="Bản tin cuối phiên mỗi ngày."
+          lead="Bản tổng kết sau ATC, đăng sau mỗi phiên giao dịch từ thứ Hai đến thứ Sáu. Mỗi bản có chỉ số, độ rộng, dòng tiền, kịch bản cho phiên kế tiếp và các mã nổi bật từ bộ lọc của IQX."
         />
 
         <Panel className="mt-8 p-0 sm:p-0">

@@ -1,5 +1,5 @@
 // ─── Market workspace (/thi-truong) ───────────────────────────────────────────
-// One route, three analysis views: market brief (3 sessions), stock analysis
+// One route, three analysis views: market brief (end-of-session bulletin), stock analysis
 // (6-layer AI insight) and financial-statement analysis (BCTC dashboard).
 //
 // Navigation state lives in the URL so a reload or a shared link lands on the
@@ -22,7 +22,7 @@ import {
   type WorkspaceView,
 } from "./components/view-rail"
 import { FinancialAnalysisView } from "./financial/financial-analysis-view"
-import { MarketSessionsView } from "./market/market-sessions-view"
+import { MarketBulletinView } from "./market/market-bulletin-view"
 import { StockAnalysisView } from "./stock/stock-analysis-view"
 import type { ProductTourKey } from "./tour/use-product-tour"
 
@@ -67,7 +67,7 @@ export function MarketWorkspacePage({ embedded = false, view }: { embedded?: boo
   const content = (
     <div ref={contentRef} className={embedded ? "min-h-full" : "min-h-full pb-24 lg:pb-0"}>
       {active === "market" && (
-        <MarketSessionsView autoStartTour={tourKey === "bantin"} onTourStarted={() => consumeTour("bantin")} />
+        <MarketBulletinView autoStartTour={tourKey === "bantin"} onTourStarted={() => consumeTour("bantin")} />
       )}
       {active === "stock" && (
         <StockAnalysisView autoStartTour={tourKey === "phantich"} onTourStarted={() => consumeTour("phantich")} />

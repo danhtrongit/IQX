@@ -756,6 +756,86 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/admin/bulletins/bulletin-admin-api.ts",
+      "line": 31,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/market-bulletins",
+      "method": "GET",
+      "route": "/api/v2/admin/market-bulletins",
+      "matchedOperation": "GET /api/v2/admin/market-bulletins",
+      "matchedOperations": [
+        "GET /api/v2/admin/market-bulletins"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/bulletins/bulletin-admin-api.ts",
+      "line": 35,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/market-bulletins/{date}",
+      "method": "GET",
+      "route": "/api/v2/admin/market-bulletins/{date}",
+      "matchedOperation": "GET /api/v2/admin/market-bulletins/{date}",
+      "matchedOperations": [
+        "GET /api/v2/admin/market-bulletins/{date}",
+        "GET /api/v2/admin/market-bulletins/push-candidates",
+        "GET /api/v2/admin/market-bulletins/push-context"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/bulletins/bulletin-admin-api.ts",
+      "line": 40,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/admin/market-bulletins/{date}/content",
+      "method": "PUT",
+      "route": "/api/v2/admin/market-bulletins/{date}/content",
+      "matchedOperation": "PUT /api/v2/admin/market-bulletins/{date}/content",
+      "matchedOperations": [
+        "PUT /api/v2/admin/market-bulletins/{date}/content"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/bulletins/bulletin-admin-api.ts",
+      "line": 50,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/market-bulletins/{date}/preview",
+      "method": "POST",
+      "route": "/api/v2/admin/market-bulletins/{date}/preview",
+      "matchedOperation": "POST /api/v2/admin/market-bulletins/{date}/preview",
+      "matchedOperations": [
+        "POST /api/v2/admin/market-bulletins/{date}/preview"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/bulletins/bulletin-admin-api.ts",
+      "line": 59,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/market-bulletins/{date}/publish",
+      "method": "POST",
+      "route": "/api/v2/admin/market-bulletins/{date}/publish",
+      "matchedOperation": "POST /api/v2/admin/market-bulletins/{date}/publish",
+      "matchedOperations": [
+        "POST /api/v2/admin/market-bulletins/{date}/publish"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/bulletins/bulletin-admin-api.ts",
+      "line": 63,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/market-bulletins/{date}/unpublish",
+      "method": "POST",
+      "route": "/api/v2/admin/market-bulletins/{date}/unpublish",
+      "matchedOperation": "POST /api/v2/admin/market-bulletins/{date}/unpublish",
+      "matchedOperations": [
+        "POST /api/v2/admin/market-bulletins/{date}/unpublish"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/admin/core/api.ts",
       "line": 162,
       "callee": "api",
@@ -3674,70 +3754,54 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/market-workspace/market/api.ts",
-      "line": 164,
-      "callee": "api",
-      "raw": "/market-analysis/daily/latest",
+      "file": "src/pages/market-workspace/market/bulletin-api.ts",
+      "line": 24,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/market/bulletins/latest",
       "method": "GET",
-      "route": "/api/v2/market-analysis/daily/latest",
-      "matchedOperation": "GET /api/v2/market-analysis/{type}/{sessionDate}",
+      "route": "/api/v2/market/bulletins/latest",
+      "matchedOperation": "GET /api/v2/market/bulletins/latest",
       "matchedOperations": [
-        "GET /api/v2/market-analysis/{type}/{sessionDate}",
-        "GET /api/v2/market-analysis/{type}/latest"
+        "GET /api/v2/market/bulletins/latest"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/market-workspace/market/api.ts",
-      "line": 169,
-      "callee": "api",
-      "raw": "/market-analysis/midday/latest",
+      "file": "src/pages/market-workspace/market/bulletin-api.ts",
+      "line": 29,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/market/bulletins",
       "method": "GET",
-      "route": "/api/v2/market-analysis/midday/latest",
-      "matchedOperation": "GET /api/v2/market-analysis/{type}/{sessionDate}",
+      "route": "/api/v2/market/bulletins",
+      "matchedOperation": "GET /api/v2/market/bulletins",
       "matchedOperations": [
-        "GET /api/v2/market-analysis/{type}/{sessionDate}",
-        "GET /api/v2/market-analysis/{type}/latest"
+        "GET /api/v2/market/bulletins"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/market-workspace/market/api.ts",
-      "line": 174,
-      "callee": "api",
-      "raw": "/market-analysis/premarket/latest",
+      "file": "src/pages/market-workspace/market/bulletin-api.ts",
+      "line": 33,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/market/bulletins/archive",
       "method": "GET",
-      "route": "/api/v2/market-analysis/premarket/latest",
-      "matchedOperation": "GET /api/v2/market-analysis/{type}/{sessionDate}",
+      "route": "/api/v2/market/bulletins/archive",
+      "matchedOperation": "GET /api/v2/market/bulletins/archive",
       "matchedOperations": [
-        "GET /api/v2/market-analysis/{type}/{sessionDate}",
-        "GET /api/v2/market-analysis/{type}/latest"
+        "GET /api/v2/market/bulletins/archive"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/market-workspace/market/overview.ts",
-      "line": 181,
-      "callee": "api",
-      "raw": "/market-data/overview/market-index?symbols={INDEX_REQUEST_SYMBOLS.join(\",\")}",
+      "file": "src/pages/market-workspace/market/bulletin-api.ts",
+      "line": 37,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/market/tracking",
       "method": "GET",
-      "route": "/api/v2/market-data/overview/market-index",
-      "matchedOperation": "GET /api/v2/market-data/overview/market-index",
+      "route": "/api/v2/market/tracking",
+      "matchedOperation": "GET /api/v2/market/tracking",
       "matchedOperations": [
-        "GET /api/v2/market-data/overview/market-index"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/market-workspace/market/overview.ts",
-      "line": 203,
-      "callee": "api",
-      "raw": "/market-data/overview/foreign/top?time_frame=ONE_DAY",
-      "method": "GET",
-      "route": "/api/v2/market-data/overview/foreign/top",
-      "matchedOperation": "GET /api/v2/market-data/overview/foreign/top",
-      "matchedOperations": [
-        "GET /api/v2/market-data/overview/foreign/top"
+        "GET /api/v2/market/tracking"
       ],
       "classification": "api-call"
     },
@@ -4163,6 +4227,19 @@
       "file": "src/pages/strategy/filter/api.ts",
       "line": 80,
       "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/filters/{filterId}",
+      "method": "GET",
+      "route": "/api/v2/strategy/filters/{filterId}",
+      "matchedOperation": "GET /api/v2/strategy/filters/{filterId}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/filters/{filterId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 84,
+      "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/filters",
       "method": "POST",
       "route": "/api/v2/strategy/filters",
@@ -4174,7 +4251,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 85,
+      "line": 89,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/strategy/filters/{filterId}",
       "method": "PUT",
@@ -4187,7 +4264,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 89,
+      "line": 93,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/filters/{filterId}",
       "method": "DELETE",
@@ -4200,7 +4277,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 96,
+      "line": 100,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/lists",
       "method": "GET",
@@ -4213,7 +4290,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 100,
+      "line": 104,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/lists/{listId}",
       "method": "GET",
@@ -4226,7 +4303,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 105,
+      "line": 109,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/lists/{listId}",
       "method": "DELETE",
@@ -4239,7 +4316,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 127,
+      "line": 131,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/lists/from-result",
       "method": "POST",
@@ -4252,7 +4329,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 133,
+      "line": 137,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/result-snapshots",
       "method": "GET",
@@ -4265,7 +4342,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 137,
+      "line": 141,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/result-snapshots/{snapshotId}",
       "method": "GET",
@@ -4278,7 +4355,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 148,
+      "line": 152,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/result-snapshots",
       "method": "POST",
@@ -4291,7 +4368,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 161,
+      "line": 165,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
       "method": "DELETE",
@@ -4299,6 +4376,47 @@
       "matchedOperation": "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
       "matchedOperations": [
         "DELETE /api/v2/strategy/result-snapshots/{snapshotId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/bulletin-push-api.ts",
+      "line": 27,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/market-bulletins/push-context",
+      "method": "GET",
+      "route": "/api/v2/admin/market-bulletins/push-context",
+      "matchedOperation": "GET /api/v2/admin/market-bulletins/{date}",
+      "matchedOperations": [
+        "GET /api/v2/admin/market-bulletins/{date}",
+        "GET /api/v2/admin/market-bulletins/push-context"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/bulletin-push-api.ts",
+      "line": 31,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/market-bulletins/push-candidates",
+      "method": "GET",
+      "route": "/api/v2/admin/market-bulletins/push-candidates",
+      "matchedOperation": "GET /api/v2/admin/market-bulletins/{date}",
+      "matchedOperations": [
+        "GET /api/v2/admin/market-bulletins/{date}",
+        "GET /api/v2/admin/market-bulletins/push-candidates"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/bulletin-push-api.ts",
+      "line": 35,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/market/bulletins/{date}/slots/{slot}",
+      "method": "POST",
+      "route": "/api/v2/market/bulletins/{date}/slots/{slot}",
+      "matchedOperation": "POST /api/v2/market/bulletins/{date}/slots/{slot}",
+      "matchedOperations": [
+        "POST /api/v2/market/bulletins/{date}/slots/{slot}"
       ],
       "classification": "api-call"
     }
@@ -4529,6 +4647,8 @@
     "GET /api/v2/flashback/leaderboard/top3",
     "GET /api/v2/health",
     "GET /api/v2/market-analysis/{type}",
+    "GET /api/v2/market-analysis/{type}/{sessionDate}",
+    "GET /api/v2/market-analysis/{type}/latest",
     "GET /api/v2/market-data/company/{symbol}/bctc",
     "GET /api/v2/market-data/company/{symbol}/bctc-dashboard",
     "GET /api/v2/market-data/company/{symbol}/details",
@@ -4559,6 +4679,7 @@
     "GET /api/v2/market-data/overview/allocation",
     "GET /api/v2/market-data/overview/breadth",
     "GET /api/v2/market-data/overview/foreign",
+    "GET /api/v2/market-data/overview/foreign/top",
     "GET /api/v2/market-data/overview/heatmap",
     "GET /api/v2/market-data/overview/heatmap/index",
     "GET /api/v2/market-data/overview/index-impact",
@@ -4594,12 +4715,12 @@
     "GET /api/v2/market-data/trading/{symbol}/summary",
     "GET /api/v2/market-data/trading/{symbol}/supply-demand",
     "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
+    "GET /api/v2/market/bulletins/{date}/files/{variant}/{revision}",
     "GET /api/v2/media/{token}",
     "GET /api/v2/portfolio-manager/report",
     "GET /api/v2/practice/indicators",
     "GET /api/v2/referrals/me",
     "GET /api/v2/strategy/alerts/events/{eventId}",
-    "GET /api/v2/strategy/filters/{filterId}",
     "GET /api/v2/virtual-trading/leaderboard",
     "GET /api/v2/virtual-trading/ledger",
     "GET /api/v2/virtual-trading/trades",
@@ -4616,6 +4737,7 @@
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
     "POST /api/v2/admin/lessons/episodes/{episodeId}/file",
+    "POST /api/v2/admin/market-bulletins/{date}/check",
     "POST /api/v2/admin/vt/accounts/{accountId}/reset",
     "POST /api/v2/admin/vt/reset-all",
     "POST /api/v2/ai/dashboard/analyze",

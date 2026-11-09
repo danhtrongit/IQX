@@ -13,7 +13,7 @@ export const WORKSPACE_VIEWS: { id: WorkspaceView; icon: LucideIcon; label: stri
 export const WORKSPACE_VIEW_META: Record<WorkspaceView, { title: string; description: string }> = {
   market: {
     title: "Phân tích thị trường",
-    description: "Bản tin trước phiên, giữa phiên và cuối phiên — cập nhật theo từng phiên giao dịch.",
+    description: "Bản tin cuối phiên của IQX, cập nhật sau mỗi phiên giao dịch.",
   },
   stock: {
     title: "Phân tích cổ phiếu",

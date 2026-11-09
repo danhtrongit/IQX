@@ -120,6 +120,7 @@ export function ResultsPanel({
   onSaveList,
   onSaveResult,
   onApply,
+  onPushBulletin,
   onCell,
   onTechnicalCell,
   onQuality,
@@ -145,6 +146,8 @@ export function ResultsPanel({
   onSaveList: () => void
   onSaveResult: () => void
   onApply: () => void
+  /** Only passed for an admin: opens "Đẩy vào bản tin". Not disabled by an empty result (0 passed is pushed as such). */
+  onPushBulletin?: () => void
   onCell: (row: ResultRow, metric: ScreenerMetric) => void
   onTechnicalCell: (row: ResultRow, column: TechnicalQuality) => void
   onQuality: () => void
@@ -217,6 +220,9 @@ export function ResultsPanel({
           <Button type="button" variant="outline" disabled={busy || noneToSave} onClick={onSaveList}>Lưu danh mục</Button>
           <Button type="button" variant="outline" disabled={busy || noneToSave} onClick={onSaveResult}>Lưu kết quả</Button>
           <Button type="button" disabled={busy || noneToSave} onClick={onApply}>Áp dụng cho Bot</Button>
+          {onPushBulletin && (
+            <Button type="button" variant="outline" disabled={busy} onClick={onPushBulletin} data-testid="push-bulletin">Đẩy vào bản tin</Button>
+          )}
         </div>
       </div>
 

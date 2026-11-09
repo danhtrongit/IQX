@@ -51,6 +51,10 @@ export interface OperationMap {
   "GET /api/v2/admin/ipn/{log_id}": { request: T.AdminGetIpnLogGetApiV2AdminIpnLogIdData; response: T.AdminGetIpnLogGetApiV2AdminIpnLogIdResponses[keyof T.AdminGetIpnLogGetApiV2AdminIpnLogIdResponses] }
   "GET /api/v2/admin/lessons/courses": { request: T.AdminLearningControllerCourses1Data; response: T.AdminLearningControllerCourses1Responses[keyof T.AdminLearningControllerCourses1Responses] }
   "GET /api/v2/admin/lessons/courses/{courseId}": { request: T.AdminLearningControllerCourse1Data; response: T.AdminLearningControllerCourse1Responses[keyof T.AdminLearningControllerCourse1Responses] }
+  "GET /api/v2/admin/market-bulletins": { request: T.ListAdminMarketBulletinsData; response: T.ListAdminMarketBulletinsResponses[keyof T.ListAdminMarketBulletinsResponses] }
+  "GET /api/v2/admin/market-bulletins/{date}": { request: T.GetAdminMarketBulletinData; response: T.GetAdminMarketBulletinResponses[keyof T.GetAdminMarketBulletinResponses] }
+  "GET /api/v2/admin/market-bulletins/push-candidates": { request: T.GetMarketBulletinPushCandidatesData; response: T.GetMarketBulletinPushCandidatesResponses[keyof T.GetMarketBulletinPushCandidatesResponses] }
+  "GET /api/v2/admin/market-bulletins/push-context": { request: T.GetMarketBulletinPushContextData; response: T.GetMarketBulletinPushContextResponses[keyof T.GetMarketBulletinPushContextResponses] }
   "GET /api/v2/admin/metrics/overview": { request: T.AdminMetricsControllerOverview1Data; response: T.AdminMetricsControllerOverview1Responses[keyof T.AdminMetricsControllerOverview1Responses] }
   "GET /api/v2/admin/metrics/plan-distribution": { request: T.AdminMetricsControllerPlanDistribution1Data; response: T.AdminMetricsControllerPlanDistribution1Responses[keyof T.AdminMetricsControllerPlanDistribution1Responses] }
   "GET /api/v2/admin/metrics/revenue": { request: T.AdminMetricsControllerRevenue1Data; response: T.AdminMetricsControllerRevenue1Responses[keyof T.AdminMetricsControllerRevenue1Responses] }
@@ -251,6 +255,11 @@ export interface OperationMap {
   "GET /api/v2/market-data/trading/{symbol}/summary": { request: T.MarketDataControllerSummary1Data; response: T.MarketDataControllerSummary1Responses[keyof T.MarketDataControllerSummary1Responses] }
   "GET /api/v2/market-data/trading/{symbol}/supply-demand": { request: T.MarketDataControllerSupply1Data; response: T.MarketDataControllerSupply1Responses[keyof T.MarketDataControllerSupply1Responses] }
   "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary": { request: T.MarketDataControllerSupplySummary1Data; response: T.MarketDataControllerSupplySummary1Responses[keyof T.MarketDataControllerSupplySummary1Responses] }
+  "GET /api/v2/market/bulletins": { request: T.GetMarketBulletinByDateData; response: T.GetMarketBulletinByDateResponses[keyof T.GetMarketBulletinByDateResponses] }
+  "GET /api/v2/market/bulletins/{date}/files/{variant}/{revision}": { request: T.DownloadMarketBulletinFileData; response: T.DownloadMarketBulletinFileResponses[keyof T.DownloadMarketBulletinFileResponses] }
+  "GET /api/v2/market/bulletins/archive": { request: T.ListMarketBulletinArchiveData; response: T.ListMarketBulletinArchiveResponses[keyof T.ListMarketBulletinArchiveResponses] }
+  "GET /api/v2/market/bulletins/latest": { request: T.GetLatestMarketBulletinData; response: T.GetLatestMarketBulletinResponses[keyof T.GetLatestMarketBulletinResponses] }
+  "GET /api/v2/market/tracking": { request: T.GetMarketTrackingData; response: T.GetMarketTrackingResponses[keyof T.GetMarketTrackingResponses] }
   "GET /api/v2/media/{token}": { request: T.MediaControllerDownloadData; response: T.MediaControllerDownloadResponses[keyof T.MediaControllerDownloadResponses] }
   "GET /api/v2/portfolio-manager/report": { request: T.GetPortfolioReportV2Data; response: T.GetPortfolioReportV2Responses[keyof T.GetPortfolioReportV2Responses] }
   "GET /api/v2/practice/{indicatorId}/history": { request: T.PracticeHistoryData; response: T.PracticeHistoryResponses[keyof T.PracticeHistoryResponses] }
@@ -342,6 +351,10 @@ export interface OperationMap {
   "POST /api/v2/admin/lessons/courses/{courseId}/reorder": { request: T.AdminLearningControllerReorder1Data; response: T.AdminLearningControllerReorder1Responses[keyof T.AdminLearningControllerReorder1Responses] }
   "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail": { request: T.AdminLearningControllerThumbnail1Data; response: T.AdminLearningControllerThumbnail1Responses[keyof T.AdminLearningControllerThumbnail1Responses] }
   "POST /api/v2/admin/lessons/episodes/{episodeId}/file": { request: T.AdminLearningControllerEpisodeFile1Data; response: T.AdminLearningControllerEpisodeFile1Responses[keyof T.AdminLearningControllerEpisodeFile1Responses] }
+  "POST /api/v2/admin/market-bulletins/{date}/check": { request: T.CheckAdminMarketBulletinData; response: T.CheckAdminMarketBulletinResponses[keyof T.CheckAdminMarketBulletinResponses] }
+  "POST /api/v2/admin/market-bulletins/{date}/preview": { request: T.PreviewAdminMarketBulletinData; response: T.PreviewAdminMarketBulletinResponses[keyof T.PreviewAdminMarketBulletinResponses] }
+  "POST /api/v2/admin/market-bulletins/{date}/publish": { request: T.PublishAdminMarketBulletinData; response: T.PublishAdminMarketBulletinResponses[keyof T.PublishAdminMarketBulletinResponses] }
+  "POST /api/v2/admin/market-bulletins/{date}/unpublish": { request: T.UnpublishAdminMarketBulletinData; response: T.UnpublishAdminMarketBulletinResponses[keyof T.UnpublishAdminMarketBulletinResponses] }
   "POST /api/v2/admin/payments/{order_id}/mark-paid": { request: T.AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidData; response: T.AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidResponses[keyof T.AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidResponses] }
   "POST /api/v2/admin/payments/{order_id}/reconcile": { request: T.AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileData; response: T.AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileResponses[keyof T.AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileResponses] }
   "POST /api/v2/admin/payments/{order_id}/refund": { request: T.AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundData; response: T.AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses[keyof T.AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses] }
@@ -452,6 +465,7 @@ export interface OperationMap {
   "POST /api/v2/market-analysis/{type}/run": { request: T.RunMarketReportV2Data; response: T.RunMarketReportV2Responses[keyof T.RunMarketReportV2Responses] }
   "POST /api/v2/market-data/screening/search": { request: T.MarketExtendedControllerScreeningSearch1Data; response: T.MarketExtendedControllerScreeningSearch1Responses[keyof T.MarketExtendedControllerScreeningSearch1Responses] }
   "POST /api/v2/market-data/trading/price-board": { request: T.MarketDataControllerPriceBoard1Data; response: T.MarketDataControllerPriceBoard1Responses[keyof T.MarketDataControllerPriceBoard1Responses] }
+  "POST /api/v2/market/bulletins/{date}/slots/{slot}": { request: T.PushMarketBulletinSlotData; response: T.PushMarketBulletinSlotResponses[keyof T.PushMarketBulletinSlotResponses] }
   "POST /api/v2/portfolio-manager/analyze": { request: T.AnalyzePortfolioV2Data; response: T.AnalyzePortfolioV2Responses[keyof T.AnalyzePortfolioV2Responses] }
   "POST /api/v2/practice/{indicatorId}/next": { request: T.PracticeNextData; response: T.PracticeNextResponses[keyof T.PracticeNextResponses] }
   "POST /api/v2/practice/{indicatorId}/preview": { request: T.PracticePreviewData; response: T.PracticePreviewResponses[keyof T.PracticePreviewResponses] }
@@ -490,6 +504,7 @@ export interface OperationMap {
   "PUT /api/v2/admin/alerts/signals/{key}": { request: T.AdminAlertsControllerUpdate1Data; response: T.AdminAlertsControllerUpdate1Responses[keyof T.AdminAlertsControllerUpdate1Responses] }
   "PUT /api/v2/admin/flashback/chat/banned-words": { request: T.FlashbackAdminChatBannedWordsReplaceData; response: T.FlashbackAdminChatBannedWordsReplaceResponses[keyof T.FlashbackAdminChatBannedWordsReplaceResponses] }
   "PUT /api/v2/admin/flashback/dataset/config": { request: T.FlashbackAdminDatasetConfigData; response: T.FlashbackAdminDatasetConfigResponses[keyof T.FlashbackAdminDatasetConfigResponses] }
+  "PUT /api/v2/admin/market-bulletins/{date}/content": { request: T.SaveAdminMarketBulletinContentData; response: T.SaveAdminMarketBulletinContentResponses[keyof T.SaveAdminMarketBulletinContentResponses] }
   "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: T.AdminTeamLeadsControllerUpdatePolicy1Data; response: T.AdminTeamLeadsControllerUpdatePolicy1Responses[keyof T.AdminTeamLeadsControllerUpdatePolicy1Responses] }
   "PUT /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerUpdateRule1Data; response: T.AlertsControllerUpdateRule1Responses[keyof T.AlertsControllerUpdateRule1Responses] }
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: T.QuantControllerUpdate0Data; response: T.QuantControllerUpdate0Responses[keyof T.QuantControllerUpdate0Responses] }
@@ -552,6 +567,10 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/admin/ipn/{log_id}": { request: "AdminGetIpnLogGetApiV2AdminIpnLogIdData", response: "AdminGetIpnLogGetApiV2AdminIpnLogIdResponses" },
   "GET /api/v2/admin/lessons/courses": { request: "AdminLearningControllerCourses1Data", response: "AdminLearningControllerCourses1Responses" },
   "GET /api/v2/admin/lessons/courses/{courseId}": { request: "AdminLearningControllerCourse1Data", response: "AdminLearningControllerCourse1Responses" },
+  "GET /api/v2/admin/market-bulletins": { request: "ListAdminMarketBulletinsData", response: "ListAdminMarketBulletinsResponses" },
+  "GET /api/v2/admin/market-bulletins/{date}": { request: "GetAdminMarketBulletinData", response: "GetAdminMarketBulletinResponses" },
+  "GET /api/v2/admin/market-bulletins/push-candidates": { request: "GetMarketBulletinPushCandidatesData", response: "GetMarketBulletinPushCandidatesResponses" },
+  "GET /api/v2/admin/market-bulletins/push-context": { request: "GetMarketBulletinPushContextData", response: "GetMarketBulletinPushContextResponses" },
   "GET /api/v2/admin/metrics/overview": { request: "AdminMetricsControllerOverview1Data", response: "AdminMetricsControllerOverview1Responses" },
   "GET /api/v2/admin/metrics/plan-distribution": { request: "AdminMetricsControllerPlanDistribution1Data", response: "AdminMetricsControllerPlanDistribution1Responses" },
   "GET /api/v2/admin/metrics/revenue": { request: "AdminMetricsControllerRevenue1Data", response: "AdminMetricsControllerRevenue1Responses" },
@@ -752,6 +771,11 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/market-data/trading/{symbol}/summary": { request: "MarketDataControllerSummary1Data", response: "MarketDataControllerSummary1Responses" },
   "GET /api/v2/market-data/trading/{symbol}/supply-demand": { request: "MarketDataControllerSupply1Data", response: "MarketDataControllerSupply1Responses" },
   "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary": { request: "MarketDataControllerSupplySummary1Data", response: "MarketDataControllerSupplySummary1Responses" },
+  "GET /api/v2/market/bulletins": { request: "GetMarketBulletinByDateData", response: "GetMarketBulletinByDateResponses" },
+  "GET /api/v2/market/bulletins/{date}/files/{variant}/{revision}": { request: "DownloadMarketBulletinFileData", response: "DownloadMarketBulletinFileResponses" },
+  "GET /api/v2/market/bulletins/archive": { request: "ListMarketBulletinArchiveData", response: "ListMarketBulletinArchiveResponses" },
+  "GET /api/v2/market/bulletins/latest": { request: "GetLatestMarketBulletinData", response: "GetLatestMarketBulletinResponses" },
+  "GET /api/v2/market/tracking": { request: "GetMarketTrackingData", response: "GetMarketTrackingResponses" },
   "GET /api/v2/media/{token}": { request: "MediaControllerDownloadData", response: "MediaControllerDownloadResponses" },
   "GET /api/v2/portfolio-manager/report": { request: "GetPortfolioReportV2Data", response: "GetPortfolioReportV2Responses" },
   "GET /api/v2/practice/{indicatorId}/history": { request: "PracticeHistoryData", response: "PracticeHistoryResponses" },
@@ -843,6 +867,10 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/admin/lessons/courses/{courseId}/reorder": { request: "AdminLearningControllerReorder1Data", response: "AdminLearningControllerReorder1Responses" },
   "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail": { request: "AdminLearningControllerThumbnail1Data", response: "AdminLearningControllerThumbnail1Responses" },
   "POST /api/v2/admin/lessons/episodes/{episodeId}/file": { request: "AdminLearningControllerEpisodeFile1Data", response: "AdminLearningControllerEpisodeFile1Responses" },
+  "POST /api/v2/admin/market-bulletins/{date}/check": { request: "CheckAdminMarketBulletinData", response: "CheckAdminMarketBulletinResponses" },
+  "POST /api/v2/admin/market-bulletins/{date}/preview": { request: "PreviewAdminMarketBulletinData", response: "PreviewAdminMarketBulletinResponses" },
+  "POST /api/v2/admin/market-bulletins/{date}/publish": { request: "PublishAdminMarketBulletinData", response: "PublishAdminMarketBulletinResponses" },
+  "POST /api/v2/admin/market-bulletins/{date}/unpublish": { request: "UnpublishAdminMarketBulletinData", response: "UnpublishAdminMarketBulletinResponses" },
   "POST /api/v2/admin/payments/{order_id}/mark-paid": { request: "AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidData", response: "AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidResponses" },
   "POST /api/v2/admin/payments/{order_id}/reconcile": { request: "AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileData", response: "AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileResponses" },
   "POST /api/v2/admin/payments/{order_id}/refund": { request: "AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundData", response: "AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses" },
@@ -953,6 +981,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/market-analysis/{type}/run": { request: "RunMarketReportV2Data", response: "RunMarketReportV2Responses" },
   "POST /api/v2/market-data/screening/search": { request: "MarketExtendedControllerScreeningSearch1Data", response: "MarketExtendedControllerScreeningSearch1Responses" },
   "POST /api/v2/market-data/trading/price-board": { request: "MarketDataControllerPriceBoard1Data", response: "MarketDataControllerPriceBoard1Responses" },
+  "POST /api/v2/market/bulletins/{date}/slots/{slot}": { request: "PushMarketBulletinSlotData", response: "PushMarketBulletinSlotResponses" },
   "POST /api/v2/portfolio-manager/analyze": { request: "AnalyzePortfolioV2Data", response: "AnalyzePortfolioV2Responses" },
   "POST /api/v2/practice/{indicatorId}/next": { request: "PracticeNextData", response: "PracticeNextResponses" },
   "POST /api/v2/practice/{indicatorId}/preview": { request: "PracticePreviewData", response: "PracticePreviewResponses" },
@@ -991,6 +1020,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PUT /api/v2/admin/alerts/signals/{key}": { request: "AdminAlertsControllerUpdate1Data", response: "AdminAlertsControllerUpdate1Responses" },
   "PUT /api/v2/admin/flashback/chat/banned-words": { request: "FlashbackAdminChatBannedWordsReplaceData", response: "FlashbackAdminChatBannedWordsReplaceResponses" },
   "PUT /api/v2/admin/flashback/dataset/config": { request: "FlashbackAdminDatasetConfigData", response: "FlashbackAdminDatasetConfigResponses" },
+  "PUT /api/v2/admin/market-bulletins/{date}/content": { request: "SaveAdminMarketBulletinContentData", response: "SaveAdminMarketBulletinContentResponses" },
   "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: "AdminTeamLeadsControllerUpdatePolicy1Data", response: "AdminTeamLeadsControllerUpdatePolicy1Responses" },
   "PUT /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerUpdateRule1Data", response: "AlertsControllerUpdateRule1Responses" },
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: "QuantControllerUpdate0Data", response: "QuantControllerUpdate0Responses" },
