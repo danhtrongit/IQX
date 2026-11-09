@@ -15,6 +15,7 @@ import { AcademyPanel } from "@/pages/academy/academy-panel"
 import { isMainTool, parseDemoContent, withDemoContent, type DemoContent, type DemoTab } from "./content-tabs-state"
 import { AnalysisDashboard } from "./analysis"
 import { BotMain, BotPanel } from "./bot"
+import { CandleDojoFrame, CandleDojoMain, CandleDojoProvider } from "./candle-dojo"
 import { FlashbackFrame, FlashbackMain, FlashbackPanel, FlashbackProvider } from "./flashback"
 import { HuntPanel } from "./insights/hunt-panel"
 import type { MascotId } from "./journey/types"
@@ -23,6 +24,7 @@ import { PatternsPanel } from "./market/patterns-panel"
 import { PortfolioPanel } from "./portfolio/portfolio-panel"
 import { PracticeMain, PracticePanel, PracticeProvider, parsePracticeParam } from "./practice"
 import { ShopMain, ShopPanel } from "./shop"
+import { requestCandleCardsFromDojo } from "./shop/candle-cards-store"
 import { TradingRuntime } from "./trading"
 import { OrderPanel } from "./trading/order-panel"
 import { useWorkspaceMemory, workspaceMemory } from "./workspace-sections"
@@ -70,7 +72,7 @@ function ContentFallback() {
   return <div className="space-y-4 p-4 sm:p-6"><Skeleton className="h-8 w-48" /><Skeleton className="h-48 w-full" /><Skeleton className="h-24 w-full" /></div>
 }
 
-/** HỌC VIỆN main area: the tool's view (Học viện, Bot, Shop) or the Bot practice. */
+/** HỌC VIỆN main area: the tool's view (Học viện, Candle Dojo, Bot, Shop, Flashback) or the Bot practice. */
 function AcademySection({ toolId, label, practice, mascotId, onNavigate }: {
   toolId: string
   label: string
@@ -85,6 +87,14 @@ function AcademySection({ toolId, label, practice, mascotId, onNavigate }: {
           <div className="min-w-0 space-y-3 p-1.5 min-[901px]:p-3 min-[1750px]:p-5">
             {toolId === "bot" ? (
               <BotMain mascotId={mascotId} />
+            ) : toolId === "candle-dojo" ? (
+              // The cards live in the Shop (spec §8): the Dojo's "Thẻ nến của bạn" block opens it.
+              <CandleDojoMain
+                onOpenShop={() => {
+                  requestCandleCardsFromDojo()
+                  onNavigate("shop")
+                }}
+              />
             ) : toolId === "shop" ? (
               <ShopMain onNavigate={onNavigate} />
             ) : toolId === "flashback" ? (
@@ -173,6 +183,8 @@ function DemoWorkspace() {
       case "news": return <NewsPanel symbol={symbol} />
       case "patterns": return <PatternsPanel symbol={symbol} />
       case "bot": return <BotPanel />
+      // Candle Dojo is a single screen without a panel: its right column lives inside the main area.
+      case "candle-dojo": return null
       case "shop": return <ShopPanel onNavigate={navigatePanel} />
       case "flashback": return <FlashbackPanel />
       default: return <AcademyPanel />
@@ -207,9 +219,12 @@ function DemoWorkspace() {
   }
   // Switching sections starts each frame afresh (on phones its panel layer starts closed).
   // Flashback: the main area and the panel share one match, and the lobby and waiting room have no panel.
+  // Candle Dojo: one screen without a panel; a lesson or exam also leaves the rail out until it ends.
   const frame = activeId === "flashback"
     ? <FlashbackProvider><FlashbackFrame key={section} {...frameProps} /></FlashbackProvider>
-    : <WorkspaceFrame key={section} {...frameProps} />
+    : activeId === "candle-dojo"
+      ? <CandleDojoProvider><CandleDojoFrame key={section} {...frameProps} /></CandleDojoProvider>
+      : <WorkspaceFrame key={section} {...frameProps} />
 
   return <>
     <PracticeProvider indicatorId={practiceId}>{frame}</PracticeProvider>

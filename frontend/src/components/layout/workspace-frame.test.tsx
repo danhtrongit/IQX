@@ -112,7 +112,7 @@ describe("WorkspaceFrame on wide screens", () => {
     renderFrame()
     const nav = await screen.findByRole("navigation", { name: "Công cụ theo trang" })
     expect(within(nav).getAllByRole("button").map((button) => button.textContent)).toEqual([
-      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Dashboard phân tích", "Học viện", "Bot", "Shop", "Flashback",
+      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Dashboard phân tích", "Học viện", "Candle Dojo", "Bot", "Shop", "Flashback",
     ])
   })
 
@@ -224,7 +224,7 @@ describe("WorkspaceFrame on wide screens", () => {
     )
     render(<RouterProvider router={router} />)
     await screen.findByText("Nội dung chính")
-    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop", "Flashback"])
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Candle Dojo", "Bot", "Shop", "Flashback"])
     expect(tool("Bot").getAttribute("aria-pressed")).toBe("true")
     await userEvent.setup().click(tool("Shop"))
     expect(onSelectTool).toHaveBeenCalledWith("shop")
@@ -373,7 +373,7 @@ describe("WorkspaceFrame with the phone tool bar", () => {
     expect(frame().querySelector(".workspace-rail")).toBeNull()
     expect(toggle()).toBeNull()
     expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual([
-      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Dashboard phân tích", "Học viện", "Bot", "Shop", "Flashback",
+      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Dashboard phân tích", "Học viện", "Candle Dojo", "Bot", "Shop", "Flashback",
     ])
 
     // The bar's tools work as the rail's: open the layer, a second click closes it, focus comes back.
@@ -463,5 +463,53 @@ describe("WorkspaceFrame without a panel (panelHidden)", () => {
       await user.click(tool("Danh mục"))
       expect(frame().getAttribute("data-panel-open")).toBe("true")
     })
+  })
+})
+
+describe("WorkspaceFrame with the rail left out (railHidden)", () => {
+  function RailHarness({ phoneRail }: { phoneRail: "column" | "bar" }) {
+    const [hidden, setHidden] = useState(true)
+    return (
+      <RailProvider>
+        <WorkspaceFrame
+          panelLabel="Bảng công cụ"
+          panelHidden
+          railHidden={hidden}
+          phoneRail={phoneRail}
+          main={<div><button type="button" onClick={() => setHidden((value) => !value)}>Đổi rail</button><p>Nội dung chính</p></div>}
+          panel={<Panel />}
+        />
+      </RailProvider>
+    )
+  }
+
+  function renderRail(phoneRail: "column" | "bar") {
+    const router = createMemoryRouter(
+      [{ path: "/demo-trading", handle: { chrome: demoChrome }, element: <RailHarness phoneRail={phoneRail} /> }],
+      { initialEntries: ["/demo-trading?view=candle-dojo"] },
+    )
+    render(<RouterProvider router={router} />)
+    return userEvent.setup()
+  }
+
+  it("shows no rail on a wide screen while a task is on, and brings it back after", async () => {
+    const user = renderRail("column")
+    await screen.findByText("Nội dung chính")
+    expect(frame().getAttribute("data-rail-hidden")).toBe("true")
+    expect(screen.queryByRole("navigation", { name: "Công cụ theo trang" })).toBeNull()
+    await user.click(screen.getByRole("button", { name: "Đổi rail" }))
+    expect(frame().getAttribute("data-rail-hidden")).toBe("false")
+    expect(within(rail()).getByRole("button", { name: "Candle Dojo" }).getAttribute("aria-pressed")).toBe("true")
+  })
+
+  it("on phones the tool bar goes too, so the task keeps the whole screen", async () => {
+    media.matches = true
+    const user = renderRail("bar")
+    await screen.findByText("Nội dung chính")
+    expect(frame().getAttribute("data-rail")).toBe("column")
+    expect(screen.queryByRole("navigation", { name: "Công cụ theo trang" })).toBeNull()
+    await user.click(screen.getByRole("button", { name: "Đổi rail" }))
+    expect(frame().getAttribute("data-rail")).toBe("bar")
+    expect(screen.getByRole("main").firstElementChild).toBe(rail())
   })
 })

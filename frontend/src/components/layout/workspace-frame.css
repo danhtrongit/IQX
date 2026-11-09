@@ -189,6 +189,11 @@
   }
 }
 
+/* A focused task (Candle Dojo's lesson or exam) leaves the rail out: main takes the whole width. */
+.workspace-frame[data-rail-hidden="true"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 @media (max-width: 380px) {
   .workspace-frame {
     --ws-rail: 54px;

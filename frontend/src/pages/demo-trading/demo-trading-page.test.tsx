@@ -12,10 +12,12 @@ import { DemoTradingPage } from "./demo-trading-page"
 import { createFakeAcademyApi } from "@/pages/academy/test-api"
 import { demoTradingLoader } from "./workspace-url"
 import { workspaceMemory } from "./workspace-sections"
+import { createDojoBackend, type DojoBackend } from "./candle-dojo/dojo-test-support"
 import { createShopBackend, type ShopBackend } from "./shop/shop-test-support"
 import { resetEnsuredWorkspaces } from "./workspace/workspace-api"
 
 let shopBackend: ShopBackend
+let dojoBackend: DojoBackend
 
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
@@ -74,6 +76,7 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
     return { data: { active_mascot: mocks.mascot ? { mascot_id: mocks.mascot } : null } }
   }
   if (path === "/shop" || path.startsWith("/shop/")) return shopBackend.handle(path, init)
+  if (path.startsWith("/candle-dojo")) return dojoBackend.handle(path, init)
   // The catalog, progress and items of the Học viện tool (the Shop reads the same progress route).
   if (path.startsWith("/academy") && academy.handler) return academy.handler(path, init)
   if (path === "/virtual-trading/account") return account
@@ -159,6 +162,7 @@ beforeEach(() => {
   mocks.api.mockImplementation(respond)
   botApi = createFakeApi(createWorld())
   shopBackend = createShopBackend({ balance: 300, lessons: 3 })
+  dojoBackend = createDojoBackend({ belt: 0 })
   mocks.mascot = "bach_ho"
   mocks.workspaceStatus = 200
   academy.handler = createFakeAcademyApi().handler
@@ -204,7 +208,7 @@ describe("DemoTradingPage for a brand-new user", () => {
     await renderPage("/demo-trading?view=academy")
 
     const buttons = within(rail()).getAllByRole("button")
-    expect(buttons.map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop", "Flashback"])
+    expect(buttons.map((button) => button.textContent)).toEqual(["Học viện", "Candle Dojo", "Bot", "Shop", "Flashback"])
     expect(buttons.every((button) => !button.hasAttribute("disabled"))).toBe(true)
     expect(document.body.textContent).not.toMatch(/Mở khóa|Cấp \d|trứng|Hành trình/i)
 
@@ -439,7 +443,7 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
     expect(frame().getAttribute("data-rail")).toBe("bar")
     expect(frame().querySelector(".workspace-rail")).toBeNull()
     expect(screen.getByRole("main").firstElementChild).toBe(rail())
-    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop", "Flashback"])
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Candle Dojo", "Bot", "Shop", "Flashback"])
     expect(within(screen.getByRole("main")).getAllByRole("button", { name: "Học viện" })).toHaveLength(1)
     const toggle = within(rail()).getByRole("button", { name: "Học viện" })
     expect(toggle.getAttribute("aria-controls")).toBe(panel().id)
@@ -486,5 +490,40 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
 
     expect(router.state.location.pathname).toBe("/demo-trading")
     expect(router.state.location.search).toBe("?content=dashboard&symbol=VCB")
+  })
+})
+
+describe("Candle Dojo in HỌC VIỆN", () => {
+  const pressed = () => within(rail()).getAllByRole("button").filter((button) => button.getAttribute("aria-pressed") === "true").map((button) => button.textContent)
+
+  it("sits between Học viện and Bot, opens as one screen without a panel, and a task hides the rail until it ends", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/demo-trading?view=academy")
+    await user.click(within(rail()).getByRole("button", { name: "Candle Dojo" }))
+    expect(router.state.location.search).toBe("?view=candle-dojo")
+    expect(await screen.findByTestId("dojo-home")).toBeTruthy()
+    await waitFor(() => expect(pressed()).toEqual(["Candle Dojo"]))
+    expect(frame().getAttribute("data-panel-hidden")).toBe("true")
+    expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()
+    expect(frame().getAttribute("data-rail-hidden")).toBe("false")
+
+    // The intro is a focused task: the rail is gone, ✕ brings the home and the rail back.
+    await user.click(document.querySelector("[data-intro='anatomy']") as HTMLElement)
+    expect(await screen.findByTestId("dojo-intro")).toBeTruthy()
+    expect(frame().getAttribute("data-rail-hidden")).toBe("true")
+    expect(screen.queryByRole("navigation", { name: "Công cụ theo trang" })).toBeNull()
+    await user.click(screen.getByRole("button", { name: "Thoát nhập môn" }))
+    expect(await screen.findByTestId("dojo-home")).toBeTruthy()
+    expect(frame().getAttribute("data-rail-hidden")).toBe("false")
+    expect(within(rail()).getByRole("button", { name: "Candle Dojo" }).getAttribute("aria-pressed")).toBe("true")
+  })
+
+  it("the Thẻ nến block opens the Shop tool", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/demo-trading?view=candle-dojo")
+    await screen.findByTestId("dojo-home")
+    await user.click(screen.getByRole("button", { name: "Mở Shop › Thẻ nến" }))
+    expect(router.state.location.search).toBe("?view=shop")
+    await waitFor(() => expect(pressed()).toEqual(["Shop"]))
   })
 })

@@ -135,12 +135,15 @@ export function CandleChart({
         ))}
         {bands.map((band, index) => {
           const color = band.color ?? CD_CHART_COLORS.gold
+          // Giữ vùng tô trong khung vẽ để viền không bị cắt khi mẫu nằm sát mép (ít nến hoặc mẫu ở rìa).
+          const left = Math.max(2, x(band.start) - slot * 0.7)
+          const right = Math.min(width - 2, x(band.end) + slot * 0.7)
           return (
             <rect
               key={index}
-              x={x(band.start) - slot * 0.7}
+              x={left}
               y={3}
-              width={slot * (band.end - band.start) + slot * 1.4}
+              width={Math.max(0, right - left)}
               height={H - 6}
               rx={6}
               fill={color}

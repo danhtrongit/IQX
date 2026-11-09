@@ -55,6 +55,7 @@ export function WorkspaceFrame({
   rail: railProp,
   phoneRail = "column",
   panelHidden = false,
+  railHidden = false,
 }: {
   main: ReactNode
   panel: ReactNode
@@ -79,6 +80,11 @@ export function WorkspaceFrame({
    * the panel column and layer are left out, the rail stays and keeps the tool marked as current.
    */
   panelHidden?: boolean
+  /**
+   * A focused task (Candle Dojo's lesson or exam) takes the whole width: the tool rail is left out until
+   * the task ends. Navigation stays possible through the header.
+   */
+  railHidden?: boolean
 }) {
   const panelId = useId()
   const routeRail = useRouteRail()
@@ -110,7 +116,7 @@ export function WorkspaceFrame({
   const open = overlay && openState && !panelHidden
   const collapsed = !overlay && collapsedValue
   const panelShown = !panelHidden && (overlay ? open : !collapsed)
-  const railBar = overlay && phoneRail === "bar"
+  const railBar = overlay && phoneRail === "bar" && !railHidden
 
   const setCollapsed = useCallback((next: boolean) => {
     if (controlledCollapsed === undefined) setUncontrolledCollapsed(next)
@@ -202,7 +208,7 @@ export function WorkspaceFrame({
   return (
     <WorkspaceFrameContext.Provider value={state}>
       <WorkspaceToggleRegistryContext.Provider value={setToggleElement}>
-        <div className="workspace-frame" data-panel-open={open} data-panel-collapsed={collapsed} data-panel-hidden={panelHidden} data-rail={railBar ? "bar" : "column"} data-testid="workspace-frame">
+        <div className="workspace-frame" data-panel-open={open} data-panel-collapsed={collapsed} data-panel-hidden={panelHidden} data-rail={railBar ? "bar" : "column"} data-rail-hidden={railHidden} data-testid="workspace-frame">
           <main className="workspace-main flex min-h-0 min-w-0 flex-col overflow-hidden">
             {railBar && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} panelHidden={panelHidden} onSelect={selectRailItem} orientation="horizontal" />}
             {main}
@@ -216,7 +222,7 @@ export function WorkspaceFrame({
           >
             {panel}
           </RightSidebar>
-          {!railBar && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} panelHidden={panelHidden} onSelect={selectRailItem} />}
+          {!railBar && !railHidden && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} panelHidden={panelHidden} onSelect={selectRailItem} />}
         </div>
       </WorkspaceToggleRegistryContext.Provider>
     </WorkspaceFrameContext.Provider>

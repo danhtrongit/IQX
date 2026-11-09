@@ -17,14 +17,15 @@ describe("demo workspace chrome", () => {
     ])
   })
 
-  it("lists the HỌC VIỆN rail tools in order: Học viện, Bot, Shop", () => {
+  it("lists the HỌC VIỆN rail tools in order: Học viện, Candle Dojo, Bot, Shop, Flashback", () => {
     expect(inSection("academy").map((item) => [item.id, item.label])).toEqual([
       ["academy", "Học viện"],
+      ["candle-dojo", "Candle Dojo"],
       ["bot", "Bot"],
       ["shop", "Shop"],
       ["flashback", "Flashback"],
     ])
-    expect(visible).toHaveLength(9)
+    expect(visible).toHaveLength(10)
   })
 
   it("hides Săn mã and Mẫu nến from the rail", () => {
@@ -46,7 +47,7 @@ describe("demo workspace chrome", () => {
   })
 
   it("maps tools to sections, with anything unknown falling in DEMO TRADING", () => {
-    for (const id of ["academy", "bot", "shop"]) expect(sectionOfTool(id)).toBe("academy")
+    for (const id of ["academy", "candle-dojo", "bot", "shop", "flashback"]) expect(sectionOfTool(id)).toBe("academy")
     for (const id of ["trading", "portfolio", "news", "insight", "dashboard", "hunt", "patterns", "unknown", "journey", null]) {
       expect(sectionOfTool(id)).toBe("demo")
     }

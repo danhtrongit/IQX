@@ -8,6 +8,7 @@ import {
   ScanSearch,
   ShoppingCart,
   Store,
+  Swords,
   TrendingUp,
   Wallet,
   type LucideIcon,
@@ -53,7 +54,7 @@ export const HEADER_NAV: readonly { to: string; label: string; hidden?: boolean 
 /**
  * Workspace tools, top to bottom per section (layout v1.2). DEMO TRADING:
  * Đặt lệnh · Danh mục · Tin tức · Insight · Dashboard phân tích; HỌC VIỆN:
- * Học viện · Bot · Shop. Insight and Dashboard phân tích replace the main area.
+ * Học viện · Candle Dojo · Bot · Shop · Flashback. Insight and Dashboard phân tích replace the main area.
  * Săn mã and Mẫu nến are hidden; their links land on Demo Trading → Biểu đồ.
  * A missing or unknown tool is "Đặt lệnh" (DEMO TRADING).
  */
@@ -69,6 +70,7 @@ export const demoChrome: RouteChrome = {
     { id: "hunt", label: "Săn mã", icon: ScanSearch, affects: "sidebar", section: "demo", hidden: true },
     { id: "patterns", label: "Mẫu nến", icon: ChartCandlestick, affects: "sidebar", section: "demo", hidden: true },
     { id: "academy", label: "Học viện", icon: BookOpen, affects: "sidebar", section: "academy" },
+    { id: "candle-dojo", label: "Candle Dojo", icon: Swords, affects: "sidebar", section: "academy" },
     { id: "bot", label: "Bot", icon: Bot, affects: "sidebar", section: "academy" },
     { id: "shop", label: "Shop", icon: Store, affects: "sidebar", section: "academy" },
     { id: "flashback", label: "Flashback", icon: History, affects: "sidebar", section: "academy" },
