@@ -189,6 +189,17 @@ describe("scene: khối lượng và chỉ báo", () => {
     expect(scene.some((command) => command.op === "lines" && command.token === "border")).toBe(true)
   })
 
+  it("MACD fade: cột co lại cùng dấu vẽ nhạt hơn, vẫn đúng màu tăng/giảm", () => {
+    const bars = makeBars(120)
+    const values = bars.map((_, index) => Math.sin(index / 4) * 3)
+    const macd: IndicatorPlot = { kind: "pane", series: [], histogram: { values, upToken: "price-up", downToken: "price-down", fade: true }, zero: true }
+    const scene = build(marketInput({ indicators: [{ key: "macd", name: "MACD", plot: macd }] })).scene()
+    for (const token of ["price-up", "price-down"]) {
+      expect(scene.some((command) => command.op === "rects" && command.alpha === 0.6 && command.token === token)).toBe(true)
+      expect(scene.some((command) => command.op === "rects" && command.alpha === 0.3 && command.token === token)).toBe(true)
+    }
+  })
+
   it("chuỗi dash có nét đứt, dots là chấm vuông, hai chuỗi area tô dải giữa chúng", () => {
     const bars = makeBars(120)
     const plot: IndicatorPlot = {

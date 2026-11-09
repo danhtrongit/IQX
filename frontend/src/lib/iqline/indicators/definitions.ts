@@ -215,7 +215,7 @@ const MACD = builtin({
     return {
       kind: "pane",
       series: [line("macd", "MACD", lines.macd, color(0)), line("signal", "Tín hiệu", lines.signal, color(1))],
-      histogram: { values: lines.histogram, upToken: "price-up", downToken: "price-down" },
+      histogram: { values: lines.histogram, upToken: "price-up", downToken: "price-down", fade: true },
       zero: true,
     }
   },

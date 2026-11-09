@@ -109,7 +109,8 @@ export type IndicatorSeries = { key: string; label: string; values: readonly (nu
 export type IndicatorPlot = {
   kind: IndicatorKind
   series: IndicatorSeries[]
-  histogram?: { values: readonly (number | null)[]; upToken: ColorToken; downToken: ColorToken }
+  /** `fade`: cột co lại so với phiên trước (dương giảm, âm tăng) vẽ nhạt, kiểu MACD 4 màu. */
+  histogram?: { values: readonly (number | null)[]; upToken: ColorToken; downToken: ColorToken; fade?: boolean }
   /** Cột ngang trên ô giá (Volume Profile). `row` theo giá, `value` tỷ lệ 0-1. */
   profile?: { rows: readonly { low: number; high: number; up: number; down: number }[] }
   markers?: readonly { index: number; token: ColorToken; label?: string }[]

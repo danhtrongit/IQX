@@ -19,6 +19,8 @@ const BAND_ALPHA = 0.1
 const LEVEL_BAND_ALPHA = 0.07
 const PROFILE_ALPHA = 0.35
 const HISTOGRAM_ALPHA = 0.6
+/** Cột histogram đang co lại (dương mà giảm, âm mà tăng): nhạt hẳn để dễ thấy động lượng yếu đi. */
+const HISTOGRAM_FADE_ALPHA = 0.3
 /** Số điểm đánh dấu tối đa mỗi chỉ báo trong một khung hình. */
 const MAX_MARKERS = 400
 
@@ -356,11 +358,25 @@ export function drawIndicatorPlot(scene: Scene, after: DrawCommand[], frame: Cha
   // Histogram: cột từ vạch 0 (MACD).
   if (plot.histogram) {
     const { values, upToken, downToken } = plot.histogram
+    const fade = plot.histogram.fade === true
     const count = d.last - d.first + 1
     const up = d.bufs.get(k("hist.up"), count * 4 + 4)
     const down = d.bufs.get(k("hist.down"), count * 4 + 4)
+    const upFade = d.bufs.get(k("hist.up.fade"), fade ? count * 4 + 4 : 4)
+    const downFade = d.bufs.get(k("hist.down.fade"), fade ? count * 4 + 4 : 4)
     let u = 0
     let n = 0
+    let uf = 0
+    let nf = 0
+    let extremeIndex = -1
+    // Cột co lại so với phiên trước, cùng dấu.
+    const shrinking = (index: number): boolean => {
+      if (!fade || index <= 0) return false
+      const value = values[index]
+      const previous = values[index - 1]
+      if (!isValue(value) || !isValue(previous)) return false
+      return (value >= 0) === (previous >= 0) && Math.abs(value) < Math.abs(previous)
+    }
     const zero = yOf(0)
     const width = Math.max(1, Math.floor(d.barPx * 0.7))
     let column = -1
@@ -370,8 +386,13 @@ export function drawIndicatorPlot(scene: Scene, after: DrawCommand[], frame: Cha
       const y = yOf(extreme)
       const top = Math.round(Math.min(y, zero))
       const height = Math.max(1, Math.round(Math.abs(y - zero)))
-      if (extreme >= 0) {
+      const faded = shrinking(extremeIndex)
+      if (extreme >= 0 && faded) {
+        upFade[uf++] = column; upFade[uf++] = top; upFade[uf++] = width; upFade[uf++] = height
+      } else if (extreme >= 0) {
         up[u++] = column; up[u++] = top; up[u++] = width; up[u++] = height
+      } else if (faded) {
+        downFade[nf++] = column; downFade[nf++] = top; downFade[nf++] = width; downFade[nf++] = height
       } else {
         down[n++] = column; down[n++] = top; down[n++] = width; down[n++] = height
       }
@@ -384,13 +405,17 @@ export function drawIndicatorPlot(scene: Scene, after: DrawCommand[], frame: Cha
         flush()
         column = next
         extreme = value
+        extremeIndex = index
       } else if (Math.abs(value) > Math.abs(extreme)) {
         extreme = value
+        extremeIndex = index
       }
     }
     flush()
     pushRects(scene, upToken, up, u, HISTOGRAM_ALPHA)
     pushRects(scene, downToken, down, n, HISTOGRAM_ALPHA)
+    if (uf) pushRects(scene, upToken, upFade, uf, HISTOGRAM_FADE_ALPHA)
+    if (nf) pushRects(scene, downToken, downFade, nf, HISTOGRAM_FADE_ALPHA)
   }
 
   // Mây giữa hai chuỗi (Ichimoku): tô trước các đường để đường nằm trên.
