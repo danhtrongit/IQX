@@ -9,6 +9,7 @@ import {
   datasetSymbolsWire,
   datasetVersionsWire,
 } from "./flashback-dataset-test-support"
+import { defaultPatternRoute } from "./flashback-patterns-test-support"
 import { FlashbackPage } from "./flashback-page"
 
 const mocks = vi.hoisted(() => ({
@@ -129,6 +130,9 @@ function install() {
     if (path === "/admin/flashback/dataset") return datasetStatusWire()
     if (path === "/admin/flashback/dataset/symbols") return datasetSymbolsWire()
     if (path === "/admin/flashback/dataset/versions") return datasetVersionsWire()
+    // Khối "Mẫu nến" (Candle Dojo v1.3) nằm trong mục kho dữ liệu; test riêng ở flashback-patterns-section.test.tsx.
+    const pattern = defaultPatternRoute(path)
+    if (pattern !== undefined) return pattern
     if (path.includes("/reveal")) {
       return { round_no: 7, symbol: "VIC", start_date: "2015-03-02", session_range: "2015-03-02..2015-08-28" }
     }
@@ -314,7 +318,10 @@ describe("màn quản trị Flashback", () => {
     renderPage()
     expect(await screen.findByText("Thời lượng một đề (giờ)")).toBeTruthy()
     expect(screen.getByText("entry_fee_xu")).toBeTruthy()
-    // Ô nhập duy nhất của màn là ô thêm từ cấm của chat; bảng tham số không có ô sửa.
-    expect(screen.getAllByRole("textbox").map((box) => box.getAttribute("aria-label"))).toEqual(["Thêm từ cấm"])
+    // Ngoài ô mã của tra cứu mẫu nến (ô gợi ý là combobox khi đã có danh sách mã), ô nhập duy nhất của
+    // màn là ô thêm từ cấm của chat; bảng tham số không có ô sửa.
+    const symbolBox = await screen.findByLabelText("Mã")
+    const others = screen.queryAllByRole("textbox").filter((box) => box !== symbolBox)
+    expect(others.map((box) => box.getAttribute("aria-label"))).toEqual(["Thêm từ cấm"])
   })
 })

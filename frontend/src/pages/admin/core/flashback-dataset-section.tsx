@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Database, RefreshCw, Settings2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -29,6 +29,7 @@ import {
   DatasetVersionsPanel,
   DatasetWarnings,
 } from "./flashback-dataset-panels"
+import { FlashbackPatternsSection } from "./flashback-patterns-section"
 
 /** Đợi lâu hơn chừng này mà chưa thấy lần dựng nào bắt đầu thì báo tác vụ nền có thể đang bận. */
 const QUEUE_WAIT_MS = 90_000
@@ -62,6 +63,12 @@ export function FlashbackDatasetSection() {
   const status = useDatasetStatus({ waitingFor: awaiting && !awaiting.timedOut ? awaiting.signature : null })
   const signature = datasetSignature(status.data)
   const symbols = useDatasetSymbols(selectedVersion, signature)
+  /** Mã của kho đang dùng (cùng khoá cache với danh sách mã khi chưa chọn phiên bản cũ), gợi ý cho khối Mẫu nến. */
+  const activeSymbols = useDatasetSymbols(null, signature)
+  const patternSymbols = useMemo(
+    () => activeSymbols.data?.symbols.filter((symbol) => symbol.status === "ok").map((symbol) => symbol.symbol),
+    [activeSymbols.data],
+  )
   const versions = useDatasetVersions(signature)
   const refresh = useRefreshDataset()
   const confirm = useConfirmDialog()
@@ -234,6 +241,8 @@ export function FlashbackDatasetSection() {
           </div>
         )}
       </DatasetBlock>
+
+      {signature !== null && <FlashbackPatternsSection datasetSignature={signature} symbolOptions={patternSymbols} />}
 
       {data && <DatasetConfigDialog open={configOpen} onOpenChange={setConfigOpen} config={data.config} />}
       {confirm.element}

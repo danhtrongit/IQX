@@ -15,6 +15,7 @@ import {
   datasetVersionWire,
   datasetVersionsWire,
 } from "./flashback-dataset-test-support"
+import { defaultPatternRoute } from "./flashback-patterns-test-support"
 
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
@@ -78,6 +79,9 @@ function install() {
       const body = JSON.parse(String(init.body)) as Record<string, unknown>
       return { config: { ...DATASET_CONFIG_WIRE, ...body }, config_invalid: [] }
     }
+    // Khối "Mẫu nến" (Candle Dojo v1.3) nằm cùng mục; test riêng của nó ở flashback-patterns-section.test.tsx.
+    const pattern = defaultPatternRoute(path)
+    if (pattern !== undefined) return pattern
     throw new Error(`Không có route giả lập: ${path}`)
   })
 }
