@@ -1,0 +1,19 @@
+[workspace]
+resolver = "3"
+members = ["app", "crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[workspace.dependencies]
+api = { path = "crates/api" }
+chart = { path = "crates/chart" }
+indicator = { path = "crates/indicator" }
+model = { path = "crates/model" }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

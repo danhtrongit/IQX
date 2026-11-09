@@ -8,13 +8,15 @@
 !/AGENTS.md
 !/CLAUDE.md
 
-# Application directories: NestJS API and integrated web frontend.
+# Application directories: NestJS API, web frontend, mobile, Rust desktop.
 !/backend/
 !/backend/**
 !/frontend/
 !/frontend/**
 !/mobile/
 !/mobile/**
+!/desktop/
+!/desktop/**
 # Safety guard: frontend was previously a standalone repo.
 /frontend/.git
 
