@@ -10,7 +10,7 @@ export {
   barsUpTo,
   barWindowStart,
   latestCompletedWeekday,
-  sessionFromCounts,
+  sessionFromCoverage,
   toStoredColumns,
   BOT_BAR_WINDOW_DAYS,
   BOT_BAR_WINDOW_SESSIONS,

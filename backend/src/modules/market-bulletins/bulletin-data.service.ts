@@ -17,7 +17,10 @@ import type { IndexBar, MarketStats, VnIndexModel } from './bulletin.types.js';
 const MODEL_BAR_LIMIT = 420;
 /** Số ngày lịch xin DNSE: đủ cho ~520 phiên. */
 const INDEX_HISTORY_DAYS = 820;
-/** Tỷ lệ mã HOSE có nến phiên T trên tổng số mã HOSE đã lưu thì mới coi số liệu thị trường là đủ. */
+/**
+ * Tỷ lệ mã HOSE đã cập nhật cho phiên T (có nến phiên T, hoặc đã tải lại sau giờ chốt mà không có nến vì không
+ * giao dịch) trên tổng số mã HOSE đã lưu thì mới coi số liệu thị trường là đủ.
+ */
 const HOSE_COVERAGE_RATIO = 0.85;
 
 export type DataOutcome =
@@ -31,6 +34,7 @@ type StatsRow = {
   unchanged: number;
   declines: number;
   hose_total: number;
+  hose_covered: number;
 };
 
 /**
@@ -80,7 +84,7 @@ export class BulletinDataService {
   async computeStats(date: string, now = new Date()): Promise<MarketStats | null> {
     const rows = await this.database.query<StatsRow>(
       `with hose as (
-         select b.symbol, b.last_date, b.bar_count, b.bars
+         select b.symbol, b.last_date, b.bar_count, b.bars, b.fetched_at
            from market_daily_bars b
            join symbols s on upper(s.symbol) = b.symbol
           where s.is_active = true
@@ -100,13 +104,16 @@ export class BulletinDataService {
               count(*) filter (where round(c, 3) > round(p, 3))::int as advances,
               count(*) filter (where round(c, 3) = round(p, 3))::int as unchanged,
               count(*) filter (where round(c, 3) < round(p, 3))::int as declines,
-              (select count(*) from hose)::int as hose_total
+              (select count(*) from hose)::int as hose_total,
+              (select count(*) from hose
+                where last_date >= $1::date
+                   or fetched_at >= (($1::date + time '15:15') at time zone 'Asia/Ho_Chi_Minh'))::int as hose_covered
          from today`,
       [date],
     );
     const row = rows[0];
     if (!row || Number(row.n) === 0 || row.value_bn === null) return null;
-    if (Number(row.n) < HOSE_COVERAGE_RATIO * Number(row.hose_total)) return null;
+    if (Number(row.hose_covered) < HOSE_COVERAGE_RATIO * Number(row.hose_total)) return null;
     return {
       value_bn: Number(row.value_bn),
       advances: Number(row.advances),

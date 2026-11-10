@@ -26,7 +26,10 @@ const FAILED_RETRY_AFTER_MS = 10 * 60_000;
 export const DAILY_BARS_EXCHANGES = ['HOSE', 'HNX', 'UPCOM'] as const;
 /** Calendar days requested per symbol: comfortably more than the retained sessions. */
 const HISTORY_DAYS = 820;
-/** A session is "the" session T once this share of the stored symbols has its bar. */
+/**
+ * A session is "the" session T once this share of the stored symbols is up to date for it: has its bar,
+ * or was fetched after its close (an illiquid symbol with no trade that day has no bar to get).
+ */
 export const SESSION_COVERAGE_RATIO = 0.85;
 
 /**
@@ -62,7 +65,7 @@ export type EnsureFreshOutcome =
   | { status: 'skipped'; reason: 'no_new_session' | 'benchmark_unavailable'; session: string | null }
   | { status: 'refreshed'; session: string; summary: RefreshSummary };
 
-type CountRow = { last_date: Date | string; n: number | string };
+type CoverageRow = { last_date: Date | string; n: number | string; total: number | string };
 
 const day = (value: Date | string): string =>
   value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10);
@@ -142,23 +145,20 @@ export function barsUpTo(
 }
 
 /**
- * Session T from the distribution of the symbols' last stored date: the newest closed date that at
- * least `SESSION_COVERAGE_RATIO` of the stored symbols reached. A half-finished refresh therefore
- * never exposes a session only some symbols have.
+ * Session T from the per-date coverage of the stored symbols: the newest closed date that at least
+ * `SESSION_COVERAGE_RATIO` of them is up to date for. A half-finished refresh therefore never exposes a
+ * session only some symbols have, while illiquid symbols (no trade, so no bar, for days) do not hold the
+ * session back once they were fetched after the close.
  */
-export function sessionFromCounts(
-  counts: ReadonlyArray<{ date: string; symbols: number }>,
+export function sessionFromCoverage(
+  rows: ReadonlyArray<{ date: string; covered: number; total: number }>,
   now: Date,
   ratio = SESSION_COVERAGE_RATIO,
 ): { session: string; coverage: number; total: number } | null {
-  const total = counts.reduce((sum, item) => sum + item.symbols, 0);
-  if (total === 0) return null;
-  const sorted = [...counts].sort((a, b) => b.date.localeCompare(a.date));
-  let cumulative = 0;
+  const sorted = [...rows].sort((a, b) => b.date.localeCompare(a.date));
   for (const item of sorted) {
-    cumulative += item.symbols;
-    if (isCompletedVietnamSession(item.date, now) && cumulative >= ratio * total) {
-      return { session: item.date, coverage: cumulative, total };
+    if (item.total > 0 && isCompletedVietnamSession(item.date, now) && item.covered >= ratio * item.total) {
+      return { session: item.date, coverage: item.covered, total: item.total };
     }
   }
   return null;
@@ -193,16 +193,34 @@ export class DailyBarsService {
   async resolveSession(
     now = new Date(),
   ): Promise<{ session: string; coverage: number; total: number } | null> {
-    const rows = await this.database.query<CountRow>(
-      `select last_date, count(*)::int as n
-         from market_daily_bars
-        where last_date is not null
+    // Candidates are the newest stored last dates; a symbol covers date D when its last bar is on or after D
+    // or it was fetched after D's close (same 15:15 cut as `staleSymbols`).
+    const rows = await this.database.query<CoverageRow>(
+      `with universe as (
+         select b.last_date as stored_date, b.fetched_at
+           from market_daily_bars b
+           join symbols s on upper(s.symbol) = b.symbol
+          where s.is_active = true
+            and coalesce(s.is_index, false) = false
+            and lower(s.asset_type) = 'stock'
+            and upper(coalesce(s.exchange, '')) = any($1::text[])
+            and b.last_date is not null
+       ), candidates as (
+         select distinct stored_date as last_date from universe order by 1 desc limit 20
+       )
+       select last_date,
+              count(*) filter (
+                where stored_date >= last_date
+                   or fetched_at >= ((last_date + time '15:15') at time zone 'Asia/Ho_Chi_Minh')
+              )::int as n,
+              count(*)::int as total
+         from candidates cross join universe
         group by last_date
-        order by last_date desc
-        limit 20`,
+        order by last_date desc`,
+      [[...DAILY_BARS_EXCHANGES]],
     );
-    return sessionFromCounts(
-      rows.map((row) => ({ date: day(row.last_date), symbols: Number(row.n) })),
+    return sessionFromCoverage(
+      rows.map((row) => ({ date: day(row.last_date), covered: Number(row.n), total: Number(row.total) })),
       now,
     );
   }

@@ -12,7 +12,7 @@ import {
   barWindowStart,
   DailyBarsService,
   latestCompletedWeekday,
-  sessionFromCounts,
+  sessionFromCoverage,
   toStoredColumns,
   type StoredColumns,
 } from '../../src/modules/market-integration/daily-bars.service.js';
@@ -197,42 +197,41 @@ describe('daily bar store helpers', () => {
     expect(latestCompletedWeekday(new Date('2025-06-02T01:00:00Z'))).toBe('2025-05-30');
   });
 
-  it('sessionFromCounts: the newest closed date that at least 85% of the stored symbols reached', () => {
+  it('sessionFromCoverage: the newest closed date that at least 85% of the stored symbols is up to date for', () => {
     const now = AFTER_CLOSE;
-    // 90 symbols on the 30th: T is the 30th.
+    // 90 of 100 up to date for the 30th: T is the 30th.
     expect(
-      sessionFromCounts(
+      sessionFromCoverage(
         [
-          { date: '2025-05-30', symbols: 90 },
-          { date: '2025-05-29', symbols: 10 },
+          { date: '2025-05-30', covered: 90, total: 100 },
+          { date: '2025-05-29', covered: 100, total: 100 },
         ],
         now,
       ),
     ).toEqual({ session: '2025-05-30', coverage: 90, total: 100 });
     // A half-finished refresh (60% on the 30th) never exposes the 30th.
     expect(
-      sessionFromCounts(
+      sessionFromCoverage(
         [
-          { date: '2025-05-30', symbols: 60 },
-          { date: '2025-05-29', symbols: 35 },
-          { date: '2025-05-28', symbols: 5 },
+          { date: '2025-05-30', covered: 60, total: 100 },
+          { date: '2025-05-29', covered: 95, total: 100 },
         ],
         now,
       ),
     ).toEqual({ session: '2025-05-29', coverage: 95, total: 100 });
     // A date that is not yet closed is skipped even if everyone "has" it; the next closed one is used.
     expect(
-      sessionFromCounts(
+      sessionFromCoverage(
         [
-          { date: '2025-05-30', symbols: 100 },
-          { date: '2025-05-29', symbols: 0 },
+          { date: '2025-05-30', covered: 100, total: 100 },
+          { date: '2025-05-29', covered: 100, total: 100 },
         ],
         MID_SESSION,
       ),
     ).toEqual({ session: '2025-05-29', coverage: 100, total: 100 });
     // Nothing closed at all: no session.
-    expect(sessionFromCounts([{ date: '2025-05-30', symbols: 10 }], MID_SESSION)).toBeNull();
-    expect(sessionFromCounts([], now)).toBeNull();
+    expect(sessionFromCoverage([{ date: '2025-05-30', covered: 10, total: 10 }], MID_SESSION)).toBeNull();
+    expect(sessionFromCoverage([], now)).toBeNull();
   });
 });
 
@@ -303,23 +302,26 @@ describe('DailyBarsService', () => {
     expect(summary.errors).toEqual(['BAD: timeout']);
   });
 
-  it('resolveSession reads the distribution of the stored last dates', async () => {
-    const { database } = fakeDatabase((sql) =>
+  it('resolveSession counts a symbol fetched after the close as up to date (illiquid symbols do not hold T back)', async () => {
+    const { database, calls } = fakeDatabase((sql) =>
       sql.includes('group by last_date')
         ? [
-            { last_date: new Date('2025-05-30T00:00:00Z'), n: '95' },
-            { last_date: '2025-05-29', n: 5 },
+            { last_date: new Date('2025-05-30T00:00:00Z'), n: '95', total: '100' },
+            { last_date: '2025-05-29', n: 100, total: 100 },
           ]
         : [],
     );
     const service = new DailyBarsService(database as never, {} as never);
     await expect(service.resolveSession(AFTER_CLOSE)).resolves.toEqual({ session: '2025-05-30', coverage: 95, total: 100 });
+    const sql = calls[0]!.sql;
+    expect(sql).toContain("fetched_at >= ((last_date + time '15:15') at time zone 'Asia/Ho_Chi_Minh')");
+    expect(calls[0]!.params).toEqual([['HOSE', 'HNX', 'UPCOM']]);
   });
 
   describe('ensureFresh', () => {
     const counts = (date: string, n = 100) => (sql: string) =>
       sql.includes('group by last_date')
-        ? [{ last_date: date, n }]
+        ? [{ last_date: date, n, total: n }]
         : sql.includes('left join market_daily_bars')
           ? []
           : [];
