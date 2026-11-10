@@ -21,7 +21,20 @@ export default defineConfig(({ mode, isSsrBuild }) => {
   // only at build time) bundles everything.
   build: isSsrBuild
     ? { manifest: false, copyPublicDir: false }
-    : { manifest: true },
+    : {
+        manifest: true,
+        rolldownOptions: {
+          output: {
+            // `?url` assets keep their extension, so the PDF.js worker would ship as `.mjs`, a type
+            // many servers (nginx mime.types included) do not map to JavaScript: a module worker
+            // served as octet-stream is refused. `.js` is served right everywhere.
+            assetFileNames: (asset) =>
+              asset.names.some((name) => name.endsWith(".mjs"))
+                ? "assets/[name]-[hash].js"
+                : "assets/[name]-[hash][extname]",
+          },
+        },
+      },
   ssr: { noExternal: true },
   server: {
     proxy: {
