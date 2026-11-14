@@ -1250,7 +1250,8 @@ export class OfficeScene extends Phaser.Scene {
     this.input.on(
       "wheel",
       (_p: unknown, _o: unknown, _dx: number, dy: number) => {
-        this.userZoom = clamp(this.userZoom * (dy > 0 ? 0.9 : 1.1), 0.6, 1.8)
+        // Zooming out stops where the room fills the screen: past the walls there is nothing to see.
+        this.userZoom = clamp(this.userZoom * (dy > 0 ? 0.9 : 1.1), 1, 3)
         this.applyZoom()
       }
     )
@@ -1327,11 +1328,10 @@ export class OfficeScene extends Phaser.Scene {
     const dpr = window.devicePixelRatio || 1
     const cssW = this.scale.width / dpr
     const cssH = this.scale.height / dpr
-    // About 1000 × 640 world units on a laptop. Phones get about 640 units across, and the view never
-    // shows past the room (a tall portrait screen would otherwise see the void under the floor).
-    let base = clamp(Math.min(cssW / 1000, cssH / 640), 0.5, 1.5)
+    // The room fills the screen edge to edge by default (the smallest zoom that shows no void past the
+    // walls); phones get at most about 640 units across so people stay big enough to tap.
+    let base = Math.max(cssW / WORLD_W, cssH / WORLD_H)
     if (cssW < 600) base = Math.max(base, cssW / 640)
-    base = Math.max(base, cssW / WORLD_W, cssH / WORLD_H)
     this.cameras.main.setZoom(base * this.userZoom * dpr)
   }
 
