@@ -16,6 +16,8 @@ import { Inject, Injectable, Optional } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
 import { AuthService } from '../auth/auth.service.js';
+import { FloorBots } from './floor-bots.js';
+import { FLOOR_CAPACITY } from './floor-bots.logic.js';
 import { FloorChatService } from './floor-chat.service.js';
 import { FloorEvents, type FloorMessage, type FloorTarget } from './floor-events.js';
 import { FloorPresence } from './floor-presence.js';
@@ -31,7 +33,7 @@ import {
   type FloorProfileRepository,
 } from './floor-profile.repository.js';
 import { FLOOR_SACO_REPOSITORY, type FloorSacoRepository } from './floor-saco.repository.js';
-import type { FloorPeer, FloorProfile } from './floor-types.js';
+import type { FloorPeer, FloorPeerState, FloorProfile } from './floor-types.js';
 
 export const FLOOR_HUB_OPTIONS = Symbol('FLOOR_HUB_OPTIONS');
 
@@ -74,6 +76,8 @@ type Conn = {
   userId: string | null;
   /** Có khi đã `hello`: nhân vật đang đứng trên sàn. */
   peer: FloorPeer | null;
+  /** Đã `hello` nhưng sảnh đầy người thật: đang xếp hàng với vị trí mới nhất mình báo. */
+  waiting: FloorPeerState | null;
   windowStartedAt: number;
   inbound: number;
   lastState: number;
@@ -97,6 +101,9 @@ export class FloorHub {
   private readonly byUser = new Map<string, Set<Conn>>();
   /** Các kết nối đã `hello`, theo thứ tự vào. */
   private readonly floor = new Set<Conn>();
+  /** Đã `hello` khi sảnh đủ người thật, theo thứ tự tới. */
+  private readonly queue: Conn[] = [];
+  private admitting = false;
   private readonly now: () => number;
   private readonly authTimeoutMs: number;
   private readonly unsubscribe: Array<() => void> = [];
@@ -110,6 +117,7 @@ export class FloorHub {
     @Inject(FLOOR_PROFILE_REPOSITORY) private readonly profiles: FloorProfileRepository,
     @Inject(FLOOR_SACO_REPOSITORY) private readonly sacos: FloorSacoRepository,
     @Optional() @Inject(FLOOR_HUB_OPTIONS) options?: FloorHubOptions,
+    @Optional() private readonly bots?: FloorBots,
   ) {
     this.now = options?.now ?? Date.now;
     this.authTimeoutMs = options?.authTimeoutMs ?? 10_000;
@@ -117,6 +125,10 @@ export class FloorHub {
       events.subscribe((target, message) => this.relay(target, message)),
       presence.onProfileChanged((userId, profile) => this.profileChanged(userId, profile)),
     );
+    bots?.attach({
+      humans: () => [...this.floor].map((conn) => conn.peer!),
+      broadcast: (payload, droppable) => this.toFloor(payload, undefined, droppable),
+    });
   }
 
   // ================================================================== vòng đời kết nối
@@ -127,6 +139,7 @@ export class FloorHub {
       peerId: randomUUID(),
       userId: null,
       peer: null,
+      waiting: null,
       windowStartedAt: this.now(),
       inbound: 0,
       lastState: 0,
@@ -171,6 +184,8 @@ export class FloorHub {
   shutdown(): void {
     for (const stop of this.unsubscribe) stop();
     this.unsubscribe.length = 0;
+    this.bots?.stop();
+    this.queue.length = 0;
     for (const conn of this.conns.values()) if (conn.authTimer) clearTimeout(conn.authTimer);
     this.conns.clear();
     this.byUser.clear();
@@ -179,7 +194,13 @@ export class FloorHub {
 
   /** Số liệu cho test và vận hành. */
   get stats() {
-    return { connections: this.conns.size, onFloor: this.floor.size, users: this.byUser.size };
+    return {
+      connections: this.conns.size,
+      onFloor: this.floor.size,
+      users: this.byUser.size,
+      bots: this.bots?.count ?? 0,
+      queued: this.queue.length,
+    };
   }
 
   // ================================================================== xử lý thông điệp
@@ -285,24 +306,98 @@ export class FloorHub {
       this.error(conn, 'BAD_STATE', 'Vị trí không hợp lệ');
       return;
     }
+    if (conn.waiting) {
+      conn.waiting = state;
+      this.sendQueue(conn);
+      return;
+    }
+    await this.enter(conn, state);
+  }
+
+  /**
+   * Vào sảnh. Sảnh chứa tối đa `FLOOR_CAPACITY` nhân vật: nhân vật tự động nhường chỗ trước; khi chỉ
+   * riêng người thật đã đủ thì xếp hàng.
+   */
+  private async enter(conn: Conn, state: FloorPeerState): Promise<boolean> {
     const profile = await this.profiles.find(this.database, conn.userId!);
     if (!profile) {
       this.error(conn, 'NO_PROFILE', 'Hãy tạo nhân vật trước khi vào khu');
-      return;
+      return false;
     }
-    if (conn.closed || conn.peer) return;
+    if (conn.closed || conn.peer) return false;
+    if (
+      this.floor.size >= FLOOR_CAPACITY ||
+      (this.queue.length > 0 && !this.queue.includes(conn))
+    ) {
+      if (!this.queue.includes(conn)) this.queue.push(conn);
+      conn.waiting = state;
+      this.sendQueue(conn);
+      // Còn chỗ mà vẫn có người chờ trước: mời hàng vào theo thứ tự.
+      if (this.floor.size < FLOOR_CAPACITY) void this.admitQueued().catch(() => undefined);
+      return false;
+    }
+    const at = this.queue.indexOf(conn);
+    if (at >= 0) this.queue.splice(at, 1);
+    conn.waiting = null;
+    this.bots?.wake();
+    this.bots?.fit(FLOOR_CAPACITY - this.floor.size - 1);
     const peer: FloorPeer = { id: conn.peerId, ...profile, ...state };
-    const others = [...this.floor].map((other) => other.peer!);
+    const others = [...[...this.floor].map((other) => other.peer!), ...(this.bots?.peers() ?? [])];
     conn.peer = peer;
     this.floor.add(conn);
     this.send(conn, { type: 'welcome', self: peer, peers: others });
     this.toFloor({ type: 'peer:join', peer }, conn);
+    this.bots?.humanJoined(peer);
+    return true;
+  }
+
+  /** Còn chỗ thì cho người đầu hàng vào; báo lại vị trí cho người còn chờ. */
+  private async admitQueued(): Promise<void> {
+    if (this.admitting) return;
+    this.admitting = true;
+    try {
+      await this.drainQueue();
+    } finally {
+      this.admitting = false;
+    }
+    for (const conn of this.queue) this.sendQueue(conn);
+  }
+
+  private async drainQueue(): Promise<void> {
+    while (this.queue.length > 0 && this.floor.size < FLOOR_CAPACITY) {
+      const next = this.queue[0]!;
+      if (next.closed || !next.waiting) {
+        this.queue.shift();
+        continue;
+      }
+      const entered = await this.enter(next, next.waiting);
+      if (!entered && this.queue[0] === next) {
+        // Không vào được (mất hồ sơ, đã đóng): bỏ khỏi hàng để người sau không phải chờ mãi.
+        this.queue.shift();
+        next.waiting = null;
+      }
+    }
+  }
+
+  private sendQueue(conn: Conn): void {
+    const position = this.queue.indexOf(conn) + 1;
+    if (position > 0)
+      this.send(conn, {
+        type: 'queue',
+        position,
+        total: this.queue.length,
+        capacity: FLOOR_CAPACITY,
+      });
   }
 
   private onState(conn: Conn, message: Record<string, unknown>): void {
     const peer = conn.peer;
     const state = cleanState(message);
-    if (!peer || !state) return;
+    if (!state) return;
+    if (!peer) {
+      if (conn.waiting) conn.waiting = state;
+      return;
+    }
     const now = this.now();
     const gate = stateGate(peer, state, conn.lastState, now);
     if (!gate.allow) return;
@@ -324,7 +419,9 @@ export class FloorHub {
     if (now - conn.lastEmote < FLOOR_EMOTE_MIN_MS) return;
     conn.lastEmote = now;
     const text = cleanEmote(message.text);
-    if (text) this.toFloor({ type: 'peer:emote', id: conn.peer.id, text });
+    if (!text) return;
+    this.toFloor({ type: 'peer:emote', id: conn.peer.id, text });
+    this.bots?.humanSaid(conn.peer, text);
   }
 
   private async onTyping(conn: Conn, message: Record<string, unknown>): Promise<void> {
@@ -381,8 +478,14 @@ export class FloorHub {
     if (conn.authTimer) clearTimeout(conn.authTimer);
     conn.authTimer = null;
     this.conns.delete(conn.socket);
+    const queued = this.queue.indexOf(conn);
+    if (queued >= 0) {
+      this.queue.splice(queued, 1);
+      for (const other of this.queue) this.sendQueue(other);
+    }
     if (this.floor.delete(conn) && conn.peer) {
       this.toFloor({ type: 'peer:leave', id: conn.peer.id });
+      if (this.queue.length) void this.admitQueued().catch(() => undefined);
     }
     const userId = conn.userId;
     if (userId) {

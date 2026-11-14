@@ -67,7 +67,10 @@ export function startPresence(start: PeerState): () => void {
       wasOnline = false
       toast("Mất kết nối máy chủ, đang thử lại…", "warn")
     }
-    if (status !== "online" && status !== "authenticating") forgetPeers()
+    if (status !== "online" && status !== "authenticating") {
+      forgetPeers()
+      ui.queue.set(null)
+    }
   }
   onStatus(floorSocket.status.get())
 
@@ -76,7 +79,14 @@ export function startPresence(start: PeerState): () => void {
     floorSocket.on("ready", () => {
       floorSocket.send({ type: "hello", ...last })
     }),
+    floorSocket.on("queue", (m) =>
+      ui.queue.set({ position: m.position, capacity: m.capacity })
+    ),
     floorSocket.on("welcome", (m) => {
+      const queued = ui.queue.get() !== null
+      ui.queue.set(null)
+      // Walked about while waiting in line: the hall sees where we stand now.
+      if (queued) floorSocket.send({ type: "state", ...last })
       selfId = m.self.id
       peers.clear()
       for (const p of m.peers) if (p.id !== selfId) peers.add(p.id)
@@ -170,5 +180,6 @@ export function startPresence(start: PeerState): () => void {
     sendTyping = () => undefined
     peers.clear()
     selfId = null
+    ui.queue.set(null)
   }
 }

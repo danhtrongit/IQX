@@ -128,6 +128,8 @@ export const ui = {
   avatarMasks: new Store<Record<string, { mask: string; luma: number }>>({}),
   /** What was said on the floor since it was opened, oldest first (not stored anywhere). */
   chatLog: new Store<ChatLine[]>([]),
+  /** Place in line while the hall is full (1 = next), null when on the floor. */
+  queue: new Store<{ position: number; capacity: number } | null>(null),
 }
 
 let chatLineId = 0

@@ -15,6 +15,7 @@ import { AuthModule } from '../auth/index.js';
 import { MarketExtendedModule } from '../market-extended/index.js';
 import { FLOOR_CHAT_REPOSITORY, PgFloorChatRepository } from './floor-chat.repository.js';
 import { FloorChatController } from './floor-chat.controller.js';
+import { FloorBots } from './floor-bots.js';
 import { FloorChatService } from './floor-chat.service.js';
 import { FLOOR_CLOCK, systemFloorClock } from './floor-clock.js';
 import { FloorEventsModule } from './floor-events.js';
@@ -58,6 +59,7 @@ import { FloorController } from './floor.controller.js';
     FloorRitualService,
     FloorChatService,
     FloorSacoService,
+    FloorBots,
     FloorHub,
     FloorWsGateway,
     FloorRitualJob,

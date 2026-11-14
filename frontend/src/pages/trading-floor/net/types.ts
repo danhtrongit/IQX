@@ -275,6 +275,8 @@ export type ServerMessage =
   | { type: "error"; code: string; message?: string }
   | { type: "pong" }
   | { type: "welcome"; self: Peer; peers: Peer[] }
+  /** The hall is full: waiting in line, `position` 1 is next. */
+  | { type: "queue"; position: number; total: number; capacity: number }
   | { type: "peer:join"; peer: Peer }
   | ({ type: "peer:state"; id: string } & PeerState)
   | { type: "peer:leave"; id: string }

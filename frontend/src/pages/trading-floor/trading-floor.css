@@ -55,6 +55,7 @@
 }
 /* .tf-ui lets clicks through to the game; only real UI surfaces take them. */
 .tf-root .loading,
+.tf-root .hall-queue,
 .tf-root .join-backdrop,
 .tf-root .sheet-backdrop,
 .tf-root .chat-ov,
@@ -2154,4 +2155,22 @@
 /* "Viết nhận định" sits beside the SACO inbox pill and is a little tighter. */
 .tf-root .write-pill {
   padding-inline: 12px;
+}
+
+/* Waiting in line while the hall is full: the floor stays visible behind. */
+.tf-root .hall-queue {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  padding: 16px;
+  text-align: center;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  color: var(--fg);
+  line-height: 1.6;
+}
+.tf-root .hall-queue b {
+  font-size: 1.25em;
+  font-variant-numeric: tabular-nums;
 }

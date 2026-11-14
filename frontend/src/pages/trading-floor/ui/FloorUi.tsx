@@ -17,6 +17,7 @@ export function FloorUi({ suggestedName }: { suggestedName: string }) {
   const profile = useStore(ui.profile)
   const panel = useStore(ui.panel)
   const ready = useStore(ui.ready)
+  const queue = useStore(ui.queue)
   const [editing, setEditing] = useState(false)
 
   return (
@@ -47,6 +48,17 @@ export function FloorUi({ suggestedName }: { suggestedName: string }) {
       {ready && profile && !editing && <QuickChat />}
       {ready && profile && !editing && <PostsLayer />}
       {panel && <PanelHost panel={panel} />}
+      {ready && profile && queue && (
+        <div className="hall-queue" role="status" aria-live="polite">
+          <div className="loading-coin" aria-hidden="true" />
+          <p>
+            Sảnh đang kín chỗ ({queue.capacity} người).
+            <br />
+            Bạn đang xếp hàng thứ <b>{queue.position}</b>, sẽ tự vào khi có chỗ
+            trống.
+          </p>
+        </div>
+      )}
       {ready && profile && <MatchOverlay />}
       {ready && profile && <InviteCard />}
       <Toasts />
