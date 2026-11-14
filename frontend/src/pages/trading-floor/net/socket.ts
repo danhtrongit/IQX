@@ -44,6 +44,8 @@ export function floorSocketUrl(): string {
 
 /** Close code the server uses for a missing or bad token. */
 export const CLOSE_AUTH = 4401
+/** The account opened more sockets than the server keeps: this (oldest) one was replaced. */
+export const CLOSE_TOO_MANY = 4429
 
 export type FloorSocketStatus =
   | "idle"
@@ -291,6 +293,12 @@ export class FloorSocketClient {
     this.pingTimer = null
     this.userId = null
     if (this.stopped) return
+    if (code === CLOSE_TOO_MANY) {
+      // Tab khác của cùng tài khoản đã thế chỗ: không nối lại, nếu không các tab giành nhau mãi.
+      this.stopped = true
+      this.status.set("closed")
+      return
+    }
     if (code === CLOSE_AUTH) {
       this.authFailures += 1
       if (this.authFailures > MAX_AUTH_RETRIES) {

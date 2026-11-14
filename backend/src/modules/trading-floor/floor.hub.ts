@@ -51,7 +51,19 @@ export interface FloorHubSocket {
 export const FLOOR_CLOSE_AUTH = 4401;
 const CLOSE_RATE = 1008;
 /** Thông điệp tối đa mỗi phút của một socket: di chuyển liên tục khoảng 20 thông điệp mỗi giây. */
-const INBOUND_PER_MINUTE = 4_000;
+const INBOUND_PER_MINUTE = 1_800;
+/**
+ * Xô token cho khung `state`: đầy 30, nạp 25 mỗi giây. Khung đổi hướng hay dừng không bị giới hạn
+ * 50 ms, nên thiếu xô này một tài khoản có thể bắn hàng nghìn khung "đổi hướng" và hub phát lại
+ * từng khung cho cả sàn.
+ */
+const STATE_BURST = 30;
+const STATE_PER_SECOND = 25;
+/** Mỗi tài khoản giữ tối đa bấy nhiêu socket; mở thêm thì đóng cái cũ nhất. */
+const MAX_SOCKETS_PER_USER = 4;
+const CLOSE_TOO_MANY = 4429;
+/** Socket nhận nghẽn quá ngưỡng này bị đóng hẳn, kể cả với khung quan trọng. */
+const HARD_BUFFERED_BYTES = 1_000_000;
 /** Khung di chuyển không quan trọng bị bỏ khi socket nhận đang nghẽn quá ngưỡng này. */
 const MAX_BUFFERED_BYTES = 256_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -65,6 +77,8 @@ type Conn = {
   windowStartedAt: number;
   inbound: number;
   lastState: number;
+  stateTokens: number;
+  stateRefilledAt: number;
   lastEmote: number;
   lastTyping: number;
   authTimer: ReturnType<typeof setTimeout> | null;
@@ -116,6 +130,8 @@ export class FloorHub {
       windowStartedAt: this.now(),
       inbound: 0,
       lastState: 0,
+      stateTokens: STATE_BURST,
+      stateRefilledAt: this.now(),
       lastEmote: 0,
       lastTyping: 0,
       authTimer: null,
@@ -238,6 +254,10 @@ export class FloorHub {
     let sockets = this.byUser.get(userId);
     if (!sockets) this.byUser.set(userId, (sockets = new Set()));
     sockets.add(conn);
+    while (sockets.size > MAX_SOCKETS_PER_USER) {
+      const oldest = sockets.values().next().value as Conn;
+      this.forceClose(oldest, CLOSE_TOO_MANY, 'too many connections');
+    }
     this.send(conn, { type: 'ready', userId });
     await this.bindSaco(conn, userId);
   }
@@ -286,6 +306,13 @@ export class FloorHub {
     const now = this.now();
     const gate = stateGate(peer, state, conn.lastState, now);
     if (!gate.allow) return;
+    conn.stateTokens = Math.min(
+      STATE_BURST,
+      conn.stateTokens + ((now - conn.stateRefilledAt) / 1000) * STATE_PER_SECOND,
+    );
+    conn.stateRefilledAt = now;
+    if (conn.stateTokens < 1) return;
+    conn.stateTokens -= 1;
     conn.lastState = now;
     Object.assign(peer, state);
     this.toFloor({ type: 'peer:state', id: peer.id, ...state }, conn, !gate.reliable);
@@ -385,6 +412,10 @@ export class FloorHub {
 
   private sendRaw(conn: Conn, encoded: string): void {
     if (conn.closed) return;
+    if ((conn.socket.bufferedAmount ?? 0) > HARD_BUFFERED_BYTES) {
+      this.forceClose(conn, CLOSE_RATE, 'receiver too slow');
+      return;
+    }
     try {
       conn.socket.send(encoded);
     } catch {
