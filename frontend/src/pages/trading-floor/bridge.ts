@@ -92,6 +92,19 @@ export interface Toast {
   tone: "info" | "good" | "warn" | "gold"
 }
 
+/** One line of the floor chat history (kept in memory only; gone when the floor is left). */
+export interface ChatLine {
+  id: number
+  name: string
+  text: string
+  self: boolean
+  /** Epoch ms. */
+  at: number
+}
+
+/** Lines kept in the floor chat history. */
+export const CHAT_HISTORY_MAX = 100
+
 export interface PostsState {
   open: boolean
   postId: string | null
@@ -113,6 +126,43 @@ export const ui = {
   avatarImages: new Store<Record<string, string>>({}),
   /** Cloth mask + median luminance per character, for the join screen's live recoloring. */
   avatarMasks: new Store<Record<string, { mask: string; luma: number }>>({}),
+  /** What was said on the floor since it was opened, oldest first (not stored anywhere). */
+  chatLog: new Store<ChatLine[]>([]),
+}
+
+let chatLineId = 0
+/** Appends a line to the floor chat history, keeping the last CHAT_HISTORY_MAX. */
+export function logChat(name: string, text: string, self: boolean): void {
+  chatLineId += 1
+  const line: ChatLine = { id: chatLineId, name, text, self, at: Date.now() }
+  ui.chatLog.update((lines) => [...lines, line].slice(-CHAT_HISTORY_MAX))
+}
+
+/** A text field has the keyboard (the chat composer, the join card, the auth dialog...). */
+export function typing(): boolean {
+  const el = document.activeElement as HTMLElement | null
+  return (
+    !!el &&
+    (el.tagName === "INPUT" ||
+      el.tagName === "TEXTAREA" ||
+      el.tagName === "SELECT" ||
+      el.isContentEditable)
+  )
+}
+
+const APP_DIALOG =
+  '[role="dialog"]:not(.tf-root [role="dialog"]), [role="alertdialog"]:not(.tf-root [role="alertdialog"]), [data-slot="dialog-content"]'
+let dialogCheckedAt = -Infinity
+let dialogOpen = false
+
+/** A dialog of the IQX app (sign-in, confirmations) is open over the floor: it owns the keyboard. Checked at most every 150 ms. */
+export function appDialogOpen(): boolean {
+  const now = performance.now()
+  if (now - dialogCheckedAt > 150) {
+    dialogCheckedAt = now
+    dialogOpen = document.querySelector(APP_DIALOG) !== null
+  }
+  return dialogOpen
 }
 
 /** Picture for any avatar id: art without its own picture shows the first character, as the office does. */

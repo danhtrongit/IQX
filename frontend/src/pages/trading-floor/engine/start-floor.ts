@@ -14,6 +14,7 @@ import { startData } from "../net/data.ts"
 import { startMarket } from "../net/market.ts"
 import { loadAvatarArt } from "./assets.ts"
 import { OfficeScene } from "./OfficeScene.ts"
+import { stopRecolorWorker } from "./tintArt.ts"
 
 /** Phaser draws text once, so the web font must be ready first or labels stay in the fallback font. */
 async function fontsReady(): Promise<void> {
@@ -98,6 +99,7 @@ export function startFloor(
     floorSocket.stop()
     game?.destroy(true)
     game = null
+    stopRecolorWorker()
     scene = null
     if (import.meta.env.DEV) Reflect.deleteProperty(window, "__tradingFloor")
   }

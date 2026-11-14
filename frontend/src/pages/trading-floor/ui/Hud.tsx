@@ -223,7 +223,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
 
       {!touch && (
         <p className="help">
-          Nhấn chuột để đi · WASD/mũi tên · E để mở · cuộn để phóng to
+          Nhấn chuột để đi · WASD/mũi tên · E để mở · Enter để chat · cuộn để phóng to
         </p>
       )}
     </div>

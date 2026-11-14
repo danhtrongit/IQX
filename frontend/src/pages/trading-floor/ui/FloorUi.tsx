@@ -7,6 +7,7 @@ import { InviteCard, MatchOverlay } from "./ChatOverlays.tsx"
 import { Hud } from "./Hud.tsx"
 import { JoinScreen } from "./JoinScreen.tsx"
 import { PanelHost } from "./PanelHost.tsx"
+import { QuickChat } from "./QuickChat.tsx"
 import { Toasts } from "./Toasts.tsx"
 
 const noop = (): void => undefined
@@ -43,6 +44,7 @@ export function FloorUi({ suggestedName }: { suggestedName: string }) {
       {ready && profile && !editing && (
         <Hud onEditProfile={() => setEditing(true)} />
       )}
+      {ready && profile && !editing && <QuickChat />}
       {ready && profile && !editing && <PostsLayer />}
       {panel && <PanelHost panel={panel} />}
       {ready && profile && <MatchOverlay />}

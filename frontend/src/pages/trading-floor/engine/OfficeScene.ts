@@ -1,5 +1,13 @@
 import * as Phaser from "phaser"
-import { commands, openInteract, ui, world } from "../bridge.ts"
+import {
+  appDialogOpen,
+  commands,
+  logChat,
+  openInteract,
+  typing,
+  ui,
+  world,
+} from "../bridge.ts"
 import { formatIndex, formatPercent } from "../net/market/format.ts"
 import {
   heatColour,
@@ -52,7 +60,7 @@ import {
 } from "./layout.ts"
 import { NavGrid, type Point } from "./nav.ts"
 import { drawPlaceholder } from "./placeholders.ts"
-import { getTintedCharacterArt } from "./tintArt.ts"
+import { evictTintedArt, getTintedCharacterArt } from "./tintArt.ts"
 
 const DEPTH = {
   FLOOR: -10_000,
@@ -63,6 +71,9 @@ const DEPTH = {
   WALL_DECOR: -7_900,
 }
 const FONT = '"Be Vietnam Pro", system-ui, sans-serif'
+/** Generated floor texture and the size of one tile in world units. */
+const FLOOR_TILES = "floor-tiles"
+const FLOOR_TILE = 64
 const TEXT_RES = 3
 const NEAR = 84
 const SEND_EVERY_MS = 100
@@ -83,8 +94,11 @@ interface Hot {
 
 interface RemotePeer {
   avatar: Avatar
-  tx: number
-  ty: number
+  charId: string
+  color: string
+  /** Reported positions not yet walked through, oldest first: the figure retraces the real route. */
+  path: Point[]
+  /** Facing as last reported (used while standing). */
   facing: Facing
   /** As last reported. */
   moving: boolean
@@ -94,49 +108,21 @@ interface RemotePeer {
 
 /** A walking peer reports every 100 ms; this long without a word means they stopped (lost packet, hidden tab). */
 const PEER_STALE_MS = 700
+/** A remote figure trails the reports by about this much walking, enough to ride out network jitter. */
+const PEER_BUFFER_S = 0.14
+/** A report this far from the last one is a jump (reconnect, respawn): the figure is moved there at once. */
+const PEER_TELEPORT = 260
+/** Unused walk sheets and recoloured outfits are freed this long after the last figure wearing them left. */
+const ART_SWEEP_MS = 20_000
 
 const clamp = (v: number, lo: number, hi: number): number =>
   Math.max(lo, Math.min(hi, v))
-
-/** A text field has the keyboard (the chat composer, the join card, the auth dialog...). */
-function typing(): boolean {
-  const el = document.activeElement as HTMLElement | null
-  return (
-    !!el &&
-    (el.tagName === "INPUT" ||
-      el.tagName === "TEXTAREA" ||
-      el.tagName === "SELECT" ||
-      el.isContentEditable)
-  )
-}
-
-const APP_DIALOG =
-  '[role="dialog"]:not(.tf-root [role="dialog"]), [role="alertdialog"]:not(.tf-root [role="alertdialog"]), [data-slot="dialog-content"]'
-let dialogCheckedAt = -Infinity
-let dialogOpen = false
-
-/** A dialog of the IQX app (sign-in, confirmations) is open over the floor: it owns the keyboard. Checked at most every 150 ms. */
-function appDialogOpen(): boolean {
-  const now = performance.now()
-  if (now - dialogCheckedAt > 150) {
-    dialogCheckedAt = now
-    dialogOpen = document.querySelector(APP_DIALOG) !== null
-  }
-  return dialogOpen
-}
 
 /** Keys move the player and open things only when nothing in the HTML is using them. */
 function keysFree(): boolean {
   return !ui.panel.get() && !typing() && !appDialogOpen()
 }
 
-/** Enter is also how a focused HUD button is pressed; it must not open the shrine as well. */
-function enterFree(): boolean {
-  const el = document.activeElement as HTMLElement | null
-  return (
-    keysFree() && !(el && el.closest('button, a, [role="button"], summary'))
-  )
-}
 
 export class OfficeScene extends Phaser.Scene {
   private readonly manifest: Manifest
@@ -145,6 +131,16 @@ export class OfficeScene extends Phaser.Scene {
   private readonly interacts: Interact[] = []
   private readonly peers = new Map<string, RemotePeer>()
   private player: Avatar | null = null
+  private playerArt: { charId: string; color: string } | null = null
+  /** Walk sheets per character: loaded the first time someone on the floor wears that character. */
+  private readonly walkLoads = new Map<string, Promise<void>>()
+  private loadChain: Promise<void> = Promise.resolve()
+  /** Figures per `character|outfit` on the floor right now, for freeing art nobody wears. */
+  private readonly artUse = new Map<string, number>()
+  private readonly tinted = new Set<string>()
+  /** Recoloured outfits that are built: their wearers no longer need the original walk sheets. */
+  private readonly tintReady = new Set<string>()
+  private sweepTimer: Phaser.Time.TimerEvent | null = null
   private path: Point[] = []
   private pending: Interact | null = null
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {}
@@ -193,13 +189,14 @@ export class OfficeScene extends Phaser.Scene {
       this.load.image(f.file, f.file)
     }
     for (const p of Object.values(this.manifest.props)) image(p)
+    // Only standing frames, statues and Thần Tài's wave load up front. A character's walk sheets (about
+    // 34 MB of pixels each) load when someone on the floor wears it: see ensureWalks.
     for (const c of Object.values(this.manifest.characters)) {
       Object.values(c.idle).forEach(image)
       if (c.statue) image(c.statue)
-      for (const w of [
-        ...Object.values(c.walk),
-        ...Object.values(c.actions ?? {}).flatMap((a) => Object.values(a)),
-      ]) {
+      for (const w of Object.values(c.actions ?? {}).flatMap((a) =>
+        Object.values(a)
+      )) {
         if (seen.has(w.file)) continue
         seen.add(w.file)
         this.load.spritesheet(w.file, w.file, {
@@ -247,15 +244,134 @@ export class OfficeScene extends Phaser.Scene {
     walk: {},
   }
 
-  private character(id: string): CharacterArt {
+  /** Manifest key of the art an avatar id is drawn with (unknown ids fall back like `character`). */
+  private characterId(id: string): string {
+    const chars = this.manifest.characters
     const normalized = normalizeAvatarId(id) ?? id
+    if (chars[normalized]) return normalized
+    if (chars[id]) return id
+    if (chars.male01) return "male01"
+    return Object.keys(chars)[0] ?? ""
+  }
+
+  private character(id: string): CharacterArt {
     return (
-      this.manifest.characters[normalized] ??
-      this.manifest.characters[id] ??
-      this.manifest.characters.male01 ??
-      Object.values(this.manifest.characters)[0] ??
-      this.fallbackCharacter
+      this.manifest.characters[this.characterId(id)] ?? this.fallbackCharacter
     )
+  }
+
+  // ---------- art on demand ----------
+
+  /** Loads a character's walk sheets once; loads run one batch at a time through the scene loader. */
+  private ensureWalks(id: string): Promise<void> {
+    const charId = this.characterId(id)
+    const existing = this.walkLoads.get(charId)
+    if (existing) return existing
+    const art = this.manifest.characters[charId]
+    if (!art) return Promise.resolve()
+    const job = (this.loadChain = this.loadChain.then(() =>
+      this.loadSheets(Object.values(art.walk))
+    )).then(() => {
+      if (this.sys.isActive()) this.makeWalkAnims(art)
+    })
+    this.walkLoads.set(charId, job)
+    return job
+  }
+
+  private loadSheets(sheets: WalkArt[]): Promise<void> {
+    const missing = sheets.filter((w) => !this.textures.exists(w.file))
+    if (!missing.length || !this.sys.isActive()) return Promise.resolve()
+    return new Promise((resolve) => {
+      this.load.setPath(ASSET_ROOT)
+      for (const w of missing)
+        this.load.spritesheet(w.file, w.file, {
+          frameWidth: w.cell,
+          frameHeight: w.cell,
+        })
+      // COMPLETE fires after failures too; a figure without its walk just glides.
+      this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve())
+      this.load.start()
+    })
+  }
+
+  /** Someone on the floor now wears this character and outfit. */
+  private useArt(charId: string, color: string): void {
+    const key = `${charId}|${color}`
+    this.artUse.set(key, (this.artUse.get(key) ?? 0) + 1)
+  }
+
+  private releaseArt(charId: string, color: string): void {
+    const key = `${charId}|${color}`
+    const n = (this.artUse.get(key) ?? 0) - 1
+    if (n > 0) this.artUse.set(key, n)
+    else this.artUse.delete(key)
+    this.scheduleSweep()
+  }
+
+  private scheduleSweep(): void {
+    this.sweepTimer?.remove()
+    this.sweepTimer = this.time.delayedCall(ART_SWEEP_MS, () => this.sweepArt())
+  }
+
+  /** Frees walk sheets and recoloured outfits that no figure on the floor uses any more. */
+  private sweepArt(): void {
+    this.sweepTimer = null
+    // A character's original sheets stay while someone wears its default outfit or waits for a recolour.
+    const usedChars = new Set(
+      [...this.artUse.keys()]
+        .filter((k) => k.endsWith("|default") || !this.tintReady.has(k))
+        .map((k) => k.split("|")[0])
+    )
+    for (const [charId, art] of Object.entries(this.manifest.characters)) {
+      if (usedChars.has(charId) || !Object.keys(art.walk).length) continue
+      let freed = false
+      for (const w of Object.values(art.walk)) {
+        const key = walkAnimKey(w)
+        if (this.anims.exists(key)) this.anims.remove(key)
+        if (this.textures.exists(w.file)) {
+          this.textures.remove(w.file)
+          freed = true
+        }
+      }
+      if (freed || this.walkLoads.has(charId)) this.walkLoads.delete(charId)
+    }
+    for (const key of [...this.tinted]) {
+      if (this.artUse.has(key)) continue
+      const [charId, color] = key.split("|")
+      evictTintedArt(this, charId, color)
+      this.tinted.delete(key)
+      this.tintReady.delete(key)
+    }
+  }
+
+  /**
+   * Gives a figure its walk (and recoloured outfit) once they are ready. `current` says whether the
+   * figure is still on the floor wearing this art when the async work finishes.
+   */
+  private async dress(
+    avatar: Avatar,
+    avatarId: string,
+    color: string,
+    current: () => boolean
+  ): Promise<void> {
+    const charId = this.characterId(avatarId)
+    await this.ensureWalks(charId)
+    if (!this.sys.isActive() || !current() || color === "default") return
+    const key = `${charId}|${color}`
+    this.tinted.add(key)
+    const tinted = await getTintedCharacterArt(
+      this,
+      charId,
+      this.character(charId),
+      color as Profile["color"]
+    )
+    if (!this.sys.isActive()) return
+    if (current()) avatar.setArt(tinted)
+    const walks = Object.values(tinted.walk)
+    if (walks.length && walks.every((w) => w.file.startsWith("tint:"))) {
+      this.tintReady.add(key)
+      this.scheduleSweep()
+    }
   }
 
   private makeTextures(): void {
@@ -305,6 +421,7 @@ export class OfficeScene extends Phaser.Scene {
       ctx.fillRect(0, 0, 4, 64)
       tex.refresh()
     }
+    this.makeFloorTiles()
     if (!this.textures.exists("char-placeholder")) {
       const tex = this.textures.createCanvas("char-placeholder", 64, 112)!
       const c = tex.getContext()
@@ -335,6 +452,67 @@ export class OfficeScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Polished ceramic floor: a 4 x 4 block of tiles (each a slightly different shade, with a soft bevel
+   * and fine speckle) that repeats over the floor. Drawn at 2x so the grout stays crisp when zoomed in.
+   */
+  private makeFloorTiles(): void {
+    if (this.textures.exists(FLOOR_TILES)) return
+    const px = FLOOR_TILE * 2
+    const n = 4
+    const tex = this.textures.createCanvas(FLOOR_TILES, px * n, px * n)!
+    const c = tex.getContext()
+    let seed = 7
+    const rand = (): number => {
+      seed = (seed * 16807) % 2147483647
+      return (seed - 1) / 2147483646
+    }
+    const grout = 3
+    c.fillStyle = "#9c8466"
+    c.fillRect(0, 0, px * n, px * n)
+    for (let row = 0; row < n; row += 1)
+      for (let col = 0; col < n; col += 1) {
+        const x = col * px + grout / 2
+        const y = row * px + grout / 2
+        const s = px - grout
+        const shade = Math.round((rand() - 0.5) * 14)
+        const base = [226 + shade, 211 + shade, 186 + shade]
+        const g = c.createLinearGradient(x, y, x + s, y + s)
+        g.addColorStop(0, `rgb(${base[0] + 8},${base[1] + 8},${base[2] + 8})`)
+        g.addColorStop(1, `rgb(${base[0] - 10},${base[1] - 10},${base[2] - 12})`)
+        c.fillStyle = g
+        c.fillRect(x, y, s, s)
+        // Soft marble veins.
+        c.strokeStyle = "rgba(150,120,90,0.10)"
+        c.lineWidth = 1.2
+        for (let v = 0; v < 2; v += 1) {
+          c.beginPath()
+          let vx = x + rand() * s
+          let vy = y
+          c.moveTo(vx, vy)
+          while (vy < y + s) {
+            vx = Math.max(x, Math.min(x + s, vx + (rand() - 0.5) * 22))
+            vy += 10 + rand() * 14
+            c.lineTo(vx, Math.min(vy, y + s))
+          }
+          c.stroke()
+        }
+        // Speckle.
+        for (let k = 0; k < 26; k += 1) {
+          c.fillStyle = rand() < 0.5 ? "rgba(255,255,255,0.18)" : "rgba(110,85,60,0.10)"
+          c.fillRect(x + rand() * s, y + rand() * s, 1.6, 1.6)
+        }
+        // Bevel: light on the top and left edge, shade on the bottom and right.
+        c.fillStyle = "rgba(255,255,255,0.35)"
+        c.fillRect(x, y, s, 2)
+        c.fillRect(x, y, 2, s)
+        c.fillStyle = "rgba(90,66,40,0.22)"
+        c.fillRect(x, y + s - 2, s, 2)
+        c.fillRect(x + s - 2, y, 2, s)
+      }
+    tex.refresh()
+  }
+
   private makeAnims(): void {
     const make = (w: WalkArt, repeat: number): void => {
       const key = walkAnimKey(w)
@@ -352,9 +530,28 @@ export class OfficeScene extends Phaser.Scene {
       })
     }
     for (const c of Object.values(this.manifest.characters)) {
-      for (const w of Object.values(c.walk)) make(w, -1)
+      for (const w of Object.values(c.walk))
+        if (this.textures.exists(w.file)) make(w, -1)
       for (const a of Object.values(c.actions ?? {}))
         for (const w of Object.values(a)) make(w, 0)
+    }
+  }
+
+  private makeWalkAnims(c: CharacterArt): void {
+    for (const w of Object.values(c.walk)) {
+      const key = walkAnimKey(w)
+      if (this.anims.exists(key) || !this.textures.exists(w.file)) continue
+      const meanMs =
+        w.durationsMs.reduce((a, b) => a + b, 0) / w.durationsMs.length
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(w.file, {
+          start: 0,
+          end: w.frames - 1,
+        }),
+        frameRate: 1000 / meanMs,
+        repeat: -1,
+      })
     }
   }
 
@@ -378,21 +575,12 @@ export class OfficeScene extends Phaser.Scene {
   // ---------- room ----------
 
   private buildRoom(): void {
-    const floor = this.prop("floor")
-    if (floor) {
-      // A muted tint keeps the warm oak from overpowering the characters.
-      this.add
-        .tileSprite(0, WALL_H, WORLD_W, WORLD_H - WALL_H, floor.file)
-        .setOrigin(0)
-        .setTileScale(1 / floor.density)
-        .setTint(0xd9cfc6)
-        .setDepth(DEPTH.FLOOR)
-    } else {
-      this.add
-        .rectangle(0, WALL_H, WORLD_W, WORLD_H - WALL_H, 0xc8975c)
-        .setOrigin(0)
-        .setDepth(DEPTH.FLOOR)
-    }
+    // Tiled ceramic floor (the texture is drawn at 2x, hence the half tile scale).
+    this.add
+      .tileSprite(0, WALL_H, WORLD_W, WORLD_H - WALL_H, FLOOR_TILES)
+      .setOrigin(0)
+      .setTileScale(0.5)
+      .setDepth(DEPTH.FLOOR)
     const wall = this.prop("wall")
     if (wall) {
       this.add
@@ -478,7 +666,7 @@ export class OfficeScene extends Phaser.Scene {
       const img = this.add
         .image(p.x, p.y, art.file)
         .setOrigin(art.origin?.[0] ?? 0.5, art.origin?.[1] ?? 1)
-        .setScale(1 / art.density)
+        .setScale((p.scale ?? 1) / art.density)
         .setDepth(depth)
       img.setData("placement", p.id)
       rect = img.getBounds()
@@ -928,23 +1116,25 @@ export class OfficeScene extends Phaser.Scene {
       ? { x: this.player.x, y: this.player.y, facing: this.player.facing }
       : this.spawnPoint()
     this.player?.destroy()
+    if (this.playerArt)
+      this.releaseArt(this.playerArt.charId, this.playerArt.color)
     const created = new Avatar(this, baseArt, at.x, at.y, at.facing, {
       name: profile.name,
       kind: "self",
     })
     this.player = created
-    this.cameras.main.startFollow(created.sprite, true, 0.14, 0.14, 0, 40)
-    if (profile.color !== "default") {
-      void getTintedCharacterArt(
-        this,
-        profile.avatar,
-        baseArt,
-        profile.color
-      ).then((tinted) => {
-        if (this.player === created && this.sys.isActive())
-          created.setArt(tinted)
-      })
+    this.playerArt = {
+      charId: this.characterId(profile.avatar),
+      color: profile.color,
     }
+    this.useArt(this.playerArt.charId, profile.color)
+    this.cameras.main.startFollow(created.sprite, true, 0.14, 0.14, 0, 40)
+    void this.dress(
+      created,
+      profile.avatar,
+      profile.color,
+      () => this.player === created
+    )
     if (first) {
       this.disposers.push(
         startPresence({ x: at.x, y: at.y, facing: at.facing, moving: false })
@@ -963,29 +1153,32 @@ export class OfficeScene extends Phaser.Scene {
 
   private addPeer(p: Peer): void {
     if (isSelf(p.id)) return
-    this.peers.get(p.id)?.avatar.destroy()
-    const baseArt = this.character(p.avatar)
-    const avatar = new Avatar(this, baseArt, p.x, p.y, p.facing, {
+    const previous = this.peers.get(p.id)
+    if (previous) {
+      previous.avatar.destroy()
+      this.releaseArt(previous.charId, previous.color)
+    }
+    const charId = this.characterId(p.avatar)
+    const avatar = new Avatar(this, this.character(p.avatar), p.x, p.y, p.facing, {
       name: p.name,
       kind: "peer",
     })
-    avatar.set(p.facing, p.moving)
+    this.useArt(charId, p.color)
     this.peers.set(p.id, {
       avatar,
-      tx: p.x,
-      ty: p.y,
+      charId,
+      color: p.color,
+      path: [],
       facing: p.facing,
       moving: p.moving,
       at: this.time.now,
     })
-    if (p.color !== "default") {
-      void getTintedCharacterArt(this, p.avatar, baseArt, p.color).then(
-        (tinted) => {
-          if (this.peers.get(p.id)?.avatar === avatar && this.sys.isActive())
-            avatar.setArt(tinted)
-        }
-      )
-    }
+    void this.dress(
+      avatar,
+      p.avatar,
+      p.color,
+      () => this.peers.get(p.id)?.avatar === avatar
+    )
   }
 
   /** A peer edited name, avatar or outfit: redraw them where they stand. This account's own edit comes back here too. */
@@ -1004,17 +1197,21 @@ export class OfficeScene extends Phaser.Scene {
     }
     const peer = this.peers.get(p.id)
     if (!peer) return this.addPeer(p)
+    const end = peer.path.at(-1) ?? peer.avatar
     this.addPeer({
       ...p,
-      x: peer.avatar.x,
-      y: peer.avatar.y,
+      x: end.x,
+      y: end.y,
       facing: peer.facing,
       moving: peer.moving,
     })
   }
 
   private removePeer(id: string): void {
-    this.peers.get(id)?.avatar.destroy()
+    const peer = this.peers.get(id)
+    if (!peer) return
+    peer.avatar.destroy()
+    this.releaseArt(peer.charId, peer.color)
     this.peers.delete(id)
   }
 
@@ -1041,8 +1238,8 @@ export class OfficeScene extends Phaser.Scene {
         const h = ui.hint.get()
         if (h && free()) openInteract(h.kind, h.data)
       }
+      // Enter belongs to the quick chat (QuickChat.tsx); E opens what the player stands next to.
       kb.on("keydown-E", fire(keysFree))
-      kb.on("keydown-ENTER", fire(enterFree))
     }
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (!this.player || ui.panel.get() || appDialogOpen()) return
@@ -1183,6 +1380,7 @@ export class OfficeScene extends Phaser.Scene {
     this.disposers.push(
       commands.on("emote", (text) => {
         this.player?.say(text)
+        logChat(ui.profile.get()?.name ?? "Tôi", text, true)
         sendEmote(text)
       }),
       commands.on("celebrate", ({ luck }) => this.celebrate(luck)),
@@ -1200,14 +1398,24 @@ export class OfficeScene extends Phaser.Scene {
       presence.on("state", (s) => {
         const peer = this.peers.get(s.id)
         if (!peer) return
-        peer.tx = s.x
-        peer.ty = s.y
+        const end = peer.path.at(-1) ?? peer.avatar
+        const jump = Math.hypot(s.x - end.x, s.y - end.y)
+        if (jump > PEER_TELEPORT || peer.path.length > 40) {
+          // Too far behind to walk it (reconnect, a long hidden tab): stand at the reported spot.
+          peer.path = []
+          peer.avatar.setPosition(s.x, s.y)
+        } else if (jump > 0.5) {
+          peer.path.push({ x: s.x, y: s.y })
+        }
         peer.facing = s.facing
         peer.moving = s.moving
         peer.at = this.time.now
       }),
       presence.on("emote", ({ id, text }) => {
-        if (!isSelf(id)) this.peers.get(id)?.avatar.say(text)
+        if (isSelf(id)) return
+        const avatar = this.peers.get(id)?.avatar
+        avatar?.say(text)
+        logChat(avatar?.name ?? "Ai đó", text, false)
       }),
       presence.on("ritual", (r) => this.celebrate(r.luck))
     )
@@ -1218,25 +1426,61 @@ export class OfficeScene extends Phaser.Scene {
   update(time: number, delta: number): void {
     const dt = Math.min(delta, 50) / 1000
     if (this.player) this.movePlayer(dt, delta, time)
-    for (const peer of this.peers.values()) {
-      const a = peer.avatar
-      const dx = peer.tx - a.x
-      const dy = peer.ty - a.y
-      const d = Math.hypot(dx, dy)
-      if (d > 260) a.setPosition(peer.tx, peer.ty)
-      else if (d > 0.5) {
-        const step = Math.min(d, WALK_SPEED * 1.35 * dt + d * 0.08)
-        a.setPosition(a.x + (dx / d) * step, a.y + (dy / d) * step)
-      }
-      // Walk while catching up to the reported spot, or while reports keep coming. A peer that
-      // went quiet (stop lost, tab hidden) stands still instead of walking in place.
-      const walking =
-        d > 1.5 || (peer.moving && this.time.now - peer.at < PEER_STALE_MS)
-      a.set(peer.facing, walking)
-      a.tick(delta)
-    }
+    for (const peer of this.peers.values()) this.movePeer(peer, dt, delta)
     this.greetVisitors(time)
     this.updateHint()
+  }
+
+  /**
+   * A remote figure retraces the reported route at walking pace, trailing the reports by a small buffer.
+   * The pace eases up a little when it falls behind and down when it runs ahead of the buffer, and the
+   * walk cycle runs at the same pace, so feet stay planted instead of skating between reports.
+   */
+  private movePeer(peer: RemotePeer, dt: number, delta: number): void {
+    const a = peer.avatar
+    let backlog = 0
+    let px = a.x
+    let py = a.y
+    for (const p of peer.path) {
+      backlog += Math.hypot(p.x - px, p.y - py)
+      px = p.x
+      py = p.y
+    }
+    const fresh = peer.moving && this.time.now - peer.at < PEER_STALE_MS
+    const lagS = backlog / WALK_SPEED
+    // Still reporting: hold about PEER_BUFFER_S of route in hand. Stopped: finish the route briskly.
+    const pace = fresh
+      ? clamp(1 + (lagS - PEER_BUFFER_S) * 1.6, 0.75, 1.6)
+      : clamp(1 + lagS * 0.8, 1, 1.6)
+    const speed = WALK_SPEED * pace
+    let budget = speed * dt
+    let x = a.x
+    let y = a.y
+    let facing: Facing | null = null
+    while (budget > 0 && peer.path.length) {
+      const t = peer.path[0]
+      const dx = t.x - x
+      const dy = t.y - y
+      const d = Math.hypot(dx, dy)
+      if (d > 0.5) facing = facingOf(dx, dy)
+      if (d <= budget) {
+        x = t.x
+        y = t.y
+        budget -= d
+        peer.path.shift()
+      } else {
+        x += (dx / d) * budget
+        y += (dy / d) * budget
+        budget = 0
+      }
+    }
+    const moved = x !== a.x || y !== a.y
+    if (moved) a.setPosition(x, y)
+    // Between two reports the legs keep going; a peer that went quiet (stop lost, tab hidden) stands.
+    const walking = moved || fresh
+    a.setSpeed(moved ? speed : WALK_SPEED)
+    a.set(facing ?? (walking ? a.facing : peer.facing), walking)
+    a.tick(delta)
   }
 
   /**

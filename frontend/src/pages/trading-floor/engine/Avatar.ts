@@ -1,6 +1,6 @@
 import * as Phaser from "phaser"
 import type { Facing } from "../net/types.ts"
-import { type CharacterArt, type FrameArt, walkAnimKey } from "./assets.ts"
+import { type CharacterArt, type FrameArt, type WalkArt, walkAnimKey } from "./assets.ts"
 
 export const DEPTH_LABEL = 1_000_000
 const FACINGS: Facing[] = ["e", "se", "s", "sw", "w", "nw", "n", "ne"]
@@ -48,6 +48,8 @@ export class Avatar {
   private bubbleTimer: Phaser.Time.TimerEvent | null = null
   private bob = 0
   private shown: string | null = null
+  /** World units per second the figure is moving at; the walk cycle runs in proportion so feet do not slide. */
+  private speed = 0
 
   constructor(
     scene: Phaser.Scene,
@@ -131,9 +133,17 @@ export class Avatar {
     this.refresh()
   }
 
-  /** Glide characters (no walk art) bob while moving. */
+  /** Walking pace in world units per second (0 = native cadence). Remote figures catching up walk a little faster. */
+  setSpeed(speed: number): void {
+    if (Math.abs(speed - this.speed) < 1) return
+    this.speed = speed
+    this.applyPace()
+  }
+
+  /** Glide characters (no walk art yet) bob while moving; the walk takes over once its sheet has loaded. */
   tick(dtMs: number): void {
-    if (this.moving && !this.art.walk[this.facing]) {
+    if (this.moving && this.shown === null && this.walkFor(this.facing)) this.refresh()
+    if (this.moving && !this.walkFor(this.facing)) {
       this.bob += dtMs / 1000
       this.place()
     } else if (this.bob) {
@@ -201,6 +211,7 @@ export class Avatar {
     if (!art || this.moving) return false
     const key = walkAnimKey(art)
     this.apply(art)
+    this.sprite.anims.timeScale = 1
     this.sprite.setFlipX(!!art.flipX).play(key)
     this.shown = key
     this.sprite.once(
@@ -219,8 +230,21 @@ export class Avatar {
     return !!this.shown?.startsWith("act:")
   }
 
+  /** The walk of a facing once its sheet is loaded (walk sheets load on demand). */
+  private walkFor(facing: Facing): WalkArt | undefined {
+    const walk = this.art.walk[facing]
+    return walk && this.scene.anims.exists(walkAnimKey(walk)) ? walk : undefined
+  }
+
+  private applyPace(): void {
+    const walk = this.moving ? this.walkFor(this.facing) : undefined
+    const ref = walk?.speedRef
+    this.sprite.anims.timeScale =
+      walk && ref && this.speed > 0 ? Math.max(0.5, Math.min(2, this.speed / ref)) : 1
+  }
+
   private refresh(): void {
-    const walk = this.moving ? this.art.walk[this.facing] : undefined
+    const walk = this.moving ? this.walkFor(this.facing) : undefined
     if (walk) {
       const key = walkAnimKey(walk)
       if (this.shown !== key) {
@@ -229,6 +253,7 @@ export class Avatar {
         this.shown = key
       }
       this.sprite.setFlipX(!!walk.flipX)
+      this.applyPace()
       return
     }
     const idle = idleOf(this.art, this.facing)

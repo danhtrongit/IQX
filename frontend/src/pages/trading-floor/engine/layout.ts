@@ -56,6 +56,8 @@ export interface Placement {
   foot?: [number, number]
   /** Drawn flat on the floor, under everything that stands. */
   flat?: boolean
+  /** Size of the art relative to its native world size (1 when absent). */
+  scale?: number
   interact?: Interact
 }
 
@@ -82,9 +84,11 @@ export const PLACEMENTS: Placement[] = [
     placeholder: "offering",
     x: 1024,
     y: 456,
-    w: 176,
-    h: 64,
-    foot: [180, 40],
+    // The altar is drawn twice its native size so it reads as the centrepiece of the shrine.
+    scale: 2,
+    w: 352,
+    h: 128,
+    foot: [190, 70],
     interact: {
       kind: "thantai",
       label: "Thần Tài",

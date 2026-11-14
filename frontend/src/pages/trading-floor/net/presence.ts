@@ -18,6 +18,10 @@ export const presence = new Emitter<{
   online: null
 }>()
 
+/** The server drops a second emote within 1.5 s; the page spaces them out instead of losing them. */
+const EMOTE_GAP_MS = 1600
+const EMOTE_QUEUE_MAX = 5
+
 let selfId: string | null = null
 const peers = new Set<string>()
 
@@ -129,9 +133,32 @@ export function startPresence(start: PeerState): () => void {
     // Nothing is queued while offline: `hello` repeats the last state after the reconnect.
     floorSocket.send({ type: "state", ...state })
   }
-  sendEmote = (text) => {
-    floorSocket.send({ type: "emote", text })
+  const emoteQueue: string[] = []
+  let emoteTimer: ReturnType<typeof setTimeout> | null = null
+  let lastEmoteAt = 0
+  const pumpEmotes = (): void => {
+    if (emoteTimer || !emoteQueue.length) return
+    const wait = lastEmoteAt + EMOTE_GAP_MS - Date.now()
+    if (wait > 0) {
+      emoteTimer = setTimeout(() => {
+        emoteTimer = null
+        pumpEmotes()
+      }, wait)
+      return
+    }
+    lastEmoteAt = Date.now()
+    floorSocket.send({ type: "emote", text: emoteQueue.shift()! })
+    pumpEmotes()
   }
+  sendEmote = (text) => {
+    emoteQueue.push(text)
+    if (emoteQueue.length > EMOTE_QUEUE_MAX) emoteQueue.shift()
+    pumpEmotes()
+  }
+  off.push(() => {
+    if (emoteTimer) clearTimeout(emoteTimer)
+    emoteQueue.length = 0
+  })
   sendTyping = (convId) => {
     floorSocket.send({ type: "chat:typing", convId })
   }

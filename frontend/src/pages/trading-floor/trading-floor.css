@@ -679,6 +679,105 @@
   border-radius: 999px;
   pointer-events: none;
 }
+/* ---------- quick chat ---------- */
+/* Bottom-left, above the shortcuts: the last lines at a glance, the whole history while typing. */
+.tf-root .quick-chat {
+  position: absolute;
+  left: 12px;
+  bottom: calc(86px + var(--safe-b));
+  width: min(360px, calc(100cqw - 24px));
+  display: grid;
+  gap: 6px;
+  pointer-events: none;
+}
+.tf-root .quick-chat.open {
+  pointer-events: auto;
+  background: rgba(12, 17, 27, 0.86);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+.tf-root .qc-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.tf-root .quick-chat.open .qc-lines {
+  max-height: min(260px, 40cqh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+.tf-root .qc-lines li {
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  background: rgba(12, 17, 27, 0.62);
+  border-radius: 8px;
+  padding: 3px 8px;
+}
+.tf-root .quick-chat.open .qc-lines li {
+  background: transparent;
+  padding: 1px 2px;
+}
+.tf-root .qc-lines b {
+  color: #cfe4ff;
+  font-weight: 700;
+}
+.tf-root .qc-lines li.self b {
+  color: var(--accent-2);
+}
+.tf-root .qc-lines time {
+  color: var(--dim);
+  font-size: 11px;
+  margin-right: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.tf-root .qc-input {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--raise);
+  color: var(--fg);
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 12px;
+}
+.tf-root .qc-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.tf-root .qc-open {
+  pointer-events: auto;
+  justify-self: start;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(12, 17, 27, 0.6);
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 10px;
+}
+.tf-root .qc-open kbd {
+  font: inherit;
+  font-weight: 700;
+  color: var(--fg);
+  background: var(--raise);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin-right: 2px;
+}
+.tf-root .qc-open:hover {
+  color: var(--fg);
+}
+
 /* ---------- toasts ---------- */
 /* Top-right on wide screens, clear of the centred panels; top-centre on phones, above the bottom sheet. */
 .tf-root .toasts {
