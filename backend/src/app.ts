@@ -61,6 +61,8 @@ import { FlashbackModule } from './modules/flashback/flashback.module.js';
 import { WorkspaceModule } from './modules/workspace/workspace.module.js';
 import { PracticeModule } from './modules/practice/practice.module.js';
 import { ResearchModule } from './modules/research/index.js';
+import { SacoPostsModule } from './modules/trading-floor/saco-posts.module.js';
+import { TradingFloorModule } from './modules/trading-floor/trading-floor.module.js';
 
 @Module({})
 class ApiModule {}
@@ -114,6 +116,8 @@ export function createApiModule(
       NotificationsModule,
       ReferralsModule,
       TeamLeadsModule,
+      SacoPostsModule,
+      TradingFloorModule,
       DomainRuntimeModule.forApi(values.QUEUE_ENABLED),
       RealtimeModule.register({
         enabled: values.REALTIME_ENABLED,

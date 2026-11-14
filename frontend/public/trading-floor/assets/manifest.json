@@ -1,0 +1,3584 @@
+{
+  "characters": {
+    "female01": {
+      "idle": {
+        "s": {
+          "file": "characters/female01/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/female01/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/female01/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/female01/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/female01/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/female01/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/female01/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/female01/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/female01/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/female01/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/female01/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/female01/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/female01/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/female01/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/female01/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/female01/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/female01/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/female01/mask_rest_s.webp",
+          "se": "characters/female01/mask_rest_se.webp",
+          "e": "characters/female01/mask_rest_e.webp",
+          "ne": "characters/female01/mask_rest_ne.webp",
+          "n": "characters/female01/mask_rest_n.webp",
+          "nw": "characters/female01/mask_rest_nw.webp",
+          "w": "characters/female01/mask_rest_w.webp",
+          "sw": "characters/female01/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/female01/mask_walk_s.webp",
+          "se": "characters/female01/mask_walk_se.webp",
+          "e": "characters/female01/mask_walk_e.webp",
+          "ne": "characters/female01/mask_walk_ne.webp",
+          "n": "characters/female01/mask_walk_n.webp",
+          "nw": "characters/female01/mask_walk_nw.webp",
+          "w": "characters/female01/mask_walk_w.webp",
+          "sw": "characters/female01/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.317
+    },
+    "female02": {
+      "idle": {
+        "s": {
+          "file": "characters/female02/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/female02/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/female02/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/female02/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/female02/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/female02/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/female02/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/female02/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/female02/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/female02/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/female02/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/female02/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/female02/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/female02/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/female02/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/female02/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/female02/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/female02/mask_rest_s.webp",
+          "se": "characters/female02/mask_rest_se.webp",
+          "e": "characters/female02/mask_rest_e.webp",
+          "ne": "characters/female02/mask_rest_ne.webp",
+          "n": "characters/female02/mask_rest_n.webp",
+          "nw": "characters/female02/mask_rest_nw.webp",
+          "w": "characters/female02/mask_rest_w.webp",
+          "sw": "characters/female02/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/female02/mask_walk_s.webp",
+          "se": "characters/female02/mask_walk_se.webp",
+          "e": "characters/female02/mask_walk_e.webp",
+          "ne": "characters/female02/mask_walk_ne.webp",
+          "n": "characters/female02/mask_walk_n.webp",
+          "nw": "characters/female02/mask_walk_nw.webp",
+          "w": "characters/female02/mask_walk_w.webp",
+          "sw": "characters/female02/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.452
+    },
+    "female03": {
+      "idle": {
+        "s": {
+          "file": "characters/female03/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/female03/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/female03/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/female03/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/female03/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/female03/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/female03/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/female03/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/female03/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/female03/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/female03/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/female03/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/female03/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/female03/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/female03/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/female03/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/female03/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/female03/mask_rest_s.webp",
+          "se": "characters/female03/mask_rest_se.webp",
+          "e": "characters/female03/mask_rest_e.webp",
+          "ne": "characters/female03/mask_rest_ne.webp",
+          "n": "characters/female03/mask_rest_n.webp",
+          "nw": "characters/female03/mask_rest_nw.webp",
+          "w": "characters/female03/mask_rest_w.webp",
+          "sw": "characters/female03/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/female03/mask_walk_s.webp",
+          "se": "characters/female03/mask_walk_se.webp",
+          "e": "characters/female03/mask_walk_e.webp",
+          "ne": "characters/female03/mask_walk_ne.webp",
+          "n": "characters/female03/mask_walk_n.webp",
+          "nw": "characters/female03/mask_walk_nw.webp",
+          "w": "characters/female03/mask_walk_w.webp",
+          "sw": "characters/female03/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.389
+    },
+    "female04": {
+      "idle": {
+        "s": {
+          "file": "characters/female04/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/female04/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/female04/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/female04/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/female04/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/female04/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/female04/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/female04/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/female04/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/female04/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/female04/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/female04/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/female04/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/female04/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/female04/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/female04/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/female04/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/female04/mask_rest_s.webp",
+          "se": "characters/female04/mask_rest_se.webp",
+          "e": "characters/female04/mask_rest_e.webp",
+          "ne": "characters/female04/mask_rest_ne.webp",
+          "n": "characters/female04/mask_rest_n.webp",
+          "nw": "characters/female04/mask_rest_nw.webp",
+          "w": "characters/female04/mask_rest_w.webp",
+          "sw": "characters/female04/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/female04/mask_walk_s.webp",
+          "se": "characters/female04/mask_walk_se.webp",
+          "e": "characters/female04/mask_walk_e.webp",
+          "ne": "characters/female04/mask_walk_ne.webp",
+          "n": "characters/female04/mask_walk_n.webp",
+          "nw": "characters/female04/mask_walk_nw.webp",
+          "w": "characters/female04/mask_walk_w.webp",
+          "sw": "characters/female04/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.664
+    },
+    "female05": {
+      "idle": {
+        "s": {
+          "file": "characters/female05/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/female05/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/female05/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/female05/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/female05/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/female05/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/female05/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/female05/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/female05/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/female05/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/female05/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/female05/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/female05/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/female05/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/female05/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/female05/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/female05/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/female05/mask_rest_s.webp",
+          "se": "characters/female05/mask_rest_se.webp",
+          "e": "characters/female05/mask_rest_e.webp",
+          "ne": "characters/female05/mask_rest_ne.webp",
+          "n": "characters/female05/mask_rest_n.webp",
+          "nw": "characters/female05/mask_rest_nw.webp",
+          "w": "characters/female05/mask_rest_w.webp",
+          "sw": "characters/female05/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/female05/mask_walk_s.webp",
+          "se": "characters/female05/mask_walk_se.webp",
+          "e": "characters/female05/mask_walk_e.webp",
+          "ne": "characters/female05/mask_walk_ne.webp",
+          "n": "characters/female05/mask_walk_n.webp",
+          "nw": "characters/female05/mask_walk_nw.webp",
+          "w": "characters/female05/mask_walk_w.webp",
+          "sw": "characters/female05/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.275
+    },
+    "male01": {
+      "idle": {
+        "s": {
+          "file": "characters/male01/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/male01/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/male01/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/male01/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/male01/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/male01/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/male01/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/male01/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/male01/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/male01/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/male01/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/male01/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/male01/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/male01/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/male01/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/male01/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/male01/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/male01/mask_rest_s.webp",
+          "se": "characters/male01/mask_rest_se.webp",
+          "e": "characters/male01/mask_rest_e.webp",
+          "ne": "characters/male01/mask_rest_ne.webp",
+          "n": "characters/male01/mask_rest_n.webp",
+          "nw": "characters/male01/mask_rest_nw.webp",
+          "w": "characters/male01/mask_rest_w.webp",
+          "sw": "characters/male01/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/male01/mask_walk_s.webp",
+          "se": "characters/male01/mask_walk_se.webp",
+          "e": "characters/male01/mask_walk_e.webp",
+          "ne": "characters/male01/mask_walk_ne.webp",
+          "n": "characters/male01/mask_walk_n.webp",
+          "nw": "characters/male01/mask_walk_nw.webp",
+          "w": "characters/male01/mask_walk_w.webp",
+          "sw": "characters/male01/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.411
+    },
+    "male02": {
+      "idle": {
+        "s": {
+          "file": "characters/male02/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/male02/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/male02/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/male02/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/male02/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/male02/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/male02/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/male02/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/male02/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/male02/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/male02/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/male02/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/male02/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/male02/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/male02/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/male02/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/male02/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/male02/mask_rest_s.webp",
+          "se": "characters/male02/mask_rest_se.webp",
+          "e": "characters/male02/mask_rest_e.webp",
+          "ne": "characters/male02/mask_rest_ne.webp",
+          "n": "characters/male02/mask_rest_n.webp",
+          "nw": "characters/male02/mask_rest_nw.webp",
+          "w": "characters/male02/mask_rest_w.webp",
+          "sw": "characters/male02/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/male02/mask_walk_s.webp",
+          "se": "characters/male02/mask_walk_se.webp",
+          "e": "characters/male02/mask_walk_e.webp",
+          "ne": "characters/male02/mask_walk_ne.webp",
+          "n": "characters/male02/mask_walk_n.webp",
+          "nw": "characters/male02/mask_walk_nw.webp",
+          "w": "characters/male02/mask_walk_w.webp",
+          "sw": "characters/male02/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.598
+    },
+    "male03": {
+      "idle": {
+        "s": {
+          "file": "characters/male03/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/male03/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/male03/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/male03/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/male03/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/male03/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/male03/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/male03/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/male03/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/male03/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/male03/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/male03/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/male03/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/male03/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/male03/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/male03/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/male03/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/male03/mask_rest_s.webp",
+          "se": "characters/male03/mask_rest_se.webp",
+          "e": "characters/male03/mask_rest_e.webp",
+          "ne": "characters/male03/mask_rest_ne.webp",
+          "n": "characters/male03/mask_rest_n.webp",
+          "nw": "characters/male03/mask_rest_nw.webp",
+          "w": "characters/male03/mask_rest_w.webp",
+          "sw": "characters/male03/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/male03/mask_walk_s.webp",
+          "se": "characters/male03/mask_walk_se.webp",
+          "e": "characters/male03/mask_walk_e.webp",
+          "ne": "characters/male03/mask_walk_ne.webp",
+          "n": "characters/male03/mask_walk_n.webp",
+          "nw": "characters/male03/mask_walk_nw.webp",
+          "w": "characters/male03/mask_walk_w.webp",
+          "sw": "characters/male03/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.604
+    },
+    "male04": {
+      "idle": {
+        "s": {
+          "file": "characters/male04/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/male04/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/male04/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/male04/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/male04/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/male04/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/male04/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/male04/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/male04/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/male04/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/male04/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/male04/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/male04/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/male04/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/male04/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/male04/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/male04/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/male04/mask_rest_s.webp",
+          "se": "characters/male04/mask_rest_se.webp",
+          "e": "characters/male04/mask_rest_e.webp",
+          "ne": "characters/male04/mask_rest_ne.webp",
+          "n": "characters/male04/mask_rest_n.webp",
+          "nw": "characters/male04/mask_rest_nw.webp",
+          "w": "characters/male04/mask_rest_w.webp",
+          "sw": "characters/male04/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/male04/mask_walk_s.webp",
+          "se": "characters/male04/mask_walk_se.webp",
+          "e": "characters/male04/mask_walk_e.webp",
+          "ne": "characters/male04/mask_walk_ne.webp",
+          "n": "characters/male04/mask_walk_n.webp",
+          "nw": "characters/male04/mask_walk_nw.webp",
+          "w": "characters/male04/mask_walk_w.webp",
+          "sw": "characters/male04/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.281
+    },
+    "male05": {
+      "idle": {
+        "s": {
+          "file": "characters/male05/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "se": {
+          "file": "characters/male05/rest_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "e": {
+          "file": "characters/male05/rest_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "ne": {
+          "file": "characters/male05/rest_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "n": {
+          "file": "characters/male05/rest_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "nw": {
+          "file": "characters/male05/rest_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "w": {
+          "file": "characters/male05/rest_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        },
+        "sw": {
+          "file": "characters/male05/rest_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/male05/walk_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/male05/walk_se@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/male05/walk_e@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/male05/walk_ne@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/male05/walk_n@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/male05/walk_nw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/male05/walk_w@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/male05/walk_sw@2x.webp",
+          "density": 2,
+          "anchor": [
+            128,
+            228
+          ],
+          "cell": 256,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/male05/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          128,
+          228
+        ]
+      },
+      "masks": {
+        "idle": {
+          "s": "characters/male05/mask_rest_s.webp",
+          "se": "characters/male05/mask_rest_se.webp",
+          "e": "characters/male05/mask_rest_e.webp",
+          "ne": "characters/male05/mask_rest_ne.webp",
+          "n": "characters/male05/mask_rest_n.webp",
+          "nw": "characters/male05/mask_rest_nw.webp",
+          "w": "characters/male05/mask_rest_w.webp",
+          "sw": "characters/male05/mask_rest_sw.webp"
+        },
+        "walk": {
+          "s": "characters/male05/mask_walk_s.webp",
+          "se": "characters/male05/mask_walk_se.webp",
+          "e": "characters/male05/mask_walk_e.webp",
+          "ne": "characters/male05/mask_walk_ne.webp",
+          "n": "characters/male05/mask_walk_n.webp",
+          "nw": "characters/male05/mask_walk_nw.webp",
+          "w": "characters/male05/mask_walk_w.webp",
+          "sw": "characters/male05/mask_walk_sw.webp"
+        }
+      },
+      "clothLuma": 0.341
+    },
+    "thantai": {
+      "idle": {
+        "s": {
+          "file": "characters/thantai/rest_s@2x.webp",
+          "density": 2,
+          "anchor": [
+            224,
+            420
+          ]
+        }
+      },
+      "walk": {},
+      "statue": {
+        "file": "characters/thantai/statue_s@2x.webp",
+        "density": 2,
+        "anchor": [
+          224,
+          420
+        ]
+      },
+      "actions": {
+        "wave": {
+          "s": {
+            "file": "characters/thantai/wave_s@2x.webp",
+            "density": 2,
+            "anchor": [
+              224,
+              420
+            ],
+            "cell": 448,
+            "columns": 8,
+            "frames": 24,
+            "durationsMs": [
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5,
+              62.5
+            ],
+            "speedRef": null,
+            "anim": "act:thantai:wave:s"
+          }
+        }
+      }
+    }
+  },
+  "props": {
+    "coffee_table": {
+      "file": "props/coffee_table@2x.webp",
+      "kind": "prop",
+      "density": 2,
+      "world": [
+        128.0,
+        67.5
+      ],
+      "origin": [
+        0.5,
+        0.9407
+      ]
+    },
+    "offering_table": {
+      "file": "props/offering_table@2x.webp",
+      "kind": "prop",
+      "density": 2,
+      "world": [
+        90.5,
+        92.0
+      ],
+      "origin": [
+        0.5,
+        0.9565
+      ]
+    },
+    "pantry_counter": {
+      "file": "props/pantry_counter@2x.webp",
+      "kind": "prop",
+      "density": 2,
+      "world": [
+        98.0,
+        154.0
+      ],
+      "origin": [
+        0.5,
+        0.974
+      ]
+    },
+    "plant_small": {
+      "file": "props/plant_small@2x.webp",
+      "kind": "prop",
+      "density": 2,
+      "world": [
+        60.0,
+        63.0
+      ],
+      "origin": [
+        0.5,
+        0.9365
+      ]
+    },
+    "plant_tall": {
+      "file": "props/plant_tall@2x.webp",
+      "kind": "prop",
+      "density": 2,
+      "world": [
+        85.0,
+        136.0
+      ],
+      "origin": [
+        0.5,
+        0.9706
+      ]
+    },
+    "podium": {
+      "file": "props/podium@2x.webp",
+      "kind": "prop",
+      "density": 2,
+      "world": [
+        75.5,
+        64.0
+      ],
+      "origin": [
+        0.5,
+        0.9375
+      ]
+    },
+    "reception_desk": {
+      "file": "props/reception_desk@2x.webp",
+      "kind": "prop",
+      "density": 2,
+      "world": [
+        254.0,
+        105.0
+      ],
+      "origin": [
+        0.5,
+        0.9619
+      ]
+    },
+    "sofa": {
+      "file": "props/sofa@2x.webp",
+      "kind": "prop",
+      "density": 2,
+      "world": [
+        231.0,
+        116.0
+      ],
+      "origin": [
+        0.5,
+        0.9655
+      ]
+    }
+  }
+}

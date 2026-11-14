@@ -3841,6 +3841,7 @@
       "GET /api/v2/market/tracking",
       "GET /api/v2/media/{token}",
       "GET /api/v2/premium/plans",
+      "GET /api/v2/trading-floor/post-images/{imageId}",
       "GET /api/v2/valuation/{symbol}",
       "GET /api/v2/virtual-trading/leaderboard",
       "GET /health/live",
@@ -3885,10 +3886,10 @@
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 850,
-    "registeredHttp": 1351,
+    "documentedHttp": 909,
+    "registeredHttp": 1435,
     "websocketAdapter": "WsAdapter",
-    "websocketGateways": 3
+    "websocketGateways": 4
   },
   "schemaVersion": 1,
   "verdict": {

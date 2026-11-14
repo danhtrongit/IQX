@@ -16,6 +16,8 @@ export interface OperationMap {
   "DELETE /api/v2/strategy/filters/{filterId}": { request: T.DeleteStrategySavedFilterData; response: T.DeleteStrategySavedFilterResponses[keyof T.DeleteStrategySavedFilterResponses] }
   "DELETE /api/v2/strategy/lists/{listId}": { request: T.DeleteStrategySavedListData; response: T.DeleteStrategySavedListResponses[keyof T.DeleteStrategySavedListResponses] }
   "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: T.DeleteStrategyResultSnapshotData; response: T.DeleteStrategyResultSnapshotResponses[keyof T.DeleteStrategyResultSnapshotResponses] }
+  "DELETE /api/v2/trading-floor/posts/comments/{commentId}": { request: T.TradingFloorPostCommentDeleteData; response: T.TradingFloorPostCommentDeleteResponses[keyof T.TradingFloorPostCommentDeleteResponses] }
+  "DELETE /api/v2/trading-floor/saco/posts/{id}": { request: T.TradingFloorSacoPostDeleteData; response: T.TradingFloorSacoPostDeleteResponses[keyof T.TradingFloorSacoPostDeleteResponses] }
   "DELETE /api/v2/users/{userId}": { request: T.UsersControllerRemove1Data; response: T.UsersControllerRemove1Responses[keyof T.UsersControllerRemove1Responses] }
   "DELETE /api/v2/watchlists/{symbol}": { request: T.RemoveWatchlistItemV2Data; response: T.RemoveWatchlistItemV2Responses[keyof T.RemoveWatchlistItemV2Responses] }
   "GET /api/v2/academy/catalog": { request: T.AcademyCatalogData; response: T.AcademyCatalogResponses[keyof T.AcademyCatalogResponses] }
@@ -299,6 +301,26 @@ export interface OperationMap {
   "GET /api/v2/team/users": { request: T.TeamControllerUsers1Data; response: T.TeamControllerUsers1Responses[keyof T.TeamControllerUsers1Responses] }
   "GET /api/v2/team/users/{userId}": { request: T.TeamControllerUser1Data; response: T.TeamControllerUser1Responses[keyof T.TeamControllerUser1Responses] }
   "GET /api/v2/team/users/{userId}/login-history": { request: T.TeamControllerLoginHistory1Data; response: T.TeamControllerLoginHistory1Responses[keyof T.TeamControllerLoginHistory1Responses] }
+  "GET /api/v2/trading-floor/chat/convs/{id}": { request: T.FloorChatConversationData; response: T.FloorChatConversationResponses[keyof T.FloorChatConversationResponses] }
+  "GET /api/v2/trading-floor/chat/inbox": { request: T.FloorChatInboxData; response: T.FloorChatInboxResponses[keyof T.FloorChatInboxResponses] }
+  "GET /api/v2/trading-floor/leaderboard": { request: T.FloorLeaderboardData; response: T.FloorLeaderboardResponses[keyof T.FloorLeaderboardResponses] }
+  "GET /api/v2/trading-floor/manage/comment-reports": { request: T.TradingFloorManageCommentReportsData; response: T.TradingFloorManageCommentReportsResponses[keyof T.TradingFloorManageCommentReportsResponses] }
+  "GET /api/v2/trading-floor/manage/convs": { request: T.FloorManageConvsData; response: T.FloorManageConvsResponses[keyof T.FloorManageConvsResponses] }
+  "GET /api/v2/trading-floor/manage/convs/{id}": { request: T.FloorManageConvData; response: T.FloorManageConvResponses[keyof T.FloorManageConvResponses] }
+  "GET /api/v2/trading-floor/manage/invites": { request: T.FloorManageInvitesData; response: T.FloorManageInvitesResponses[keyof T.FloorManageInvitesResponses] }
+  "GET /api/v2/trading-floor/manage/posts": { request: T.TradingFloorManagePostsData; response: T.TradingFloorManagePostsResponses[keyof T.TradingFloorManagePostsResponses] }
+  "GET /api/v2/trading-floor/manage/posts/{id}": { request: T.TradingFloorManagePostData; response: T.TradingFloorManagePostResponses[keyof T.TradingFloorManagePostResponses] }
+  "GET /api/v2/trading-floor/manage/saco-candidates": { request: T.FloorManageSacoCandidatesData; response: T.FloorManageSacoCandidatesResponses[keyof T.FloorManageSacoCandidatesResponses] }
+  "GET /api/v2/trading-floor/manage/sacos": { request: T.FloorManageSacosData; response: T.FloorManageSacosResponses[keyof T.FloorManageSacosResponses] }
+  "GET /api/v2/trading-floor/me": { request: T.FloorMeData; response: T.FloorMeResponses[keyof T.FloorMeResponses] }
+  "GET /api/v2/trading-floor/post-images/{imageId}": { request: T.TradingFloorPostImageData; response: T.TradingFloorPostImageResponses[keyof T.TradingFloorPostImageResponses] }
+  "GET /api/v2/trading-floor/posts/{id}": { request: T.TradingFloorPostDetailData; response: T.TradingFloorPostDetailResponses[keyof T.TradingFloorPostDetailResponses] }
+  "GET /api/v2/trading-floor/posts/{id}/comments": { request: T.TradingFloorPostCommentsData; response: T.TradingFloorPostCommentsResponses[keyof T.TradingFloorPostCommentsResponses] }
+  "GET /api/v2/trading-floor/posts/today": { request: T.TradingFloorPostsTodayData; response: T.TradingFloorPostsTodayResponses[keyof T.TradingFloorPostsTodayResponses] }
+  "GET /api/v2/trading-floor/ritual/today": { request: T.FloorRitualTodayData; response: T.FloorRitualTodayResponses[keyof T.FloorRitualTodayResponses] }
+  "GET /api/v2/trading-floor/saco/comment-reports": { request: T.TradingFloorSacoCommentReportsData; response: T.TradingFloorSacoCommentReportsResponses[keyof T.TradingFloorSacoCommentReportsResponses] }
+  "GET /api/v2/trading-floor/saco/posts": { request: T.TradingFloorSacoPostsData; response: T.TradingFloorSacoPostsResponses[keyof T.TradingFloorSacoPostsResponses] }
+  "GET /api/v2/trading-floor/saco/posts/{id}": { request: T.TradingFloorSacoPostData; response: T.TradingFloorSacoPostResponses[keyof T.TradingFloorSacoPostResponses] }
   "GET /api/v2/users": { request: T.UsersControllerList1Data; response: T.UsersControllerList1Responses[keyof T.UsersControllerList1Responses] }
   "GET /api/v2/users/{userId}": { request: T.UsersControllerGet1Data; response: T.UsersControllerGet1Responses[keyof T.UsersControllerGet1Responses] }
   "GET /api/v2/users/me": { request: T.UsersControllerMe1Data; response: T.UsersControllerMe1Responses[keyof T.UsersControllerMe1Responses] }
@@ -327,6 +349,7 @@ export interface OperationMap {
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData; response: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses] }
   "PATCH /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertUpdateData; response: T.StrategyAlertUpdateResponses[keyof T.StrategyAlertUpdateResponses] }
   "PATCH /api/v2/strategy/shared-config": { request: T.StrategyConfigPatchSharedConfigData; response: T.StrategyConfigPatchSharedConfigResponses[keyof T.StrategyConfigPatchSharedConfigResponses] }
+  "PATCH /api/v2/trading-floor/manage/sacos/{id}": { request: T.FloorManageSacoUpdateData; response: T.FloorManageSacoUpdateResponses[keyof T.FloorManageSacoUpdateResponses] }
   "PATCH /api/v2/users/{userId}": { request: T.UsersControllerUpdate1Data; response: T.UsersControllerUpdate1Responses[keyof T.UsersControllerUpdate1Responses] }
   "PATCH /api/v2/users/me": { request: T.UsersControllerUpdateMe1Data; response: T.UsersControllerUpdateMe1Responses[keyof T.UsersControllerUpdateMe1Responses] }
   "PATCH /api/v2/virtual-trading/admin/config": { request: T.LegacyVirtualTradingAdminControllerUpdateConfig1Data; response: T.LegacyVirtualTradingAdminControllerUpdateConfig1Responses[keyof T.LegacyVirtualTradingAdminControllerUpdateConfig1Responses] }
@@ -488,6 +511,28 @@ export interface OperationMap {
   "POST /api/v2/strategy/screener/run": { request: T.ScreenerRunData; response: T.ScreenerRunResponses[keyof T.ScreenerRunResponses] }
   "POST /api/v2/team/users/{userId}/remove": { request: T.TeamControllerRemove1Data; response: T.TeamControllerRemove1Responses[keyof T.TeamControllerRemove1Responses] }
   "POST /api/v2/telegram/webhook/{secret}": { request: T.TelegramControllerWebhook1Data; response: T.TelegramControllerWebhook1Responses[keyof T.TelegramControllerWebhook1Responses] }
+  "POST /api/v2/trading-floor/chat/convs/{id}/read": { request: T.FloorChatReadData; response: T.FloorChatReadResponses[keyof T.FloorChatReadResponses] }
+  "POST /api/v2/trading-floor/chat/convs/{id}/send": { request: T.FloorChatSendData; response: T.FloorChatSendResponses[keyof T.FloorChatSendResponses] }
+  "POST /api/v2/trading-floor/chat/invites/{id}": { request: T.FloorChatInviteAnswerData; response: T.FloorChatInviteAnswerResponses[keyof T.FloorChatInviteAnswerResponses] }
+  "POST /api/v2/trading-floor/chat/match": { request: T.FloorChatMatchData; response: T.FloorChatMatchResponses[keyof T.FloorChatMatchResponses] }
+  "POST /api/v2/trading-floor/chat/match/cancel": { request: T.FloorChatMatchCancelData; response: T.FloorChatMatchCancelResponses[keyof T.FloorChatMatchCancelResponses] }
+  "POST /api/v2/trading-floor/chat/open": { request: T.FloorChatOpenData; response: T.FloorChatOpenResponses[keyof T.FloorChatOpenResponses] }
+  "POST /api/v2/trading-floor/manage/posts/{id}/hide": { request: T.TradingFloorManagePostHideData; response: T.TradingFloorManagePostHideResponses[keyof T.TradingFloorManagePostHideResponses] }
+  "POST /api/v2/trading-floor/manage/posts/{id}/unhide": { request: T.TradingFloorManagePostUnhideData; response: T.TradingFloorManagePostUnhideResponses[keyof T.TradingFloorManagePostUnhideResponses] }
+  "POST /api/v2/trading-floor/manage/sacos": { request: T.FloorManageSacoGrantData; response: T.FloorManageSacoGrantResponses[keyof T.FloorManageSacoGrantResponses] }
+  "POST /api/v2/trading-floor/manage/sacos/{id}/move": { request: T.FloorManageSacoMoveData; response: T.FloorManageSacoMoveResponses[keyof T.FloorManageSacoMoveResponses] }
+  "POST /api/v2/trading-floor/manage/sacos/{id}/remove": { request: T.FloorManageSacoRemoveData; response: T.FloorManageSacoRemoveResponses[keyof T.FloorManageSacoRemoveResponses] }
+  "POST /api/v2/trading-floor/posts/{id}/comments": { request: T.TradingFloorPostCommentCreateData; response: T.TradingFloorPostCommentCreateResponses[keyof T.TradingFloorPostCommentCreateResponses] }
+  "POST /api/v2/trading-floor/posts/{id}/heart": { request: T.TradingFloorPostHeartData; response: T.TradingFloorPostHeartResponses[keyof T.TradingFloorPostHeartResponses] }
+  "POST /api/v2/trading-floor/posts/comments/{commentId}/hide": { request: T.TradingFloorPostCommentHideData; response: T.TradingFloorPostCommentHideResponses[keyof T.TradingFloorPostCommentHideResponses] }
+  "POST /api/v2/trading-floor/posts/comments/{commentId}/report": { request: T.TradingFloorPostCommentReportData; response: T.TradingFloorPostCommentReportResponses[keyof T.TradingFloorPostCommentReportResponses] }
+  "POST /api/v2/trading-floor/ritual/draw": { request: T.FloorRitualDrawData; response: T.FloorRitualDrawResponses[keyof T.FloorRitualDrawResponses] }
+  "POST /api/v2/trading-floor/ritual/submit": { request: T.FloorRitualSubmitData; response: T.FloorRitualSubmitResponses[keyof T.FloorRitualSubmitResponses] }
+  "POST /api/v2/trading-floor/saco/duty": { request: T.FloorSacoDutyData; response: T.FloorSacoDutyResponses[keyof T.FloorSacoDutyResponses] }
+  "POST /api/v2/trading-floor/saco/posts": { request: T.TradingFloorSacoPostCreateData; response: T.TradingFloorSacoPostCreateResponses[keyof T.TradingFloorSacoPostCreateResponses] }
+  "POST /api/v2/trading-floor/saco/posts/{id}/comments-seen": { request: T.TradingFloorSacoPostCommentsSeenData; response: T.TradingFloorSacoPostCommentsSeenResponses[keyof T.TradingFloorSacoPostCommentsSeenResponses] }
+  "POST /api/v2/trading-floor/saco/posts/{id}/images": { request: T.TradingFloorSacoPostImageUploadData; response: T.TradingFloorSacoPostImageUploadResponses[keyof T.TradingFloorSacoPostImageUploadResponses] }
+  "POST /api/v2/trading-floor/saco/posts/{id}/publish": { request: T.TradingFloorSacoPostPublishData; response: T.TradingFloorSacoPostPublishResponses[keyof T.TradingFloorSacoPostPublishResponses] }
   "POST /api/v2/users": { request: T.UsersControllerCreate1Data; response: T.UsersControllerCreate1Responses[keyof T.UsersControllerCreate1Responses] }
   "POST /api/v2/users/me/username": { request: T.UsersControllerChangeUsername1Data; response: T.UsersControllerChangeUsername1Responses[keyof T.UsersControllerChangeUsername1Responses] }
   "POST /api/v2/virtual-trading/account/activate": { request: T.TradingControllerActivate1Data; response: T.TradingControllerActivate1Responses[keyof T.TradingControllerActivate1Responses] }
@@ -514,6 +559,8 @@ export interface OperationMap {
   "PUT /api/v2/practice/{indicatorId}/draft": { request: T.PracticeSaveDraftData; response: T.PracticeSaveDraftResponses[keyof T.PracticeSaveDraftResponses] }
   "PUT /api/v2/shop/active-mascot": { request: T.SetShopActiveMascotData; response: T.SetShopActiveMascotResponses[keyof T.SetShopActiveMascotResponses] }
   "PUT /api/v2/strategy/filters/{filterId}": { request: T.UpdateStrategySavedFilterData; response: T.UpdateStrategySavedFilterResponses[keyof T.UpdateStrategySavedFilterResponses] }
+  "PUT /api/v2/trading-floor/profile": { request: T.FloorProfileSaveData; response: T.FloorProfileSaveResponses[keyof T.FloorProfileSaveResponses] }
+  "PUT /api/v2/trading-floor/saco/posts/{id}": { request: T.TradingFloorSacoPostSaveData; response: T.TradingFloorSacoPostSaveResponses[keyof T.TradingFloorSacoPostSaveResponses] }
   "PUT /api/v2/watchlists/reorder": { request: T.ReorderWatchlistV2Data; response: T.ReorderWatchlistV2Responses[keyof T.ReorderWatchlistV2Responses] }
 }
 
@@ -532,6 +579,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "DELETE /api/v2/strategy/filters/{filterId}": { request: "DeleteStrategySavedFilterData", response: "DeleteStrategySavedFilterResponses" },
   "DELETE /api/v2/strategy/lists/{listId}": { request: "DeleteStrategySavedListData", response: "DeleteStrategySavedListResponses" },
   "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: "DeleteStrategyResultSnapshotData", response: "DeleteStrategyResultSnapshotResponses" },
+  "DELETE /api/v2/trading-floor/posts/comments/{commentId}": { request: "TradingFloorPostCommentDeleteData", response: "TradingFloorPostCommentDeleteResponses" },
+  "DELETE /api/v2/trading-floor/saco/posts/{id}": { request: "TradingFloorSacoPostDeleteData", response: "TradingFloorSacoPostDeleteResponses" },
   "DELETE /api/v2/users/{userId}": { request: "UsersControllerRemove1Data", response: "UsersControllerRemove1Responses" },
   "DELETE /api/v2/watchlists/{symbol}": { request: "RemoveWatchlistItemV2Data", response: "RemoveWatchlistItemV2Responses" },
   "GET /api/v2/academy/catalog": { request: "AcademyCatalogData", response: "AcademyCatalogResponses" },
@@ -815,6 +864,26 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/team/users": { request: "TeamControllerUsers1Data", response: "TeamControllerUsers1Responses" },
   "GET /api/v2/team/users/{userId}": { request: "TeamControllerUser1Data", response: "TeamControllerUser1Responses" },
   "GET /api/v2/team/users/{userId}/login-history": { request: "TeamControllerLoginHistory1Data", response: "TeamControllerLoginHistory1Responses" },
+  "GET /api/v2/trading-floor/chat/convs/{id}": { request: "FloorChatConversationData", response: "FloorChatConversationResponses" },
+  "GET /api/v2/trading-floor/chat/inbox": { request: "FloorChatInboxData", response: "FloorChatInboxResponses" },
+  "GET /api/v2/trading-floor/leaderboard": { request: "FloorLeaderboardData", response: "FloorLeaderboardResponses" },
+  "GET /api/v2/trading-floor/manage/comment-reports": { request: "TradingFloorManageCommentReportsData", response: "TradingFloorManageCommentReportsResponses" },
+  "GET /api/v2/trading-floor/manage/convs": { request: "FloorManageConvsData", response: "FloorManageConvsResponses" },
+  "GET /api/v2/trading-floor/manage/convs/{id}": { request: "FloorManageConvData", response: "FloorManageConvResponses" },
+  "GET /api/v2/trading-floor/manage/invites": { request: "FloorManageInvitesData", response: "FloorManageInvitesResponses" },
+  "GET /api/v2/trading-floor/manage/posts": { request: "TradingFloorManagePostsData", response: "TradingFloorManagePostsResponses" },
+  "GET /api/v2/trading-floor/manage/posts/{id}": { request: "TradingFloorManagePostData", response: "TradingFloorManagePostResponses" },
+  "GET /api/v2/trading-floor/manage/saco-candidates": { request: "FloorManageSacoCandidatesData", response: "FloorManageSacoCandidatesResponses" },
+  "GET /api/v2/trading-floor/manage/sacos": { request: "FloorManageSacosData", response: "FloorManageSacosResponses" },
+  "GET /api/v2/trading-floor/me": { request: "FloorMeData", response: "FloorMeResponses" },
+  "GET /api/v2/trading-floor/post-images/{imageId}": { request: "TradingFloorPostImageData", response: "TradingFloorPostImageResponses" },
+  "GET /api/v2/trading-floor/posts/{id}": { request: "TradingFloorPostDetailData", response: "TradingFloorPostDetailResponses" },
+  "GET /api/v2/trading-floor/posts/{id}/comments": { request: "TradingFloorPostCommentsData", response: "TradingFloorPostCommentsResponses" },
+  "GET /api/v2/trading-floor/posts/today": { request: "TradingFloorPostsTodayData", response: "TradingFloorPostsTodayResponses" },
+  "GET /api/v2/trading-floor/ritual/today": { request: "FloorRitualTodayData", response: "FloorRitualTodayResponses" },
+  "GET /api/v2/trading-floor/saco/comment-reports": { request: "TradingFloorSacoCommentReportsData", response: "TradingFloorSacoCommentReportsResponses" },
+  "GET /api/v2/trading-floor/saco/posts": { request: "TradingFloorSacoPostsData", response: "TradingFloorSacoPostsResponses" },
+  "GET /api/v2/trading-floor/saco/posts/{id}": { request: "TradingFloorSacoPostData", response: "TradingFloorSacoPostResponses" },
   "GET /api/v2/users": { request: "UsersControllerList1Data", response: "UsersControllerList1Responses" },
   "GET /api/v2/users/{userId}": { request: "UsersControllerGet1Data", response: "UsersControllerGet1Responses" },
   "GET /api/v2/users/me": { request: "UsersControllerMe1Data", response: "UsersControllerMe1Responses" },
@@ -843,6 +912,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData", response: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses" },
   "PATCH /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertUpdateData", response: "StrategyAlertUpdateResponses" },
   "PATCH /api/v2/strategy/shared-config": { request: "StrategyConfigPatchSharedConfigData", response: "StrategyConfigPatchSharedConfigResponses" },
+  "PATCH /api/v2/trading-floor/manage/sacos/{id}": { request: "FloorManageSacoUpdateData", response: "FloorManageSacoUpdateResponses" },
   "PATCH /api/v2/users/{userId}": { request: "UsersControllerUpdate1Data", response: "UsersControllerUpdate1Responses" },
   "PATCH /api/v2/users/me": { request: "UsersControllerUpdateMe1Data", response: "UsersControllerUpdateMe1Responses" },
   "PATCH /api/v2/virtual-trading/admin/config": { request: "LegacyVirtualTradingAdminControllerUpdateConfig1Data", response: "LegacyVirtualTradingAdminControllerUpdateConfig1Responses" },
@@ -1004,6 +1074,28 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/strategy/screener/run": { request: "ScreenerRunData", response: "ScreenerRunResponses" },
   "POST /api/v2/team/users/{userId}/remove": { request: "TeamControllerRemove1Data", response: "TeamControllerRemove1Responses" },
   "POST /api/v2/telegram/webhook/{secret}": { request: "TelegramControllerWebhook1Data", response: "TelegramControllerWebhook1Responses" },
+  "POST /api/v2/trading-floor/chat/convs/{id}/read": { request: "FloorChatReadData", response: "FloorChatReadResponses" },
+  "POST /api/v2/trading-floor/chat/convs/{id}/send": { request: "FloorChatSendData", response: "FloorChatSendResponses" },
+  "POST /api/v2/trading-floor/chat/invites/{id}": { request: "FloorChatInviteAnswerData", response: "FloorChatInviteAnswerResponses" },
+  "POST /api/v2/trading-floor/chat/match": { request: "FloorChatMatchData", response: "FloorChatMatchResponses" },
+  "POST /api/v2/trading-floor/chat/match/cancel": { request: "FloorChatMatchCancelData", response: "FloorChatMatchCancelResponses" },
+  "POST /api/v2/trading-floor/chat/open": { request: "FloorChatOpenData", response: "FloorChatOpenResponses" },
+  "POST /api/v2/trading-floor/manage/posts/{id}/hide": { request: "TradingFloorManagePostHideData", response: "TradingFloorManagePostHideResponses" },
+  "POST /api/v2/trading-floor/manage/posts/{id}/unhide": { request: "TradingFloorManagePostUnhideData", response: "TradingFloorManagePostUnhideResponses" },
+  "POST /api/v2/trading-floor/manage/sacos": { request: "FloorManageSacoGrantData", response: "FloorManageSacoGrantResponses" },
+  "POST /api/v2/trading-floor/manage/sacos/{id}/move": { request: "FloorManageSacoMoveData", response: "FloorManageSacoMoveResponses" },
+  "POST /api/v2/trading-floor/manage/sacos/{id}/remove": { request: "FloorManageSacoRemoveData", response: "FloorManageSacoRemoveResponses" },
+  "POST /api/v2/trading-floor/posts/{id}/comments": { request: "TradingFloorPostCommentCreateData", response: "TradingFloorPostCommentCreateResponses" },
+  "POST /api/v2/trading-floor/posts/{id}/heart": { request: "TradingFloorPostHeartData", response: "TradingFloorPostHeartResponses" },
+  "POST /api/v2/trading-floor/posts/comments/{commentId}/hide": { request: "TradingFloorPostCommentHideData", response: "TradingFloorPostCommentHideResponses" },
+  "POST /api/v2/trading-floor/posts/comments/{commentId}/report": { request: "TradingFloorPostCommentReportData", response: "TradingFloorPostCommentReportResponses" },
+  "POST /api/v2/trading-floor/ritual/draw": { request: "FloorRitualDrawData", response: "FloorRitualDrawResponses" },
+  "POST /api/v2/trading-floor/ritual/submit": { request: "FloorRitualSubmitData", response: "FloorRitualSubmitResponses" },
+  "POST /api/v2/trading-floor/saco/duty": { request: "FloorSacoDutyData", response: "FloorSacoDutyResponses" },
+  "POST /api/v2/trading-floor/saco/posts": { request: "TradingFloorSacoPostCreateData", response: "TradingFloorSacoPostCreateResponses" },
+  "POST /api/v2/trading-floor/saco/posts/{id}/comments-seen": { request: "TradingFloorSacoPostCommentsSeenData", response: "TradingFloorSacoPostCommentsSeenResponses" },
+  "POST /api/v2/trading-floor/saco/posts/{id}/images": { request: "TradingFloorSacoPostImageUploadData", response: "TradingFloorSacoPostImageUploadResponses" },
+  "POST /api/v2/trading-floor/saco/posts/{id}/publish": { request: "TradingFloorSacoPostPublishData", response: "TradingFloorSacoPostPublishResponses" },
   "POST /api/v2/users": { request: "UsersControllerCreate1Data", response: "UsersControllerCreate1Responses" },
   "POST /api/v2/users/me/username": { request: "UsersControllerChangeUsername1Data", response: "UsersControllerChangeUsername1Responses" },
   "POST /api/v2/virtual-trading/account/activate": { request: "TradingControllerActivate1Data", response: "TradingControllerActivate1Responses" },
@@ -1030,5 +1122,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PUT /api/v2/practice/{indicatorId}/draft": { request: "PracticeSaveDraftData", response: "PracticeSaveDraftResponses" },
   "PUT /api/v2/shop/active-mascot": { request: "SetShopActiveMascotData", response: "SetShopActiveMascotResponses" },
   "PUT /api/v2/strategy/filters/{filterId}": { request: "UpdateStrategySavedFilterData", response: "UpdateStrategySavedFilterResponses" },
+  "PUT /api/v2/trading-floor/profile": { request: "FloorProfileSaveData", response: "FloorProfileSaveResponses" },
+  "PUT /api/v2/trading-floor/saco/posts/{id}": { request: "TradingFloorSacoPostSaveData", response: "TradingFloorSacoPostSaveResponses" },
   "PUT /api/v2/watchlists/reorder": { request: "ReorderWatchlistV2Data", response: "ReorderWatchlistV2Responses" },
 }

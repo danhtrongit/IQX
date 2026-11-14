@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Navigate, NavLink, Outlet, useLocation } from "react-router"
-import { BellRing, BookOpen, Copy, Newspaper, CreditCard, GraduationCap, History, LayoutDashboard, Menu, Network, Package, ReceiptText, ServerCog, SlidersHorizontal, Timer, Users, WalletCards, Webhook, type LucideIcon } from "lucide-react"
+import { BellRing, BookOpen, Copy, FilePenLine, FileText, Newspaper, CreditCard, GraduationCap, History, LayoutDashboard, Menu, MessagesSquare, Network, Package, ReceiptText, ServerCog, SlidersHorizontal, Timer, Users, WalletCards, Webhook, type LucideIcon } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { BrainWaveLogo } from "@/components/brand/brain-wave-logo"
@@ -14,7 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 import { fetchTeamReferralCode, referralKeys, referralOfferLabel } from "@/pages/referral/api"
-import { getAdminAccess, isTeamAdminPath, type AdminScope } from "./admin-access"
+import { adminHomePath, adminScopeForRole, getAdminAccess, isSacoAdminPath, isTeamAdminPath, type AdminScope } from "./admin-access"
+import { useSacoSelf } from "./admin-saco"
 
 type NavGroup = { label: string; items: { to: string; label: string; icon: LucideIcon }[] }
 
@@ -23,6 +24,7 @@ const adminGroups: NavGroup[] = [
     { to: "/admin", label: "Tổng quan", icon: LayoutDashboard },
     { to: "/admin/users", label: "Người dùng", icon: Users },
     { to: "/admin/team-leads", label: "Trưởng nhóm", icon: Network },
+    { to: "/admin/saco", label: "SACO", icon: MessagesSquare },
     { to: "/admin/lessons", label: "Khoá học", icon: BookOpen },
     { to: "/admin/academy", label: "Học viện", icon: GraduationCap },
     { to: "/admin/alerts", label: "Tín hiệu cảnh báo", icon: BellRing },
@@ -52,13 +54,27 @@ const teamGroups: NavGroup[] = [
   { label: "Quản lý", items: [
     { to: "/admin", label: "Tổng quan", icon: LayoutDashboard },
     { to: "/admin/users", label: "Người dùng", icon: Users },
+    { to: "/admin/saco", label: "SACO", icon: MessagesSquare },
   ] },
 ]
 
+/** Tài khoản SACO chỉ có bài nhận định của mình. */
+const sacoGroups: NavGroup[] = [
+  { label: "SACO", items: [
+    { to: "/admin/saco/posts", label: "Bài của tôi", icon: FileText },
+    { to: "/admin/saco/posts/new", label: "Viết bài mới", icon: FilePenLine },
+  ] },
+]
+
+const NAV_GROUPS: Record<AdminScope, NavGroup[]> = { admin: adminGroups, team: teamGroups, saco: sacoGroups }
+
 const SCOPE_COPY: Record<AdminScope, { title: string; description: string }> = {
   admin: { title: "Quản trị IQX", description: "Người dùng, nội dung, doanh thu và vận hành." },
-  team: { title: "Quản trị nhóm", description: "Tổng quan và người dùng trong nhóm của bạn." },
+  team: { title: "Quản trị nhóm", description: "Tổng quan, người dùng và SACO trong nhóm của bạn." },
+  saco: { title: "Quản trị SACO", description: "Bài nhận định của bạn." },
 }
+
+const SCOPE_BADGE: Partial<Record<AdminScope, string>> = { team: "Trưởng nhóm", saco: "SACO" }
 
 async function copyCode(code: string) {
   try {
@@ -104,13 +120,13 @@ export function TeamCodeCard() {
 }
 
 function AdminNavigation({ scope, onNavigate }: { scope: AdminScope; onNavigate?: () => void }) {
-  const groups = scope === "team" ? teamGroups : adminGroups
+  const groups = NAV_GROUPS[scope]
   return <nav aria-label="Điều hướng quản trị" className="space-y-5 p-3">
     {groups.map(group => <div key={group.label}>
       <p className="mb-1 px-3 text-xs font-medium text-muted-foreground">{group.label}</p>
       <ul className="space-y-1">
         {group.items.map(({ to, label, icon: Icon }) => <li key={to}>
-          <NavLink to={to} end={to === "/admin"} onClick={onNavigate} className={({ isActive }) => cn("flex min-h-10 items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring", isActive ? "bg-primary/10 font-semibold text-primary" : "text-muted-foreground hover:text-foreground")}>
+          <NavLink to={to} end={to === "/admin" || scope === "saco"} onClick={onNavigate} className={({ isActive }) => cn("flex min-h-10 items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring", isActive ? "bg-primary/10 font-semibold text-primary" : "text-muted-foreground hover:text-foreground")}>
             <Icon aria-hidden="true" className="size-4 shrink-0" />{label}
           </NavLink>
         </li>)}
@@ -131,13 +147,18 @@ export function AdminLayout() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const { state: access, scope } = getAdminAccess(auth)
+  const roleScope = adminScopeForRole(auth.user?.role)
+  const sacoSelf = useSacoSelf(!auth.isLoading && !roleScope)
+  const sacoAccess = auth.user && !roleScope ? { pending: sacoSelf.isPending, active: !!sacoSelf.data?.saco?.active } : undefined
+  const { state: access, scope } = getAdminAccess(auth, sacoAccess)
   if (access === "loading") return <WorkspacePage title="Quản trị"><div role="status" aria-label="Đang xác minh quyền truy cập" className="space-y-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-64 w-full" /></div></WorkspacePage>
   if (access === "session-error") return <WorkspacePage title="Quản trị"><PanelState title="Không xác minh được phiên đăng nhập" description={auth.sessionError?.message} action={{ label: "Thử lại", onClick: () => window.location.reload() }} /></WorkspacePage>
-  if (access === "unauthenticated") return <WorkspacePage title="Khu vực quản trị"><PanelState title="Đăng nhập để tiếp tục" description="Khu vực này chỉ dành cho tài khoản quản trị và trưởng nhóm IQX. Đường dẫn hiện tại sẽ được giữ sau khi đăng nhập." action={{ label: "Đăng nhập", onClick: () => auth.openAuth() }} /></WorkspacePage>
+  if (access === "unauthenticated") return <WorkspacePage title="Khu vực quản trị"><PanelState title="Đăng nhập để tiếp tục" description="Khu vực này chỉ dành cho tài khoản quản trị, trưởng nhóm và SACO của IQX. Đường dẫn hiện tại sẽ được giữ sau khi đăng nhập." action={{ label: "Đăng nhập", onClick: () => auth.openAuth() }} /></WorkspacePage>
   if (access === "forbidden" || !scope) return <WorkspacePage title="Không có quyền truy cập" description="Tài khoản hiện tại không có quyền quản trị."><PanelState title="Quyền quản trị là bắt buộc" description="Dữ liệu và thao tác quản trị được kiểm tra quyền trên máy chủ." /><Button asChild variant="outline"><NavLink to="/demo-trading">Trở về Demo Trading</NavLink></Button></WorkspacePage>
   // Trưởng nhóm chỉ vào được Tổng quan và Người dùng; mọi trang khác quay về /admin.
   if (scope === "team" && !isTeamAdminPath(location.pathname)) return <Navigate replace to="/admin" />
+  // SACO chỉ có Bài của tôi và trình soạn bài; mọi trang khác quay về Bài của tôi.
+  if (scope === "saco" && !isSacoAdminPath(location.pathname)) return <Navigate replace to={adminHomePath("saco")} />
 
   const copy = SCOPE_COPY[scope]
   const displayName = auth.user?.full_name?.trim() || auth.user?.username || auth.user?.email
@@ -165,9 +186,9 @@ export function AdminLayout() {
             <ScrollArea className="min-h-0 flex-1"><NavigationBody scope={scope} onNavigate={() => setMenuOpen(false)} /></ScrollArea>
           </SheetContent>
         </Sheet>
-        {scope === "team" && <div className="ml-auto flex min-w-0 items-center gap-2" data-testid="admin-identity">
+        {SCOPE_BADGE[scope] && <div className="ml-auto flex min-w-0 items-center gap-2" data-testid="admin-identity">
           <span className="truncate text-sm font-medium">{displayName}</span>
-          <Badge variant="secondary">Trưởng nhóm</Badge>
+          <Badge variant="secondary">{SCOPE_BADGE[scope]}</Badge>
         </div>}
       </div>
       <Outlet />

@@ -61,7 +61,7 @@ export function PlayerBar({ match, chat }: { match: MatchApi; chat: ChatApi }) {
           {chat.enabled ? <ChatToggleButton chat={chat} /> : null}
         </div>
       </div>
-      <ScrollArea orientation="horizontal" viewportClassName="overscroll-y-auto">
+      <ScrollArea orientation="horizontal">
       <div className="flex w-max gap-1.5 pt-2.5 pb-2.5" data-testid="flashback-player-list">
         {players.map((player) => (
           <PlayerCell

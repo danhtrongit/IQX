@@ -107,7 +107,7 @@ export function FlashbackRoomScreen() {
 
       {/* Phòng đông (từ 9 người): lưới thu nhỏ cuộn bằng ScrollArea (DESIGN: không dùng thanh cuộn mặc định).
           Cuộn hết lưới thì cuộn tiếp ra trang, không kẹt ở trong lưới trên điện thoại. */}
-      <ScrollArea className={compact ? "max-h-[52vh]" : undefined} viewportClassName="overscroll-auto">
+      <ScrollArea className={compact ? "max-h-[52vh]" : undefined}>
       <section
         aria-label="Người chơi"
         data-testid="flashback-slots"

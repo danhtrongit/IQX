@@ -277,7 +277,7 @@ function ExpandedCall({
           )}
         </div>
       ) : null}
-      <ScrollArea className="max-h-[40dvh]" viewportClassName="overscroll-auto">
+      <ScrollArea className="max-h-[40dvh]">
         <ul className="m-0 grid list-none grid-cols-2 gap-2 p-0 pr-2.5 sm:grid-cols-3 min-[901px]:grid-cols-4">
           {call.people.map((person) => (
             <PersonTile

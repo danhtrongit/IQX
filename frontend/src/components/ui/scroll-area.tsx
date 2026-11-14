@@ -30,7 +30,10 @@ function ScrollArea({
         className={cn(
           // `max-h-[inherit]`: a root bounded only by max-height (e.g. `max-h-[45vh]`)
           // has no definite height, so `size-full` alone lets the viewport grow past it.
-          "size-full max-h-[inherit] overscroll-contain rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
+          // No `overscroll-contain` here: browsers now apply it to a scroll container even on an
+          // axis it cannot scroll, so a horizontal-only table (or a list that fits) swallowed the
+          // wheel and the page behind stopped scrolling. The wheel must chain to the parent.
+          "size-full max-h-[inherit] rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
           viewportClassName
         )}
       >

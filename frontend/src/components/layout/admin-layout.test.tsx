@@ -3,7 +3,7 @@ import { cleanup, render, screen, within } from "@testing-library/react"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { adminScopeForRole, getAdminAccess, isTeamAdminPath } from "./admin-access"
+import { adminHomePath, adminScopeForRole, getAdminAccess, isSacoAdminPath, isTeamAdminPath } from "./admin-access"
 import { AdminLayout } from "./admin-layout"
 
 class ResizeObserverStub {
@@ -18,6 +18,8 @@ type TestUser = { id: string; role: string; full_name: string; username: string 
 const mocks = vi.hoisted(() => ({
   auth: null as unknown,
   fetchTeamReferralCode: vi.fn(),
+  saco: { isPending: false, data: { saco: null } } as { isPending: boolean; data: { saco: { id: string; active: boolean } | null } | undefined },
+  sacoEnabled: [] as boolean[],
 }))
 
 function authAs(user: TestUser) {
@@ -25,6 +27,12 @@ function authAs(user: TestUser) {
 }
 
 vi.mock("@/hooks/use-auth", () => ({ useAuth: () => mocks.auth }))
+vi.mock("./admin-saco", () => ({
+  useSacoSelf: (enabled: boolean) => {
+    mocks.sacoEnabled.push(enabled)
+    return mocks.saco
+  },
+}))
 vi.mock("@/pages/referral/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/pages/referral/api")>()),
   fetchTeamReferralCode: mocks.fetchTeamReferralCode,
@@ -43,6 +51,19 @@ describe("admin access gate", () => {
     expect(adminScopeForRole(role)).toBeNull()
   })
 
+  it("gives an active SACO the saco scope and waits while the SACO check is pending", () => {
+    expect(getAdminAccess(ready("user"), { pending: false, active: true })).toEqual({ state: "authorized", scope: "saco" })
+    expect(getAdminAccess(ready("premium"), { pending: false, active: true })).toEqual({ state: "authorized", scope: "saco" })
+    expect(getAdminAccess(ready("user"), { pending: true, active: false })).toEqual({ state: "loading", scope: null })
+    expect(getAdminAccess(ready("user"), { pending: false, active: false })).toEqual({ state: "forbidden", scope: null })
+    expect(getAdminAccess(ready("user"))).toEqual({ state: "forbidden", scope: null })
+    // Vai trò quản trị luôn thắng cờ SACO.
+    expect(getAdminAccess(ready("admin"), { pending: true, active: false })).toEqual({ state: "authorized", scope: "admin" })
+    expect(getAdminAccess(ready("team_lead"), { pending: false, active: true })).toEqual({ state: "authorized", scope: "team" })
+    expect(adminHomePath("saco")).toBe("/admin/saco/posts")
+    expect(adminHomePath("team")).toBe("/admin")
+  })
+
   it("keeps loading and session failures explicit", () => {
     expect(getAdminAccess({ isLoading: true, sessionError: null, user: null }).state).toBe("loading")
     expect(getAdminAccess({ isLoading: false, sessionError: new Error("expired"), user: null }).state).toBe(
@@ -53,7 +74,7 @@ describe("admin access gate", () => {
 })
 
 describe("team lead route guard", () => {
-  it.each(["/admin", "/admin/", "/admin/users", "/admin/users/", "/admin/users/7f1c"])("allows %s", (path) => {
+  it.each(["/admin", "/admin/", "/admin/users", "/admin/users/", "/admin/users/7f1c", "/admin/saco", "/admin/saco/"])("allows %s", (path) => {
     expect(isTeamAdminPath(path)).toBe(true)
   })
 
@@ -72,8 +93,20 @@ describe("team lead route guard", () => {
     "/admin/lessons",
     "/admin/academy",
     "/admin/users/7f1c/extra",
+    "/admin/saco/posts",
+    "/admin/saco/posts/new",
   ])("sends a team lead away from %s", (path) => {
     expect(isTeamAdminPath(path)).toBe(false)
+  })
+})
+
+describe("SACO route guard", () => {
+  it.each(["/admin/saco/posts", "/admin/saco/posts/", "/admin/saco/posts/new", "/admin/saco/posts/7f1c"])("allows %s", (path) => {
+    expect(isSacoAdminPath(path)).toBe(true)
+  })
+
+  it.each(["/admin", "/admin/saco", "/admin/users", "/admin/plans", "/admin/saco/posts/7f1c/extra"])("sends a SACO away from %s", (path) => {
+    expect(isSacoAdminPath(path)).toBe(false)
   })
 })
 
@@ -90,6 +123,9 @@ describe("AdminLayout by role", () => {
             { path: "plans", element: <p>Trang gói</p> },
             { path: "team-leads", element: <p>Trang trưởng nhóm</p> },
             { path: "academy", element: <p>Trang Học viện</p> },
+            { path: "saco", element: <p>Trang quản lý SACO</p> },
+            { path: "saco/posts", element: <p>Trang bài của tôi</p> },
+            { path: "saco/posts/new", element: <p>Trang viết bài</p> },
           ],
         },
       ],
@@ -105,6 +141,8 @@ describe("AdminLayout by role", () => {
   }
 
   beforeEach(() => {
+    mocks.saco = { isPending: false, data: { saco: null } }
+    mocks.sacoEnabled = []
     mocks.fetchTeamReferralCode.mockReset().mockResolvedValue({
       code: "lan.nguyen",
       commissionPct: 25,
@@ -120,7 +158,7 @@ describe("AdminLayout by role", () => {
     renderAt("/admin")
     expect(screen.getByText("Trang tổng quan")).toBeTruthy()
     const nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
-    expect(within(nav).getAllByRole("link").map((link) => link.textContent)).toEqual(["Tổng quan", "Người dùng"])
+    expect(within(nav).getAllByRole("link").map((link) => link.textContent)).toEqual(["Tổng quan", "Người dùng", "SACO"])
     expect(within(screen.getByTestId("admin-identity")).getByText("Trưởng nhóm")).toBeTruthy()
     expect(screen.getByText("Nguyễn Lan")).toBeTruthy()
     expect(await screen.findByText("lan.nguyen")).toBeTruthy()
@@ -163,6 +201,52 @@ describe("AdminLayout by role", () => {
     expect(screen.queryByText("Trang Học viện")).toBeNull()
     const nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
     expect(within(nav).queryByRole("link", { name: "Học viện" })).toBeNull()
+  })
+
+  it("lets an active SACO into the SACO pages only", async () => {
+    mocks.auth = authAs({ id: "u-9", role: "premium", full_name: "Trần Minh", username: "minh" })
+    mocks.saco = { isPending: false, data: { saco: { id: "s-1", active: true } } }
+    const router = renderAt("/admin")
+    expect(await screen.findByText("Trang bài của tôi")).toBeTruthy()
+    expect(router.state.location.pathname).toBe("/admin/saco/posts")
+    const nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
+    expect(within(nav).getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(["/admin/saco/posts", "/admin/saco/posts/new"])
+    expect(within(screen.getByTestId("admin-identity")).getByText("SACO")).toBeTruthy()
+    expect(mocks.sacoEnabled).toContain(true)
+    cleanup()
+
+    const other = renderAt("/admin/saco")
+    expect(await screen.findByText("Trang bài của tôi")).toBeTruthy()
+    expect(other.state.location.pathname).toBe("/admin/saco/posts")
+    cleanup()
+
+    renderAt("/admin/saco/posts/new")
+    expect(screen.getByText("Trang viết bài")).toBeTruthy()
+  })
+
+  it("shows the access skeleton while the SACO check is pending", () => {
+    mocks.auth = authAs({ id: "u-9", role: "user", full_name: "Trần Minh", username: "minh" })
+    mocks.saco = { isPending: true, data: undefined }
+    renderAt("/admin")
+    expect(screen.getByRole("status", { name: "Đang xác minh quyền truy cập" })).toBeTruthy()
+  })
+
+  it("gives admins and team leads the SACO management entry, never asking the SACO check", async () => {
+    mocks.auth = authAs({ id: "admin-1", role: "admin", full_name: "Admin", username: "admin" })
+    renderAt("/admin/saco")
+    expect(screen.getByText("Trang quản lý SACO")).toBeTruthy()
+    let nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
+    expect(within(nav).getByRole("link", { name: "SACO" }).getAttribute("href")).toBe("/admin/saco")
+    cleanup()
+
+    mocks.auth = authAs({ id: "lead-1", role: "team_lead", full_name: "Nguyễn Lan", username: "lan.nguyen" })
+    const lead = renderAt("/admin/saco")
+    expect(screen.getByText("Trang quản lý SACO")).toBeTruthy()
+    expect(lead.state.location.pathname).toBe("/admin/saco")
+    nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
+    expect(within(nav).getAllByRole("link").map((link) => link.textContent)).toEqual(["Tổng quan", "Người dùng", "SACO"])
+    expect(mocks.sacoEnabled.every((enabled) => !enabled)).toBe(true)
+    await screen.findByText("lan.nguyen")
   })
 
   it("blocks a premium user", () => {

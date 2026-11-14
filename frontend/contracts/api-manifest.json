@@ -72,6 +72,16 @@
       "requestType": "DeleteStrategyResultSnapshotData",
       "responseType": "DeleteStrategyResultSnapshotResponses"
     },
+    "DELETE /api/v2/trading-floor/posts/comments/{commentId}": {
+      "operationId": "tradingFloorPostCommentDelete",
+      "requestType": "TradingFloorPostCommentDeleteData",
+      "responseType": "TradingFloorPostCommentDeleteResponses"
+    },
+    "DELETE /api/v2/trading-floor/saco/posts/{id}": {
+      "operationId": "tradingFloorSacoPostDelete",
+      "requestType": "TradingFloorSacoPostDeleteData",
+      "responseType": "TradingFloorSacoPostDeleteResponses"
+    },
     "DELETE /api/v2/users/{userId}": {
       "operationId": "UsersController_remove[1]",
       "requestType": "UsersControllerRemove1Data",
@@ -1487,6 +1497,106 @@
       "requestType": "TeamControllerLoginHistory1Data",
       "responseType": "TeamControllerLoginHistory1Responses"
     },
+    "GET /api/v2/trading-floor/chat/convs/{id}": {
+      "operationId": "floorChatConversation",
+      "requestType": "FloorChatConversationData",
+      "responseType": "FloorChatConversationResponses"
+    },
+    "GET /api/v2/trading-floor/chat/inbox": {
+      "operationId": "floorChatInbox",
+      "requestType": "FloorChatInboxData",
+      "responseType": "FloorChatInboxResponses"
+    },
+    "GET /api/v2/trading-floor/leaderboard": {
+      "operationId": "floorLeaderboard",
+      "requestType": "FloorLeaderboardData",
+      "responseType": "FloorLeaderboardResponses"
+    },
+    "GET /api/v2/trading-floor/manage/comment-reports": {
+      "operationId": "tradingFloorManageCommentReports",
+      "requestType": "TradingFloorManageCommentReportsData",
+      "responseType": "TradingFloorManageCommentReportsResponses"
+    },
+    "GET /api/v2/trading-floor/manage/convs": {
+      "operationId": "floorManageConvs",
+      "requestType": "FloorManageConvsData",
+      "responseType": "FloorManageConvsResponses"
+    },
+    "GET /api/v2/trading-floor/manage/convs/{id}": {
+      "operationId": "floorManageConv",
+      "requestType": "FloorManageConvData",
+      "responseType": "FloorManageConvResponses"
+    },
+    "GET /api/v2/trading-floor/manage/invites": {
+      "operationId": "floorManageInvites",
+      "requestType": "FloorManageInvitesData",
+      "responseType": "FloorManageInvitesResponses"
+    },
+    "GET /api/v2/trading-floor/manage/posts": {
+      "operationId": "tradingFloorManagePosts",
+      "requestType": "TradingFloorManagePostsData",
+      "responseType": "TradingFloorManagePostsResponses"
+    },
+    "GET /api/v2/trading-floor/manage/posts/{id}": {
+      "operationId": "tradingFloorManagePost",
+      "requestType": "TradingFloorManagePostData",
+      "responseType": "TradingFloorManagePostResponses"
+    },
+    "GET /api/v2/trading-floor/manage/saco-candidates": {
+      "operationId": "floorManageSacoCandidates",
+      "requestType": "FloorManageSacoCandidatesData",
+      "responseType": "FloorManageSacoCandidatesResponses"
+    },
+    "GET /api/v2/trading-floor/manage/sacos": {
+      "operationId": "floorManageSacos",
+      "requestType": "FloorManageSacosData",
+      "responseType": "FloorManageSacosResponses"
+    },
+    "GET /api/v2/trading-floor/me": {
+      "operationId": "floorMe",
+      "requestType": "FloorMeData",
+      "responseType": "FloorMeResponses"
+    },
+    "GET /api/v2/trading-floor/post-images/{imageId}": {
+      "operationId": "tradingFloorPostImage",
+      "requestType": "TradingFloorPostImageData",
+      "responseType": "TradingFloorPostImageResponses"
+    },
+    "GET /api/v2/trading-floor/posts/{id}": {
+      "operationId": "tradingFloorPostDetail",
+      "requestType": "TradingFloorPostDetailData",
+      "responseType": "TradingFloorPostDetailResponses"
+    },
+    "GET /api/v2/trading-floor/posts/{id}/comments": {
+      "operationId": "tradingFloorPostComments",
+      "requestType": "TradingFloorPostCommentsData",
+      "responseType": "TradingFloorPostCommentsResponses"
+    },
+    "GET /api/v2/trading-floor/posts/today": {
+      "operationId": "tradingFloorPostsToday",
+      "requestType": "TradingFloorPostsTodayData",
+      "responseType": "TradingFloorPostsTodayResponses"
+    },
+    "GET /api/v2/trading-floor/ritual/today": {
+      "operationId": "floorRitualToday",
+      "requestType": "FloorRitualTodayData",
+      "responseType": "FloorRitualTodayResponses"
+    },
+    "GET /api/v2/trading-floor/saco/comment-reports": {
+      "operationId": "tradingFloorSacoCommentReports",
+      "requestType": "TradingFloorSacoCommentReportsData",
+      "responseType": "TradingFloorSacoCommentReportsResponses"
+    },
+    "GET /api/v2/trading-floor/saco/posts": {
+      "operationId": "tradingFloorSacoPosts",
+      "requestType": "TradingFloorSacoPostsData",
+      "responseType": "TradingFloorSacoPostsResponses"
+    },
+    "GET /api/v2/trading-floor/saco/posts/{id}": {
+      "operationId": "tradingFloorSacoPost",
+      "requestType": "TradingFloorSacoPostData",
+      "responseType": "TradingFloorSacoPostResponses"
+    },
     "GET /api/v2/users": {
       "operationId": "UsersController_list[1]",
       "requestType": "UsersControllerList1Data",
@@ -1626,6 +1736,11 @@
       "operationId": "strategyConfigPatchSharedConfig",
       "requestType": "StrategyConfigPatchSharedConfigData",
       "responseType": "StrategyConfigPatchSharedConfigResponses"
+    },
+    "PATCH /api/v2/trading-floor/manage/sacos/{id}": {
+      "operationId": "floorManageSacoUpdate",
+      "requestType": "FloorManageSacoUpdateData",
+      "responseType": "FloorManageSacoUpdateResponses"
     },
     "PATCH /api/v2/users/{userId}": {
       "operationId": "UsersController_update[1]",
@@ -2432,6 +2547,116 @@
       "requestType": "TelegramControllerWebhook1Data",
       "responseType": "TelegramControllerWebhook1Responses"
     },
+    "POST /api/v2/trading-floor/chat/convs/{id}/read": {
+      "operationId": "floorChatRead",
+      "requestType": "FloorChatReadData",
+      "responseType": "FloorChatReadResponses"
+    },
+    "POST /api/v2/trading-floor/chat/convs/{id}/send": {
+      "operationId": "floorChatSend",
+      "requestType": "FloorChatSendData",
+      "responseType": "FloorChatSendResponses"
+    },
+    "POST /api/v2/trading-floor/chat/invites/{id}": {
+      "operationId": "floorChatInviteAnswer",
+      "requestType": "FloorChatInviteAnswerData",
+      "responseType": "FloorChatInviteAnswerResponses"
+    },
+    "POST /api/v2/trading-floor/chat/match": {
+      "operationId": "floorChatMatch",
+      "requestType": "FloorChatMatchData",
+      "responseType": "FloorChatMatchResponses"
+    },
+    "POST /api/v2/trading-floor/chat/match/cancel": {
+      "operationId": "floorChatMatchCancel",
+      "requestType": "FloorChatMatchCancelData",
+      "responseType": "FloorChatMatchCancelResponses"
+    },
+    "POST /api/v2/trading-floor/chat/open": {
+      "operationId": "floorChatOpen",
+      "requestType": "FloorChatOpenData",
+      "responseType": "FloorChatOpenResponses"
+    },
+    "POST /api/v2/trading-floor/manage/posts/{id}/hide": {
+      "operationId": "tradingFloorManagePostHide",
+      "requestType": "TradingFloorManagePostHideData",
+      "responseType": "TradingFloorManagePostHideResponses"
+    },
+    "POST /api/v2/trading-floor/manage/posts/{id}/unhide": {
+      "operationId": "tradingFloorManagePostUnhide",
+      "requestType": "TradingFloorManagePostUnhideData",
+      "responseType": "TradingFloorManagePostUnhideResponses"
+    },
+    "POST /api/v2/trading-floor/manage/sacos": {
+      "operationId": "floorManageSacoGrant",
+      "requestType": "FloorManageSacoGrantData",
+      "responseType": "FloorManageSacoGrantResponses"
+    },
+    "POST /api/v2/trading-floor/manage/sacos/{id}/move": {
+      "operationId": "floorManageSacoMove",
+      "requestType": "FloorManageSacoMoveData",
+      "responseType": "FloorManageSacoMoveResponses"
+    },
+    "POST /api/v2/trading-floor/manage/sacos/{id}/remove": {
+      "operationId": "floorManageSacoRemove",
+      "requestType": "FloorManageSacoRemoveData",
+      "responseType": "FloorManageSacoRemoveResponses"
+    },
+    "POST /api/v2/trading-floor/posts/{id}/comments": {
+      "operationId": "tradingFloorPostCommentCreate",
+      "requestType": "TradingFloorPostCommentCreateData",
+      "responseType": "TradingFloorPostCommentCreateResponses"
+    },
+    "POST /api/v2/trading-floor/posts/{id}/heart": {
+      "operationId": "tradingFloorPostHeart",
+      "requestType": "TradingFloorPostHeartData",
+      "responseType": "TradingFloorPostHeartResponses"
+    },
+    "POST /api/v2/trading-floor/posts/comments/{commentId}/hide": {
+      "operationId": "tradingFloorPostCommentHide",
+      "requestType": "TradingFloorPostCommentHideData",
+      "responseType": "TradingFloorPostCommentHideResponses"
+    },
+    "POST /api/v2/trading-floor/posts/comments/{commentId}/report": {
+      "operationId": "tradingFloorPostCommentReport",
+      "requestType": "TradingFloorPostCommentReportData",
+      "responseType": "TradingFloorPostCommentReportResponses"
+    },
+    "POST /api/v2/trading-floor/ritual/draw": {
+      "operationId": "floorRitualDraw",
+      "requestType": "FloorRitualDrawData",
+      "responseType": "FloorRitualDrawResponses"
+    },
+    "POST /api/v2/trading-floor/ritual/submit": {
+      "operationId": "floorRitualSubmit",
+      "requestType": "FloorRitualSubmitData",
+      "responseType": "FloorRitualSubmitResponses"
+    },
+    "POST /api/v2/trading-floor/saco/duty": {
+      "operationId": "floorSacoDuty",
+      "requestType": "FloorSacoDutyData",
+      "responseType": "FloorSacoDutyResponses"
+    },
+    "POST /api/v2/trading-floor/saco/posts": {
+      "operationId": "tradingFloorSacoPostCreate",
+      "requestType": "TradingFloorSacoPostCreateData",
+      "responseType": "TradingFloorSacoPostCreateResponses"
+    },
+    "POST /api/v2/trading-floor/saco/posts/{id}/comments-seen": {
+      "operationId": "tradingFloorSacoPostCommentsSeen",
+      "requestType": "TradingFloorSacoPostCommentsSeenData",
+      "responseType": "TradingFloorSacoPostCommentsSeenResponses"
+    },
+    "POST /api/v2/trading-floor/saco/posts/{id}/images": {
+      "operationId": "tradingFloorSacoPostImageUpload",
+      "requestType": "TradingFloorSacoPostImageUploadData",
+      "responseType": "TradingFloorSacoPostImageUploadResponses"
+    },
+    "POST /api/v2/trading-floor/saco/posts/{id}/publish": {
+      "operationId": "tradingFloorSacoPostPublish",
+      "requestType": "TradingFloorSacoPostPublishData",
+      "responseType": "TradingFloorSacoPostPublishResponses"
+    },
     "POST /api/v2/users": {
       "operationId": "UsersController_create[1]",
       "requestType": "UsersControllerCreate1Data",
@@ -2561,6 +2786,16 @@
       "operationId": "updateStrategySavedFilter",
       "requestType": "UpdateStrategySavedFilterData",
       "responseType": "UpdateStrategySavedFilterResponses"
+    },
+    "PUT /api/v2/trading-floor/profile": {
+      "operationId": "floorProfileSave",
+      "requestType": "FloorProfileSaveData",
+      "responseType": "FloorProfileSaveResponses"
+    },
+    "PUT /api/v2/trading-floor/saco/posts/{id}": {
+      "operationId": "tradingFloorSacoPostSave",
+      "requestType": "TradingFloorSacoPostSaveData",
+      "responseType": "TradingFloorSacoPostSaveResponses"
     },
     "PUT /api/v2/watchlists/reorder": {
       "operationId": "reorderWatchlistV2",

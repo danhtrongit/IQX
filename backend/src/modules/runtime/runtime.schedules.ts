@@ -203,6 +203,15 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       tradingDay: false,
       enabled: enabled('flashback.dataset-refresh'),
     },
+    {
+      name: 'trading-floor.ritual-score',
+      description:
+        'Khu giao dịch: chấm nghi lễ Thần Tài của phiên đã đóng cửa (cả phiên cũ bị lỡ) khi đã có thanh VNINDEX ngày đó, cập nhật bảng xếp hạng tháng; idempotent',
+      // Tick cả ngày mỗi 5 phút như market.bulletin-draft: handler tự bỏ qua khi chưa có phiên nào tới hạn chấm.
+      everyMs: 300_000,
+      tradingDay: false,
+      enabled: enabled('trading-floor.ritual-score'),
+    },
   ];
 }
 

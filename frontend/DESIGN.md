@@ -267,6 +267,7 @@ After a shadcn update, verify:
 - Dropdown, menubar, and select items stay compact with `bg-muted` hover and focus. shadcn's default `focus:bg-accent` must be replaced because `accent` is the violet AI color.
 - Dialog overlays remain strong enough to isolate the task.
 - Focus rings are visible in both themes.
+- `ScrollArea` never sets `overscroll-behavior: contain` by default: browsers apply it even on an axis the area cannot scroll, so a horizontal-only table would swallow the wheel. The wheel must chain to the page scroller.
 - `ScrollArea` keeps its custom thin thumb. Horizontal scrollbars are siblings of the Radix viewport, never nested inside it.
 - No raw Nova background, radius, ring, or shadow overrides leak into product pages.
 

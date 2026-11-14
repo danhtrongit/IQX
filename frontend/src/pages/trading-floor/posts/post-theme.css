@@ -1,0 +1,464 @@
+/*
+ * SACO nhận định: chủ đề tối + vàng của khu giao dịch (spec yêu cầu vàng ở đây).
+ * Mọi selector nằm dưới `.tf-post-theme` để dùng được cả trong khu giao dịch lẫn xem trước ở quản trị.
+ */
+.tf-post-theme {
+  --tfp-bg: #0c111b;
+  --tfp-panel: #131a28;
+  --tfp-raise: #1a2335;
+  --tfp-line: #29334a;
+  --tfp-fg: #e8ecf4;
+  --tfp-strong: #f7f9fc;
+  --tfp-muted: #a3afc4;
+  --tfp-dim: #7d89a1;
+  --tfp-gold: #e3b341;
+  --tfp-gold-2: #f6d27a;
+  --tfp-gold-ink: #23170a;
+  --tfp-gold-soft: rgba(227, 179, 65, 0.16);
+  --tfp-heart: #ff5c8a;
+  --tfp-good: #32d74b;
+  --tfp-danger: #ff8a80;
+  color: var(--tfp-fg);
+  font-family:
+    "Be Vietnam Pro",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color-scheme: dark;
+}
+
+.tf-post-theme :where(button) {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.tf-post-theme :where(button:disabled) {
+  cursor: default;
+}
+.tf-post-theme :focus-visible {
+  outline: 2px solid var(--tfp-gold);
+  outline-offset: 2px;
+}
+
+/* ---------- buttons ---------- */
+.tf-post-theme .tf-post-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--tfp-line);
+  background: var(--tfp-raise);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    filter 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+.tf-post-theme .tf-post-btn:disabled {
+  opacity: 0.5;
+}
+.tf-post-theme .tf-post-btn--outline {
+  background: transparent;
+  border-color: var(--tfp-gold);
+  color: var(--tfp-gold-2);
+}
+.tf-post-theme .tf-post-btn--outline:not(:disabled):hover {
+  background: var(--tfp-gold-soft);
+}
+.tf-post-theme .tf-post-btn--gold {
+  background: linear-gradient(180deg, #f6d27a, #d9a73a);
+  border-color: #f6d27a;
+  color: var(--tfp-gold-ink);
+}
+.tf-post-theme .tf-post-btn--gold:not(:disabled):hover {
+  filter: brightness(1.06);
+}
+.tf-post-theme .tf-post-btn--ghost {
+  background: transparent;
+}
+.tf-post-theme .tf-post-btn--ghost:not(:disabled):hover {
+  background: var(--tfp-raise);
+}
+.tf-post-theme .tf-post-btn-icon {
+  width: 16px;
+  height: 16px;
+}
+.tf-post-theme .tf-post-chevron {
+  width: 15px;
+  height: 15px;
+}
+
+.tf-post-theme .tf-post-heart {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 4px 8px;
+  margin-left: -8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tfp-muted);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tf-post-theme .tf-post-heart:not(:disabled):hover {
+  background: var(--tfp-raise);
+  color: var(--tfp-fg);
+}
+.tf-post-theme .tf-post-heart-icon {
+  width: 18px;
+  height: 18px;
+}
+.tf-post-theme .tf-post-heart--on {
+  color: var(--tfp-heart);
+}
+.tf-post-theme .tf-post-heart--on .tf-post-heart-icon {
+  fill: currentColor;
+}
+.tf-post-theme .tf-post-heart:disabled {
+  opacity: 1;
+}
+
+/* ---------- Khung nhận định ---------- */
+.tf-post-theme .tf-post-card {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px 8px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--tfp-line);
+  border-left: 4px solid var(--tfp-gold);
+  background: var(--tfp-raise);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.4s ease;
+}
+.tf-post-theme .tf-post-card--interactive {
+  cursor: pointer;
+}
+.tf-post-theme .tf-post-card--interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  border-left-color: var(--tfp-gold-2);
+}
+.tf-post-theme .tf-post-card--fresh {
+  animation:
+    tf-post-card-in 0.35s ease-out,
+    tf-post-card-fresh 2s ease-out;
+}
+@keyframes tf-post-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes tf-post-card-fresh {
+  0%,
+  70% {
+    background: rgba(246, 210, 122, 0.22);
+  }
+  100% {
+    background: var(--tfp-raise);
+  }
+}
+.tf-post-theme .tf-post-card-saco {
+  margin: 0;
+  color: var(--tfp-gold);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tf-post-theme .tf-post-card-headline {
+  margin: 0;
+  color: var(--tfp-strong);
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.tf-post-theme .tf-post-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.tf-post-theme .tf-post-read-more {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 34px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tfp-gold-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+.tf-post-theme .tf-post-read-more:not(:disabled):hover {
+  text-decoration: underline;
+}
+.tf-post-theme .tf-post-read-more:disabled {
+  opacity: 0.85;
+}
+
+/* ---------- Trang đọc bài ---------- */
+.tf-post-theme .tf-post-article {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.tf-post-theme .tf-post-author {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 13px;
+}
+.tf-post-theme .tf-post-author-name {
+  color: var(--tfp-gold);
+  font-weight: 800;
+}
+.tf-post-theme .tf-post-author-time {
+  color: var(--tfp-muted);
+  font-variant-numeric: tabular-nums;
+}
+.tf-post-theme .tf-post-headline {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border-left: 4px solid var(--tfp-gold);
+  background: var(--tfp-bg);
+  color: var(--tfp-strong);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.tf-post-theme .tf-post-body {
+  display: flow-root;
+  min-width: 0;
+  color: var(--tfp-fg);
+  font-size: 15px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.tf-post-theme .tf-post-body > :first-child {
+  margin-top: 0;
+}
+.tf-post-theme .tf-post-body > :last-child {
+  margin-bottom: 0;
+}
+.tf-post-theme .tf-post-body p {
+  margin: 0 0 0.8em;
+}
+.tf-post-theme .tf-post-body h1,
+.tf-post-theme .tf-post-body h2,
+.tf-post-theme .tf-post-body h3 {
+  margin: 1.1em 0 0.5em;
+  color: var(--tfp-strong);
+  line-height: 1.3;
+  font-weight: 800;
+}
+.tf-post-theme .tf-post-body h1 {
+  font-size: 22px;
+}
+.tf-post-theme .tf-post-body h2 {
+  font-size: 19px;
+}
+.tf-post-theme .tf-post-body h3 {
+  font-size: 16.5px;
+}
+.tf-post-theme .tf-post-body strong,
+.tf-post-theme .tf-post-body b {
+  font-weight: 700;
+  color: var(--tfp-strong);
+}
+.tf-post-theme .tf-post-body ul,
+.tf-post-theme .tf-post-body ol {
+  margin: 0 0 0.8em;
+  padding-left: 1.5em;
+}
+.tf-post-theme .tf-post-body ul {
+  list-style: disc;
+}
+.tf-post-theme .tf-post-body ol {
+  list-style: decimal;
+}
+.tf-post-theme .tf-post-body li {
+  margin: 0.2em 0;
+}
+.tf-post-theme .tf-post-body li > p {
+  margin: 0;
+}
+.tf-post-theme .tf-post-body blockquote {
+  margin: 0 0 0.9em;
+  padding: 8px 14px;
+  border-left: 3px solid var(--tfp-gold);
+  border-radius: 0 8px 8px 0;
+  background: var(--tfp-gold-soft);
+  color: var(--tfp-fg);
+}
+.tf-post-theme .tf-post-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+.tf-post-theme .tf-post-body a {
+  color: var(--tfp-gold-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.tf-post-theme .tf-post-body hr {
+  clear: both;
+  margin: 1.2em 0;
+  border: 0;
+  border-top: 1px solid var(--tfp-line);
+}
+/* Bảng rộng cuộn ngang trong khung bảng, trang không tràn. */
+.tf-post-theme .tf-post-body table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  font-size: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+.tf-post-theme .tf-post-body th,
+.tf-post-theme .tf-post-body td {
+  min-width: 72px;
+  padding: 6px 10px;
+  border: 1px solid var(--tfp-line);
+  text-align: left;
+  vertical-align: top;
+}
+.tf-post-theme .tf-post-body th {
+  background: var(--tfp-raise);
+  color: var(--tfp-strong);
+  font-weight: 700;
+}
+.tf-post-theme .tf-post-body th p,
+.tf-post-theme .tf-post-body td p {
+  margin: 0;
+}
+/* Ảnh: bề ngang theo data-width (đặt bằng JS), căn theo data-align; trái/phải thì chữ chạy quanh. */
+.tf-post-theme .tf-post-body figure {
+  margin: 0.4em auto 1em;
+  max-width: 100%;
+}
+.tf-post-theme .tf-post-body figure[data-align="center"] {
+  clear: both;
+  margin-left: auto;
+  margin-right: auto;
+}
+.tf-post-theme .tf-post-body figure[data-align="left"] {
+  float: left;
+  margin: 0.25em 16px 0.6em 0;
+}
+.tf-post-theme .tf-post-body figure[data-align="right"] {
+  float: right;
+  margin: 0.25em 0 0.6em 16px;
+}
+.tf-post-theme .tf-post-body figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.tf-post-theme .tf-post-body figcaption {
+  margin-top: 6px;
+  color: var(--tfp-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+.tf-post-theme .tf-post-body figcaption:empty {
+  display: none;
+}
+
+/* ---------- Thẻ SACO, miễn trừ ---------- */
+.tf-post-theme .tf-post-saco-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--tfp-line);
+  background: var(--tfp-raise);
+}
+.tf-post-theme .tf-post-saco-card-text {
+  min-width: 0;
+}
+.tf-post-theme .tf-post-saco-card-name {
+  margin: 0;
+  color: var(--tfp-gold);
+  font-weight: 800;
+}
+.tf-post-theme .tf-post-saco-card-status {
+  margin: 2px 0 0;
+  color: var(--tfp-muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tf-post-theme .tf-post-saco-card-status--on {
+  color: var(--tfp-good);
+}
+.tf-post-theme .tf-post-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+}
+.tf-post-theme .tf-post-disclaimer {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--tfp-line);
+  color: var(--tfp-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-post-theme .tf-post-card,
+  .tf-post-theme .tf-post-card--interactive:hover {
+    transition: none;
+    transform: none;
+  }
+  .tf-post-theme .tf-post-card--fresh {
+    animation: tf-post-card-fresh 2s steps(1, end);
+  }
+}

@@ -59,7 +59,7 @@ Public and authenticated product routes:
 | `/bieu-do` | Advanced chart workspace |
 | `/demo-trading` | Learning journey and virtual trading |
 | `/chien-luoc` | Alerts and backtest |
-| `/van-phong-ao` | Virtual office: 3D brokerage floor (three.js) fed by real market data |
+| `/khu-giao-dich` | Khu giao dịch: 2D trading floor (Phaser) with Thần Tài, SACO nhận định and Chat SACO; login required. `/van-phong-ao` redirects here |
 | `/bai-hoc` | Course catalog |
 | `/bai-hoc/:slug` | Course detail |
 | `/bai-hoc/:slug/:episodeId` | Episode viewer |
@@ -85,7 +85,7 @@ Admin routes are nested under `/admin` and must use `AdminLayout`:
 
 Do not register an admin page outside this nested layout.
 
-`team_lead` (Trưởng nhóm) uses the same layout with a reduced scope. It may open only `/admin`, `/admin/users`, and `/admin/users/:userId`, and on the `team` scope those three pages must render their team variant backed by the `team/*` API, never the `admin/*` one. `AdminScopeRoute` (`components/layout/admin-scope-route.tsx`) picks the variant in `App.tsx`; the team pages live in `pages/admin/team/` with their own `["team", leadId, …]` query keys. `isTeamAdminPath` in `components/layout/admin-access.ts` is the single allow-list: every other `/admin/**` route redirects a team lead to `/admin`. A new admin route is admin-only unless it is added to that allow-list on purpose.
+`team_lead` (Trưởng nhóm) uses the same layout with a reduced scope. It may open only `/admin`, `/admin/users`, `/admin/users/:userId`, and `/admin/saco`, and on the `team` scope those three pages must render their team variant backed by the `team/*` API, never the `admin/*` one. `AdminScopeRoute` (`components/layout/admin-scope-route.tsx`) picks the variant in `App.tsx`; the team pages live in `pages/admin/team/` with their own `["team", leadId, …]` query keys. `isTeamAdminPath` in `components/layout/admin-access.ts` is the single allow-list: every other `/admin/**` route redirects a team lead to `/admin`. A new admin route is admin-only unless it is added to that allow-list on purpose.
 
 ## 4. Routing and code splitting
 
@@ -130,7 +130,7 @@ Use optimistic updates only when the domain can safely reconcile them. Do not us
 - Registration receives the backend trial behavior. Do not fake trial entitlement on the client.
 - Client premium checks control presentation only. Backend guards remain authoritative.
 - Free journey levels remain usable when their legacy contract is free. Premium gates apply only to the premium analysis feature itself.
-- `AdminLayout` uses `getAdminAccess` for navigation safety: `admin` gets the `admin` scope, `team_lead` gets the `team` scope (Tổng quan and Người dùng of the own group plus the referral code card), every other role is forbidden.
+- `AdminLayout` uses `getAdminAccess` for navigation safety: `admin` gets the `admin` scope, `team_lead` gets the `team` scope (Tổng quan and Người dùng of the own group plus the referral code card), an account that holds active SACO rights (`GET /trading-floor/me`) gets the `saco` scope (Bài của tôi and the post editor under `/admin/saco/posts`, allow-list `isSacoAdminPath`), every other account is forbidden. `admin` and `team_lead` also get `/admin/saco` (SACO order, invite log, chat history, posts); a team lead only acts on SACOs of the own group.
 - Every `admin/*` endpoint must still reject non-admin callers, and every `team/*` endpoint scopes to the caller's own group on the server. Never treat the layout gate or the team route guard as security.
 - `team_lead` is listable but never assignable through role edits or bulk `set_role`; it is set only by Bổ nhiệm and removed only by Thôi bổ nhiệm on `/admin/team-leads`.
 

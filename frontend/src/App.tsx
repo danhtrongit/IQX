@@ -4,7 +4,7 @@ import { createBrowserRouter, Navigate, RouterProvider, useLocation, useParams, 
 import { AdminLayout } from "@/components/layout/admin-layout"
 import { AdminScopeRoute } from "@/components/layout/admin-scope-route"
 import { AppShell } from "@/components/layout/app-shell"
-import { SHOW_VIRTUAL_OFFICE, demoChrome, emptyChrome } from "@/config/chrome"
+import { demoChrome, emptyChrome } from "@/config/chrome"
 import { demoRouteRedirect } from "@/lib/demo-route-redirect"
 import { AcademyMetricRedirect, AcademyRedirect } from "@/pages/demo-trading/academy-redirect"
 import { demoTradingLoader } from "@/pages/demo-trading/workspace-url"
@@ -73,9 +73,12 @@ const VTAccountsPage = lazyPage(() => import("@/pages/admin/trading/vt-accounts-
 const VTAccountDetailPage = lazyPage(() => import("@/pages/admin/trading/vt-account-detail-page").then(module => ({ default: module.VTAccountDetailPage })))
 const VTConfigPage = lazyPage(() => import("@/pages/admin/trading/vt-config-page").then(module => ({ default: module.VTConfigPage })))
 const CoursesPage = lazyPage(() => import("@/pages/admin/learning/courses-page").then(module => ({ default: module.CoursesPage })))
-const VirtualOfficePage = lazyPage(() => import("@/pages/virtual-office/virtual-office-page").then(module => ({ default: module.VirtualOfficePage })))
+const TradingFloorPage = lazyPage(() => import("@/pages/trading-floor/trading-floor-page").then(module => ({ default: module.TradingFloorPage })))
 const AboutPage = lazyPage(() => import("@/pages/about/about-page").then(module => ({ default: module.AboutPage })))
 const CourseEditPage = lazyPage(() => import("@/pages/admin/learning/course-edit-page").then(module => ({ default: module.CourseEditPage })))
+const SacoManagePage = lazyPage(() => import("@/pages/admin/saco/saco-manage-page").then(module => ({ default: module.SacoManagePage })))
+const MyPostsPage = lazyPage(() => import("@/pages/admin/saco/my-posts-page").then(module => ({ default: module.MyPostsPage })))
+const PostEditorPage = lazyPage(() => import("@/pages/admin/saco/post-editor-page").then(module => ({ default: module.PostEditorPage })))
 
 function RedirectWithSearch({ to, tab }: { to: string; tab?: string }) {
   const location = useLocation()
@@ -118,9 +121,8 @@ export const routes: RouteObject[] = [
       { path: "canh-bao", element: <RedirectWithSearch to="/chien-luoc" tab="canh-bao" />, handle: { chrome: emptyChrome } },
       { path: "backtest", element: <RedirectWithSearch to="/chien-luoc" tab="backtest" />, handle: { chrome: emptyChrome } },
       { path: "backtest/:symbol", Component: BacktestSymbolRedirect, handle: { chrome: emptyChrome } },
-      SHOW_VIRTUAL_OFFICE
-        ? { path: "van-phong-ao", Component: VirtualOfficePage, handle: { chrome: emptyChrome } }
-        : { path: "van-phong-ao", element: <Navigate to="/" replace />, handle: { chrome: emptyChrome } },
+      { path: "khu-giao-dich", Component: TradingFloorPage, handle: { chrome: emptyChrome } },
+      { path: "van-phong-ao", element: <Navigate to="/khu-giao-dich" replace />, handle: { chrome: emptyChrome } },
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug", Component: CourseDetailPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug/:episodeId", Component: EpisodeViewerPage, handle: { chrome: emptyChrome } },
@@ -169,6 +171,10 @@ export const routes: RouteObject[] = [
           { path: "lessons", Component: CoursesPage },
           { path: "lessons/new", Component: CourseEditPage },
           { path: "lessons/:id", Component: CourseEditPage },
+          { path: "saco", Component: SacoManagePage },
+          { path: "saco/posts", Component: MyPostsPage },
+          { path: "saco/posts/new", Component: PostEditorPage },
+          { path: "saco/posts/:id", Component: PostEditorPage },
         ],
       },
       { path: "503", Component: MaintenancePage, handle: { chrome: emptyChrome } },

@@ -76,10 +76,7 @@ describe("demo workspace chrome", () => {
       "Demo Trading",
       "Chiến lược",
       "Học viện",
+      "Khu giao dịch",
     ])
-  })
-
-  it("tạm gỡ Văn phòng ảo khỏi header khi chưa bật cờ", () => {
-    expect(HEADER_NAV.find((item) => item.label === "Văn phòng ảo")).toMatchObject({ to: "/van-phong-ao", hidden: true })
   })
 })

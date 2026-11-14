@@ -63058,6 +63058,2641 @@ export type TelegramControllerWebhook1Responses = {
 export type TelegramControllerWebhook1Response =
   TelegramControllerWebhook1Responses[keyof TelegramControllerWebhook1Responses];
 
+export type FloorChatConversationData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/chat/convs/{id}";
+};
+
+export type FloorChatConversationErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatConversationError =
+  FloorChatConversationErrors[keyof FloorChatConversationErrors];
+
+export type FloorChatConversationResponses = {
+  200: {
+    id: string;
+    last: {
+      at: number;
+      from: "u" | "s" | "x";
+      id: number;
+      text: string;
+    } | null;
+    matched: boolean;
+    messages: Array<{
+      at: number;
+      from: "u" | "s" | "x";
+      id: number;
+      text: string;
+    }>;
+    online: boolean;
+    peerIcon: string;
+    peerName: string;
+    peerReadAt: number;
+    side: "user" | "saco";
+    unread: number;
+    writable: boolean;
+  };
+};
+
+export type FloorChatConversationResponse =
+  FloorChatConversationResponses[keyof FloorChatConversationResponses];
+
+export type FloorChatReadData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/chat/convs/{id}/read";
+};
+
+export type FloorChatReadErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatReadError = FloorChatReadErrors[keyof FloorChatReadErrors];
+
+export type FloorChatReadResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type FloorChatReadResponse =
+  FloorChatReadResponses[keyof FloorChatReadResponses];
+
+export type FloorChatSendData = {
+  body: {
+    text: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/chat/convs/{id}/send";
+};
+
+export type FloorChatSendErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatSendError = FloorChatSendErrors[keyof FloorChatSendErrors];
+
+export type FloorChatSendResponses = {
+  200: {
+    at: number;
+    from: "u" | "s" | "x";
+    id: number;
+    text: string;
+  };
+};
+
+export type FloorChatSendResponse =
+  FloorChatSendResponses[keyof FloorChatSendResponses];
+
+export type FloorChatInboxData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/chat/inbox";
+};
+
+export type FloorChatInboxErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatInboxError =
+  FloorChatInboxErrors[keyof FloorChatInboxErrors];
+
+export type FloorChatInboxResponses = {
+  200: {
+    asSaco: Array<{
+      id: string;
+      last: {
+        at: number;
+        from: "u" | "s" | "x";
+        id: number;
+        text: string;
+      } | null;
+      matched: boolean;
+      online: boolean;
+      peerIcon: string;
+      peerName: string;
+      side: "user" | "saco";
+      unread: number;
+      writable: boolean;
+    }>;
+    asUser: Array<{
+      id: string;
+      last: {
+        at: number;
+        from: "u" | "s" | "x";
+        id: number;
+        text: string;
+      } | null;
+      matched: boolean;
+      online: boolean;
+      peerIcon: string;
+      peerName: string;
+      side: "user" | "saco";
+      unread: number;
+      writable: boolean;
+    }>;
+    matchedConvId: string | null;
+    saco: {
+      active: boolean;
+      icon: string;
+      id: string;
+      name: string;
+      onDuty: boolean;
+      position: number | null;
+      team: string;
+    } | null;
+  };
+};
+
+export type FloorChatInboxResponse =
+  FloorChatInboxResponses[keyof FloorChatInboxResponses];
+
+export type FloorChatInviteAnswerData = {
+  body: {
+    accept: boolean;
+  };
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/chat/invites/{id}";
+};
+
+export type FloorChatInviteAnswerErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatInviteAnswerError =
+  FloorChatInviteAnswerErrors[keyof FloorChatInviteAnswerErrors];
+
+export type FloorChatInviteAnswerResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type FloorChatInviteAnswerResponse =
+  FloorChatInviteAnswerResponses[keyof FloorChatInviteAnswerResponses];
+
+export type FloorChatMatchData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/chat/match";
+};
+
+export type FloorChatMatchErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatMatchError =
+  FloorChatMatchErrors[keyof FloorChatMatchErrors];
+
+export type FloorChatMatchResponses = {
+  200:
+    | {
+        convId: string;
+      }
+    | {
+        running: true;
+      };
+};
+
+export type FloorChatMatchResponse =
+  FloorChatMatchResponses[keyof FloorChatMatchResponses];
+
+export type FloorChatMatchCancelData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/chat/match/cancel";
+};
+
+export type FloorChatMatchCancelErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatMatchCancelError =
+  FloorChatMatchCancelErrors[keyof FloorChatMatchCancelErrors];
+
+export type FloorChatMatchCancelResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type FloorChatMatchCancelResponse =
+  FloorChatMatchCancelResponses[keyof FloorChatMatchCancelResponses];
+
+export type FloorChatOpenData = {
+  body: {
+    sacoId: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/chat/open";
+};
+
+export type FloorChatOpenErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatOpenError = FloorChatOpenErrors[keyof FloorChatOpenErrors];
+
+export type FloorChatOpenResponses = {
+  200: {
+    id: string;
+    last: {
+      at: number;
+      from: "u" | "s" | "x";
+      id: number;
+      text: string;
+    } | null;
+    matched: boolean;
+    online: boolean;
+    peerIcon: string;
+    peerName: string;
+    side: "user" | "saco";
+    unread: number;
+    writable: boolean;
+  };
+};
+
+export type FloorChatOpenResponse =
+  FloorChatOpenResponses[keyof FloorChatOpenResponses];
+
+export type FloorLeaderboardData = {
+  body?: never;
+  path?: never;
+  query?: {
+    month?: string;
+  };
+  url: "/api/v2/trading-floor/leaderboard";
+};
+
+export type FloorLeaderboardErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorLeaderboardError =
+  FloorLeaderboardErrors[keyof FloorLeaderboardErrors];
+
+export type FloorLeaderboardResponses = {
+  200: {
+    month: string;
+    rows: Array<{
+      avatar:
+        | "male01"
+        | "male02"
+        | "male03"
+        | "male04"
+        | "male05"
+        | "female01"
+        | "female02"
+        | "female03"
+        | "female04"
+        | "female05";
+      avgError: number | null;
+      correct: number;
+      id: string;
+      name: string;
+      rank: number;
+      total: number;
+    }>;
+  };
+};
+
+export type FloorLeaderboardResponse =
+  FloorLeaderboardResponses[keyof FloorLeaderboardResponses];
+
+export type TradingFloorManageCommentReportsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/manage/comment-reports";
+};
+
+export type TradingFloorManageCommentReportsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorManageCommentReportsError =
+  TradingFloorManageCommentReportsErrors[keyof TradingFloorManageCommentReportsErrors];
+
+export type TradingFloorManageCommentReportsResponses = {
+  200: {
+    items: Array<{
+      at: number;
+      authorName: string;
+      commentId: string;
+      headline: string;
+      postId: string;
+      reports: number;
+      sacoName: string;
+      text: string;
+    }>;
+  };
+};
+
+export type TradingFloorManageCommentReportsResponse =
+  TradingFloorManageCommentReportsResponses[keyof TradingFloorManageCommentReportsResponses];
+
+export type FloorManageConvsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/manage/convs";
+};
+
+export type FloorManageConvsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageConvsError =
+  FloorManageConvsErrors[keyof FloorManageConvsErrors];
+
+export type FloorManageConvsResponses = {
+  200: {
+    items: Array<{
+      id: string;
+      last: {
+        at: number;
+        from: "u" | "s" | "x";
+        id: number;
+        text: string;
+      } | null;
+      matched: boolean;
+      sacoIcon: string;
+      sacoName: string;
+      userName: string;
+    }>;
+  };
+};
+
+export type FloorManageConvsResponse =
+  FloorManageConvsResponses[keyof FloorManageConvsResponses];
+
+export type FloorManageConvData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/convs/{id}";
+};
+
+export type FloorManageConvErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageConvError =
+  FloorManageConvErrors[keyof FloorManageConvErrors];
+
+export type FloorManageConvResponses = {
+  200: {
+    id: string;
+    last: {
+      at: number;
+      from: "u" | "s" | "x";
+      id: number;
+      text: string;
+    } | null;
+    matched: boolean;
+    messages: Array<{
+      at: number;
+      from: "u" | "s" | "x";
+      id: number;
+      text: string;
+    }>;
+    sacoIcon: string;
+    sacoName: string;
+    userName: string;
+  };
+};
+
+export type FloorManageConvResponse =
+  FloorManageConvResponses[keyof FloorManageConvResponses];
+
+export type FloorManageInvitesData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/trading-floor/manage/invites";
+};
+
+export type FloorManageInvitesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageInvitesError =
+  FloorManageInvitesErrors[keyof FloorManageInvitesErrors];
+
+export type FloorManageInvitesResponses = {
+  200: {
+    items: Array<{
+      at: number;
+      result:
+        "accept" | "decline" | "timeout" | "skip-off" | "skip-busy" | "cancel";
+      sacoIcon: string;
+      sacoName: string;
+      userName: string;
+    }>;
+  };
+};
+
+export type FloorManageInvitesResponse =
+  FloorManageInvitesResponses[keyof FloorManageInvitesResponses];
+
+export type TradingFloorManagePostsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    status?: "published" | "hidden";
+  };
+  url: "/api/v2/trading-floor/manage/posts";
+};
+
+export type TradingFloorManagePostsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorManagePostsError =
+  TradingFloorManagePostsErrors[keyof TradingFloorManagePostsErrors];
+
+export type TradingFloorManagePostsResponses = {
+  200: {
+    items: Array<{
+      comments: number;
+      headline: string;
+      hearts: number;
+      id: string;
+      leadName: string;
+      publishedAt: number | null;
+      reports: number;
+      sacoId: string;
+      sacoName: string;
+      status: "draft" | "published" | "hidden";
+    }>;
+  };
+};
+
+export type TradingFloorManagePostsResponse =
+  TradingFloorManagePostsResponses[keyof TradingFloorManagePostsResponses];
+
+export type TradingFloorManagePostData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/posts/{id}";
+};
+
+export type TradingFloorManagePostErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorManagePostError =
+  TradingFloorManagePostErrors[keyof TradingFloorManagePostErrors];
+
+export type TradingFloorManagePostResponses = {
+  200: {
+    bodyHtml: string;
+    comments: number;
+    headline: string;
+    hearts: number;
+    id: string;
+    leadName: string;
+    log: Array<{
+      action: "publish" | "hide" | "unhide";
+      actorName: string;
+      actorRole: "saco" | "admin" | "team_lead";
+      at: number;
+    }>;
+    newComments: number;
+    publishedAt: number | null;
+    revision: number;
+    sacoId: string;
+    sacoName: string;
+    savedAt: number;
+    status: "draft" | "published" | "hidden";
+  };
+};
+
+export type TradingFloorManagePostResponse =
+  TradingFloorManagePostResponses[keyof TradingFloorManagePostResponses];
+
+export type TradingFloorManagePostHideData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/posts/{id}/hide";
+};
+
+export type TradingFloorManagePostHideErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorManagePostHideError =
+  TradingFloorManagePostHideErrors[keyof TradingFloorManagePostHideErrors];
+
+export type TradingFloorManagePostHideResponses = {
+  200: {
+    id: string;
+    status: "published" | "hidden";
+  };
+};
+
+export type TradingFloorManagePostHideResponse =
+  TradingFloorManagePostHideResponses[keyof TradingFloorManagePostHideResponses];
+
+export type TradingFloorManagePostUnhideData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/posts/{id}/unhide";
+};
+
+export type TradingFloorManagePostUnhideErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorManagePostUnhideError =
+  TradingFloorManagePostUnhideErrors[keyof TradingFloorManagePostUnhideErrors];
+
+export type TradingFloorManagePostUnhideResponses = {
+  200: {
+    id: string;
+    status: "published" | "hidden";
+  };
+};
+
+export type TradingFloorManagePostUnhideResponse =
+  TradingFloorManagePostUnhideResponses[keyof TradingFloorManagePostUnhideResponses];
+
+export type FloorManageSacoCandidatesData = {
+  body?: never;
+  path?: never;
+  query?: {
+    q?: string;
+  };
+  url: "/api/v2/trading-floor/manage/saco-candidates";
+};
+
+export type FloorManageSacoCandidatesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageSacoCandidatesError =
+  FloorManageSacoCandidatesErrors[keyof FloorManageSacoCandidatesErrors];
+
+export type FloorManageSacoCandidatesResponses = {
+  200: {
+    items: Array<{
+      email: string;
+      leadName: string | null;
+      leadUserId: string | null;
+      name: string;
+      userId: string;
+    }>;
+  };
+};
+
+export type FloorManageSacoCandidatesResponse =
+  FloorManageSacoCandidatesResponses[keyof FloorManageSacoCandidatesResponses];
+
+export type FloorManageSacosData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/manage/sacos";
+};
+
+export type FloorManageSacosErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageSacosError =
+  FloorManageSacosErrors[keyof FloorManageSacosErrors];
+
+export type FloorManageSacosResponses = {
+  200: {
+    items: Array<{
+      accepted: number;
+      active: boolean;
+      convs: number;
+      declined: number;
+      email: string;
+      icon: string;
+      id: string;
+      leadName: string;
+      leadUserId: string;
+      mine: boolean;
+      name: string;
+      onDuty: boolean;
+      online: boolean;
+      position: number | null;
+      timedOut: number;
+      userId: string;
+    }>;
+    leads: Array<{
+      id: string;
+      name: string;
+    }>;
+  };
+};
+
+export type FloorManageSacosResponse =
+  FloorManageSacosResponses[keyof FloorManageSacosResponses];
+
+export type FloorManageSacoGrantData = {
+  body: {
+    displayName?: string;
+    leadUserId?: string;
+    userId: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/manage/sacos";
+};
+
+export type FloorManageSacoGrantErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageSacoGrantError =
+  FloorManageSacoGrantErrors[keyof FloorManageSacoGrantErrors];
+
+export type FloorManageSacoGrantResponses = {
+  200: {
+    accepted: number;
+    active: boolean;
+    convs: number;
+    declined: number;
+    email: string;
+    icon: string;
+    id: string;
+    leadName: string;
+    leadUserId: string;
+    mine: boolean;
+    name: string;
+    onDuty: boolean;
+    online: boolean;
+    position: number | null;
+    timedOut: number;
+    userId: string;
+  };
+};
+
+export type FloorManageSacoGrantResponse =
+  FloorManageSacoGrantResponses[keyof FloorManageSacoGrantResponses];
+
+export type FloorManageSacoUpdateData = {
+  body: {
+    displayName?: string;
+    leadUserId?: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/sacos/{id}";
+};
+
+export type FloorManageSacoUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageSacoUpdateError =
+  FloorManageSacoUpdateErrors[keyof FloorManageSacoUpdateErrors];
+
+export type FloorManageSacoUpdateResponses = {
+  200: {
+    accepted: number;
+    active: boolean;
+    convs: number;
+    declined: number;
+    email: string;
+    icon: string;
+    id: string;
+    leadName: string;
+    leadUserId: string;
+    mine: boolean;
+    name: string;
+    onDuty: boolean;
+    online: boolean;
+    position: number | null;
+    timedOut: number;
+    userId: string;
+  };
+};
+
+export type FloorManageSacoUpdateResponse =
+  FloorManageSacoUpdateResponses[keyof FloorManageSacoUpdateResponses];
+
+export type FloorManageSacoMoveData = {
+  body: {
+    dir: "up" | "down";
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/sacos/{id}/move";
+};
+
+export type FloorManageSacoMoveErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageSacoMoveError =
+  FloorManageSacoMoveErrors[keyof FloorManageSacoMoveErrors];
+
+export type FloorManageSacoMoveResponses = {
+  200: {
+    items: Array<{
+      accepted: number;
+      active: boolean;
+      convs: number;
+      declined: number;
+      email: string;
+      icon: string;
+      id: string;
+      leadName: string;
+      leadUserId: string;
+      mine: boolean;
+      name: string;
+      onDuty: boolean;
+      online: boolean;
+      position: number | null;
+      timedOut: number;
+      userId: string;
+    }>;
+    leads: Array<{
+      id: string;
+      name: string;
+    }>;
+  };
+};
+
+export type FloorManageSacoMoveResponse =
+  FloorManageSacoMoveResponses[keyof FloorManageSacoMoveResponses];
+
+export type FloorManageSacoRemoveData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/sacos/{id}/remove";
+};
+
+export type FloorManageSacoRemoveErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorManageSacoRemoveError =
+  FloorManageSacoRemoveErrors[keyof FloorManageSacoRemoveErrors];
+
+export type FloorManageSacoRemoveResponses = {
+  200: {
+    items: Array<{
+      accepted: number;
+      active: boolean;
+      convs: number;
+      declined: number;
+      email: string;
+      icon: string;
+      id: string;
+      leadName: string;
+      leadUserId: string;
+      mine: boolean;
+      name: string;
+      onDuty: boolean;
+      online: boolean;
+      position: number | null;
+      timedOut: number;
+      userId: string;
+    }>;
+    leads: Array<{
+      id: string;
+      name: string;
+    }>;
+  };
+};
+
+export type FloorManageSacoRemoveResponse =
+  FloorManageSacoRemoveResponses[keyof FloorManageSacoRemoveResponses];
+
+export type FloorMeData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/me";
+};
+
+export type FloorMeErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorMeError = FloorMeErrors[keyof FloorMeErrors];
+
+export type FloorMeResponses = {
+  200: {
+    profile: {
+      avatar:
+        | "male01"
+        | "male02"
+        | "male03"
+        | "male04"
+        | "male05"
+        | "female01"
+        | "female02"
+        | "female03"
+        | "female04"
+        | "female05";
+      color:
+        | "default"
+        | "navy"
+        | "charcoal"
+        | "burgundy"
+        | "forest"
+        | "cobalt"
+        | "beige"
+        | "plum"
+        | "gold"
+        | "teal";
+      name: string;
+    } | null;
+    saco: {
+      active: boolean;
+      icon: string;
+      id: string;
+      name: string;
+      onDuty: boolean;
+      position: number | null;
+      team: string;
+    } | null;
+    suggestedName: string;
+  };
+};
+
+export type FloorMeResponse = FloorMeResponses[keyof FloorMeResponses];
+
+export type TradingFloorPostImageData = {
+  body?: never;
+  path: {
+    imageId: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/post-images/{imageId}";
+};
+
+export type TradingFloorPostImageErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostImageError =
+  TradingFloorPostImageErrors[keyof TradingFloorPostImageErrors];
+
+export type TradingFloorPostImageResponses = {
+  /**
+   * Ảnh WebP
+   */
+  200: Blob | File;
+};
+
+export type TradingFloorPostImageResponse =
+  TradingFloorPostImageResponses[keyof TradingFloorPostImageResponses];
+
+export type TradingFloorPostCommentDeleteData = {
+  body?: never;
+  path: {
+    commentId: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/posts/comments/{commentId}";
+};
+
+export type TradingFloorPostCommentDeleteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostCommentDeleteError =
+  TradingFloorPostCommentDeleteErrors[keyof TradingFloorPostCommentDeleteErrors];
+
+export type TradingFloorPostCommentDeleteResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type TradingFloorPostCommentDeleteResponse =
+  TradingFloorPostCommentDeleteResponses[keyof TradingFloorPostCommentDeleteResponses];
+
+export type TradingFloorPostCommentHideData = {
+  body?: never;
+  path: {
+    commentId: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/posts/comments/{commentId}/hide";
+};
+
+export type TradingFloorPostCommentHideErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostCommentHideError =
+  TradingFloorPostCommentHideErrors[keyof TradingFloorPostCommentHideErrors];
+
+export type TradingFloorPostCommentHideResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type TradingFloorPostCommentHideResponse =
+  TradingFloorPostCommentHideResponses[keyof TradingFloorPostCommentHideResponses];
+
+export type TradingFloorPostCommentReportData = {
+  body?: never;
+  path: {
+    commentId: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/posts/comments/{commentId}/report";
+};
+
+export type TradingFloorPostCommentReportErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostCommentReportError =
+  TradingFloorPostCommentReportErrors[keyof TradingFloorPostCommentReportErrors];
+
+export type TradingFloorPostCommentReportResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type TradingFloorPostCommentReportResponse =
+  TradingFloorPostCommentReportResponses[keyof TradingFloorPostCommentReportResponses];
+
+export type TradingFloorPostsTodayData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/posts/today";
+};
+
+export type TradingFloorPostsTodayErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostsTodayError =
+  TradingFloorPostsTodayErrors[keyof TradingFloorPostsTodayErrors];
+
+export type TradingFloorPostsTodayResponses = {
+  200: {
+    date: string;
+    items: Array<{
+      comments: number;
+      headline: string;
+      hearted: boolean;
+      hearts: number;
+      id: string;
+      publishedAt: number;
+      sacoId: string;
+      sacoName: string;
+    }>;
+  };
+};
+
+export type TradingFloorPostsTodayResponse =
+  TradingFloorPostsTodayResponses[keyof TradingFloorPostsTodayResponses];
+
+export type TradingFloorPostDetailData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/posts/{id}";
+};
+
+export type TradingFloorPostDetailErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostDetailError =
+  TradingFloorPostDetailErrors[keyof TradingFloorPostDetailErrors];
+
+export type TradingFloorPostDetailResponses = {
+  200: {
+    bodyHtml: string;
+    canModerate: boolean;
+    comments: number;
+    headline: string;
+    hearted: boolean;
+    hearts: number;
+    id: string;
+    isAuthor: boolean;
+    publishedAt: number;
+    sacoActive: boolean;
+    sacoId: string;
+    sacoName: string;
+    sacoOnDuty: boolean;
+  };
+};
+
+export type TradingFloorPostDetailResponse =
+  TradingFloorPostDetailResponses[keyof TradingFloorPostDetailResponses];
+
+export type TradingFloorPostCommentsData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/posts/{id}/comments";
+};
+
+export type TradingFloorPostCommentsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostCommentsError =
+  TradingFloorPostCommentsErrors[keyof TradingFloorPostCommentsErrors];
+
+export type TradingFloorPostCommentsResponses = {
+  200: {
+    items: Array<{
+      at: number;
+      authorName: string;
+      id: string;
+      isAuthor: boolean;
+      mine: boolean;
+      postId: string;
+      reported: boolean;
+      text: string;
+    }>;
+    total: number;
+  };
+};
+
+export type TradingFloorPostCommentsResponse =
+  TradingFloorPostCommentsResponses[keyof TradingFloorPostCommentsResponses];
+
+export type TradingFloorPostCommentCreateData = {
+  body: {
+    text: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/posts/{id}/comments";
+};
+
+export type TradingFloorPostCommentCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostCommentCreateError =
+  TradingFloorPostCommentCreateErrors[keyof TradingFloorPostCommentCreateErrors];
+
+export type TradingFloorPostCommentCreateResponses = {
+  200: {
+    at: number;
+    authorName: string;
+    id: string;
+    isAuthor: boolean;
+    mine: boolean;
+    postId: string;
+    reported: boolean;
+    text: string;
+  };
+};
+
+export type TradingFloorPostCommentCreateResponse =
+  TradingFloorPostCommentCreateResponses[keyof TradingFloorPostCommentCreateResponses];
+
+export type TradingFloorPostHeartData = {
+  body: {
+    on: boolean;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/posts/{id}/heart";
+};
+
+export type TradingFloorPostHeartErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorPostHeartError =
+  TradingFloorPostHeartErrors[keyof TradingFloorPostHeartErrors];
+
+export type TradingFloorPostHeartResponses = {
+  200: {
+    hearted: boolean;
+    hearts: number;
+  };
+};
+
+export type TradingFloorPostHeartResponse =
+  TradingFloorPostHeartResponses[keyof TradingFloorPostHeartResponses];
+
+export type FloorProfileSaveData = {
+  body: {
+    avatar:
+      | "male01"
+      | "male02"
+      | "male03"
+      | "male04"
+      | "male05"
+      | "female01"
+      | "female02"
+      | "female03"
+      | "female04"
+      | "female05";
+    color?:
+      | "default"
+      | "navy"
+      | "charcoal"
+      | "burgundy"
+      | "forest"
+      | "cobalt"
+      | "beige"
+      | "plum"
+      | "gold"
+      | "teal";
+    name: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/profile";
+};
+
+export type FloorProfileSaveErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorProfileSaveError =
+  FloorProfileSaveErrors[keyof FloorProfileSaveErrors];
+
+export type FloorProfileSaveResponses = {
+  200: {
+    avatar:
+      | "male01"
+      | "male02"
+      | "male03"
+      | "male04"
+      | "male05"
+      | "female01"
+      | "female02"
+      | "female03"
+      | "female04"
+      | "female05";
+    color:
+      | "default"
+      | "navy"
+      | "charcoal"
+      | "burgundy"
+      | "forest"
+      | "cobalt"
+      | "beige"
+      | "plum"
+      | "gold"
+      | "teal";
+    name: string;
+  };
+};
+
+export type FloorProfileSaveResponse =
+  FloorProfileSaveResponses[keyof FloorProfileSaveResponses];
+
+export type FloorRitualDrawData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/ritual/draw";
+};
+
+export type FloorRitualDrawErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorRitualDrawError =
+  FloorRitualDrawErrors[keyof FloorRitualDrawErrors];
+
+export type FloorRitualDrawResponses = {
+  200: {
+    que: {
+      advice: string;
+      id: number;
+      luck: number;
+      name: string;
+      verse: string;
+    };
+    ritual: {
+      correct: boolean | null;
+      createdAt: number;
+      direction: "up" | "down";
+      error: number | null;
+      level: number | null;
+      queId: number;
+      session: string;
+      tickers: Array<string>;
+    };
+  };
+};
+
+export type FloorRitualDrawResponse =
+  FloorRitualDrawResponses[keyof FloorRitualDrawResponses];
+
+export type FloorRitualSubmitData = {
+  body: {
+    direction: "up" | "down";
+    level: number;
+    tickers: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/ritual/submit";
+};
+
+export type FloorRitualSubmitErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorRitualSubmitError =
+  FloorRitualSubmitErrors[keyof FloorRitualSubmitErrors];
+
+export type FloorRitualSubmitResponses = {
+  200: {
+    mine: {
+      correct: boolean | null;
+      createdAt: number;
+      direction: "up" | "down";
+      error: number | null;
+      level: number | null;
+      queId: number;
+      session: string;
+      tickers: Array<string>;
+    };
+    que: {
+      advice: string;
+      id: number;
+      luck: number;
+      name: string;
+      verse: string;
+    };
+    stats: {
+      avgLevel: number | null;
+      down: number;
+      session: string;
+      topTickers: Array<{
+        count: number;
+        symbol: string;
+      }>;
+      total: number;
+      up: number;
+    };
+  };
+};
+
+export type FloorRitualSubmitResponse =
+  FloorRitualSubmitResponses[keyof FloorRitualSubmitResponses];
+
+export type FloorRitualTodayData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/ritual/today";
+};
+
+export type FloorRitualTodayErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorRitualTodayError =
+  FloorRitualTodayErrors[keyof FloorRitualTodayErrors];
+
+export type FloorRitualTodayResponses = {
+  200: {
+    cutoffAt: number;
+    lastResult: {
+      change: number;
+      close: number;
+      correct: number;
+      session: string;
+      total: number;
+    } | null;
+    mine: {
+      correct: boolean | null;
+      createdAt: number;
+      direction: "up" | "down";
+      error: number | null;
+      level: number | null;
+      queId: number;
+      session: string;
+      tickers: Array<string>;
+    } | null;
+    session: string;
+    stats: {
+      avgLevel: number | null;
+      down: number;
+      session: string;
+      topTickers: Array<{
+        count: number;
+        symbol: string;
+      }>;
+      total: number;
+      up: number;
+    };
+  };
+};
+
+export type FloorRitualTodayResponse =
+  FloorRitualTodayResponses[keyof FloorRitualTodayResponses];
+
+export type TradingFloorSacoCommentReportsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/saco/comment-reports";
+};
+
+export type TradingFloorSacoCommentReportsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoCommentReportsError =
+  TradingFloorSacoCommentReportsErrors[keyof TradingFloorSacoCommentReportsErrors];
+
+export type TradingFloorSacoCommentReportsResponses = {
+  200: {
+    items: Array<{
+      at: number;
+      authorName: string;
+      commentId: string;
+      headline: string;
+      postId: string;
+      reports: number;
+      sacoName: string;
+      text: string;
+    }>;
+  };
+};
+
+export type TradingFloorSacoCommentReportsResponse =
+  TradingFloorSacoCommentReportsResponses[keyof TradingFloorSacoCommentReportsResponses];
+
+export type FloorSacoDutyData = {
+  body: {
+    on: boolean;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/saco/duty";
+};
+
+export type FloorSacoDutyErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorSacoDutyError = FloorSacoDutyErrors[keyof FloorSacoDutyErrors];
+
+export type FloorSacoDutyResponses = {
+  200: {
+    active: boolean;
+    icon: string;
+    id: string;
+    name: string;
+    onDuty: boolean;
+    position: number | null;
+    team: string;
+  };
+};
+
+export type FloorSacoDutyResponse =
+  FloorSacoDutyResponses[keyof FloorSacoDutyResponses];
+
+export type TradingFloorSacoPostsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts";
+};
+
+export type TradingFloorSacoPostsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostsError =
+  TradingFloorSacoPostsErrors[keyof TradingFloorSacoPostsErrors];
+
+export type TradingFloorSacoPostsResponses = {
+  200: {
+    items: Array<{
+      comments: number;
+      headline: string;
+      hearts: number;
+      id: string;
+      newComments: number;
+      publishedAt: number | null;
+      savedAt: number;
+      status: "draft" | "published" | "hidden";
+    }>;
+  };
+};
+
+export type TradingFloorSacoPostsResponse =
+  TradingFloorSacoPostsResponses[keyof TradingFloorSacoPostsResponses];
+
+export type TradingFloorSacoPostCreateData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts";
+};
+
+export type TradingFloorSacoPostCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostCreateError =
+  TradingFloorSacoPostCreateErrors[keyof TradingFloorSacoPostCreateErrors];
+
+export type TradingFloorSacoPostCreateResponses = {
+  200: {
+    bodyHtml: string;
+    comments: number;
+    headline: string;
+    hearts: number;
+    id: string;
+    newComments: number;
+    publishedAt: number | null;
+    revision: number;
+    savedAt: number;
+    status: "draft" | "published" | "hidden";
+  };
+};
+
+export type TradingFloorSacoPostCreateResponse =
+  TradingFloorSacoPostCreateResponses[keyof TradingFloorSacoPostCreateResponses];
+
+export type TradingFloorSacoPostDeleteData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}";
+};
+
+export type TradingFloorSacoPostDeleteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostDeleteError =
+  TradingFloorSacoPostDeleteErrors[keyof TradingFloorSacoPostDeleteErrors];
+
+export type TradingFloorSacoPostDeleteResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type TradingFloorSacoPostDeleteResponse =
+  TradingFloorSacoPostDeleteResponses[keyof TradingFloorSacoPostDeleteResponses];
+
+export type TradingFloorSacoPostData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}";
+};
+
+export type TradingFloorSacoPostErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostError =
+  TradingFloorSacoPostErrors[keyof TradingFloorSacoPostErrors];
+
+export type TradingFloorSacoPostResponses = {
+  200: {
+    bodyHtml: string;
+    comments: number;
+    headline: string;
+    hearts: number;
+    id: string;
+    newComments: number;
+    publishedAt: number | null;
+    revision: number;
+    savedAt: number;
+    status: "draft" | "published" | "hidden";
+  };
+};
+
+export type TradingFloorSacoPostResponse =
+  TradingFloorSacoPostResponses[keyof TradingFloorSacoPostResponses];
+
+export type TradingFloorSacoPostSaveData = {
+  body: {
+    baseRevision: number;
+    bodyHtml: string;
+    headline: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}";
+};
+
+export type TradingFloorSacoPostSaveErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostSaveError =
+  TradingFloorSacoPostSaveErrors[keyof TradingFloorSacoPostSaveErrors];
+
+export type TradingFloorSacoPostSaveResponses = {
+  200: {
+    revision: number;
+    savedAt: number;
+  };
+};
+
+export type TradingFloorSacoPostSaveResponse =
+  TradingFloorSacoPostSaveResponses[keyof TradingFloorSacoPostSaveResponses];
+
+export type TradingFloorSacoPostCommentsSeenData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}/comments-seen";
+};
+
+export type TradingFloorSacoPostCommentsSeenErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostCommentsSeenError =
+  TradingFloorSacoPostCommentsSeenErrors[keyof TradingFloorSacoPostCommentsSeenErrors];
+
+export type TradingFloorSacoPostCommentsSeenResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type TradingFloorSacoPostCommentsSeenResponse =
+  TradingFloorSacoPostCommentsSeenResponses[keyof TradingFloorSacoPostCommentsSeenResponses];
+
+export type TradingFloorSacoPostImageUploadData = {
+  body: {
+    file: Blob | File;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}/images";
+};
+
+export type TradingFloorSacoPostImageUploadErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostImageUploadError =
+  TradingFloorSacoPostImageUploadErrors[keyof TradingFloorSacoPostImageUploadErrors];
+
+export type TradingFloorSacoPostImageUploadResponses = {
+  200: {
+    height: number;
+    id: string;
+    url: string;
+    width: number;
+  };
+};
+
+export type TradingFloorSacoPostImageUploadResponse =
+  TradingFloorSacoPostImageUploadResponses[keyof TradingFloorSacoPostImageUploadResponses];
+
+export type TradingFloorSacoPostPublishData = {
+  body: {
+    baseRevision: number;
+    bodyHtml: string;
+    headline: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}/publish";
+};
+
+export type TradingFloorSacoPostPublishErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostPublishError =
+  TradingFloorSacoPostPublishErrors[keyof TradingFloorSacoPostPublishErrors];
+
+export type TradingFloorSacoPostPublishResponses = {
+  200: {
+    bodyHtml: string;
+    comments: number;
+    headline: string;
+    hearts: number;
+    id: string;
+    newComments: number;
+    publishedAt: number | null;
+    revision: number;
+    savedAt: number;
+    status: "draft" | "published" | "hidden";
+  };
+};
+
+export type TradingFloorSacoPostPublishResponse =
+  TradingFloorSacoPostPublishResponses[keyof TradingFloorSacoPostPublishResponses];
+
 export type UsersControllerList1Data = {
   body?: never;
   path?: never;

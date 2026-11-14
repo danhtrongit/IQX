@@ -59,6 +59,7 @@ const SHARED_NAV = [
   ["Demo Trading", "/demo-trading?view=trading"],
   ["Chiến lược", "/chien-luoc"],
   ["Học viện", "/demo-trading?view=academy"],
+  ["Khu giao dịch", "/khu-giao-dich"],
 ] as const
 
 describe("Header", () => {
