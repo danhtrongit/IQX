@@ -100,7 +100,7 @@ function SacoBar({ saco }: { saco: SacoSelf }) {
   return (
     <div className="saco-bar">
       <span className="chat-av" aria-hidden="true">
-        {saco.icon}
+        {saco.name.trim().charAt(0).toUpperCase()}
       </span>
       <div className="saco-who">
         <b>{saco.name}</b>
