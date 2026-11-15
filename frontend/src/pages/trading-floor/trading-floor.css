@@ -2064,7 +2064,9 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
+  flex: none;
   font-size: 19px;
+  line-height: 1;
 }
 .tf-root .pill .count {
   position: absolute;
@@ -2078,6 +2080,7 @@
 }
 .tf-root .chat-pill .pill-ico {
   background: #23170a;
+  color: #f6d27a;
 }
 .tf-root .saco-pill {
   background: rgba(12, 17, 27, 0.88);

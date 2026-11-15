@@ -1,8 +1,12 @@
 /**
- * Nhắn tin với SACO (port 1:1 từ `server/chat.ts` của IQX-KhuGiaoDich, danh tính là tài khoản IQX):
- * hộp thư, nhắn trực tiếp, gửi / đã xem / đang soạn, công tắc Đang trực, và Chat SACO (khớp theo thứ
+ * Nhắn tin với SACO (port 1:1 từ `server/chat.ts` của IQX-KhuGiaoDich, danh tính là tài khoản IQX hoặc
+ * khách): hộp thư, nhắn trực tiếp, gửi / đã xem / đang soạn, công tắc Đang trực, và Chat SACO (khớp theo thứ
  * tự, mỗi SACO 5 giây để nhận lời). Lời mời đang chờ và lượt tìm của từng người nằm trong bộ nhớ của
  * tiến trình API; tin nhắn, cuộc trò chuyện và nhật ký lời mời nằm trong PostgreSQL.
+ *
+ * Người chat (phía "user") được gọi là `ownerId`: uuid tài khoản, hoặc `g:<uuid khách>` với khách chưa
+ * đăng nhập, cùng quy ước với `conn.userId` của `FloorHub` nên `toUser(ownerId)` tới đúng socket. Phía
+ * SACO luôn là tài khoản.
  *
  * Sự kiện đi qua `FloorEvents`; "online" do `FloorPresence` trả lời.
  */
@@ -24,7 +28,7 @@ import {
 
 import { DatabaseService } from '../../platform/database/index.js';
 import { isGuestKey } from './floor-actor.js';
-import { CHAT_RULES, cleanText, floorChatTiming } from './floor-chat.logic.js';
+import { CHAT_RULES, cleanText, floorChatTiming, guestLabel } from './floor-chat.logic.js';
 import {
   FLOOR_CHAT_REPOSITORY,
   type ChatConvView,
@@ -101,14 +105,15 @@ export class FloorChatService implements OnApplicationShutdown {
 
   // ================================================================== hộp thư và cuộc trò chuyện
 
-  async inbox(userId: string): Promise<Inbox> {
-    const saco = await this.sacos.findByUser(this.database, userId);
+  async inbox(ownerId: string): Promise<Inbox> {
+    // Khách không bao giờ là SACO.
+    const saco = isGuestKey(ownerId) ? null : await this.sacos.findByUser(this.database, ownerId);
     const [mine, theirs, matched] = await Promise.all([
-      this.chat.userConvs(this.database, userId, CHAT_RULES.inboxLimit),
+      this.chat.userConvs(this.database, ownerId, CHAT_RULES.inboxLimit),
       saco?.active
         ? this.chat.sacoConvs(this.database, saco.id, CHAT_RULES.inboxLimit)
         : Promise.resolve([] as ChatConvView[]),
-      this.chat.matchedConv(this.database, userId),
+      this.chat.matchedConv(this.database, ownerId),
     ]);
     return {
       saco: saco ? toSacoSelf(saco) : null,
@@ -118,15 +123,15 @@ export class FloorChatService implements OnApplicationShutdown {
     };
   }
 
-  async conversation(userId: string, convId: string): Promise<ConvDetail> {
-    const { conv, side } = await this.member(userId, convId);
+  async conversation(ownerId: string, convId: string): Promise<ConvDetail> {
+    const { conv, side } = await this.member(ownerId, convId);
     const messages = await this.chat.messages(this.database, convId, CHAT_RULES.history);
     const peerRead = side === 'user' ? conv.sacoReadAt : conv.userReadAt;
     return { ...this.summary(conv, side), messages, peerReadAt: peerRead?.getTime() ?? 0 };
   }
 
   /** "Nhắn SACO" trên thẻ nhận định: mở (hoặc dùng lại) cuộc trò chuyện trực tiếp, bật cờ nhắn trực tiếp. */
-  async openDirect(userId: string, sacoId: string): Promise<ConvSummary> {
+  async openDirect(ownerId: string, sacoId: string): Promise<ConvSummary> {
     const saco = await this.sacos.findById(this.database, sacoId);
     if (!saco || !saco.active) {
       throw new NotFoundException({
@@ -134,23 +139,23 @@ export class FloorChatService implements OnApplicationShutdown {
         message: 'SACO này không còn hoạt động.',
       });
     }
-    if (saco.userId === userId) {
+    if (saco.userId === ownerId) {
       throw new BadRequestException({
         code: 'SELF_CHAT',
         message: 'Bạn không thể tự nhắn cho chính mình.',
       });
     }
-    const id = await this.chat.ensureConv(this.database, userId, sacoId, this.clock.now(), {
+    const id = await this.chat.ensureConv(this.database, ownerId, sacoId, this.clock.now(), {
       direct: true,
     });
     const view = await this.chat.convView(this.database, id, 'user');
     return this.summary(view!, 'user');
   }
 
-  async send(userId: string, convId: string, raw: unknown): Promise<ChatMessage> {
+  async send(ownerId: string, convId: string, raw: unknown): Promise<ChatMessage> {
     const now = this.clock.now();
     const nowMs = now.getTime();
-    const { conv, side } = await this.member(userId, convId);
+    const { conv, side } = await this.member(ownerId, convId);
     if (!conv.sacoActive) {
       throw new ForbiddenException({
         code: 'SACO_INACTIVE',
@@ -164,14 +169,14 @@ export class FloorChatService implements OnApplicationShutdown {
         message: `Tin nhắn trống hoặc dài quá ${CHAT_RULES.maxText} ký tự.`,
       });
     }
-    const previous = this.lastSend.get(userId);
+    const previous = this.lastSend.get(ownerId);
     if (previous !== undefined && nowMs >= previous && nowMs - previous < CHAT_RULES.sendMinMs) {
       throw new HttpException(
         { code: 'SEND_TOO_FAST', message: 'Bạn gửi nhanh quá, chờ một chút.' },
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    this.lastSend.set(userId, nowMs);
+    this.lastSend.set(ownerId, nowMs);
     if (this.lastSend.size > 2000) this.pruneSendLog(nowMs);
     // Viết trả lời nghĩa là người gửi đã đọc cuộc trò chuyện.
     const message = await this.database.transaction(async (tx) => {
@@ -183,20 +188,18 @@ export class FloorChatService implements OnApplicationShutdown {
     return message;
   }
 
-  async markRead(userId: string, convId: string): Promise<void> {
+  async markRead(ownerId: string, convId: string): Promise<void> {
     const now = this.clock.now();
-    const { conv, side } = await this.member(userId, convId);
+    const { conv, side } = await this.member(ownerId, convId);
     await this.chat.markRead(this.database, convId, side, now);
     this.broadcast(conv, { type: 'chat:read', convId, side, at: now.getTime() });
   }
 
   /** "Đang soạn": báo cho bên kia; người không thuộc cuộc trò chuyện thì bỏ qua lặng lẽ. */
-  async typing(userId: string, convId: string): Promise<void> {
-    // Khách (`g:<uuid>`) không có cuộc trò chuyện nào: bỏ qua trước khi chạm DB.
-    if (isGuestKey(userId)) return;
+  async typing(ownerId: string, convId: string): Promise<void> {
     let found: { conv: ChatConvView; side: 'user' | 'saco' };
     try {
-      found = await this.member(userId, convId);
+      found = await this.member(ownerId, convId);
     } catch {
       return;
     }
@@ -249,7 +252,8 @@ export class FloorChatService implements OnApplicationShutdown {
    * Chat SACO: hỏi lần lượt các SACO còn hoạt động từ số 1 xuống, mỗi SACO `inviteMs`. SACO vắng, không
    * online hoặc đang giữ lời mời khác thì bỏ qua ngay. Tiến trình gửi cho người dùng bằng `chat:match`.
    */
-  async startMatch(userId: string): Promise<{ convId: string } | { running: true }> {
+  async startMatch(ownerId: string): Promise<{ convId: string } | { running: true }> {
+    const userId = ownerId;
     if (this.runs.has(userId)) return { running: true };
     const existing = await this.chat.matchedConv(this.database, userId);
     if (existing) return { convId: existing.id };
@@ -290,6 +294,8 @@ export class FloorChatService implements OnApplicationShutdown {
     const tell = (event: MatchEvent): void =>
       this.events.toUser(userId, { type: 'chat:match', event });
     const userName = await this.profiles.displayName(userId);
+    // SACO thấy khách được đánh dấu; tin hệ thống trong cuộc chat giữ tên gốc.
+    const inviteName = guestLabel(userName, isGuestKey(userId));
     let turn = 0;
     let found: FloorSacoRow | null = null;
     // Lượt tìm đang chạy giữ thứ tự cũ: danh sách chụp một lần, từng SACO đọc lại trước khi hỏi.
@@ -308,7 +314,7 @@ export class FloorChatService implements OnApplicationShutdown {
       turn += 1;
       const deadline = Date.now() + floorChatTiming.inviteMs;
       tell({ state: 'asking', turn, deadline });
-      const result = await this.ask(saco, userId, userName, run, deadline);
+      const result = await this.ask(saco, userId, inviteName, run, deadline);
       await this.logInvite(run, userId, saco.id, result);
       if (result === 'cancel') break;
       if (result === 'accept') {
@@ -384,7 +390,7 @@ export class FloorChatService implements OnApplicationShutdown {
     try {
       await this.chat.insertInvite(this.database, {
         runId: run.id,
-        userId,
+        ownerId: userId,
         sacoId,
         result,
         at: this.clock.now(),
@@ -407,7 +413,7 @@ export class FloorChatService implements OnApplicationShutdown {
     return {
       id: conv.id,
       side,
-      peerName: side === 'user' ? conv.sacoName : conv.userName,
+      peerName: side === 'user' ? conv.sacoName : guestLabel(conv.userName, conv.userGuest),
       peerIcon: side === 'user' ? conv.sacoIcon : '',
       matched: conv.matched,
       writable: conv.sacoActive,
@@ -424,7 +430,7 @@ export class FloorChatService implements OnApplicationShutdown {
     };
   }
 
-  /** Cuộc trò chuyện và phía của `userId`; người ngoài cuộc nhận 404. */
+  /** Cuộc trò chuyện và phía của `userId` (`ownerId` hoặc tài khoản SACO); người ngoài cuộc nhận 404. */
   private async member(
     userId: string,
     convId: string,

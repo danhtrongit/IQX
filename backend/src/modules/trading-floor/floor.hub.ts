@@ -3,7 +3,8 @@
  * của dịch vụ (`FloorEvents`) tới đúng socket. Giao thức JSON trên `/api/v2/trading-floor/ws` (xem
  * `floor-ws.gateway.ts`); xác thực bằng thông điệp `auth` đầu tiên, giống Flashback: `{type:'auth', token}`
  * cho tài khoản đăng nhập hoặc `{type:'auth', guest}` cho khách (token khách do `POST /guest` cấp).
- * Khách đi lại, emote và chat nhanh như mọi người nhưng không có SACO, chat SACO hay hộp thư.
+ * Khách đi lại, emote, chat nhanh và nhắn SACO như mọi người (khoá người chat là `g:<uuid khách>`, xem
+ * `FloorChatService`) nhưng không bao giờ giữ quyền SACO.
  *
  * Trạng thái nằm trong bộ nhớ của tiến trình API. `id` của một nhân vật là mã kết nối, không bao giờ là
  * id tài khoản: cùng một người mở hai tab là hai nhân vật. Hồ sơ lấy từ `tf_profiles`, không tin trình
@@ -17,6 +18,7 @@ import { randomUUID } from 'node:crypto';
 import { Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
+import { FLOOR_PUBLIC_CHAT } from './floor-bots.logic.js';
 import { FloorActors, type FloorActor } from './floor-actor.js';
 import { FloorBots } from './floor-bots.js';
 import { FLOOR_CAPACITY } from './floor-bots.logic.js';
@@ -77,7 +79,7 @@ type Conn = {
   readonly peerId: string;
   /** uuid tài khoản; với khách là `g:<uuid khách>`. Null khi chưa xác thực. */
   userId: string | null;
-  /** Khách chưa đăng nhập: không SACO, không chat SACO, hồ sơ nằm ở `tf_guests`. */
+  /** Khách chưa đăng nhập: không bao giờ là SACO, hồ sơ nằm ở `tf_guests`. */
   guest: boolean;
   /** Có khi đã `hello`: nhân vật đang đứng trên sàn. */
   peer: FloorPeer | null;
@@ -245,7 +247,8 @@ export class FloorHub {
           this.onState(conn, message);
           return;
         case 'emote':
-          this.onEmote(conn, message);
+          // Chat chung đã bỏ (chủ sở hữu, 2026-11-15): bỏ qua lời nói công khai từ client.
+          if (FLOOR_PUBLIC_CHAT) this.onEmote(conn, message);
           return;
         case 'chat:typing':
           await this.onTyping(conn, message);
@@ -293,7 +296,8 @@ export class FloorHub {
     conn.guest = guest;
     if (conn.authTimer) clearTimeout(conn.authTimer);
     conn.authTimer = null;
-    if (!guest) this.presence.connected(userId);
+    // Khách cũng tính là online: để SACO thấy họ trực tuyến và lượt Chat SACO đang chạy bị huỷ khi họ rời.
+    this.presence.connected(userId);
     let sockets = this.byUser.get(userId);
     if (!sockets) this.byUser.set(userId, (sockets = new Set()));
     sockets.add(conn);
@@ -451,10 +455,6 @@ export class FloorHub {
   }
 
   private async onTyping(conn: Conn, message: Record<string, unknown>): Promise<void> {
-    if (conn.guest) {
-      this.error(conn, 'LOGIN_REQUIRED', 'Đăng nhập để dùng tính năng này');
-      return;
-    }
     const now = this.now();
     const convId = message.convId;
     if (now - conn.lastTyping < FLOOR_TYPING_MIN_MS) return;
@@ -522,7 +522,7 @@ export class FloorHub {
       const sockets = this.byUser.get(userId);
       sockets?.delete(conn);
       if (sockets && sockets.size === 0) this.byUser.delete(userId);
-      if (!conn.guest) this.presence.disconnected(userId);
+      this.presence.disconnected(userId);
     }
   }
 

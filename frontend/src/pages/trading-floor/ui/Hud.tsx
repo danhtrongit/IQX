@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react"
+import { MessagesSquare } from "lucide-react"
 import { useNavigate } from "react-router"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -21,18 +21,10 @@ import { PRICE_COLORS, indexTone } from "../net/market/tone.ts"
 import { useStore } from "../use-store.ts"
 import { isTouchDevice, SACO_POSTS_PATH, cx } from "./utils.ts"
 
-const EMOTES = [
-  "👋 Xin chào!",
-  "🙏 Thần Tài phù hộ",
-  "🚀 Lên nào!",
-  "📉 Bình tĩnh nhé",
-  "☕ Cà phê không?",
-  "👍 Chuẩn!",
-]
-
 const SHORTCUTS: { kind: InteractKind; icon: string; label: string }[] = [
   { kind: "thantai", icon: "🙏", label: "Thần Tài" },
   { kind: "posts", icon: "📋", label: "Nhận định" },
+  { kind: "market", icon: "📈", label: "Bảng điện" },
 ]
 
 export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
@@ -49,23 +41,8 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
   const userUnread = unreadAsUser(inbox)
   const saco = inbox?.saco?.active ? inbox.saco : null
   const sacoUnread = unreadAsSaco(inbox)
-  const [emoteOpen, setEmoteOpen] = useState(false)
-  const [draft, setDraft] = useState("")
   const vn = indices?.find((q) => q.code === "VNINDEX")
   const touch = isTouchDevice()
-
-  const say = (text: string): void => {
-    const t = text.trim()
-    if (!t) return
-    commands.emit("emote", t.slice(0, 60))
-    setDraft("")
-    setEmoteOpen(false)
-  }
-
-  const submitEmote = (e: FormEvent): void => {
-    e.preventDefault()
-    say(draft)
-  }
 
   return (
     <div className="hud">
@@ -153,7 +130,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
       </nav>
 
       <div className="emote-wrap">
-        {!emoteOpen && saco && (
+        {saco && (
           <>
             <button
               type="button"
@@ -183,61 +160,23 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
             </button>
           </>
         )}
-        {!emoteOpen && (
-          <button
+        <button
             type="button"
             className="pill chat-pill"
             onClick={chatSaco}
             aria-label={`Chat SACO${userUnread ? `, ${userUnread} tin chưa đọc` : ""}`}
-            title={guest ? "Đăng nhập để chat với SACO" : undefined}
           >
             <span className="pill-ico" aria-hidden="true">
-              🧑‍💼
+              <MessagesSquare size={20} strokeWidth={2.2} />
             </span>
             <span className="pill-label">Chat SACO</span>
             {userUnread > 0 && <span className="count">{userUnread}</span>}
           </button>
-        )}
-        {emoteOpen && (
-          <div className="emote-pop">
-            {EMOTES.map((e) => (
-              <button
-                key={e}
-                type="button"
-                className="emote"
-                onClick={() => say(e)}
-              >
-                {e}
-              </button>
-            ))}
-            <form className="emote-form" onSubmit={submitEmote}>
-              <input
-                value={draft}
-                maxLength={60}
-                placeholder="Nói gì đó…"
-                aria-label="Nội dung muốn nói"
-                onChange={(e) => setDraft(e.target.value)}
-              />
-              <button type="submit" className="btn gold small">
-                Gửi
-              </button>
-            </form>
-          </div>
-        )}
-        <button
-          type="button"
-          className="fab"
-          onClick={() => setEmoteOpen(!emoteOpen)}
-          aria-expanded={emoteOpen}
-          aria-label="Nói chuyện"
-        >
-          💬
-        </button>
       </div>
 
       {!touch && (
         <p className="help">
-          Nhấn chuột để đi · WASD/mũi tên · E để mở · Enter để chat · cuộn để
+          Nhấn chuột để đi · WASD/mũi tên · E để mở · cuộn để
           phóng to
         </p>
       )}

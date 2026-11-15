@@ -45,8 +45,8 @@ export function ReceptionPanel() {
       </p>
       {guest && (
         <p className="muted small">
-          Bạn đang vào bằng nhân vật khách. Đăng nhập để chat với SACO, xin quẻ
-          Thần Tài, thả tim và bình luận nhận định.
+          Bạn đang vào bằng nhân vật khách. Đăng nhập để xin quẻ Thần Tài, thả
+          tim và bình luận nhận định.
         </p>
       )}
       <ul className="places">

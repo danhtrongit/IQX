@@ -63073,10 +63073,6 @@ export type FloorChatConversationErrors = {
    */
   400: ApiErrorV2;
   /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -63137,10 +63133,6 @@ export type FloorChatReadErrors = {
    */
   400: ApiErrorV2;
   /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -63182,10 +63174,6 @@ export type FloorChatSendErrors = {
    */
   400: ApiErrorV2;
   /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -63225,10 +63213,6 @@ export type FloorChatInboxErrors = {
    * Bad request
    */
   400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
   /**
    * Request validation failed
    */
@@ -63355,10 +63339,6 @@ export type FloorChatMatchErrors = {
    */
   400: ApiErrorV2;
   /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -63401,10 +63381,6 @@ export type FloorChatMatchCancelErrors = {
    */
   400: ApiErrorV2;
   /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -63444,10 +63420,6 @@ export type FloorChatOpenErrors = {
    * Bad request
    */
   400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
   /**
    * Request validation failed
    */

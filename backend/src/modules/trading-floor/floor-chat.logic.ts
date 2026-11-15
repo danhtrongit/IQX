@@ -47,6 +47,10 @@ export function cleanText(raw: unknown): string | null {
   return text && text.length <= CHAT_RULES.maxText ? text : null;
 }
 
+/** Tên người chat hiển thị cho SACO và quản trị: khách chưa đăng nhập được đánh dấu để không lẫn với tài khoản. */
+export const guestLabel = (name: string, guest: boolean): string =>
+  guest ? `${name || 'Khách'} (khách)` : name;
+
 /** Trường văn bản ngắn (tên hiển thị SACO): bỏ ký tự điều khiển và `<>`, gộp khoảng trắng, cắt độ dài. */
 export function cleanField(raw: unknown, max: number): string {
   return typeof raw === 'string'

@@ -4,6 +4,8 @@ import { UnauthorizedException } from '@nestjs/common';
 import {
   guestActor,
   hashGuestToken,
+  ownerIdOf,
+  splitOwner,
   userActor,
   type FloorActor,
 } from '../../src/modules/trading-floor/floor-actor.js';
@@ -51,6 +53,25 @@ function makeService(presence = new FloorPresence()) {
   );
   return { service, presence, ...profiles };
 }
+
+describe('chat owner id', () => {
+  it('is the raw account uuid for accounts and g:<uuid> for guests', () => {
+    expect(ownerIdOf(userActor('acct-1'))).toBe('acct-1');
+    expect(ownerIdOf(guestActor(GUEST_ID))).toBe(`g:${GUEST_ID}`);
+  });
+
+  it('splits into exactly one of user_id / guest_id', () => {
+    expect(splitOwner('2f0b8c1e-0000-4000-8000-000000000001')).toEqual({
+      userId: '2f0b8c1e-0000-4000-8000-000000000001',
+      guestId: null,
+    });
+    expect(splitOwner(`g:${GUEST_ID}`)).toEqual({ userId: null, guestId: GUEST_ID });
+    expect(splitOwner(ownerIdOf(guestActor(GUEST_ID)))).toEqual({
+      userId: null,
+      guestId: GUEST_ID,
+    });
+  });
+});
 
 describe('FloorProfileService guests', () => {
   it('creates a guest from a name and avatar, storing only the token hash', async () => {
@@ -109,6 +130,14 @@ describe('FloorProfileService guests', () => {
     });
   });
 
+  it('displayName() reads the guest name for g:<uuid> and the account profile otherwise', async () => {
+    const { service, guests } = makeService();
+    guests.set(GUEST_ID, { name: 'Khách Vui', avatar: 'male03', color: 'teal' });
+    await expect(service.displayName(`g:${GUEST_ID}`)).resolves.toBe('Khách Vui');
+    await expect(service.displayName(`g:${GUEST_ID.replace(/1/g, '2')}`)).resolves.toBe('Khách');
+    await expect(service.displayName('acct-1')).resolves.toBe('Tài khoản');
+  });
+
   it('me() of a guest that no longer exists is 401 GUEST_INVALID', async () => {
     const { service } = makeService();
     await expect(service.me(guestActor(GUEST_ID))).rejects.toMatchObject({
@@ -162,7 +191,14 @@ class FakeSocket implements FloorHubSocket {
 }
 
 function makeHub() {
-  const calls = { findByUser: 0, bindSaco: 0, connected: 0, disconnected: 0, typing: 0 };
+  const calls = {
+    findByUser: 0,
+    bindSaco: 0,
+    connected: 0,
+    disconnected: 0,
+    typing: 0,
+    typingOwner: '',
+  };
   const profileListeners: Array<(id: string, profile: FloorProfile) => void> = [];
   const guestProfile: FloorProfile = { name: 'Khách Vui', avatar: 'female01', color: 'plum' };
   const hub = new FloorHub(
@@ -193,7 +229,10 @@ function makeHub() {
     new FloorEvents(),
     {
       pendingInvite: () => null,
-      typing: async () => void (calls.typing += 1),
+      typing: async (owner: string) => {
+        calls.typing += 1;
+        calls.typingOwner = owner;
+      },
     } as never,
     {
       find: async () => ({ name: 'Tài khoản', avatar: 'male01', color: 'default' }),
@@ -224,7 +263,8 @@ describe('FloorHub guests', () => {
     await hub.message(socket, JSON.stringify({ type: 'auth', guest: GUEST_TOKEN }));
     expect(socket.last('ready')).toEqual({ type: 'ready', userId: `g:${GUEST_ID}`, guest: true });
     expect(calls.findByUser).toBe(0);
-    expect(calls.connected).toBe(0);
+    // Guests are online like accounts: SACO sees them, and closing the tab cancels a running Chat SACO.
+    expect(calls.connected).toBe(1);
 
     await hub.message(socket, HELLO);
     const welcome = socket.last('welcome') as { self: Record<string, unknown> };
@@ -232,7 +272,7 @@ describe('FloorHub guests', () => {
     expect(hub.stats.onFloor).toBe(1);
 
     hub.disconnect(socket);
-    expect(calls.disconnected).toBe(0);
+    expect(calls.disconnected).toBe(1);
     expect(hub.stats.onFloor).toBe(0);
   });
 
@@ -260,7 +300,7 @@ describe('FloorHub guests', () => {
     expect(socket.last('ready')).toBeUndefined();
   });
 
-  it('asks a guest to log in for chat actions and never reaches the chat service', async () => {
+  it('passes a guest typing event to the chat service under the guest key, never as an error', async () => {
     const { hub, calls } = makeHub();
     stop = () => hub.shutdown();
     const socket = new FakeSocket();
@@ -270,11 +310,12 @@ describe('FloorHub guests', () => {
       socket,
       JSON.stringify({ type: 'chat:typing', convId: '22222222-2222-4222-8222-222222222222' }),
     );
-    expect(socket.last('error')).toMatchObject({ code: 'LOGIN_REQUIRED' });
-    expect(calls.typing).toBe(0);
+    expect(socket.last('error')).toBeUndefined();
+    expect(calls.typing).toBe(1);
+    expect(calls.typingOwner).toBe(`g:${GUEST_ID}`);
   });
 
-  it('guests walk and say things like everyone else', async () => {
+  it('guests walk like everyone else; public chat is off', async () => {
     const { hub } = makeHub();
     stop = () => hub.shutdown();
     const guest = new FakeSocket();
@@ -292,7 +333,8 @@ describe('FloorHub guests', () => {
     await hub.message(guest, JSON.stringify({ type: 'emote', text: 'Chào mọi người' }));
     expect(other.last('peer:join')).toMatchObject({ peer: { name: 'Khách Vui' } });
     expect(other.last('peer:state')).toMatchObject({ x: 910, moving: true });
-    expect(other.last('peer:emote')).toMatchObject({ text: 'Chào mọi người' });
+    // Chat chung đã tắt: lời nói công khai không tới ai.
+    expect(other.last('peer:emote')).toBeUndefined();
   });
 
   it('dresses a standing guest in the new character when the profile changes', async () => {

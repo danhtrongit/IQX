@@ -6,6 +6,7 @@ import {
   cleanField,
   cleanSacoName,
   cleanText,
+  guestLabel,
   moveInOrder,
   pickSacoIcon,
   type OrderEntry,
@@ -84,5 +85,13 @@ describe('moveInOrder', () => {
     const before = JSON.stringify(order);
     moveInOrder(order, 'a2', 'up', null);
     expect(JSON.stringify(order)).toBe(before);
+  });
+});
+
+describe('guestLabel', () => {
+  it('marks guests so a SACO or an admin cannot mistake them for an account', () => {
+    expect(guestLabel('Minh Anh', true)).toBe('Minh Anh (khách)');
+    expect(guestLabel('Minh Anh', false)).toBe('Minh Anh');
+    expect(guestLabel('', true)).toBe('Khách (khách)');
   });
 });

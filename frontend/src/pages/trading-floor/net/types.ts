@@ -29,7 +29,7 @@ export const RESERVED_AVATARS: Partial<Record<AvatarId, readonly string[]>> = {
 
 /** Tag shown before the name of whoever wears the avatar. */
 export const AVATAR_BADGES: Partial<Record<AvatarId, string>> = {
-  danhtrongit: "IT ngầu ngầu nhìn bảnh tỏn",
+  danhtrongit: "IT",
 }
 
 export function avatarAllowedFor(id: AvatarId, username: string | null | undefined): boolean {

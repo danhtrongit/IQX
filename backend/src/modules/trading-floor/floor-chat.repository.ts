@@ -9,11 +9,16 @@
 import { Injectable } from '@nestjs/common';
 
 import type { SqlClient } from '../../platform/database/database.service.js';
+import { splitOwner } from './floor-actor.js';
+import { guestLabel } from './floor-chat.logic.js';
 import type { ChatMessage, ChatSender, InviteResult } from './floor-types.js';
 
 export const FLOOR_CHAT_REPOSITORY = Symbol('FLOOR_CHAT_REPOSITORY');
 
-/** Một cuộc trò chuyện kèm mọi thứ cần để dựng `ConvSummary` cho một phía. */
+/**
+ * Một cuộc trò chuyện kèm mọi thứ cần để dựng `ConvSummary` cho một phía. `userId` là chủ cuộc chat
+ * (`ownerId`): uuid tài khoản, hoặc `g:<uuid khách>` khi người chat là khách.
+ */
 export interface ChatConvView {
   readonly id: string;
   readonly userId: string;
@@ -31,6 +36,8 @@ export interface ChatConvView {
   /** Tài khoản đang giữ quyền SACO này. */
   readonly sacoUserId: string;
   readonly userName: string;
+  /** Chủ cuộc chat là khách chưa đăng nhập. */
+  readonly userGuest: boolean;
   readonly last: ChatMessage | null;
   /** Số tin chưa đọc của phía được hỏi. */
   readonly unread: number;
@@ -58,15 +65,16 @@ export interface StaffConvRow {
   readonly last: ChatMessage | null;
 }
 
+/** Mọi tham số `ownerId` là uuid tài khoản hoặc `g:<uuid khách>` (xem `splitOwner`). */
 export interface FloorChatRepository {
   convView(db: SqlClient, convId: string, side: 'user' | 'saco'): Promise<ChatConvView | null>;
-  userConvs(db: SqlClient, userId: string, limit: number): Promise<ChatConvView[]>;
+  userConvs(db: SqlClient, ownerId: string, limit: number): Promise<ChatConvView[]>;
   sacoConvs(db: SqlClient, sacoId: string, limit: number): Promise<ChatConvView[]>;
-  matchedConv(db: SqlClient, userId: string): Promise<MatchedConvRef | null>;
+  matchedConv(db: SqlClient, ownerId: string): Promise<MatchedConvRef | null>;
   /** Tạo cuộc trò chuyện nếu chưa có; `direct` bật cờ nhắn trực tiếp. Trả về id. */
   ensureConv(
     db: SqlClient,
-    userId: string,
+    ownerId: string,
     sacoId: string,
     at: Date,
     options?: { direct?: boolean },
@@ -82,10 +90,11 @@ export interface FloorChatRepository {
   markRead(db: SqlClient, convId: string, side: 'user' | 'saco', at: Date): Promise<void>;
   /** Tin gần nhất theo thứ tự cũ → mới. */
   messages(db: SqlClient, convId: string, limit: number): Promise<ChatMessage[]>;
+  /** `userId` là chủ cuộc chat (uuid tài khoản hoặc `g:<uuid khách>`). */
   convIdsOfSaco(db: SqlClient, sacoId: string): Promise<Array<{ id: string; userId: string }>>;
   insertInvite(
     db: SqlClient,
-    input: { runId: string; userId: string; sacoId: string; result: InviteResult; at: Date },
+    input: { runId: string; ownerId: string; sacoId: string; result: InviteResult; at: Date },
   ): Promise<void>;
   staffInvites(db: SqlClient, leadId: string | null, limit: number): Promise<StaffInviteRow[]>;
   staffConvs(db: SqlClient, leadId: string | null, limit: number): Promise<StaffConvRow[]>;
@@ -99,7 +108,9 @@ const toDate = (value: unknown): Date =>
 const toDateOrNull = (value: unknown): Date | null =>
   value === null || value === undefined ? null : toDate(value);
 
-const USER_NAME = `coalesce(nullif(btrim(p.display_name), ''), nullif(btrim(u.full_name), ''), u.username)`;
+/** Tên người chat: hồ sơ trên sàn, rồi tên khách, rồi họ tên tài khoản (khách không có `u` và `p`). */
+const USER_NAME = `coalesce(nullif(btrim(p.display_name), ''), nullif(btrim(g.display_name), ''), nullif(btrim(u.full_name), ''), u.username)`;
+const OWNER_ID = `coalesce(c.user_id::text, 'g:' || c.guest_id::text)`;
 
 export const toChatMessage = (row: Row): ChatMessage => ({
   id: Number(row.id),
@@ -123,11 +134,11 @@ function convSelect(side: 'user' | 'saco'): string {
   const other = side === 'user' ? 's' : 'u';
   const readColumn = side === 'user' ? 'user_read_at' : 'saco_read_at';
   return `
-    select c.id, c.user_id, c.saco_id, c.matched, c.matched_at, c.direct, c.last_at,
+    select c.id, ${OWNER_ID} as owner_id, c.saco_id, c.matched, c.matched_at, c.direct, c.last_at,
            c.user_read_at, c.saco_read_at,
            s.display_name as saco_name, s.icon as saco_icon, s.active as saco_active,
            s.on_duty as saco_on_duty, s.user_id as saco_user_id,
-           ${USER_NAME} as user_name,
+           ${USER_NAME} as user_name, (c.guest_id is not null) as user_guest,
            lm.id as last_id, lm.sender as last_sender, lm.text as last_text,
            lm.created_at as last_created,
            (select count(*) from tf_chat_messages m
@@ -135,7 +146,8 @@ function convSelect(side: 'user' | 'saco'): string {
                and m.created_at > coalesce(c.${readColumn}, '-infinity'::timestamptz))::int as unread
       from tf_chat_convs c
       join tf_sacos s on s.id = c.saco_id
-      join users u on u.id = c.user_id
+      left join users u on u.id = c.user_id
+      left join tf_guests g on g.id = c.guest_id
       left join tf_profiles p on p.user_id = c.user_id
       left join lateral (
         select id, sender, text, created_at from tf_chat_messages
@@ -145,7 +157,7 @@ function convSelect(side: 'user' | 'saco'): string {
 
 const toConvView = (row: Row): ChatConvView => ({
   id: String(row.id),
-  userId: String(row.user_id),
+  userId: String(row.owner_id),
   sacoId: String(row.saco_id),
   matched: row.matched === true,
   matchedAt: toDateOrNull(row.matched_at),
@@ -159,6 +171,7 @@ const toConvView = (row: Row): ChatConvView => ({
   sacoOnDuty: row.saco_on_duty === true,
   sacoUserId: String(row.saco_user_id),
   userName: String(row.user_name ?? ''),
+  userGuest: row.user_guest === true,
   last: lastOf(row),
   unread: Number(row.unread ?? 0),
 });
@@ -177,10 +190,12 @@ export class PgFloorChatRepository implements FloorChatRepository {
     return rows[0] ? toConvView(rows[0]) : null;
   }
 
-  async userConvs(db: SqlClient, userId: string, limit: number): Promise<ChatConvView[]> {
+  async userConvs(db: SqlClient, ownerId: string, limit: number): Promise<ChatConvView[]> {
+    const { userId, guestId } = splitOwner(ownerId);
     const rows = await db.query<Row>(
-      `${convSelect('user')} where c.user_id = $1 order by c.last_at desc, c.id limit $2`,
-      [userId, limit],
+      `${convSelect('user')} where (c.user_id = $1::uuid or c.guest_id = $2::uuid)
+        order by c.last_at desc, c.id limit $3`,
+      [userId, guestId, limit],
     );
     return rows.map(toConvView);
   }
@@ -193,30 +208,43 @@ export class PgFloorChatRepository implements FloorChatRepository {
     return rows.map(toConvView);
   }
 
-  async matchedConv(db: SqlClient, userId: string): Promise<MatchedConvRef | null> {
+  async matchedConv(db: SqlClient, ownerId: string): Promise<MatchedConvRef | null> {
+    const { userId, guestId } = splitOwner(ownerId);
     const rows = await db.query<Row>(
       `select c.id, c.saco_id from tf_chat_convs c join tf_sacos s on s.id = c.saco_id
-        where c.user_id = $1 and c.matched and s.active
+        where (c.user_id = $1::uuid or c.guest_id = $2::uuid) and c.matched and s.active
         order by c.matched_at desc nulls last, c.id limit 1`,
-      [userId],
+      [userId, guestId],
     );
     return rows[0] ? { id: String(rows[0].id), sacoId: String(rows[0].saco_id) } : null;
   }
 
   async ensureConv(
     db: SqlClient,
-    userId: string,
+    ownerId: string,
     sacoId: string,
     at: Date,
     options: { direct?: boolean } = {},
   ): Promise<string> {
-    const rows = await db.query<Row>(
-      `insert into tf_chat_convs (user_id, saco_id, direct, created_at, last_at)
-       values ($1, $2, $3, $4, $4)
-       on conflict (user_id, saco_id) do update set direct = tf_chat_convs.direct or excluded.direct
-       returning id`,
-      [userId, sacoId, options.direct === true, at],
-    );
+    const { userId, guestId } = splitOwner(ownerId);
+    // Hai đường: khoá duy nhất của khách là chỉ mục từng phần nên `on conflict` phải nêu đúng vị từ đó.
+    const rows =
+      guestId === null
+        ? await db.query<Row>(
+            `insert into tf_chat_convs (user_id, saco_id, direct, created_at, last_at)
+             values ($1, $2, $3, $4, $4)
+             on conflict (user_id, saco_id) do update set direct = tf_chat_convs.direct or excluded.direct
+             returning id`,
+            [userId, sacoId, options.direct === true, at],
+          )
+        : await db.query<Row>(
+            `insert into tf_chat_convs (guest_id, saco_id, direct, created_at, last_at)
+             values ($1, $2, $3, $4, $4)
+             on conflict (guest_id, saco_id) where guest_id is not null
+             do update set direct = tf_chat_convs.direct or excluded.direct
+             returning id`,
+            [guestId, sacoId, options.direct === true, at],
+          );
     return String(rows[0]!.id);
   }
 
@@ -273,20 +301,22 @@ export class PgFloorChatRepository implements FloorChatRepository {
     sacoId: string,
   ): Promise<Array<{ id: string; userId: string }>> {
     const rows = await db.query<Row>(
-      `select id, user_id from tf_chat_convs where saco_id = $1 order by created_at, id`,
+      `select id, coalesce(user_id::text, 'g:' || guest_id::text) as owner_id
+         from tf_chat_convs where saco_id = $1 order by created_at, id`,
       [sacoId],
     );
-    return rows.map((row) => ({ id: String(row.id), userId: String(row.user_id) }));
+    return rows.map((row) => ({ id: String(row.id), userId: String(row.owner_id) }));
   }
 
   async insertInvite(
     db: SqlClient,
-    input: { runId: string; userId: string; sacoId: string; result: InviteResult; at: Date },
+    input: { runId: string; ownerId: string; sacoId: string; result: InviteResult; at: Date },
   ): Promise<void> {
+    const { userId, guestId } = splitOwner(input.ownerId);
     await db.query(
-      `insert into tf_chat_invites (run_id, user_id, saco_id, result, created_at)
-       values ($1, $2, $3, $4, $5)`,
-      [input.runId, input.userId, input.sacoId, input.result, input.at],
+      `insert into tf_chat_invites (run_id, user_id, guest_id, saco_id, result, created_at)
+       values ($1, $2, $3, $4, $5, $6)`,
+      [input.runId, userId, guestId, input.sacoId, input.result, input.at],
     );
   }
 
@@ -297,10 +327,11 @@ export class PgFloorChatRepository implements FloorChatRepository {
   ): Promise<StaffInviteRow[]> {
     const rows = await db.query<Row>(
       `select i.id, i.result, i.created_at, s.display_name as saco_name, s.icon as saco_icon,
-              ${USER_NAME} as user_name
+              ${USER_NAME} as user_name, (i.guest_id is not null) as user_guest
          from tf_chat_invites i
          join tf_sacos s on s.id = i.saco_id
-         join users u on u.id = i.user_id
+         left join users u on u.id = i.user_id
+         left join tf_guests g on g.id = i.guest_id
          left join tf_profiles p on p.user_id = i.user_id
         where ${STAFF_SCOPE}
         order by i.id desc
@@ -309,7 +340,7 @@ export class PgFloorChatRepository implements FloorChatRepository {
     );
     return rows.map((row) => ({
       at: toDate(row.created_at).getTime(),
-      userName: String(row.user_name ?? ''),
+      userName: guestLabel(String(row.user_name ?? ''), row.user_guest === true),
       sacoName: String(row.saco_name),
       sacoIcon: String(row.saco_icon),
       result: row.result as InviteResult,
@@ -339,7 +370,7 @@ export class PgFloorChatRepository implements FloorChatRepository {
 
 const toStaffConv = (row: Row): StaffConvRow => ({
   id: String(row.id),
-  userName: String(row.user_name ?? ''),
+  userName: guestLabel(String(row.user_name ?? ''), row.user_guest === true),
   sacoName: String(row.saco_name),
   sacoIcon: String(row.saco_icon),
   matched: row.matched === true,

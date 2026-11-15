@@ -8,7 +8,7 @@ import "./login-prompt.css"
 
 /**
  * "Đăng nhập để dùng tính năng này": what a guest sees instead of a failed request when they press
- * something that needs an account (Chat SACO, Nhắn SACO, hearts, comments, reports). Opened through
+ * something that needs an account (hearts, comments, reports; Chat SACO is open to guests). Opened through
  * `needLogin()` in the bridge.
  */
 export function LoginPrompt() {
@@ -40,8 +40,8 @@ export function LoginPrompt() {
         </div>
         <h1 id="login-prompt-title">{message}</h1>
         <p className="muted small">
-          Bạn đang vào bằng nhân vật khách. Đăng nhập bằng tài khoản IQX để chat
-          với SACO, thả tim và bình luận nhận định.
+          Bạn đang vào bằng nhân vật khách. Đăng nhập bằng tài khoản IQX để thả
+          tim và bình luận nhận định.
         </p>
         <div className="gate-actions">
           <button

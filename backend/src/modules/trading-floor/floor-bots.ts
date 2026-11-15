@@ -13,6 +13,7 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 
 import {
   ambientLines,
+  FLOOR_PUBLIC_CHAT,
   between,
   botIdentity,
   botsAllowed,
@@ -368,6 +369,7 @@ export class FloorBots {
   }
 
   private speak(now: number): void {
+    if (!FLOOR_PUBLIC_CHAT) return;
     const due = this.lines[0];
     if (due && due.at <= now && now - this.lastLineAt >= LINE_GAP_MS) {
       this.lines.shift();

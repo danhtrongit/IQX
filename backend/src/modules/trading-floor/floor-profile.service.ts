@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
-import { hashGuestToken, newGuestToken, type FloorActor } from './floor-actor.js';
+import { hashGuestToken, newGuestToken, splitOwner, type FloorActor } from './floor-actor.js';
 import {
   GuestCreateLimiter,
   avatarAllowedFor,
@@ -83,11 +83,16 @@ export class FloorProfileService {
     };
   }
 
-  /** Tên và nhân vật hiển thị của một tài khoản: hồ sơ trên sàn, nếu chưa có thì họ tên. */
-  async displayName(userId: string): Promise<string> {
-    const profile = await this.profiles.find(this.database, userId);
+  /**
+   * Tên hiển thị của một chủ cuộc chat (`ownerId`): với tài khoản là hồ sơ trên sàn, nếu chưa có thì họ
+   * tên; với khách (`g:<uuid>`) là tên khách.
+   */
+  async displayName(ownerId: string): Promise<string> {
+    const { userId, guestId } = splitOwner(ownerId);
+    if (guestId) return (await this.profiles.findGuest(this.database, guestId))?.name ?? 'Khách';
+    const profile = await this.profiles.find(this.database, userId!);
     if (profile) return profile.name;
-    const basics = await this.profiles.userBasics(this.database, userId);
+    const basics = await this.profiles.userBasics(this.database, userId!);
     return basics ? suggestName(basics.fullName, basics.username) : 'Khách';
   }
 

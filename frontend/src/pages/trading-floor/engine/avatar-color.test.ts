@@ -36,7 +36,7 @@ describe("avatar catalogue and outfit colors", () => {
     expect(avatarAllowedFor("danhtrongit", "danhtrongit")).toBe(true)
     expect(avatarAllowedFor("danhtrongit", "other")).toBe(false)
     expect(avatarAllowedFor("danhtrongit", undefined)).toBe(false)
-    expect(avatarBadge("danhtrongit")).toBe("IT ngầu ngầu nhìn bảnh tỏn")
+    expect(avatarBadge("danhtrongit")).toBe("IT")
     expect(avatarBadge("male01")).toBeUndefined()
   })
 

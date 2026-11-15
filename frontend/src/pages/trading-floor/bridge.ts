@@ -105,7 +105,7 @@ export interface PostsState {
 
 export const ui = {
   profile: new Store<Profile | null>(null),
-  /** The visitor is not signed in (guest character): SACO chat, hearts and comments need an account. */
+  /** The visitor is not signed in (guest character): hearts, comments and reports need an account; SACO chat does not. */
   guest: new Store<boolean>(false),
   /** Text of the "Đăng nhập để dùng tính năng này" prompt; null while it is closed. */
   loginPrompt: new Store<string | null>(null),
@@ -138,7 +138,7 @@ export function logChat(name: string, text: string, self: boolean): void {
 }
 
 /**
- * For actions that need an account (SACO chat, hearts, comments, reports). Returns true for a guest and
+ * For actions that need an account (hearts, comments, reports). Returns true for a guest and
  * opens the login prompt; the caller then returns without calling the server.
  */
 export function needLogin(feature = "Đăng nhập để dùng tính năng này"): boolean {
