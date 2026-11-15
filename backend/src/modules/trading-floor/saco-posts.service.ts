@@ -70,6 +70,9 @@ export const SACO_COMMENT_COOLDOWN_MS = Symbol('SACO_COMMENT_COOLDOWN_MS');
 
 const ms = (value: Date | string): number => new Date(value).getTime();
 
+/** Người xem chưa đăng nhập (khách trong khu): không có tim, bình luận hay quyền ẩn nào. */
+const NO_VIEWER = '00000000-0000-0000-0000-000000000000';
+
 const unavailable = () =>
   new GoneException({ code: 'POST_UNAVAILABLE', message: 'Bài viết không còn hiển thị' });
 const postNotFound = () =>
@@ -154,28 +157,28 @@ export class SacoPostsService {
   // ================================================================== người đọc
 
   /** Bài đăng hôm nay (theo ngày Việt Nam) của các SACO còn quyền, mới nhất trước. */
-  async today(user: AuthenticatedUser): Promise<{ date: string; items: PostCard[] }> {
+  async today(user: AuthenticatedUser | null): Promise<{ date: string; items: PostCard[] }> {
     const now = this.now();
     const rows = await this.repository.listToday(
       this.database,
       vnDayStart(now),
       vnNextDayStart(now),
-      user.id,
+      user?.id ?? NO_VIEWER,
       TODAY_LIMIT,
     );
     return { date: vnDateString(now), items: rows.map((row) => toCard(row)) };
   }
 
   /** Bài đã đăng của SACO còn quyền đọc được mọi ngày; còn lại là 410. */
-  async detail(user: AuthenticatedUser, id: string): Promise<PostDetail> {
-    const row = await this.readable(id, user.id);
+  async detail(user: AuthenticatedUser | null, id: string): Promise<PostDetail> {
+    const row = await this.readable(id, user?.id ?? NO_VIEWER);
     return {
       ...toCard(row),
       bodyHtml: sanitizePostHtml(row.bodyHtml),
       sacoOnDuty: row.sacoOnDuty,
       sacoActive: row.sacoActive,
-      canModerate: await this.canModerate(user, row),
-      isAuthor: row.sacoUserId === user.id,
+      canModerate: user ? await this.canModerate(user, row) : false,
+      isAuthor: user !== null && row.sacoUserId === user.id,
     };
   }
 
@@ -206,11 +209,12 @@ export class SacoPostsService {
   }
 
   async comments(
-    user: AuthenticatedUser,
+    user: AuthenticatedUser | null,
     id: string,
   ): Promise<{ total: number; items: PostComment[] }> {
-    const row = await this.readable(id, user.id);
-    const items = await this.repository.listComments(this.database, id, user.id, COMMENTS_LIMIT);
+    const viewerId = user?.id ?? NO_VIEWER;
+    const row = await this.readable(id, viewerId);
+    const items = await this.repository.listComments(this.database, id, viewerId, COMMENTS_LIMIT);
     return { total: row.commentCount, items: items.map(toComment) };
   }
 

@@ -25,7 +25,6 @@ export const RUNTIME_JOB_NAMES = [
   'flashback.round-cycle',
   'flashback.rooms-sweep',
   'flashback.dataset-refresh',
-  'trading-floor.ritual-score',
 ] as const;
 
 export type RuntimeJobName = (typeof RUNTIME_JOB_NAMES)[number];

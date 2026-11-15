@@ -1,14 +1,16 @@
 /**
- * API đọc của "SACO nhận định": bảng hôm nay, bài, tim, bình luận và ảnh trong bài. Mọi đường dẫn
- * yêu cầu đăng nhập, trừ ảnh (phát công khai theo uuid, cache dài).
+ * API đọc của "SACO nhận định": bảng hôm nay, bài, tim, bình luận và ảnh trong bài. Đọc bảng hôm nay, đọc
+ * một bài, đọc bình luận và xem ảnh không cần đăng nhập (khách trong khu đọc được; có Bearer thì trả
+ * thêm tim và quyền của chính người xem). Thả tim, bình luận, báo cáo, ẩn vẫn yêu cầu đăng nhập.
  */
 
-import { Body, Controller, Delete, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Req } from '@nestjs/common';
 import { Res } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { FastifyReply } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 
+import { AuthService } from '../auth/auth.service.js';
 import { CurrentUser, Public, type AuthenticatedUser } from '../auth/index.js';
 import { SacoPostsImagesService } from './saco-posts-images.service.js';
 import {
@@ -31,29 +33,38 @@ export class SacoPostsController {
   constructor(
     private readonly posts: SacoPostsService,
     private readonly images: SacoPostsImagesService,
+    @Inject(AuthService) private readonly auth: Pick<AuthService, 'authenticate'>,
   ) {}
 
+  /** Người xem nếu có `Authorization: Bearer` (token sai hoặc hết hạn vẫn là 401); không có thì khách. */
+  private async viewer(req: FastifyRequest): Promise<AuthenticatedUser | null> {
+    const token = /^Bearer\s+(.+)$/i.exec(req.headers.authorization ?? '')?.[1]?.trim();
+    return token ? this.auth.authenticate(token) : null;
+  }
+
+  @Public()
   @Get('posts/today')
   @ApiOperation({
     operationId: 'tradingFloorPostsToday',
     summary: 'Bài SACO nhận định đăng hôm nay (giờ Việt Nam), mới nhất trước',
   })
   @ApiOkResponse({ schema: openapi(todayResponseSchema) })
-  today(@CurrentUser() user: AuthenticatedUser) {
-    return this.posts.today(user);
+  async today(@Req() req: FastifyRequest) {
+    return this.posts.today(await this.viewer(req));
   }
 
+  @Public()
   @Get('posts/:id')
   @ApiOperation({
     operationId: 'tradingFloorPostDetail',
     summary: 'Đọc một bài; bài bị ẩn hoặc SACO đã bị gỡ quyền trả 410 POST_UNAVAILABLE',
   })
   @ApiOkResponse({ schema: openapi(postDetailSchema) })
-  detail(
-    @CurrentUser() user: AuthenticatedUser,
+  async detail(
+    @Req() req: FastifyRequest,
     @Param('id', { schema: uuidParamSchema }) id: string,
   ) {
-    return this.posts.detail(user, id);
+    return this.posts.detail(await this.viewer(req), id);
   }
 
   @Post('posts/:id/heart')
@@ -68,17 +79,18 @@ export class SacoPostsController {
     return this.posts.heart(user, id, body.on);
   }
 
+  @Public()
   @Get('posts/:id/comments')
   @ApiOperation({
     operationId: 'tradingFloorPostComments',
     summary: 'Bình luận đang hiện của một bài, mới nhất trước',
   })
   @ApiOkResponse({ schema: openapi(commentsResponseSchema) })
-  comments(
-    @CurrentUser() user: AuthenticatedUser,
+  async comments(
+    @Req() req: FastifyRequest,
     @Param('id', { schema: uuidParamSchema }) id: string,
   ) {
-    return this.posts.comments(user, id);
+    return this.posts.comments(await this.viewer(req), id);
   }
 
   @Post('posts/:id/comments')

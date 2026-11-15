@@ -1,6 +1,6 @@
 /**
- * Sự kiện thời gian thực của Khu giao dịch trong cùng tiến trình API. Các dịch vụ (chat, nghi lễ,
- * nhận định) gọi `emit` sau khi transaction đã commit; `FloorHub` nghe và chuyển tới các socket.
+ * Sự kiện thời gian thực của Khu giao dịch trong cùng tiến trình API. Các dịch vụ (chat, nhận định)
+ * gọi `emit` sau khi transaction đã commit; `FloorHub` nghe và chuyển tới các socket.
  * Một người nghe lỗi không bao giờ làm hỏng luồng nghiệp vụ.
  *
  * Trạng thái nằm trong bộ nhớ của một tiến trình API, giống máy chủ phòng Flashback.

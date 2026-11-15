@@ -2,20 +2,16 @@ import { useEffect, useMemo, useState, type FormEvent } from "react"
 
 import { world } from "../../bridge.ts"
 import { directory, quotes, searchDirectory } from "../../net/market.ts"
-import {
-  formatIndex,
-  formatPercent,
-  formatPrice,
-} from "../../net/market/format.ts"
+import { formatIndex, formatPercent } from "../../net/market/format.ts"
 import {
   heatColour,
   heatPct,
   heatPrice,
   marketWeather,
 } from "../../net/market/heat.ts"
-import { PRICE_COLORS, indexTone, priceTone } from "../../net/market/tone.ts"
+import { PRICE_COLORS, indexTone } from "../../net/market/tone.ts"
 import type { DirectoryEntry, Quote } from "../../net/market/types.ts"
-import { TICKER_RE } from "../../ritual.ts"
+import { TICKER_RE } from "../../than-tai.ts"
 import { useStore } from "../../use-store.ts"
 import { cx } from "../utils.ts"
 
@@ -50,17 +46,13 @@ type Tab = "vn30" | "watch" | "edit"
 
 const stockHref = (symbol: string): string => `/co-phieu/${symbol}`
 
-/** Bảng điện: VN30 heatmap, the visitor's watchlist and the most-prayed tickers. */
+/** Bảng điện: VN30 heatmap and the visitor's watchlist. */
 export function MarketPanel() {
   const indices = useStore(world.indices)
   const vn30 = useStore(world.vn30)
-  const ritual = useStore(world.ritual)
   const [tab, setTab] = useState<Tab>("vn30")
   const [watch, setWatch] = useState<string[]>(loadWatch)
   const [watchRows, setWatchRows] = useState<Record<string, Quote>>({})
-  const [topRows, setTopRows] = useState<Record<string, Quote>>({})
-  const top = useMemo(() => ritual?.topTickers ?? [], [ritual])
-  const topKey = top.map((t) => t.symbol).join(",")
   const watchKey = watch.join(",")
   const vnindex = indices?.find((q) => q.code === "VNINDEX")
   const weather = marketWeather(vnindex)
@@ -85,16 +77,6 @@ export function MarketPanel() {
       clearInterval(timer)
     }
   }, [watchKey])
-
-  useEffect(() => {
-    let live = true
-    quotes(topKey ? topKey.split(",") : [])
-      .then((r) => live && setTopRows(r))
-      .catch(() => live && setTopRows({}))
-    return () => {
-      live = false
-    }
-  }, [topKey])
 
   const tiles =
     tab === "vn30"
@@ -180,48 +162,6 @@ export function MarketPanel() {
         )}
       </div>
 
-      <h3>Mã được khấn nhiều nhất hôm nay</h3>
-      {top.length === 0 && (
-        <p className="muted">Chưa có ai khấn trong phiên này.</p>
-      )}
-      {top.length > 0 && (
-        <table className="quote-table">
-          <thead>
-            <tr>
-              <th>Mã</th>
-              <th>Giá</th>
-              <th>+/-</th>
-              <th>Lượt khấn</th>
-            </tr>
-          </thead>
-          <tbody>
-            {top.map((t) => {
-              const q = topRows[t.symbol]
-              const colour = q ? PRICE_COLORS[priceTone(q)] : undefined
-              return (
-                <tr key={t.symbol}>
-                  <td>
-                    <a
-                      href={stockHref(t.symbol)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {t.symbol}
-                    </a>
-                  </td>
-                  <td style={{ color: colour }}>
-                    {q ? formatPrice(q.price) : "—"}
-                  </td>
-                  <td style={{ color: colour }}>
-                    {q ? formatPercent(q.pct) : "—"}
-                  </td>
-                  <td>{t.count}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      )}
       <p className="fineprint">
         Nguồn: dữ liệu thị trường IQX · giá nghìn đồng. Viền sáng: mã bạn đang
         theo dõi.

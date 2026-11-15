@@ -1,19 +1,13 @@
 /**
  * The only link between the Phaser world and the HTML screens.
  * The game writes what the player is near and asks for panels; the UI writes profile, market
- * and ritual data and sends commands back. Neither side imports the other.
+ * data and sends commands back. Neither side imports the other.
  *
  * Every store here is a module singleton: `resetBridge()` returns them to their initial value
  * when the floor unmounts, so navigating away and back starts clean.
  */
 import type { IndexQuote, Quote } from "./net/market/types.ts"
-import {
-  normalizeAvatarId,
-  type LeaderRow,
-  type PostCard,
-  type Profile,
-  type RitualStats,
-} from "./net/types.ts"
+import { normalizeAvatarId, type PostCard, type Profile } from "./net/types.ts"
 
 export class Store<T> {
   private value: T
@@ -69,8 +63,7 @@ export class Emitter<Events extends Record<string, unknown>> {
 }
 
 /** Screens that open as a sheet. */
-export type PanelKind =
-  "thantai" | "leaderboard" | "market" | "reception" | "chat"
+export type PanelKind = "thantai" | "market" | "reception" | "chat"
 /** Everything the player can walk up to: a sheet, or the SACO nhận định slide-over. */
 export type InteractKind = PanelKind | "posts"
 
@@ -112,6 +105,10 @@ export interface PostsState {
 
 export const ui = {
   profile: new Store<Profile | null>(null),
+  /** The visitor is not signed in (guest character): SACO chat, hearts and comments need an account. */
+  guest: new Store<boolean>(false),
+  /** Text of the "Đăng nhập để dùng tính năng này" prompt; null while it is closed. */
+  loginPrompt: new Store<string | null>(null),
   panel: new Store<Panel | null>(null),
   /** The SACO nhận định slide-over (rendered by the posts layer). */
   posts: new Store<PostsState>({ open: false, postId: null }),
@@ -138,6 +135,16 @@ export function logChat(name: string, text: string, self: boolean): void {
   chatLineId += 1
   const line: ChatLine = { id: chatLineId, name, text, self, at: Date.now() }
   ui.chatLog.update((lines) => [...lines, line].slice(-CHAT_HISTORY_MAX))
+}
+
+/**
+ * For actions that need an account (SACO chat, hearts, comments, reports). Returns true for a guest and
+ * opens the login prompt; the caller then returns without calling the server.
+ */
+export function needLogin(feature = "Đăng nhập để dùng tính năng này"): boolean {
+  if (!ui.guest.get()) return false
+  ui.loginPrompt.set(feature)
+  return true
 }
 
 /** A text field has the keyboard (the chat composer, the join card, the auth dialog...). */
@@ -176,13 +183,11 @@ export function avatarImage(
   return images[norm] ?? images[id] ?? Object.values(images)[0]
 }
 
-/** Data shown inside the world (LED wall, statues, shrine counter, wall board). */
+/** Data shown inside the world (LED wall, wall board). */
 export const world = {
   indices: new Store<IndexQuote[] | null>(null),
   /** VN30 quotes in basket order, for the LED heatmap and the market panel. */
   vn30: new Store<Quote[] | null>(null),
-  leaders: new Store<LeaderRow[]>([]),
-  ritual: new Store<RitualStats | null>(null),
   /** Today's SACO nhận định, newest first. Written by the posts layer, read by the wall board. */
   posts: new Store<PostCard[]>([]),
 }
@@ -190,7 +195,7 @@ export const world = {
 export const commands = new Emitter<{
   /** UI → game: show a speech bubble over the player and send it to everyone. */
   emote: string
-  /** UI → game: the shrine celebrates a finished ritual. `luck` 1–5. */
+  /** UI → game: the shrine celebrates a finished Thần Tài ritual. `luck` 1–5 from the rank of the quẻ. */
   celebrate: { luck: number; name: string; self: boolean }
   /** UI → game: the player walks to an interactable and opens it. */
   goTo: InteractKind

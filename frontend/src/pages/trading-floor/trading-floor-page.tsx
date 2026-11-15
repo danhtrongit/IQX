@@ -2,15 +2,31 @@ import { useQuery } from "@tanstack/react-query"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { useAuth } from "@/hooks/use-auth"
+import { ApiError } from "@/lib/api"
 
-import { resetBridge, ui } from "./bridge.ts"
+import { resetBridge, toast, ui } from "./bridge.ts"
 import { loadAvatarArt } from "./engine/assets.ts"
 import { floorApi } from "./net/api.ts"
+import { getGuestToken, setGuestToken } from "./net/guest.ts"
+import { floorSocket } from "./net/socket.ts"
 import type { MeResponse } from "./net/types.ts"
 import { FloorUi } from "./ui/FloorUi.tsx"
+import { LoginPrompt } from "./ui/LoginPrompt.tsx"
 import "./trading-floor.css"
 
-/** Full-height card over the dark backdrop: guests, expired sessions and load errors. */
+/** What a visitor with no saved character starts from: the join card creates a guest character. */
+const NEW_GUEST: MeResponse = {
+  profile: null,
+  suggestedName: "",
+  saco: null,
+  guest: true,
+}
+
+/** The server does not know this guest token (cleaned up, or forged). */
+const isGuestInvalid = (error: unknown): boolean =>
+  error instanceof ApiError && error.status === 401
+
+/** Full-height card over the dark backdrop: load errors and the auth check. */
 function Gate({
   emoji,
   title,
@@ -47,8 +63,21 @@ function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
 
   // Before paint, so a returning player never sees the join card flash up.
   useLayoutEffect(() => {
+    ui.guest.set(me.guest === true)
     ui.profile.set(me.profile)
   }, [me])
+
+  // The server forgot this guest (their token no longer matches): back to the join card for a new one.
+  useEffect(
+    () =>
+      floorSocket.on("error", (m) => {
+        if (m.code !== "GUEST_INVALID") return
+        setGuestToken(null)
+        ui.profile.set(null)
+        toast("Phiên khách đã hết hạn, hãy tạo lại nhân vật.", "warn")
+      }),
+    []
+  )
 
   useEffect(() => {
     const el = stage.current
@@ -76,6 +105,7 @@ function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
       <div ref={stage} className="tf-game" />
       <div className="tf-ui">
         <FloorUi suggestedName={me.suggestedName} />
+        <LoginPrompt />
       </div>
       {failed && (
         <Gate
@@ -92,18 +122,43 @@ function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
   )
 }
 
-function SignedIn({ userId }: { userId: string }) {
+/**
+ * Loads the character of the visitor (account, or the guest whose token the browser kept) and opens the
+ * floor. A visitor with no saved guest token goes straight to the join card.
+ */
+function Entry({ userId }: { userId: string | null }) {
+  // Read once: the token appears later only through the join card, which keeps this page mounted.
+  const [guestToken] = useState(() =>
+    userId === null ? getGuestToken() : null
+  )
+  const enabled = userId !== null || guestToken !== null
   const me = useQuery({
-    queryKey: ["trading-floor", "me", userId],
+    queryKey: ["trading-floor", "me", userId ?? `guest:${guestToken ?? ""}`],
     queryFn: () => floorApi.me(),
+    enabled,
     // Always read the server: a profile saved last visit must not come back from a cache.
     gcTime: 0,
     staleTime: 0,
-    retry: 1,
+    retry: (count, error) =>
+      userId === null && isGuestInvalid(error) ? false : count < 1,
     refetchOnWindowFocus: false,
   })
   const [attempt, setAttempt] = useState(0)
+  const guestInvalid = userId === null && me.isError && isGuestInvalid(me.error)
 
+  useEffect(() => {
+    if (guestInvalid) setGuestToken(null)
+  }, [guestInvalid])
+
+  if (userId === null && (!enabled || guestInvalid)) {
+    return (
+      <Floor
+        key={attempt}
+        me={NEW_GUEST}
+        onRetry={() => setAttempt((n) => n + 1)}
+      />
+    )
+  }
   if (me.isError) {
     return (
       <Gate
@@ -140,56 +195,16 @@ function SignedIn({ userId }: { userId: string }) {
 }
 
 export function TradingFloorPage() {
-  const { user, isLoading, isAuthenticated, sessionExpired, openAuth } =
-    useAuth()
-  const prompted = useRef(false)
+  const { user, isLoading } = useAuth()
 
-  // Guests get the login dialog once; the card stays behind it for when they close it.
-  useEffect(() => {
-    if (isLoading || isAuthenticated || prompted.current) return
-    prompted.current = true
-    openAuth("login")
-  }, [isLoading, isAuthenticated, openAuth])
-
-  let content: React.ReactNode
-  if (isLoading) {
-    content = (
-      <div className="gate" role="status">
-        <p className="muted">Đang kiểm tra đăng nhập…</p>
-      </div>
-    )
-  } else if (user) {
-    content = <SignedIn key={user.id} userId={user.id} />
-  } else {
-    content = (
-      <Gate
-        emoji="🏛️"
-        title={sessionExpired ? "Phiên đăng nhập đã hết hạn" : "Khu giao dịch"}
-        text={
-          sessionExpired
-            ? "Đăng nhập lại để quay về khu giao dịch."
-            : "Đăng nhập để bước vào khu giao dịch: gặp nhà đầu tư khác, xin quẻ Thần Tài và đọc nhận định của SACO."
-        }
-      >
-        <button
-          type="button"
-          className="btn gold"
-          onClick={() => openAuth("login")}
-        >
-          Đăng nhập
-        </button>
-        {!sessionExpired && (
-          <button
-            type="button"
-            className="btn ghost"
-            onClick={() => openAuth("register")}
-          >
-            Đăng ký
-          </button>
-        )}
-      </Gate>
-    )
-  }
+  // No login wall: a visitor who is not signed in enters as a guest with a name and a character.
+  const content = isLoading ? (
+    <div className="gate" role="status">
+      <p className="muted">Đang kiểm tra đăng nhập…</p>
+    </div>
+  ) : (
+    <Entry key={user?.id ?? "guest"} userId={user?.id ?? null} />
+  )
 
   return (
     <div className="tf-root relative h-full min-h-0 min-w-0 flex-1 overflow-hidden">

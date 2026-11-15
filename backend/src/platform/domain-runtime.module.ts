@@ -35,8 +35,6 @@ import { FlashbackJob } from '../modules/flashback/flashback.job.js';
 import { FlashbackDatasetJob, requestedByFromJobId } from '../modules/flashback/flashback-dataset.job.js';
 import { FlashbackRoomsJob } from '../modules/flashback/flashback-rooms.job.js';
 import { FlashbackModule } from '../modules/flashback/flashback.module.js';
-import { FloorRitualJob } from '../modules/trading-floor/floor-ritual.job.js';
-import { TradingFloorModule } from '../modules/trading-floor/trading-floor.module.js';
 import {
   RuntimeModule,
   type JobOutcome,
@@ -109,15 +107,10 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly symbolAttributes?: SymbolAttributesService,
     private readonly indexMembership?: IndexMembershipService,
     private readonly marketBulletins?: MarketBulletinsJob,
-    private readonly floorRitual?: FloorRitualJob,
   ) {}
 
   handlers(): RuntimeJobHandlers {
     return {
-      'trading-floor.ritual-score': async () => {
-        if (!this.floorRitual) return { status: 'skipped', reason: 'trading-floor-unavailable' };
-        return this.floorRitual.run();
-      },
       'flashback.round-cycle': async () => {
         if (!this.flashback) return { status: 'skipped', reason: 'flashback-unavailable' };
         return this.flashback.run();
@@ -607,7 +600,6 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     ResearchModule,
     FlashbackModule,
     MarketBulletinsModule,
-    TradingFloorModule,
   ],
   providers: [DomainRuntimeJobs],
   exports: [DomainRuntimeJobs],

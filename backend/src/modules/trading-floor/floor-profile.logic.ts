@@ -19,6 +19,10 @@ export const FLOOR_EMOTE_MAX = 60;
 /** Toạ độ lớn nhất chấp nhận (giống `WORLD_MAX` của KGD). */
 export const FLOOR_WORLD_MAX = 10_000;
 
+/** Khách: mỗi IP tạo tối đa bấy nhiêu nhân vật trong một giờ. */
+export const FLOOR_GUEST_CREATE_MAX = 10;
+export const FLOOR_GUEST_CREATE_WINDOW_MS = 60 * 60 * 1000;
+
 /** Giới hạn tần suất của một kết nối (ms). */
 export const FLOOR_STATE_MIN_MS = 50;
 export const FLOOR_EMOTE_MIN_MS = 1500;
@@ -87,4 +91,36 @@ export function stateGate(
   const change = next.moving !== previous.moving || next.facing !== previous.facing;
   if (!change && now - lastAt < FLOOR_STATE_MIN_MS) return { allow: false, reliable: false };
   return { allow: true, reliable: change };
+}
+
+/**
+ * Hạn mức tạo nhân vật khách theo IP (cửa sổ trượt, trong bộ nhớ của tiến trình API). `take` ghi nhận
+ * một lần tạo và trả false khi IP đã dùng hết hạn mức trong cửa sổ.
+ */
+export class GuestCreateLimiter {
+  private readonly hits = new Map<string, number[]>();
+
+  constructor(
+    private readonly max = FLOOR_GUEST_CREATE_MAX,
+    private readonly windowMs = FLOOR_GUEST_CREATE_WINDOW_MS,
+    private readonly maxKeys = 5_000,
+  ) {}
+
+  take(key: string, now: number): boolean {
+    const recent = (this.hits.get(key) ?? []).filter((at) => now - at < this.windowMs);
+    if (recent.length >= this.max) {
+      this.hits.set(key, recent);
+      return false;
+    }
+    recent.push(now);
+    this.hits.set(key, recent);
+    if (this.hits.size > this.maxKeys) this.prune(now);
+    return true;
+  }
+
+  private prune(now: number): void {
+    for (const [key, times] of this.hits) {
+      if (times.every((at) => now - at >= this.windowMs)) this.hits.delete(key);
+    }
+  }
 }

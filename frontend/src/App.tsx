@@ -79,6 +79,7 @@ const CourseEditPage = lazyPage(() => import("@/pages/admin/learning/course-edit
 const SacoManagePage = lazyPage(() => import("@/pages/admin/saco/saco-manage-page").then(module => ({ default: module.SacoManagePage })))
 const MyPostsPage = lazyPage(() => import("@/pages/admin/saco/my-posts-page").then(module => ({ default: module.MyPostsPage })))
 const PostEditorPage = lazyPage(() => import("@/pages/admin/saco/post-editor-page").then(module => ({ default: module.PostEditorPage })))
+const ThanTaiAdminPage = lazyPage(() => import("@/pages/admin/than-tai/than-tai-page").then(module => ({ default: module.ThanTaiAdminPage })))
 
 function RedirectWithSearch({ to, tab }: { to: string; tab?: string }) {
   const location = useLocation()
@@ -175,6 +176,7 @@ export const routes: RouteObject[] = [
           { path: "saco/posts", Component: MyPostsPage },
           { path: "saco/posts/new", Component: PostEditorPage },
           { path: "saco/posts/:id", Component: PostEditorPage },
+          { path: "than-tai", Component: ThanTaiAdminPage },
         ],
       },
       { path: "503", Component: MaintenancePage, handle: { chrome: emptyChrome } },

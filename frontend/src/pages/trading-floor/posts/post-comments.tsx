@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState, type FormEvent } from "react"
 import { errorMessage } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
-import { toast } from "../bridge"
+import { needLogin, toast, ui } from "../bridge"
 import { floorSocket } from "../net/socket"
 import type { PostComment } from "../net/types"
+import { useStore } from "../use-store"
 import { COMMENT_MAX, postsApi, type PostComments as CommentsData } from "./api"
 import { timeAgo } from "./format"
 
@@ -34,6 +35,7 @@ export function PostComments({
   const [sending, setSending] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const guest = useStore(ui.guest)
   const now = useNow()
 
   const load = useCallback(
@@ -155,35 +157,47 @@ export function PostComments({
       <h3 id={`tf-post-comments-${postId}`} className="tf-post-comments-title">
         Bình luận ({data?.total ?? 0})
       </h3>
-      <form className="tf-post-comment-form" onSubmit={submit}>
-        <textarea
-          className="tf-post-comment-input"
-          value={text}
-          rows={3}
-          maxLength={COMMENT_MAX + 50}
-          placeholder="Viết bình luận…"
-          aria-label="Viết bình luận"
-          aria-invalid={tooLong}
-          onChange={(event) => setText(event.target.value)}
-        />
-        <div className="tf-post-comment-form-foot">
-          <span
-            className={cn(
-              "tf-post-comment-counter",
-              tooLong && "tf-post-comment-counter--over"
-            )}
-          >
-            {trimmed.length}/{COMMENT_MAX}
-          </span>
+      {guest ? (
+        <div className="tf-post-comment-form">
           <button
-            type="submit"
+            type="button"
             className="tf-post-btn tf-post-btn--gold"
-            disabled={!trimmed || tooLong || sending}
+            onClick={() => needLogin("Đăng nhập để bình luận")}
           >
-            {sending ? "Đang gửi…" : "Gửi"}
+            Đăng nhập để bình luận
           </button>
         </div>
-      </form>
+      ) : (
+        <form className="tf-post-comment-form" onSubmit={submit}>
+          <textarea
+            className="tf-post-comment-input"
+            value={text}
+            rows={3}
+            maxLength={COMMENT_MAX + 50}
+            placeholder="Viết bình luận…"
+            aria-label="Viết bình luận"
+            aria-invalid={tooLong}
+            onChange={(event) => setText(event.target.value)}
+          />
+          <div className="tf-post-comment-form-foot">
+            <span
+              className={cn(
+                "tf-post-comment-counter",
+                tooLong && "tf-post-comment-counter--over"
+              )}
+            >
+              {trimmed.length}/{COMMENT_MAX}
+            </span>
+            <button
+              type="submit"
+              className="tf-post-btn tf-post-btn--gold"
+              disabled={!trimmed || tooLong || sending}
+            >
+              {sending ? "Đang gửi…" : "Gửi"}
+            </button>
+          </div>
+        </form>
+      )}
 
       {loadError && !data ? (
         <div className="tf-post-comments-state">
@@ -283,14 +297,15 @@ export function PostComments({
                     type="button"
                     className="tf-post-link"
                     disabled={comment.reported || busyId === comment.id}
-                    onClick={() =>
+                    onClick={() => {
+                      if (needLogin("Đăng nhập để báo cáo bình luận")) return
                       void run(
                         comment.id,
                         () => postsApi.reportComment(comment.id),
                         () => patch(comment.id, { reported: true }),
                         "Đã gửi báo cáo"
                       )
-                    }
+                    }}
                   >
                     {comment.reported ? "Đã báo cáo" : "Báo cáo"}
                   </button>

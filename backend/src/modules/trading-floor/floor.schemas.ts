@@ -20,21 +20,6 @@ export const floorProfileBodySchema = z.strictObject({
 });
 export type FloorProfileBody = z.infer<typeof floorProfileBodySchema>;
 
-export const ritualSubmitBodySchema = z.strictObject({
-  direction: z.enum(['up', 'down']),
-  level: z.number().positive().max(1_000_000),
-  tickers: z.array(z.string().max(16)).max(10),
-});
-export type RitualSubmitBody = z.infer<typeof ritualSubmitBodySchema>;
-
-export const leaderboardQuerySchema = z.object({
-  month: z
-    .string()
-    .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
-    .optional(),
-});
-export type LeaderboardQuery = z.infer<typeof leaderboardQuerySchema>;
-
 export const floorIdParamSchema = z.uuid();
 export const floorInviteIdParamSchema = z.coerce.number().int().min(1).max(2_147_483_647);
 
@@ -105,34 +90,6 @@ const convSummary = z.object({
   unread: z.number().int(),
 });
 
-const que = z.object({
-  id: z.number().int(),
-  name: z.string(),
-  luck: z.number().int(),
-  verse: z.string(),
-  advice: z.string(),
-});
-
-const myRitual = z.object({
-  session: z.string(),
-  queId: z.number().int(),
-  direction: z.enum(['up', 'down']).nullable(),
-  level: z.number().nullable(),
-  tickers: z.array(z.string()),
-  createdAt: z.number(),
-  correct: z.boolean().nullable(),
-  error: z.number().nullable(),
-});
-
-const ritualStats = z.object({
-  session: z.string(),
-  total: z.number().int(),
-  up: z.number().int(),
-  down: z.number().int(),
-  avgLevel: z.number().nullable(),
-  topTickers: z.array(z.object({ symbol: z.string(), count: z.number().int() })),
-});
-
 const manageSaco = z.object({
   id: z.string(),
   userId: z.string(),
@@ -164,45 +121,16 @@ const manageConv = z.object({
 });
 
 export const FLOOR_ME_SCHEMA = openapi(
-  z.object({ profile: profile.nullable(), suggestedName: z.string(), saco: sacoSelf.nullable() }),
+  z.object({
+    profile: profile.nullable(),
+    suggestedName: z.string(),
+    saco: sacoSelf.nullable(),
+    guest: z.boolean(),
+  }),
 );
 export const FLOOR_PROFILE_SCHEMA = openapi(profile);
-export const FLOOR_RITUAL_TODAY_SCHEMA = openapi(
-  z.object({
-    session: z.string(),
-    cutoffAt: z.number(),
-    mine: myRitual.nullable(),
-    stats: ritualStats,
-    lastResult: z
-      .object({
-        session: z.string(),
-        close: z.number(),
-        change: z.number(),
-        total: z.number().int(),
-        correct: z.number().int(),
-      })
-      .nullable(),
-  }),
-);
-export const FLOOR_RITUAL_DRAW_SCHEMA = openapi(z.object({ que, ritual: myRitual }));
-export const FLOOR_RITUAL_SUBMIT_SCHEMA = openapi(
-  z.object({ mine: myRitual, stats: ritualStats, que }),
-);
-export const FLOOR_LEADERBOARD_SCHEMA = openapi(
-  z.object({
-    month: z.string(),
-    rows: z.array(
-      z.object({
-        rank: z.number().int(),
-        id: z.string(),
-        name: z.string(),
-        avatar: z.enum(FLOOR_AVATARS),
-        correct: z.number().int(),
-        total: z.number().int(),
-        avgError: z.number().nullable(),
-      }),
-    ),
-  }),
+export const FLOOR_GUEST_CREATED_SCHEMA = openapi(
+  z.object({ token: z.string(), guestId: z.string(), profile }),
 );
 export const FLOOR_INBOX_SCHEMA = openapi(
   z.object({
