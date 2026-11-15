@@ -188,13 +188,13 @@ export function altarCopy(status: ThanTaiStatus, drawn: boolean): AltarCopy {
     case "chua_khan":
       return {
         status: "Mỗi ngày một lần, trước 11:30.",
-        button: "🙏 Thành tâm khấn",
+        button: "Thành tâm khấn",
         primary: true,
       }
     case "dang_do":
       return {
         status: "Bạn đang khấn dở. Thành tâm làm tiếp nhé.",
-        button: "🙏 Khấn tiếp",
+        button: "Khấn tiếp",
         primary: true,
       }
     case "da_xong":

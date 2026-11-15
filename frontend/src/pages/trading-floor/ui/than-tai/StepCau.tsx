@@ -1,3 +1,4 @@
+import { X } from "lucide-react"
 /** Step 3: offer up to 3 listed stocks in the gold-ingot slots, or skip. */
 import { useEffect, useMemo, useState, type KeyboardEvent } from "react"
 
@@ -139,7 +140,7 @@ export function StepCau({ act, onDone }: Props) {
                       setChosen(chosen.filter((c) => c !== symbol))
                     }
                   >
-                    ✕
+                    <X size={12} aria-hidden="true" />
                   </button>
                   <span className="tt-slot-t">{symbol}</span>
                 </>

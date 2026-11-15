@@ -600,15 +600,20 @@
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 6px;
+  padding: 4px;
+  /* Cùng chiều cao với nút Chat SACO ở góc phải để hai cụm thẳng hàng. */
+  box-sizing: border-box;
+  height: 56px;
+  align-items: center;
 }
 .tf-root .shortcut {
   display: grid;
   justify-items: center;
-  gap: 0;
+  align-content: center;
+  gap: 2px;
   min-width: 60px;
-  min-height: 52px;
-  padding: 6px 8px;
+  height: 46px;
+  padding: 2px 8px;
   border: 0;
   border-radius: 12px;
   background: transparent;
@@ -625,6 +630,7 @@
 .tf-root .emote-wrap {
   position: absolute;
   right: 12px;
+  align-items: end;
   bottom: calc(14px + var(--safe-b));
   display: grid;
   justify-items: end;
@@ -1558,7 +1564,7 @@
   justify-content: center;
   gap: 8px;
 }
-.tf-root .big-emoji {
+.tf-root .big-icon {
   font-size: 40px;
   line-height: 1;
 }
@@ -2074,6 +2080,8 @@
   right: -5px;
 }
 .tf-root .chat-pill {
+  box-sizing: border-box;
+  height: 56px;
   background: linear-gradient(180deg, #f6d27a, #d9a73a);
   color: #23170a;
   border: 0;
@@ -2104,6 +2112,14 @@
   .tf-root .pill {
     padding: 5px;
     min-height: 0;
+  }
+  .tf-root .chat-pill {
+    width: 56px;
+    justify-content: center;
+  }
+  .tf-root .chat-pill .pill-ico {
+    width: 46px;
+    height: 46px;
   }
   .tf-root .pill-label {
     display: none;
@@ -2142,7 +2158,7 @@
   font-size: 22px;
   font-weight: 800;
 }
-.tf-root .gate-card .big-emoji {
+.tf-root .gate-card .big-icon {
   font-size: 40px;
   line-height: 1;
 }
@@ -2178,4 +2194,30 @@
 .tf-root .hall-queue b {
   font-size: 1.25em;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- lucide icons replacing emoji ---------- */
+.tf-root .big-icon {
+  display: flex;
+  justify-content: center;
+  line-height: 1;
+}
+.tf-root .sheet-icon,
+.tf-root .place-icon,
+.tf-root .icon-btn,
+.tf-root .me {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tf-root .me {
+  gap: 4px;
+}
+.tf-root .ticker-chip svg {
+  flex: none;
+}
+.tf-root .ico-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }

@@ -2,8 +2,8 @@
  * SACO nhận định trong khu giao dịch: bảng cố định góc phải trên và bảng trượt bên phải
  * (danh sách hôm nay ↔ trang đọc bài). Giữ `world.posts` khớp máy chủ cho bảng tường Phaser.
  */
-import { useEffect, useRef, type KeyboardEvent } from "react"
-import { ChevronRight, X } from "lucide-react"
+import { useEffect, useRef, useState, type KeyboardEvent } from "react"
+import { ChevronDown, ChevronRight, ChevronUp, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -41,36 +41,88 @@ function PostsBoard({
   fresh: ReadonlySet<string>
 }) {
   const top = posts.slice(0, BOARD_ROWS)
+  const compact = useCompactScreen()
+  // Trên điện thoại bảng mặc định thu gọn thành một dải tiêu đề để không che sàn.
+  const [expanded, setExpanded] = useState(false)
+  if (compact && !expanded) {
+    return (
+      <button
+        type="button"
+        className="tf-posts-board tf-posts-board--collapsed tf-post-theme"
+        onClick={() => setExpanded(true)}
+        aria-expanded={false}
+        aria-label={`SACO nhận định, ${posts.length} bài hôm nay. Mở rộng`}
+      >
+        <span className="tf-posts-board-title">
+          SACO NHẬN ĐỊNH
+          {posts.length > 0 && (
+            <span className="tf-posts-board-count">{posts.length}</span>
+          )}
+          <ChevronDown aria-hidden="true" className="tf-posts-board-toggle" />
+        </span>
+      </button>
+    )
+  }
   return (
-    <button
-      type="button"
-      className="tf-posts-board tf-post-theme"
-      onClick={() => openPosts()}
-      aria-label={`SACO nhận định, ${posts.length} bài hôm nay. Mở danh sách`}
-    >
-      <span className="tf-posts-board-title">SACO NHẬN ĐỊNH</span>
-      {top.length === 0 ? (
-        <span className="tf-posts-board-empty">Chưa có nhận định hôm nay</span>
-      ) : (
-        top.map((post) => (
-          <span
-            key={post.id}
-            className={cn(
-              "tf-posts-board-row",
-              fresh.has(post.id) && "tf-posts-board-row--flash"
-            )}
-          >
-            <span className="tf-posts-board-saco">{post.sacoName}</span>
-            <span className="tf-posts-board-headline">{post.headline}</span>
-          </span>
-        ))
+    <div className="tf-posts-board-wrap">
+      {compact && (
+        <button
+          type="button"
+          className="tf-posts-board-collapse"
+          onClick={() => setExpanded(false)}
+          aria-expanded={true}
+          aria-label="Thu gọn SACO nhận định"
+        >
+          <ChevronUp aria-hidden="true" />
+        </button>
       )}
-      <span className="tf-posts-board-more">
-        Chạm để xem tất cả
-        <ChevronRight aria-hidden="true" className="tf-posts-board-chevron" />
-      </span>
-    </button>
+      <button
+        type="button"
+        className="tf-posts-board tf-post-theme"
+        onClick={() => openPosts()}
+        aria-label={`SACO nhận định, ${posts.length} bài hôm nay. Mở danh sách`}
+      >
+        <span className="tf-posts-board-title">SACO NHẬN ĐỊNH</span>
+        {top.length === 0 ? (
+          <span className="tf-posts-board-empty">
+            Chưa có nhận định hôm nay
+          </span>
+        ) : (
+          top.map((post) => (
+            <span
+              key={post.id}
+              className={cn(
+                "tf-posts-board-row",
+                fresh.has(post.id) && "tf-posts-board-row--flash"
+              )}
+            >
+              <span className="tf-posts-board-saco">{post.sacoName}</span>
+              <span className="tf-posts-board-headline">{post.headline}</span>
+            </span>
+          ))
+        )}
+        <span className="tf-posts-board-more">
+          Chạm để xem tất cả
+          <ChevronRight aria-hidden="true" className="tf-posts-board-chevron" />
+        </span>
+      </button>
+    </div>
   )
+}
+
+/** Màn hình hẹp (điện thoại, ≤ 640px), theo dõi khi xoay máy. */
+function useCompactScreen(): boolean {
+  const query = "(max-width: 640px)"
+  const [compact, setCompact] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(query).matches
+  )
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const onChange = () => setCompact(media.matches)
+    media.addEventListener("change", onChange)
+    return () => media.removeEventListener("change", onChange)
+  }, [])
+  return compact
 }
 
 function PostsPanel({

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { WifiOff, Wrench, type LucideIcon } from "lucide-react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -28,12 +29,12 @@ const isGuestInvalid = (error: unknown): boolean =>
 
 /** Full-height card over the dark backdrop: load errors and the auth check. */
 function Gate({
-  emoji,
+  icon: Icon,
   title,
   text,
   children,
 }: {
-  emoji: string
+  icon: LucideIcon
   title: string
   text: string
   children?: React.ReactNode
@@ -41,8 +42,8 @@ function Gate({
   return (
     <div className="gate" role="region" aria-label={title}>
       <div className="gate-card">
-        <div className="big-emoji" aria-hidden="true">
-          {emoji}
+        <div className="big-icon" aria-hidden="true">
+          <Icon size={40} />
         </div>
         <h1>{title}</h1>
         <p className="muted">{text}</p>
@@ -109,7 +110,7 @@ function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
       </div>
       {failed && (
         <Gate
-          emoji="🛠️"
+          icon={Wrench}
           title="Không mở được Khu giao dịch"
           text="Không tải được hình ảnh hoặc đồ họa của khu giao dịch. Kiểm tra kết nối rồi thử lại."
         >
@@ -162,7 +163,7 @@ function Entry({ userId }: { userId: string | null }) {
   if (me.isError) {
     return (
       <Gate
-        emoji="📡"
+        icon={WifiOff}
         title="Không tải được Khu giao dịch"
         text={me.error.message || "Kiểm tra kết nối rồi thử lại."}
       >

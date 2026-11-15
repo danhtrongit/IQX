@@ -1,3 +1,4 @@
+import { Sparkles, User } from "lucide-react"
 import { useEffect, useRef, useState, type FormEvent } from "react"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -108,7 +109,7 @@ function AvatarPreview({
     return (
       <div className="preview-stage">
         <div className="avatar-ph" aria-hidden="true">
-          👤
+          <User size={24} />
         </div>
       </div>
     )
@@ -217,8 +218,8 @@ export function JoinScreen({
           </p>
         ) : (
           <p className="muted">
-            Văn phòng ảo của IQX: đọc nhận định SACO, chat với SACO và khấn
-            Thần Tài gieo quẻ mỗi sáng.
+            Văn phòng ảo của IQX: đọc nhận định SACO, chat với SACO và khấn Thần
+            Tài gieo quẻ mỗi sáng.
           </p>
         )}
 
@@ -267,7 +268,7 @@ export function JoinScreen({
                   style={c.hex ? { backgroundColor: c.hex } : undefined}
                   onClick={() => setColor(c.id)}
                 >
-                  {c.hex === null ? "✦" : ""}
+                  {c.hex === null && <Sparkles size={12} aria-hidden="true" />}
                 </button>
               ))}
             </div>
@@ -316,7 +317,7 @@ export function JoinScreen({
                   <img src={images[a.id]} alt="" />
                 ) : (
                   <div className="avatar-ph" aria-hidden="true">
-                    👤
+                    <User size={24} />
                   </div>
                 )}
                 <span>{a.label.replace(/^(Nam|Nữ)\s*·\s*/, "")}</span>

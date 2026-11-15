@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react"
 import { useEffect } from "react"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -35,8 +36,8 @@ export function LoginPrompt() {
       onClick={close}
     >
       <div className="gate-card" onClick={(e) => e.stopPropagation()}>
-        <div className="big-emoji" aria-hidden="true">
-          🔒
+        <div className="big-icon" aria-hidden="true">
+          <Lock size={40} />
         </div>
         <h1 id="login-prompt-title">{message}</h1>
         <p className="muted small">

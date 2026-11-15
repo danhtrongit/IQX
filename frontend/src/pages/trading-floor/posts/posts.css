@@ -346,12 +346,53 @@
 }
 
 /* ---------- Điện thoại ---------- */
+.tf-root .tf-posts-board-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--tfp-gold-ink);
+  color: #f6d27a;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.tf-root .tf-posts-board-toggle {
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  flex: none;
+}
+.tf-root .tf-posts-board-collapse {
+  position: absolute;
+  z-index: 16;
+  top: calc(56px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 27px;
+  border: 0;
+  border-radius: 0 12px 0 8px;
+  background: transparent;
+  color: var(--tfp-gold-ink);
+}
 @media (max-width: 640px) {
   .tf-root .tf-posts-board {
-    left: 12px;
+    left: auto;
     right: 12px;
-    width: auto;
+    width: min(300px, calc(100% - 24px));
     max-width: none;
+  }
+  .tf-root .tf-posts-board--collapsed {
+    width: auto;
+    padding: 0;
+  }
+  .tf-root .tf-posts-board--collapsed .tf-posts-board-title {
+    display: flex;
+    align-items: center;
   }
   .tf-root .tf-posts-panel {
     left: 0;

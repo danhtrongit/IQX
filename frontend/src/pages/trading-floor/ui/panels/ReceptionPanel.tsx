@@ -1,28 +1,35 @@
+import {
+  ChartCandlestick,
+  ClipboardList,
+  Landmark,
+  type LucideIcon,
+} from "lucide-react"
+
 import { commands, ui, type InteractKind } from "../../bridge.ts"
 import { useStore } from "../../use-store.ts"
 import { isTouchDevice } from "../utils.ts"
 
 const PLACES: {
   kind: InteractKind
-  icon: string
+  icon: LucideIcon
   name: string
   text: string
 }[] = [
   {
     kind: "thantai",
-    icon: "🙏",
+    icon: Landmark,
     name: "Thần Tài",
     text: "Mỗi ngày một lượt trước 11:30: lắc ống xăm gieo quẻ Kinh Dịch, dự đoán VNINDEX, cầu tối đa 3 mã và xem cả sàn đang nghĩ gì.",
   },
   {
     kind: "posts",
-    icon: "📋",
+    icon: ClipboardList,
     name: "SACO NHẬN ĐỊNH",
     text: "Bảng trên tường: nhận định mới nhất của các SACO trong ngày. Đọc bài, thả tim, bình luận và nhắn SACO.",
   },
   {
     kind: "market",
-    icon: "📊",
+    icon: ChartCandlestick,
     name: "Bảng điện",
     text: "Chỉ số VN-Index, VN30, HNX, UPCoM cập nhật trong phiên.",
   },
@@ -53,7 +60,7 @@ export function ReceptionPanel() {
         {PLACES.map((p) => (
           <li key={p.kind}>
             <span className="place-icon" aria-hidden="true">
-              {p.icon}
+              <p.icon size={24} />
             </span>
             <div>
               <b>{p.name}</b>

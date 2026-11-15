@@ -139,18 +139,18 @@ describe("ThanTaiPanel", () => {
     expect(
       await screen.findByText("Mỗi ngày một lần, trước 11:30.")
     ).toBeTruthy()
-    await user.click(screen.getByRole("button", { name: "🙏 Thành tâm khấn" }))
+    await user.click(screen.getByRole("button", { name: "Thành tâm khấn" }))
 
     const dialog = screen.getByRole("dialog", { name: "Khấn Thần Tài" })
     await user.click(
-      within(dialog).getByRole("button", { name: "🙏 Lắc ống xăm" })
+      within(dialog).getByRole("button", { name: "Lắc ống xăm" })
     )
     expect(await within(dialog).findByText("水雷屯")).toBeTruthy()
     expect(within(dialog).getByText(/☵ Khảm trên/)).toBeTruthy()
     // The luận stays behind its button on the first reading.
     expect(within(dialog).queryByText(LA.chot)).toBeNull()
     await user.click(
-      within(dialog).getByRole("button", { name: "🔮 Xin thầy luận" })
+      within(dialog).getByRole("button", { name: "Xin thầy luận" })
     )
     expect(within(dialog).getByText(LA.chot)).toBeTruthy()
     expect(
@@ -202,7 +202,7 @@ describe("ThanTaiPanel", () => {
     )
     render(<ThanTaiPanel />)
     await user.click(
-      await screen.findByRole("button", { name: "🙏 Khấn tiếp" })
+      await screen.findByRole("button", { name: "Khấn tiếp" })
     )
     expect(screen.getByText("Cầu mã tăng")).toBeTruthy()
   })
@@ -214,9 +214,9 @@ describe("ThanTaiPanel", () => {
     api.draw.mockRejectedValue(new ApiError("late", 409, { code: "HET_GIO" }))
     render(<ThanTaiPanel />)
     await user.click(
-      await screen.findByRole("button", { name: "🙏 Thành tâm khấn" })
+      await screen.findByRole("button", { name: "Thành tâm khấn" })
     )
-    await user.click(screen.getByRole("button", { name: "🙏 Lắc ống xăm" }))
+    await user.click(screen.getByRole("button", { name: "Lắc ống xăm" }))
     await waitFor(() =>
       expect(screen.queryByRole("dialog", { name: "Khấn Thần Tài" })).toBeNull()
     )
@@ -232,13 +232,13 @@ describe("ThanTaiPanel", () => {
     api.draw.mockResolvedValue(today({ status: "dang_do", step: 2, la: LA }))
     render(<ThanTaiPanel />)
     await user.click(
-      await screen.findByRole("button", { name: "🙏 Thành tâm khấn" })
+      await screen.findByRole("button", { name: "Thành tâm khấn" })
     )
-    await user.click(screen.getByRole("button", { name: "🙏 Lắc ống xăm" }))
+    await user.click(screen.getByRole("button", { name: "Lắc ống xăm" }))
     expect(
       await screen.findByText("Chưa gửi được, bạn thử lại nhé")
     ).toBeTruthy()
-    await user.click(screen.getByRole("button", { name: "🙏 Lắc lại" }))
+    await user.click(screen.getByRole("button", { name: "Lắc lại" }))
     expect(await screen.findByText("水雷屯")).toBeTruthy()
   })
 })

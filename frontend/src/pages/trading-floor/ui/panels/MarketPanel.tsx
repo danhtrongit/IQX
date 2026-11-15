@@ -1,3 +1,4 @@
+import { X } from "lucide-react"
 import { useEffect, useMemo, useState, type FormEvent } from "react"
 
 import { world } from "../../bridge.ts"
@@ -128,9 +129,7 @@ export function MarketPanel() {
                 : "—"}
             </b>
             {" · "}
-            <span>
-              {weather.icon} {weather.label}
-            </span>
+            <span>{weather.label}</span>
           </div>
         </div>
 
@@ -237,7 +236,7 @@ function WatchEditor({
             onClick={() => onChange(watch.filter((x) => x !== s))}
             aria-label={`Bỏ ${s}`}
           >
-            {s} ✕
+            {s} <X size={12} aria-hidden="true" />
           </button>
         ))}
         {!watch.length && <span className="muted small">Danh mục trống.</span>}

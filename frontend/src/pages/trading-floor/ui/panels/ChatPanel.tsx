@@ -1,3 +1,4 @@
+import { Ban, MessageCircle, Search } from "lucide-react"
 import {
   useEffect,
   useLayoutEffect,
@@ -59,8 +60,8 @@ export function ChatPanel({
     if (!saco.active) {
       return (
         <div className="chat-gone">
-          <div className="big-emoji" aria-hidden="true">
-            🚫
+          <div className="big-icon" aria-hidden="true">
+            <Ban size={40} />
           </div>
           <b>Tài khoản này không còn quyền SACO</b>
           <p className="muted small">
@@ -99,7 +100,7 @@ function SacoBar({ saco }: { saco: SacoSelf }) {
   return (
     <div className="saco-bar">
       <span className="chat-av" aria-hidden="true">
-        {saco.icon}
+        {saco.name.trim().charAt(0).toUpperCase()}
       </span>
       <div className="saco-who">
         <b>{saco.name}</b>
@@ -155,7 +156,10 @@ function ChatBody({ side, list, selected, onSelect, finder }: BodyProps) {
             className="find-saco"
             onClick={() => void findSaco()}
           >
-            🔍 Tìm SACO đang rảnh
+            <span className="ico-line">
+              <Search size={14} aria-hidden="true" />
+              Tìm SACO đang rảnh
+            </span>
             <small>Khớp với một SACO đang trực để được trả lời ngay</small>
           </button>
         )}
@@ -186,8 +190,8 @@ function ChatBody({ side, list, selected, onSelect, finder }: BodyProps) {
           />
         ) : side === "user" ? (
           <div className="chat-welcome">
-            <div className="big-emoji" aria-hidden="true">
-              💬
+            <div className="big-icon" aria-hidden="true">
+              <MessageCircle size={40} />
             </div>
             <b>Cần SACO hướng dẫn?</b>
             <p className="muted small">
@@ -199,7 +203,10 @@ function ChatBody({ side, list, selected, onSelect, finder }: BodyProps) {
               className="btn gold"
               onClick={() => void findSaco()}
             >
-              🔍 Tìm SACO đang rảnh
+              <span className="ico-line">
+                <Search size={16} aria-hidden="true" />
+                Tìm SACO đang rảnh
+              </span>
             </button>
           </div>
         ) : (

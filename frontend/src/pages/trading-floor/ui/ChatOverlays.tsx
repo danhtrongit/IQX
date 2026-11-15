@@ -1,3 +1,4 @@
+import { Moon } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { openPanel } from "../bridge.ts"
@@ -38,8 +39,8 @@ export function MatchOverlay() {
         aria-label="Chưa có SACO rảnh"
       >
         <div className="chat-ov-box">
-          <div className="big-emoji" aria-hidden="true">
-            😴
+          <div className="big-icon" aria-hidden="true">
+            <Moon size={40} />
           </div>
           <h3>Chưa có SACO rảnh</h3>
           <p className="muted small">

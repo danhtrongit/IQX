@@ -109,11 +109,7 @@ export function StepDraw({
           disabled={phase !== "idle"}
           onClick={() => void shake()}
         >
-          {phase === "idle"
-            ? error
-              ? "🙏 Lắc lại"
-              : "🙏 Lắc ống xăm"
-            : "Đang lắc…"}
+          {phase === "idle" ? (error ? "Lắc lại" : "Lắc ống xăm") : "Đang lắc…"}
         </button>
       </div>
     </>
