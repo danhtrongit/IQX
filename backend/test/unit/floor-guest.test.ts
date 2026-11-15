@@ -200,6 +200,7 @@ function makeHub() {
     typingOwner: '',
   };
   const profileListeners: Array<(id: string, profile: FloorProfile) => void> = [];
+  const sacoListeners: Array<(id: string, saco: boolean) => void> = [];
   const guestProfile: FloorProfile = { name: 'Khách Vui', avatar: 'female01', color: 'plum' };
   const hub = new FloorHub(
     {} as never,
@@ -224,6 +225,10 @@ function makeHub() {
         profileListeners.push(fn);
         return () => undefined;
       },
+      onSacoChanged: (fn: (id: string, saco: boolean) => void) => {
+        sacoListeners.push(fn);
+        return () => undefined;
+      },
       bindSaco: () => void (calls.bindSaco += 1),
     } as never,
     new FloorEvents(),
@@ -244,14 +249,14 @@ function makeHub() {
       }),
     } as never,
     {
-      findByUser: async () => {
+      findByUser: async (_db: unknown, id: string) => {
         calls.findByUser += 1;
-        return null;
+        return id === 'acct-saco' ? { id: 'saco-1', active: true } : null;
       },
     } as never,
     { authTimeoutMs: 60_000 },
   );
-  return { hub, calls, profileListeners };
+  return { hub, calls, profileListeners, sacoListeners };
 }
 
 const HELLO = JSON.stringify({ type: 'hello', x: 900, y: 700, facing: 's', moving: false });
@@ -342,6 +347,35 @@ describe('FloorHub guests', () => {
     expect(other.last('peer:emote')).toBeUndefined();
     await hub.message(other, JSON.stringify({ type: 'emote', text: 'Chào' }));
     expect(guest.last('peer:emote')).toBeUndefined();
+  });
+
+  it('marks the character of a SACO account, and follows a grant or a removal live', async () => {
+    const { hub, sacoListeners } = makeHub();
+    stop = () => hub.shutdown();
+    const saco = new FakeSocket();
+    const plain = new FakeSocket();
+    const guest = new FakeSocket();
+    for (const socket of [saco, plain, guest]) hub.connect(socket);
+    await hub.message(guest, JSON.stringify({ type: 'auth', guest: GUEST_TOKEN }));
+    await hub.message(guest, HELLO);
+    await hub.message(saco, JSON.stringify({ type: 'auth', token: 'acct-saco' }));
+    await hub.message(saco, HELLO);
+    await hub.message(plain, JSON.stringify({ type: 'auth', token: 'acct-2' }));
+    await hub.message(plain, HELLO);
+
+    expect(saco.last('welcome')).toMatchObject({ self: { saco: true } });
+    const joins = guest.sent.filter((m) => m.type === 'peer:join').map((m) => m.peer);
+    expect(joins).toHaveLength(2);
+    expect(joins[0]).toMatchObject({ saco: true });
+    expect(joins[1]).not.toHaveProperty('saco');
+    const peers = plain.last('welcome')!.peers as Array<Record<string, unknown>>;
+    expect(peers.filter((p) => p.saco === true)).toHaveLength(1);
+
+    // Quyền bị gỡ rồi tài khoản khác được gán: cả sàn thấy nhãn đổi ngay.
+    for (const fn of sacoListeners) fn('acct-saco', false);
+    expect(guest.last('peer:update')!.peer).not.toHaveProperty('saco');
+    for (const fn of sacoListeners) fn('acct-2', true);
+    expect(guest.last('peer:update')).toMatchObject({ peer: { saco: true } });
   });
 
   it('the owner account still speaks in public and everyone on the floor hears it', async () => {

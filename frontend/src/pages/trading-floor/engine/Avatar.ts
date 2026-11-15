@@ -1,6 +1,11 @@
 import * as Phaser from "phaser"
-import type { Facing } from "../net/types.ts"
-import { type CharacterArt, type FrameArt, type WalkArt, walkAnimKey } from "./assets.ts"
+import type { Facing, NameBadge } from "../net/types.ts"
+import {
+  type CharacterArt,
+  type FrameArt,
+  type WalkArt,
+  walkAnimKey,
+} from "./assets.ts"
 
 export const DEPTH_LABEL = 1_000_000
 const FACINGS: Facing[] = ["e", "se", "s", "sw", "w", "nw", "n", "ne"]
@@ -12,10 +17,37 @@ export function facingOf(dx: number, dy: number): Facing {
   return FACINGS[i]
 }
 
+interface BadgeArt {
+  bg: Phaser.GameObjects.Graphics
+  label: Phaser.GameObjects.Text
+  w: number
+}
+
+/** Pill colours: gold for the owner tag, bright teal for SACO; dark text on both. */
+const BADGE_TONES: Record<
+  NameBadge["tone"],
+  { text: string; glow: number; fill: number; shine: number; line: number }
+> = {
+  owner: {
+    text: "#2a1a02",
+    glow: 0xffc83d,
+    fill: 0xf5b81c,
+    shine: 0xffe58a,
+    line: 0xfff3c4,
+  },
+  saco: {
+    text: "#022a26",
+    glow: 0x2ee6c8,
+    fill: 0x14c8ac,
+    shine: 0x7ff2dc,
+    line: 0xc9fff4,
+  },
+}
+
 export interface AvatarOptions {
   name: string
-  /** Tag drawn before the name (owner-only avatars). */
-  badge?: string
+  /** Pills drawn before the name (owner-only avatar, SACO). */
+  badges?: NameBadge[]
   /** Small line under the name (role). */
   title?: string
   kind: "self" | "peer" | "npc"
@@ -44,9 +76,7 @@ export class Avatar {
   private art: CharacterArt
   private readonly shadow: Phaser.GameObjects.Image
   private readonly tag: Phaser.GameObjects.Text | null
-  private badgeBg: Phaser.GameObjects.Graphics | null = null
-  private badgeText: Phaser.GameObjects.Text | null = null
-  private badgeW = 0
+  private badges: BadgeArt[] = []
   private readonly height: number
   private readonly bubbleSide: "above" | "right"
   private bubble: Phaser.GameObjects.Text | null = null
@@ -101,7 +131,7 @@ export class Avatar {
               resolution: 3,
             })
             .setOrigin(0.5, 1)
-    if (this.tag && opts.badge) this.makeBadge(scene, opts.badge)
+    if (this.tag) for (const b of opts.badges ?? []) this.makeBadge(b)
     this.refresh()
     this.place()
   }
@@ -148,7 +178,8 @@ export class Avatar {
 
   /** Glide characters (no walk art yet) bob while moving; the walk takes over once its sheet has loaded. */
   tick(dtMs: number): void {
-    if (this.moving && this.shown === null && this.walkFor(this.facing)) this.refresh()
+    if (this.moving && this.shown === null && this.walkFor(this.facing))
+      this.refresh()
     if (this.moving && !this.walkFor(this.facing)) {
       this.bob += dtMs / 1000
       this.place()
@@ -194,35 +225,54 @@ export class Avatar {
     this.sprite.destroy()
     this.shadow.destroy()
     this.tag?.destroy()
-    this.badgeBg?.destroy()
-    this.badgeText?.destroy()
+    this.clearBadges()
   }
 
-  /** Short pill badge (e.g. "IT") drawn just left of the name tag, gold with a soft glow. */
-  private makeBadge(scene: Phaser.Scene, text: string): void {
-    const label = scene.add
-      .text(0, 0, text, {
+  /** Replaces the pills before the name where the character stands (a SACO right granted or removed). */
+  setBadges(badges: NameBadge[]): void {
+    this.clearBadges()
+    if (this.tag) for (const b of badges) this.makeBadge(b)
+    this.place()
+  }
+
+  private clearBadges(): void {
+    for (const b of this.badges) {
+      b.bg.destroy()
+      b.label.destroy()
+    }
+    this.badges = []
+  }
+
+  /** Short pill badge (e.g. "IT", "SACO") drawn just left of the name tag, in its tone with a soft glow. */
+  private makeBadge(badge: NameBadge): void {
+    const tone = BADGE_TONES[badge.tone]
+    const label = this.scene.add
+      .text(0, 0, badge.text, {
         fontFamily: '"Be Vietnam Pro", system-ui, sans-serif',
         fontSize: "11px",
         fontStyle: "800",
-        color: "#2a1a02",
+        color: tone.text,
         resolution: 3,
       })
       .setOrigin(0.5, 0.5)
     const w = Math.ceil(label.width) + 12
     const h = 17
-    const g = scene.add.graphics()
-    g.fillStyle(0xffc83d, 0.28)
+    const g = this.scene.add.graphics()
+    g.fillStyle(tone.glow, 0.28)
     g.fillRoundedRect(-w / 2 - 2, -h / 2 - 2, w + 4, h + 4, (h + 4) / 2)
-    g.fillStyle(0xf5b81c, 1)
+    g.fillStyle(tone.fill, 1)
     g.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2)
-    g.fillStyle(0xffe58a, 1)
-    g.fillRoundedRect(-w / 2 + 2, -h / 2 + 1.5, w - 4, h / 2 - 1.5, (h / 2 - 1.5) / 2)
-    g.lineStyle(1, 0xfff3c4, 0.95)
+    g.fillStyle(tone.shine, 1)
+    g.fillRoundedRect(
+      -w / 2 + 2,
+      -h / 2 + 1.5,
+      w - 4,
+      h / 2 - 1.5,
+      (h / 2 - 1.5) / 2
+    )
+    g.lineStyle(1, tone.line, 0.95)
     g.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2)
-    this.badgeBg = g
-    this.badgeText = label
-    this.badgeW = w
+    this.badges.push({ bg: g, label, w })
   }
 
   private place(): void {
@@ -231,17 +281,21 @@ export class Avatar {
       : 0
     this.sprite.setPosition(this.x, this.y - lift).setDepth(this.y)
     this.shadow.setPosition(this.x, this.y - 1).setDepth(this.y - 0.5)
-    if (this.tag && this.badgeBg && this.badgeText) {
+    if (this.tag && this.badges.length) {
       const gap = 4
-      const left = this.x - (this.badgeW + gap + this.tag.width) / 2
-      const bx = left + this.badgeW / 2
+      const badgesW = this.badges.reduce((sum, b) => sum + b.w + gap, 0)
+      let left = this.x - (badgesW + this.tag.width) / 2
       // Level with the first line of the name tag (13px text + 2px padding).
       const by = this.headY - this.tag.height + 11
+      for (const b of this.badges) {
+        const bx = left + b.w / 2
+        b.bg.setPosition(bx, by).setDepth(DEPTH_LABEL + this.y)
+        b.label.setPosition(bx, by + 0.5).setDepth(DEPTH_LABEL + this.y + 0.1)
+        left += b.w + gap
+      }
       this.tag
-        .setPosition(left + this.badgeW + gap + this.tag.width / 2, this.headY)
+        .setPosition(left + this.tag.width / 2, this.headY)
         .setDepth(DEPTH_LABEL + this.y)
-      this.badgeBg.setPosition(bx, by).setDepth(DEPTH_LABEL + this.y)
-      this.badgeText.setPosition(bx, by + 0.5).setDepth(DEPTH_LABEL + this.y + 0.1)
     } else {
       this.tag?.setPosition(this.x, this.headY).setDepth(DEPTH_LABEL + this.y)
     }
@@ -288,7 +342,9 @@ export class Avatar {
     const walk = this.moving ? this.walkFor(this.facing) : undefined
     const ref = walk?.speedRef
     this.sprite.anims.timeScale =
-      walk && ref && this.speed > 0 ? Math.max(0.5, Math.min(2, this.speed / ref)) : 1
+      walk && ref && this.speed > 0
+        ? Math.max(0.5, Math.min(2, this.speed / ref))
+        : 1
   }
 
   private refresh(): void {

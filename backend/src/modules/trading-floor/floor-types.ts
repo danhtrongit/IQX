@@ -63,6 +63,8 @@ export interface FloorPeerState {
 /** `id` là mã kết nối, không bao giờ là id tài khoản. */
 export interface FloorPeer extends FloorProfile, FloorPeerState {
   id: string;
+  /** Tài khoản đang giữ quyền SACO còn hoạt động: cả sàn thấy nhãn SACO cạnh tên. Không có khi không phải SACO. */
+  saco?: true;
 }
 
 // ---------- chat ----------

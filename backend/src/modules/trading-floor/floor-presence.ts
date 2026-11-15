@@ -16,6 +16,7 @@ import type { FloorProfile } from './floor-types.js';
 
 type UserListener = (userId: string) => void;
 type ProfileListener = (userId: string, profile: FloorProfile) => void;
+type SacoListener = (userId: string, saco: boolean) => void;
 
 @Injectable()
 export class FloorPresence {
@@ -23,6 +24,7 @@ export class FloorPresence {
   private readonly owners = new Map<string, string>();
   private readonly gone = new Set<UserListener>();
   private readonly profiles = new Set<ProfileListener>();
+  private readonly sacoListeners = new Set<SacoListener>();
 
   /** Một socket của `userId` vừa xác thực xong. */
   connected(userId: string): void {
@@ -52,8 +54,28 @@ export class FloorPresence {
 
   /** `userId` null: gỡ liên kết (SACO bị gỡ quyền). */
   bindSaco(sacoId: string, userId: string | null): void {
+    const before = this.owners.get(sacoId) ?? null;
     if (userId === null) this.owners.delete(sacoId);
     else this.owners.set(sacoId, userId);
+    if (before === userId) return;
+    if (before !== null) this.sacoChanged(before, false);
+    if (userId !== null) this.sacoChanged(userId, true);
+  }
+
+  /** Tài khoản vừa nhận hoặc mất quyền SACO: hub gắn hoặc gỡ nhãn SACO của các nhân vật đang đứng trên sàn. */
+  onSacoChanged(listener: SacoListener): () => void {
+    this.sacoListeners.add(listener);
+    return () => this.sacoListeners.delete(listener);
+  }
+
+  private sacoChanged(userId: string, saco: boolean): void {
+    for (const listener of [...this.sacoListeners]) {
+      try {
+        listener(userId, saco);
+      } catch {
+        // Người nghe tự ghi log.
+      }
+    }
   }
 
   sacoOwner(sacoId: string): string | null {

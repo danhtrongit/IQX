@@ -53,6 +53,24 @@ export function avatarBadge(id: string): string | undefined {
   return AVATAR_BADGES[id as AvatarId]
 }
 
+/** A pill drawn before the name over a character's head. */
+export interface NameBadge {
+  text: string
+  tone: "owner" | "saco"
+}
+
+/** Badges of a character: the owner-avatar tag first, then SACO for an account holding the SACO right. */
+export function nameBadges(
+  avatar: string,
+  saco: boolean | undefined
+): NameBadge[] {
+  const badges: NameBadge[] = []
+  const owner = avatarBadge(avatar)
+  if (owner) badges.push({ text: owner, tone: "owner" })
+  if (saco) badges.push({ text: "SACO", tone: "saco" })
+  return badges
+}
+
 export function normalizeAvatarId(raw: unknown): AvatarId | null {
   if (typeof raw !== "string") return null
   return AVATARS.some((a) => a.id === raw) ? (raw as AvatarId) : null
@@ -94,6 +112,8 @@ export interface PeerState {
 /** `id` is the connection id, never the account id. */
 export interface Peer extends Profile, PeerState {
   id: string
+  /** The account holds an active SACO right: a SACO badge sits before the name. Absent otherwise. */
+  saco?: boolean
 }
 
 export interface MeResponse {

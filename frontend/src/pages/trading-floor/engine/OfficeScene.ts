@@ -30,7 +30,7 @@ import {
   type Peer,
   type PostCard,
   type Profile,
-  avatarBadge,
+  nameBadges,
   normalizeAvatarId,
 } from "../net/types.ts"
 import {
@@ -121,13 +121,13 @@ function keysFree(): boolean {
   return !ui.panel.get() && !typing() && !appDialogOpen()
 }
 
-
 export class OfficeScene extends Phaser.Scene {
   private readonly manifest: Manifest
   private readonly nav = new NavGrid(WORLD_W, WORLD_H, NAV_CELL)
   private readonly hots: Hot[] = []
   private readonly interacts: Interact[] = []
   private readonly peers = new Map<string, RemotePeer>()
+  private selfSaco = false
   private player: Avatar | null = null
   private playerArt: { charId: string; color: string } | null = null
   /** Walk sheets per character: loaded the first time someone on the floor wears that character. */
@@ -468,7 +468,10 @@ export class OfficeScene extends Phaser.Scene {
         const base = [226 + shade, 211 + shade, 186 + shade]
         const g = c.createLinearGradient(x, y, x + s, y + s)
         g.addColorStop(0, `rgb(${base[0] + 8},${base[1] + 8},${base[2] + 8})`)
-        g.addColorStop(1, `rgb(${base[0] - 10},${base[1] - 10},${base[2] - 12})`)
+        g.addColorStop(
+          1,
+          `rgb(${base[0] - 10},${base[1] - 10},${base[2] - 12})`
+        )
         c.fillStyle = g
         c.fillRect(x, y, s, s)
         // Soft marble veins.
@@ -488,7 +491,8 @@ export class OfficeScene extends Phaser.Scene {
         }
         // Speckle.
         for (let k = 0; k < 26; k += 1) {
-          c.fillStyle = rand() < 0.5 ? "rgba(255,255,255,0.18)" : "rgba(110,85,60,0.10)"
+          c.fillStyle =
+            rand() < 0.5 ? "rgba(255,255,255,0.18)" : "rgba(110,85,60,0.10)"
           c.fillRect(x + rand() * s, y + rand() * s, 1.6, 1.6)
         }
         // Bevel: light on the top and left edge, shade on the bottom and right.
@@ -1004,7 +1008,7 @@ export class OfficeScene extends Phaser.Scene {
       this.releaseArt(this.playerArt.charId, this.playerArt.color)
     const created = new Avatar(this, baseArt, at.x, at.y, at.facing, {
       name: profile.name,
-      badge: avatarBadge(profile.avatar),
+      badges: nameBadges(profile.avatar, this.selfSaco),
       kind: "self",
     })
     this.player = created
@@ -1044,11 +1048,18 @@ export class OfficeScene extends Phaser.Scene {
       this.releaseArt(previous.charId, previous.color)
     }
     const charId = this.characterId(p.avatar)
-    const avatar = new Avatar(this, this.character(p.avatar), p.x, p.y, p.facing, {
-      name: p.name,
-      badge: avatarBadge(p.avatar),
-      kind: "peer",
-    })
+    const avatar = new Avatar(
+      this,
+      this.character(p.avatar),
+      p.x,
+      p.y,
+      p.facing,
+      {
+        name: p.name,
+        badges: nameBadges(p.avatar, p.saco),
+        kind: "peer",
+      }
+    )
     this.useArt(charId, p.color)
     this.peers.set(p.id, {
       avatar,
@@ -1070,6 +1081,7 @@ export class OfficeScene extends Phaser.Scene {
   /** A peer edited name, avatar or outfit: redraw them where they stand. This account's own edit comes back here too. */
   private updatePeer(p: Peer): void {
     if (isSelf(p.id)) {
+      this.setSelfSaco(Boolean(p.saco))
       const mine = ui.profile.get()
       if (
         !mine ||
@@ -1091,6 +1103,14 @@ export class OfficeScene extends Phaser.Scene {
       facing: peer.facing,
       moving: peer.moving,
     })
+  }
+
+  /** This account's SACO right as the server last reported it: the own character wears the badge too. */
+  private setSelfSaco(saco: boolean): void {
+    if (this.selfSaco === saco) return
+    this.selfSaco = saco
+    const avatar = ui.profile.get()?.avatar
+    if (avatar) this.player?.setBadges(nameBadges(avatar, saco))
   }
 
   private removePeer(id: string): void {
@@ -1270,7 +1290,8 @@ export class OfficeScene extends Phaser.Scene {
         const target = this.interacts.find((i) => i.kind === kind)
         if (target) this.goInteract(target)
       }),
-      presence.on("welcome", ({ peers }) => {
+      presence.on("welcome", ({ self, peers }) => {
+        this.setSelfSaco(Boolean(self.saco))
         for (const id of [...this.peers.keys()]) this.removePeer(id)
         peers.forEach((p) => this.addPeer(p))
       }),
