@@ -6,6 +6,7 @@ import {
   avatarAllowedFor,
   avatarBadge,
   cleanOutfitColor,
+  nameBadges,
   normalizeAvatarId,
 } from "../net/types.ts"
 import { hexToRgb, recolorRgbaBuffer } from "./recolor.ts"
@@ -37,6 +38,12 @@ describe("avatar catalogue and outfit colors", () => {
     expect(avatarAllowedFor("danhtrongit", "other")).toBe(false)
     expect(avatarAllowedFor("danhtrongit", undefined)).toBe(false)
     expect(avatarBadge("danhtrongit")).toBe("IT")
+    expect(nameBadges("male01", false)).toEqual([])
+    expect(nameBadges("male01", true)).toEqual([{ text: "SACO", tone: "saco" }])
+    expect(nameBadges("danhtrongit", true).map((b) => b.text)).toEqual([
+      "IT",
+      "SACO",
+    ])
     expect(avatarBadge("male01")).toBeUndefined()
   })
 

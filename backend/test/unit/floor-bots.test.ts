@@ -140,6 +140,7 @@ function makeHub(now: () => number) {
       connected() {},
       disconnected() {},
       onProfileChanged: () => () => undefined,
+      onSacoChanged: () => () => undefined,
       bindSaco() {},
     } as never,
     events,
