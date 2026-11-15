@@ -1,6 +1,5 @@
-/** Real-time presence: who is in the office, where they walk, emotes and ritual news. */
+/** Real-time presence: who is in the office, where they walk and emotes. */
 import { Emitter, toast, ui } from "../bridge.ts"
-import type { Direction } from "../ritual.ts"
 import { floorSocket, type FloorSocketStatus } from "./socket.ts"
 import type { Peer, PeerState } from "./types.ts"
 
@@ -12,8 +11,6 @@ export const presence = new Emitter<{
   state: { id: string } & PeerState
   leave: { id: string }
   emote: { id: string; text: string }
-  ritual: { name: string; que: string; luck: number; direction: Direction }
-  leaderboard: null
   /** Fires on every (re)connect once the server has said `ready`. */
   online: null
 }>()
@@ -120,17 +117,6 @@ export function startPresence(start: PeerState): () => void {
     }),
     floorSocket.on("peer:emote", (m) =>
       presence.emit("emote", { id: m.id, text: m.text })
-    ),
-    floorSocket.on("ritual:done", (m) =>
-      presence.emit("ritual", {
-        name: m.name,
-        que: m.que,
-        luck: m.luck,
-        direction: m.direction,
-      })
-    ),
-    floorSocket.on("leaderboard:changed", () =>
-      presence.emit("leaderboard", null)
     ),
     floorSocket.on("error", (m) => {
       // The account has no profile (never joined, or it was removed): back to the join card.

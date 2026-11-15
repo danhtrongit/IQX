@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX · Thầy gieo quẻ chứng khoán</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Noto+Serif:ital,wght@0,500;0,700;0,800;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lac:#5a0d0d; --lac2:#7a1414; --lac3:#9b1c1c; --ink:#fdf4dc; --ink2:#e9d7a8; --ink3:#b89a62;
+  --gold:#f2c14e; --gold2:#d4a017; --gold3:#a8770f; --paper:#fbf3dc; --paper2:#f1e2b8; --sepia:#4a2c0c;
+  --up:#16a34a; --flat:#ca8a04; --dn:#dc2626;
+  --serif:"Noto Serif",Georgia,"Times New Roman",serif;
+  --sans:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:14px/1.55 var(--sans);color:var(--ink);min-height:100vh;
+  background:
+    radial-gradient(900px 520px at 50% 18%,rgba(242,193,78,.18),transparent 65%),
+    radial-gradient(1200px 700px at 50% 120%,#2a0606,transparent 70%),
+    #170404;}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.hide{display:none!important}
+
+/* hoạ tiết mây */
+.clouds{position:fixed;inset:0;pointer-events:none;opacity:.07;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='90' viewBox='0 0 160 90'%3E%3Cpath d='M20 60c0-11 9-20 20-20 3-12 14-20 26-20 13 0 24 9 26 22 9 1 16 9 16 18' fill='none' stroke='%23f2c14e' stroke-width='2'/%3E%3Ccircle cx='66' cy='44' r='6' fill='none' stroke='%23f2c14e' stroke-width='2'/%3E%3Cpath d='M110 30c6-8 18-8 24 0' fill='none' stroke='%23f2c14e' stroke-width='2'/%3E%3C/svg%3E");}
+
+/* demo bar */
+.demo{position:relative;z-index:30;background:rgba(10,4,4,.85);border-bottom:1px solid #3a1d10;padding:7px 16px;font-size:12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;color:#d8c8a4}
+.demo b{color:var(--gold)}
+.demo .g{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.demo button{background:#2a1810;border:1px solid #4a2c18;border-radius:6px;padding:3px 9px;font-size:12px;color:#e9d7a8}
+.demo button.on{background:var(--gold);border-color:var(--gold);color:#3a2300;font-weight:700}
+.demo select{background:#2a1810;border:1px solid #4a2c18;border-radius:6px;padding:2px 6px;color:#e9d7a8;font-size:12px}
+
+/* ============ ĐIỆN THỜ ============ */
+.stage{position:relative;max-width:1100px;margin:0 auto;padding:18px 16px 60px;text-align:center}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.crumb{font-size:12.5px;color:var(--ink3);letter-spacing:.4px}
+.crumb b{color:var(--gold)}
+.clock{font-size:12.5px;color:var(--ink2);background:rgba(0,0,0,.35);border:1px solid #4a2c18;border-radius:999px;padding:4px 12px}
+.clock i{font-style:normal;color:var(--gold);font-weight:700}
+
+.shrine{position:relative;margin:6px auto 0;width:min(760px,100%);padding-top:18px}
+.plaque{position:relative;margin:0 auto;width:min(420px,86%);padding:10px 18px;border-radius:10px;
+  background:linear-gradient(180deg,#8b1717,#5e0e0e);border:2px solid var(--gold2);box-shadow:inset 0 0 0 4px #5e0e0e,inset 0 0 0 5px rgba(242,193,78,.55),0 10px 30px rgba(0,0,0,.5)}
+.plaque h1{margin:0;font-family:var(--serif);font-weight:800;font-size:clamp(20px,3.4vw,30px);letter-spacing:4px;
+  background:linear-gradient(180deg,#fff2c2,#f2c14e 45%,#b8860b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.plaque small{display:block;color:var(--ink2);font-size:11.5px;letter-spacing:2px;margin-top:1px}
+.lantern{position:absolute;top:0;width:54px;transform-origin:50% 0;animation:sway 4s ease-in-out infinite}
+.lantern.l{left:2%}.lantern.r{right:2%;animation-delay:-2s}
+@keyframes sway{50%{transform:rotate(4deg)}0%,100%{transform:rotate(-4deg)}}
+
+.altar{position:relative;margin:18px auto 0;width:min(620px,100%)}
+.godbox{position:relative;width:250px;margin:0 auto;z-index:2}
+.halo{position:absolute;left:50%;top:44%;width:330px;height:330px;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(255,214,102,.45),rgba(255,180,40,.12) 45%,transparent 68%);animation:breath 4.5s ease-in-out infinite;z-index:-1}
+.halo:after{content:"";position:absolute;inset:18%;border-radius:50%;border:1px dashed rgba(242,193,78,.35);animation:spin 40s linear infinite}
+@keyframes breath{50%{transform:translate(-50%,-50%) scale(1.08);opacity:.8}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.godbox.blessed .halo{background:radial-gradient(circle,rgba(255,232,150,.85),rgba(255,190,60,.35) 45%,transparent 70%)}
+.table{position:relative;margin:-14px auto 0;width:100%;height:120px;z-index:3}
+.table .top{position:absolute;left:0;right:0;top:0;height:22px;border-radius:6px;background:linear-gradient(180deg,#c9932a,#8a5a10);box-shadow:0 4px 0 #5e3a08}
+.table .front{position:absolute;left:3%;right:3%;top:22px;bottom:0;border-radius:0 0 10px 10px;
+  background:linear-gradient(180deg,#8f1515,#5a0b0b);border:2px solid var(--gold3);border-top:0;overflow:hidden}
+.table .front:before{content:"";position:absolute;inset:10px 14px;border:1px solid rgba(242,193,78,.45);border-radius:6px}
+.table .front:after{content:"福  祿  壽";position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-size:28px;letter-spacing:22px;color:rgba(242,193,78,.55)}
+.props{position:absolute;left:0;right:0;top:-46px;height:50px;display:flex;justify-content:space-between;align-items:flex-end;padding:0 8%;z-index:4;pointer-events:none}
+.candle{width:16px;height:40px;border-radius:3px;background:linear-gradient(90deg,#b91c1c,#ef4444,#b91c1c);position:relative}
+.candle:before{content:"";position:absolute;left:50%;top:-16px;width:10px;height:16px;transform:translateX(-50%);border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 50% 70%,#fff7cc,#fbbf24 45%,#f97316 75%,transparent 76%);filter:drop-shadow(0 0 8px #fbbf24);animation:flick .18s ease-in-out infinite alternate}
+@keyframes flick{to{transform:translateX(-50%) scale(1.06,.92)}}
+.burner{position:relative;width:70px;height:30px;border-radius:0 0 30px 30px;background:linear-gradient(180deg,#d4a017,#8a5a10);border:1px solid #f2c14e}
+.burner i{position:absolute;bottom:26px;width:2px;height:42px;background:linear-gradient(#7f1d1d,#3b0a0a)}
+.burner i:after{content:"";position:absolute;top:-3px;left:-1px;width:4px;height:4px;border-radius:50%;background:#ff7a1a;box-shadow:0 0 8px #ff7a1a}
+.burner i:nth-child(1){left:24px;transform:rotate(-6deg)}.burner i:nth-child(2){left:34px}.burner i:nth-child(3){left:44px;transform:rotate(6deg)}
+.smoke{position:absolute;bottom:68px;left:30px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.18);filter:blur(5px);animation:smoke 5s linear infinite;opacity:0}
+.smoke:nth-of-type(5){animation-delay:1.6s;left:36px}.smoke:nth-of-type(6){animation-delay:3.2s;left:26px}
+@keyframes smoke{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:.6}100%{transform:translate(14px,-120px) scale(3);opacity:0}}
+.ingots{display:flex;gap:4px;align-items:flex-end}
+.ingot{width:26px;height:16px;background:linear-gradient(180deg,#ffe28a,#d4a017);clip-path:polygon(0 30%,20% 30%,30% 0,70% 0,80% 30%,100% 30%,88% 100%,12% 100%)}
+
+.cta{margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.status{font-family:var(--serif);font-size:15px;color:var(--ink2);min-height:22px}
+.btnPray{position:relative;border:0;border-radius:999px;padding:14px 34px;font-weight:800;font-size:17px;letter-spacing:.5px;color:#3a2300;
+  background:linear-gradient(180deg,#fff0b3,#f2c14e 40%,#c8901a);box-shadow:0 0 0 3px rgba(242,193,78,.25),0 12px 30px rgba(242,193,78,.25),inset 0 -3px 0 rgba(0,0,0,.18);overflow:hidden}
+.btnPray:after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite}
+@keyframes shine{0%,60%{left:-60%}100%{left:130%}}
+.btnPray:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.btnPray[disabled]{filter:grayscale(.7);opacity:.55;cursor:not-allowed}
+.btnGhost{border:1px solid rgba(242,193,78,.6);background:rgba(0,0,0,.25);color:var(--gold);border-radius:999px;padding:10px 22px;font-weight:700}
+.btnGhost:hover{background:rgba(242,193,78,.08)}
+.today{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.35);border:1px solid #5a3a1a;border-radius:999px;padding:4px 12px;font-size:12.5px;color:var(--ink2)}
+.chip b{color:var(--ink)}
+.chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+/* ============ CỬA SỔ KHẤN ============ */
+.ov{position:fixed;inset:0;z-index:40;background:rgba(10,2,2,.78);backdrop-filter:blur(3px);display:flex;justify-content:center;align-items:flex-start;padding:22px 12px;overflow:auto}
+.panel{position:relative;width:600px;max-width:100%;border-radius:20px;padding:20px 20px 22px;
+  background:radial-gradient(500px 200px at 50% 0,rgba(242,193,78,.14),transparent 70%),linear-gradient(180deg,#6d1111,#3d0808);
+  border:2px solid var(--gold3);box-shadow:inset 0 0 0 5px #3d0808,inset 0 0 0 6px rgba(242,193,78,.45),0 30px 80px rgba(0,0,0,.7);animation:rise .3s ease}
+@keyframes rise{from{transform:translateY(16px);opacity:0}}
+.panel .x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(242,193,78,.4);background:rgba(0,0,0,.25);color:var(--ink2);font-size:16px}
+.ptitle{font-family:var(--serif);font-weight:800;letter-spacing:3px;color:var(--gold);font-size:13px}
+.seals{display:flex;justify-content:center;gap:6px;margin:12px 0 18px}
+.seal{display:flex;flex-direction:column;align-items:center;gap:4px;width:25%;max-width:120px;font-size:11px;color:var(--ink3)}
+.seal span{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-family:var(--serif);font-weight:800;border:1.5px solid #6a3a1a;color:var(--ink3);transform:rotate(45deg)}
+.seal span b{transform:rotate(-45deg)}
+.seal.on{color:var(--gold)}
+.seal.on span{background:linear-gradient(180deg,#c81e1e,#8b1010);border-color:var(--gold);color:#fff3c4;box-shadow:0 0 14px rgba(242,193,78,.45)}
+.seal.done{color:var(--ink2)}
+.seal.done span{background:#3a1d10;border-color:var(--gold3);color:var(--gold)}
+.h3{font-family:var(--serif);font-size:21px;font-weight:800;margin:0 0 4px;color:#fff3c4}
+.lead{margin:0 0 16px;color:var(--ink2);font-size:13.5px}
+.act{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.btnMain{border:0;border-radius:999px;padding:11px 24px;font-weight:800;color:#3a2300;background:linear-gradient(180deg,#fff0b3,#f2c14e 45%,#c8901a);box-shadow:0 8px 20px rgba(242,193,78,.2)}
+.btnMain[disabled]{filter:grayscale(.8);opacity:.5;cursor:not-allowed}
+.note{font-size:12px;color:var(--ink3);margin-top:8px}
+
+/* ống xăm */
+.tubeWrap{position:relative;height:250px;display:flex;justify-content:center;align-items:flex-end}
+.tube{transform-origin:50% 92%;filter:drop-shadow(0 14px 20px rgba(0,0,0,.5))}
+.tubeWrap.shake .tube{animation:shake .14s ease-in-out infinite alternate}
+@keyframes shake{from{transform:rotate(-10deg) translateY(-2px)}to{transform:rotate(10deg)}}
+.flyStick{position:absolute;left:50%;top:70px;width:12px;height:130px;margin-left:-6px;border-radius:3px;background:linear-gradient(90deg,#d6b46a,#f6e2a8,#c79a45);border:1px solid #8a6a2a;opacity:0}
+.flyStick:after{content:"";position:absolute;top:6px;left:2px;right:2px;height:26px;background:#b91c1c;border-radius:2px}
+.flyStick.go{animation:fly 1s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes fly{0%{opacity:1;transform:translateY(60px)}55%{opacity:1;transform:translateY(-70px) rotate(14deg)}100%{opacity:0;transform:translateY(-90px) rotate(30deg) scale(.8)}}
+.tubeHint{font-size:12.5px;color:var(--ink3);margin-top:4px}
+
+/* thẻ quẻ */
+.qwrap{perspective:1400px;display:flex;justify-content:center}
+.qcard{position:relative;width:380px;max-width:100%;min-height:370px;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.2,.75,.2,1)}
+.qcard.flip{transform:rotateY(180deg)}
+.qf,.qb{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px}
+.qf{display:grid;place-items:center;background:repeating-linear-gradient(45deg,#7a1414 0 12px,#8d1a1a 12px 24px);border:3px solid var(--gold);box-shadow:inset 0 0 0 6px #7a1414,inset 0 0 0 7px rgba(242,193,78,.6)}
+.qf span{font-family:var(--serif);font-size:54px;font-weight:800;color:var(--gold);text-shadow:0 2px 0 #3d0808}
+.qb{transform:rotateY(180deg);overflow:hidden;color:var(--sepia);text-align:center;padding:26px 24px 20px;
+  background:
+    radial-gradient(circle at 20% 10%,rgba(255,255,255,.6),transparent 40%),
+    repeating-linear-gradient(0deg,rgba(120,80,20,.035) 0 2px,transparent 2px 5px),
+    linear-gradient(180deg,var(--paper),var(--paper2));
+  border:1px solid #c9a86a;box-shadow:inset 0 0 0 8px rgba(255,255,255,.35),inset 0 0 0 9px var(--hc,#c81e1e),inset 0 0 40px rgba(140,90,20,.25)}
+.qb.dai{box-shadow:inset 0 0 0 8px rgba(255,255,255,.35),inset 0 0 0 9px var(--hc),inset 0 0 40px rgba(140,90,20,.25),0 0 40px rgba(242,193,78,.55)}
+.qb.dai:before{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,236,160,.75),transparent);transform:skewX(-20deg);animation:shine 3s ease-in-out .9s 2}
+.stamp{position:absolute;top:16px;right:16px;width:62px;height:62px;border:3px solid var(--hc);border-radius:8px;color:var(--hc);display:grid;place-items:center;font-family:var(--serif);font-weight:800;font-size:13px;line-height:1.15;transform:rotate(8deg);opacity:.92;background:rgba(255,255,255,.25)}
+.stamp.press{animation:press .45s cubic-bezier(.3,1.6,.5,1) .85s both}
+@keyframes press{from{transform:rotate(8deg) scale(2.2);opacity:0}}
+.qb .le{font-size:11px;font-weight:800;letter-spacing:1px;color:#9a3412;margin-bottom:2px}
+.qb .lb{font-size:11px;letter-spacing:3px;color:#9b7a3a;font-weight:700}
+.qb .ten{font-family:var(--serif);font-size:25px;font-weight:800;color:#6b1508;margin:4px 70px 10px 0;text-align:left;line-height:1.25}
+.orn{display:flex;align-items:center;gap:10px;color:#b08a4a;margin:6px 0}
+.orn:before,.orn:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,#b08a4a,transparent)}
+.qb .tho{font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.75;color:#3d240a;padding:4px 0}
+.qb .giai{font-size:14px;line-height:1.6;color:#4b3a20;margin:6px 4px 14px}
+.qb .mau{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#6b5330;background:rgba(255,255,255,.55);border:1px solid #d9c08a;border-radius:999px;padding:4px 12px 4px 6px}
+.qb .mau i{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.25);box-shadow:inset 0 -2px 3px rgba(0,0,0,.15)}
+
+/* dự đoán */
+.pred{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pred button{position:relative;border-radius:16px;padding:20px 8px 16px;border:2px solid #6a3a1a;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.4));display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.pred button:hover:not([disabled]){transform:translateY(-3px)}
+.pred svg{width:46px;height:46px}
+.pred b{font-size:17px}
+.pred small{font-size:11.5px;color:var(--ink3)}
+.pred button.on{transform:translateY(-3px)}
+.pred .up.on{border-color:var(--up);box-shadow:0 0 0 3px rgba(22,163,74,.25),0 0 30px rgba(22,163,74,.35)}
+.pred .flat.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,193,78,.25),0 0 30px rgba(242,193,78,.35)}
+.pred .dn.on{border-color:var(--dn);box-shadow:0 0 0 3px rgba(220,38,38,.25),0 0 30px rgba(220,38,38,.35)}
+.pred button[disabled]{cursor:default}
+.vn{display:inline-flex;gap:8px;align-items:center;background:rgba(0,0,0,.3);border:1px solid #5a3a1a;border-radius:999px;padding:4px 12px;font-size:12.5px;color:var(--ink2);margin-bottom:14px}
+.vn b{color:#f87171}
+
+/* cầu mã */
+.srch{position:relative;max-width:440px;margin:0 auto}
+.srch input{width:100%;padding:12px 16px 12px 40px;border-radius:999px;border:1px solid #7a4a1a;background:rgba(0,0,0,.35);outline:none;color:var(--ink)}
+.srch input:focus{border-color:var(--gold)}
+.srch:before{content:"⌕";position:absolute;left:15px;top:50%;transform:translateY(-52%);font-size:19px;color:var(--ink3)}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;background:#2a0b0b;border:1px solid #7a4a1a;border-radius:14px;max-height:250px;overflow:auto;text-align:left;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.sug div{display:flex;gap:10px;align-items:center;padding:9px 14px;cursor:pointer;border-bottom:1px solid #3a1510}
+.sug div:hover{background:#3d1210}
+.sug b{width:54px;color:var(--gold)}
+.sug span{flex:1;color:var(--ink2);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sug em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--ink3);border:1px solid #5a3a1a;border-radius:5px;padding:0 5px}
+.slots{display:flex;justify-content:center;gap:14px;margin-top:22px;flex-wrap:wrap}
+.slot{position:relative;width:118px;height:80px;display:grid;place-items:center}
+.slot svg{position:absolute;inset:0;width:100%;height:100%}
+.slot .t{position:relative;font-weight:800;font-size:18px;color:#3a2300;margin-top:14px}
+.slot .e{position:relative;font-size:11.5px;color:var(--ink3);margin-top:14px}
+.slot .sx{position:absolute;top:0;right:4px;font-size:10px;font-weight:700;color:var(--ink3)}
+.slot .rm{position:absolute;top:-6px;right:-4px;width:22px;height:22px;border-radius:50%;border:1px solid #7a4a1a;background:#2a0b0b;color:var(--ink2);font-size:11px;line-height:1}
+.slot.fill{animation:drop .4s cubic-bezier(.3,1.5,.5,1)}
+@keyframes drop{from{transform:translateY(-16px) scale(.9);opacity:0}}
+
+/* kết quả */
+.res{text-align:left}
+.rbox{background:rgba(0,0,0,.28);border:1px solid #5a3a1a;border-radius:16px;padding:14px 16px;margin-bottom:12px}
+.rbox h4{margin:0;font-family:var(--serif);font-size:16px;color:#fff3c4}
+.rbox .s{font-size:12px;color:var(--ink3);margin-bottom:10px}
+.big{font-family:var(--serif);font-size:30px;font-weight:800;color:var(--gold);line-height:1}
+.bar3{display:flex;height:34px;border-radius:10px;overflow:hidden;margin-top:10px;font-weight:800;font-size:12.5px}
+.bar3 div{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;transition:width .8s ease}
+.leg{display:flex;gap:6px 16px;flex-wrap:wrap;margin-top:9px;font-size:12.5px;color:var(--ink2)}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.leg .me{color:var(--gold);font-weight:800}
+.trow{display:grid;grid-template-columns:30px 60px 1fr 82px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid rgba(90,58,26,.5)}
+.trow:first-of-type{border-top:0}
+.medal{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12px;color:#3a2300;background:#7a5a2a}
+.m1{background:linear-gradient(180deg,#fff0b3,#d4a017)}.m2{background:linear-gradient(180deg,#f3f4f6,#9ca3af)}.m3{background:linear-gradient(180deg,#fcd9b0,#b45309)}
+.trow .cd{font-weight:800}
+.trow.my .cd{color:var(--gold)}
+.trow .bb{height:10px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden}
+.trow .bb i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#c8901a,#ffe28a);transition:width .8s ease}
+.trow .c{text-align:right;font-size:12px;color:var(--ink2)}
+.miniq{display:flex;gap:12px;align-items:center;cursor:pointer;background:linear-gradient(180deg,var(--paper),var(--paper2));color:var(--sepia);border-radius:14px;padding:10px 14px;margin-bottom:12px;border:1px solid #c9a86a}
+.miniq .st{width:44px;height:44px;flex:none;border:2px solid var(--hc);color:var(--hc);border-radius:7px;display:grid;place-items:center;font-family:var(--serif);font-weight:800;font-size:10px;line-height:1.1;text-align:center;transform:rotate(6deg)}
+.miniq b{font-family:var(--serif);font-size:16px;color:#6b1508;display:block}
+.miniq small{color:#7a6340}
+
+/* hiệu ứng */
+.fx{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.coin{position:absolute;top:-40px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3b0,#f2c14e 45%,#b8860b);box-shadow:inset 0 0 0 3px rgba(168,119,15,.6);animation:fall linear forwards}
+.coin:after{content:"";position:absolute;inset:9px;border:2px solid rgba(120,80,10,.55);border-radius:2px}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:70;background:#fff7e0;color:#3a2300;font-weight:700;font-size:13px;border-radius:10px;padding:10px 16px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:none;max-width:calc(100% - 32px)}
+
+@media (max-width:620px){
+  .lantern{width:38px}
+  .godbox{width:190px}
+  .halo{width:250px;height:250px}
+  .table{height:96px}
+  .table .front:after{font-size:20px;letter-spacing:12px}
+  .props{padding:0 4%}
+  .pred{grid-template-columns:1fr}
+  .pred button{flex-direction:row;justify-content:center;padding:12px;gap:12px}
+  .pred svg{width:32px;height:32px}
+  .slot{width:96px;height:66px}
+  .trow{grid-template-columns:28px 52px 1fr 66px;gap:8px}
+  .qb .ten{font-size:21px;margin-right:64px}
+  .qb .tho{font-size:16px}
+  .panel{padding:18px 14px 20px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* lá quẻ Kinh Dịch */
+.qcard{min-height:0;width:440px}
+.qb{position:relative}
+.qb.kd{text-align:center;padding:22px 22px 22px}
+.dline{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:12.5px;color:#6b5330;text-align:left;margin-right:72px}
+.dline .nw{white-space:nowrap}
+.dline .hd{color:#fff;font-weight:800;font-size:11px;border-radius:6px;padding:2px 7px}
+.qb.kd .lb{text-align:center;margin-top:12px}
+.han{font-family:var(--serif);font-size:40px;font-weight:800;letter-spacing:6px;color:#8b1010;line-height:1.2;margin-top:4px}
+.qb.kd .ten{text-align:center;margin:2px 0 8px;font-size:22px}
+.hexrow{display:flex;justify-content:center;align-items:center;gap:6px;margin:4px 0}
+.tg{display:flex;flex-direction:column;gap:42px;font-size:12px;color:#7a6340;text-align:left}
+.tuong{font-family:var(--serif);font-style:italic;color:#4b3a20;font-size:14.5px;margin:4px 6px}
+.sec{text-align:left;margin:10px 2px}
+.sec .k,.ngbox .k{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#9b7a3a;margin-bottom:3px}
+.sec .van{font-family:var(--serif);font-style:italic;font-size:16px;color:#3d240a;line-height:1.5}
+.sec .ng2{font-size:13px;color:#6b5330;margin-top:2px}
+.sec.mv{border-left:3px solid #c81e1e;padding-left:10px}
+.sec.mv .k{color:#c81e1e}
+.luan{margin:0;font-size:14.5px;line-height:1.65;color:#3d2a10}
+.ngbox{text-align:left;border-radius:10px;padding:9px 12px;margin:8px 0}
+.ngbox.hop{background:rgba(22,163,74,.09);border:1px solid rgba(22,163,74,.35)}
+.ngbox.hop .k{color:#15803d}
+.ngbox.kieng{background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.3)}
+.ngbox.kieng .k{color:#b91c1c}
+.ng{display:flex;gap:8px;font-size:13px;color:#3d2a10;padding:2px 0}
+.ng b{width:40px;flex:none}
+.tk{font-size:11.5px;font-style:italic;color:#8a7350;text-align:left;margin:2px 2px 10px}
+.mh{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.qb .mau i+i{margin-left:-6px}
+.chot{margin-top:14px;font-family:var(--serif);font-weight:800;font-size:19px;color:#8b1010;border-top:1px solid #d9c08a;border-bottom:1px solid #d9c08a;padding:10px 4px}
+.chot small{display:block;font-family:var(--sans);font-size:10.5px;letter-spacing:2px;color:#9b7a3a;font-weight:800}
+.btnLuan{margin-top:10px;border:0;border-radius:999px;padding:11px 22px;font-weight:800;color:#fff3c4;background:linear-gradient(180deg,#c81e1e,#8b1010);box-shadow:0 6px 16px rgba(139,16,16,.35)}
+.lunwrap:not(.hide){animation:rise .5s ease}
+@media (max-width:620px){.han{font-size:32px}.qb.kd{padding:20px 16px}}
+</style>
+</head>
+<body>
+<div class="clouds"></div>
+
+<div class="demo">
+  <b>Mô phỏng (không thuộc giao diện thật)</b>
+  <div class="g">Giờ: <button data-time="0945" class="on">09:45</button><button data-time="1135">11:35</button></div>
+  <div class="g">Hành ngày: <button data-hanh="Kim">Kim</button><button data-hanh="Mộc">Mộc</button><button data-hanh="Thủy" class="on">Thủy</button><button data-hanh="Hỏa">Hỏa</button><button data-hanh="Thổ">Thổ</button></div>
+  <div class="g">Hạng lần gieo tới: <select id="force"><option value="">Ngẫu nhiên theo tỷ lệ</option><option>Đại cát</option><option>Thượng cát</option><option>Trung cát</option><option>Tiểu cát</option><option>Thận trọng</option></select></div>
+  
+  <div class="g"><button id="reset">↺ Sang ngày mới</button></div>
+</div>
+
+<div class="stage">
+  <div class="topbar">
+    <div class="crumb">IQX · Khu giao dịch › <b>Tượng Thần Tài</b></div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <div class="shrine">
+    <svg class="lantern l" viewBox="0 0 54 110"><line x1="27" y1="0" x2="27" y2="18" stroke="#b8860b" stroke-width="2"/><rect x="17" y="16" width="20" height="6" rx="2" fill="#d4a017"/><ellipse cx="27" cy="50" rx="25" ry="29" fill="#c81e1e"/><ellipse cx="27" cy="50" rx="25" ry="29" fill="url(#lg)"/><path d="M14 26v48M27 21v58M40 26v48" stroke="#8b1010" stroke-width="1.5" opacity=".6"/><rect x="17" y="77" width="20" height="6" rx="2" fill="#d4a017"/><path d="M22 83v22M27 83v26M32 83v22" stroke="#f2c14e" stroke-width="1.5"/><text x="27" y="56" text-anchor="middle" font-family="serif" font-size="16" font-weight="800" fill="#f2c14e">福</text><defs><radialGradient id="lg" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity=".15"/></radialGradient></defs></svg>
+    <svg class="lantern r" viewBox="0 0 54 110"><line x1="27" y1="0" x2="27" y2="18" stroke="#b8860b" stroke-width="2"/><rect x="17" y="16" width="20" height="6" rx="2" fill="#d4a017"/><ellipse cx="27" cy="50" rx="25" ry="29" fill="#c81e1e"/><ellipse cx="27" cy="50" rx="25" ry="29" fill="url(#lg)"/><path d="M14 26v48M27 21v58M40 26v48" stroke="#8b1010" stroke-width="1.5" opacity=".6"/><rect x="17" y="77" width="20" height="6" rx="2" fill="#d4a017"/><path d="M22 83v22M27 83v26M32 83v22" stroke="#f2c14e" stroke-width="1.5"/><text x="27" y="56" text-anchor="middle" font-family="serif" font-size="16" font-weight="800" fill="#f2c14e">祿</text></svg>
+
+    <div class="plaque"><h1>THẦN TÀI</h1><small>LỘC ĐẾN · TÀI VƯỢNG</small></div>
+
+    <div class="altar">
+      <div class="godbox" id="god">
+        <div class="halo"></div>
+        <svg viewBox="0 0 240 250" width="100%" aria-label="Tượng Thần Tài">
+          <defs>
+            <linearGradient id="robe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e11d1d"/><stop offset="1" stop-color="#8b0f0f"/></linearGradient>
+            <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a8"/><stop offset=".5" stop-color="#f2c14e"/><stop offset="1" stop-color="#a8770f"/></linearGradient>
+            <radialGradient id="skin" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#ffe7c7"/><stop offset="1" stop-color="#f0bf8f"/></radialGradient>
+          </defs>
+          <ellipse cx="120" cy="240" rx="92" ry="9" fill="rgba(0,0,0,.35)"/>
+          <path d="M40 238 Q44 150 120 132 Q196 150 200 238 Z" fill="url(#robe)"/>
+          <path d="M120 132 L104 238 L136 238 Z" fill="url(#gold)" opacity=".9"/>
+          <path d="M62 238 Q70 186 96 160" stroke="url(#gold)" stroke-width="5" fill="none"/>
+          <path d="M178 238 Q170 186 144 160" stroke="url(#gold)" stroke-width="5" fill="none"/>
+          <circle cx="120" cy="196" r="15" fill="url(#gold)"/><text x="120" y="202" text-anchor="middle" font-family="serif" font-size="16" font-weight="800" fill="#8b0f0f">財</text>
+          <path d="M70 168 Q60 196 82 206 L102 200 Q90 186 94 168 Z" fill="url(#robe)"/>
+          <path d="M170 168 Q180 196 158 206 L138 200 Q150 186 146 168 Z" fill="url(#robe)"/>
+          <g transform="translate(120 206)">
+            <path d="M-34 -6 Q-30 -18 -18 -16 Q-12 -32 0 -32 Q12 -32 18 -16 Q30 -18 34 -6 Q30 10 0 12 Q-30 10 -34 -6 Z" fill="url(#gold)" stroke="#a8770f"/>
+            <ellipse cx="0" cy="-20" rx="10" ry="7" fill="#fff3b0" opacity=".85"/>
+          </g>
+          <ellipse cx="88" cy="206" rx="11" ry="9" fill="url(#skin)"/><ellipse cx="152" cy="206" rx="11" ry="9" fill="url(#skin)"/>
+          <ellipse cx="120" cy="98" rx="36" ry="38" fill="url(#skin)"/>
+          <ellipse cx="86" cy="100" rx="6" ry="9" fill="#f0bf8f"/><ellipse cx="154" cy="100" rx="6" ry="9" fill="#f0bf8f"/>
+          <path d="M102 92 Q108 86 114 92" stroke="#3b1d06" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M126 92 Q132 86 138 92" stroke="#3b1d06" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <ellipse cx="104" cy="106" rx="7" ry="4" fill="#fb7185" opacity=".45"/><ellipse cx="136" cy="106" rx="7" ry="4" fill="#fb7185" opacity=".45"/>
+          <path d="M108 112 Q120 124 132 112" stroke="#7c2d12" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M100 116 Q108 120 120 117 Q132 120 140 116 Q138 150 120 160 Q102 150 100 116 Z" fill="#2b1a10"/>
+          <path d="M104 114 Q112 110 120 114 Q128 110 136 114" stroke="#2b1a10" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M80 70 Q120 30 160 70 L160 78 L80 78 Z" fill="#1f1209"/>
+          <path d="M84 62 Q120 22 156 62" fill="url(#gold)"/>
+          <rect x="80" y="70" width="80" height="12" rx="4" fill="url(#gold)"/>
+          <circle cx="120" cy="58" r="7" fill="#e11d48" stroke="#fff0a8" stroke-width="2"/>
+          <path d="M80 72 Q52 56 34 70 Q52 74 80 80 Z" fill="#1f1209" stroke="url(#gold)" stroke-width="2"/>
+          <path d="M160 72 Q188 56 206 70 Q188 74 160 80 Z" fill="#1f1209" stroke="url(#gold)" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="table">
+        <div class="props">
+          <div class="candle"></div>
+          <div class="ingots"><div class="ingot"></div><div class="ingot" style="transform:translateY(-6px)"></div></div>
+          <div class="burner"><i></i><i></i><i></i><span class="smoke"></span><span class="smoke"></span><span class="smoke"></span></div>
+          <div class="ingots"><div class="ingot" style="transform:translateY(-6px)"></div><div class="ingot"></div></div>
+          <div class="candle"></div>
+        </div>
+        <div class="top"></div><div class="front"></div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <div class="status" id="status"></div>
+      <div id="ctaBtns"></div>
+      <div class="today" id="today"></div>
+    </div>
+  </div>
+</div>
+
+<div class="ov hide" id="ov"><div class="panel" id="panel">
+  <button class="x" id="close" title="Đóng">✕</button>
+  <div class="ptitle">KHẤN THẦN TÀI</div>
+  <div class="seals" id="seals"></div>
+  <div id="body"></div>
+</div></div>
+<div class="fx" id="fx"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= THƯ VIỆN ================= */
+const KD = [
+ {h:'Đại cát',vn:'Hỏa Thiên Đại Hữu',han:'火天大有',lines:'111101',tren:'☲ Ly',duoi:'☰ Càn',tuong:'Mặt trời treo trên trời cao, soi khắp muôn nơi.',
+  thoan:'Đại Hữu, nguyên hanh',thoanNghia:'Có được nhiều, rất mực hanh thông.',hao:1,haoTen:'Sơ Cửu',haoVan:'Vô giao hại, phỉ cữu; gian tắc vô cữu',haoNghia:'Chưa dính điều hại thì chẳng có lỗi; giữ lòng như lúc gian nan thì không lỗi.',
+  luan:'Đại Hữu là quẻ của người đang nắm nhiều trong tay, như mặt trời đứng giữa trời. Nhưng hào động lại ở chân quẻ, nhắc rằng giàu đến đâu cũng phải nhớ lúc còn khó. Hôm nay lộc vượng, càng nên làm việc như người còn thiếu: kiểm lại từng vị thế, ghi lại vì sao mình thắng, và đừng vì hưng phấn mà dồn thêm vốn.',
+  chot:'Giàu chớ quên nghèo, thắng chớ quên thua.'},
+ {h:'Đại cát',vn:'Địa Thiên Thái',han:'地天泰',lines:'111000',tren:'☷ Khôn',duoi:'☰ Càn',tuong:'Đất ở trên, trời ở dưới, khí âm dương giao hoà.',
+  thoan:'Thái, tiểu vãng đại lai, cát hanh',thoanNghia:'Cái nhỏ đi, cái lớn đến, tốt lành hanh thông.',hao:6,haoTen:'Thượng Lục',haoVan:'Thành phục vu hoàng',haoNghia:'Tường thành đổ xuống hào.',
+  luan:'Thái là lúc khí thông, việc dễ thành. Nhưng hào động lại nằm ở đỉnh quẻ, mà Thái đến cùng thì sinh Bĩ, thịnh quá ắt suy. Người được quẻ này hôm nay thuận thì càng phải giữ thành: phần lãi đã chạm mục tiêu nên cất bớt, đừng vì một ngày đẹp mà nâng thêm đòn bẩy.',
+  chot:'Thịnh chớ quên suy, lãi chớ quên giữ.'},
+ {h:'Thượng cát',vn:'Thủy Thiên Nhu',han:'水天需',lines:'111010',tren:'☵ Khảm',duoi:'☰ Càn',tuong:'Mây đã lên trời mà mưa chưa xuống.',
+  thoan:'Nhu, hữu phu, quang hanh, trinh cát, lợi thiệp đại xuyên',thoanNghia:'Biết chờ với lòng tin thì sáng sủa hanh thông, giữ chính thì tốt, lợi vượt sông lớn.',hao:1,haoTen:'Sơ Cửu',haoVan:'Nhu vu giao, lợi dụng hằng, vô cữu',haoNghia:'Chờ ở ngoài đồng, lợi ở chỗ giữ bền, không lỗi.',
+  luan:'Nhu là quẻ chờ. Mây đã kéo thì mưa ắt đến, nhưng chưa phải lúc này. Người được quẻ đang đứng xa chỗ hiểm, đó là phúc. Điểm vào đã định thì cứ để lệnh chờ ở đó, đừng sửa kế hoạch giữa phiên vì sốt ruột; chờ được là thắng một nửa.',
+  chot:'Mây đã lên, mưa sẽ tới.'},
+ {h:'Trung cát',vn:'Phong Sơn Tiệm',han:'風山漸',lines:'001011',tren:'☴ Tốn',duoi:'☶ Cấn',tuong:'Cây mọc trên núi, lớn lên từng chút một.',
+  thoan:'Tiệm, nữ quy cát, lợi trinh',thoanNghia:'Tiến dần như con gái về nhà chồng đúng lễ thì tốt, lợi ở chỗ giữ chính.',hao:1,haoTen:'Sơ Lục',haoVan:'Hồng tiệm vu can',haoNghia:'Chim hồng bay dần tới bến nước.',
+  luan:'Chim hồng không bay một mạch lên trời; nó đậu bến nước trước, rồi mới lên gò, lên núi. Quẻ Tiệm dạy cách tiến từng nấc. Hôm nay muốn vào hàng thì chia vốn làm nhiều phần, mua phần đầu rồi xem thị trường đáp lại thế nào. Đi chậm mà chắc thì đường mới dài.',
+  chot:'Chim hồng bay xa nhờ từng chặng.'},
+ {h:'Tiểu cát',vn:'Sơn Thiên Đại Súc',han:'山天大畜',lines:'111001',tren:'☶ Cấn',duoi:'☰ Càn',tuong:'Núi giữ trời ở bên trong, sức lớn đang được nén lại.',
+  thoan:'Đại Súc, lợi trinh, bất gia thực cát, lợi thiệp đại xuyên',thoanNghia:'Tích chứa lớn, lợi ở giữ chính; không ăn ở nhà thì tốt, lợi vượt sông lớn.',hao:1,haoTen:'Sơ Cửu',haoVan:'Hữu lệ, lợi dĩ',haoNghia:'Có nguy, nên dừng.',
+  luan:'Đại Súc là quẻ tích lực, nhưng hào đầu dặn phải biết dừng. Sức đang bị núi chặn, cố húc chỉ tổn mình. Hôm nay hợp để đọc kỹ báo cáo của mã đang cầm hơn là mở vị thế mới chỉ vì thấy rẻ. Vốn hiểu biết tích được hôm nay sẽ thành lộc ngày sau.',
+  chot:'Núi chưa mở, chớ húc núi.'},
+ {h:'Thận trọng',vn:'Thủy Lôi Truân',han:'水雷屯',lines:'100010',tren:'☵ Khảm',duoi:'☳ Chấn',tuong:'Sấm động dưới mây dày, mầm cây đội đất mà chưa lên được.',
+  thoan:'Truân, nguyên hanh lợi trinh, vật dụng hữu du vãng, lợi kiến hầu',thoanNghia:'Buổi đầu gian nan; giữ chính thì vẫn hanh thông, chớ vội đi xa, nên dựng nền móng.',hao:3,haoTen:'Lục Tam',haoVan:'Tức lộc vô ngu, duy nhập vu lâm trung; quân tử cơ bất như xá, vãng lận',haoNghia:'Đuổi hươu không có người dẫn đường, chỉ lạc vào rừng sâu; người khôn thà bỏ, cứ đi tới ắt ân hận.',
+  luan:'Đây là lời răn rõ nhất trong quẻ Truân. Đuổi theo con hươu mình không hiểu đường đi thì cuối cùng chỉ lạc trong rừng. Hôm nay thấy mã nào tăng nóng mà mình không biết vì sao, hãy để nó đi; đừng mua đuổi theo tin trong nhóm chat. Bỏ một cơ hội mình không hiểu chưa bao giờ là mất.',
+  chot:'Không hiểu đường rừng, chớ đuổi hươu.'},
+];
+const NGANH = {Kim:'ngân hàng, chứng khoán, bảo hiểm, thép',Mộc:'cao su, phân bón, dệt may, dược phẩm',Thủy:'thủy sản, cảng biển, logistics, nước sạch',Hỏa:'điện, dầu khí, công nghệ, viễn thông',Thổ:'bất động sản, xây dựng, vật liệu, khu công nghiệp'};
+const HANH = {
+  Kim:{ngay:'Giáp Tý',nap:'Hải Trung Kim',hop:['Kim','Thủy'],kieng:['Mộc','Hỏa'],mau:[['Trắng','#f8fafc'],['Vàng ánh kim','#d4a017']],huong:'Tây',c:'#94a3b8'},
+  Mộc:{ngay:'Mậu Thìn',nap:'Đại Lâm Mộc',hop:['Mộc','Hỏa'],kieng:['Thổ','Kim'],mau:[['Xanh lá','#16a34a'],['Xanh rêu','#3f6212']],huong:'Đông',c:'#16a34a'},
+  Thủy:{ngay:'Bính Ngọ',nap:'Thiên Hà Thủy',hop:['Thủy','Mộc'],kieng:['Hỏa','Thổ'],mau:[['Đen huyền','#111827'],['Xanh lam','#2563eb']],huong:'Bắc',c:'#2563eb'},
+  Hỏa:{ngay:'Bính Dần',nap:'Lô Trung Hỏa',hop:['Hỏa','Thổ'],kieng:['Kim','Thủy'],mau:[['Đỏ','#dc2626'],['Tím','#7c3aed']],huong:'Nam',c:'#dc2626'},
+  Thổ:{ngay:'Canh Ngọ',nap:'Lộ Bàng Thổ',hop:['Thổ','Kim'],kieng:['Thủy','Mộc'],mau:[['Vàng đất','#ca8a04'],['Nâu','#92400e']],huong:'Đông Bắc',c:'#a16207'},
+};
+const HANG = {'Đại cát':{p:35,c:'#c81e1e',s:'ĐẠI\nCÁT'},'Thượng cát':{p:30,c:'#c2410c',s:'THƯỢNG\nCÁT'},'Trung cát':{p:20,c:'#15803d',s:'TRUNG\nCÁT'},'Tiểu cát':{p:10,c:'#0e7490',s:'TIỂU\nCÁT'},'Thận trọng':{p:5,c:'#6b5b95',s:'THẬN\nTRỌNG'}};
+const CODES = [['FPT','CTCP FPT','HOSE'],['HPG','CTCP Tập đoàn Hòa Phát','HOSE'],['SSI','CTCP Chứng khoán SSI','HOSE'],['VCB','Ngân hàng TMCP Ngoại thương','HOSE'],['MWG','CTCP Đầu tư Thế Giới Di Động','HOSE'],['VNM','CTCP Sữa Việt Nam','HOSE'],['TCB','Ngân hàng TMCP Kỹ Thương','HOSE'],['MBB','Ngân hàng TMCP Quân đội','HOSE'],['VHM','CTCP Vinhomes','HOSE'],['VIC','Tập đoàn Vingroup','HOSE'],['GAS','Tổng Công ty Khí Việt Nam','HOSE'],['MSN','CTCP Tập đoàn Masan','HOSE'],['ACB','Ngân hàng TMCP Á Châu','HOSE'],['DGC','CTCP Tập đoàn Hóa chất Đức Giang','HOSE'],['VND','CTCP Chứng khoán VNDIRECT','HOSE'],['STB','Ngân hàng TMCP Sài Gòn Thương Tín','HOSE'],['PNJ','CTCP Vàng bạc Đá quý Phú Nhuận','HOSE'],['REE','CTCP Cơ điện lạnh','HOSE'],['GMD','CTCP Gemadept','HOSE'],['DXG','CTCP Tập đoàn Đất Xanh','HOSE'],['VPB','Ngân hàng TMCP Việt Nam Thịnh Vượng','HOSE'],['SHS','CTCP Chứng khoán Sài Gòn – Hà Nội','HNX'],['PVS','Tổng CTCP Dịch vụ Kỹ thuật Dầu khí','HNX'],['IDC','Tổng Công ty IDICO','HNX'],['CEO','CTCP Tập đoàn C.E.O','HNX'],['BSR','CTCP Lọc Hóa dầu Bình Sơn','UPCoM'],['ACV','Tổng Công ty Cảng hàng không Việt Nam','UPCoM'],['QNS','CTCP Đường Quảng Ngãi','UPCoM']];
+
+/* ================= TRẠNG THÁI ================= */
+let time='0945', hanh='Thủy', today, crowd, seen={}, step=0, pendingPred=null, q='';
+function fresh(){ today={que:null,pred:null,codes:[],done:false,shaken:false}; crowd={up:742,flat:93,dn:449,cau:{FPT:214,HPG:187,SSI:152,VCB:131,MWG:118,TCB:96,VND:88,DGC:71,SHS:64,MBB:60}}; }
+fresh();
+const late=()=>time==='1135';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>n.toLocaleString('vi-VN');
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.display='none',2400);}
+function curStep(){ if(!today.que) return 0; if(!today.pred) return 1; if(!today.done) return 2; return 3; }
+
+/* ================= GIEO ================= */
+function pickHang(){ const f=$('force').value; if(f) return f; let r=Math.random()*100; for(const [h,v] of Object.entries(HANG)){ if((r-=v.p)<0) return h; } return 'Đại cát'; }
+function draw(){
+  const h=pickHang(); let pool=KD.filter(x=>x.h===h); if(!pool.length) pool=KD;
+  const S=seen[h]=seen[h]||new Set(); let left=pool.filter(x=>!S.has(x.vn)); if(!left.length){S.clear();left=pool;}
+  const pick=left[Math.floor(Math.random()*left.length)]; S.add(pick.vn); return {...pick,ten:pick.vn,hanh};
+}
+
+/* ================= ĐIỆN THỜ ================= */
+function renderShrine(){
+  $('clock').innerHTML = `🕘 ${late()?'11:35':'09:45'} · hạn khấn <i>11:30</i>· ngày <i>${HANH[hanh].ngay}</i> hành <i>${hanh}</i>`;
+  let st, btn;
+  if(today.done){ st='Lễ đã dâng. Lộc hôm nay đã về với bạn.'; btn='<button class="btnPray" id="open">Xem quẻ và kết quả hôm nay</button>'; }
+  else if(late()){ st=today.que?'Đã qua 11:30, lượt khấn dở dang khép lại.':'Đã qua giờ khấn hôm nay. Hẹn bạn sáng mai.'; btn='<button class="btnGhost" id="openRes">Xem kết quả cả sàn</button>'; }
+  else if(today.que){ st='Bạn đang khấn dở. Thành tâm làm tiếp nhé.'; btn='<button class="btnPray" id="open">🙏 Khấn tiếp</button>'; }
+  else { st='Mỗi ngày một lần, trước 11:30.'; btn='<button class="btnPray" id="open">🙏 Thành tâm khấn</button>'; }
+  $('status').textContent=st; $('ctaBtns').innerHTML=btn;
+  const t=[]; if(today.que) t.push(`<span class="chip"><i style="background:${HANG[today.que.h].c}"></i>Quẻ <b>${esc(today.que.ten)}</b></span>`);
+  if(today.pred) t.push(`<span class="chip">VNINDEX <b>${PRED[today.pred].t}</b></span>`);
+  if(today.done) t.push(`<span class="chip">Cầu ${today.codes.length?today.codes.map(c=>`<b>${c}</b>`).join(' · '):'<b>không cầu mã</b>'}</span>`);
+  $('today').innerHTML=t.join('');
+}
+
+/* ================= CỬA SỔ ================= */
+const STEPS=['Gieo quẻ','Dự đoán VNINDEX','Cầu mã','Kết quả'];
+const PRED={
+  up:{t:'Tăng',c:'up',d:'Đóng cửa cao hơn tham chiếu',svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="rgba(22,163,74,.15)" stroke="#16a34a" stroke-width="2"/><path d="M12 30l9-9 6 6 9-11" fill="none" stroke="#4ade80" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 16h6v6" fill="none" stroke="#4ade80" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+  flat:{t:'Đi ngang',c:'flat',d:'Thay đổi đúng bằng 0',svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="rgba(242,193,78,.15)" stroke="#f2c14e" stroke-width="2"/><path d="M12 24h24" stroke="#fde68a" stroke-width="3.5" stroke-linecap="round"/><path d="M31 19l5 5-5 5" fill="none" stroke="#fde68a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+  dn:{t:'Giảm',c:'dn',d:'Đóng cửa thấp hơn tham chiếu',svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="rgba(220,38,38,.15)" stroke="#dc2626" stroke-width="2"/><path d="M12 18l9 9 6-6 9 11" fill="none" stroke="#f87171" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 32h6v-6" fill="none" stroke="#f87171" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+};
+function open(s){ step=s; $('ov').classList.remove('hide'); render(); }
+function close(){ $('ov').classList.add('hide'); renderShrine(); }
+function render(){
+  const lim=late()&&!today.done;
+  $('seals').innerHTML=STEPS.map((s,i)=>`<div class="seal ${i===step?'on':(i<step||today.done?'done':'')}"><span><b>${i+1}</b></span>${s}</div>`).join('');
+  [renderQue,renderPred,renderCau,renderRes][step]($('body'));
+}
+function hexSVG(lines,mv,c){
+  let s='';
+  for(let i=0;i<6;i++){ const y=8+(5-i)*17, yang=lines[i]==='1', m=i+1===mv, col=m?'#c81e1e':'#3d240a';
+    s+= yang?`<rect x="10" y="${y}" width="120" height="10" rx="2" fill="${col}"/>`
+            :`<rect x="10" y="${y}" width="52" height="10" rx="2" fill="${col}"/><rect x="78" y="${y}" width="52" height="10" rx="2" fill="${col}"/>`;
+    if(m) s+=`<circle cx="146" cy="${y+5}" r="6" fill="none" stroke="#c81e1e" stroke-width="2.5"/>`;
+  }
+  return `<svg class="hex" viewBox="0 0 160 112" width="150" height="105">${s}</svg>`;
+}
+function queCard(q,anim,full){
+  const H=HANG[q.h], D=HANH[q.hanh], ng=a=>a.map(h=>`<div class="ng"><b>${h}</b><span>${NGANH[h]}</span></div>`).join('');
+  return `<div class="qb kd ${q.h==='Đại cát'?'dai':''}" style="--hc:${H.c}">
+    <div class="stamp ${anim?'press':''}">${H.s.replace('\n','<br>')}</div>
+    <div class="dline"><span class="hd" style="background:${D.c}">${q.hanh}</span><span class="nw">Ngày <b>${D.ngay}</b></span><span class="nw">· ${D.nap}</span></div>
+    <div class="lb">QUẺ CHỦ</div>
+    <div class="han">${q.han}</div>
+    <div class="ten">${esc(q.vn)}</div>
+    <div class="hexrow">${hexSVG(q.lines,q.hao)}<div class="tg"><span>${q.tren}</span><span>${q.duoi}</span></div></div>
+    <div class="tuong">${esc(q.tuong)}</div>
+    <div class="orn">❖</div>
+    <div class="sec"><div class="k">Thoán rằng</div><div class="van">“${esc(q.thoan)}”</div><div class="ng2">${esc(q.thoanNghia)}</div></div>
+    <div class="sec mv"><div class="k">Hào động · ${q.haoTen}</div><div class="van">“${esc(q.haoVan)}”</div><div class="ng2">${esc(q.haoNghia)}</div></div>
+    <div class="lunwrap ${full?'':'hide'}" id="lun">
+      <div class="orn">❖</div>
+      <div class="sec"><div class="k">Thầy luận</div><p class="luan">${esc(q.luan)}</p></div>
+      <div class="ngbox hop"><div class="k">Ngành hợp · ${D.hop.join(', ')}</div>${ng(D.hop)}</div>
+      <div class="ngbox kieng"><div class="k">Ngành kiêng · ${D.kieng.join(', ')}</div>${ng(D.kieng)}</div>
+      <div class="tk">Luận theo ngũ hành, mang tính tham khảo vui.</div>
+      <div class="mh"><span class="mau">${D.mau.map(m=>`<i style="background:${m[1]}"></i>`).join('')}Màu hợp: <b>${D.mau.map(m=>m[0]).join(', ')}</b></span><span class="mau">🧭 Hướng: <b>${D.huong}</b></span></div>
+      <div class="chot"><small>LỜI THẦY CHỐT</small>${esc(q.chot)}</div>
+    </div>
+    ${full?'':'<button class="btnLuan" id="reveal">🔮 Xin thầy luận</button>'}
+  </div>`;
+}
+function renderQue(B){
+  if(!today.que){
+    B.innerHTML=`<div class="h3">Gieo quẻ đầu ngày</div><p class="lead">Tĩnh tâm, nghĩ về việc đầu tư của mình rồi lắc ống xăm.</p>
+      <div class="tubeWrap" id="tw">
+        <svg class="tube" width="150" height="230" viewBox="0 0 150 230">
+          <defs><linearGradient id="bam" x1="0" x2="1"><stop offset="0" stop-color="#8a5a1a"/><stop offset=".35" stop-color="#e6c27a"/><stop offset=".65" stop-color="#c99a4a"/><stop offset="1" stop-color="#6b4210"/></linearGradient>
+          <linearGradient id="stk" x1="0" x2="1"><stop offset="0" stop-color="#c79a45"/><stop offset=".5" stop-color="#f6e2a8"/><stop offset="1" stop-color="#b8893a"/></linearGradient></defs>
+          ${[26,38,50,62,74,86,98,110].map((x,i)=>`<rect x="${x}" y="${12+(i%3)*9}" width="9" height="100" rx="2" fill="url(#stk)" stroke="#8a6a2a"/><rect x="${x+1}" y="${16+(i%3)*9}" width="7" height="16" rx="1" fill="#b91c1c"/>`).join('')}
+          <path d="M18 74 H132 L124 214 Q75 228 26 214 Z" fill="url(#bam)" stroke="#5a3a10" stroke-width="2"/>
+          <path d="M22 118 H128 M24 170 H126" stroke="#6b4210" stroke-width="3" opacity=".7"/>
+          <rect x="18" y="68" width="114" height="12" rx="4" fill="#c81e1e" stroke="#f2c14e" stroke-width="2"/>
+          <rect x="44" y="128" width="62" height="34" rx="5" fill="#c81e1e" stroke="#f2c14e" stroke-width="2"/>
+          <text x="75" y="151" text-anchor="middle" font-family="Noto Serif,serif" font-size="17" font-weight="800" fill="#f2c14e">XĂM</text>
+        </svg>
+        <div class="flyStick" id="fs"></div>
+      </div>
+      <div class="tubeHint">Mỗi ngày một quẻ, không gieo lại</div>
+      <div class="act"><button class="btnMain" id="shake">🙏 Lắc ống xăm</button></div>`;
+  } else {
+    B.innerHTML=`<div class="qwrap"><div class="qcard flip"><div class="qf"><span>卦</span></div>${queCard(today.que,false,true)}</div></div>
+      <div class="act">${today.done?'<button class="btnMain" data-go="3">Xem kết quả</button>':'<button class="btnMain" data-go="1">Tiếp: Dự đoán VNINDEX →</button>'}</div>`;
+  }
+}
+function doShake(){
+  if(late()) return lateStop();
+  $('shake').disabled=true; $('tw').classList.add('shake');
+  setTimeout(()=>{ $('tw').classList.remove('shake'); $('fs').classList.add('go'); },1500);
+  setTimeout(()=>{
+    today.que=draw(); renderShrine();
+    $('body').innerHTML=`<div class="qwrap"><div class="qcard" id="qc"><div class="qf"><span>卦</span></div>${queCard(today.que,true)}</div></div>
+      <div class="act"><button class="btnMain" data-go="1">Tiếp: Dự đoán VNINDEX →</button></div>`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>$('qc').classList.add('flip')));
+    if(today.que.h==='Đại cát') setTimeout(()=>rain(16),900);
+  },2450);
+}
+function renderPred(B){
+  const sel=today.pred||pendingPred;
+  B.innerHTML=`<div class="h3">Hôm nay VNINDEX sẽ thế nào?</div>
+    <div class="vn">Tham chiếu <b>1.746,90</b> · tính theo giá đóng cửa</div>
+    <div class="pred">${Object.entries(PRED).map(([k,v])=>`<button class="${v.c} ${sel===k?'on':''}" data-pred="${k}" ${today.pred?'disabled':''}>${v.svg}<div><b>${v.t}</b><br><small>${v.d}</small></div></button>`).join('')}</div>
+    <div class="note">Xác nhận xong thì không đổi được.</div>
+    <div class="act"><button class="btnMain" id="confPred" ${sel&&!today.pred?'':'disabled'}>Xác nhận dự đoán</button></div>`;
+}
+function slotSVG(full){return `<svg viewBox="0 0 118 80"><defs><linearGradient id="ig${full?1:0}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a8"/><stop offset=".55" stop-color="#f2c14e"/><stop offset="1" stop-color="#a8770f"/></linearGradient></defs><path d="M6 34 Q10 22 24 24 Q34 4 59 4 Q84 4 94 24 Q108 22 112 34 Q108 66 59 72 Q10 66 6 34 Z" fill="${full?'url(#ig1)':'rgba(0,0,0,.25)'}" stroke="${full?'#a8770f':'#8a5a1a'}" stroke-width="2" ${full?'':'stroke-dasharray="5 4"'}/>${full?'<ellipse cx="59" cy="22" rx="20" ry="9" fill="#fff6c8" opacity=".75"/>':''}</svg>`;}
+function renderCau(B){
+  const full=today.codes.length>=3;
+  B.innerHTML=`<div class="h3">Cầu mã tăng</div><p class="lead">Dâng tối đa 3 mã bất kỳ để cầu Thần Tài phù hộ. Có thể bỏ qua bước này.</p>
+    <div class="srch"><input id="sIn" autocomplete="off" placeholder="${full?'Đã đủ 3 mã':'Gõ mã hoặc tên công ty…'}" ${full?'disabled':''} value="${esc(q)}"><div class="sug hide" id="sug"></div></div>
+    <div class="slots">${[0,1,2].map(i=>{const c=today.codes[i]; const x=c&&CODES.find(r=>r[0]===c);
+      return c?`<div class="slot fill">${slotSVG(true)}<span class="sx">${x?x[2]:''}</span><button class="rm" data-rm="${c}" title="Bỏ">✕</button><span class="t">${c}</span></div>`
+              :`<div class="slot">${slotSVG(false)}<span class="e">Nén ${i+1}</span></div>`;}).join('')}</div>
+    <div class="note">Mã đã dâng thì không đổi được.</div>
+    <div class="act"><button class="btnGhost" id="skip">Bỏ qua</button><button class="btnMain" id="confCau" ${today.codes.length?'':'disabled'}>Dâng lễ cầu ${today.codes.length||''} mã</button></div>`;
+  const i=$('sIn'); if(!i.disabled){ i.focus(); i.setSelectionRange(q.length,q.length); } renderSug();
+}
+function renderSug(){
+  const s=$('sug'); if(!s) return; const t=q.trim().toUpperCase(); if(!t){s.classList.add('hide');return;}
+  const r=CODES.filter(c=>!today.codes.includes(c[0])&&(c[0].startsWith(t)||c[1].toUpperCase().includes(t))).slice(0,8);
+  s.classList.remove('hide'); s.innerHTML=r.length?r.map(c=>`<div data-pick="${c[0]}"><b>${c[0]}</b><span>${esc(c[1])}</span><em>${c[2]}</em></div>`).join(''):'<div style="cursor:default;color:var(--ink3)">Không tìm thấy mã</div>';
+}
+function renderRes(B){
+  const tot=crowd.up+crowd.flat+crowd.dn, pc=k=>Math.round(crowd[k]/tot*1000)/10;
+  const top=Object.entries(crowd.cau).sort((a,b)=>b[1]-a[1]).slice(0,5), mx=top[0][1], qq=today.que;
+  const me=k=>today.pred===k?' · bạn':'';
+  B.innerHTML=`<div class="res"><div class="h3" style="text-align:center">Lộc hôm nay của cả sàn</div><p class="lead" style="text-align:center">Số liệu tính tới ${late()?'11:35':'09:45'}</p>
+    ${qq?`<div class="miniq" data-go="0" style="--hc:${HANG[qq.h].c}"><div class="st">${HANG[qq.h].s.replace('\n','<br>')}</div><div><b>${esc(qq.ten)}</b><small>Quẻ hôm nay của bạn · bấm để xem lại</small></div></div>`:''}
+    <div class="rbox"><h4>Dự đoán VNINDEX</h4><div class="s">Cả sàn đang nghĩ gì</div>
+      <div><span class="big">${fmt(tot)}</span> <span style="color:var(--ink2)">người đã dự đoán</span></div>
+      <div class="bar3"><div style="width:${pc('up')}%;background:var(--up)">${pc('up')}%</div><div style="width:${pc('flat')}%;background:var(--flat);color:#3a2300">${pc('flat')>10?pc('flat')+'%':''}</div><div style="width:${pc('dn')}%;background:var(--dn)">${pc('dn')}%</div></div>
+      <div class="leg"><span class="${today.pred==='up'?'me':''}"><i style="background:var(--up)"></i>Tăng ${fmt(crowd.up)}${me('up')}</span><span class="${today.pred==='flat'?'me':''}"><i style="background:var(--flat)"></i>Đi ngang ${fmt(crowd.flat)}${me('flat')}</span><span class="${today.pred==='dn'?'me':''}"><i style="background:var(--dn)"></i>Giảm ${fmt(crowd.dn)}${me('dn')}</span></div></div>
+    <div class="rbox"><h4>Top 5 mã được cầu nhiều nhất</h4><div class="s">Theo số người dâng lễ cầu</div>
+      ${top.map(([c,n],i)=>`<div class="trow ${today.codes.includes(c)?'my':''}"><span class="medal ${i<3?'m'+(i+1):''}">${i+1}</span><span class="cd">${c}</span><div class="bb"><i style="width:${n/mx*100}%"></i></div><span class="c">${fmt(n)} người</span></div>`).join('')}
+      ${today.done?`<div class="s" style="margin:10px 0 0">Bạn đã cầu: ${today.codes.length?today.codes.map(c=>`<b style="color:var(--gold)">${c}</b>`).join(' · '):'không cầu mã'}</div>`:''}
+    </div>
+    <div class="act"><button class="btnMain" id="close2">${today.done?'Hoàn tất':'Đóng'}</button></div></div>`;
+}
+
+/* ================= HIỆU ỨNG ================= */
+function rain(n){
+  const fx=$('fx');
+  for(let i=0;i<n;i++){ const c=document.createElement('span'); c.className='coin';
+    c.style.left=Math.random()*100+'%'; c.style.animationDuration=(2+Math.random()*1.8)+'s'; c.style.animationDelay=(Math.random()*.9)+'s';
+    fx.appendChild(c); setTimeout(()=>c.remove(),5000); }
+}
+function lateStop(){ toast('Đã qua 11:30, không khấn tiếp được'); close(); }
+
+/* ================= SỰ KIỆN ================= */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button,[data-pick],[data-go]'); if(!b) { if(e.target.id==='ov') close(); return; }
+  if(b.dataset.time){ time=b.dataset.time; document.querySelectorAll('[data-time]').forEach(x=>x.classList.toggle('on',x===b)); $('ov').classList.add('hide'); renderShrine(); return; }
+  if(b.dataset.hanh){ hanh=b.dataset.hanh; document.querySelectorAll('[data-hanh]').forEach(x=>x.classList.toggle('on',x===b)); renderShrine(); return; }
+  if(b.id==='reveal'){ $('lun').classList.remove('hide'); b.remove(); return; }
+  if(b.id==='reset'){ fresh(); $('ov').classList.add('hide'); $('god').classList.remove('blessed'); renderShrine(); toast('Sang ngày mới, khấn lại được'); return; }
+  if(b.id==='open'){ open(today.done?0:curStep()); return; }
+  if(b.id==='openRes'){ open(3); return; }
+  if(b.id==='close'||b.id==='close2'){ close(); return; }
+  if(b.id==='shake'){ doShake(); return; }
+  if(b.dataset.go){ step=+b.dataset.go; render(); return; }
+  if(b.dataset.pred&&!today.pred){ pendingPred=b.dataset.pred; render(); return; }
+  if(b.id==='confPred'){ if(late()) return lateStop(); today.pred=pendingPred; crowd[today.pred]++; step=2; q=''; render(); renderShrine(); return; }
+  if(b.dataset.pick){ if(today.codes.length<3) today.codes.push(b.dataset.pick); q=''; render(); return; }
+  if(b.dataset.rm){ today.codes=today.codes.filter(c=>c!==b.dataset.rm); render(); return; }
+  if(b.id==='skip'||b.id==='confCau'){ if(late()) return lateStop();
+    if(b.id==='skip') today.codes=[]; today.codes.forEach(c=>crowd.cau[c]=(crowd.cau[c]||0)+1);
+    today.done=true; step=3; render(); renderShrine(); $('god').classList.add('blessed'); rain(26); return; }
+});
+document.addEventListener('input',e=>{ if(e.target.id==='sIn'){ q=e.target.value; renderSug(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('ov').classList.contains('hide')) close(); });
+renderShrine();
+</script>
+</body>
+</html>

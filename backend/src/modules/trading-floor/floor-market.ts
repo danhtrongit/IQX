@@ -11,7 +11,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
 import { VietcapOverviewProvider } from '../market-extended/index.js';
-import { parseQuoteTime } from './floor-ritual.logic.js';
+import { parseQuoteTime } from './than-tai.logic.js';
 
 export const FLOOR_MARKET = Symbol('FLOOR_MARKET');
 

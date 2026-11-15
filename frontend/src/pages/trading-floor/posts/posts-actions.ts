@@ -1,7 +1,7 @@
 /** Thao tác dùng chung của bảng trượt: tim lạc quan có hoàn tác và Nhắn SACO. */
 import { errorMessage } from "@/lib/api"
 
-import { closePosts, toast, world } from "../bridge"
+import { closePosts, needLogin, toast, world } from "../bridge"
 import { openDirectChat } from "../net/chat"
 import { postsApi } from "./api"
 import { setHeart } from "./today-reducer"
@@ -20,6 +20,7 @@ export async function toggleHeart(
   current: HeartState,
   applyLocal?: (next: HeartState) => void
 ): Promise<void> {
+  if (needLogin("Đăng nhập để thả tim")) return
   if (inFlight.has(id)) return
   inFlight.add(id)
   const apply = (next: HeartState) => {
@@ -41,6 +42,7 @@ export async function toggleHeart(
 
 /** Mở chat có sẵn với đúng SACO tác giả và đóng bảng trượt; người dùng vẫn ở khu giao dịch. */
 export function messageSaco(sacoId: string): void {
+  if (needLogin("Đăng nhập để nhắn SACO")) return
   closePosts()
   void openDirectChat(sacoId)
 }

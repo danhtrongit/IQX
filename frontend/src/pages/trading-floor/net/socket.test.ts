@@ -42,12 +42,15 @@ class FakeSocket implements WebSocketLike {
   }
 }
 
-function setup(overrides: { token?: string | null } = {}) {
+function setup(
+  overrides: { token?: string | null; guest?: string | null } = {}
+) {
   const sockets: FakeSocket[] = []
   const urls: string[] = []
   const refreshAuth = vi.fn(() => Promise.resolve())
   const client = new FloorSocketClient({
     getToken: () => (overrides.token === undefined ? "tok" : overrides.token),
+    getGuest: () => overrides.guest ?? null,
     refreshAuth,
     url: () => "wss://example.test/api/v2/trading-floor/ws",
     // Jitter factor 1.0, so delays are exactly 1 s, 2 s, 4 s ...
@@ -144,11 +147,76 @@ describe("FloorSocketClient handshake and dispatch", () => {
     expect(handler).toHaveBeenCalledTimes(1)
   })
 
-  it("does not connect without a token", () => {
+  it("does not connect without a token or a guest token", () => {
     const { client, sockets } = setup({ token: null })
     client.start()
     expect(sockets).toHaveLength(0)
     expect(client.status.get()).toBe("closed")
+  })
+})
+
+describe("FloorSocketClient as a guest", () => {
+  it("sends the guest token in the auth message when there is no account token", () => {
+    const { client, latest } = setup({ token: null, guest: "guest-tok" })
+    client.start()
+    expect(client.status.get()).toBe("connecting")
+    latest().open()
+    expect(latest().sent).toEqual([{ type: "auth", guest: "guest-tok" }])
+
+    latest().receive({ type: "ready", userId: "g:1", guest: true })
+    expect(client.status.get()).toBe("online")
+    expect(client.currentUserId).toBe("g:1")
+    expect(client.isGuest).toBe(true)
+  })
+
+  it("prefers the account token when both exist", () => {
+    const { client, latest } = setup({ token: "tok", guest: "guest-tok" })
+    client.start()
+    latest().open()
+    expect(latest().sent).toEqual([{ type: "auth", token: "tok" }])
+    latest().receive({ type: "ready", userId: "u1", guest: false })
+    expect(client.isGuest).toBe(false)
+  })
+
+  it("does not try to refresh a guest session: a 4401 stops the client", async () => {
+    const { client, sockets, latest, refreshAuth } = setup({
+      token: null,
+      guest: "stale",
+    })
+    const error = vi.fn()
+    client.on("error", error)
+    client.start()
+    latest().open()
+    latest().receive({ type: "error", code: "GUEST_INVALID" })
+    latest().drop(CLOSE_AUTH)
+    expect(error).toHaveBeenCalledWith({ type: "error", code: "GUEST_INVALID" })
+    expect(client.status.get()).toBe("closed")
+    expect(refreshAuth).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(BACKOFF_MAX_MS * 2)
+    expect(sockets).toHaveLength(1)
+  })
+
+  it("restart() connects again once a guest token exists", () => {
+    let guest: string | null = null
+    const sockets: FakeSocket[] = []
+    const client = new FloorSocketClient({
+      getToken: () => null,
+      getGuest: () => guest,
+      refreshAuth: () => Promise.resolve(),
+      url: () => "wss://example.test/api/v2/trading-floor/ws",
+      createSocket: () => {
+        const s = new FakeSocket()
+        sockets.push(s)
+        return s
+      },
+    })
+    client.start()
+    expect(sockets).toHaveLength(0)
+    guest = "fresh-token"
+    client.restart()
+    expect(sockets).toHaveLength(1)
+    sockets[0]!.open()
+    expect(sockets[0]!.sent).toEqual([{ type: "auth", guest: "fresh-token" }])
   })
 })
 

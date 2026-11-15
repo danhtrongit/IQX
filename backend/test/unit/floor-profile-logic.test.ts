@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   FLOOR_EMOTE_MAX,
+  FLOOR_GUEST_CREATE_MAX,
   FLOOR_STATE_MIN_MS,
   FLOOR_WORLD_MAX,
+  GuestCreateLimiter,
   avatarAllowedFor,
   cleanAvatar,
   cleanEmote,
@@ -109,5 +111,33 @@ describe('stateGate', () => {
       allow: true,
       reliable: false,
     });
+  });
+});
+
+describe('GuestCreateLimiter', () => {
+  it('allows 10 characters per IP per hour, then refuses', () => {
+    const limiter = new GuestCreateLimiter();
+    const t0 = 1_000_000;
+    for (let i = 0; i < FLOOR_GUEST_CREATE_MAX; i++) expect(limiter.take('1.2.3.4', t0 + i)).toBe(true);
+    expect(limiter.take('1.2.3.4', t0 + 100)).toBe(false);
+    // Another address is unaffected.
+    expect(limiter.take('5.6.7.8', t0 + 100)).toBe(true);
+  });
+
+  it('frees the quota as old creations leave the window', () => {
+    const limiter = new GuestCreateLimiter(2, 1_000);
+    expect(limiter.take('a', 0)).toBe(true);
+    expect(limiter.take('a', 500)).toBe(true);
+    expect(limiter.take('a', 900)).toBe(false);
+    expect(limiter.take('a', 1_100)).toBe(true); // the first one has left
+    expect(limiter.take('a', 1_200)).toBe(false);
+    expect(limiter.take('a', 1_600)).toBe(true);
+  });
+
+  it('forgets idle addresses once the table is full', () => {
+    const limiter = new GuestCreateLimiter(1, 1_000, 3);
+    for (const key of ['a', 'b', 'c']) expect(limiter.take(key, 0)).toBe(true);
+    expect(limiter.take('d', 5_000)).toBe(true); // prunes a, b, c
+    expect(limiter.take('a', 5_001)).toBe(true);
   });
 });

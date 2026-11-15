@@ -4,8 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { floorChatTiming } from '../../src/modules/trading-floor/floor-chat.logic.js';
 import { FLOOR_CLOCK } from '../../src/modules/trading-floor/floor-clock.js';
-import { FloorRitualJob } from '../../src/modules/trading-floor/floor-ritual.job.js';
-import { leaderboardId } from '../../src/modules/trading-floor/floor-ritual.repository.js';
+import { FLOOR_MARKET, type FloorMarketPort } from '../../src/modules/trading-floor/floor-market.js';
 import {
   authHeader,
   registerAndLogin,
@@ -14,9 +13,9 @@ import {
 } from './system-stack.js';
 
 // Khu giao dịch trên PostgreSQL và Redis thật với migration 0047, WebSocket thật (`ws`) và access token
-// thật: hồ sơ nhân vật, nghi lễ Thần Tài chấm bằng nến VNINDEX (kể cả phiên bị lỡ), bảng xếp hạng tháng,
-// trưởng nhóm gán quyền SACO cho nhóm mình, nhắn trực tiếp, Chat SACO khớp qua hai socket, và gỡ quyền
-// làm cuộc chat chỉ đọc. Đồng hồ của khu được dịch về tháng 11/2026 để phiên nghi lễ xác định.
+// thật: hồ sơ nhân vật, Thần Tài v2 (gieo quẻ, dự đoán, cầu mã, kết quả cả sàn, hạn 11:30) và quản trị
+// thư viện quẻ, trưởng nhóm gán quyền SACO cho nhóm mình, nhắn trực tiếp, Chat SACO khớp qua hai socket,
+// và gỡ quyền làm cuộc chat chỉ đọc. Đồng hồ của khu được dịch về tháng 11/2026 để ngày khấn xác định.
 const BASE = '/api/v2/trading-floor';
 const PASSWORD = 'System!Passw0rd';
 
@@ -43,6 +42,12 @@ describe('system acceptance: Khu giao dịch', () => {
     shiftMs = new Date(iso).getTime() - Date.now();
   };
   const originalInviteMs = floorChatTiming.inviteMs;
+  /** VNINDEX 1.756,52 (+9,62 so với tham chiếu 1.746,90) và đúng hai mã niêm yết FPT, VCB. */
+  const market: FloorMarketPort = {
+    vnindex: async () => ({ value: 1756.52, change: 9.62, time: clock.now().getTime() }),
+    listedSymbols: async () => new Set(['FPT', 'VCB']),
+    indexClose: async () => null,
+  };
 
   let admin: Session;
   let lead: Session;
@@ -124,7 +129,9 @@ describe('system acceptance: Khu giao dịch', () => {
       });
       socket.once('error', reject);
       socket.once('open', () => {
-        if (token !== null) socket.send(JSON.stringify({ type: 'auth', token }));
+        if (token?.startsWith('guest:')) {
+          socket.send(JSON.stringify({ type: 'auth', guest: token.slice('guest:'.length) }));
+        } else if (token !== null) socket.send(JSON.stringify({ type: 'auth', token }));
         resolve(client);
       });
     });
@@ -165,7 +172,17 @@ describe('system acceptance: Khu giao dịch', () => {
   }
 
   beforeAll(async () => {
-    stack = await startSystemStack({}, { overrideProviders: [{ token: FLOOR_CLOCK, value: clock }] });
+    // Nhân vật tự động làm lệch số người trên sàn mà các kịch bản dưới đây đếm.
+    process.env.FLOOR_BOTS_ENABLED = 'false';
+    stack = await startSystemStack(
+      {},
+      {
+        overrideProviders: [
+          { token: FLOOR_CLOCK, value: clock },
+          { token: FLOOR_MARKET, value: market },
+        ],
+      },
+    );
     app = stack.app;
     floorChatTiming.inviteMs = 1500;
     setClock('2026-11-12T03:00:00Z'); // thứ Năm 10:00 giờ Việt Nam
@@ -257,125 +274,211 @@ describe('system acceptance: Khu giao dịch', () => {
     );
     second.socket.close();
     await waitFor(u1Floor, (m) => m.type === 'peer:leave', 'peer:leave');
+
+    // Khách: chỉ nhập tên và tạo nhân vật, vào sàn qua token khách; nhân vật riêng bị chặn.
+    const reserved = await call(null, 'POST', '/guest', {
+      name: 'Khách lạ',
+      avatar: 'danhtrongit',
+      color: 'default',
+    });
+    expect(reserved.statusCode).toBe(403);
+    const created = await call(null, 'POST', '/guest', {
+      name: 'Khách Một',
+      avatar: 'female01',
+      color: 'default',
+    });
+    expect(created.statusCode).toBe(200);
+    const guestToken = (created.json() as { token: string }).token;
+    const guest = await connect(`guest:${guestToken}`);
+    const ready = await waitFor(guest, (m) => m.type === 'ready', 'ready của khách');
+    expect(ready.guest).toBe(true);
+    send(guest, { type: 'hello', x: 30, y: 30, facing: 's', moving: false });
+    const guestWelcome = await waitFor(guest, (m) => m.type === 'welcome', 'welcome của khách');
+    expect(guestWelcome.self).toMatchObject({ name: 'Khách Một', avatar: 'female01' });
+    await waitFor(u1Floor, (m) => m.type === 'peer:join' && m.peer.name === 'Khách Một', 'khách join');
+    const badGuest = await connect('guest:' + 'x'.repeat(43));
+    await until(() => badGuest.closed !== null, 'đóng vì sai token khách');
+    expect(badGuest.closed).toBe(4401);
+    guest.socket.close();
+    await waitFor(u1Floor, (m) => m.type === 'peer:leave', 'khách rời');
   });
 
-  it('nghi lễ: gieo quẻ một lần, dự đoán, chấm bằng nến VNINDEX cả phiên bị lỡ, rồi bảng xếp hạng', async () => {
-    const today = await ok(u1, 'GET', '/ritual/today');
-    expect(today).toMatchObject({ session: '2026-11-12', mine: null, lastResult: null });
-    expect(today.cutoffAt).toBe(Date.UTC(2026, 10, 12, 7, 30));
-    expect(today.stats).toMatchObject({ total: 0, up: 0, down: 0 });
+  it('Thần Tài v2: gieo quẻ một lần (song song vẫn một lá), dự đoán, cầu mã, kết quả cả sàn, hạn 11:30', async () => {
+    const ngay = '2026-11-12';
+    // Cơ sở dữ liệu ngoài có thể còn dữ liệu của lần chạy trước.
+    await stack.query('delete from tf_khan_daily');
+    await stack.query('delete from tf_la_seen');
+    // Thư viện trống: không rút được.
+    await stack.query('update tf_kd_la set active = false');
+    const empty = await call(u1, 'POST', '/than-tai/draw');
+    expect(empty.statusCode).toBe(503);
+    expect(errorOf(empty)).toBe('THU_VIEN_TRONG');
 
-    const early = await call(u1, 'POST', '/ritual/submit', {
-      direction: 'up',
-      level: 1745,
-      tickers: ['VCB', 'VNM', 'FPT'],
-    });
-    expect(early.statusCode).toBe(409);
-    expect(errorOf(early)).toBe('RITUAL_NOT_DRAWN');
+    await stack.query(
+      `insert into tf_kd_que (id, ten, chu_han, hao, que_tren, que_duoi, tuong, thoan, thoan_nghia)
+       values (1, 'Thuần Càn', '乾為天', '111111', 'can', 'can', 'Tượng thử', 'Thoán thử', 'Nghĩa thoán thử')
+       on conflict (id) do update set ten = excluded.ten, chu_han = excluded.chu_han`,
+    );
+    await stack.query(
+      `insert into tf_kd_la (que_id, hao_dong, ten_hao, hao_van, hao_nghia, hang, luan, chot, active) values
+         (1, 1, 'Sơ Cửu', 'Tiềm long vật dụng', 'Rồng còn ẩn', 'dai_cat', 'Luận thử một', 'Chốt thử một', true),
+         (1, 2, 'Cửu Nhị', 'Kiến long tại điền', 'Rồng hiện ruộng', 'than_trong', 'Luận thử hai', 'Chốt thử hai', true)
+       on conflict (que_id, hao_dong) do update
+         set hang = excluded.hang, luan = excluded.luan, chot = excluded.chot, active = true`,
+    );
 
-    const drawn = await ok(u1, 'POST', '/ritual/draw');
-    expect(drawn.ritual).toMatchObject({ session: '2026-11-12', direction: null });
-    expect(drawn.que.id).toBe(drawn.ritual.queId);
-    expect((await ok(u1, 'POST', '/ritual/draw')).que.id).toBe(drawn.que.id);
+    const before = await ok(u1, 'GET', '/than-tai/today');
+    expect(before).toMatchObject({
+      status: 'chua_khan',
+      step: 1,
+      la: null,
+      prediction: null,
+      tickers: null,
+      vnindexRef: 1746.9,
+      deadline: Date.UTC(2026, 10, 12, 4, 30),
+    });
+    expect(before.day).toMatchObject({ date: ngay, hop: expect.any(Array), kieng: expect.any(Array) });
+    expect(before.day.hop).toHaveLength(2);
+    expect(before.day.kieng).toHaveLength(2);
+    expect(before.day.hop.every((g: Body) => g.nganh.length <= 4)).toBe(true);
+    expect((await call(null, 'GET', '/than-tai/today')).statusCode).toBe(401);
 
-    const badTickers = await call(u1, 'POST', '/ritual/submit', {
-      direction: 'up',
-      level: 1745,
-      tickers: ['VCB', 'VCB', 'FPT'],
+    expect(errorOf(await call(u3, 'POST', '/than-tai/predict', { direction: 'up' }))).toBe('CHUA_GIEO_QUE');
+    expect(errorOf(await call(u1, 'POST', '/than-tai/cau', { tickers: [] }))).toBe('CHUA_DU_DOAN');
+
+    const drawn = await ok(u1, 'POST', '/than-tai/draw');
+    expect(drawn).toMatchObject({ status: 'dang_do', step: 2, prediction: null, tickers: null });
+    expect(drawn.la.que).toMatchObject({ id: 1, hao: '111111', tren: { key: 'can' }, duoi: { key: 'can' } });
+    expect(drawn.la.hangLabel).toBe(drawn.la.hang === 'dai_cat' ? 'Đại cát' : 'Thận trọng');
+    expect((await ok(u1, 'POST', '/than-tai/draw')).la.id).toBe(drawn.la.id);
+    expect((await ok(u1, 'GET', '/than-tai/today')).la.id).toBe(drawn.la.id);
+
+    // Gọi song song vẫn chỉ ra một lá và một dòng.
+    const racers = await Promise.all(
+      Array.from({ length: 6 }, () => call(u2, 'POST', '/than-tai/draw')),
+    );
+    expect(racers.map((r) => r.statusCode)).toEqual([200, 200, 200, 200, 200, 200]);
+    expect(new Set(racers.map((r) => (r.json() as Body).la.id)).size).toBe(1);
+    const rows = await stack.query(
+      `select 1 from tf_khan_daily where actor_key = $1 and ngay = $2::date`,
+      [`u:${u2.id}`, ngay],
+    );
+    expect(rows).toHaveLength(1);
+    const seen = await stack.query(`select 1 from tf_la_seen where actor_key = $1`, [`u:${u2.id}`]);
+    expect(seen).toHaveLength(1);
+
+    // Bước 2.
+    expect((await call(u1, 'POST', '/than-tai/predict', { direction: 'sideways' })).statusCode).toBe(422);
+    const predicted = await ok(u1, 'POST', '/than-tai/predict', { direction: 'up' });
+    expect(predicted).toMatchObject({ status: 'dang_do', step: 3, prediction: 'up', tickers: null });
+    expect(errorOf(await call(u1, 'POST', '/than-tai/predict', { direction: 'down' }))).toBe('DA_DU_DOAN');
+
+    // Bước 3.
+    expect(errorOf(await call(u1, 'POST', '/than-tai/cau', { tickers: ['FPT', 'FPT'] }))).toBe('MA_KHONG_HOP_LE');
+    expect(errorOf(await call(u1, 'POST', '/than-tai/cau', { tickers: ['F'] }))).toBe('MA_KHONG_HOP_LE');
+    expect(errorOf(await call(u1, 'POST', '/than-tai/cau', { tickers: ['ZZZ'] }))).toBe('MA_KHONG_HOP_LE');
+    const tooMany = await call(u1, 'POST', '/than-tai/cau', { tickers: ['FPT', 'VCB', 'VNM', 'HPG'] });
+    expect(tooMany.statusCode).toBe(422);
+    expect(errorOf(tooMany)).toBe('QUA_3_MA');
+    const results403 = await call(u1, 'GET', '/than-tai/results');
+    expect(results403.statusCode).toBe(403);
+    expect(errorOf(results403)).toBe('KET_QUA_CHUA_MO');
+    const done = await ok(u1, 'POST', '/than-tai/cau', { tickers: ['fpt'] });
+    expect(done).toMatchObject({ status: 'da_xong', step: 4, prediction: 'up', tickers: ['FPT'] });
+    expect(errorOf(await call(u1, 'POST', '/than-tai/cau', { tickers: [] }))).toBe('DA_CAU');
+
+    await ok(u2, 'POST', '/than-tai/predict', { direction: 'down' });
+    const skipped = await ok(u2, 'POST', '/than-tai/cau', { tickers: [] });
+    expect(skipped).toMatchObject({ status: 'da_xong', step: 4, tickers: [] });
+
+    // Kết quả cả sàn: người chưa xong và người ẩn danh chưa xem được trước 11:30.
+    expect(errorOf(await call(u3, 'GET', '/than-tai/results'))).toBe('KET_QUA_CHUA_MO');
+    expect(errorOf(await call(null, 'GET', '/than-tai/results'))).toBe('KET_QUA_CHUA_MO');
+    const results = await ok(u1, 'GET', '/than-tai/results');
+    expect(results).toMatchObject({
+      total: 2,
+      up: 1,
+      flat: 0,
+      down: 1,
+      top5: [{ ticker: 'FPT', count: 1 }],
     });
-    expect(errorOf(badTickers)).toBe('RITUAL_BAD_TICKERS');
-    const unknown = await call(u1, 'POST', '/ritual/submit', {
-      direction: 'up',
-      level: 1745,
-      tickers: ['VCB', 'VNM', 'ZZZ'],
+
+    // Lá bị tắt sau khi gieo vẫn hiển thị đủ trong ngày.
+    await stack.query('update tf_kd_la set active = false');
+    const rendered = await ok(u1, 'GET', '/than-tai/today');
+    expect(rendered.la).toMatchObject({ id: drawn.la.id, luan: drawn.la.luan, chot: drawn.la.chot });
+
+    // Hạn 11:30 giờ Việt Nam: 11:29:59 còn khấn được, 11:30:00 thì HET_GIO.
+    await stack.query('update tf_kd_la set active = true where que_id = 1');
+    setClock('2026-11-12T04:29:59Z');
+    expect((await ok(u3, 'POST', '/than-tai/draw')).status).toBe('dang_do');
+    setClock('2026-11-12T04:30:00Z');
+    const late = await call(u3, 'POST', '/than-tai/predict', { direction: 'flat' });
+    expect(late.statusCode).toBe(409);
+    expect(errorOf(late)).toBe('HET_GIO');
+    expect(errorOf(await call(u3, 'POST', '/than-tai/draw'))).toBe('HET_GIO');
+    expect(errorOf(await call(u3, 'POST', '/than-tai/cau', { tickers: [] }))).toBe('HET_GIO');
+    const closed = await ok(u3, 'GET', '/than-tai/today');
+    expect(closed).toMatchObject({ status: 'het_gio', step: 2 });
+    expect((await ok(u1, 'GET', '/than-tai/today')).status).toBe('da_xong');
+    // Sau 11:30 ai cũng xem được kết quả, kể cả chưa đăng nhập.
+    expect(await ok(null, 'GET', '/than-tai/results')).toMatchObject({ total: 2, up: 1, down: 1 });
+
+    // Qua nửa đêm giờ Việt Nam là ngày mới, khấn lại được.
+    setClock('2026-11-12T17:30:00Z'); // 00:30 ngày 13
+    const next = await ok(u1, 'GET', '/than-tai/today');
+    expect(next).toMatchObject({ status: 'chua_khan', step: 1, la: null });
+    expect(next.day.date).toBe('2026-11-13');
+    setClock('2026-11-12T03:00:00Z');
+  });
+
+  it('quản trị Thần Tài: chỉ quản trị viên, sửa lá/quẻ/hành có kiểm tra độ dài và ghi nhật ký', async () => {
+    const MANAGE = '/manage/than-tai';
+    expect((await call(u1, 'GET', `${MANAGE}/la`)).statusCode).toBe(403);
+    expect((await call(lead, 'GET', `${MANAGE}/hanh`)).statusCode).toBe(403);
+    expect((await call(null, 'GET', `${MANAGE}/la`)).statusCode).toBe(401);
+
+    const list = await ok(admin, 'GET', `${MANAGE}/la`);
+    const target = list.items.find((item: Body) => item.queId === 1 && item.haoDong === 1);
+    expect(target).toMatchObject({ queTen: expect.any(String), hao: '111111', active: true });
+
+    const updated = await ok(admin, 'PUT', `${MANAGE}/la/${target.id}`, {
+      luan: 'Luận đã sửa',
+      hang: 'trung_cat',
+      active: false,
     });
-    expect(errorOf(unknown)).toBe('RITUAL_UNKNOWN_TICKER');
+    expect(updated).toMatchObject({ id: target.id, luan: 'Luận đã sửa', hang: 'trung_cat', active: false });
+    expect((await call(admin, 'PUT', `${MANAGE}/la/${target.id}`, { luan: 'x'.repeat(1201) })).statusCode).toBe(422);
+    expect((await call(admin, 'PUT', `${MANAGE}/la/${target.id}`, { chot: 'x'.repeat(121) })).statusCode).toBe(422);
+    expect((await call(admin, 'PUT', `${MANAGE}/la/${target.id}`, { hang: 'tuyet_cat' })).statusCode).toBe(422);
+    expect((await call(admin, 'PUT', `${MANAGE}/la/${target.id}`, {})).statusCode).toBe(422);
+    expect((await call(admin, 'PUT', `${MANAGE}/la/99999999`, { luan: 'y' })).statusCode).toBe(404);
+
+    const que = await ok(admin, 'PUT', `${MANAGE}/que/1`, { tuong: 'Tượng đã sửa' });
+    expect(que).toMatchObject({ id: 1, tuong: 'Tượng đã sửa' });
+    expect((await call(admin, 'PUT', `${MANAGE}/que/65`, { tuong: 'z' })).statusCode).toBe(422);
+
+    const hanh = await ok(admin, 'GET', `${MANAGE}/hanh`);
+    expect(hanh.items.map((item: Body) => item.hanh)).toEqual(['kim', 'moc', 'thuy', 'hoa', 'tho']);
+    const kim = await ok(admin, 'PUT', `${MANAGE}/hanh/kim`, {
+      nganh: ['Ngân hàng', 'Chứng khoán'],
+      mau: [{ ten: 'Trắng', hex: '#FFFFFF' }],
+      huong: 'Tây',
+    });
+    expect(kim).toMatchObject({ hanh: 'kim', nganh: ['Ngân hàng', 'Chứng khoán'], huong: 'Tây' });
     expect(
-      (await call(u1, 'POST', '/ritual/submit', { direction: 'up', level: -1, tickers: [] })).statusCode,
+      (await call(admin, 'PUT', `${MANAGE}/hanh/kim`, { mau: [{ ten: 'Xấu', hex: 'trắng' }] })).statusCode,
     ).toBe(422);
+    expect((await call(admin, 'PUT', `${MANAGE}/hanh/dat`, { huong: 'x' })).statusCode).toBe(422);
 
-    const submitted = await ok(u1, 'POST', '/ritual/submit', {
-      direction: 'up',
-      level: 1745,
-      tickers: ['vcb', 'vnm', 'fpt'],
-    });
-    expect(submitted.mine).toMatchObject({ direction: 'up', level: 1745, correct: null });
-    expect(submitted.mine.tickers).toEqual(['VCB', 'VNM', 'FPT']);
-    await waitFor(u1Floor, (m) => m.type === 'ritual:done' && m.name === 'Nam Bình', 'ritual:done');
-    const again = await call(u1, 'POST', '/ritual/submit', {
-      direction: 'down',
-      level: 1700,
-      tickers: ['VCB', 'VNM', 'FPT'],
-    });
-    expect(again.statusCode).toBe(409);
-    expect(errorOf(again)).toBe('RITUAL_ALREADY_DONE');
-
-    await ok(u2, 'POST', '/ritual/draw');
-    await ok(u2, 'POST', '/ritual/submit', { direction: 'down', level: 1700, tickers: ['VCB', 'FPT', 'VNM'] });
-    await ok(u3, 'POST', '/ritual/draw');
-    await ok(u3, 'POST', '/ritual/submit', { direction: 'up', level: 1750, tickers: ['VCB', 'VNM', 'FPT'] });
-    const stats = (await ok(u1, 'GET', '/ritual/today')).stats;
-    expect(stats).toMatchObject({ total: 3, up: 2, down: 1 });
-    expect(stats.topTickers).toHaveLength(3);
-    expect(stats.topTickers[0].count).toBe(3);
-
-    // Một phiên bị lỡ trước đó (10/11, đoán giảm) và các nến VNINDEX cần để chấm.
-    await stack.query(
-      `insert into tf_rituals (user_id, session, que_id, direction, level, tickers, created_at, done_at)
-       values ($1, '2026-11-10', 1, 'down', 1730, '{VCB,VNM,FPT}', now(), now())`,
-      [u1.id],
+    const audit = await stack.query(
+      `select action from admin_audit_log where action like 'trading_floor.than_tai_%' order by created_at`,
     );
-    await stack.query(
-      `insert into market_index_bars (symbol, trade_date, open, high, low, close, volume) values
-         ('VNINDEX', '2026-11-09', 1740, 1742, 1738, 1740, 1000),
-         ('VNINDEX', '2026-11-10', 1738, 1740, 1730, 1735.5, 1000),
-         ('VNINDEX', '2026-11-12', 1736, 1750, 1735, 1745.12, 1000)`,
-    );
-
-    const job = app.get(FloorRitualJob);
-    // 14:59: chưa tới giờ chấm của phiên hôm nay; phiên 10/11 thì chấm được từ sớm.
-    setClock('2026-11-12T07:59:00Z');
-    const early1 = await job.run();
-    expect(early1).toMatchObject({ status: 'completed' });
-    expect((early1 as { detail: Body }).detail.scored.map((s: Body) => s.session)).toEqual(['2026-11-10']);
-
-    setClock('2026-11-12T08:30:00Z'); // 15:30
-    const scored = await job.run();
-    expect((scored as { detail: Body }).detail.scored).toEqual([
-      expect.objectContaining({ session: '2026-11-12', rituals: 3, close: 1745.12, change: 9.62 }),
+    expect(audit.map((row) => row.action)).toEqual([
+      'trading_floor.than_tai_la_update',
+      'trading_floor.than_tai_que_update',
+      'trading_floor.than_tai_hanh_update',
     ]);
-    const rerun = await job.run();
-    expect((rerun as { detail: Body }).detail).toEqual({ scored: [], waiting: [] });
-
-    const rows = await stack.query<{ user_id: string; correct: boolean; error: string }>(
-      `select user_id, correct, error from tf_rituals where session = '2026-11-12' order by user_id`,
-    );
-    const byUser = new Map(rows.map((row) => [row.user_id, row]));
-    expect(byUser.get(u1.id)).toMatchObject({ correct: true });
-    expect(Number(byUser.get(u1.id)!.error)).toBeCloseTo(0.12, 2);
-    expect(byUser.get(u2.id)).toMatchObject({ correct: false });
-    expect(byUser.get(u3.id)).toMatchObject({ correct: true });
-
-    const board = await ok(u2, 'GET', '/leaderboard?month=2026-11');
-    expect(board.month).toBe('2026-11');
-    expect(board.rows.map((row: Body) => row.id)).toEqual([leaderboardId(u1.id), leaderboardId(u3.id)]);
-    expect(board.rows[0]).toMatchObject({ rank: 1, correct: 2, total: 2, name: 'Nam Bình' });
-    expect(board.rows[0].avgError).toBeCloseTo((5.5 + 0.12) / 2, 2);
-    expect(board.rows[1]).toMatchObject({ rank: 2, correct: 1, total: 1 });
-    expect((await ok(u2, 'GET', '/leaderboard')).month).toBe('2026-11');
-    expect((await ok(u2, 'GET', '/leaderboard?month=2026-10')).rows).toEqual([]);
-    expect((await call(u2, 'GET', '/leaderboard?month=2026-13')).statusCode).toBe(422);
-
-    const after = await ok(u1, 'GET', '/ritual/today');
-    expect(after.session).toBe('2026-11-13');
-    expect(after.mine).toBeNull();
-    expect(after.lastResult).toEqual({
-      session: '2026-11-12',
-      close: 1745.12,
-      change: 9.62,
-      total: 3,
-      correct: 2,
-    });
   });
 
   it('quản trị SACO: trưởng nhóm gán cho người trong nhóm, bị từ chối với người ngoài nhóm, người thường bị 403', async () => {

@@ -27,23 +27,20 @@ import {
 import { floorSocket } from "../net/socket.ts"
 import {
   type Facing,
-  type LeaderRow,
   type Peer,
   type PostCard,
   type Profile,
-  type RitualStats,
   avatarBadge,
   normalizeAvatarId,
 } from "../net/types.ts"
 import {
   ASSET_ROOT,
   type CharacterArt,
-  type FrameArt,
   type Manifest,
   type WalkArt,
   walkAnimKey,
 } from "./assets.ts"
-import { Avatar, DEPTH_LABEL, facingOf } from "./Avatar.ts"
+import { Avatar, facingOf } from "./Avatar.ts"
 import {
   BOARDS,
   NAV_CELL,
@@ -161,13 +158,6 @@ export class OfficeScene extends Phaser.Scene {
   private postLines: Phaser.GameObjects.Text[] = []
   private readonly disposers: (() => void)[] = []
   private disposed = false
-  private statues: {
-    img: Phaser.GameObjects.Image
-    name: Phaser.GameObjects.Text
-    sub: Phaser.GameObjects.Text
-    base: number
-  }[] = []
-  private shrineCounter!: Phaser.GameObjects.Text
   private shrineGlow!: Phaser.GameObjects.Image
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter
   /** Thần Tài on the shrine when his art exists, and who he has already greeted. */
@@ -190,11 +180,10 @@ export class OfficeScene extends Phaser.Scene {
       this.load.image(f.file, f.file)
     }
     for (const p of Object.values(this.manifest.props)) image(p)
-    // Only standing frames, statues and Thần Tài's wave load up front. A character's walk sheets (about
+    // Only standing frames and Thần Tài's wave load up front. A character's walk sheets (about
     // 34 MB of pixels each) load when someone on the floor wears it: see ensureWalks.
     for (const c of Object.values(this.manifest.characters)) {
       Object.values(c.idle).forEach(image)
-      if (c.statue) image(c.statue)
       for (const w of Object.values(c.actions ?? {}).flatMap((a) =>
         Object.values(a)
       )) {
@@ -215,7 +204,6 @@ export class OfficeScene extends Phaser.Scene {
     this.buildBoards()
     for (const p of PLACEMENTS) this.place(p)
     this.buildShrine()
-    this.buildStatues()
     this.buildPeople()
     this.buildLabels()
     this.setupInput()
@@ -658,7 +646,6 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   private place(p: Placement): void {
-    if (p.id.startsWith("statue-")) return // built by buildStatues
     if (p.id === "thantai" && this.manifest.characters.thantai) return // an animated figure, built by buildShrine
     const art = p.art ? this.prop(p.art) : undefined
     const depth = p.flat ? DEPTH.FLAT : p.y
@@ -945,20 +932,11 @@ export class OfficeScene extends Phaser.Scene {
         blendMode: "ADD",
       })
       .setDepth(p.y + 100)
-    this.shrineCounter = this.text(p.x, 18, "", 15, "#ffe7a3", "700")
+    this.text(p.x, 18, "🙏 Thần Tài · Khấn trước 11:30", 15, "#ffe7a3", "700")
       .setOrigin(0.5, 0)
       .setBackgroundColor("rgba(60,14,10,0.78)")
       .setPadding(12, 5, 12, 5)
       .setDepth(DEPTH.WALL_DECOR + 2)
-  }
-
-  private updateShrine(stats: RitualStats | null): void {
-    const n = stats?.total ?? 0
-    this.shrineCounter.setText(
-      n
-        ? `🙏 ${n} lượt khấn cho phiên ${stats!.session.slice(8)}/${stats!.session.slice(5, 7)}`
-        : "🙏 Thần Tài · Gieo quẻ đầu phiên"
-    )
   }
 
   private celebrate(luck: number): void {
@@ -972,101 +950,6 @@ export class OfficeScene extends Phaser.Scene {
       yoyo: true,
       ease: "Quad.easeOut",
     })
-  }
-
-  // ---------- hall of fame ----------
-
-  private buildStatues(): void {
-    for (const rank of [1, 2, 3]) {
-      const p = PLACEMENTS.find((x) => x.id === `statue-${rank}`)!
-      // `top` is where the statue stands; `face` is the middle of the podium's front, for the name.
-      let top = p.y - p.h + 4
-      let face = p.y - p.h * 0.6 + 8
-      const art = this.prop("podium")
-      if (art) {
-        const podium = this.add
-          .image(p.x, p.y, art.file)
-          .setOrigin(art.origin?.[0] ?? 0.5, art.origin?.[1] ?? 1)
-          .setScale(1 / art.density)
-          .setDepth(p.y)
-        // A round podium seen from 22° above: its top face is an ellipse 0.375 × width tall.
-        const lid = podium.displayWidth * 0.375
-        top = p.y - podium.displayHeight + lid / 2
-        face = (p.y - podium.displayHeight + lid + p.y) / 2
-      } else {
-        const g = this.add.graphics({ x: p.x, y: p.y }).setDepth(p.y)
-        drawPlaceholder(g, p.placeholder ?? "podium", p.w, p.h)
-      }
-      if (p.foot)
-        this.nav.blockRect(
-          p.x - p.foot[0] / 2,
-          p.y - p.foot[1],
-          p.foot[0],
-          p.foot[1]
-        )
-      const base = rank === 1 ? 1.1 : 1
-      const img = this.add.image(p.x, top, "__WHITE").setDepth(p.y + 0.5)
-      const medal = ["🥇", "🥈", "🥉"][rank - 1]
-      const name = this.text(p.x, face, "", 12, "#2a1a08", "800")
-        .setOrigin(0.5, 0.5)
-        .setDepth(p.y + 1)
-      const sub = this.text(p.x, p.y + 6, "", 12, "#ffe7a3", "700")
-        .setOrigin(0.5, 0)
-        .setBackgroundColor("rgba(12,17,27,0.6)")
-        .setPadding(6, 2, 6, 2)
-        .setDepth(DEPTH_LABEL + p.y)
-      this.text(p.x, top - 104 * base - 34, medal, 22, "#ffffff")
-        .setOrigin(0.5, 1)
-        .setDepth(p.y + 1)
-      this.statues.push({ img, name, sub, base })
-      const rect = new Phaser.Geom.Rectangle(
-        p.x - p.w / 2,
-        top - 110 * base,
-        p.w,
-        p.y - top + 110 * base
-      )
-      this.addHot(rect, p.interact!, p.y)
-    }
-    this.updateStatues([])
-  }
-
-  private updateStatues(rows: LeaderRow[]): void {
-    this.statues.forEach((s, i) => {
-      const row = rows[i]
-      const art = this.character(row?.avatar ?? "male01").statue
-      if (art) {
-        s.img.setVisible(true)
-        this.setFrame(s.img, art, s.base)
-      } else {
-        s.img.setVisible(false)
-      }
-      if (row) {
-        s.img.setAlpha(1).clearTint()
-        s.name.setText(
-          row.name.length > 14 ? `${row.name.slice(0, 13)}…` : row.name
-        )
-        s.sub.setText(`${row.correct}/${row.total} lần đúng`)
-      } else {
-        s.img.setAlpha(0.35).setTint(0x8a8f99)
-        s.name.setText("Còn trống")
-        s.sub.setText("Dự đoán đúng để lên tượng")
-      }
-    })
-  }
-
-  private setFrame(
-    img: Phaser.GameObjects.Image,
-    art: FrameArt,
-    base: number
-  ): void {
-    const src = this.textures.get(art.file).getSourceImage() as {
-      width: number
-      height: number
-    }
-    img
-      .setTexture(art.file)
-      .setOrigin(art.anchor[0] / src.width, art.anchor[1] / src.height)
-      .setScale(base / art.density)
   }
 
   // ---------- people ----------
@@ -1343,14 +1226,10 @@ export class OfficeScene extends Phaser.Scene {
   private bindData(): void {
     this.updateLedIndex(world.indices.get())
     this.updateLedTiles(world.vn30.get())
-    this.updateShrine(world.ritual.get())
     this.updatePosts(world.posts.get())
-    this.updateStatues(world.leaders.get())
     this.disposers.push(
       world.indices.subscribe((v) => this.updateLedIndex(v)),
       world.vn30.subscribe((v) => this.updateLedTiles(v)),
-      world.ritual.subscribe((v) => this.updateShrine(v)),
-      world.leaders.subscribe((v) => this.updateStatues(v)),
       world.posts.subscribe((v) => this.updatePosts(v))
     )
 
@@ -1419,8 +1298,7 @@ export class OfficeScene extends Phaser.Scene {
         const avatar = this.peers.get(id)?.avatar
         avatar?.say(text)
         logChat(avatar?.name ?? "Ai đó", text, false)
-      }),
-      presence.on("ritual", (r) => this.celebrate(r.luck))
+      })
     )
   }
 

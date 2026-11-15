@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react"
 import { useNavigate } from "react-router"
 
+import { useAuth } from "@/hooks/use-auth"
+
 import {
   commands,
   openPanel,
@@ -31,11 +33,12 @@ const EMOTES = [
 const SHORTCUTS: { kind: InteractKind; icon: string; label: string }[] = [
   { kind: "thantai", icon: "🙏", label: "Thần Tài" },
   { kind: "posts", icon: "📋", label: "Nhận định" },
-  { kind: "leaderboard", icon: "🏆", label: "Vinh danh" },
 ]
 
 export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
   const navigate = useNavigate()
+  const { openAuth } = useAuth()
+  const guest = useStore(ui.guest)
   const profile = useStore(ui.profile)
   const online = useStore(ui.online)
   const connection = useStore(ui.connection)
@@ -101,6 +104,16 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
                   : "Ngoại tuyến"}
             </span>
           </span>
+          {guest && (
+            <button
+              type="button"
+              className="chip"
+              onClick={() => openAuth("login")}
+              aria-label="Đăng nhập tài khoản IQX"
+            >
+              Đăng nhập
+            </button>
+          )}
           <button
             type="button"
             className="chip me"
@@ -176,6 +189,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
             className="pill chat-pill"
             onClick={chatSaco}
             aria-label={`Chat SACO${userUnread ? `, ${userUnread} tin chưa đọc` : ""}`}
+            title={guest ? "Đăng nhập để chat với SACO" : undefined}
           >
             <span className="pill-ico" aria-hidden="true">
               🧑‍💼
@@ -223,7 +237,8 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
 
       {!touch && (
         <p className="help">
-          Nhấn chuột để đi · WASD/mũi tên · E để mở · Enter để chat · cuộn để phóng to
+          Nhấn chuột để đi · WASD/mũi tên · E để mở · Enter để chat · cuộn để
+          phóng to
         </p>
       )}
     </div>

@@ -1,5 +1,5 @@
 /** Nhắn tin với SACO on the client: inbox, open threads, Chat SACO matching, SACO invites. */
-import { openPanel, Store, toast, ui } from "../bridge.ts"
+import { needLogin, openPanel, Store, toast, ui } from "../bridge.ts"
 import { floorApi } from "./api.ts"
 import { floorSocket } from "./socket.ts"
 import type {
@@ -43,7 +43,8 @@ let inboxTimer: ReturnType<typeof setTimeout> | null = null
 
 /** Debounced: a burst of socket events costs one request. */
 export function refreshInbox(delay = 120): void {
-  if (!ui.profile.get()) return
+  // A guest has no inbox: those calls would only answer 401.
+  if (!ui.profile.get() || ui.guest.get()) return
   if (inboxTimer) clearTimeout(inboxTimer)
   inboxTimer = setTimeout(async () => {
     inboxTimer = null
@@ -100,6 +101,7 @@ function appendMessage(convId: string, message: ChatMessage): void {
 
 /** Chat SACO button: back to the matched SACO, else the latest chat, else find a SACO. */
 export function chatSaco(): void {
+  if (needLogin("Đăng nhập để chat với SACO")) return
   const box = chat.inbox.get()
   if (box?.matchedConvId)
     return openPanel("chat", { side: "user", convId: box.matchedConvId })
@@ -109,6 +111,7 @@ export function chatSaco(): void {
 }
 
 export async function findSaco(): Promise<void> {
+  if (needLogin("Đăng nhập để chat với SACO")) return
   if (chat.match.get()) return
   chat.match.set({ state: "starting" })
   try {
@@ -135,6 +138,7 @@ export async function cancelFind(): Promise<void> {
 
 /** Opens the conversation with one SACO (creating it on the first message), for "Nhắn SACO" buttons. */
 export async function openDirectChat(sacoId: string): Promise<void> {
+  if (needLogin("Đăng nhập để nhắn SACO")) return
   try {
     const c = await floorApi.openDirect(sacoId)
     refreshInbox(0)

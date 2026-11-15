@@ -35149,7 +35149,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 891 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 898 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -177364,20 +177364,63 @@
         "x-response-schema-status": "explicit"
       }
     },
-    "/api/v2/trading-floor/leaderboard": {
-      "get": {
-        "operationId": "floorLeaderboard",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "month",
-            "required": false,
-            "schema": {
-              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
-              "type": "string"
+    "/api/v2/trading-floor/guest": {
+      "post": {
+        "operationId": "floorGuestCreate",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "avatar": {
+                    "enum": [
+                      "male01",
+                      "male02",
+                      "male03",
+                      "male04",
+                      "male05",
+                      "female01",
+                      "female02",
+                      "female03",
+                      "female04",
+                      "female05",
+                      "danhtrongit"
+                    ],
+                    "type": "string"
+                  },
+                  "color": {
+                    "default": "default",
+                    "enum": [
+                      "default",
+                      "navy",
+                      "charcoal",
+                      "burgundy",
+                      "forest",
+                      "cobalt",
+                      "beige",
+                      "plum",
+                      "gold",
+                      "teal"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "maxLength": 100,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "avatar"
+                ],
+                "type": "object"
+              }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -177385,72 +177428,62 @@
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
-                    "month": {
+                    "guestId": {
                       "type": "string"
                     },
-                    "rows": {
-                      "items": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "avatar": {
-                            "enum": [
-                              "male01",
-                              "male02",
-                              "male03",
-                              "male04",
-                              "male05",
-                              "female01",
-                              "female02",
-                              "female03",
-                              "female04",
-                              "female05",
-                              "danhtrongit"
-                            ],
-                            "type": "string"
-                          },
-                          "avgError": {
-                            "nullable": true,
-                            "type": "number"
-                          },
-                          "correct": {
-                            "maximum": 9007199254740991,
-                            "minimum": -9007199254740991,
-                            "type": "integer"
-                          },
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "rank": {
-                            "maximum": 9007199254740991,
-                            "minimum": -9007199254740991,
-                            "type": "integer"
-                          },
-                          "total": {
-                            "maximum": 9007199254740991,
-                            "minimum": -9007199254740991,
-                            "type": "integer"
-                          }
+                    "profile": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "avatar": {
+                          "enum": [
+                            "male01",
+                            "male02",
+                            "male03",
+                            "male04",
+                            "male05",
+                            "female01",
+                            "female02",
+                            "female03",
+                            "female04",
+                            "female05",
+                            "danhtrongit"
+                          ],
+                          "type": "string"
                         },
-                        "required": [
-                          "rank",
-                          "id",
-                          "name",
-                          "avatar",
-                          "correct",
-                          "total",
-                          "avgError"
-                        ],
-                        "type": "object"
+                        "color": {
+                          "enum": [
+                            "default",
+                            "navy",
+                            "charcoal",
+                            "burgundy",
+                            "forest",
+                            "cobalt",
+                            "beige",
+                            "plum",
+                            "gold",
+                            "teal"
+                          ],
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
                       },
-                      "type": "array"
+                      "required": [
+                        "name",
+                        "avatar",
+                        "color"
+                      ],
+                      "type": "object"
+                    },
+                    "token": {
+                      "type": "string"
                     }
                   },
                   "required": [
-                    "month",
-                    "rows"
+                    "token",
+                    "guestId",
+                    "profile"
                   ],
                   "type": "object"
                 }
@@ -177467,16 +177500,6 @@
               }
             },
             "description": "Bad request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
           },
           "422": {
             "content": {
@@ -177509,16 +177532,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Bảng xếp hạng dự đoán đúng hướng của một tháng (mặc định tháng này)",
+        "security": [],
+        "summary": "Khách chưa đăng nhập tạo nhân vật (tên 2–20 ký tự, dáng, màu áo) và nhận token khách; tối đa 10 lần mỗi IP mỗi giờ",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -179999,6 +180018,1006 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/trading-floor/manage/than-tai/hanh": {
+      "get": {
+        "operationId": "thanTaiAdminHanhList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "hanh": {
+                            "enum": [
+                              "kim",
+                              "moc",
+                              "thuy",
+                              "hoa",
+                              "tho"
+                            ],
+                            "type": "string"
+                          },
+                          "huong": {
+                            "type": "string"
+                          },
+                          "mau": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "hex": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "ten",
+                                "hex"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "nganh": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "updatedAt": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "hanh",
+                          "nganh",
+                          "mau",
+                          "huong",
+                          "updatedAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cấu hình 5 hành: ngành, màu hợp và hướng",
+        "tags": [
+          "Khu giao dịch · Quản trị Thần Tài"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/manage/than-tai/hanh/{hanh}": {
+      "put": {
+        "operationId": "thanTaiAdminHanhUpdate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "hanh",
+            "required": true,
+            "schema": {
+              "enum": [
+                "kim",
+                "moc",
+                "thuy",
+                "hoa",
+                "tho"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "huong": {
+                    "maxLength": 40,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "mau": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "hex": {
+                          "pattern": "^#[0-9A-Fa-f]{6}$",
+                          "type": "string"
+                        },
+                        "ten": {
+                          "maxLength": 40,
+                          "minLength": 1,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "ten",
+                        "hex"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 6,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "nganh": {
+                    "items": {
+                      "maxLength": 60,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "maxItems": 20,
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "hanh": {
+                      "enum": [
+                        "kim",
+                        "moc",
+                        "thuy",
+                        "hoa",
+                        "tho"
+                      ],
+                      "type": "string"
+                    },
+                    "huong": {
+                      "type": "string"
+                    },
+                    "mau": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "hex": {
+                            "type": "string"
+                          },
+                          "ten": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "ten",
+                          "hex"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "nganh": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "hanh",
+                    "nganh",
+                    "mau",
+                    "huong",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa cấu hình một hành (kim, moc, thuy, hoa, tho): danh sách ngành, màu và hướng",
+        "tags": [
+          "Khu giao dịch · Quản trị Thần Tài"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/manage/than-tai/la": {
+      "get": {
+        "operationId": "thanTaiAdminLaList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "active": {
+                            "type": "boolean"
+                          },
+                          "chot": {
+                            "type": "string"
+                          },
+                          "chuHan": {
+                            "type": "string"
+                          },
+                          "hang": {
+                            "enum": [
+                              "dai_cat",
+                              "thuong_cat",
+                              "trung_cat",
+                              "tieu_cat",
+                              "than_trong"
+                            ],
+                            "type": "string"
+                          },
+                          "hao": {
+                            "type": "string"
+                          },
+                          "haoDong": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "haoNghia": {
+                            "type": "string"
+                          },
+                          "haoVan": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "luan": {
+                            "type": "string"
+                          },
+                          "queDuoi": {
+                            "type": "string"
+                          },
+                          "queId": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "queTen": {
+                            "type": "string"
+                          },
+                          "queTren": {
+                            "type": "string"
+                          },
+                          "tenHao": {
+                            "type": "string"
+                          },
+                          "thoan": {
+                            "type": "string"
+                          },
+                          "thoanNghia": {
+                            "type": "string"
+                          },
+                          "tuong": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "queId",
+                          "queTen",
+                          "chuHan",
+                          "hao",
+                          "queTren",
+                          "queDuoi",
+                          "tuong",
+                          "thoan",
+                          "thoanNghia",
+                          "haoDong",
+                          "tenHao",
+                          "haoVan",
+                          "haoNghia",
+                          "hang",
+                          "luan",
+                          "chot",
+                          "active",
+                          "updatedAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mọi lá quẻ (đang bật hoặc đã tắt) kèm nội dung quẻ, xếp theo quẻ rồi hào động",
+        "tags": [
+          "Khu giao dịch · Quản trị Thần Tài"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/manage/than-tai/la/{id}": {
+      "put": {
+        "operationId": "thanTaiAdminLaUpdate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "chot": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "hang": {
+                    "enum": [
+                      "dai_cat",
+                      "thuong_cat",
+                      "trung_cat",
+                      "tieu_cat",
+                      "than_trong"
+                    ],
+                    "type": "string"
+                  },
+                  "haoNghia": {
+                    "maxLength": 600,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "haoVan": {
+                    "maxLength": 600,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "luan": {
+                    "maxLength": 1200,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "tenHao": {
+                    "maxLength": 40,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "active": {
+                      "type": "boolean"
+                    },
+                    "chot": {
+                      "type": "string"
+                    },
+                    "chuHan": {
+                      "type": "string"
+                    },
+                    "hang": {
+                      "enum": [
+                        "dai_cat",
+                        "thuong_cat",
+                        "trung_cat",
+                        "tieu_cat",
+                        "than_trong"
+                      ],
+                      "type": "string"
+                    },
+                    "hao": {
+                      "type": "string"
+                    },
+                    "haoDong": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "haoNghia": {
+                      "type": "string"
+                    },
+                    "haoVan": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "luan": {
+                      "type": "string"
+                    },
+                    "queDuoi": {
+                      "type": "string"
+                    },
+                    "queId": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "queTen": {
+                      "type": "string"
+                    },
+                    "queTren": {
+                      "type": "string"
+                    },
+                    "tenHao": {
+                      "type": "string"
+                    },
+                    "thoan": {
+                      "type": "string"
+                    },
+                    "thoanNghia": {
+                      "type": "string"
+                    },
+                    "tuong": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "queId",
+                    "queTen",
+                    "chuHan",
+                    "hao",
+                    "queTren",
+                    "queDuoi",
+                    "tuong",
+                    "thoan",
+                    "thoanNghia",
+                    "haoDong",
+                    "tenHao",
+                    "haoVan",
+                    "haoNghia",
+                    "hang",
+                    "luan",
+                    "chot",
+                    "active",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa một lá: tên hào, kinh văn hào, nghĩa, hạng, thầy luận, lời chốt, bật/tắt",
+        "tags": [
+          "Khu giao dịch · Quản trị Thần Tài"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/manage/than-tai/que/{id}": {
+      "put": {
+        "operationId": "thanTaiAdminQueUpdate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maximum": 64,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "chuHan": {
+                    "maxLength": 20,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "ten": {
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "thoan": {
+                    "maxLength": 1000,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "thoanNghia": {
+                    "maxLength": 600,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "tuong": {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "chuHan": {
+                      "type": "string"
+                    },
+                    "hao": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "queDuoi": {
+                      "type": "string"
+                    },
+                    "queTren": {
+                      "type": "string"
+                    },
+                    "ten": {
+                      "type": "string"
+                    },
+                    "thoan": {
+                      "type": "string"
+                    },
+                    "thoanNghia": {
+                      "type": "string"
+                    },
+                    "tuong": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "ten",
+                    "chuHan",
+                    "hao",
+                    "queTren",
+                    "queDuoi",
+                    "tuong",
+                    "thoan",
+                    "thoanNghia",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa phần theo quẻ (1–64): tên, chữ Hán, tượng, thoán và nghĩa thoán",
+        "tags": [
+          "Khu giao dịch · Quản trị Thần Tài"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/trading-floor/me": {
       "get": {
         "operationId": "floorMe",
@@ -180010,6 +181029,9 @@
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
+                    "guest": {
+                      "type": "boolean"
+                    },
                     "profile": {
                       "additionalProperties": false,
                       "nullable": true,
@@ -180103,7 +181125,8 @@
                   "required": [
                     "profile",
                     "suggestedName",
-                    "saco"
+                    "saco",
+                    "guest"
                   ],
                   "type": "object"
                 }
@@ -180120,16 +181143,6 @@
               }
             },
             "description": "Bad request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
           },
           "422": {
             "content": {
@@ -180162,16 +181175,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Hồ sơ nhân vật trên sàn, tên gợi ý và quyền SACO của chính tôi",
+        "security": [],
+        "summary": "Hồ sơ nhân vật trên sàn, tên gợi ý và quyền SACO của chính tôi (tài khoản đăng nhập hoặc khách `x-floor-guest`)",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -180636,16 +181645,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -180677,16 +181676,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Bài SACO nhận định đăng hôm nay (giờ Việt Nam), mới nhất trước",
         "tags": [
           "Trading Floor Posts"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -180783,16 +181778,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -180824,16 +181809,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Đọc một bài; bài bị ẩn hoặc SACO đã bị gỡ quyền trả 410 POST_UNAVAILABLE",
         "tags": [
           "Trading Floor Posts"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -180926,16 +181907,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -180967,16 +181938,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Bình luận đang hiện của một bài, mới nhất trước",
         "tags": [
           "Trading Floor Posts"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       },
       "post": {
@@ -181367,16 +182334,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -181408,694 +182365,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Tạo hoặc đổi nhân vật trên sàn (tên 2–20 ký tự, dáng, màu áo)",
+        "security": [],
+        "summary": "Tạo hoặc đổi nhân vật trên sàn (tên 2–20 ký tự, dáng, màu áo); khách `x-floor-guest` đổi được nhân vật của mình",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
-        "x-response-schema-status": "explicit"
-      }
-    },
-    "/api/v2/trading-floor/ritual/draw": {
-      "post": {
-        "operationId": "floorRitualDraw",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "que": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "advice": {
-                          "type": "string"
-                        },
-                        "id": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "luck": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "verse": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "luck",
-                        "verse",
-                        "advice"
-                      ],
-                      "type": "object"
-                    },
-                    "ritual": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "correct": {
-                          "nullable": true,
-                          "type": "boolean"
-                        },
-                        "createdAt": {
-                          "type": "number"
-                        },
-                        "direction": {
-                          "enum": [
-                            "up",
-                            "down"
-                          ],
-                          "nullable": true,
-                          "type": "string"
-                        },
-                        "error": {
-                          "nullable": true,
-                          "type": "number"
-                        },
-                        "level": {
-                          "nullable": true,
-                          "type": "number"
-                        },
-                        "queId": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "session": {
-                          "type": "string"
-                        },
-                        "tickers": {
-                          "items": {
-                            "type": "string"
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "required": [
-                        "session",
-                        "queId",
-                        "direction",
-                        "level",
-                        "tickers",
-                        "createdAt",
-                        "correct",
-                        "error"
-                      ],
-                      "type": "object"
-                    }
-                  },
-                  "required": [
-                    "que",
-                    "ritual"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Bad request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Request validation failed"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Rate limit exceeded"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Service temporarily unavailable"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Gieo quẻ (một lần mỗi phiên; gieo lại trả đúng quẻ cũ)",
-        "tags": [
-          "Khu giao dịch"
-        ],
-        "x-auth-level": "authenticated",
-        "x-response-schema-status": "explicit"
-      }
-    },
-    "/api/v2/trading-floor/ritual/submit": {
-      "post": {
-        "operationId": "floorRitualSubmit",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "additionalProperties": false,
-                "properties": {
-                  "direction": {
-                    "enum": [
-                      "up",
-                      "down"
-                    ],
-                    "type": "string"
-                  },
-                  "level": {
-                    "exclusiveMinimum": true,
-                    "maximum": 1000000,
-                    "minimum": 0,
-                    "type": "number"
-                  },
-                  "tickers": {
-                    "items": {
-                      "maxLength": 16,
-                      "type": "string"
-                    },
-                    "maxItems": 10,
-                    "type": "array"
-                  }
-                },
-                "required": [
-                  "direction",
-                  "level",
-                  "tickers"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "mine": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "correct": {
-                          "nullable": true,
-                          "type": "boolean"
-                        },
-                        "createdAt": {
-                          "type": "number"
-                        },
-                        "direction": {
-                          "enum": [
-                            "up",
-                            "down"
-                          ],
-                          "nullable": true,
-                          "type": "string"
-                        },
-                        "error": {
-                          "nullable": true,
-                          "type": "number"
-                        },
-                        "level": {
-                          "nullable": true,
-                          "type": "number"
-                        },
-                        "queId": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "session": {
-                          "type": "string"
-                        },
-                        "tickers": {
-                          "items": {
-                            "type": "string"
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "required": [
-                        "session",
-                        "queId",
-                        "direction",
-                        "level",
-                        "tickers",
-                        "createdAt",
-                        "correct",
-                        "error"
-                      ],
-                      "type": "object"
-                    },
-                    "que": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "advice": {
-                          "type": "string"
-                        },
-                        "id": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "luck": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "verse": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "luck",
-                        "verse",
-                        "advice"
-                      ],
-                      "type": "object"
-                    },
-                    "stats": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "avgLevel": {
-                          "nullable": true,
-                          "type": "number"
-                        },
-                        "down": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "session": {
-                          "type": "string"
-                        },
-                        "topTickers": {
-                          "items": {
-                            "additionalProperties": false,
-                            "properties": {
-                              "count": {
-                                "maximum": 9007199254740991,
-                                "minimum": -9007199254740991,
-                                "type": "integer"
-                              },
-                              "symbol": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "symbol",
-                              "count"
-                            ],
-                            "type": "object"
-                          },
-                          "type": "array"
-                        },
-                        "total": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "up": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        }
-                      },
-                      "required": [
-                        "session",
-                        "total",
-                        "up",
-                        "down",
-                        "avgLevel",
-                        "topTickers"
-                      ],
-                      "type": "object"
-                    }
-                  },
-                  "required": [
-                    "mine",
-                    "stats",
-                    "que"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Bad request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Request validation failed"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Rate limit exceeded"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Service temporarily unavailable"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Hoàn tất nghi lễ: hướng VNINDEX, mức đóng cửa dự đoán và 3 mã khấn",
-        "tags": [
-          "Khu giao dịch"
-        ],
-        "x-auth-level": "authenticated",
-        "x-response-schema-status": "explicit"
-      }
-    },
-    "/api/v2/trading-floor/ritual/today": {
-      "get": {
-        "operationId": "floorRitualToday",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "cutoffAt": {
-                      "type": "number"
-                    },
-                    "lastResult": {
-                      "additionalProperties": false,
-                      "nullable": true,
-                      "properties": {
-                        "change": {
-                          "type": "number"
-                        },
-                        "close": {
-                          "type": "number"
-                        },
-                        "correct": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "session": {
-                          "type": "string"
-                        },
-                        "total": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        }
-                      },
-                      "required": [
-                        "session",
-                        "close",
-                        "change",
-                        "total",
-                        "correct"
-                      ],
-                      "type": "object"
-                    },
-                    "mine": {
-                      "additionalProperties": false,
-                      "nullable": true,
-                      "properties": {
-                        "correct": {
-                          "nullable": true,
-                          "type": "boolean"
-                        },
-                        "createdAt": {
-                          "type": "number"
-                        },
-                        "direction": {
-                          "enum": [
-                            "up",
-                            "down"
-                          ],
-                          "nullable": true,
-                          "type": "string"
-                        },
-                        "error": {
-                          "nullable": true,
-                          "type": "number"
-                        },
-                        "level": {
-                          "nullable": true,
-                          "type": "number"
-                        },
-                        "queId": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "session": {
-                          "type": "string"
-                        },
-                        "tickers": {
-                          "items": {
-                            "type": "string"
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "required": [
-                        "session",
-                        "queId",
-                        "direction",
-                        "level",
-                        "tickers",
-                        "createdAt",
-                        "correct",
-                        "error"
-                      ],
-                      "type": "object"
-                    },
-                    "session": {
-                      "type": "string"
-                    },
-                    "stats": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "avgLevel": {
-                          "nullable": true,
-                          "type": "number"
-                        },
-                        "down": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "session": {
-                          "type": "string"
-                        },
-                        "topTickers": {
-                          "items": {
-                            "additionalProperties": false,
-                            "properties": {
-                              "count": {
-                                "maximum": 9007199254740991,
-                                "minimum": -9007199254740991,
-                                "type": "integer"
-                              },
-                              "symbol": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "symbol",
-                              "count"
-                            ],
-                            "type": "object"
-                          },
-                          "type": "array"
-                        },
-                        "total": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        },
-                        "up": {
-                          "maximum": 9007199254740991,
-                          "minimum": -9007199254740991,
-                          "type": "integer"
-                        }
-                      },
-                      "required": [
-                        "session",
-                        "total",
-                        "up",
-                        "down",
-                        "avgLevel",
-                        "topTickers"
-                      ],
-                      "type": "object"
-                    }
-                  },
-                  "required": [
-                    "session",
-                    "cutoffAt",
-                    "mine",
-                    "stats",
-                    "lastResult"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Bad request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Request validation failed"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Rate limit exceeded"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Service temporarily unavailable"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Phiên đang dự đoán, nghi lễ của tôi, thống kê đám đông và phiên chấm gần nhất",
-        "tags": [
-          "Khu giao dịch"
-        ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -183398,6 +183673,1742 @@
           "Trading Floor Posts"
         ],
         "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/than-tai/cau": {
+      "post": {
+        "operationId": "thanTaiCau",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "tickers": {
+                    "items": {
+                      "maxLength": 16,
+                      "type": "string"
+                    },
+                    "maxItems": 10,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "tickers"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "day": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "canChi": {
+                          "type": "string"
+                        },
+                        "date": {
+                          "type": "string"
+                        },
+                        "hanh": {
+                          "enum": [
+                            "kim",
+                            "moc",
+                            "thuy",
+                            "hoa",
+                            "tho"
+                          ],
+                          "type": "string"
+                        },
+                        "hanhLabel": {
+                          "type": "string"
+                        },
+                        "hop": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hanh": {
+                                "enum": [
+                                  "kim",
+                                  "moc",
+                                  "thuy",
+                                  "hoa",
+                                  "tho"
+                                ],
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "nganh": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "hanh",
+                              "label",
+                              "nganh"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "huong": {
+                          "type": "string"
+                        },
+                        "kieng": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hanh": {
+                                "enum": [
+                                  "kim",
+                                  "moc",
+                                  "thuy",
+                                  "hoa",
+                                  "tho"
+                                ],
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "nganh": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "hanh",
+                              "label",
+                              "nganh"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "mau": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hex": {
+                                "type": "string"
+                              },
+                              "ten": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ten",
+                              "hex"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "napAm": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "canChi",
+                        "napAm",
+                        "hanh",
+                        "hanhLabel",
+                        "hop",
+                        "kieng",
+                        "mau",
+                        "huong"
+                      ],
+                      "type": "object"
+                    },
+                    "deadline": {
+                      "type": "number"
+                    },
+                    "la": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "chot": {
+                          "type": "string"
+                        },
+                        "hang": {
+                          "enum": [
+                            "dai_cat",
+                            "thuong_cat",
+                            "trung_cat",
+                            "tieu_cat",
+                            "than_trong"
+                          ],
+                          "type": "string"
+                        },
+                        "hangLabel": {
+                          "type": "string"
+                        },
+                        "haoDong": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "nghia": {
+                              "type": "string"
+                            },
+                            "so": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "ten": {
+                              "type": "string"
+                            },
+                            "van": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "so",
+                            "ten",
+                            "van",
+                            "nghia"
+                          ],
+                          "type": "object"
+                        },
+                        "id": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "luan": {
+                          "type": "string"
+                        },
+                        "que": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "chuHan": {
+                              "type": "string"
+                            },
+                            "duoi": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "ten",
+                                "symbol"
+                              ],
+                              "type": "object"
+                            },
+                            "hao": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "ten": {
+                              "type": "string"
+                            },
+                            "thoan": {
+                              "type": "string"
+                            },
+                            "thoanNghia": {
+                              "type": "string"
+                            },
+                            "tren": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "ten",
+                                "symbol"
+                              ],
+                              "type": "object"
+                            },
+                            "tuong": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "ten",
+                            "chuHan",
+                            "hao",
+                            "tren",
+                            "duoi",
+                            "tuong",
+                            "thoan",
+                            "thoanNghia"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "hang",
+                        "hangLabel",
+                        "que",
+                        "haoDong",
+                        "luan",
+                        "chot"
+                      ],
+                      "type": "object"
+                    },
+                    "prediction": {
+                      "enum": [
+                        "up",
+                        "flat",
+                        "down"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "serverTime": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "chua_khan",
+                        "dang_do",
+                        "da_xong",
+                        "het_gio"
+                      ],
+                      "type": "string"
+                    },
+                    "step": {
+                      "maximum": 4,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "tickers": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "vnindexRef": {
+                      "nullable": true,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "step",
+                    "serverTime",
+                    "deadline",
+                    "day",
+                    "vnindexRef",
+                    "la",
+                    "prediction",
+                    "tickers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Bước 3: cầu 0–3 mã cổ phiếu (mảng rỗng là bỏ qua), chốt một lần",
+        "tags": [
+          "Khu giao dịch · Thần Tài"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/than-tai/draw": {
+      "post": {
+        "operationId": "thanTaiDraw",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "day": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "canChi": {
+                          "type": "string"
+                        },
+                        "date": {
+                          "type": "string"
+                        },
+                        "hanh": {
+                          "enum": [
+                            "kim",
+                            "moc",
+                            "thuy",
+                            "hoa",
+                            "tho"
+                          ],
+                          "type": "string"
+                        },
+                        "hanhLabel": {
+                          "type": "string"
+                        },
+                        "hop": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hanh": {
+                                "enum": [
+                                  "kim",
+                                  "moc",
+                                  "thuy",
+                                  "hoa",
+                                  "tho"
+                                ],
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "nganh": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "hanh",
+                              "label",
+                              "nganh"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "huong": {
+                          "type": "string"
+                        },
+                        "kieng": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hanh": {
+                                "enum": [
+                                  "kim",
+                                  "moc",
+                                  "thuy",
+                                  "hoa",
+                                  "tho"
+                                ],
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "nganh": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "hanh",
+                              "label",
+                              "nganh"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "mau": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hex": {
+                                "type": "string"
+                              },
+                              "ten": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ten",
+                              "hex"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "napAm": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "canChi",
+                        "napAm",
+                        "hanh",
+                        "hanhLabel",
+                        "hop",
+                        "kieng",
+                        "mau",
+                        "huong"
+                      ],
+                      "type": "object"
+                    },
+                    "deadline": {
+                      "type": "number"
+                    },
+                    "la": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "chot": {
+                          "type": "string"
+                        },
+                        "hang": {
+                          "enum": [
+                            "dai_cat",
+                            "thuong_cat",
+                            "trung_cat",
+                            "tieu_cat",
+                            "than_trong"
+                          ],
+                          "type": "string"
+                        },
+                        "hangLabel": {
+                          "type": "string"
+                        },
+                        "haoDong": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "nghia": {
+                              "type": "string"
+                            },
+                            "so": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "ten": {
+                              "type": "string"
+                            },
+                            "van": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "so",
+                            "ten",
+                            "van",
+                            "nghia"
+                          ],
+                          "type": "object"
+                        },
+                        "id": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "luan": {
+                          "type": "string"
+                        },
+                        "que": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "chuHan": {
+                              "type": "string"
+                            },
+                            "duoi": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "ten",
+                                "symbol"
+                              ],
+                              "type": "object"
+                            },
+                            "hao": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "ten": {
+                              "type": "string"
+                            },
+                            "thoan": {
+                              "type": "string"
+                            },
+                            "thoanNghia": {
+                              "type": "string"
+                            },
+                            "tren": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "ten",
+                                "symbol"
+                              ],
+                              "type": "object"
+                            },
+                            "tuong": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "ten",
+                            "chuHan",
+                            "hao",
+                            "tren",
+                            "duoi",
+                            "tuong",
+                            "thoan",
+                            "thoanNghia"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "hang",
+                        "hangLabel",
+                        "que",
+                        "haoDong",
+                        "luan",
+                        "chot"
+                      ],
+                      "type": "object"
+                    },
+                    "prediction": {
+                      "enum": [
+                        "up",
+                        "flat",
+                        "down"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "serverTime": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "chua_khan",
+                        "dang_do",
+                        "da_xong",
+                        "het_gio"
+                      ],
+                      "type": "string"
+                    },
+                    "step": {
+                      "maximum": 4,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "tickers": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "vnindexRef": {
+                      "nullable": true,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "step",
+                    "serverTime",
+                    "deadline",
+                    "day",
+                    "vnindexRef",
+                    "la",
+                    "prediction",
+                    "tickers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Bước 1: gieo quẻ (một lá mỗi ngày; gọi lại trả đúng lá đã gieo; sau 11:30 là HET_GIO)",
+        "tags": [
+          "Khu giao dịch · Thần Tài"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/than-tai/predict": {
+      "post": {
+        "operationId": "thanTaiPredict",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "direction": {
+                    "enum": [
+                      "up",
+                      "flat",
+                      "down"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "direction"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "day": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "canChi": {
+                          "type": "string"
+                        },
+                        "date": {
+                          "type": "string"
+                        },
+                        "hanh": {
+                          "enum": [
+                            "kim",
+                            "moc",
+                            "thuy",
+                            "hoa",
+                            "tho"
+                          ],
+                          "type": "string"
+                        },
+                        "hanhLabel": {
+                          "type": "string"
+                        },
+                        "hop": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hanh": {
+                                "enum": [
+                                  "kim",
+                                  "moc",
+                                  "thuy",
+                                  "hoa",
+                                  "tho"
+                                ],
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "nganh": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "hanh",
+                              "label",
+                              "nganh"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "huong": {
+                          "type": "string"
+                        },
+                        "kieng": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hanh": {
+                                "enum": [
+                                  "kim",
+                                  "moc",
+                                  "thuy",
+                                  "hoa",
+                                  "tho"
+                                ],
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "nganh": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "hanh",
+                              "label",
+                              "nganh"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "mau": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hex": {
+                                "type": "string"
+                              },
+                              "ten": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ten",
+                              "hex"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "napAm": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "canChi",
+                        "napAm",
+                        "hanh",
+                        "hanhLabel",
+                        "hop",
+                        "kieng",
+                        "mau",
+                        "huong"
+                      ],
+                      "type": "object"
+                    },
+                    "deadline": {
+                      "type": "number"
+                    },
+                    "la": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "chot": {
+                          "type": "string"
+                        },
+                        "hang": {
+                          "enum": [
+                            "dai_cat",
+                            "thuong_cat",
+                            "trung_cat",
+                            "tieu_cat",
+                            "than_trong"
+                          ],
+                          "type": "string"
+                        },
+                        "hangLabel": {
+                          "type": "string"
+                        },
+                        "haoDong": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "nghia": {
+                              "type": "string"
+                            },
+                            "so": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "ten": {
+                              "type": "string"
+                            },
+                            "van": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "so",
+                            "ten",
+                            "van",
+                            "nghia"
+                          ],
+                          "type": "object"
+                        },
+                        "id": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "luan": {
+                          "type": "string"
+                        },
+                        "que": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "chuHan": {
+                              "type": "string"
+                            },
+                            "duoi": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "ten",
+                                "symbol"
+                              ],
+                              "type": "object"
+                            },
+                            "hao": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "ten": {
+                              "type": "string"
+                            },
+                            "thoan": {
+                              "type": "string"
+                            },
+                            "thoanNghia": {
+                              "type": "string"
+                            },
+                            "tren": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "ten",
+                                "symbol"
+                              ],
+                              "type": "object"
+                            },
+                            "tuong": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "ten",
+                            "chuHan",
+                            "hao",
+                            "tren",
+                            "duoi",
+                            "tuong",
+                            "thoan",
+                            "thoanNghia"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "hang",
+                        "hangLabel",
+                        "que",
+                        "haoDong",
+                        "luan",
+                        "chot"
+                      ],
+                      "type": "object"
+                    },
+                    "prediction": {
+                      "enum": [
+                        "up",
+                        "flat",
+                        "down"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "serverTime": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "chua_khan",
+                        "dang_do",
+                        "da_xong",
+                        "het_gio"
+                      ],
+                      "type": "string"
+                    },
+                    "step": {
+                      "maximum": 4,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "tickers": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "vnindexRef": {
+                      "nullable": true,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "step",
+                    "serverTime",
+                    "deadline",
+                    "day",
+                    "vnindexRef",
+                    "la",
+                    "prediction",
+                    "tickers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Bước 2: dự đoán hướng VNINDEX hôm nay (up, flat, down), chốt một lần",
+        "tags": [
+          "Khu giao dịch · Thần Tài"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/than-tai/results": {
+      "get": {
+        "operationId": "thanTaiResults",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "asOf": {
+                      "type": "number"
+                    },
+                    "down": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "flat": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "top5": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "count": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "ticker": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "ticker",
+                          "count"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "total": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "up": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "up",
+                    "flat",
+                    "down",
+                    "top5",
+                    "asOf"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Bước 4: kết quả cả sàn hôm nay (số người từng hướng, top 5 mã được cầu). Trước 11:30 chỉ người đã xong bước 3; sau 11:30 ai cũng xem được",
+        "tags": [
+          "Khu giao dịch · Thần Tài"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/than-tai/today": {
+      "get": {
+        "operationId": "thanTaiToday",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "day": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "canChi": {
+                          "type": "string"
+                        },
+                        "date": {
+                          "type": "string"
+                        },
+                        "hanh": {
+                          "enum": [
+                            "kim",
+                            "moc",
+                            "thuy",
+                            "hoa",
+                            "tho"
+                          ],
+                          "type": "string"
+                        },
+                        "hanhLabel": {
+                          "type": "string"
+                        },
+                        "hop": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hanh": {
+                                "enum": [
+                                  "kim",
+                                  "moc",
+                                  "thuy",
+                                  "hoa",
+                                  "tho"
+                                ],
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "nganh": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "hanh",
+                              "label",
+                              "nganh"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "huong": {
+                          "type": "string"
+                        },
+                        "kieng": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hanh": {
+                                "enum": [
+                                  "kim",
+                                  "moc",
+                                  "thuy",
+                                  "hoa",
+                                  "tho"
+                                ],
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "nganh": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "hanh",
+                              "label",
+                              "nganh"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "mau": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "hex": {
+                                "type": "string"
+                              },
+                              "ten": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ten",
+                              "hex"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "napAm": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "canChi",
+                        "napAm",
+                        "hanh",
+                        "hanhLabel",
+                        "hop",
+                        "kieng",
+                        "mau",
+                        "huong"
+                      ],
+                      "type": "object"
+                    },
+                    "deadline": {
+                      "type": "number"
+                    },
+                    "la": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "chot": {
+                          "type": "string"
+                        },
+                        "hang": {
+                          "enum": [
+                            "dai_cat",
+                            "thuong_cat",
+                            "trung_cat",
+                            "tieu_cat",
+                            "than_trong"
+                          ],
+                          "type": "string"
+                        },
+                        "hangLabel": {
+                          "type": "string"
+                        },
+                        "haoDong": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "nghia": {
+                              "type": "string"
+                            },
+                            "so": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "ten": {
+                              "type": "string"
+                            },
+                            "van": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "so",
+                            "ten",
+                            "van",
+                            "nghia"
+                          ],
+                          "type": "object"
+                        },
+                        "id": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "luan": {
+                          "type": "string"
+                        },
+                        "que": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "chuHan": {
+                              "type": "string"
+                            },
+                            "duoi": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "ten",
+                                "symbol"
+                              ],
+                              "type": "object"
+                            },
+                            "hao": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "ten": {
+                              "type": "string"
+                            },
+                            "thoan": {
+                              "type": "string"
+                            },
+                            "thoanNghia": {
+                              "type": "string"
+                            },
+                            "tren": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "type": "string"
+                                },
+                                "ten": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "ten",
+                                "symbol"
+                              ],
+                              "type": "object"
+                            },
+                            "tuong": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "ten",
+                            "chuHan",
+                            "hao",
+                            "tren",
+                            "duoi",
+                            "tuong",
+                            "thoan",
+                            "thoanNghia"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "hang",
+                        "hangLabel",
+                        "que",
+                        "haoDong",
+                        "luan",
+                        "chot"
+                      ],
+                      "type": "object"
+                    },
+                    "prediction": {
+                      "enum": [
+                        "up",
+                        "flat",
+                        "down"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "serverTime": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "chua_khan",
+                        "dang_do",
+                        "da_xong",
+                        "het_gio"
+                      ],
+                      "type": "string"
+                    },
+                    "step": {
+                      "maximum": 4,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "tickers": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "nullable": true,
+                      "type": "array"
+                    },
+                    "vnindexRef": {
+                      "nullable": true,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "step",
+                    "serverTime",
+                    "deadline",
+                    "day",
+                    "vnindexRef",
+                    "la",
+                    "prediction",
+                    "tickers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Trạng thái khấn hôm nay: bước còn dở, dòng ngày (can chi, hành), lá đã gieo và phần đã chốt",
+        "tags": [
+          "Khu giao dịch · Thần Tài"
+        ],
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -187511,11 +189522,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 696,
+    "authenticatedOperations": 692,
     "noContentResponses": 18,
-    "operations": 909,
-    "publicOperations": 213,
-    "responseSchemas": 891,
+    "operations": 916,
+    "publicOperations": 224,
+    "responseSchemas": 898,
     "untypedResponses": 0
   }
 }

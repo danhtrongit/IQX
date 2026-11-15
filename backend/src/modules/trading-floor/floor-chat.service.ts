@@ -23,6 +23,7 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
+import { isGuestKey } from './floor-actor.js';
 import { CHAT_RULES, cleanText, floorChatTiming } from './floor-chat.logic.js';
 import {
   FLOOR_CHAT_REPOSITORY,
@@ -191,6 +192,8 @@ export class FloorChatService implements OnApplicationShutdown {
 
   /** "Đang soạn": báo cho bên kia; người không thuộc cuộc trò chuyện thì bỏ qua lặng lẽ. */
   async typing(userId: string, convId: string): Promise<void> {
+    // Khách (`g:<uuid>`) không có cuộc trò chuyện nào: bỏ qua trước khi chạm DB.
+    if (isGuestKey(userId)) return;
     let found: { conv: ChatConvView; side: 'user' | 'saco' };
     try {
       found = await this.member(userId, convId);

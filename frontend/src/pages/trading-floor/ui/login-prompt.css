@@ -1,0 +1,22 @@
+/* Over everything on the floor (sheets 20-30, posts panel 40) except the app's own sign-in dialog. */
+.tf-root .login-prompt {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(5, 10, 20, 0.72);
+  pointer-events: auto;
+}
+
+/* "Đã có tài khoản? Đăng nhập" under the guest join card: a link that is a button. */
+.tf-root .join-login {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-2);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

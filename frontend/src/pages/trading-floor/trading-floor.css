@@ -826,6 +826,8 @@
 /* ---------- sheet ---------- */
 .tf-root .sheet-backdrop {
   position: absolute;
+  /* Trên bảng SACO nhận định (15), dưới toast (20) và lời mời chat. */
+  z-index: 18;
   inset: 0;
   background: rgba(5, 8, 14, 0.55);
   display: grid;

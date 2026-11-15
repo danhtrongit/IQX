@@ -30,15 +30,13 @@ import {
   inBox,
   marketLine,
   pick,
-  ritualLine,
   route,
   thanksLine,
   tickerLine,
   type Rand,
 } from './floor-bots.logic.js';
-import { FloorEvents } from './floor-events.js';
 import { FLOOR_MARKET, type FloorMarketPort } from './floor-market.js';
-import { isSameVnDay } from './floor-ritual.logic.js';
+import { isSameVnDay } from './than-tai.logic.js';
 import type { FloorPeer } from './floor-types.js';
 
 export const FLOOR_BOTS_OPTIONS = Symbol('FLOOR_BOTS_OPTIONS');
@@ -99,19 +97,14 @@ export class FloorBots {
   private nextRemoveAt = 0;
   private nextAmbientAt = 0;
   private lastLineAt = 0;
-  private readonly unsubscribe: () => void;
 
   constructor(
     @Inject(FLOOR_MARKET) private readonly market: FloorMarketPort,
-    events: FloorEvents,
     @Optional() @Inject(FLOOR_BOTS_OPTIONS) options?: FloorBotsOptions,
   ) {
     this.now = options?.now ?? Date.now;
     this.rand = options?.rand ?? Math.random;
     this.enabled = options?.enabled ?? process.env.FLOOR_BOTS_ENABLED !== 'false';
-    this.unsubscribe = events.subscribe((_target, message) => {
-      if (message.type === 'ritual:done') this.onRitual(message);
-    });
   }
 
   attach(sink: FloorBotSink): void {
@@ -136,7 +129,6 @@ export class FloorBots {
   stop(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-    this.unsubscribe();
     this.bots.clear();
     this.lines.length = 0;
   }
@@ -228,16 +220,6 @@ export class FloorBots {
     const bot = this.nearest(peer);
     if (bot && !bot.peer.moving) this.face(bot, peer);
     this.schedule(this.now() + between(2_000, 5_000, this.rand), bot?.peer.id ?? null, line, true);
-  }
-
-  private onRitual(message: Record<string, unknown>): void {
-    if (!this.timer || this.bots.size === 0 || this.rand() > 0.5) return;
-    const name = typeof message.name === 'string' ? message.name : '';
-    const que = typeof message.que === 'string' ? message.que : '';
-    const luck = typeof message.luck === 'number' ? message.luck : 3;
-    if (!name || !que) return;
-    const line = ritualLine(name, que, luck, this.rand);
-    if (line) this.schedule(this.now() + between(3_000, 8_000, this.rand), null, line, true);
   }
 
   private schedule(at: number, botId: string | null, text: string, reply: boolean): void {

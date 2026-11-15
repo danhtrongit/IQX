@@ -1,21 +1,23 @@
 /**
  * Máy chủ thời gian thực của Khu giao dịch: hiện diện (ai đang đứng ở đâu), emote, và chuyển các sự kiện
  * của dịch vụ (`FloorEvents`) tới đúng socket. Giao thức JSON trên `/api/v2/trading-floor/ws` (xem
- * `floor-ws.gateway.ts`); xác thực bằng thông điệp `auth` đầu tiên, giống Flashback.
+ * `floor-ws.gateway.ts`); xác thực bằng thông điệp `auth` đầu tiên, giống Flashback: `{type:'auth', token}`
+ * cho tài khoản đăng nhập hoặc `{type:'auth', guest}` cho khách (token khách do `POST /guest` cấp).
+ * Khách đi lại, emote và chat nhanh như mọi người nhưng không có SACO, chat SACO hay hộp thư.
  *
  * Trạng thái nằm trong bộ nhớ của tiến trình API. `id` của một nhân vật là mã kết nối, không bao giờ là
  * id tài khoản: cùng một người mở hai tab là hai nhân vật. Hồ sơ lấy từ `tf_profiles`, không tin trình
  * duyệt.
  *
- * Client → server: `hello`, `state`, `emote`, `chat:typing`, `ping`. Server → client: xem hợp đồng WS.
+ * Client → server: `auth`, `hello`, `state`, `emote`, `chat:typing`, `ping`. Server → client: xem hợp đồng WS.
  */
 
 import { randomUUID } from 'node:crypto';
 
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
-import { AuthService } from '../auth/auth.service.js';
+import { FloorActors, type FloorActor } from './floor-actor.js';
 import { FloorBots } from './floor-bots.js';
 import { FLOOR_CAPACITY } from './floor-bots.logic.js';
 import { FloorChatService } from './floor-chat.service.js';
@@ -73,7 +75,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 type Conn = {
   readonly socket: FloorHubSocket;
   readonly peerId: string;
+  /** uuid tài khoản; với khách là `g:<uuid khách>`. Null khi chưa xác thực. */
   userId: string | null;
+  /** Khách chưa đăng nhập: không SACO, không chat SACO, hồ sơ nằm ở `tf_guests`. */
+  guest: boolean;
   /** Có khi đã `hello`: nhân vật đang đứng trên sàn. */
   peer: FloorPeer | null;
   /** Đã `hello` nhưng sảnh đầy người thật: đang xếp hàng với vị trí mới nhất mình báo. */
@@ -110,7 +115,7 @@ export class FloorHub {
 
   constructor(
     private readonly database: DatabaseService,
-    @Inject(AuthService) private readonly auth: Pick<AuthService, 'authenticate'>,
+    @Inject(FloorActors) private readonly actors: Pick<FloorActors, 'resolve'>,
     private readonly presence: FloorPresence,
     events: FloorEvents,
     private readonly chat: FloorChatService,
@@ -138,6 +143,7 @@ export class FloorHub {
       socket,
       peerId: randomUUID(),
       userId: null,
+      guest: false,
       peer: null,
       waiting: null,
       windowStartedAt: this.now(),
@@ -254,33 +260,51 @@ export class FloorHub {
 
   private async onAuth(conn: Conn, message: Record<string, unknown>): Promise<void> {
     const token = typeof message.token === 'string' ? message.token.trim() : '';
-    if (!token) {
+    const guestToken = typeof message.guest === 'string' ? message.guest.trim() : '';
+    if (!token && !guestToken) {
       this.error(conn, 'AUTH_INVALID', 'Thiếu access token');
       this.forceClose(conn, FLOOR_CLOSE_AUTH, 'invalid token');
       return;
     }
-    let userId: string;
+    let actor: FloorActor | null;
     try {
-      userId = (await this.auth.authenticate(token)).id;
-    } catch {
-      this.error(conn, 'AUTH_INVALID', 'Access token không hợp lệ hoặc đã hết hạn');
+      actor = await this.actors.resolve({ accessToken: token, guestToken });
+    } catch (error) {
+      if (!(error instanceof UnauthorizedException)) {
+        // Lỗi máy chủ (cơ sở dữ liệu chập chờn): đóng để client thử lại, không xoá phiên khách.
+        this.error(conn, 'INTERNAL', 'Có lỗi xảy ra, thử lại sau');
+        this.forceClose(conn, 1011, 'auth unavailable');
+        return;
+      }
+      actor = null;
+    }
+    if (!actor) {
+      // Token tài khoản được ưu tiên, nên chỉ khi không có nó thì lỗi mới là của phiên khách.
+      if (token) this.error(conn, 'AUTH_INVALID', 'Access token không hợp lệ hoặc đã hết hạn');
+      else this.error(conn, 'GUEST_INVALID', 'Phiên khách không hợp lệ, hãy tạo lại nhân vật');
       this.forceClose(conn, FLOOR_CLOSE_AUTH, 'invalid token');
       return;
     }
     if (conn.closed) return;
+    const guest = actor.kind === 'guest';
+    // Tài khoản giữ nguyên uuid thô (SACO, chat, hồ sơ); khách dùng khoá `g:<uuid>` không đụng uuid nào.
+    const userId = actor.userId ?? actor.key;
     conn.userId = userId;
+    conn.guest = guest;
     if (conn.authTimer) clearTimeout(conn.authTimer);
     conn.authTimer = null;
-    this.presence.connected(userId);
+    if (!guest) this.presence.connected(userId);
     let sockets = this.byUser.get(userId);
     if (!sockets) this.byUser.set(userId, (sockets = new Set()));
     sockets.add(conn);
-    while (sockets.size > MAX_SOCKETS_PER_USER) {
+    // Khách chỉ giữ một chỗ trên sàn: kết nối mới thay kết nối cũ, không thể nhân bản để chiếm sảnh.
+    const maxSockets = guest ? 1 : MAX_SOCKETS_PER_USER;
+    while (sockets.size > maxSockets) {
       const oldest = sockets.values().next().value as Conn;
       this.forceClose(oldest, CLOSE_TOO_MANY, 'too many connections');
     }
-    this.send(conn, { type: 'ready', userId });
-    await this.bindSaco(conn, userId);
+    this.send(conn, { type: 'ready', userId, guest });
+    if (!guest) await this.bindSaco(conn, userId);
   }
 
   /** Tài khoản giữ quyền SACO còn hoạt động: nối với mã SACO và gửi lại lời mời đang chờ (nếu có). */
@@ -319,7 +343,9 @@ export class FloorHub {
    * riêng người thật đã đủ thì xếp hàng.
    */
   private async enter(conn: Conn, state: FloorPeerState): Promise<boolean> {
-    const profile = await this.profiles.find(this.database, conn.userId!);
+    const profile = conn.guest
+      ? await this.profiles.findGuest(this.database, conn.userId!.slice(2))
+      : await this.profiles.find(this.database, conn.userId!);
     if (!profile) {
       this.error(conn, 'NO_PROFILE', 'Hãy tạo nhân vật trước khi vào khu');
       return false;
@@ -425,6 +451,10 @@ export class FloorHub {
   }
 
   private async onTyping(conn: Conn, message: Record<string, unknown>): Promise<void> {
+    if (conn.guest) {
+      this.error(conn, 'LOGIN_REQUIRED', 'Đăng nhập để dùng tính năng này');
+      return;
+    }
     const now = this.now();
     const convId = message.convId;
     if (now - conn.lastTyping < FLOOR_TYPING_MIN_MS) return;
@@ -492,7 +522,7 @@ export class FloorHub {
       const sockets = this.byUser.get(userId);
       sockets?.delete(conn);
       if (sockets && sockets.size === 0) this.byUser.delete(userId);
-      this.presence.disconnected(userId);
+      if (!conn.guest) this.presence.disconnected(userId);
     }
   }
 

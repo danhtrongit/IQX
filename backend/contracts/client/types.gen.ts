@@ -63486,24 +63486,43 @@ export type FloorChatOpenResponses = {
 export type FloorChatOpenResponse =
   FloorChatOpenResponses[keyof FloorChatOpenResponses];
 
-export type FloorLeaderboardData = {
-  body?: never;
-  path?: never;
-  query?: {
-    month?: string;
+export type FloorGuestCreateData = {
+  body: {
+    avatar:
+      | "male01"
+      | "male02"
+      | "male03"
+      | "male04"
+      | "male05"
+      | "female01"
+      | "female02"
+      | "female03"
+      | "female04"
+      | "female05"
+      | "danhtrongit";
+    color?:
+      | "default"
+      | "navy"
+      | "charcoal"
+      | "burgundy"
+      | "forest"
+      | "cobalt"
+      | "beige"
+      | "plum"
+      | "gold"
+      | "teal";
+    name: string;
   };
-  url: "/api/v2/trading-floor/leaderboard";
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/guest";
 };
 
-export type FloorLeaderboardErrors = {
+export type FloorGuestCreateErrors = {
   /**
    * Bad request
    */
   400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
   /**
    * Request validation failed
    */
@@ -63518,13 +63537,13 @@ export type FloorLeaderboardErrors = {
   503: ApiErrorV2;
 };
 
-export type FloorLeaderboardError =
-  FloorLeaderboardErrors[keyof FloorLeaderboardErrors];
+export type FloorGuestCreateError =
+  FloorGuestCreateErrors[keyof FloorGuestCreateErrors];
 
-export type FloorLeaderboardResponses = {
+export type FloorGuestCreateResponses = {
   200: {
-    month: string;
-    rows: Array<{
+    guestId: string;
+    profile: {
       avatar:
         | "male01"
         | "male02"
@@ -63537,18 +63556,25 @@ export type FloorLeaderboardResponses = {
         | "female04"
         | "female05"
         | "danhtrongit";
-      avgError: number | null;
-      correct: number;
-      id: string;
+      color:
+        | "default"
+        | "navy"
+        | "charcoal"
+        | "burgundy"
+        | "forest"
+        | "cobalt"
+        | "beige"
+        | "plum"
+        | "gold"
+        | "teal";
       name: string;
-      rank: number;
-      total: number;
-    }>;
+    };
+    token: string;
   };
 };
 
-export type FloorLeaderboardResponse =
-  FloorLeaderboardResponses[keyof FloorLeaderboardResponses];
+export type FloorGuestCreateResponse =
+  FloorGuestCreateResponses[keyof FloorGuestCreateResponses];
 
 export type TradingFloorManageCommentReportsData = {
   body?: never;
@@ -64397,6 +64423,326 @@ export type FloorManageSacoRemoveResponses = {
 export type FloorManageSacoRemoveResponse =
   FloorManageSacoRemoveResponses[keyof FloorManageSacoRemoveResponses];
 
+export type ThanTaiAdminHanhListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/manage/than-tai/hanh";
+};
+
+export type ThanTaiAdminHanhListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiAdminHanhListError =
+  ThanTaiAdminHanhListErrors[keyof ThanTaiAdminHanhListErrors];
+
+export type ThanTaiAdminHanhListResponses = {
+  200: {
+    items: Array<{
+      hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+      huong: string;
+      mau: Array<{
+        hex: string;
+        ten: string;
+      }>;
+      nganh: Array<string>;
+      updatedAt: number;
+    }>;
+  };
+};
+
+export type ThanTaiAdminHanhListResponse =
+  ThanTaiAdminHanhListResponses[keyof ThanTaiAdminHanhListResponses];
+
+export type ThanTaiAdminHanhUpdateData = {
+  body: {
+    huong?: string;
+    mau?: Array<{
+      hex: string;
+      ten: string;
+    }>;
+    nganh?: Array<string>;
+  };
+  path: {
+    hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/than-tai/hanh/{hanh}";
+};
+
+export type ThanTaiAdminHanhUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiAdminHanhUpdateError =
+  ThanTaiAdminHanhUpdateErrors[keyof ThanTaiAdminHanhUpdateErrors];
+
+export type ThanTaiAdminHanhUpdateResponses = {
+  200: {
+    hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+    huong: string;
+    mau: Array<{
+      hex: string;
+      ten: string;
+    }>;
+    nganh: Array<string>;
+    updatedAt: number;
+  };
+};
+
+export type ThanTaiAdminHanhUpdateResponse =
+  ThanTaiAdminHanhUpdateResponses[keyof ThanTaiAdminHanhUpdateResponses];
+
+export type ThanTaiAdminLaListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/manage/than-tai/la";
+};
+
+export type ThanTaiAdminLaListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiAdminLaListError =
+  ThanTaiAdminLaListErrors[keyof ThanTaiAdminLaListErrors];
+
+export type ThanTaiAdminLaListResponses = {
+  200: {
+    items: Array<{
+      active: boolean;
+      chot: string;
+      chuHan: string;
+      hang: "dai_cat" | "thuong_cat" | "trung_cat" | "tieu_cat" | "than_trong";
+      hao: string;
+      haoDong: number;
+      haoNghia: string;
+      haoVan: string;
+      id: number;
+      luan: string;
+      queDuoi: string;
+      queId: number;
+      queTen: string;
+      queTren: string;
+      tenHao: string;
+      thoan: string;
+      thoanNghia: string;
+      tuong: string;
+      updatedAt: number;
+    }>;
+  };
+};
+
+export type ThanTaiAdminLaListResponse =
+  ThanTaiAdminLaListResponses[keyof ThanTaiAdminLaListResponses];
+
+export type ThanTaiAdminLaUpdateData = {
+  body: {
+    active?: boolean;
+    chot?: string;
+    hang?: "dai_cat" | "thuong_cat" | "trung_cat" | "tieu_cat" | "than_trong";
+    haoNghia?: string;
+    haoVan?: string;
+    luan?: string;
+    tenHao?: string;
+  };
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/than-tai/la/{id}";
+};
+
+export type ThanTaiAdminLaUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiAdminLaUpdateError =
+  ThanTaiAdminLaUpdateErrors[keyof ThanTaiAdminLaUpdateErrors];
+
+export type ThanTaiAdminLaUpdateResponses = {
+  200: {
+    active: boolean;
+    chot: string;
+    chuHan: string;
+    hang: "dai_cat" | "thuong_cat" | "trung_cat" | "tieu_cat" | "than_trong";
+    hao: string;
+    haoDong: number;
+    haoNghia: string;
+    haoVan: string;
+    id: number;
+    luan: string;
+    queDuoi: string;
+    queId: number;
+    queTen: string;
+    queTren: string;
+    tenHao: string;
+    thoan: string;
+    thoanNghia: string;
+    tuong: string;
+    updatedAt: number;
+  };
+};
+
+export type ThanTaiAdminLaUpdateResponse =
+  ThanTaiAdminLaUpdateResponses[keyof ThanTaiAdminLaUpdateResponses];
+
+export type ThanTaiAdminQueUpdateData = {
+  body: {
+    chuHan?: string;
+    ten?: string;
+    thoan?: string;
+    thoanNghia?: string;
+    tuong?: string;
+  };
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/manage/than-tai/que/{id}";
+};
+
+export type ThanTaiAdminQueUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiAdminQueUpdateError =
+  ThanTaiAdminQueUpdateErrors[keyof ThanTaiAdminQueUpdateErrors];
+
+export type ThanTaiAdminQueUpdateResponses = {
+  200: {
+    chuHan: string;
+    hao: string;
+    id: number;
+    queDuoi: string;
+    queTren: string;
+    ten: string;
+    thoan: string;
+    thoanNghia: string;
+    tuong: string;
+    updatedAt: number;
+  };
+};
+
+export type ThanTaiAdminQueUpdateResponse =
+  ThanTaiAdminQueUpdateResponses[keyof ThanTaiAdminQueUpdateResponses];
+
 export type FloorMeData = {
   body?: never;
   path?: never;
@@ -64409,10 +64755,6 @@ export type FloorMeErrors = {
    * Bad request
    */
   400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
   /**
    * Request validation failed
    */
@@ -64431,6 +64773,7 @@ export type FloorMeError = FloorMeErrors[keyof FloorMeErrors];
 
 export type FloorMeResponses = {
   200: {
+    guest: boolean;
     profile: {
       avatar:
         | "male01"
@@ -64658,10 +65001,6 @@ export type TradingFloorPostsTodayErrors = {
    */
   400: ApiErrorV2;
   /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -64711,10 +65050,6 @@ export type TradingFloorPostDetailErrors = {
    * Bad request
    */
   400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
   /**
    * Request validation failed
    */
@@ -64767,10 +65102,6 @@ export type TradingFloorPostCommentsErrors = {
    * Bad request
    */
   400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
   /**
    * Request validation failed
    */
@@ -64945,10 +65276,6 @@ export type FloorProfileSaveErrors = {
    */
   400: ApiErrorV2;
   /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -64996,208 +65323,6 @@ export type FloorProfileSaveResponses = {
 
 export type FloorProfileSaveResponse =
   FloorProfileSaveResponses[keyof FloorProfileSaveResponses];
-
-export type FloorRitualDrawData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/api/v2/trading-floor/ritual/draw";
-};
-
-export type FloorRitualDrawErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type FloorRitualDrawError =
-  FloorRitualDrawErrors[keyof FloorRitualDrawErrors];
-
-export type FloorRitualDrawResponses = {
-  200: {
-    que: {
-      advice: string;
-      id: number;
-      luck: number;
-      name: string;
-      verse: string;
-    };
-    ritual: {
-      correct: boolean | null;
-      createdAt: number;
-      direction: "up" | "down";
-      error: number | null;
-      level: number | null;
-      queId: number;
-      session: string;
-      tickers: Array<string>;
-    };
-  };
-};
-
-export type FloorRitualDrawResponse =
-  FloorRitualDrawResponses[keyof FloorRitualDrawResponses];
-
-export type FloorRitualSubmitData = {
-  body: {
-    direction: "up" | "down";
-    level: number;
-    tickers: Array<string>;
-  };
-  path?: never;
-  query?: never;
-  url: "/api/v2/trading-floor/ritual/submit";
-};
-
-export type FloorRitualSubmitErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type FloorRitualSubmitError =
-  FloorRitualSubmitErrors[keyof FloorRitualSubmitErrors];
-
-export type FloorRitualSubmitResponses = {
-  200: {
-    mine: {
-      correct: boolean | null;
-      createdAt: number;
-      direction: "up" | "down";
-      error: number | null;
-      level: number | null;
-      queId: number;
-      session: string;
-      tickers: Array<string>;
-    };
-    que: {
-      advice: string;
-      id: number;
-      luck: number;
-      name: string;
-      verse: string;
-    };
-    stats: {
-      avgLevel: number | null;
-      down: number;
-      session: string;
-      topTickers: Array<{
-        count: number;
-        symbol: string;
-      }>;
-      total: number;
-      up: number;
-    };
-  };
-};
-
-export type FloorRitualSubmitResponse =
-  FloorRitualSubmitResponses[keyof FloorRitualSubmitResponses];
-
-export type FloorRitualTodayData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/api/v2/trading-floor/ritual/today";
-};
-
-export type FloorRitualTodayErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type FloorRitualTodayError =
-  FloorRitualTodayErrors[keyof FloorRitualTodayErrors];
-
-export type FloorRitualTodayResponses = {
-  200: {
-    cutoffAt: number;
-    lastResult: {
-      change: number;
-      close: number;
-      correct: number;
-      session: string;
-      total: number;
-    } | null;
-    mine: {
-      correct: boolean | null;
-      createdAt: number;
-      direction: "up" | "down";
-      error: number | null;
-      level: number | null;
-      queId: number;
-      session: string;
-      tickers: Array<string>;
-    } | null;
-    session: string;
-    stats: {
-      avgLevel: number | null;
-      down: number;
-      session: string;
-      topTickers: Array<{
-        count: number;
-        symbol: string;
-      }>;
-      total: number;
-      up: number;
-    };
-  };
-};
-
-export type FloorRitualTodayResponse =
-  FloorRitualTodayResponses[keyof FloorRitualTodayResponses];
 
 export type TradingFloorSacoCommentReportsData = {
   body?: never;
@@ -65696,6 +65821,444 @@ export type TradingFloorSacoPostPublishResponses = {
 
 export type TradingFloorSacoPostPublishResponse =
   TradingFloorSacoPostPublishResponses[keyof TradingFloorSacoPostPublishResponses];
+
+export type ThanTaiCauData = {
+  body: {
+    tickers: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/than-tai/cau";
+};
+
+export type ThanTaiCauErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiCauError = ThanTaiCauErrors[keyof ThanTaiCauErrors];
+
+export type ThanTaiCauResponses = {
+  200: {
+    day: {
+      canChi: string;
+      date: string;
+      hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+      hanhLabel: string;
+      hop: Array<{
+        hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+        label: string;
+        nganh: Array<string>;
+      }>;
+      huong: string;
+      kieng: Array<{
+        hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+        label: string;
+        nganh: Array<string>;
+      }>;
+      mau: Array<{
+        hex: string;
+        ten: string;
+      }>;
+      napAm: string;
+    };
+    deadline: number;
+    la: {
+      chot: string;
+      hang: "dai_cat" | "thuong_cat" | "trung_cat" | "tieu_cat" | "than_trong";
+      hangLabel: string;
+      haoDong: {
+        nghia: string;
+        so: number;
+        ten: string;
+        van: string;
+      };
+      id: number;
+      luan: string;
+      que: {
+        chuHan: string;
+        duoi: {
+          key: string;
+          symbol: string;
+          ten: string;
+        };
+        hao: string;
+        id: number;
+        ten: string;
+        thoan: string;
+        thoanNghia: string;
+        tren: {
+          key: string;
+          symbol: string;
+          ten: string;
+        };
+        tuong: string;
+      };
+    } | null;
+    prediction: "up" | "flat" | "down";
+    serverTime: number;
+    status: "chua_khan" | "dang_do" | "da_xong" | "het_gio";
+    step: number;
+    tickers: Array<string> | null;
+    vnindexRef: number | null;
+  };
+};
+
+export type ThanTaiCauResponse = ThanTaiCauResponses[keyof ThanTaiCauResponses];
+
+export type ThanTaiDrawData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/than-tai/draw";
+};
+
+export type ThanTaiDrawErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiDrawError = ThanTaiDrawErrors[keyof ThanTaiDrawErrors];
+
+export type ThanTaiDrawResponses = {
+  200: {
+    day: {
+      canChi: string;
+      date: string;
+      hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+      hanhLabel: string;
+      hop: Array<{
+        hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+        label: string;
+        nganh: Array<string>;
+      }>;
+      huong: string;
+      kieng: Array<{
+        hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+        label: string;
+        nganh: Array<string>;
+      }>;
+      mau: Array<{
+        hex: string;
+        ten: string;
+      }>;
+      napAm: string;
+    };
+    deadline: number;
+    la: {
+      chot: string;
+      hang: "dai_cat" | "thuong_cat" | "trung_cat" | "tieu_cat" | "than_trong";
+      hangLabel: string;
+      haoDong: {
+        nghia: string;
+        so: number;
+        ten: string;
+        van: string;
+      };
+      id: number;
+      luan: string;
+      que: {
+        chuHan: string;
+        duoi: {
+          key: string;
+          symbol: string;
+          ten: string;
+        };
+        hao: string;
+        id: number;
+        ten: string;
+        thoan: string;
+        thoanNghia: string;
+        tren: {
+          key: string;
+          symbol: string;
+          ten: string;
+        };
+        tuong: string;
+      };
+    } | null;
+    prediction: "up" | "flat" | "down";
+    serverTime: number;
+    status: "chua_khan" | "dang_do" | "da_xong" | "het_gio";
+    step: number;
+    tickers: Array<string> | null;
+    vnindexRef: number | null;
+  };
+};
+
+export type ThanTaiDrawResponse =
+  ThanTaiDrawResponses[keyof ThanTaiDrawResponses];
+
+export type ThanTaiPredictData = {
+  body: {
+    direction: "up" | "flat" | "down";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/than-tai/predict";
+};
+
+export type ThanTaiPredictErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiPredictError =
+  ThanTaiPredictErrors[keyof ThanTaiPredictErrors];
+
+export type ThanTaiPredictResponses = {
+  200: {
+    day: {
+      canChi: string;
+      date: string;
+      hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+      hanhLabel: string;
+      hop: Array<{
+        hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+        label: string;
+        nganh: Array<string>;
+      }>;
+      huong: string;
+      kieng: Array<{
+        hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+        label: string;
+        nganh: Array<string>;
+      }>;
+      mau: Array<{
+        hex: string;
+        ten: string;
+      }>;
+      napAm: string;
+    };
+    deadline: number;
+    la: {
+      chot: string;
+      hang: "dai_cat" | "thuong_cat" | "trung_cat" | "tieu_cat" | "than_trong";
+      hangLabel: string;
+      haoDong: {
+        nghia: string;
+        so: number;
+        ten: string;
+        van: string;
+      };
+      id: number;
+      luan: string;
+      que: {
+        chuHan: string;
+        duoi: {
+          key: string;
+          symbol: string;
+          ten: string;
+        };
+        hao: string;
+        id: number;
+        ten: string;
+        thoan: string;
+        thoanNghia: string;
+        tren: {
+          key: string;
+          symbol: string;
+          ten: string;
+        };
+        tuong: string;
+      };
+    } | null;
+    prediction: "up" | "flat" | "down";
+    serverTime: number;
+    status: "chua_khan" | "dang_do" | "da_xong" | "het_gio";
+    step: number;
+    tickers: Array<string> | null;
+    vnindexRef: number | null;
+  };
+};
+
+export type ThanTaiPredictResponse =
+  ThanTaiPredictResponses[keyof ThanTaiPredictResponses];
+
+export type ThanTaiResultsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/than-tai/results";
+};
+
+export type ThanTaiResultsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiResultsError =
+  ThanTaiResultsErrors[keyof ThanTaiResultsErrors];
+
+export type ThanTaiResultsResponses = {
+  200: {
+    asOf: number;
+    down: number;
+    flat: number;
+    top5: Array<{
+      count: number;
+      ticker: string;
+    }>;
+    total: number;
+    up: number;
+  };
+};
+
+export type ThanTaiResultsResponse =
+  ThanTaiResultsResponses[keyof ThanTaiResultsResponses];
+
+export type ThanTaiTodayData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/than-tai/today";
+};
+
+export type ThanTaiTodayErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiTodayError = ThanTaiTodayErrors[keyof ThanTaiTodayErrors];
+
+export type ThanTaiTodayResponses = {
+  200: {
+    day: {
+      canChi: string;
+      date: string;
+      hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+      hanhLabel: string;
+      hop: Array<{
+        hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+        label: string;
+        nganh: Array<string>;
+      }>;
+      huong: string;
+      kieng: Array<{
+        hanh: "kim" | "moc" | "thuy" | "hoa" | "tho";
+        label: string;
+        nganh: Array<string>;
+      }>;
+      mau: Array<{
+        hex: string;
+        ten: string;
+      }>;
+      napAm: string;
+    };
+    deadline: number;
+    la: {
+      chot: string;
+      hang: "dai_cat" | "thuong_cat" | "trung_cat" | "tieu_cat" | "than_trong";
+      hangLabel: string;
+      haoDong: {
+        nghia: string;
+        so: number;
+        ten: string;
+        van: string;
+      };
+      id: number;
+      luan: string;
+      que: {
+        chuHan: string;
+        duoi: {
+          key: string;
+          symbol: string;
+          ten: string;
+        };
+        hao: string;
+        id: number;
+        ten: string;
+        thoan: string;
+        thoanNghia: string;
+        tren: {
+          key: string;
+          symbol: string;
+          ten: string;
+        };
+        tuong: string;
+      };
+    } | null;
+    prediction: "up" | "flat" | "down";
+    serverTime: number;
+    status: "chua_khan" | "dang_do" | "da_xong" | "het_gio";
+    step: number;
+    tickers: Array<string> | null;
+    vnindexRef: number | null;
+  };
+};
+
+export type ThanTaiTodayResponse =
+  ThanTaiTodayResponses[keyof ThanTaiTodayResponses];
 
 export type UsersControllerList1Data = {
   body?: never;

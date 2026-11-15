@@ -127,10 +127,15 @@ const market: FloorMarketPort = {
 
 function makeHub(now: () => number) {
   const events = new FloorEvents();
-  const bots = new FloorBots(market, events, { enabled: true, now, rand: Math.random });
+  const bots = new FloorBots(market, { enabled: true, now, rand: Math.random });
   const hub = new FloorHub(
     {} as never,
-    { authenticate: async (token: string) => ({ id: token }) } as never,
+    {
+      resolve: async ({ accessToken }: { accessToken?: string }) =>
+        accessToken
+          ? { key: `u:${accessToken}`, kind: 'user', id: accessToken, userId: accessToken }
+          : null,
+    } as never,
     {
       connected() {},
       disconnected() {},

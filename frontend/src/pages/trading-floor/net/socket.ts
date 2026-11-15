@@ -2,11 +2,12 @@
  * WebSocket of the trading floor (`/api/v2/trading-floor/ws`, JSON text frames).
  *
  * Same handshake as Flashback: the first message is `{type:'auth', token}` (the token never goes in
- * the URL), the server answers `ready` or closes with 4401. After that the socket sends and
- * receives plain `{type, ...}` objects (see `ServerMessage`).
+ * the URL), the server answers `ready` or closes with 4401. A visitor who is not signed in sends
+ * `{type:'auth', guest}` with the guest token instead. After that the socket sends and receives plain
+ * `{type, ...}` objects (see `ServerMessage`).
  *
  * - Reconnects with backoff 1 s, 2 s, 4 s ... up to 15 s, with jitter. A 4401 close first refreshes
- *   the session with an authenticated request.
+ *   the session with an authenticated request (a guest token cannot be refreshed: it stops instead).
  * - Application ping every 25 s; 55 s without hearing anything counts as a dead connection.
  * - `on(type, handler)` handlers stay registered across reconnects and `stop()`/`start()`; each
  *   registration returns its own unsubscribe. The `ready` message is dispatched to handlers too, so
@@ -16,6 +17,7 @@ import { getAccessToken, getWebSocketUrl, resolveWsUrl } from "@/lib/api"
 
 import { Store } from "../bridge.ts"
 import { floorApi } from "./api.ts"
+import { getGuestToken } from "./guest.ts"
 import type {
   ClientMessage,
   ServerMessage,
@@ -67,6 +69,8 @@ export interface WebSocketLike {
 
 export interface FloorSocketOptions {
   getToken?: () => string | null
+  /** Guest token, used when there is no account token. */
+  getGuest?: () => string | null
   /** Refreshes the session when the server closes with 4401. */
   refreshAuth?: () => Promise<unknown>
   createSocket?: (url: string) => WebSocketLike
@@ -97,7 +101,11 @@ export function isServerMessage(value: unknown): value is ServerMessage {
 export class FloorSocketClient {
   readonly status = new Store<FloorSocketStatus>("idle")
   private userId: string | null = null
+  private guest = false
+  /** What the current connection authenticates as (a guest 4401 is final). */
+  private authAs: "account" | "guest" = "account"
   private readonly getToken: () => string | null
+  private readonly getGuest: () => string | null
   private readonly refreshAuth: () => Promise<unknown>
   private readonly createSocket: (url: string) => WebSocketLike
   private readonly url: () => string
@@ -117,6 +125,7 @@ export class FloorSocketClient {
 
   constructor(options: FloorSocketOptions = {}) {
     this.getToken = options.getToken ?? getAccessToken
+    this.getGuest = options.getGuest ?? getGuestToken
     this.refreshAuth = options.refreshAuth ?? (() => floorApi.me())
     this.createSocket =
       options.createSocket ??
@@ -125,9 +134,14 @@ export class FloorSocketClient {
     this.random = options.random ?? Math.random
   }
 
-  /** The account id the server confirmed with `ready`, null while offline. */
+  /** The account id the server confirmed with `ready` (`g:<id>` for a guest), null while offline. */
   get currentUserId(): string | null {
     return this.userId
+  }
+
+  /** The server confirmed this connection as a guest character. */
+  get isGuest(): boolean {
+    return this.guest
   }
 
   /** Connects when the floor mounts. Calling it again while running does nothing. */
@@ -150,7 +164,14 @@ export class FloorSocketClient {
     this.clearTimers()
     this.detach(1000, "client closed")
     this.userId = null
+    this.guest = false
     this.status.set("closed")
+  }
+
+  /** Reconnects from scratch, e.g. right after a guest character got its token. */
+  restart(): void {
+    this.stop()
+    this.start()
   }
 
   /** Subscribes to one message type; returns the unsubscribe. */
@@ -208,10 +229,12 @@ export class FloorSocketClient {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer)
     this.reconnectTimer = null
     const token = this.getToken()
-    if (!token) {
+    const guest = token ? null : this.getGuest()
+    if (!token && !guest) {
       this.status.set("closed")
       return
     }
+    this.authAs = token ? "account" : "guest"
     this.status.set(
       this.everReady || this.attempt > 0 ? "reconnecting" : "connecting"
     )
@@ -227,7 +250,9 @@ export class FloorSocketClient {
       if (this.socket !== socket) return
       this.lastHeard = Date.now()
       this.status.set("authenticating")
-      this.raw({ type: "auth", token })
+      this.raw(
+        token ? { type: "auth", token } : { type: "auth", guest: guest! }
+      )
       this.startPing()
     }
     socket.onmessage = (event) => {
@@ -245,7 +270,10 @@ export class FloorSocketClient {
   }
 
   private raw(
-    message: { type: "auth"; token: string } | { type: "ping" }
+    message:
+      | { type: "auth"; token: string }
+      | { type: "auth"; guest: string }
+      | { type: "ping" }
   ): void {
     try {
       this.socket?.send(JSON.stringify(message))
@@ -282,6 +310,7 @@ export class FloorSocketClient {
       this.authFailures = 0
       this.everReady = true
       this.userId = message.userId
+      this.guest = message.guest === true
       this.status.set("online")
     }
     const set = this.handlers.get(message.type)
@@ -292,9 +321,17 @@ export class FloorSocketClient {
     if (this.pingTimer) clearInterval(this.pingTimer)
     this.pingTimer = null
     this.userId = null
+    this.guest = false
     if (this.stopped) return
     if (code === CLOSE_TOO_MANY) {
       // Tab khác của cùng tài khoản đã thế chỗ: không nối lại, nếu không các tab giành nhau mãi.
+      this.stopped = true
+      this.status.set("closed")
+      return
+    }
+    if (code === CLOSE_AUTH && this.authAs === "guest") {
+      // A guest token is opaque: the server either knows it or not, so there is nothing to refresh.
+      // The `GUEST_INVALID` error that came just before tells the page to ask for a new character.
       this.stopped = true
       this.status.set("closed")
       return

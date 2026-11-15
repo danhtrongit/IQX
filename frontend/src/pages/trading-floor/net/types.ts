@@ -2,8 +2,6 @@
  * Shapes shared by the REST client, the socket and the UI of the trading floor. They mirror
  * `backend/src/modules/trading-floor` (camelCase JSON, times in epoch milliseconds).
  */
-import type { Direction } from "../ritual.ts"
-
 export type Facing = "s" | "se" | "e" | "ne" | "n" | "sw" | "w" | "nw"
 
 /** Avatars a visitor can pick, each with baked art in `public/trading-floor/assets/characters`. */
@@ -87,72 +85,168 @@ export interface Peer extends Profile, PeerState {
 
 export interface MeResponse {
   profile: Profile | null
-  /** Prefill for the join card. */
+  /** Prefill for the join card (empty for a guest). */
   suggestedName: string
   saco: SacoSelf | null
+  /** The visitor is not signed in: a guest character with no SACO, chat or ritual. */
+  guest: boolean
 }
 
-// ---------- ritual ----------
+/** `POST /trading-floor/guest`: the token is kept in the browser and shown to the server once only. */
+export interface GuestCreated {
+  token: string
+  guestId: string
+  profile: Profile
+}
 
-export interface TickerCount {
+// ---------- Thần Tài (CONTRACT: backend/docs/than-tai/CONTRACT.md) ----------
+
+export type Hang =
+  "dai_cat" | "thuong_cat" | "trung_cat" | "tieu_cat" | "than_trong"
+export type Hanh = "kim" | "moc" | "thuy" | "hoa" | "tho"
+export type Direction = "up" | "flat" | "down"
+export type ThanTaiStatus = "chua_khan" | "dang_do" | "da_xong" | "het_gio"
+export type ThanTaiStep = 1 | 2 | 3 | 4
+
+export interface HanhMau {
+  ten: string
+  hex: string
+}
+
+export interface HanhGroup {
+  hanh: Hanh
+  label: string
+  /** At most 4 industries, names only. */
+  nganh: string[]
+}
+
+export interface ThanTaiDay {
+  /** `YYYY-MM-DD`, Vietnam calendar day. */
+  date: string
+  canChi: string
+  napAm: string
+  hanh: Hanh
+  hanhLabel: string
+  hop: HanhGroup[]
+  kieng: HanhGroup[]
+  mau: HanhMau[]
+  huong: string
+}
+
+export interface TrigramView {
+  key: string
+  ten: string
   symbol: string
-  count: number
 }
 
-export interface RitualStats {
-  session: string
+export interface ThanTaiLa {
+  id: number
+  hang: Hang
+  hangLabel: string
+  que: {
+    id: number
+    ten: string
+    chuHan: string
+    /** 6 chars `0`/`1`, bottom line first. */
+    hao: string
+    tren: TrigramView
+    duoi: TrigramView
+    tuong: string
+    thoan: string
+    thoanNghia: string
+  }
+  haoDong: { so: number; ten: string; van: string; nghia: string }
+  luan: string
+  chot: string
+}
+
+export interface ThanTaiToday {
+  status: ThanTaiStatus
+  /** Next step to do: 1 draw, 2 predict, 3 cầu mã, 4 finished. */
+  step: ThanTaiStep
+  /** Server clock when the answer was made, epoch ms. */
+  serverTime: number
+  /** 11:30 Vietnam time today, epoch ms. */
+  deadline: number
+  day: ThanTaiDay
+  /** VNINDEX reference (previous close) of the session. */
+  vnindexRef: number | null
+  la: ThanTaiLa | null
+  prediction: Direction | null
+  /** null = not yet, [] = skipped. */
+  tickers: string[] | null
+}
+
+export interface ThanTaiResults {
   total: number
   up: number
+  flat: number
   down: number
-  /** Mean predicted close, null with no ritual. */
-  avgLevel: number | null
-  topTickers: TickerCount[]
+  top5: { ticker: string; count: number }[]
+  asOf: number
 }
 
-export interface MyRitual {
-  session: string
+/** Admin library: one quẻ (trigram keys `can|khon|chan|kham|can_son|ton|ly|doai`). */
+export interface AdminQue {
+  id: number
+  ten: string
+  chuHan: string
+  hao: string
+  queTren: string
+  queDuoi: string
+  tuong: string
+  thoan: string
+  thoanNghia: string
+  updatedAt: number
+}
+
+/** Admin library: one lá (quẻ + hào động), flat with its quẻ's text. */
+export interface AdminLa {
+  id: number
   queId: number
-  direction: Direction | null
-  level: number | null
-  tickers: string[]
-  createdAt: number
-  /** Set once the session is scored. */
-  correct: boolean | null
-  error: number | null
+  queTen: string
+  chuHan: string
+  hao: string
+  queTren: string
+  queDuoi: string
+  tuong: string
+  thoan: string
+  thoanNghia: string
+  haoDong: number
+  tenHao: string
+  haoVan: string
+  haoNghia: string
+  hang: Hang
+  luan: string
+  chot: string
+  active: boolean
+  updatedAt: number
 }
 
-export interface RitualToday {
-  session: string
-  /** Epoch ms after which this session takes no more predictions. */
-  cutoffAt: number
-  /** A drawn quẻ without a finished prediction is a ritual with `direction` null. */
-  mine: MyRitual | null
-  stats: RitualStats
-  /** Last scored session, so people can see how the crowd did. */
-  lastResult: {
-    session: string
-    close: number
-    change: number
-    total: number
-    correct: number
-  } | null
+export interface HanhConfig {
+  hanh: Hanh
+  nganh: string[]
+  mau: HanhMau[]
+  huong: string
+  updatedAt?: number
 }
 
-export interface LeaderRow {
-  rank: number
-  id: string
-  name: string
-  avatar: AvatarId
-  correct: number
-  total: number
-  /** Mean absolute error of the predicted close on correct calls. */
-  avgError: number | null
+export type AdminLaPatch = Partial<
+  Pick<
+    AdminLa,
+    "tenHao" | "haoVan" | "haoNghia" | "hang" | "luan" | "chot" | "active"
+  >
+>
+export interface AdminQuePatch {
+  ten?: string
+  chuHan?: string
+  tuong?: string
+  thoan?: string
+  thoanNghia?: string
 }
-
-export interface Leaderboard {
-  month: string
-  rows: LeaderRow[]
-}
+export type HanhConfigPatch = Partial<
+  Pick<HanhConfig, "nganh" | "mau" | "huong">
+>
 
 // ---------- chat ----------
 
@@ -291,7 +385,7 @@ export type ClientMessage =
 
 /** Messages the server sends. */
 export type ServerMessage =
-  | { type: "ready"; userId: string }
+  | { type: "ready"; userId: string; guest?: boolean }
   | { type: "error"; code: string; message?: string }
   | { type: "pong" }
   | { type: "welcome"; self: Peer; peers: Peer[] }
@@ -302,14 +396,6 @@ export type ServerMessage =
   | { type: "peer:leave"; id: string }
   | { type: "peer:emote"; id: string; text: string }
   | { type: "peer:update"; peer: Peer }
-  | {
-      type: "ritual:done"
-      name: string
-      que: string
-      luck: number
-      direction: Direction
-    }
-  | { type: "leaderboard:changed" }
   | { type: "chat:msg"; convId: string; message: ChatMessage }
   | { type: "chat:read"; convId: string; side: "user" | "saco"; at: number }
   | { type: "chat:typing"; convId: string; side: "user" | "saco" }

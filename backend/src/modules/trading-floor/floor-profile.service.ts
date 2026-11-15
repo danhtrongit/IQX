@@ -1,18 +1,27 @@
 /**
  * Hồ sơ trên sàn và `GET /me`: nhân vật đang mặc (`tf_profiles`), tên gợi ý lấy từ tài khoản IQX và
- * quyền SACO của chính người gọi (cả khi đã bị gỡ, `active: false`).
+ * quyền SACO của chính người gọi (cả khi đã bị gỡ, `active: false`). Khách chưa đăng nhập có hồ sơ
+ * riêng trong `tf_guests` (tạo bằng `createGuest`, không có quyền SACO và không có tên gợi ý).
  */
 
 import {
   ForbiddenException,
+  HttpException,
   Inject,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
-import { avatarAllowedFor, cleanName, suggestName } from './floor-profile.logic.js';
+import { hashGuestToken, newGuestToken, type FloorActor } from './floor-actor.js';
+import {
+  GuestCreateLimiter,
+  avatarAllowedFor,
+  cleanName,
+  suggestName,
+} from './floor-profile.logic.js';
 import { FLOOR_PROFILE_REPOSITORY, type FloorProfileRepository } from './floor-profile.repository.js';
 import { FloorPresence } from './floor-presence.js';
 import {
@@ -26,10 +35,27 @@ export interface FloorMe {
   profile: FloorProfile | null;
   suggestedName: string;
   saco: SacoSelf | null;
+  /** Đang vào bằng nhân vật khách (chưa đăng nhập). */
+  guest: boolean;
 }
+
+export interface FloorGuestCreated {
+  /** Token ngẫu nhiên, chỉ trả đúng một lần; trình duyệt giữ và gửi lại qua `x-floor-guest`. */
+  token: string;
+  guestId: string;
+  profile: FloorProfile;
+}
+
+const invalidName = () =>
+  new UnprocessableEntityException({
+    code: 'INVALID_NAME',
+    message: 'Tên hiển thị cần từ 2 đến 20 ký tự',
+  });
 
 @Injectable()
 export class FloorProfileService {
+  private readonly guestLimiter = new GuestCreateLimiter();
+
   constructor(
     private readonly database: DatabaseService,
     @Inject(FLOOR_PROFILE_REPOSITORY) private readonly profiles: FloorProfileRepository,
@@ -37,7 +63,13 @@ export class FloorProfileService {
     private readonly presence: FloorPresence,
   ) {}
 
-  async me(userId: string): Promise<FloorMe> {
+  async me(actor: FloorActor): Promise<FloorMe> {
+    if (actor.kind === 'guest') {
+      const profile = await this.profiles.findGuest(this.database, actor.id);
+      if (!profile) throw guestInvalid();
+      return { profile, suggestedName: '', saco: null, guest: true };
+    }
+    const userId = actor.id;
     const [profile, basics, saco] = await Promise.all([
       this.profiles.find(this.database, userId),
       this.profiles.userBasics(this.database, userId),
@@ -47,6 +79,7 @@ export class FloorProfileService {
       profile,
       suggestedName: suggestName(basics?.fullName, basics?.username),
       saco: saco ? toSacoSelf(saco) : null,
+      guest: false,
     };
   }
 
@@ -58,31 +91,73 @@ export class FloorProfileService {
     return basics ? suggestName(basics.fullName, basics.username) : 'Khách';
   }
 
+  /** Tạo hoặc đổi nhân vật của tài khoản đăng nhập, hoặc của khách (đổi tên và dáng, không tạo mới). */
   async save(
-    userId: string,
+    actor: FloorActor,
     input: { name: string; avatar: FloorAvatarId; color: FloorOutfitColorId },
     now = new Date(),
   ): Promise<FloorProfile> {
     const name = cleanName(input.name);
-    if (!name) {
-      throw new UnprocessableEntityException({
-        code: 'INVALID_NAME',
-        message: 'Tên hiển thị cần từ 2 đến 20 ký tự',
-      });
+    if (!name) throw invalidName();
+    const profile: FloorProfile = { name, avatar: input.avatar, color: input.color };
+    if (actor.kind === 'guest') {
+      if (!avatarAllowedFor(input.avatar, null)) throw avatarReserved();
+      if (!(await this.profiles.updateGuest(this.database, actor.id, profile, now))) {
+        throw guestInvalid();
+      }
+      this.presence.profileChanged(actor.key, profile);
+      return profile;
     }
-    const basics = await this.profiles.userBasics(this.database, userId);
+    const basics = await this.profiles.userBasics(this.database, actor.id);
     if (!basics) {
       throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'Không tìm thấy tài khoản' });
     }
-    if (!avatarAllowedFor(input.avatar, basics.username)) {
-      throw new ForbiddenException({
-        code: 'AVATAR_RESERVED',
-        message: 'Nhân vật này là nhân vật riêng, bạn không dùng được',
-      });
-    }
-    const profile: FloorProfile = { name, avatar: input.avatar, color: input.color };
-    await this.profiles.upsert(this.database, userId, profile, now);
-    this.presence.profileChanged(userId, profile);
+    if (!avatarAllowedFor(input.avatar, basics.username)) throw avatarReserved();
+    await this.profiles.upsert(this.database, actor.id, profile, now);
+    this.presence.profileChanged(actor.id, profile);
     return profile;
   }
+
+  /**
+   * Khách tạo nhân vật chỉ bằng tên và dáng: sinh token ngẫu nhiên, lưu băm. Mỗi IP tối đa 10 lần mỗi
+   * giờ (429 `GUEST_RATE_LIMIT`).
+   */
+  async createGuest(
+    ip: string | null | undefined,
+    input: { name: string; avatar: FloorAvatarId; color: FloorOutfitColorId },
+    nowMs = Date.now(),
+  ): Promise<FloorGuestCreated> {
+    const name = cleanName(input.name);
+    if (!name) throw invalidName();
+    if (!avatarAllowedFor(input.avatar, null)) throw avatarReserved();
+    if (!this.guestLimiter.take(ip || 'unknown', nowMs)) {
+      throw new HttpException(
+        {
+          code: 'GUEST_RATE_LIMIT',
+          message: 'Bạn tạo nhân vật quá nhiều lần, hãy thử lại sau ít phút hoặc đăng nhập',
+        },
+        429,
+      );
+    }
+    const profile: FloorProfile = { name, avatar: input.avatar, color: input.color };
+    const token = newGuestToken();
+    const guestId = await this.profiles.createGuest(this.database, {
+      tokenHash: hashGuestToken(token),
+      profile,
+      ip: ip ? ip.slice(0, 45) : null,
+    });
+    return { token, guestId, profile };
+  }
 }
+
+const guestInvalid = () =>
+  new UnauthorizedException({
+    code: 'GUEST_INVALID',
+    message: 'Phiên khách không hợp lệ, hãy tạo lại nhân vật',
+  });
+
+const avatarReserved = () =>
+  new ForbiddenException({
+    code: 'AVATAR_RESERVED',
+    message: 'Nhân vật này là nhân vật riêng, bạn không dùng được',
+  });

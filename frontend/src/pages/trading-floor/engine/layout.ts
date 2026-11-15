@@ -3,7 +3,7 @@
  * y grows downward; the back wall with its windows is the top band.
  *
  *   ┌──────── LED wall ─────── Thần Tài ─────── SACO NHẬN ĐỊNH ────────┐
- *   │  lounge + pantry          red carpet       hall of fame           │
+ *   │  lounge + pantry          red carpet                              │
  *   │  (left)                       │            (right)                │
  *   └── reception ─────────────  door ──────────────────────────────────┘
  */
@@ -117,36 +117,7 @@ export const PLACEMENTS: Placement[] = [
     foot: [44, 26],
   },
 
-  // Hall of fame (right): rank 2, 1, 3 from left to right, on a rug of their own.
-  {
-    id: "rug-fame",
-    placeholder: "rug",
-    x: 1650,
-    y: 1000,
-    w: 600,
-    h: 300,
-    flat: true,
-  },
-  ...[
-    [1440, 880, 2],
-    [1650, 840, 1],
-    [1860, 880, 3],
-  ].map(([x, y, rank]): Placement => ({
-    id: `statue-${rank}`,
-    placeholder: "podium",
-    x,
-    y,
-    w: 118,
-    h: 48,
-    foot: [124, 60],
-    interact: {
-      kind: "leaderboard",
-      label: "Bảng vinh danh",
-      data: { rank },
-      access: { x, y: y + 64 },
-      face: "n",
-    },
-  })),
+  // Right side plants.
   {
     id: "plant-fame-1",
     art: "plant_small",
@@ -320,5 +291,4 @@ export const RECEPTIONIST = {
 /** Floor labels for the zones. */
 export const ZONE_LABELS = [
   { text: "PHÒNG CHỜ", x: 398, y: 630 },
-  { text: "VINH DANH TOP DỰ ĐOÁN", x: 1650, y: 590 },
 ]

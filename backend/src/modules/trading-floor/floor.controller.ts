@@ -1,33 +1,22 @@
 /**
- * API của Khu giao dịch dưới `api/v2/trading-floor`: hồ sơ nhân vật, nghi lễ Thần Tài và bảng xếp
- * hạng. Mọi đường dẫn yêu cầu đăng nhập (guard toàn cục); danh tính là tài khoản IQX.
+ * API của Khu giao dịch dưới `api/v2/trading-floor`: hồ sơ nhân vật. Danh tính là tài khoản IQX hoặc
+ * khách (`x-floor-guest`); Thần Tài ở `than-tai.controller.ts`.
  */
 
-import { Body, Controller, Get, HttpCode, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Put, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { FastifyRequest } from 'fastify';
 
-import { CurrentUser, type AuthenticatedUser } from '../auth/index.js';
+import { Public } from '../auth/index.js';
+import { FloorActors } from './floor-actor.js';
 import { FloorProfileService, type FloorMe } from './floor-profile.service.js';
 import {
-  FloorRitualService,
-  type RitualDrawResult,
-  type RitualSubmitResult,
-} from './floor-ritual.service.js';
-import {
-  FLOOR_LEADERBOARD_SCHEMA,
   FLOOR_ME_SCHEMA,
   FLOOR_PROFILE_SCHEMA,
-  FLOOR_RITUAL_DRAW_SCHEMA,
-  FLOOR_RITUAL_SUBMIT_SCHEMA,
-  FLOOR_RITUAL_TODAY_SCHEMA,
   floorProfileBodySchema,
-  leaderboardQuerySchema,
-  ritualSubmitBodySchema,
   type FloorProfileBody,
-  type LeaderboardQuery,
-  type RitualSubmitBody,
 } from './floor.schemas.js';
-import type { FloorProfile, Leaderboard, RitualToday } from './floor-types.js';
+import type { FloorProfile } from './floor-types.js';
 
 @ApiTags('Khu giao dịch')
 @ApiBearerAuth()
@@ -35,76 +24,33 @@ import type { FloorProfile, Leaderboard, RitualToday } from './floor-types.js';
 export class FloorController {
   constructor(
     private readonly profiles: FloorProfileService,
-    private readonly ritual: FloorRitualService,
+    private readonly actors: FloorActors,
   ) {}
 
+  @Public()
   @Get('me')
   @ApiOperation({
     operationId: 'floorMe',
-    summary: 'Hồ sơ nhân vật trên sàn, tên gợi ý và quyền SACO của chính tôi',
+    summary:
+      'Hồ sơ nhân vật trên sàn, tên gợi ý và quyền SACO của chính tôi (tài khoản đăng nhập hoặc khách `x-floor-guest`)',
   })
   @ApiOkResponse({ schema: FLOOR_ME_SCHEMA })
-  me(@CurrentUser() user: AuthenticatedUser): Promise<FloorMe> {
-    return this.profiles.me(user.id);
+  async me(@Req() req: FastifyRequest): Promise<FloorMe> {
+    return this.profiles.me(await this.actors.require(req));
   }
 
+  @Public()
   @Put('profile')
   @ApiOperation({
     operationId: 'floorProfileSave',
-    summary: 'Tạo hoặc đổi nhân vật trên sàn (tên 2–20 ký tự, dáng, màu áo)',
+    summary:
+      'Tạo hoặc đổi nhân vật trên sàn (tên 2–20 ký tự, dáng, màu áo); khách `x-floor-guest` đổi được nhân vật của mình',
   })
   @ApiOkResponse({ schema: FLOOR_PROFILE_SCHEMA })
-  saveProfile(
-    @CurrentUser() user: AuthenticatedUser,
+  async saveProfile(
+    @Req() req: FastifyRequest,
     @Body({ schema: floorProfileBodySchema }) body: FloorProfileBody,
   ): Promise<FloorProfile> {
-    return this.profiles.save(user.id, body);
-  }
-
-  @Get('ritual/today')
-  @ApiOperation({
-    operationId: 'floorRitualToday',
-    summary: 'Phiên đang dự đoán, nghi lễ của tôi, thống kê đám đông và phiên chấm gần nhất',
-  })
-  @ApiOkResponse({ schema: FLOOR_RITUAL_TODAY_SCHEMA })
-  ritualToday(@CurrentUser() user: AuthenticatedUser): Promise<RitualToday> {
-    return this.ritual.today(user.id);
-  }
-
-  @Post('ritual/draw')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'floorRitualDraw',
-    summary: 'Gieo quẻ (một lần mỗi phiên; gieo lại trả đúng quẻ cũ)',
-  })
-  @ApiOkResponse({ schema: FLOOR_RITUAL_DRAW_SCHEMA })
-  ritualDraw(@CurrentUser() user: AuthenticatedUser): Promise<RitualDrawResult> {
-    return this.ritual.draw(user.id);
-  }
-
-  @Post('ritual/submit')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'floorRitualSubmit',
-    summary: 'Hoàn tất nghi lễ: hướng VNINDEX, mức đóng cửa dự đoán và 3 mã khấn',
-  })
-  @ApiOkResponse({ schema: FLOOR_RITUAL_SUBMIT_SCHEMA })
-  ritualSubmit(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body({ schema: ritualSubmitBodySchema }) body: RitualSubmitBody,
-  ): Promise<RitualSubmitResult> {
-    return this.ritual.submit(user.id, body);
-  }
-
-  @Get('leaderboard')
-  @ApiOperation({
-    operationId: 'floorLeaderboard',
-    summary: 'Bảng xếp hạng dự đoán đúng hướng của một tháng (mặc định tháng này)',
-  })
-  @ApiOkResponse({ schema: FLOOR_LEADERBOARD_SCHEMA })
-  leaderboard(
-    @Query({ schema: leaderboardQuerySchema }) query: LeaderboardQuery,
-  ): Promise<Leaderboard> {
-    return this.ritual.leaderboard(query.month);
+    return this.profiles.save(await this.actors.require(req), body);
   }
 }

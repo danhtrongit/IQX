@@ -21,6 +21,15 @@ export interface FloorProfileRepository {
   find(db: SqlClient, userId: string): Promise<FloorProfile | null>;
   upsert(db: SqlClient, userId: string, profile: FloorProfile, at: Date): Promise<void>;
   userBasics(db: SqlClient, userId: string): Promise<FloorUserBasics | null>;
+  /** Khách (`tf_guests`): hồ sơ theo id khách. */
+  findGuest(db: SqlClient, guestId: string): Promise<FloorProfile | null>;
+  /** Tạo khách mới; chỉ lưu băm của token. Trả id khách. */
+  createGuest(
+    db: SqlClient,
+    input: { tokenHash: string; profile: FloorProfile; ip: string | null },
+  ): Promise<string>;
+  /** Đổi tên và nhân vật của khách; false khi khách không còn. */
+  updateGuest(db: SqlClient, guestId: string, profile: FloorProfile, at: Date): Promise<boolean>;
 }
 
 type Row = Record<string, unknown>;
@@ -50,6 +59,43 @@ export class PgFloorProfileRepository implements FloorProfileRepository {
              color = excluded.color, updated_at = excluded.updated_at`,
       [userId, profile.name, profile.avatar, profile.color, at],
     );
+  }
+
+  async findGuest(db: SqlClient, guestId: string): Promise<FloorProfile | null> {
+    const rows = await db.query<Row>(
+      `select display_name, avatar, color from tf_guests where id = $1`,
+      [guestId],
+    );
+    return rows[0] ? toFloorProfile(rows[0]) : null;
+  }
+
+  async createGuest(
+    db: SqlClient,
+    input: { tokenHash: string; profile: FloorProfile; ip: string | null },
+  ): Promise<string> {
+    const rows = await db.query<{ id: string }>(
+      `insert into tf_guests (token_hash, display_name, avatar, color, created_ip)
+       values ($1, $2, $3, $4, $5)
+       returning id`,
+      [input.tokenHash, input.profile.name, input.profile.avatar, input.profile.color, input.ip],
+    );
+    return String(rows[0]!.id);
+  }
+
+  async updateGuest(
+    db: SqlClient,
+    guestId: string,
+    profile: FloorProfile,
+    at: Date,
+  ): Promise<boolean> {
+    const rows = await db.query<{ id: string }>(
+      `update tf_guests
+          set display_name = $2, avatar = $3, color = $4, updated_at = $5, last_seen_at = $5
+        where id = $1
+        returning id`,
+      [guestId, profile.name, profile.avatar, profile.color, at],
+    );
+    return rows.length > 0;
   }
 
   async userBasics(db: SqlClient, userId: string): Promise<FloorUserBasics | null> {

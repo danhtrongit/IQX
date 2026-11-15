@@ -7,7 +7,7 @@
  * Không nói gì khi không hiểu ý: im lặng tự nhiên hơn một câu lạc đề.
  */
 
-import { vnParts } from './floor-ritual.logic.js';
+import { vnParts } from './than-tai.logic.js';
 import { FLOOR_EMOTE_MAX } from './floor-profile.logic.js';
 import type { FloorAvatarId, FloorOutfitColorId } from './floor-types.js';
 
@@ -339,26 +339,6 @@ export function tickerLine(symbol: string, rand: Rand): string {
       rand,
     ),
   );
-}
-
-export function ritualLine(name: string, que: string, luck: number, rand: Rand): string | null {
-  const who = callName(name);
-  if (luck >= 4)
-    return fit(
-      pick(
-        [
-          `Quẻ ${que} đẹp đấy ${who} 🙏`,
-          `Chúc mừng ${who}, quẻ ${que}!`,
-          `${who} xin được quẻ đẹp ghê`,
-        ],
-        rand,
-      ),
-    );
-  if (luck <= 2)
-    return fit(
-      pick([`Quẻ nào cũng là lời nhắc thôi ${who} 😄`, `Không sao ${who}, cẩn thận là được`], rand),
-    );
-  return null;
 }
 
 const AMBIENT: Record<DayPhase, readonly string[]> = {

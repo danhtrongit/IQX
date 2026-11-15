@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/use-auth"
 import { ui } from "../bridge.ts"
 import { recolorRgbaBuffer } from "../engine/recolor.ts"
 import { floorApi } from "../net/api.ts"
+import { getGuestToken, setGuestToken } from "../net/guest.ts"
+import { floorSocket } from "../net/socket.ts"
 import {
   AVATARS,
   OUTFIT_COLORS,
@@ -16,6 +18,7 @@ import {
 } from "../net/types.ts"
 import { useStore } from "../use-store.ts"
 import { cx } from "./utils.ts"
+import "./login-prompt.css"
 
 /** Display names are 2 to 20 characters, as the server checks. */
 const NAME_MIN = 2
@@ -117,7 +120,10 @@ function AvatarPreview({
   )
 }
 
-/** Name, character and outfit colour. First visit: one click enters with the suggested name. Later: edits the profile. */
+/**
+ * Name, character and outfit colour. First visit: one click enters with the suggested name. Later: edits
+ * the profile. A visitor who is not signed in creates a guest character here (no account needed).
+ */
 export function JoinScreen({
   initial,
   suggestedName,
@@ -126,6 +132,8 @@ export function JoinScreen({
 }: Props) {
   const images = useStore(ui.avatarImages)
   const masks = useStore(ui.avatarMasks)
+  const guest = useStore(ui.guest)
+  const { openAuth } = useAuth()
   const [name, setName] = useState(initial?.name ?? suggestedName ?? "")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
@@ -169,7 +177,22 @@ export function JoinScreen({
     setBusy(true)
     setError("")
     try {
-      ui.profile.set(await floorApi.saveProfile({ name: clean, avatar, color }))
+      if (guest && !getGuestToken()) {
+        // First visit of a guest: the server hands back the token that identifies them from now on.
+        const created = await floorApi.createGuest({
+          name: clean,
+          avatar,
+          color,
+        })
+        setGuestToken(created.token)
+        ui.profile.set(created.profile)
+        // The socket could not connect without a token: connect now that there is one.
+        floorSocket.restart()
+      } else {
+        ui.profile.set(
+          await floorApi.saveProfile({ name: clean, avatar, color })
+        )
+      }
       onDone()
     } catch (err) {
       setError(
@@ -187,10 +210,17 @@ export function JoinScreen({
       <form className="join" onSubmit={submit}>
         <p className="eyebrow">IQX</p>
         <h1>Khu Giao Dịch</h1>
-        <p className="muted">
-          Văn phòng ảo của IQX: đọc nhận định SACO, chat với SACO, xin quẻ Thần
-          Tài và đua top dự đoán VNINDEX.
-        </p>
+        {guest ? (
+          <p className="muted">
+            Văn phòng ảo của IQX: đi dạo, trò chuyện và đọc nhận định SACO ngay,
+            không cần tài khoản. Chỉ cần một cái tên và một nhân vật.
+          </p>
+        ) : (
+          <p className="muted">
+            Văn phòng ảo của IQX: đọc nhận định SACO, chat với SACO, xin quẻ
+            Thần Tài và đua top dự đoán VNINDEX.
+          </p>
+        )}
 
         <label className="field">
           <span>Tên hiển thị</span>
@@ -314,6 +344,19 @@ export function JoinScreen({
           Tên, nhân vật và màu trang phục hiện với mọi người trong khu giao
           dịch. Bạn đổi lại được bất cứ lúc nào bằng nút tên ở góc trên.
         </p>
+        {guest && !initial && (
+          <p className="fineprint">
+            Đã có tài khoản?{" "}
+            <button
+              type="button"
+              className="join-login"
+              onClick={() => openAuth("login")}
+            >
+              Đăng nhập
+            </button>{" "}
+            để chat với SACO, thả tim và bình luận nhận định.
+          </p>
+        )}
       </form>
     </div>
   )
