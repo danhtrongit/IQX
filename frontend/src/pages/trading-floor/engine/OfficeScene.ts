@@ -792,7 +792,7 @@ export class OfficeScene extends Phaser.Scene {
     const w = marketWeather(q)
     this.ledIndex
       .setText(
-        `VN-Index ${formatIndex(q.value)} ${formatPercent(q.pct)} · ${w.icon} ${w.label}`
+        `VN-Index ${formatIndex(q.value)} ${formatPercent(q.pct)} · ${w.label}`
       )
       .setColor(PRICE_COLORS[indexTone(q)])
   }
@@ -932,7 +932,7 @@ export class OfficeScene extends Phaser.Scene {
         blendMode: "ADD",
       })
       .setDepth(p.y + 100)
-    this.text(p.x, 18, "🙏 Thần Tài · Khấn trước 11:30", 15, "#ffe7a3", "700")
+    this.text(p.x, 18, "Thần Tài · Khấn trước 11:30", 15, "#ffe7a3", "700")
       .setOrigin(0.5, 0)
       .setBackgroundColor("rgba(60,14,10,0.78)")
       .setPadding(12, 5, 12, 5)

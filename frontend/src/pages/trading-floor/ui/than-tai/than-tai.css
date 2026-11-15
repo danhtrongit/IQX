@@ -1608,3 +1608,23 @@
     transition: none !important;
   }
 }
+
+/* lucide icons replacing emoji */
+.tt .tt-x,
+.tt .tt-slot-rm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.tt .tt-btn-luan,
+.tt .tt-clock,
+.tt .tt-btn-main {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tt .tt-mau svg {
+  flex: none;
+}

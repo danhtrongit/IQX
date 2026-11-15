@@ -38,12 +38,12 @@ export function heatColour(
 /** "Market weather" next to VN-Index. */
 export function marketWeather(
   index: Pick<IndexQuote, "pct"> | null | undefined
-): { icon: string; label: string } {
+): { label: string } {
   const pct = index?.pct ?? 0
-  if (pct >= 0.5) return { icon: "☀️", label: "Nắng" }
-  if (pct > 0) return { icon: "🌤️", label: "Hửng nắng" }
-  if (pct > -0.5) return { icon: "☁️", label: "Nhiều mây" }
-  return { icon: "🌧️", label: "Mưa" }
+  if (pct >= 0.5) return { label: "Nắng" }
+  if (pct > 0) return { label: "Hửng nắng" }
+  if (pct > -0.5) return { label: "Nhiều mây" }
+  return { label: "Mưa" }
 }
 
 /** Prices on the heatmap: thousands with two decimals, Vietnamese comma ("24,34"). */

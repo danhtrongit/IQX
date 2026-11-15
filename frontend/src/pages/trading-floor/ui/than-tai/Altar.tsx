@@ -1,4 +1,5 @@
 /** The altar screen: hoành phi, lanterns, the statue, the altar table, clock, status line and main button. */
+import { Clock } from "lucide-react"
 import type { ThanTaiStatus, ThanTaiToday } from "../../net/types.ts"
 import {
   DIRECTION_META,
@@ -26,8 +27,9 @@ export function Altar({ today, status, now, onOpen }: Props) {
           Khu giao dịch › <b>Tượng Thần Tài</b>
         </div>
         <div className="tt-clock">
-          🕘 {vnClock(now)} · hạn khấn <i>{vnClock(today.deadline)}</i> · ngày{" "}
-          <i>{today.day.canChi}</i> hành <i>{today.day.hanhLabel}</i>
+          <Clock size={13} aria-hidden="true" /> {vnClock(now)} · hạn khấn{" "}
+          <i>{vnClock(today.deadline)}</i> · ngày <i>{today.day.canChi}</i> hành{" "}
+          <i>{today.day.hanhLabel}</i>
         </div>
       </div>
 

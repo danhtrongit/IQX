@@ -1,4 +1,13 @@
-import { MessagesSquare } from "lucide-react"
+import {
+  ChartCandlestick,
+  ClipboardList,
+  Inbox,
+  Landmark,
+  MessagesSquare,
+  PenLine,
+  Pencil,
+  type LucideIcon,
+} from "lucide-react"
 import { useNavigate } from "react-router"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -21,10 +30,10 @@ import { PRICE_COLORS, indexTone } from "../net/market/tone.ts"
 import { useStore } from "../use-store.ts"
 import { isTouchDevice, SACO_POSTS_PATH, cx } from "./utils.ts"
 
-const SHORTCUTS: { kind: InteractKind; icon: string; label: string }[] = [
-  { kind: "thantai", icon: "🙏", label: "Thần Tài" },
-  { kind: "posts", icon: "📋", label: "Nhận định" },
-  { kind: "market", icon: "📈", label: "Bảng điện" },
+const SHORTCUTS: { kind: InteractKind; icon: LucideIcon; label: string }[] = [
+  { kind: "thantai", icon: Landmark, label: "Thần Tài" },
+  { kind: "posts", icon: ClipboardList, label: "Nhận định" },
+  { kind: "market", icon: ChartCandlestick, label: "Bảng điện" },
 ]
 
 export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
@@ -98,7 +107,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
             aria-label="Đổi tên hoặc nhân vật"
           >
             <span className="me-name">{profile?.name}</span>{" "}
-            <span aria-hidden="true">✎</span>
+            <Pencil size={14} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -123,7 +132,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
             onClick={() => commands.emit("goTo", s.kind)}
             title={`Đi tới ${s.label}`}
           >
-            <span aria-hidden="true">{s.icon}</span>
+            <s.icon size={20} aria-hidden="true" />
             <small>{s.label}</small>
           </button>
         ))}
@@ -138,7 +147,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
               onClick={() => navigate(SACO_POSTS_PATH)}
             >
               <span className="pill-ico" aria-hidden="true">
-                📝
+                <PenLine size={19} />
               </span>
               <span className="pill-label">Viết nhận định</span>
             </button>
@@ -149,7 +158,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
               aria-label={`Hộp thư SACO, ${saco.onDuty ? "đang trực" : "vắng"}${sacoUnread ? `, ${sacoUnread} tin chưa đọc` : ""}`}
             >
               <span className="pill-ico" aria-hidden="true">
-                💼
+                <Inbox size={19} />
               </span>
               <span className="pill-label">Hộp thư SACO</span>
               <i
@@ -161,23 +170,22 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
           </>
         )}
         <button
-            type="button"
-            className="pill chat-pill"
-            onClick={chatSaco}
-            aria-label={`Chat SACO${userUnread ? `, ${userUnread} tin chưa đọc` : ""}`}
-          >
-            <span className="pill-ico" aria-hidden="true">
-              <MessagesSquare size={20} strokeWidth={2.2} />
-            </span>
-            <span className="pill-label">Chat SACO</span>
-            {userUnread > 0 && <span className="count">{userUnread}</span>}
-          </button>
+          type="button"
+          className="pill chat-pill"
+          onClick={chatSaco}
+          aria-label={`Chat SACO${userUnread ? `, ${userUnread} tin chưa đọc` : ""}`}
+        >
+          <span className="pill-ico" aria-hidden="true">
+            <MessagesSquare size={20} strokeWidth={2.2} />
+          </span>
+          <span className="pill-label">Chat SACO</span>
+          {userUnread > 0 && <span className="count">{userUnread}</span>}
+        </button>
       </div>
 
       {!touch && (
         <p className="help">
-          Nhấn chuột để đi · WASD/mũi tên · E để mở · cuộn để
-          phóng to
+          Nhấn chuột để đi · WASD/mũi tên · E để mở · cuộn để phóng to
         </p>
       )}
     </div>

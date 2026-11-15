@@ -222,7 +222,7 @@ export function startChat(): () => void {
         const peer =
           box && [...box.asUser, ...box.asSaco].find((c) => c.id === convId)
         toast(
-          `💬 ${peer?.peerName ?? (mine === "saco" ? "Khách" : "SACO")}: ${message.text.slice(0, 80)}`,
+          `${peer?.peerName ?? (mine === "saco" ? "Khách" : "SACO")}: ${message.text.slice(0, 80)}`,
           "info"
         )
       }

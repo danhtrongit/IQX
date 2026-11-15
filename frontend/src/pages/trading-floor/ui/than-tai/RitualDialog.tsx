@@ -1,4 +1,5 @@
-/** The lacquered ritual window: 4 diamond step seals over the current step. ✕, Esc and the backdrop close it. */
+import { X } from "lucide-react"
+/** The lacquered ritual window: 4 diamond step seals over the current step. the X button, Esc and the backdrop close it. */
 import { useCallback, useEffect, useRef, useState } from "react"
 
 import { floorApi } from "../../net/api.ts"
@@ -108,7 +109,7 @@ export function RitualDialog({
           onClick={onClose}
           aria-label="Đóng"
         >
-          ✕
+          <X size={16} aria-hidden="true" />
         </button>
         <div className="tt-ptitle">KHẤN THẦN TÀI</div>
         <ol className="tt-seals">

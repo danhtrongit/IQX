@@ -24,10 +24,10 @@ describe("altarCopy", () => {
   it("gives the status line and button of each altar state", () => {
     expect(altarCopy("chua_khan", false)).toEqual({
       status: "Mỗi ngày một lần, trước 11:30.",
-      button: "🙏 Thành tâm khấn",
+      button: "Thành tâm khấn",
       primary: true,
     })
-    expect(altarCopy("dang_do", true).button).toBe("🙏 Khấn tiếp")
+    expect(altarCopy("dang_do", true).button).toBe("Khấn tiếp")
     expect(altarCopy("dang_do", true).status).toBe(
       "Bạn đang khấn dở. Thành tâm làm tiếp nhé."
     )

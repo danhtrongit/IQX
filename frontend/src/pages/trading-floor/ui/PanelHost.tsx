@@ -1,3 +1,11 @@
+import {
+  ChartCandlestick,
+  ConciergeBell,
+  Inbox,
+  Landmark,
+  MessagesSquare,
+  type LucideIcon,
+} from "lucide-react"
 import { useCallback } from "react"
 
 import { ui, type Panel } from "../bridge.ts"
@@ -7,22 +15,22 @@ import { ReceptionPanel } from "./panels/ReceptionPanel.tsx"
 import { ThanTaiPanel } from "./panels/ThanTaiPanel.tsx"
 import { Sheet } from "./Sheet.tsx"
 
-const TITLES: Record<Panel["kind"], [string, string]> = {
-  thantai: ["🙏", "Thần Tài"],
-  market: ["📊", "Thị trường"],
-  reception: ["🛎️", "Lễ tân · Hướng dẫn"],
-  chat: ["💬", "Chat SACO"],
+const TITLES: Record<Panel["kind"], [LucideIcon, string]> = {
+  thantai: [Landmark, "Thần Tài"],
+  market: [ChartCandlestick, "Thị trường"],
+  reception: [ConciergeBell, "Lễ tân · Hướng dẫn"],
+  chat: [MessagesSquare, "Chat SACO"],
 }
 
 export function PanelHost({ panel }: { panel: Panel }) {
   const close = useCallback(() => ui.panel.set(null), [])
   const sacoInbox = panel.kind === "chat" && panel.data?.side === "saco"
-  const [icon, title] = sacoInbox ? ["💼", "Hộp thư SACO"] : TITLES[panel.kind]
+  const [Icon, title] = sacoInbox ? [Inbox, "Hộp thư SACO"] : TITLES[panel.kind]
   const isChat = panel.kind === "chat"
   return (
     <Sheet
       title={title}
-      icon={icon}
+      icon={<Icon size={20} />}
       onClose={close}
       wide={panel.kind === "market" || panel.kind === "thantai" || isChat}
       bodyClass={

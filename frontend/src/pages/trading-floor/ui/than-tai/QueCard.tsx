@@ -1,4 +1,5 @@
 /** The Kinh Dịch card: back 卦, front with day line, rank seal, hexagram, verses and (on request) the luận. */
+import { Compass, Sparkles } from "lucide-react"
 import { useState, type CSSProperties } from "react"
 
 import type { HanhGroup, ThanTaiDay, ThanTaiLa } from "../../net/types.ts"
@@ -87,7 +88,8 @@ export function QueCard({ la, day, animate, full }: Props) {
               className="tt-btn-luan"
               onClick={() => setRevealed(true)}
             >
-              🔮 Xin thầy luận
+              <Sparkles size={16} aria-hidden="true" />
+              Xin thầy luận
             </button>
           )}
         </article>
@@ -126,7 +128,7 @@ function Luan({
         )}
         {day.huong && (
           <span className="tt-mau">
-            🧭 Hướng: <b>{day.huong}</b>
+            <Compass size={14} aria-hidden="true" /> Hướng: <b>{day.huong}</b>
           </span>
         )}
       </div>

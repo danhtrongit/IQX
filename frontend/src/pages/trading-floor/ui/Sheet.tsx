@@ -1,9 +1,10 @@
+import { X } from "lucide-react"
 import { useEffect, useRef, type ReactNode } from "react"
 import { cx } from "./utils.ts"
 
 interface Props {
   title: string
-  icon?: string
+  icon?: ReactNode
   onClose: () => void
   wide?: boolean
   /** Extra class on the body, e.g. a fixed-height chat. */
@@ -63,7 +64,7 @@ export function Sheet({
             onClick={onClose}
             aria-label="Đóng"
           >
-            ✕
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
         <div className={cx("sheet-body", bodyClass)}>{children}</div>
