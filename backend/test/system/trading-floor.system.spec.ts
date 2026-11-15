@@ -129,7 +129,9 @@ describe('system acceptance: Khu giao dịch', () => {
       });
       socket.once('error', reject);
       socket.once('open', () => {
-        if (token !== null) socket.send(JSON.stringify({ type: 'auth', token }));
+        if (token?.startsWith('guest:')) {
+          socket.send(JSON.stringify({ type: 'auth', guest: token.slice('guest:'.length) }));
+        } else if (token !== null) socket.send(JSON.stringify({ type: 'auth', token }));
         resolve(client);
       });
     });
@@ -170,6 +172,8 @@ describe('system acceptance: Khu giao dịch', () => {
   }
 
   beforeAll(async () => {
+    // Nhân vật tự động làm lệch số người trên sàn mà các kịch bản dưới đây đếm.
+    process.env.FLOOR_BOTS_ENABLED = 'false';
     stack = await startSystemStack(
       {},
       {
@@ -270,6 +274,33 @@ describe('system acceptance: Khu giao dịch', () => {
     );
     second.socket.close();
     await waitFor(u1Floor, (m) => m.type === 'peer:leave', 'peer:leave');
+
+    // Khách: chỉ nhập tên và tạo nhân vật, vào sàn qua token khách; nhân vật riêng bị chặn.
+    const reserved = await call(null, 'POST', '/guest', {
+      name: 'Khách lạ',
+      avatar: 'danhtrongit',
+      color: 'default',
+    });
+    expect(reserved.statusCode).toBe(403);
+    const created = await call(null, 'POST', '/guest', {
+      name: 'Khách Một',
+      avatar: 'female01',
+      color: 'default',
+    });
+    expect(created.statusCode).toBe(200);
+    const guestToken = (created.json() as { token: string }).token;
+    const guest = await connect(`guest:${guestToken}`);
+    const ready = await waitFor(guest, (m) => m.type === 'ready', 'ready của khách');
+    expect(ready.guest).toBe(true);
+    send(guest, { type: 'hello', x: 30, y: 30, facing: 's', moving: false });
+    const guestWelcome = await waitFor(guest, (m) => m.type === 'welcome', 'welcome của khách');
+    expect(guestWelcome.self).toMatchObject({ name: 'Khách Một', avatar: 'female01' });
+    await waitFor(u1Floor, (m) => m.type === 'peer:join' && m.peer.name === 'Khách Một', 'khách join');
+    const badGuest = await connect('guest:' + 'x'.repeat(43));
+    await until(() => badGuest.closed !== null, 'đóng vì sai token khách');
+    expect(badGuest.closed).toBe(4401);
+    guest.socket.close();
+    await waitFor(u1Floor, (m) => m.type === 'peer:leave', 'khách rời');
   });
 
   it('Thần Tài v2: gieo quẻ một lần (song song vẫn một lá), dự đoán, cầu mã, kết quả cả sàn, hạn 11:30', async () => {
