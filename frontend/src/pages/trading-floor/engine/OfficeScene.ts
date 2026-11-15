@@ -32,6 +32,7 @@ import {
   type PostCard,
   type Profile,
   type RitualStats,
+  avatarBadge,
   normalizeAvatarId,
 } from "../net/types.ts"
 import {
@@ -1120,6 +1121,7 @@ export class OfficeScene extends Phaser.Scene {
       this.releaseArt(this.playerArt.charId, this.playerArt.color)
     const created = new Avatar(this, baseArt, at.x, at.y, at.facing, {
       name: profile.name,
+      badge: avatarBadge(profile.avatar),
       kind: "self",
     })
     this.player = created
@@ -1161,6 +1163,7 @@ export class OfficeScene extends Phaser.Scene {
     const charId = this.characterId(p.avatar)
     const avatar = new Avatar(this, this.character(p.avatar), p.x, p.y, p.facing, {
       name: p.name,
+      badge: avatarBadge(p.avatar),
       kind: "peer",
     })
     this.useArt(charId, p.color)

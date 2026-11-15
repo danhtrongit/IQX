@@ -3,10 +3,16 @@
  * quyền SACO của chính người gọi (cả khi đã bị gỡ, `active: false`).
  */
 
-import { Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
-import { cleanName, suggestName } from './floor-profile.logic.js';
+import { avatarAllowedFor, cleanName, suggestName } from './floor-profile.logic.js';
 import { FLOOR_PROFILE_REPOSITORY, type FloorProfileRepository } from './floor-profile.repository.js';
 import { FloorPresence } from './floor-presence.js';
 import {
@@ -67,6 +73,12 @@ export class FloorProfileService {
     const basics = await this.profiles.userBasics(this.database, userId);
     if (!basics) {
       throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'Không tìm thấy tài khoản' });
+    }
+    if (!avatarAllowedFor(input.avatar, basics.username)) {
+      throw new ForbiddenException({
+        code: 'AVATAR_RESERVED',
+        message: 'Nhân vật này là nhân vật riêng, bạn không dùng được',
+      });
     }
     const profile: FloorProfile = { name, avatar: input.avatar, color: input.color };
     await this.profiles.upsert(this.database, userId, profile, now);

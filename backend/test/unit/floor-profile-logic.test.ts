@@ -4,6 +4,7 @@ import {
   FLOOR_EMOTE_MAX,
   FLOOR_STATE_MIN_MS,
   FLOOR_WORLD_MAX,
+  avatarAllowedFor,
   cleanAvatar,
   cleanEmote,
   cleanName,
@@ -42,6 +43,17 @@ describe('cleanAvatar / cleanOutfitColor', () => {
     expect(cleanAvatar('nope')).toBeNull();
     expect(cleanOutfitColor('nope')).toBe('default');
     expect(cleanOutfitColor(undefined)).toBe('default');
+  });
+});
+
+describe('avatarAllowedFor', () => {
+  it('keeps the owner avatar for its username only', () => {
+    expect(avatarAllowedFor('male01', null)).toBe(true);
+    expect(avatarAllowedFor('danhtrongit', 'danhtrongit')).toBe(true);
+    expect(avatarAllowedFor('danhtrongit', 'DanhTrongIT')).toBe(true);
+    expect(avatarAllowedFor('danhtrongit', 'someone')).toBe(false);
+    expect(avatarAllowedFor('danhtrongit', null)).toBe(false);
+    expect(avatarAllowedFor('danhtrongit', '')).toBe(false);
   });
 });
 

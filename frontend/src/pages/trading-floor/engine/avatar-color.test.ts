@@ -3,15 +3,18 @@ import { describe, expect, it } from "vitest"
 import {
   AVATARS,
   OUTFIT_COLORS,
+  avatarAllowedFor,
+  avatarBadge,
   cleanOutfitColor,
   normalizeAvatarId,
 } from "../net/types.ts"
 import { hexToRgb, recolorRgbaBuffer } from "./recolor.ts"
 
 describe("avatar catalogue and outfit colors", () => {
-  it("provides 5 male and 5 female avatars", () => {
-    const males = AVATARS.filter((a) => a.gender === "male")
-    const females = AVATARS.filter((a) => a.gender === "female")
+  it("provides 5 male and 5 female avatars to everyone", () => {
+    const open = AVATARS.filter((a) => avatarAllowedFor(a.id, null))
+    const males = open.filter((a) => a.gender === "male")
+    const females = open.filter((a) => a.gender === "female")
     expect(males.map((a) => a.id)).toEqual([
       "male01",
       "male02",
@@ -27,6 +30,14 @@ describe("avatar catalogue and outfit colors", () => {
       "female05",
     ])
     expect(OUTFIT_COLORS.length).toBeGreaterThanOrEqual(8)
+  })
+
+  it("keeps the owner avatar and its tag for danhtrongit only", () => {
+    expect(avatarAllowedFor("danhtrongit", "danhtrongit")).toBe(true)
+    expect(avatarAllowedFor("danhtrongit", "other")).toBe(false)
+    expect(avatarAllowedFor("danhtrongit", undefined)).toBe(false)
+    expect(avatarBadge("danhtrongit")).toBe("IT ngầu ngầu nhìn bảnh tỏn")
+    expect(avatarBadge("male01")).toBeUndefined()
   })
 
   it("accepts catalogue ids only, with no legacy aliases", () => {

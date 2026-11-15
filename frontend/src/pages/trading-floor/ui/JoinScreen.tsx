@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
 
+import { useAuth } from "@/hooks/use-auth"
+
 import { ui } from "../bridge.ts"
 import { recolorRgbaBuffer } from "../engine/recolor.ts"
 import { floorApi } from "../net/api.ts"
 import {
   AVATARS,
   OUTFIT_COLORS,
+  avatarAllowedFor,
   type AvatarGender,
   type AvatarId,
   type OutfitColorId,
@@ -135,8 +138,14 @@ export function JoinScreen({
   const [color, setColor] = useState<OutfitColorId>(initial?.color ?? "default")
 
   // Presets without art (before the manifest loads) are filtered out once any character art exists.
+  const { user } = useAuth()
   const hasPlayableArt = AVATARS.some((a) => Boolean(images[a.id]))
-  const choices = AVATARS.filter((a) => !hasPlayableArt || images[a.id])
+  // Owner-only avatars appear only for their account (the server checks it too).
+  const choices = AVATARS.filter(
+    (a) =>
+      avatarAllowedFor(a.id, user?.username) &&
+      (!hasPlayableArt || images[a.id])
+  )
   const genderList = choices.filter((a) => a.gender === gender)
   const shownList = genderList.length ? genderList : choices
   const selected =

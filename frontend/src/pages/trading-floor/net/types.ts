@@ -18,9 +18,29 @@ export const AVATARS = [
   { id: "female03", gender: "female", label: "Nữ · Đầm tài chính hiện đại" },
   { id: "female04", gender: "female", label: "Nữ · Blazer trắng kem" },
   { id: "female05", gender: "female", label: "Nữ · Chuyên gia tư vấn" },
+  { id: "danhtrongit", gender: "male", label: "Nam · IT ngầu ngầu" },
 ] as const
 export type AvatarGender = (typeof AVATARS)[number]["gender"]
 export type AvatarId = (typeof AVATARS)[number]["id"]
+
+/** Owner-only avatars: the account username allowed to wear each (the server enforces the same rule). */
+export const RESERVED_AVATARS: Partial<Record<AvatarId, string>> = {
+  danhtrongit: "danhtrongit",
+}
+
+/** Tag shown before the name of whoever wears the avatar. */
+export const AVATAR_BADGES: Partial<Record<AvatarId, string>> = {
+  danhtrongit: "IT ngầu ngầu nhìn bảnh tỏn",
+}
+
+export function avatarAllowedFor(id: AvatarId, username: string | null | undefined): boolean {
+  const owner = RESERVED_AVATARS[id]
+  return !owner || (username ?? "").toLowerCase() === owner
+}
+
+export function avatarBadge(id: string): string | undefined {
+  return AVATAR_BADGES[id as AvatarId]
+}
 
 export function normalizeAvatarId(raw: unknown): AvatarId | null {
   if (typeof raw !== "string") return null

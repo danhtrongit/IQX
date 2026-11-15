@@ -63535,7 +63535,8 @@ export type FloorLeaderboardResponses = {
         | "female02"
         | "female03"
         | "female04"
-        | "female05";
+        | "female05"
+        | "danhtrongit";
       avgError: number | null;
       correct: number;
       id: string;
@@ -64441,7 +64442,8 @@ export type FloorMeResponses = {
         | "female02"
         | "female03"
         | "female04"
-        | "female05";
+        | "female05"
+        | "danhtrongit";
       color:
         | "default"
         | "navy"
@@ -64917,7 +64919,8 @@ export type FloorProfileSaveData = {
       | "female02"
       | "female03"
       | "female04"
-      | "female05";
+      | "female05"
+      | "danhtrongit";
     color?:
       | "default"
       | "navy"
@@ -64974,7 +64977,8 @@ export type FloorProfileSaveResponses = {
       | "female02"
       | "female03"
       | "female04"
-      | "female05";
+      | "female05"
+      | "danhtrongit";
     color:
       | "default"
       | "navy"

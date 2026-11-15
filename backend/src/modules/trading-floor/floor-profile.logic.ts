@@ -7,6 +7,7 @@ import {
   FLOOR_AVATARS,
   FLOOR_FACINGS,
   FLOOR_OUTFIT_COLORS,
+  FLOOR_RESERVED_AVATARS,
   type FloorAvatarId,
   type FloorFacing,
   type FloorOutfitColorId,
@@ -48,6 +49,12 @@ export function cleanAvatar(raw: unknown): FloorAvatarId | null {
   return typeof raw === 'string' && (FLOOR_AVATARS as readonly string[]).includes(raw)
     ? (raw as FloorAvatarId)
     : null;
+}
+
+/** Nhân vật riêng chỉ dành cho đúng username chủ; khách (username null) không được mặc. */
+export function avatarAllowedFor(avatar: FloorAvatarId, username: string | null | undefined): boolean {
+  const owner = FLOOR_RESERVED_AVATARS[avatar];
+  return !owner || (typeof username === 'string' && username.toLowerCase() === owner);
 }
 
 export function cleanOutfitColor(raw: unknown): FloorOutfitColorId {
