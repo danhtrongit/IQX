@@ -123,10 +123,15 @@ export type StaffScope = { leadUserId: string | null };
 export type ReportScope = { leadUserId?: string; sacoId?: string };
 
 /**
- * Tên người viết: SACO tác giả dùng tên SACO, người khác dùng tên trên sàn rồi tới họ tên tài khoản.
+ * Tên người viết: SACO tác giả dùng tên SACO, người khác dùng tên trên sàn. Không lấy họ tên tài khoản vì
+ * bình luận đọc công khai (khách không đăng nhập cũng xem).
  * Cần các bí danh `c` (bình luận), `s` (SACO của bài), `u` (người viết) và `tp` (hồ sơ sàn).
  */
 const WRITER_NAME = `CASE WHEN c.is_author THEN s.display_name
+  ELSE COALESCE(NULLIF(tp.display_name, ''), 'Người dùng') END`;
+
+/** Như `WRITER_NAME` nhưng cho màn kiểm duyệt (chỉ nhân sự xem): có họ tên tài khoản. */
+const STAFF_WRITER_NAME = `CASE WHEN c.is_author THEN s.display_name
   ELSE COALESCE(NULLIF(tp.display_name, ''), NULLIF(u.full_name, ''), 'Người dùng') END`;
 
 const POST_COLUMNS = `
@@ -573,7 +578,7 @@ export class PgSacoPostsRepository extends SacoPostsRepository {
   commentReports(db: SqlClient, scope: ReportScope, limit: number): Promise<CommentReportRow[]> {
     return db.query<CommentReportRow>(
       `SELECT c.id AS "commentId", c.post_id AS "postId", p.headline, s.display_name AS "sacoName",
-              ${WRITER_NAME} AS "authorName", c.text, c.created_at AS "createdAt",
+              ${STAFF_WRITER_NAME} AS "authorName", c.text, c.created_at AS "createdAt",
               (SELECT count(*)::int FROM tf_post_comment_reports r WHERE r.comment_id = c.id) AS reports
          FROM tf_post_comments c
          JOIN tf_posts p ON p.id = c.post_id

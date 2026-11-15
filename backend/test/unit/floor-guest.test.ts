@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { UnauthorizedException } from '@nestjs/common';
 
 import {
   guestActor,
@@ -176,7 +177,7 @@ function makeHub() {
       }): Promise<FloorActor | null> => {
         if (accessToken) return userActor(accessToken);
         if (guestToken === GUEST_TOKEN) return guestActor(GUEST_ID);
-        if (guestToken) throw new Error('GUEST_INVALID');
+        if (guestToken) throw new UnauthorizedException({ code: 'GUEST_INVALID' });
         return null;
       },
     } as never,

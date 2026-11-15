@@ -14,7 +14,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
 import { FloorActors, type FloorActor } from './floor-actor.js';
@@ -269,7 +269,13 @@ export class FloorHub {
     let actor: FloorActor | null;
     try {
       actor = await this.actors.resolve({ accessToken: token, guestToken });
-    } catch {
+    } catch (error) {
+      if (!(error instanceof UnauthorizedException)) {
+        // Lỗi máy chủ (cơ sở dữ liệu chập chờn): đóng để client thử lại, không xoá phiên khách.
+        this.error(conn, 'INTERNAL', 'Có lỗi xảy ra, thử lại sau');
+        this.forceClose(conn, 1011, 'auth unavailable');
+        return;
+      }
       actor = null;
     }
     if (!actor) {
@@ -291,7 +297,9 @@ export class FloorHub {
     let sockets = this.byUser.get(userId);
     if (!sockets) this.byUser.set(userId, (sockets = new Set()));
     sockets.add(conn);
-    while (sockets.size > MAX_SOCKETS_PER_USER) {
+    // Khách chỉ giữ một chỗ trên sàn: kết nối mới thay kết nối cũ, không thể nhân bản để chiếm sảnh.
+    const maxSockets = guest ? 1 : MAX_SOCKETS_PER_USER;
+    while (sockets.size > maxSockets) {
       const oldest = sockets.values().next().value as Conn;
       this.forceClose(oldest, CLOSE_TOO_MANY, 'too many connections');
     }

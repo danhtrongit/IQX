@@ -364,7 +364,7 @@ export class PgThanTaiRepository implements ThanTaiRepository {
       db.query<Row>(
         `select t.ticker, count(*)::int as count
            from tf_khan_daily d, unnest(d.ma_cau) as t(ticker)
-          where d.ngay = $1::date and d.ma_cau is not null
+          where d.ngay = $1::date and d.ma_cau is not null and d.actor_key like 'u:%'
           group by t.ticker
           order by count desc, t.ticker asc
           limit $2`,
