@@ -3473,6 +3473,324 @@
           }
         }
       }
+    },
+    "danhtrongit": {
+      "idle": {
+        "s": {
+          "file": "characters/danhtrongit/rest_s@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ]
+        },
+        "se": {
+          "file": "characters/danhtrongit/rest_se@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ]
+        },
+        "e": {
+          "file": "characters/danhtrongit/rest_e@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ]
+        },
+        "ne": {
+          "file": "characters/danhtrongit/rest_ne@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ]
+        },
+        "n": {
+          "file": "characters/danhtrongit/rest_n@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ]
+        },
+        "nw": {
+          "file": "characters/danhtrongit/rest_nw@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ]
+        },
+        "w": {
+          "file": "characters/danhtrongit/rest_w@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ]
+        },
+        "sw": {
+          "file": "characters/danhtrongit/rest_sw@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ]
+        }
+      },
+      "walk": {
+        "s": {
+          "file": "characters/danhtrongit/walk_s@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ],
+          "cell": 384,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "se": {
+          "file": "characters/danhtrongit/walk_se@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ],
+          "cell": 384,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "e": {
+          "file": "characters/danhtrongit/walk_e@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ],
+          "cell": 384,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "ne": {
+          "file": "characters/danhtrongit/walk_ne@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ],
+          "cell": 384,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "n": {
+          "file": "characters/danhtrongit/walk_n@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ],
+          "cell": 384,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "nw": {
+          "file": "characters/danhtrongit/walk_nw@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ],
+          "cell": 384,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "w": {
+          "file": "characters/danhtrongit/walk_w@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ],
+          "cell": 384,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        },
+        "sw": {
+          "file": "characters/danhtrongit/walk_sw@2x.webp",
+          "density": 3,
+          "anchor": [
+            192,
+            342
+          ],
+          "cell": 384,
+          "columns": 8,
+          "frames": 16,
+          "durationsMs": [
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5,
+            62.5
+          ],
+          "speedRef": 115
+        }
+      },
+      "statue": {
+        "file": "characters/danhtrongit/statue_s@2x.webp",
+        "density": 3,
+        "anchor": [
+          192,
+          342
+        ]
+      }
     }
   },
   "props": {

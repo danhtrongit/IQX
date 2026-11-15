@@ -1507,11 +1507,6 @@
       "requestType": "FloorChatInboxData",
       "responseType": "FloorChatInboxResponses"
     },
-    "GET /api/v2/trading-floor/leaderboard": {
-      "operationId": "floorLeaderboard",
-      "requestType": "FloorLeaderboardData",
-      "responseType": "FloorLeaderboardResponses"
-    },
     "GET /api/v2/trading-floor/manage/comment-reports": {
       "operationId": "tradingFloorManageCommentReports",
       "requestType": "TradingFloorManageCommentReportsData",
@@ -1552,6 +1547,16 @@
       "requestType": "FloorManageSacosData",
       "responseType": "FloorManageSacosResponses"
     },
+    "GET /api/v2/trading-floor/manage/than-tai/hanh": {
+      "operationId": "thanTaiAdminHanhList",
+      "requestType": "ThanTaiAdminHanhListData",
+      "responseType": "ThanTaiAdminHanhListResponses"
+    },
+    "GET /api/v2/trading-floor/manage/than-tai/la": {
+      "operationId": "thanTaiAdminLaList",
+      "requestType": "ThanTaiAdminLaListData",
+      "responseType": "ThanTaiAdminLaListResponses"
+    },
     "GET /api/v2/trading-floor/me": {
       "operationId": "floorMe",
       "requestType": "FloorMeData",
@@ -1577,11 +1582,6 @@
       "requestType": "TradingFloorPostsTodayData",
       "responseType": "TradingFloorPostsTodayResponses"
     },
-    "GET /api/v2/trading-floor/ritual/today": {
-      "operationId": "floorRitualToday",
-      "requestType": "FloorRitualTodayData",
-      "responseType": "FloorRitualTodayResponses"
-    },
     "GET /api/v2/trading-floor/saco/comment-reports": {
       "operationId": "tradingFloorSacoCommentReports",
       "requestType": "TradingFloorSacoCommentReportsData",
@@ -1596,6 +1596,16 @@
       "operationId": "tradingFloorSacoPost",
       "requestType": "TradingFloorSacoPostData",
       "responseType": "TradingFloorSacoPostResponses"
+    },
+    "GET /api/v2/trading-floor/than-tai/results": {
+      "operationId": "thanTaiResults",
+      "requestType": "ThanTaiResultsData",
+      "responseType": "ThanTaiResultsResponses"
+    },
+    "GET /api/v2/trading-floor/than-tai/today": {
+      "operationId": "thanTaiToday",
+      "requestType": "ThanTaiTodayData",
+      "responseType": "ThanTaiTodayResponses"
     },
     "GET /api/v2/users": {
       "operationId": "UsersController_list[1]",
@@ -2577,6 +2587,11 @@
       "requestType": "FloorChatOpenData",
       "responseType": "FloorChatOpenResponses"
     },
+    "POST /api/v2/trading-floor/guest": {
+      "operationId": "floorGuestCreate",
+      "requestType": "FloorGuestCreateData",
+      "responseType": "FloorGuestCreateResponses"
+    },
     "POST /api/v2/trading-floor/manage/posts/{id}/hide": {
       "operationId": "tradingFloorManagePostHide",
       "requestType": "TradingFloorManagePostHideData",
@@ -2622,16 +2637,6 @@
       "requestType": "TradingFloorPostCommentReportData",
       "responseType": "TradingFloorPostCommentReportResponses"
     },
-    "POST /api/v2/trading-floor/ritual/draw": {
-      "operationId": "floorRitualDraw",
-      "requestType": "FloorRitualDrawData",
-      "responseType": "FloorRitualDrawResponses"
-    },
-    "POST /api/v2/trading-floor/ritual/submit": {
-      "operationId": "floorRitualSubmit",
-      "requestType": "FloorRitualSubmitData",
-      "responseType": "FloorRitualSubmitResponses"
-    },
     "POST /api/v2/trading-floor/saco/duty": {
       "operationId": "floorSacoDuty",
       "requestType": "FloorSacoDutyData",
@@ -2656,6 +2661,21 @@
       "operationId": "tradingFloorSacoPostPublish",
       "requestType": "TradingFloorSacoPostPublishData",
       "responseType": "TradingFloorSacoPostPublishResponses"
+    },
+    "POST /api/v2/trading-floor/than-tai/cau": {
+      "operationId": "thanTaiCau",
+      "requestType": "ThanTaiCauData",
+      "responseType": "ThanTaiCauResponses"
+    },
+    "POST /api/v2/trading-floor/than-tai/draw": {
+      "operationId": "thanTaiDraw",
+      "requestType": "ThanTaiDrawData",
+      "responseType": "ThanTaiDrawResponses"
+    },
+    "POST /api/v2/trading-floor/than-tai/predict": {
+      "operationId": "thanTaiPredict",
+      "requestType": "ThanTaiPredictData",
+      "responseType": "ThanTaiPredictResponses"
     },
     "POST /api/v2/users": {
       "operationId": "UsersController_create[1]",
@@ -2786,6 +2806,21 @@
       "operationId": "updateStrategySavedFilter",
       "requestType": "UpdateStrategySavedFilterData",
       "responseType": "UpdateStrategySavedFilterResponses"
+    },
+    "PUT /api/v2/trading-floor/manage/than-tai/hanh/{hanh}": {
+      "operationId": "thanTaiAdminHanhUpdate",
+      "requestType": "ThanTaiAdminHanhUpdateData",
+      "responseType": "ThanTaiAdminHanhUpdateResponses"
+    },
+    "PUT /api/v2/trading-floor/manage/than-tai/la/{id}": {
+      "operationId": "thanTaiAdminLaUpdate",
+      "requestType": "ThanTaiAdminLaUpdateData",
+      "responseType": "ThanTaiAdminLaUpdateResponses"
+    },
+    "PUT /api/v2/trading-floor/manage/than-tai/que/{id}": {
+      "operationId": "thanTaiAdminQueUpdate",
+      "requestType": "ThanTaiAdminQueUpdateData",
+      "responseType": "ThanTaiAdminQueUpdateResponses"
     },
     "PUT /api/v2/trading-floor/profile": {
       "operationId": "floorProfileSave",

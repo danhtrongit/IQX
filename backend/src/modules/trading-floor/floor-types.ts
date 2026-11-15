@@ -17,8 +17,14 @@ export const FLOOR_AVATARS = [
   'female03',
   'female04',
   'female05',
+  'danhtrongit',
 ] as const;
 export type FloorAvatarId = (typeof FLOOR_AVATARS)[number];
+
+/** Nhân vật riêng: chỉ tài khoản có username này được mặc (khách và bot không bao giờ). */
+export const FLOOR_RESERVED_AVATARS: Partial<Record<FloorAvatarId, string>> = {
+  danhtrongit: 'danhtrongit',
+};
 
 export const FLOOR_OUTFIT_COLORS = [
   'default',

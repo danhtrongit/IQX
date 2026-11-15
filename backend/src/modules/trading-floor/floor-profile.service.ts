@@ -5,6 +5,7 @@
  */
 
 import {
+  ForbiddenException,
   HttpException,
   Inject,
   Injectable,
@@ -15,7 +16,12 @@ import {
 
 import { DatabaseService } from '../../platform/database/index.js';
 import { hashGuestToken, newGuestToken, type FloorActor } from './floor-actor.js';
-import { GuestCreateLimiter, cleanName, suggestName } from './floor-profile.logic.js';
+import {
+  GuestCreateLimiter,
+  avatarAllowedFor,
+  cleanName,
+  suggestName,
+} from './floor-profile.logic.js';
 import { FLOOR_PROFILE_REPOSITORY, type FloorProfileRepository } from './floor-profile.repository.js';
 import { FloorPresence } from './floor-presence.js';
 import {
@@ -95,6 +101,7 @@ export class FloorProfileService {
     if (!name) throw invalidName();
     const profile: FloorProfile = { name, avatar: input.avatar, color: input.color };
     if (actor.kind === 'guest') {
+      if (!avatarAllowedFor(input.avatar, null)) throw avatarReserved();
       if (!(await this.profiles.updateGuest(this.database, actor.id, profile, now))) {
         throw guestInvalid();
       }
@@ -105,6 +112,7 @@ export class FloorProfileService {
     if (!basics) {
       throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'Không tìm thấy tài khoản' });
     }
+    if (!avatarAllowedFor(input.avatar, basics.username)) throw avatarReserved();
     await this.profiles.upsert(this.database, actor.id, profile, now);
     this.presence.profileChanged(actor.id, profile);
     return profile;
@@ -121,6 +129,7 @@ export class FloorProfileService {
   ): Promise<FloorGuestCreated> {
     const name = cleanName(input.name);
     if (!name) throw invalidName();
+    if (!avatarAllowedFor(input.avatar, null)) throw avatarReserved();
     if (!this.guestLimiter.take(ip || 'unknown', nowMs)) {
       throw new HttpException(
         {
@@ -145,4 +154,10 @@ const guestInvalid = () =>
   new UnauthorizedException({
     code: 'GUEST_INVALID',
     message: 'Phiên khách không hợp lệ, hãy tạo lại nhân vật',
+  });
+
+const avatarReserved = () =>
+  new ForbiddenException({
+    code: 'AVATAR_RESERVED',
+    message: 'Nhân vật này là nhân vật riêng, bạn không dùng được',
   });

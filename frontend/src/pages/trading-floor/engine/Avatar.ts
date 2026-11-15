@@ -14,6 +14,8 @@ export function facingOf(dx: number, dy: number): Facing {
 
 export interface AvatarOptions {
   name: string
+  /** Tag drawn before the name (owner-only avatars). */
+  badge?: string
   /** Small line under the name (role). */
   title?: string
   kind: "self" | "peer" | "npc"
@@ -80,7 +82,8 @@ export class Avatar {
         : opts.kind === "npc"
           ? "#9fd3ff"
           : "#ffffff"
-    const label = opts.title ? `${opts.name}\n${opts.title}` : opts.name
+    const shownName = opts.badge ? `${opts.badge} · ${opts.name}` : opts.name
+    const label = opts.title ? `${shownName}\n${opts.title}` : shownName
     this.tag =
       opts.tag === false
         ? null
