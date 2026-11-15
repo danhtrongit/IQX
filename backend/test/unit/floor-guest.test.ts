@@ -237,6 +237,11 @@ function makeHub() {
     {
       find: async () => ({ name: 'Tài khoản', avatar: 'male01', color: 'default' }),
       findGuest: async (_db: unknown, id: string) => (id === GUEST_ID ? guestProfile : null),
+      userBasics: async (_db: unknown, id: string) => ({
+        id,
+        fullName: '',
+        username: id === 'acct-owner' ? 'Danhtrong.IT' : `user-${id}`,
+      }),
     } as never,
     {
       findByUser: async () => {
@@ -335,6 +340,23 @@ describe('FloorHub guests', () => {
     expect(other.last('peer:state')).toMatchObject({ x: 910, moving: true });
     // Chat chung đã tắt: lời nói công khai không tới ai.
     expect(other.last('peer:emote')).toBeUndefined();
+    await hub.message(other, JSON.stringify({ type: 'emote', text: 'Chào' }));
+    expect(guest.last('peer:emote')).toBeUndefined();
+  });
+
+  it('the owner account still speaks in public and everyone on the floor hears it', async () => {
+    const { hub } = makeHub();
+    stop = () => hub.shutdown();
+    const owner = new FakeSocket();
+    const guest = new FakeSocket();
+    hub.connect(owner);
+    hub.connect(guest);
+    await hub.message(owner, JSON.stringify({ type: 'auth', token: 'acct-owner' }));
+    await hub.message(guest, JSON.stringify({ type: 'auth', guest: GUEST_TOKEN }));
+    await hub.message(owner, HELLO);
+    await hub.message(guest, HELLO);
+    await hub.message(owner, JSON.stringify({ type: 'emote', text: 'Chào cả nhà' }));
+    expect(guest.last('peer:emote')).toMatchObject({ text: 'Chào cả nhà' });
   });
 
   it('dresses a standing guest in the new character when the profile changes', async () => {

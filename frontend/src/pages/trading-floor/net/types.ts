@@ -32,9 +32,21 @@ export const AVATAR_BADGES: Partial<Record<AvatarId, string>> = {
   danhtrongit: "IT",
 }
 
-export function avatarAllowedFor(id: AvatarId, username: string | null | undefined): boolean {
+export function avatarAllowedFor(
+  id: AvatarId,
+  username: string | null | undefined
+): boolean {
   const owners = RESERVED_AVATARS[id]
   return !owners || owners.includes((username ?? "").toLowerCase())
+}
+
+/** Public floor chat is off for everyone but these usernames (mirror of the server's FLOOR_PUBLIC_CHAT_USERS). */
+export const PUBLIC_CHAT_USERS: readonly string[] = ["danhtrong.it"]
+
+export function publicChatAllowedFor(
+  username: string | null | undefined
+): boolean {
+  return PUBLIC_CHAT_USERS.includes((username ?? "").toLowerCase())
 }
 
 export function avatarBadge(id: string): string | undefined {

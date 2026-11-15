@@ -30,6 +30,7 @@ import {
   cleanState,
   FLOOR_EMOTE_MIN_MS,
   FLOOR_TYPING_MIN_MS,
+  publicChatAllowedFor,
   stateGate,
 } from './floor-profile.logic.js';
 import {
@@ -81,6 +82,8 @@ type Conn = {
   userId: string | null;
   /** Khách chưa đăng nhập: không bao giờ là SACO, hồ sơ nằm ở `tf_guests`. */
   guest: boolean;
+  /** Được nói công khai dù chat chung đã tắt (`FLOOR_PUBLIC_CHAT_USERS`); null khi chưa tra username. */
+  publicChat: boolean | null;
   /** Có khi đã `hello`: nhân vật đang đứng trên sàn. */
   peer: FloorPeer | null;
   /** Đã `hello` nhưng sảnh đầy người thật: đang xếp hàng với vị trí mới nhất mình báo. */
@@ -146,6 +149,7 @@ export class FloorHub {
       peerId: randomUUID(),
       userId: null,
       guest: false,
+      publicChat: null,
       peer: null,
       waiting: null,
       windowStartedAt: this.now(),
@@ -247,8 +251,9 @@ export class FloorHub {
           this.onState(conn, message);
           return;
         case 'emote':
-          // Chat chung đã bỏ (chủ sở hữu, 2026-11-15): bỏ qua lời nói công khai từ client.
-          if (FLOOR_PUBLIC_CHAT) this.onEmote(conn, message);
+          // Chat chung đã bỏ (chủ sở hữu, 2026-11-15): bỏ qua lời nói công khai từ client, trừ các
+          // tài khoản trong `FLOOR_PUBLIC_CHAT_USERS`.
+          if (FLOOR_PUBLIC_CHAT || (await this.maySpeak(conn))) this.onEmote(conn, message);
           return;
         case 'chat:typing':
           await this.onTyping(conn, message);
@@ -451,7 +456,18 @@ export class FloorHub {
     const text = cleanEmote(message.text);
     if (!text) return;
     this.toFloor({ type: 'peer:emote', id: conn.peer.id, text });
-    this.bots?.humanSaid(conn.peer, text);
+    // Nhân vật tự động chỉ đáp lời khi chat chung mở cho mọi người.
+    if (FLOOR_PUBLIC_CHAT) this.bots?.humanSaid(conn.peer, text);
+  }
+
+  /** Tài khoản được nói công khai khi chat chung đã tắt; tra username một lần cho mỗi kết nối. */
+  private async maySpeak(conn: Conn): Promise<boolean> {
+    if (conn.guest || !conn.userId) return false;
+    if (conn.publicChat === null) {
+      const basics = await this.profiles.userBasics(this.database, conn.userId);
+      conn.publicChat = publicChatAllowedFor(basics?.username);
+    }
+    return conn.publicChat;
   }
 
   private async onTyping(conn: Conn, message: Record<string, unknown>): Promise<void> {

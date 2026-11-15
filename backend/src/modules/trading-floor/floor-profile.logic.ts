@@ -7,6 +7,7 @@ import {
   FLOOR_AVATARS,
   FLOOR_FACINGS,
   FLOOR_OUTFIT_COLORS,
+  FLOOR_PUBLIC_CHAT_USERS,
   FLOOR_RESERVED_AVATARS,
   type FloorAvatarId,
   type FloorFacing,
@@ -59,6 +60,11 @@ export function cleanAvatar(raw: unknown): FloorAvatarId | null {
 export function avatarAllowedFor(avatar: FloorAvatarId, username: string | null | undefined): boolean {
   const owners = FLOOR_RESERVED_AVATARS[avatar];
   return !owners || (typeof username === 'string' && owners.includes(username.toLowerCase()));
+}
+
+/** Tài khoản còn được nói công khai trên sàn khi chat chung đã tắt; khách (username null) thì không. */
+export function publicChatAllowedFor(username: string | null | undefined): boolean {
+  return typeof username === 'string' && FLOOR_PUBLIC_CHAT_USERS.includes(username.toLowerCase());
 }
 
 export function cleanOutfitColor(raw: unknown): FloorOutfitColorId {

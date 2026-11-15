@@ -27,6 +27,7 @@ import {
   formatPercent,
 } from "../net/market/format.ts"
 import { PRICE_COLORS, indexTone } from "../net/market/tone.ts"
+import { publicChatAllowedFor } from "../net/types.ts"
 import { useStore } from "../use-store.ts"
 import { isTouchDevice, SACO_POSTS_PATH, cx } from "./utils.ts"
 
@@ -38,7 +39,7 @@ const SHORTCUTS: { kind: InteractKind; icon: LucideIcon; label: string }[] = [
 
 export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
   const navigate = useNavigate()
-  const { openAuth } = useAuth()
+  const { openAuth, user } = useAuth()
   const guest = useStore(ui.guest)
   const profile = useStore(ui.profile)
   const online = useStore(ui.online)
@@ -52,6 +53,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
   const sacoUnread = unreadAsSaco(inbox)
   const vn = indices?.find((q) => q.code === "VNINDEX")
   const touch = isTouchDevice()
+  const canChat = !guest && publicChatAllowedFor(user?.username)
 
   return (
     <div className="hud">
@@ -185,7 +187,8 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
 
       {!touch && (
         <p className="help">
-          Nhấn chuột để đi · WASD/mũi tên · E để mở · cuộn để phóng to
+          Nhấn chuột để đi · WASD/mũi tên · E để mở ·{" "}
+          {canChat && "Enter để chat · "}cuộn để phóng to
         </p>
       )}
     </div>

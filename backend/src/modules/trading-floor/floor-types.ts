@@ -27,6 +27,12 @@ export const FLOOR_RESERVED_AVATARS: Partial<Record<FloorAvatarId, readonly stri
   danhtrongit: ['danhtrongit', 'danhtrong.it'],
 };
 
+/**
+ * Chat chung trên sàn đã tắt cho mọi người (`FLOOR_PUBLIC_CHAT`); riêng các username này vẫn nói được
+ * và mọi người trên sàn đều thấy (chủ sở hữu, 2026-11-15).
+ */
+export const FLOOR_PUBLIC_CHAT_USERS: readonly string[] = ['danhtrong.it'];
+
 export const FLOOR_OUTFIT_COLORS = [
   'default',
   'navy',
