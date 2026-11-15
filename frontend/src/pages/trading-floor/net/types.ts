@@ -89,7 +89,7 @@ export interface MeResponse {
   /** Prefill for the join card (empty for a guest). */
   suggestedName: string
   saco: SacoSelf | null
-  /** The visitor is not signed in: a guest character with no SACO, chat or ritual. */
+  /** The visitor is not signed in: a guest character with no SACO rights. */
   guest: boolean
 }
 
