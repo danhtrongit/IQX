@@ -217,8 +217,8 @@ export function JoinScreen({
           </p>
         ) : (
           <p className="muted">
-            Văn phòng ảo của IQX: đọc nhận định SACO, chat với SACO, xin quẻ
-            Thần Tài và đua top dự đoán VNINDEX.
+            Văn phòng ảo của IQX: đọc nhận định SACO, chat với SACO và khấn
+            Thần Tài gieo quẻ mỗi sáng.
           </p>
         )}
 

@@ -53,6 +53,7 @@ describe('avatarAllowedFor', () => {
     expect(avatarAllowedFor('male01', null)).toBe(true);
     expect(avatarAllowedFor('danhtrongit', 'danhtrongit')).toBe(true);
     expect(avatarAllowedFor('danhtrongit', 'DanhTrongIT')).toBe(true);
+    expect(avatarAllowedFor('danhtrongit', 'danhtrong.it')).toBe(true);
     expect(avatarAllowedFor('danhtrongit', 'someone')).toBe(false);
     expect(avatarAllowedFor('danhtrongit', null)).toBe(false);
     expect(avatarAllowedFor('danhtrongit', '')).toBe(false);

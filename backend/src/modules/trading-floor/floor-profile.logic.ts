@@ -57,8 +57,8 @@ export function cleanAvatar(raw: unknown): FloorAvatarId | null {
 
 /** Nhân vật riêng chỉ dành cho đúng username chủ; khách (username null) không được mặc. */
 export function avatarAllowedFor(avatar: FloorAvatarId, username: string | null | undefined): boolean {
-  const owner = FLOOR_RESERVED_AVATARS[avatar];
-  return !owner || (typeof username === 'string' && username.toLowerCase() === owner);
+  const owners = FLOOR_RESERVED_AVATARS[avatar];
+  return !owners || (typeof username === 'string' && owners.includes(username.toLowerCase()));
 }
 
 export function cleanOutfitColor(raw: unknown): FloorOutfitColorId {

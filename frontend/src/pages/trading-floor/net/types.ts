@@ -22,8 +22,9 @@ export type AvatarGender = (typeof AVATARS)[number]["gender"]
 export type AvatarId = (typeof AVATARS)[number]["id"]
 
 /** Owner-only avatars: the account username allowed to wear each (the server enforces the same rule). */
-export const RESERVED_AVATARS: Partial<Record<AvatarId, string>> = {
-  danhtrongit: "danhtrongit",
+export const RESERVED_AVATARS: Partial<Record<AvatarId, readonly string[]>> = {
+  // Both accounts of the owner.
+  danhtrongit: ["danhtrongit", "danhtrong.it"],
 }
 
 /** Tag shown before the name of whoever wears the avatar. */
@@ -32,8 +33,8 @@ export const AVATAR_BADGES: Partial<Record<AvatarId, string>> = {
 }
 
 export function avatarAllowedFor(id: AvatarId, username: string | null | undefined): boolean {
-  const owner = RESERVED_AVATARS[id]
-  return !owner || (username ?? "").toLowerCase() === owner
+  const owners = RESERVED_AVATARS[id]
+  return !owners || owners.includes((username ?? "").toLowerCase())
 }
 
 export function avatarBadge(id: string): string | undefined {
