@@ -42,7 +42,6 @@ export async function toggleHeart(
 
 /** Mở chat có sẵn với đúng SACO tác giả và đóng bảng trượt; người dùng vẫn ở khu giao dịch. */
 export function messageSaco(sacoId: string): void {
-  if (needLogin("Đăng nhập để nhắn SACO")) return
   closePosts()
   void openDirectChat(sacoId)
 }

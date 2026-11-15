@@ -44,6 +44,9 @@ export class Avatar {
   private art: CharacterArt
   private readonly shadow: Phaser.GameObjects.Image
   private readonly tag: Phaser.GameObjects.Text | null
+  private badgeBg: Phaser.GameObjects.Graphics | null = null
+  private badgeText: Phaser.GameObjects.Text | null = null
+  private badgeW = 0
   private readonly height: number
   private readonly bubbleSide: "above" | "right"
   private bubble: Phaser.GameObjects.Text | null = null
@@ -82,8 +85,7 @@ export class Avatar {
         : opts.kind === "npc"
           ? "#9fd3ff"
           : "#ffffff"
-    const shownName = opts.badge ? `${opts.badge} · ${opts.name}` : opts.name
-    const label = opts.title ? `${shownName}\n${opts.title}` : shownName
+    const label = opts.title ? `${opts.name}\n${opts.title}` : opts.name
     this.tag =
       opts.tag === false
         ? null
@@ -99,6 +101,7 @@ export class Avatar {
               resolution: 3,
             })
             .setOrigin(0.5, 1)
+    if (this.tag && opts.badge) this.makeBadge(scene, opts.badge)
     this.refresh()
     this.place()
   }
@@ -191,6 +194,35 @@ export class Avatar {
     this.sprite.destroy()
     this.shadow.destroy()
     this.tag?.destroy()
+    this.badgeBg?.destroy()
+    this.badgeText?.destroy()
+  }
+
+  /** Short pill badge (e.g. "IT") drawn just left of the name tag, gold with a soft glow. */
+  private makeBadge(scene: Phaser.Scene, text: string): void {
+    const label = scene.add
+      .text(0, 0, text, {
+        fontFamily: '"Be Vietnam Pro", system-ui, sans-serif',
+        fontSize: "11px",
+        fontStyle: "800",
+        color: "#2a1a02",
+        resolution: 3,
+      })
+      .setOrigin(0.5, 0.5)
+    const w = Math.ceil(label.width) + 12
+    const h = 17
+    const g = scene.add.graphics()
+    g.fillStyle(0xffc83d, 0.28)
+    g.fillRoundedRect(-w / 2 - 2, -h / 2 - 2, w + 4, h + 4, (h + 4) / 2)
+    g.fillStyle(0xf5b81c, 1)
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+    g.fillStyle(0xffe58a, 1)
+    g.fillRoundedRect(-w / 2 + 2, -h / 2 + 1.5, w - 4, h / 2 - 1.5, (h / 2 - 1.5) / 2)
+    g.lineStyle(1, 0xfff3c4, 0.95)
+    g.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+    this.badgeBg = g
+    this.badgeText = label
+    this.badgeW = w
   }
 
   private place(): void {
@@ -199,7 +231,20 @@ export class Avatar {
       : 0
     this.sprite.setPosition(this.x, this.y - lift).setDepth(this.y)
     this.shadow.setPosition(this.x, this.y - 1).setDepth(this.y - 0.5)
-    this.tag?.setPosition(this.x, this.headY).setDepth(DEPTH_LABEL + this.y)
+    if (this.tag && this.badgeBg && this.badgeText) {
+      const gap = 4
+      const left = this.x - (this.badgeW + gap + this.tag.width) / 2
+      const bx = left + this.badgeW / 2
+      // Level with the first line of the name tag (13px text + 2px padding).
+      const by = this.headY - this.tag.height + 11
+      this.tag
+        .setPosition(left + this.badgeW + gap + this.tag.width / 2, this.headY)
+        .setDepth(DEPTH_LABEL + this.y)
+      this.badgeBg.setPosition(bx, by).setDepth(DEPTH_LABEL + this.y)
+      this.badgeText.setPosition(bx, by + 0.5).setDepth(DEPTH_LABEL + this.y + 0.1)
+    } else {
+      this.tag?.setPosition(this.x, this.headY).setDepth(DEPTH_LABEL + this.y)
+    }
     this.bubble
       ?.setPosition(...this.bubbleAt())
       .setDepth(DEPTH_LABEL + this.y + 1)

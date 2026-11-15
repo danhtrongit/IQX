@@ -29,7 +29,7 @@ export const RESERVED_AVATARS: Partial<Record<AvatarId, readonly string[]>> = {
 
 /** Tag shown before the name of whoever wears the avatar. */
 export const AVATAR_BADGES: Partial<Record<AvatarId, string>> = {
-  danhtrongit: "IT ngầu ngầu nhìn bảnh tỏn",
+  danhtrongit: "IT",
 }
 
 export function avatarAllowedFor(id: AvatarId, username: string | null | undefined): boolean {
@@ -89,7 +89,7 @@ export interface MeResponse {
   /** Prefill for the join card (empty for a guest). */
   suggestedName: string
   saco: SacoSelf | null
-  /** The visitor is not signed in: a guest character with no SACO, chat or ritual. */
+  /** The visitor is not signed in: a guest character with no SACO rights. */
   guest: boolean
 }
 

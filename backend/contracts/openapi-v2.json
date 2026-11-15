@@ -176279,16 +176279,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -176320,16 +176310,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Một cuộc trò chuyện với tin nhắn gần nhất và mốc đã xem của bên kia",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -176381,16 +176367,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -176422,16 +176398,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Đánh dấu đã xem cuộc trò chuyện",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -176519,16 +176491,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -176560,16 +176522,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Gửi một tin nhắn",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -176815,16 +176773,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -176856,16 +176804,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Hộp thư: cuộc chat của tôi với SACO, cuộc chat của tôi nếu tôi là SACO, SACO khớp",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -177043,16 +176987,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -177084,16 +177018,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Chat SACO: trả cuộc chat với SACO khớp nếu có, ngược lại bắt đầu tìm (tiến trình qua WebSocket chat:match)",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -177134,16 +177064,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -177175,16 +177095,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Huỷ lượt tìm SACO đang chạy",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -177310,16 +177226,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -177351,16 +177257,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Nhắn SACO: mở (hoặc dùng lại) cuộc chat trực tiếp với một SACO",
         "tags": [
           "Khu giao dịch"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -189522,10 +189424,10 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 692,
+    "authenticatedOperations": 685,
     "noContentResponses": 18,
     "operations": 916,
-    "publicOperations": 224,
+    "publicOperations": 231,
     "responseSchemas": 898,
     "untypedResponses": 0
   }

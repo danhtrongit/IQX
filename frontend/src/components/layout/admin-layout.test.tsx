@@ -231,7 +231,7 @@ describe("AdminLayout by role", () => {
     expect(screen.getByRole("status", { name: "Đang xác minh quyền truy cập" })).toBeTruthy()
   })
 
-  it("gives admins and team leads the SACO management entry, never asking the SACO check", async () => {
+  it("gives admins and team leads the SACO management entry", async () => {
     mocks.auth = authAs({ id: "admin-1", role: "admin", full_name: "Admin", username: "admin" })
     renderAt("/admin/saco")
     expect(screen.getByText("Trang quản lý SACO")).toBeTruthy()
@@ -245,8 +245,22 @@ describe("AdminLayout by role", () => {
     expect(lead.state.location.pathname).toBe("/admin/saco")
     nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
     expect(within(nav).getAllByRole("link").map((link) => link.textContent)).toEqual(["Tổng quan", "Người dùng", "SACO"])
-    expect(mocks.sacoEnabled.every((enabled) => !enabled)).toBe(true)
     await screen.findByText("lan.nguyen")
+  })
+
+  it("adds the own-posts links for a team lead who is also a SACO and lets them open the editor", () => {
+    mocks.saco = { isPending: false, data: { saco: { id: "s-1", active: true } } }
+    mocks.auth = authAs({ id: "lead-2", role: "team_lead", full_name: "Lê Huy", username: "lehuy" })
+    const lead = renderAt("/admin/saco/posts/new")
+    expect(lead.state.location.pathname).toBe("/admin/saco/posts/new")
+    const nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
+    expect(within(nav).getAllByRole("link").map((link) => link.textContent)).toEqual([
+      "Tổng quan",
+      "Người dùng",
+      "SACO",
+      "Bài của tôi",
+      "Viết bài mới",
+    ])
   })
 
   it("blocks a premium user", () => {

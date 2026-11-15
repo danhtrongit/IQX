@@ -753,4 +753,136 @@ describe('system acceptance: Khu giao dịch', () => {
     );
     expect(audit).toHaveLength(1);
   });
+
+  it('khách chat với SACO như tài khoản: nhắn trực tiếp, hộp thư, Chat SACO qua socket, chỉ phần SACO là của tài khoản', async () => {
+    const guestCall = (token: string, method: string, path: string, payload?: unknown) =>
+      app.inject({
+        method: method as 'GET',
+        url: `${BASE}${path}`,
+        headers: { 'x-floor-guest': token },
+        ...(payload === undefined ? {} : { payload: payload as Json }),
+      });
+    const guestOk = async (
+      token: string,
+      method: string,
+      path: string,
+      payload?: unknown,
+    ): Promise<Body> => {
+      const response = await guestCall(token, method, path, payload);
+      expect(response.statusCode, `${method} ${path}: ${response.body}`).toBe(200);
+      return response.json();
+    };
+    const newGuest = async (name: string): Promise<string> => {
+      const created = await call(null, 'POST', '/guest', { name, avatar: 'female01', color: 'default' });
+      expect(created.statusCode, created.body).toBe(200);
+      return (created.json() as { token: string }).token;
+    };
+
+    const token = await newGuest('Khách Chat');
+    const other = await newGuest('Khách Khác');
+
+    // Không có danh tính (cả tài khoản lẫn khách) thì vẫn là 401; phần SACO không mở cho khách.
+    expect((await call(null, 'GET', '/chat/inbox')).statusCode).toBe(401);
+    expect((await call(null, 'POST', '/chat/open', { sacoId: sacoA })).statusCode).toBe(401);
+    expect((await guestCall(token, 'POST', '/saco/duty', { on: true })).statusCode).toBe(401);
+    expect((await guestCall(token, 'POST', '/chat/invites/1', { accept: true })).statusCode).toBe(401);
+    expect((await guestCall('x'.repeat(43), 'GET', '/chat/inbox')).statusCode).toBe(401);
+
+    // Nhắn SACO: mở cuộc chat trực tiếp, dùng lại cuộc cũ, gửi tin.
+    const conv = await guestOk(token, 'POST', '/chat/open', { sacoId: sacoA });
+    expect(conv).toMatchObject({ side: 'user', peerName: 'Sư Tử Vàng', matched: false, writable: true, unread: 0 });
+    expect((await guestOk(token, 'POST', '/chat/open', { sacoId: sacoA })).id).toBe(conv.id);
+    const sent = await guestOk(token, 'POST', `/chat/convs/${conv.id}/send`, { text: '  Chào SACO, mình là khách  ' });
+    expect(sent).toMatchObject({ from: 'u', text: 'Chào SACO, mình là khách' });
+    const fast = await guestCall(token, 'POST', `/chat/convs/${conv.id}/send`, { text: 'quá nhanh' });
+    expect(fast.statusCode).toBe(429);
+    expect(errorOf(fast)).toBe('SEND_TOO_FAST');
+    const guestInbox = await guestOk(token, 'GET', '/chat/inbox');
+    expect(guestInbox.saco).toBeNull();
+    expect(guestInbox.asSaco).toEqual([]);
+    expect(guestInbox.asUser.map((c: Body) => c.id)).toEqual([conv.id]);
+
+    // SACO thấy tin trong hộp thư, đúng tên khách và có dấu khách; người ngoài cuộc không đọc được.
+    const inbox = await ok(memberA, 'GET', '/chat/inbox');
+    const entry = inbox.asSaco.find((c: Body) => c.id === conv.id);
+    expect(entry).toMatchObject({ side: 'saco', peerName: 'Khách Chat (khách)', unread: 1 });
+    expect(entry.last).toMatchObject({ from: 'u', text: 'Chào SACO, mình là khách' });
+    expect((await guestCall(other, 'GET', `/chat/convs/${conv.id}`)).statusCode).toBe(404);
+    expect((await guestCall(other, 'POST', `/chat/convs/${conv.id}/send`, { text: 'chen ngang' })).statusCode).toBe(404);
+    expect((await call(outsider, 'GET', `/chat/convs/${conv.id}`)).statusCode).toBe(404);
+
+    // Trưởng nhóm xem được lịch sử, tên khách có dấu khách và không lỗi dù không có tài khoản.
+    const staff = await ok(lead, 'GET', '/manage/convs');
+    expect(staff.items.find((item: Body) => item.id === conv.id)).toMatchObject({
+      userName: 'Khách Chat (khách)',
+      sacoName: 'Sư Tử Vàng',
+    });
+    expect((await ok(lead, 'GET', `/manage/convs/${conv.id}`)).userName).toBe('Khách Chat (khách)');
+
+    // SACO trả lời; khách đọc, đánh dấu đã xem.
+    await sleep(300);
+    expect((await ok(memberA, 'POST', `/chat/convs/${conv.id}/send`, { text: 'Chào bạn, mình nghe đây' })).from).toBe('s');
+    const seen = await guestOk(token, 'GET', `/chat/convs/${conv.id}`);
+    expect(seen.messages.map((m: Body) => m.text)).toEqual(['Chào SACO, mình là khách', 'Chào bạn, mình nghe đây']);
+    expect(seen).toMatchObject({ unread: 1, writable: true });
+    expect(seen.peerReadAt).toBeGreaterThan(0);
+    await guestOk(token, 'POST', `/chat/convs/${conv.id}/read`);
+    expect((await guestOk(token, 'GET', '/chat/inbox')).asUser[0].unread).toBe(0);
+
+    // Thời gian thực: socket khách và socket SACO nhận tin, "đang soạn", "đã xem", và khách hiện online.
+    const sacoSocket = await authed(memberA);
+    const guestSocket = await connect(`guest:${token}`);
+    await waitFor(guestSocket, (m) => m.type === 'ready' && m.guest === true, 'ready của khách');
+    expect((await ok(memberA, 'GET', '/chat/inbox')).asSaco.find((c: Body) => c.id === conv.id).online).toBe(true);
+    send(guestSocket, { type: 'chat:typing', convId: conv.id });
+    await waitFor(sacoSocket, (m) => m.type === 'chat:typing' && m.convId === conv.id && m.side === 'user', 'khách đang soạn');
+    await sleep(300);
+    await guestOk(token, 'POST', `/chat/convs/${conv.id}/send`, { text: 'Cho mình hỏi về VCB' });
+    await waitFor(sacoSocket, (m) => m.type === 'chat:msg' && m.message?.text === 'Cho mình hỏi về VCB', 'tin của khách tới SACO');
+    await waitFor(guestSocket, (m) => m.type === 'chat:msg' && m.message?.text === 'Cho mình hỏi về VCB', 'tin của khách tới chính khách');
+    send(sacoSocket, { type: 'chat:typing', convId: conv.id });
+    await waitFor(guestSocket, (m) => m.type === 'chat:typing' && m.convId === conv.id && m.side === 'saco', 'SACO đang soạn');
+    await ok(memberA, 'POST', `/chat/convs/${conv.id}/read`);
+    await waitFor(guestSocket, (m) => m.type === 'chat:read' && m.convId === conv.id && m.side === 'saco', 'chat:read tới khách');
+    await sleep(300);
+    await ok(memberA, 'POST', `/chat/convs/${conv.id}/send`, { text: 'VCB đang tích luỹ' });
+    await waitFor(guestSocket, (m) => m.type === 'chat:msg' && m.message?.text === 'VCB đang tích luỹ', 'tin của SACO tới khách');
+    expect(guestSocket.messages.some((m) => m.type === 'error')).toBe(false);
+
+    // Chat SACO: khách được hỏi như tài khoản; SACO đồng ý thì khớp và nhận sự kiện qua socket khách.
+    await ok(memberA, 'POST', '/saco/duty', { on: true });
+    expect(await guestOk(token, 'POST', '/chat/match')).toEqual({ running: true });
+    expect(await guestOk(token, 'POST', '/chat/match')).toEqual({ running: true });
+    const invite = await waitFor(sacoSocket, (m) => m.type === 'chat:invite' && m.invite.userName === 'Khách Chat (khách)', 'lời mời của khách');
+    await waitFor(guestSocket, (m) => m.type === 'chat:match' && m.event.state === 'asking', 'asking tới khách');
+    await ok(memberA, 'POST', `/chat/invites/${invite.invite.id}`, { accept: true });
+    const matched = await waitFor(guestSocket, (m) => m.type === 'chat:match' && m.event.state === 'matched', 'matched tới khách');
+    expect(matched.event.convId).toBe(conv.id);
+    expect((await guestOk(token, 'GET', '/chat/inbox')).matchedConvId).toBe(conv.id);
+    expect(await guestOk(token, 'POST', '/chat/match')).toEqual({ convId: conv.id });
+
+    // Huỷ lượt tìm bằng REST, rồi đóng socket khách giữa lượt cũng là huỷ.
+    const second = await newGuest('Khách Hai');
+    const secondSocket = await connect(`guest:${second}`);
+    await waitFor(secondSocket, (m) => m.type === 'ready', 'ready của khách hai');
+    const before = sacoSocket.messages.length;
+    expect(await guestOk(second, 'POST', '/chat/match')).toEqual({ running: true });
+    await until(() => sacoSocket.messages.slice(before).some((m) => m.type === 'chat:invite'), 'lời mời của khách hai');
+    secondSocket.socket.close();
+    await until(() => sacoSocket.messages.slice(before).some((m) => m.type === 'chat:invite:end'), 'thu hồi khi khách hai mất socket');
+    expect(await guestOk(second, 'POST', '/chat/match/cancel')).toEqual({ ok: true });
+
+    // Nhật ký lời mời của trưởng nhóm có dòng của khách, ghi bằng cột guest_id.
+    const logged = await stack.query<{ guest_id: string | null; user_id: string | null }>(
+      'select guest_id, user_id from tf_chat_invites where guest_id is not null',
+    );
+    expect(logged.length).toBeGreaterThanOrEqual(2);
+    expect(logged.every((row) => row.user_id === null)).toBe(true);
+    const staffInvites = await ok(lead, 'GET', '/manage/invites?limit=50');
+    expect(staffInvites.items.some((item: Body) => item.userName === 'Khách Chat (khách)' && item.result === 'accept')).toBe(true);
+
+    await ok(memberA, 'POST', '/saco/duty', { on: false });
+    guestSocket.socket.close();
+  });
 });
+

@@ -354,7 +354,7 @@ export function JoinScreen({
             >
               Đăng nhập
             </button>{" "}
-            để chat với SACO, thả tim và bình luận nhận định.
+            để thả tim và bình luận nhận định.
           </p>
         )}
       </form>

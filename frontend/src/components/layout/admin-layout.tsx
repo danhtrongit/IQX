@@ -120,14 +120,15 @@ export function TeamCodeCard() {
   </section>
 }
 
-function AdminNavigation({ scope, onNavigate }: { scope: AdminScope; onNavigate?: () => void }) {
-  const groups = NAV_GROUPS[scope]
+function AdminNavigation({ scope, onNavigate, alsoSaco }: { scope: AdminScope; onNavigate?: () => void; alsoSaco?: boolean }) {
+  // Admin hay trưởng nhóm đồng thời là SACO thấy thêm nhóm bài nhận định của mình.
+  const groups = alsoSaco && scope !== "saco" ? [...NAV_GROUPS[scope], ...sacoGroups] : NAV_GROUPS[scope]
   return <nav aria-label="Điều hướng quản trị" className="space-y-5 p-3">
     {groups.map(group => <div key={group.label}>
       <p className="mb-1 px-3 text-xs font-medium text-muted-foreground">{group.label}</p>
       <ul className="space-y-1">
         {group.items.map(({ to, label, icon: Icon }) => <li key={to}>
-          <NavLink to={to} end={to === "/admin" || scope === "saco"} onClick={onNavigate} className={({ isActive }) => cn("flex min-h-10 items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring", isActive ? "bg-primary/10 font-semibold text-primary" : "text-muted-foreground hover:text-foreground")}>
+          <NavLink to={to} end={to === "/admin" || to.startsWith("/admin/saco/posts")} onClick={onNavigate} className={({ isActive }) => cn("flex min-h-10 items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring", isActive ? "bg-primary/10 font-semibold text-primary" : "text-muted-foreground hover:text-foreground")}>
             <Icon aria-hidden="true" className="size-4 shrink-0" />{label}
           </NavLink>
         </li>)}
@@ -136,9 +137,9 @@ function AdminNavigation({ scope, onNavigate }: { scope: AdminScope; onNavigate?
   </nav>
 }
 
-function NavigationBody({ scope, onNavigate }: { scope: AdminScope; onNavigate?: () => void }) {
+function NavigationBody({ scope, onNavigate, alsoSaco }: { scope: AdminScope; onNavigate?: () => void; alsoSaco?: boolean }) {
   return <>
-    <AdminNavigation scope={scope} onNavigate={onNavigate} />
+    <AdminNavigation scope={scope} onNavigate={onNavigate} alsoSaco={alsoSaco} />
     {scope === "team" && <TeamCodeCard />}
   </>
 }
@@ -149,7 +150,8 @@ export function AdminLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const roleScope = adminScopeForRole(auth.user?.role)
-  const sacoSelf = useSacoSelf(!auth.isLoading && !roleScope)
+  const sacoSelf = useSacoSelf(!auth.isLoading && !!auth.user)
+  const alsoSaco = !!roleScope && !!sacoSelf.data?.saco?.active
   const sacoAccess = auth.user && !roleScope ? { pending: sacoSelf.isPending, active: !!sacoSelf.data?.saco?.active } : undefined
   const { state: access, scope } = getAdminAccess(auth, sacoAccess)
   if (access === "loading") return <WorkspacePage title="Quản trị"><div role="status" aria-label="Đang xác minh quyền truy cập" className="space-y-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-64 w-full" /></div></WorkspacePage>
@@ -157,7 +159,7 @@ export function AdminLayout() {
   if (access === "unauthenticated") return <WorkspacePage title="Khu vực quản trị"><PanelState title="Đăng nhập để tiếp tục" description="Khu vực này chỉ dành cho tài khoản quản trị, trưởng nhóm và SACO của IQX. Đường dẫn hiện tại sẽ được giữ sau khi đăng nhập." action={{ label: "Đăng nhập", onClick: () => auth.openAuth() }} /></WorkspacePage>
   if (access === "forbidden" || !scope) return <WorkspacePage title="Không có quyền truy cập" description="Tài khoản hiện tại không có quyền quản trị."><PanelState title="Quyền quản trị là bắt buộc" description="Dữ liệu và thao tác quản trị được kiểm tra quyền trên máy chủ." /><Button asChild variant="outline"><NavLink to="/demo-trading">Trở về Demo Trading</NavLink></Button></WorkspacePage>
   // Trưởng nhóm chỉ vào được Tổng quan và Người dùng; mọi trang khác quay về /admin.
-  if (scope === "team" && !isTeamAdminPath(location.pathname)) return <Navigate replace to="/admin" />
+  if (scope === "team" && !isTeamAdminPath(location.pathname) && !(alsoSaco && isSacoAdminPath(location.pathname))) return <Navigate replace to="/admin" />
   // SACO chỉ có Bài của tôi và trình soạn bài; mọi trang khác quay về Bài của tôi.
   if (scope === "saco" && !isSacoAdminPath(location.pathname)) return <Navigate replace to={adminHomePath("saco")} />
 
@@ -170,7 +172,7 @@ export function AdminLayout() {
         <BrainWaveLogo size="xs" aria-hidden="true" />
         <span>{copy.title}</span>
       </div>
-      <ScrollArea className="min-h-0 flex-1"><NavigationBody scope={scope} /></ScrollArea>
+      <ScrollArea className="min-h-0 flex-1"><NavigationBody scope={scope} alsoSaco={alsoSaco} /></ScrollArea>
     </aside>
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className={cn("flex h-12 shrink-0 items-center gap-2 border-b border-border bg-card px-3", scope === "admin" && "md:hidden")}>
@@ -184,7 +186,7 @@ export function AdminLayout() {
               </div>
               <SheetDescription>{copy.description}</SheetDescription>
             </SheetHeader>
-            <ScrollArea className="min-h-0 flex-1"><NavigationBody scope={scope} onNavigate={() => setMenuOpen(false)} /></ScrollArea>
+            <ScrollArea className="min-h-0 flex-1"><NavigationBody scope={scope} alsoSaco={alsoSaco} onNavigate={() => setMenuOpen(false)} /></ScrollArea>
           </SheetContent>
         </Sheet>
         {SCOPE_BADGE[scope] && <div className="ml-auto flex min-w-0 items-center gap-2" data-testid="admin-identity">

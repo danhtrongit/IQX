@@ -44,6 +44,20 @@ export const guestActor = (guestId: string): FloorActor => ({
 
 export const isGuestKey = (key: string): boolean => key.startsWith('g:');
 
+/**
+ * Chủ của một cuộc chat với SACO: uuid thô của tài khoản, hoặc `g:<uuid khách>`. Cùng quy ước với
+ * `conn.userId` của `FloorHub`, nên `FloorEvents.toUser(ownerId)` tới đúng socket cả với khách.
+ */
+export const ownerIdOf = (actor: FloorActor): string => actor.userId ?? actor.key;
+
+/** Tách chủ cuộc chat thành cột `user_id` (tài khoản) hoặc `guest_id` (khách); đúng một trong hai có giá trị. */
+export const splitOwner = (
+  ownerId: string,
+): { userId: string | null; guestId: string | null } =>
+  isGuestKey(ownerId)
+    ? { userId: null, guestId: ownerId.slice(2) }
+    : { userId: ownerId, guestId: null };
+
 export const hashGuestToken = (token: string): string =>
   createHash('sha256').update(token, 'utf8').digest('hex');
 

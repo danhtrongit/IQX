@@ -448,3 +448,6 @@ export function route(rand: Rand): Array<{ x: number; y: number }> {
 const FACINGS = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne'] as const;
 export const facingOf = (dx: number, dy: number): (typeof FACINGS)[number] =>
   FACINGS[((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8]!;
+
+/** Chat chung trên sàn (lời nói công khai của người và nhân vật tự động). Tắt từ 2026-11-15. */
+export const FLOOR_PUBLIC_CHAT = false as boolean;
