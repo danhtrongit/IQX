@@ -13,6 +13,7 @@ import type {
   Profile,
   SacoSelf,
   StartResult,
+  ThanTaiLeaderboard,
   ThanTaiResults,
   ThanTaiToday,
 } from "./types.ts"
@@ -88,5 +89,10 @@ export const floorApi = {
     cau: (tickers: string[]) =>
       send<ThanTaiToday>("POST", "/than-tai/cau", { tickers }),
     results: () => read<ThanTaiResults>("/than-tai/results"),
+    /** Monthly hall of fame; `month` is `YYYY-MM`, omitted = this month. Public. */
+    leaderboard: (month?: string) =>
+      read<ThanTaiLeaderboard>(
+        `/than-tai/leaderboard${month ? `?month=${id(month)}` : ""}`
+      ),
   },
 }

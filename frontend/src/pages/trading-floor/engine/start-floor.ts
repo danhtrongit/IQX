@@ -1,5 +1,5 @@
 /**
- * Starts the whole floor inside `container`: market polling, chat, the socket and the Phaser
+ * Starts the whole floor inside `container`: market polling, chat, the hall of fame, the socket and the Phaser
  * game. Returns the function that tears all of it down (destroys the game, closes the socket, stops
  * every timer), so leaving the page and coming back, or React StrictMode's double mount, starts clean.
  *
@@ -10,6 +10,7 @@ import * as Phaser from "phaser"
 
 import { floorSocket } from "../net/socket.ts"
 import { startChat } from "../net/chat.ts"
+import { startLeaderboard } from "../net/leaderboard.ts"
 import { startMarket } from "../net/market.ts"
 import {
   liteDevice,
@@ -44,6 +45,7 @@ export function startFloor(
 
   const stopMarket = startMarket()
   const stopChat = startChat()
+  const stopLeaderboard = startLeaderboard()
   floorSocket.start()
 
   const lite = liteDevice()
@@ -99,6 +101,7 @@ export function startFloor(
     if (onWindowResize) window.removeEventListener("resize", onWindowResize)
     scene?.dispose()
     stopChat()
+    stopLeaderboard()
     stopMarket()
     floorSocket.stop()
     game?.destroy(true)

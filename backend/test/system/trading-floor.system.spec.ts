@@ -433,6 +433,99 @@ describe('system acceptance: Khu giao dịch', () => {
     setClock('2026-11-12T03:00:00Z');
   });
 
+  it('Thần Tài: bảng vinh danh tháng chỉ chấm ngày đã có giá đóng cửa, chỉ xếp tài khoản có hồ sơ', async () => {
+    const board = (session: Session | null, query = '?month=2026-11') =>
+      ok(session, 'GET', `/than-tai/leaderboard${query}`);
+    try {
+      // Nến VNINDEX: 02/11 +10 (tăng), 03/11 0 (đi ngang), 04/11 -10 (giảm), 05/11 +5 (tăng), 12/11 +15
+      // (hôm nay). 09/11 không có nến (nghỉ). Nến 30/10 là tham chiếu của 02/11.
+      await stack.query('delete from market_index_bars');
+      await stack.query(
+        `insert into market_index_bars (symbol, trade_date, open, high, low, close, volume) values
+           ('VNINDEX', '2026-10-30', 1700, 1700, 1700, 1700, 1),
+           ('VNINDEX', '2026-11-02', 1710, 1710, 1710, 1710, 1),
+           ('VNINDEX', '2026-11-03', 1710, 1710, 1710, 1710, 1),
+           ('VNINDEX', '2026-11-04', 1700, 1700, 1700, 1700, 1),
+           ('VNINDEX', '2026-11-05', 1705, 1705, 1705, 1705, 1),
+           ('VNINDEX', '2026-11-12', 1720, 1720, 1720, 1720, 1)`,
+      );
+      const created = await call(null, 'POST', '/guest', {
+        name: 'Khách Bảng',
+        avatar: 'female01',
+        color: 'default',
+      });
+      const guestToken = (created.json() as { token: string }).token;
+      const [guestRow] = await stack.query<{ id: string }>(
+        `select id from tf_guests where display_name = 'Khách Bảng'`,
+      );
+      const [la] = await stack.query<{ id: number }>('select id from tf_kd_la order by id limit 1');
+      await stack.query('delete from tf_khan_daily');
+      const calls: Array<[string, ...string[]]> = [
+        // u1 đoán đúng cả bốn ngày đã chốt; 09/11 (không có nến) và 12/11 (chưa 15:00) chưa chấm.
+        [`u:${u1.id}`, 'up', 'flat', 'down', 'up', 'up', 'up'],
+        [`u:${u2.id}`, 'up', 'up', 'down', 'down'],
+        [`u:${u3.id}`, 'up'],
+        // Khách và tài khoản chưa có hồ sơ trên sàn không được xếp hạng.
+        [`g:${guestRow!.id}`, 'up', 'flat', 'down', 'up'],
+        [`u:${memberA.id}`, 'up', 'flat', 'down', 'up'],
+      ];
+      const days = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-09', '2026-11-12'];
+      for (const [actorKey, ...picks] of calls) {
+        for (const [index, pick] of picks.entries()) {
+          await stack.query(
+            `insert into tf_khan_daily (actor_key, ngay, la_id, hang, du_doan, step)
+             values ($1, $2, $3, 'dai_cat', $4, 3)`,
+            [actorKey, days[index], la!.id, pick],
+          );
+        }
+      }
+      // Một người chỉ mới gieo quẻ (chưa dự đoán) không có mặt.
+      await stack.query(
+        `insert into tf_khan_daily (actor_key, ngay, la_id, hang, step) values ($1, '2026-11-02', $2, 'dai_cat', 2)`,
+        [`u:${outsider.id}`, la!.id],
+      );
+
+      setClock('2026-11-12T03:00:00Z'); // 10:00: nến 12/11 đã có nhưng phiên chưa chốt
+      const anon = await board(null);
+      expect(anon).toMatchObject({ month: '2026-11', scoredDays: 4, me: null });
+      expect(anon.rows).toEqual([
+        { rank: 1, name: 'Nam Bình', avatar: 'male02', color: 'forest', correct: 4, total: 4 },
+        { rank: 2, name: 'Người 2', avatar: 'female01', color: 'default', correct: 2, total: 4 },
+        { rank: 3, name: 'Người 3', avatar: 'female01', color: 'default', correct: 1, total: 1 },
+      ]);
+      expect((await board(u2)).me).toMatchObject({ rank: 2, correct: 2, total: 4 });
+      expect((await board(memberA)).me).toBeNull();
+      const guestView = await app.inject({
+        method: 'GET',
+        url: `${BASE}/than-tai/leaderboard?month=2026-11`,
+        headers: { 'x-floor-guest': guestToken },
+      });
+      expect(guestView.statusCode).toBe(200);
+      expect(guestView.json()).toMatchObject({ me: null, scoredDays: 4 });
+
+      // Sau 15:00 nến 12/11 được chấm (kết quả được nhớ 60 giây nên đồng hồ nhảy qua hạn nhớ).
+      setClock('2026-11-12T08:30:00Z'); // 15:30
+      const after = await board(u1);
+      expect(after.scoredDays).toBe(5);
+      expect(after.rows[0]).toMatchObject({ name: 'Nam Bình', correct: 5, total: 5 });
+      expect(after.me).toMatchObject({ rank: 1, correct: 5, total: 5 });
+
+      // Mặc định là tháng hiện tại; tháng chưa có ngày nào được chấm thì trống.
+      expect((await board(null, '')).month).toBe('2026-11');
+      expect(await board(null, '?month=2026-10')).toMatchObject({
+        month: '2026-10',
+        scoredDays: 0,
+        rows: [],
+        me: null,
+      });
+      const bad = await call(null, 'GET', '/than-tai/leaderboard?month=2026-13');
+      expect(bad.statusCode).toBe(422);
+    } finally {
+      setClock('2026-11-12T03:00:00Z');
+      await stack.query('delete from market_index_bars');
+    }
+  });
+
   it('quản trị Thần Tài: chỉ quản trị viên, sửa lá/quẻ/hành có kiểm tra độ dài và ghi nhật ký', async () => {
     const MANAGE = '/manage/than-tai';
     expect((await call(u1, 'GET', `${MANAGE}/la`)).statusCode).toBe(403);

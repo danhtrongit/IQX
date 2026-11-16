@@ -221,6 +221,28 @@ export interface ThanTaiResults {
   asOf: number
 }
 
+/** One line of the monthly hall of fame. */
+export interface LeaderRow {
+  rank: number
+  name: string
+  avatar: string
+  color: string
+  correct: number
+  total: number
+}
+
+/** `GET /than-tai/leaderboard`: top 10 of the month by correct VNINDEX calls, and the caller's own line. */
+export interface ThanTaiLeaderboard {
+  /** `YYYY-MM`. */
+  month: string
+  /** Trading days of the month that already have a settled close. */
+  scoredDays: number
+  rows: LeaderRow[]
+  /** The caller's line with the real rank; null for guests and for people with nothing scored. */
+  me: LeaderRow | null
+  asOf: number
+}
+
 /** Admin library: one quẻ (trigram keys `can|khon|chan|kham|can_son|ton|ly|doai`). */
 export interface AdminQue {
   id: number

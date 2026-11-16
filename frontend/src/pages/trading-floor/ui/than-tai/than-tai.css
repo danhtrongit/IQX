@@ -483,6 +483,11 @@
   border-radius: 999px;
   padding: 10px 22px;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
 }
 .tt .tt-btn-ghost:hover:not(:disabled) {
   background: rgba(242, 193, 78, 0.08);

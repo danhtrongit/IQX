@@ -488,3 +488,135 @@ export function vnindexReference(
   const ref = Math.round((stale ? quote.value : quote.value - quote.change) * 100) / 100;
   return Number.isFinite(ref) && ref > 0 ? ref : null;
 }
+
+// ================================================================== bảng vinh danh theo tháng
+
+export const LEADERBOARD_RULES = {
+  /** Số người trả về. */
+  top: 10,
+  /** Từ giờ này (giờ Việt Nam) nến của chính hôm nay mới được coi là đã chốt, dù bảng đã có nến. */
+  settledAt: { hour: 15, minute: 0 },
+} as const;
+
+/** `YYYY-MM` hợp lệ (năm 2020–2099, tháng 01–12). */
+export const MONTH_RE = /^20\d{2}-(0[1-9]|1[0-2])$/;
+
+export interface LeaderRow {
+  rank: number;
+  name: string;
+  avatar: string;
+  color: string;
+  correct: number;
+  total: number;
+}
+
+export interface ThanTaiLeaderboard {
+  /** Tháng được xếp hạng, `YYYY-MM`. */
+  month: string;
+  /** Số ngày giao dịch của tháng đã có giá đóng cửa chốt (số ngày đã chấm). */
+  scoredDays: number;
+  rows: LeaderRow[];
+  /** Dòng của người gọi (kèm hạng thật); null với khách hoặc khi chưa có lượt nào được chấm. */
+  me: LeaderRow | null;
+  asOf: number;
+}
+
+/** Tháng (`YYYY-MM`) của ngày `YYYY-MM-DD`. */
+export const monthOfDay = (day: string): string => day.slice(0, 7);
+
+/** Tháng liền sau `month`, `YYYY-MM`. */
+export function nextMonth(month: string): string {
+  const [y, m] = month.split('-').map(Number) as [number, number];
+  return m === 12 ? `${y + 1}-01` : `${y}-${pad(m + 1)}`;
+}
+
+/**
+ * Kết quả của một ngày từ chênh lệch giá đóng cửa so với nến liền trước: tăng, giảm, hoặc đi ngang khi
+ * đúng bằng 0 (cùng nghĩa với các lựa chọn ở bước 2: "Đóng cửa cao hơn / thấp hơn tham chiếu", "Thay đổi
+ * đúng bằng 0"). null khi chưa biết chênh lệch (không có nến trước): ngày đó không được chấm.
+ */
+export function outcomeOf(change: number | null): Direction | null {
+  if (change === null || !Number.isFinite(change)) return null;
+  if (change > 0) return 'up';
+  if (change < 0) return 'down';
+  return 'flat';
+}
+
+/**
+ * Ngày giao dịch mới nhất có thể đã chốt tại `nowMs`: hôm nay từ 15:00 giờ Việt Nam, trước đó là hôm qua.
+ * Nến sau ngày này (nếu có) không được chấm.
+ */
+export function lastSettledDay(nowMs: number): string {
+  const today = vnDay(nowMs);
+  return nowMs >= vnTimeOn(today, LEADERBOARD_RULES.settledAt) ? today : vnDay(nowMs, -1);
+}
+
+/** Một lượt dự đoán của tài khoản trong một ngày đã chốt, kèm chênh lệch của ngày đó. */
+export interface ScoredCall {
+  actorKey: string;
+  ngay: string;
+  duDoan: Direction;
+  change: number | null;
+}
+
+export interface MonthTally {
+  actorKey: string;
+  correct: number;
+  total: number;
+  /** Ngày đạt tới số lần đúng cuối cùng (ngày của lần đúng gần nhất); '' khi chưa đúng lần nào. */
+  reachedOn: string;
+}
+
+/** Gộp các lượt thành một dòng mỗi người. Lượt của ngày không có kết quả (không rõ chênh lệch) bị bỏ qua. */
+export function tallyCalls(calls: readonly ScoredCall[]): MonthTally[] {
+  const byActor = new Map<string, MonthTally>();
+  for (const call of calls) {
+    const outcome = outcomeOf(call.change);
+    if (outcome === null) continue;
+    let row = byActor.get(call.actorKey);
+    if (!row) {
+      row = { actorKey: call.actorKey, correct: 0, total: 0, reachedOn: '' };
+      byActor.set(call.actorKey, row);
+    }
+    row.total += 1;
+    if (call.duDoan === outcome) {
+      row.correct += 1;
+      if (call.ngay > row.reachedOn) row.reachedOn = call.ngay;
+    }
+  }
+  return [...byActor.values()];
+}
+
+/**
+ * Thứ tự xếp hạng: nhiều lần đúng hơn, rồi chính xác hơn (đúng/tổng, so bằng nhân chéo để không dính số
+ * thực), rồi đạt số lần đúng đó sớm hơn, rồi `actorKey` để thứ tự luôn xác định.
+ */
+export function compareTallies(a: MonthTally, b: MonthTally): number {
+  if (a.correct !== b.correct) return b.correct - a.correct;
+  const accuracy = b.correct * a.total - a.correct * b.total;
+  if (accuracy !== 0) return accuracy > 0 ? 1 : -1;
+  if (a.reachedOn !== b.reachedOn) return a.reachedOn < b.reachedOn ? -1 : 1;
+  return a.actorKey < b.actorKey ? -1 : a.actorKey > b.actorKey ? 1 : 0;
+}
+
+/** Bảng xếp hạng đầy đủ (hạng 1, 2, 3, ... liên tục). Chỉ giữ người có hồ sơ trên sàn. */
+export function rankTallies(
+  tallies: readonly MonthTally[],
+  profiles: ReadonlyMap<string, { name: string; avatar: string; color: string }>,
+): Array<LeaderRow & { actorKey: string }> {
+  return tallies
+    .filter((row) => profiles.has(row.actorKey) && row.total > 0)
+    .sort(compareTallies)
+    .map((row, index) => {
+      const profile = profiles.get(row.actorKey)!;
+      return {
+        actorKey: row.actorKey,
+        rank: index + 1,
+        name: profile.name,
+        avatar: profile.avatar,
+        color: profile.color,
+        correct: row.correct,
+        total: row.total,
+      };
+    });
+}
