@@ -7,7 +7,12 @@
  * when the floor unmounts, so navigating away and back starts clean.
  */
 import type { IndexQuote, Quote } from "./net/market/types.ts"
-import { normalizeAvatarId, type PostCard, type Profile } from "./net/types.ts"
+import {
+  normalizeAvatarId,
+  type PostCard,
+  type Profile,
+  type ThanTaiLeaderboard,
+} from "./net/types.ts"
 
 export class Store<T> {
   private value: T
@@ -63,7 +68,8 @@ export class Emitter<Events extends Record<string, unknown>> {
 }
 
 /** Screens that open as a sheet. */
-export type PanelKind = "thantai" | "market" | "reception" | "chat"
+export type PanelKind =
+  "thantai" | "market" | "reception" | "chat" | "leaderboard"
 /** Everything the player can walk up to: a sheet, or the SACO nhận định slide-over. */
 export type InteractKind = PanelKind | "posts"
 
@@ -141,7 +147,9 @@ export function logChat(name: string, text: string, self: boolean): void {
  * For actions that need an account (hearts, comments, reports). Returns true for a guest and
  * opens the login prompt; the caller then returns without calling the server.
  */
-export function needLogin(feature = "Đăng nhập để dùng tính năng này"): boolean {
+export function needLogin(
+  feature = "Đăng nhập để dùng tính năng này"
+): boolean {
   if (!ui.guest.get()) return false
   ui.loginPrompt.set(feature)
   return true
@@ -190,6 +198,8 @@ export const world = {
   vn30: new Store<Quote[] | null>(null),
   /** Today's SACO nhận định, newest first. Written by the posts layer, read by the wall board. */
   posts: new Store<PostCard[]>([]),
+  /** This month's hall of fame (Thần Tài predictions), for the statues and the leaderboard panel. */
+  leaderboard: new Store<ThanTaiLeaderboard | null>(null),
 }
 
 export const commands = new Emitter<{

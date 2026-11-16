@@ -2,13 +2,19 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CHAT_RULES,
+  IMAGE_RULES,
   SACO_ICONS,
+  canRecall,
+  imageWindow,
   cleanField,
   cleanSacoName,
   cleanText,
   guestLabel,
+  invitePreview,
   moveInOrder,
+  pickFallbackSaco,
   pickSacoIcon,
+  type DispatchCandidate,
   type OrderEntry,
 } from '../../src/modules/trading-floor/floor-chat.logic.js';
 
@@ -93,5 +99,92 @@ describe('guestLabel', () => {
     expect(guestLabel('Minh Anh', true)).toBe('Minh Anh (khách)');
     expect(guestLabel('Minh Anh', false)).toBe('Minh Anh');
     expect(guestLabel('', true)).toBe('Khách (khách)');
+  });
+});
+
+describe('invitePreview', () => {
+  it('keeps short text on one line', () => {
+    expect(invitePreview('  Chào SACO,\n\ncho em hỏi  ')).toBe('Chào SACO, cho em hỏi');
+  });
+
+  it('cuts long text to 120 characters including the ellipsis', () => {
+    const preview = invitePreview('a'.repeat(300));
+    expect(Array.from(preview)).toHaveLength(120);
+    expect(preview.endsWith('…')).toBe(true);
+    expect(invitePreview('b'.repeat(120))).toBe('b'.repeat(120));
+  });
+
+  it('never splits a surrogate pair', () => {
+    const preview = invitePreview('𝐀'.repeat(200), 10);
+    expect(Array.from(preview)).toHaveLength(10);
+    expect(preview).toBe(`${'𝐀'.repeat(9)}…`);
+  });
+});
+
+describe('pickFallbackSaco', () => {
+  const saco = (
+    id: string,
+    patch: Partial<DispatchCandidate> = {},
+  ): DispatchCandidate => ({
+    id,
+    userId: `user-${id}`,
+    active: true,
+    onDuty: false,
+    online: false,
+    ...patch,
+  });
+
+  it('picks the highest-ranked SACO with a socket, on duty or not', () => {
+    const ranking = [saco('a'), saco('b', { online: true }), saco('c', { online: true, onDuty: true })];
+    expect(pickFallbackSaco(ranking, 'visitor')).toBe('b');
+  });
+
+  it('falls back to the highest-ranked active SACO when nobody is connected', () => {
+    expect(pickFallbackSaco([saco('a'), saco('b')], 'visitor')).toBe('a');
+  });
+
+  it('skips inactive SACOs', () => {
+    const ranking = [saco('a', { active: false, online: true }), saco('b'), saco('c', { online: true })];
+    expect(pickFallbackSaco(ranking, 'visitor')).toBe('c');
+    expect(pickFallbackSaco([saco('a', { active: false })], 'visitor')).toBeNull();
+  });
+
+  it('never gives the conversation to the visitor themself', () => {
+    const ranking = [saco('a', { online: true }), saco('b')];
+    expect(pickFallbackSaco(ranking, 'user-a')).toBe('b');
+    expect(pickFallbackSaco([saco('a', { online: true })], 'user-a')).toBeNull();
+  });
+
+  it('returns null when there is no SACO at all', () => {
+    expect(pickFallbackSaco([], 'visitor')).toBeNull();
+  });
+});
+
+describe('canRecall', () => {
+  it('lets each side recall only its own messages, never a system line', () => {
+    expect(canRecall('u', 'user')).toBe(true);
+    expect(canRecall('s', 'user')).toBe(false);
+    expect(canRecall('s', 'saco')).toBe(true);
+    expect(canRecall('u', 'saco')).toBe(false);
+    expect(canRecall('x', 'user')).toBe(false);
+    expect(canRecall('x', 'saco')).toBe(false);
+  });
+});
+
+describe('imageWindow', () => {
+  it('allows up to ten images in ten minutes', () => {
+    const now = 1_000_000;
+    const nine = Array.from({ length: 9 }, (_, i) => now - i * 1000);
+    expect(imageWindow(nine, now).allowed).toBe(true);
+    const ten = [...nine, now - 30_000];
+    expect(imageWindow(ten, now)).toMatchObject({ allowed: false });
+  });
+
+  it('forgets images older than the window and does not touch its input', () => {
+    const now = 5_000_000;
+    const times = [now - IMAGE_RULES.windowMs, now - IMAGE_RULES.windowMs + 1, now];
+    const result = imageWindow(times, now);
+    expect(result.kept).toEqual([now - IMAGE_RULES.windowMs + 1, now]);
+    expect(times).toHaveLength(3);
   });
 });

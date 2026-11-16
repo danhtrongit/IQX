@@ -6,7 +6,7 @@
 import type { SchemaObject } from '@nestjs/swagger';
 import { z } from 'zod';
 
-import { DIRECTIONS, HANG_LIST, HANH_LIST } from './than-tai.logic.js';
+import { DIRECTIONS, HANG_LIST, HANH_LIST, MONTH_RE } from './than-tai.logic.js';
 
 export const openapi = (schema: z.ZodType): SchemaObject =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
@@ -21,6 +21,12 @@ export const thanTaiCauBodySchema = z.strictObject({
   tickers: z.array(z.string().max(16)).max(10),
 });
 export type ThanTaiCauBody = z.infer<typeof thanTaiCauBodySchema>;
+
+/** `?month=YYYY-MM`; vắng mặt là tháng hiện tại. */
+export const thanTaiLeaderboardQuerySchema = z.strictObject({
+  month: z.string().regex(MONTH_RE).optional(),
+});
+export type ThanTaiLeaderboardQuery = z.infer<typeof thanTaiLeaderboardQuerySchema>;
 
 export const thanTaiLaIdParamSchema = z.coerce.number().int().min(1).max(2_147_483_647);
 export const thanTaiQueIdParamSchema = z.coerce.number().int().min(1).max(64);
@@ -157,6 +163,23 @@ const results = z.object({
   asOf: z.number(),
 });
 
+const leaderRow = z.object({
+  rank: z.number().int(),
+  name: z.string(),
+  avatar: z.string(),
+  color: z.string(),
+  correct: z.number().int(),
+  total: z.number().int(),
+});
+
+const leaderboard = z.object({
+  month: z.string(),
+  scoredDays: z.number().int(),
+  rows: z.array(leaderRow),
+  me: leaderRow.nullable(),
+  asOf: z.number(),
+});
+
 const adminLa = z.object({
   id: z.number().int(),
   queId: z.number().int(),
@@ -202,6 +225,7 @@ const adminHanh = z.object({
 
 export const THAN_TAI_TODAY_SCHEMA = openapi(today);
 export const THAN_TAI_RESULTS_SCHEMA = openapi(results);
+export const THAN_TAI_LEADERBOARD_SCHEMA = openapi(leaderboard);
 export const THAN_TAI_ADMIN_LA_LIST_SCHEMA = openapi(z.object({ items: z.array(adminLa) }));
 export const THAN_TAI_ADMIN_LA_SCHEMA = openapi(adminLa);
 export const THAN_TAI_ADMIN_QUE_SCHEMA = openapi(adminQue);

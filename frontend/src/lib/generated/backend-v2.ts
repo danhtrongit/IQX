@@ -63096,6 +63096,12 @@ export type FloorChatConversationResponses = {
       at: number;
       from: "u" | "s" | "x";
       id: number;
+      image?: {
+        h: number;
+        id: string;
+        w: number;
+      };
+      recalled?: true;
       text: string;
     } | null;
     matched: boolean;
@@ -63103,6 +63109,12 @@ export type FloorChatConversationResponses = {
       at: number;
       from: "u" | "s" | "x";
       id: number;
+      image?: {
+        h: number;
+        id: string;
+        w: number;
+      };
+      recalled?: true;
       text: string;
     }>;
     online: boolean;
@@ -63117,6 +63129,98 @@ export type FloorChatConversationResponses = {
 
 export type FloorChatConversationResponse =
   FloorChatConversationResponses[keyof FloorChatConversationResponses];
+
+export type FloorChatSendImageData = {
+  body: {
+    file: Blob | File;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/chat/convs/{id}/images";
+};
+
+export type FloorChatSendImageErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatSendImageError =
+  FloorChatSendImageErrors[keyof FloorChatSendImageErrors];
+
+export type FloorChatSendImageResponses = {
+  200: {
+    at: number;
+    from: "u" | "s" | "x";
+    id: number;
+    image?: {
+      h: number;
+      id: string;
+      w: number;
+    };
+    recalled?: true;
+    text: string;
+  };
+};
+
+export type FloorChatSendImageResponse =
+  FloorChatSendImageResponses[keyof FloorChatSendImageResponses];
+
+export type FloorChatRecallData = {
+  body?: never;
+  path: {
+    id: string;
+    messageId: number;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/chat/convs/{id}/messages/{messageId}/recall";
+};
+
+export type FloorChatRecallErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatRecallError =
+  FloorChatRecallErrors[keyof FloorChatRecallErrors];
+
+export type FloorChatRecallResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type FloorChatRecallResponse =
+  FloorChatRecallResponses[keyof FloorChatRecallResponses];
 
 export type FloorChatReadData = {
   body?: never;
@@ -63194,12 +63298,59 @@ export type FloorChatSendResponses = {
     at: number;
     from: "u" | "s" | "x";
     id: number;
+    image?: {
+      h: number;
+      id: string;
+      w: number;
+    };
+    recalled?: true;
     text: string;
   };
 };
 
 export type FloorChatSendResponse =
   FloorChatSendResponses[keyof FloorChatSendResponses];
+
+export type FloorChatImageData = {
+  body?: never;
+  path: {
+    imageId: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/chat/images/{imageId}";
+};
+
+export type FloorChatImageErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatImageError =
+  FloorChatImageErrors[keyof FloorChatImageErrors];
+
+export type FloorChatImageResponses = {
+  /**
+   * Ảnh WebP
+   */
+  200: Blob | File;
+};
+
+export type FloorChatImageResponse =
+  FloorChatImageResponses[keyof FloorChatImageResponses];
 
 export type FloorChatInboxData = {
   body?: never;
@@ -63238,6 +63389,12 @@ export type FloorChatInboxResponses = {
         at: number;
         from: "u" | "s" | "x";
         id: number;
+        image?: {
+          h: number;
+          id: string;
+          w: number;
+        };
+        recalled?: true;
         text: string;
       } | null;
       matched: boolean;
@@ -63254,6 +63411,12 @@ export type FloorChatInboxResponses = {
         at: number;
         from: "u" | "s" | "x";
         id: number;
+        image?: {
+          h: number;
+          id: string;
+          w: number;
+        };
+        recalled?: true;
         text: string;
       } | null;
       matched: boolean;
@@ -63443,6 +63606,12 @@ export type FloorChatOpenResponses = {
       at: number;
       from: "u" | "s" | "x";
       id: number;
+      image?: {
+        h: number;
+        id: string;
+        w: number;
+      };
+      recalled?: true;
       text: string;
     } | null;
     matched: boolean;
@@ -63457,6 +63626,62 @@ export type FloorChatOpenResponses = {
 
 export type FloorChatOpenResponse =
   FloorChatOpenResponses[keyof FloorChatOpenResponses];
+
+export type FloorChatStartData = {
+  body: {
+    text: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/trading-floor/chat/start";
+};
+
+export type FloorChatStartErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FloorChatStartError =
+  FloorChatStartErrors[keyof FloorChatStartErrors];
+
+export type FloorChatStartResponses = {
+  200:
+    | {
+        convId: string;
+        message: {
+          at: number;
+          from: "u" | "s" | "x";
+          id: number;
+          image?: {
+            h: number;
+            id: string;
+            w: number;
+          };
+          recalled?: true;
+          text: string;
+        };
+      }
+    | {
+        pending: true;
+      };
+};
+
+export type FloorChatStartResponse =
+  FloorChatStartResponses[keyof FloorChatStartResponses];
 
 export type FloorGuestCreateData = {
   body: {
@@ -63648,6 +63873,12 @@ export type FloorManageConvsResponses = {
         at: number;
         from: "u" | "s" | "x";
         id: number;
+        image?: {
+          h: number;
+          id: string;
+          w: number;
+        };
+        recalled?: true;
         text: string;
       } | null;
       matched: boolean;
@@ -63707,6 +63938,12 @@ export type FloorManageConvResponses = {
       at: number;
       from: "u" | "s" | "x";
       id: number;
+      image?: {
+        h: number;
+        id: string;
+        w: number;
+      };
+      recalled?: true;
       text: string;
     } | null;
     matched: boolean;
@@ -63714,6 +63951,12 @@ export type FloorManageConvResponses = {
       at: number;
       from: "u" | "s" | "x";
       id: number;
+      image?: {
+        h: number;
+        id: string;
+        w: number;
+      };
+      recalled?: true;
       text: string;
     }>;
     sacoIcon: string;
@@ -63769,7 +64012,13 @@ export type FloorManageInvitesResponses = {
     items: Array<{
       at: number;
       result:
-        "accept" | "decline" | "timeout" | "skip-off" | "skip-busy" | "cancel";
+        | "accept"
+        | "decline"
+        | "timeout"
+        | "skip-off"
+        | "skip-busy"
+        | "cancel"
+        | "auto";
       sacoIcon: string;
       sacoName: string;
       userName: string;
@@ -63784,7 +64033,7 @@ export type TradingFloorManagePostsData = {
   body?: never;
   path?: never;
   query?: {
-    status?: "published" | "hidden";
+    status?: "published" | "hidden" | "withdrawn";
   };
   url: "/api/v2/trading-floor/manage/posts";
 };
@@ -63831,7 +64080,7 @@ export type TradingFloorManagePostsResponses = {
       reports: number;
       sacoId: string;
       sacoName: string;
-      status: "draft" | "published" | "hidden";
+      status: "draft" | "published" | "hidden" | "withdrawn";
     }>;
   };
 };
@@ -63882,12 +64131,13 @@ export type TradingFloorManagePostResponses = {
   200: {
     bodyHtml: string;
     comments: number;
+    editedAt: number | null;
     headline: string;
     hearts: number;
     id: string;
     leadName: string;
     log: Array<{
-      action: "publish" | "hide" | "unhide";
+      action: "publish" | "hide" | "unhide" | "edit" | "withdraw" | "republish";
       actorName: string;
       actorRole: "saco" | "admin" | "team_lead";
       at: number;
@@ -63898,7 +64148,7 @@ export type TradingFloorManagePostResponses = {
     sacoId: string;
     sacoName: string;
     savedAt: number;
-    status: "draft" | "published" | "hidden";
+    status: "draft" | "published" | "hidden" | "withdrawn";
   };
 };
 
@@ -64994,6 +65244,7 @@ export type TradingFloorPostsTodayResponses = {
     date: string;
     items: Array<{
       comments: number;
+      editedAt: number | null;
       headline: string;
       hearted: boolean;
       hearts: number;
@@ -65044,6 +65295,7 @@ export type TradingFloorPostDetailResponses = {
     bodyHtml: string;
     canModerate: boolean;
     comments: number;
+    editedAt: number | null;
     headline: string;
     hearted: boolean;
     hearts: number;
@@ -65433,13 +65685,14 @@ export type TradingFloorSacoPostsResponses = {
   200: {
     items: Array<{
       comments: number;
+      editedAt: number | null;
       headline: string;
       hearts: number;
       id: string;
       newComments: number;
       publishedAt: number | null;
       savedAt: number;
-      status: "draft" | "published" | "hidden";
+      status: "draft" | "published" | "hidden" | "withdrawn";
     }>;
   };
 };
@@ -65484,6 +65737,7 @@ export type TradingFloorSacoPostCreateResponses = {
   200: {
     bodyHtml: string;
     comments: number;
+    editedAt: number | null;
     headline: string;
     hearts: number;
     id: string;
@@ -65491,7 +65745,7 @@ export type TradingFloorSacoPostCreateResponses = {
     publishedAt: number | null;
     revision: number;
     savedAt: number;
-    status: "draft" | "published" | "hidden";
+    status: "draft" | "published" | "hidden" | "withdrawn";
   };
 };
 
@@ -65581,6 +65835,7 @@ export type TradingFloorSacoPostResponses = {
   200: {
     bodyHtml: string;
     comments: number;
+    editedAt: number | null;
     headline: string;
     hearts: number;
     id: string;
@@ -65588,7 +65843,7 @@ export type TradingFloorSacoPostResponses = {
     publishedAt: number | null;
     revision: number;
     savedAt: number;
-    status: "draft" | "published" | "hidden";
+    status: "draft" | "published" | "hidden" | "withdrawn";
   };
 };
 
@@ -65688,6 +65943,64 @@ export type TradingFloorSacoPostCommentsSeenResponses = {
 export type TradingFloorSacoPostCommentsSeenResponse =
   TradingFloorSacoPostCommentsSeenResponses[keyof TradingFloorSacoPostCommentsSeenResponses];
 
+export type TradingFloorSacoPostEditData = {
+  body: {
+    baseRevision: number;
+    bodyHtml: string;
+    headline: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}/edit";
+};
+
+export type TradingFloorSacoPostEditErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostEditError =
+  TradingFloorSacoPostEditErrors[keyof TradingFloorSacoPostEditErrors];
+
+export type TradingFloorSacoPostEditResponses = {
+  200: {
+    bodyHtml: string;
+    comments: number;
+    editedAt: number | null;
+    headline: string;
+    hearts: number;
+    id: string;
+    newComments: number;
+    publishedAt: number | null;
+    revision: number;
+    savedAt: number;
+    status: "draft" | "published" | "hidden" | "withdrawn";
+  };
+};
+
+export type TradingFloorSacoPostEditResponse =
+  TradingFloorSacoPostEditResponses[keyof TradingFloorSacoPostEditResponses];
+
 export type TradingFloorSacoPostImageUploadData = {
   body: {
     file: Blob | File;
@@ -65780,6 +66093,7 @@ export type TradingFloorSacoPostPublishResponses = {
   200: {
     bodyHtml: string;
     comments: number;
+    editedAt: number | null;
     headline: string;
     hearts: number;
     id: string;
@@ -65787,12 +66101,120 @@ export type TradingFloorSacoPostPublishResponses = {
     publishedAt: number | null;
     revision: number;
     savedAt: number;
-    status: "draft" | "published" | "hidden";
+    status: "draft" | "published" | "hidden" | "withdrawn";
   };
 };
 
 export type TradingFloorSacoPostPublishResponse =
   TradingFloorSacoPostPublishResponses[keyof TradingFloorSacoPostPublishResponses];
+
+export type TradingFloorSacoPostRepublishData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}/republish";
+};
+
+export type TradingFloorSacoPostRepublishErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostRepublishError =
+  TradingFloorSacoPostRepublishErrors[keyof TradingFloorSacoPostRepublishErrors];
+
+export type TradingFloorSacoPostRepublishResponses = {
+  200: {
+    bodyHtml: string;
+    comments: number;
+    editedAt: number | null;
+    headline: string;
+    hearts: number;
+    id: string;
+    newComments: number;
+    publishedAt: number | null;
+    revision: number;
+    savedAt: number;
+    status: "draft" | "published" | "hidden" | "withdrawn";
+  };
+};
+
+export type TradingFloorSacoPostRepublishResponse =
+  TradingFloorSacoPostRepublishResponses[keyof TradingFloorSacoPostRepublishResponses];
+
+export type TradingFloorSacoPostWithdrawData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/trading-floor/saco/posts/{id}/withdraw";
+};
+
+export type TradingFloorSacoPostWithdrawErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TradingFloorSacoPostWithdrawError =
+  TradingFloorSacoPostWithdrawErrors[keyof TradingFloorSacoPostWithdrawErrors];
+
+export type TradingFloorSacoPostWithdrawResponses = {
+  200: {
+    bodyHtml: string;
+    comments: number;
+    editedAt: number | null;
+    headline: string;
+    hearts: number;
+    id: string;
+    newComments: number;
+    publishedAt: number | null;
+    revision: number;
+    savedAt: number;
+    status: "draft" | "published" | "hidden" | "withdrawn";
+  };
+};
+
+export type TradingFloorSacoPostWithdrawResponse =
+  TradingFloorSacoPostWithdrawResponses[keyof TradingFloorSacoPostWithdrawResponses];
 
 export type ThanTaiCauData = {
   body: {
@@ -65988,6 +66410,64 @@ export type ThanTaiDrawResponses = {
 
 export type ThanTaiDrawResponse =
   ThanTaiDrawResponses[keyof ThanTaiDrawResponses];
+
+export type ThanTaiLeaderboardData = {
+  body?: never;
+  path?: never;
+  query?: {
+    month?: string;
+  };
+  url: "/api/v2/trading-floor/than-tai/leaderboard";
+};
+
+export type ThanTaiLeaderboardErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ThanTaiLeaderboardError =
+  ThanTaiLeaderboardErrors[keyof ThanTaiLeaderboardErrors];
+
+export type ThanTaiLeaderboardResponses = {
+  200: {
+    asOf: number;
+    me: {
+      avatar: string;
+      color: string;
+      correct: number;
+      name: string;
+      rank: number;
+      total: number;
+    } | null;
+    month: string;
+    rows: Array<{
+      avatar: string;
+      color: string;
+      correct: number;
+      name: string;
+      rank: number;
+      total: number;
+    }>;
+    scoredDays: number;
+  };
+};
+
+export type ThanTaiLeaderboardResponse =
+  ThanTaiLeaderboardResponses[keyof ThanTaiLeaderboardResponses];
 
 export type ThanTaiPredictData = {
   body: {

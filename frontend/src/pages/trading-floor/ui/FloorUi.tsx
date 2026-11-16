@@ -3,12 +3,13 @@ import { useState } from "react"
 import { ui } from "../bridge.ts"
 import { PostsLayer } from "../posts/posts-layer.tsx"
 import { useStore } from "../use-store.ts"
-import { InviteCard, MatchOverlay } from "./ChatOverlays.tsx"
+import { InviteCard } from "./ChatOverlays.tsx"
 import { Hud } from "./Hud.tsx"
 import { JoinScreen } from "./JoinScreen.tsx"
 import { PanelHost } from "./PanelHost.tsx"
 import { QuickChat } from "./QuickChat.tsx"
 import { Toasts } from "./Toasts.tsx"
+import { useThanTaiAutoOpen } from "./than-tai/use-auto-open.ts"
 
 const noop = (): void => undefined
 
@@ -19,6 +20,7 @@ export function FloorUi({ suggestedName }: { suggestedName: string }) {
   const ready = useStore(ui.ready)
   const queue = useStore(ui.queue)
   const [editing, setEditing] = useState(false)
+  useThanTaiAutoOpen()
 
   return (
     <>
@@ -59,7 +61,6 @@ export function FloorUi({ suggestedName }: { suggestedName: string }) {
           </p>
         </div>
       )}
-      {ready && profile && <MatchOverlay />}
       {ready && profile && <InviteCard />}
       <Toasts />
     </>

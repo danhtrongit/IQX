@@ -149,3 +149,14 @@ export function useDeleteDraft() {
   const invalidate = useInvalidateMyPosts()
   return useMutation({ mutationFn: (postId: string) => myPostsApi.remove(postId), onSettled: invalidate })
 }
+
+/** Thu hồi, đăng lại bài và xoá hẳn bài đã thu hồi: làm mới danh sách và chi tiết của Bài của tôi. */
+export function useWithdrawPost() {
+  const invalidate = useInvalidateMyPosts()
+  return useMutation({ mutationFn: (postId: string) => myPostsApi.withdraw(postId), onSettled: invalidate })
+}
+
+export function useRepublishPost() {
+  const invalidate = useInvalidateMyPosts()
+  return useMutation({ mutationFn: (postId: string) => myPostsApi.republish(postId), onSettled: invalidate })
+}

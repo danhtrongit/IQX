@@ -4,21 +4,24 @@
  * header `x-floor-guest` qua `FloorActors`. Trừ `results` (cho phép ẩn danh sau 11:30), thiếu cả hai là 401.
  */
 
-import { Body, Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 
 import { Public } from '../auth/index.js';
 import { FloorActors } from './floor-actor.js';
 import {
+  THAN_TAI_LEADERBOARD_SCHEMA,
   THAN_TAI_RESULTS_SCHEMA,
   THAN_TAI_TODAY_SCHEMA,
   thanTaiCauBodySchema,
+  thanTaiLeaderboardQuerySchema,
   thanTaiPredictBodySchema,
   type ThanTaiCauBody,
+  type ThanTaiLeaderboardQuery,
   type ThanTaiPredictBody,
 } from './than-tai.schemas.js';
-import type { ThanTaiResults, ThanTaiToday } from './than-tai.logic.js';
+import type { ThanTaiLeaderboard, ThanTaiResults, ThanTaiToday } from './than-tai.logic.js';
 import { ThanTaiService } from './than-tai.service.js';
 
 @ApiTags('Khu giao dịch · Thần Tài')
@@ -90,5 +93,19 @@ export class ThanTaiController {
   @ApiOkResponse({ schema: THAN_TAI_RESULTS_SCHEMA })
   async results(@Req() request: FastifyRequest): Promise<ThanTaiResults> {
     return this.service.results(await this.actors.fromRequest(request));
+  }
+
+  @Get('leaderboard')
+  @ApiOperation({
+    operationId: 'thanTaiLeaderboard',
+    summary:
+      'Bảng vinh danh theo tháng (`?month=YYYY-MM`, mặc định tháng này): top 10 tài khoản dự đoán đúng VNINDEX nhiều nhất và dòng của người gọi. Chỉ chấm ngày đã có giá đóng cửa; khách xem được nhưng không được xếp hạng',
+  })
+  @ApiOkResponse({ schema: THAN_TAI_LEADERBOARD_SCHEMA })
+  async leaderboard(
+    @Req() request: FastifyRequest,
+    @Query({ schema: thanTaiLeaderboardQuerySchema }) query: ThanTaiLeaderboardQuery,
+  ): Promise<ThanTaiLeaderboard> {
+    return this.service.leaderboard(await this.actors.fromRequest(request), query.month);
   }
 }

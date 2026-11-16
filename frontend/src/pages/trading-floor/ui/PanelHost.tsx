@@ -4,12 +4,14 @@ import {
   Inbox,
   Landmark,
   MessagesSquare,
+  Trophy,
   type LucideIcon,
 } from "lucide-react"
 import { useCallback } from "react"
 
 import { ui, type Panel } from "../bridge.ts"
 import { ChatPanel } from "./panels/ChatPanel.tsx"
+import { LeaderboardPanel } from "./panels/LeaderboardPanel.tsx"
 import { MarketPanel } from "./panels/MarketPanel.tsx"
 import { ReceptionPanel } from "./panels/ReceptionPanel.tsx"
 import { ThanTaiPanel } from "./panels/ThanTaiPanel.tsx"
@@ -20,6 +22,7 @@ const TITLES: Record<Panel["kind"], [LucideIcon, string]> = {
   market: [ChartCandlestick, "Thị trường"],
   reception: [ConciergeBell, "Lễ tân · Hướng dẫn"],
   chat: [MessagesSquare, "Chat SACO"],
+  leaderboard: [Trophy, "Vinh danh Top dự đoán"],
 }
 
 export function PanelHost({ panel }: { panel: Panel }) {
@@ -44,6 +47,7 @@ export function PanelHost({ panel }: { panel: Panel }) {
       {panel.kind === "thantai" && <ThanTaiPanel />}
       {panel.kind === "market" && <MarketPanel />}
       {panel.kind === "reception" && <ReceptionPanel />}
+      {panel.kind === "leaderboard" && <LeaderboardPanel />}
       {isChat && (
         <ChatPanel
           side={sacoInbox ? "saco" : "user"}

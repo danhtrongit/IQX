@@ -17,7 +17,9 @@ import {
 } from "../net/market/heat.ts"
 import type { IndexQuote, Quote } from "../net/market/types.ts"
 import { PRICE_COLORS, indexTone } from "../net/market/tone.ts"
+import { openDirectChat } from "../net/chat.ts"
 import {
+  isOwnSaco,
   isSelf,
   presence,
   sendEmote,
@@ -30,17 +32,20 @@ import {
   type Peer,
   type PostCard,
   type Profile,
+  type ThanTaiLeaderboard,
   nameBadges,
   normalizeAvatarId,
 } from "../net/types.ts"
 import {
   ASSET_ROOT,
   type CharacterArt,
+  type FrameArt,
   type Manifest,
   type WalkArt,
+  renderRatio,
   walkAnimKey,
 } from "./assets.ts"
-import { Avatar, facingOf } from "./Avatar.ts"
+import { Avatar, DEPTH_LABEL, facingOf } from "./Avatar.ts"
 import {
   BOARDS,
   NAV_CELL,
@@ -58,6 +63,7 @@ import {
 } from "./layout.ts"
 import { NavGrid, type Point } from "./nav.ts"
 import { drawPlaceholder } from "./placeholders.ts"
+import { liftTags, type TagBox } from "./tags.ts"
 import { evictTintedArt, getTintedCharacterArt } from "./tintArt.ts"
 
 const DEPTH = {
@@ -90,6 +96,20 @@ interface Hot {
   depth: number
 }
 
+/** One statue of the hall of fame: the figure, its caption, the numbered disc above it. */
+interface Statue {
+  img: Phaser.GameObjects.Image
+  name: Phaser.GameObjects.Text
+  sub: Phaser.GameObjects.Text
+  mark: Phaser.GameObjects.Graphics
+  markText: Phaser.GameObjects.Text
+  /** Where the statue stands (top of the podium) and its size relative to the art. */
+  top: number
+  base: number
+  /** Texture the slot wants, so a late load never overwrites a newer choice. */
+  file: string
+}
+
 interface RemotePeer {
   avatar: Avatar
   charId: string
@@ -102,6 +122,8 @@ interface RemotePeer {
   moving: boolean
   /** Scene time of the last report. */
   at: number
+  /** The SACO behind this figure: a tap opens the chat with them. */
+  sacoId?: string
 }
 
 /** A walking peer reports every 100 ms; this long without a word means they stopped (lost packet, hidden tab). */
@@ -112,6 +134,15 @@ const PEER_BUFFER_S = 0.14
 const PEER_TELEPORT = 260
 /** Unused walk sheets and recoloured outfits are freed this long after the last figure wearing them left. */
 const ART_SWEEP_MS = 20_000
+/** How often overlapping name tags are sorted out, the gap left between two, and how high one may climb. */
+const TAG_DECLUTTER_MS = 120
+const TAG_GAP = 2
+const TAG_MAX_STEPS = 4
+/**
+ * Recoloured outfits kept at once. Each one is a full set of walk sheets drawn on canvases, and phones
+ * allow little canvas memory: past the limit a newcomer keeps the character's own colours.
+ */
+const TINT_LIMIT = { lite: 6, full: 20 }
 
 const clamp = (v: number, lo: number, hi: number): number =>
   Math.max(lo, Math.min(hi, v))
@@ -144,6 +175,7 @@ export class OfficeScene extends Phaser.Scene {
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {}
   private last = { t: 0, facing: "s" as Facing, moving: false }
   private hintKey = ""
+  private declutterAt = 0
   private userZoom = 1
   private ledTiles: {
     sym: Phaser.GameObjects.Text
@@ -158,6 +190,9 @@ export class OfficeScene extends Phaser.Scene {
   private postLines: Phaser.GameObjects.Text[] = []
   private readonly disposers: (() => void)[] = []
   private disposed = false
+  /** Hall of fame, in rank order (1, 2, 3). */
+  private readonly statues: Statue[] = []
+  private readonly statueLoads = new Map<string, Promise<void>>()
   private shrineGlow!: Phaser.GameObjects.Image
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter
   /** Thần Tài on the shrine when his art exists, and who he has already greeted. */
@@ -166,9 +201,13 @@ export class OfficeScene extends Phaser.Scene {
   private greetQueue: string[] = []
   private deityFreeAt = 0
 
-  constructor(manifest: Manifest) {
+  /** Phones and tablets: half-size art (the manifest passed in), fewer recoloured outfits. */
+  private readonly lite: boolean
+
+  constructor(manifest: Manifest, lite = false) {
     super("office")
     this.manifest = manifest
+    this.lite = lite
   }
 
   preload(): void {
@@ -204,6 +243,7 @@ export class OfficeScene extends Phaser.Scene {
     this.buildBoards()
     for (const p of PLACEMENTS) this.place(p)
     this.buildShrine()
+    this.buildStatues()
     this.buildPeople()
     this.buildLabels()
     this.setupInput()
@@ -347,6 +387,14 @@ export class OfficeScene extends Phaser.Scene {
     await this.ensureWalks(charId)
     if (!this.sys.isActive() || !current() || color === "default") return
     const key = `${charId}|${color}`
+    // The player always wears the colour they picked; other figures only while there is room.
+    const limit = this.lite ? TINT_LIMIT.lite : TINT_LIMIT.full
+    if (
+      avatar !== this.player &&
+      !this.tinted.has(key) &&
+      this.tinted.size >= limit
+    )
+      return
     this.tinted.add(key)
     const tinted = await getTintedCharacterArt(
       this,
@@ -650,6 +698,7 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   private place(p: Placement): void {
+    if (p.id.startsWith("statue-")) return // built by buildStatues
     if (p.id === "thantai" && this.manifest.characters.thantai) return // an animated figure, built by buildShrine
     const art = p.art ? this.prop(p.art) : undefined
     const depth = p.flat ? DEPTH.FLAT : p.y
@@ -956,6 +1005,160 @@ export class OfficeScene extends Phaser.Scene {
     })
   }
 
+  // ---------- hall of fame ----------
+
+  private buildStatues(): void {
+    for (const rank of [1, 2, 3]) {
+      const p = PLACEMENTS.find((x) => x.id === `statue-${rank}`)!
+      // `top` is where the statue stands; `face` is the middle of the podium's front, for the name.
+      let top = p.y - p.h + 4
+      let face = p.y - p.h * 0.6 + 8
+      const art = this.prop("podium")
+      if (art) {
+        const podium = this.add
+          .image(p.x, p.y, art.file)
+          .setOrigin(art.origin?.[0] ?? 0.5, art.origin?.[1] ?? 1)
+          .setScale(1 / art.density)
+          .setDepth(p.y)
+        // A round podium seen from 22 degrees above: its top face is an ellipse 0.375 x width tall.
+        const lid = podium.displayWidth * 0.375
+        top = p.y - podium.displayHeight + lid / 2
+        face = (p.y - podium.displayHeight + lid + p.y) / 2
+      } else {
+        const g = this.add.graphics({ x: p.x, y: p.y }).setDepth(p.y)
+        drawPlaceholder(g, p.placeholder ?? "podium", p.w, p.h)
+      }
+      if (p.foot)
+        this.nav.blockRect(
+          p.x - p.foot[0] / 2,
+          p.y - p.foot[1],
+          p.foot[0],
+          p.foot[1]
+        )
+      const base = rank === 1 ? 1.1 : 1
+      const img = this.add
+        .image(p.x, top, "__WHITE")
+        .setDepth(p.y + 0.5)
+        .setVisible(false)
+      const name = this.text(p.x, face, "", 12, "#2a1a08", "800")
+        .setOrigin(0.5, 0.5)
+        .setDepth(p.y + 1)
+      const sub = this.text(p.x, p.y + 6, "", 12, "#ffe7a3", "700")
+        .setOrigin(0.5, 0)
+        .setBackgroundColor("rgba(12,17,27,0.6)")
+        .setPadding(6, 2, 6, 2)
+        .setDepth(DEPTH_LABEL + p.y)
+      // The rank mark: a gold, silver or bronze disc with the number (no emoji), drawn by placeMark.
+      const mark = this.add.graphics().setDepth(p.y + 1)
+      const markText = this.text(p.x, top, String(rank), 15, "#2a1a08", "800")
+        .setOrigin(0.5, 0.5)
+        .setDepth(p.y + 1.1)
+      this.statues.push({ img, name, sub, mark, markText, top, base, file: "" })
+      this.addHot(
+        new Phaser.Geom.Rectangle(
+          p.x - p.w / 2,
+          top - 110 * base,
+          p.w,
+          p.y - top + 110 * base
+        ),
+        p.interact!,
+        p.y
+      )
+    }
+  }
+
+  /** The top 3 of the month (people with at least one correct call) take the statues; the rest stay empty. */
+  private updateStatues(board: ThanTaiLeaderboard | null): void {
+    if (this.disposed) return
+    this.statues.forEach((s, i) => {
+      const rank = i + 1
+      const row = board?.rows.find((r) => r.rank === rank && r.correct > 0)
+      // An empty podium shows the first character, dimmed.
+      const art = this.character(row?.avatar ?? "male01").statue
+      s.file = art?.file ?? ""
+      if (art) {
+        const apply = (): void => {
+          if (this.disposed || s.file !== art.file) return
+          if (!this.textures.exists(art.file)) return
+          s.img.setVisible(true)
+          this.setFrame(s.img, art, s.base)
+          this.placeMark(s, rank, Boolean(row))
+        }
+        if (this.textures.exists(art.file)) apply()
+        else void this.loadStatueArt(art).then(apply)
+      } else {
+        s.img.setVisible(false)
+      }
+      if (row) {
+        s.img.setAlpha(1).clearTint()
+        s.name.setText(
+          row.name.length > 14 ? `${row.name.slice(0, 13)}…` : row.name
+        )
+        s.sub.setText(`${row.correct}/${row.total} lần đúng`).setVisible(true)
+      } else {
+        s.img.setAlpha(0.35).setTint(0x8a8f99)
+        s.name.setText("Chưa có")
+        s.sub.setText("").setVisible(false)
+      }
+      this.placeMark(s, rank, Boolean(row))
+    })
+  }
+
+  /** Draws the numbered disc above the statue's head (above the podium while the art has not loaded). */
+  private placeMark(s: Statue, rank: number, filled: boolean): void {
+    const headY = s.img.visible
+      ? s.img.y - s.img.displayHeight * s.img.originY
+      : s.top - 110 * s.base
+    const cy = headY - 20
+    const colour = [0xf3c64a, 0xcfd5de, 0xc98a52][rank - 1]!
+    const r = 15
+    s.mark
+      .clear()
+      .setAlpha(filled ? 1 : 0.4)
+      .fillStyle(0x2a1a08, 0.35)
+      .fillCircle(s.img.x, cy + 2, r + 1)
+      .fillStyle(colour, 1)
+      .fillCircle(s.img.x, cy, r)
+      .lineStyle(2, 0x2a1a08, 0.9)
+      .strokeCircle(s.img.x, cy, r)
+    s.markText.setPosition(s.img.x, cy).setAlpha(filled ? 1 : 0.5)
+  }
+
+  /** Statue pictures are not preloaded (only the top 3 of the month need one): a picture loads when first wanted. */
+  private loadStatueArt(art: FrameArt): Promise<void> {
+    const existing = this.statueLoads.get(art.file)
+    if (existing) return existing
+    const job = (this.loadChain = this.loadChain.then(
+      () =>
+        new Promise<void>((resolve) => {
+          if (this.textures.exists(art.file) || !this.sys.isActive())
+            return resolve()
+          this.load.setPath(ASSET_ROOT)
+          this.load.image(art.file, art.file)
+          // COMPLETE fires after a failure too; the slot then simply stays without a statue.
+          this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve())
+          this.load.start()
+        })
+    ))
+    this.statueLoads.set(art.file, job)
+    return job
+  }
+
+  private setFrame(
+    img: Phaser.GameObjects.Image,
+    art: FrameArt,
+    base: number
+  ): void {
+    const src = this.textures.get(art.file).getSourceImage() as {
+      width: number
+      height: number
+    }
+    img
+      .setTexture(art.file)
+      .setOrigin(art.anchor[0] / src.width, art.anchor[1] / src.height)
+      .setScale(base / art.density)
+  }
+
   // ---------- people ----------
 
   private buildPeople(): void {
@@ -1069,6 +1272,7 @@ export class OfficeScene extends Phaser.Scene {
       facing: p.facing,
       moving: p.moving,
       at: this.time.now,
+      sacoId: p.sacoId,
     })
     void this.dress(
       avatar,
@@ -1149,10 +1353,16 @@ export class OfficeScene extends Phaser.Scene {
     }
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (!this.player || ui.panel.get() || appDialogOpen()) return
+      // A SACO's figure (or name tag) opens the chat with that SACO instead of walking there.
+      const sacoId = this.sacoAt(pointer.worldX, pointer.worldY)
+      if (sacoId) return void openDirectChat(sacoId)
       const hot = this.hotAt(pointer.worldX, pointer.worldY)
       if (hot) this.goInteract(hot.interact)
       else this.walkTo({ x: pointer.worldX, y: pointer.worldY })
     })
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) =>
+      this.hoverSaco(pointer)
+    )
     this.input.on(
       "wheel",
       (_p: unknown, _o: unknown, _dx: number, dy: number) => {
@@ -1161,6 +1371,35 @@ export class OfficeScene extends Phaser.Scene {
         this.applyZoom()
       }
     )
+  }
+
+  /** Mouse over a SACO's figure: the pointer cursor says it can be clicked. */
+  private hoverSaco(pointer: Phaser.Input.Pointer): void {
+    if (pointer.wasTouch) return
+    const over =
+      !ui.panel.get() && this.sacoAt(pointer.worldX, pointer.worldY) !== null
+    this.input.setDefaultCursor(over ? "pointer" : "")
+  }
+
+  /**
+   * The SACO whose figure or name tag is at this world point (the front-most one). The target is at
+   * least 44 CSS px each way at the current zoom, so a small figure on a phone is still easy to tap.
+   */
+  private sacoAt(x: number, y: number): string | null {
+    const cam = this.cameras.main
+    const min = (44 * (window.devicePixelRatio || 1)) / cam.zoom
+    let found: { sacoId: string; depth: number } | null = null
+    for (const peer of this.peers.values()) {
+      if (!peer.sacoId || isOwnSaco(peer.sacoId)) continue
+      const b = peer.avatar.bounds()
+      const w = Math.max(b.width, min)
+      const h = Math.max(b.height, min)
+      if (Math.abs(x - b.centerX) > w / 2 || Math.abs(y - b.centerY) > h / 2)
+        continue
+      if (!found || peer.avatar.y > found.depth)
+        found = { sacoId: peer.sacoId, depth: peer.avatar.y }
+    }
+    return found?.sacoId ?? null
   }
 
   private hotAt(x: number, y: number): Hot | undefined {
@@ -1231,7 +1470,7 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   applyZoom(): void {
-    const dpr = window.devicePixelRatio || 1
+    const dpr = renderRatio()
     const cssW = this.scale.width / dpr
     const cssH = this.scale.height / dpr
     // The room fills the screen edge to edge by default (the smallest zoom that shows no void past the
@@ -1247,7 +1486,9 @@ export class OfficeScene extends Phaser.Scene {
     this.updateLedIndex(world.indices.get())
     this.updateLedTiles(world.vn30.get())
     this.updatePosts(world.posts.get())
+    this.updateStatues(world.leaderboard.get())
     this.disposers.push(
+      world.leaderboard.subscribe((v) => this.updateStatues(v)),
       world.indices.subscribe((v) => this.updateLedIndex(v)),
       world.vn30.subscribe((v) => this.updateLedTiles(v)),
       world.posts.subscribe((v) => this.updatePosts(v))
@@ -1331,6 +1572,28 @@ export class OfficeScene extends Phaser.Scene {
     for (const peer of this.peers.values()) this.movePeer(peer, dt, delta)
     this.greetVisitors(time)
     this.updateHint()
+    this.declutterTags(time)
+  }
+
+  /**
+   * Keeps name tags readable in a crowd: a tag that would cover the tag of a figure standing in front
+   * steps up above it. Figures in front (lower on screen) keep their tag in place.
+   */
+  private declutterTags(time: number): void {
+    if (time < this.declutterAt) return
+    this.declutterAt = time + TAG_DECLUTTER_MS
+    const figures = [...this.peers.values()].map((p) => p.avatar)
+    if (this.player) figures.push(this.player)
+    const tagged = figures
+      .map((figure) => ({ figure, box: figure.tagBox() }))
+      .filter((t): t is { figure: Avatar; box: TagBox } => t.box !== null)
+      .sort((a, b) => b.figure.y - a.figure.y)
+    const lifts = liftTags(
+      tagged.map((t) => t.box),
+      TAG_GAP,
+      TAG_MAX_STEPS
+    )
+    tagged.forEach((t, i) => t.figure.liftTag(lifts[i]))
   }
 
   /**

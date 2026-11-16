@@ -1,5 +1,5 @@
 /** REST client of the trading floor: `/api/v2/trading-floor/*`, through the shared authenticated `api`. */
-import { api as http } from "@/lib/api"
+import { api as http, apiUpload } from "@/lib/api"
 
 import { guestHeaders } from "./guest.ts"
 import type {
@@ -12,6 +12,8 @@ import type {
   MeResponse,
   Profile,
   SacoSelf,
+  StartResult,
+  ThanTaiLeaderboard,
   ThanTaiResults,
   ThanTaiToday,
 } from "./types.ts"
@@ -44,9 +46,8 @@ export const floorApi = {
       body: JSON.stringify(profile),
     }),
   inbox: () => read<Inbox>("/chat/inbox"),
-  match: () =>
-    send<{ convId: string } | { running: true }>("POST", "/chat/match"),
-  cancelMatch: () => send<{ ok: true }>("POST", "/chat/match/cancel"),
+  /** Chat SACO, message first: into the matched conversation, or queued while a SACO is found (`chat:match`). */
+  start: (text: string) => send<StartResult>("POST", "/chat/start", { text }),
   openDirect: (sacoId: string) =>
     send<ConvSummary>("POST", "/chat/open", { sacoId }),
   conversation: (convId: string) =>
@@ -55,6 +56,26 @@ export const floorApi = {
     send<ChatMessage>("POST", `/chat/convs/${id(convId)}/send`, { text }),
   read: (convId: string) =>
     send<{ ok: true }>("POST", `/chat/convs/${id(convId)}/read`),
+  /** One image (JPG, PNG, WebP up to 5 MB) into a conversation, with upload progress in percent. */
+  sendImage: async (
+    convId: string,
+    file: File,
+    onProgress: (percent: number) => void
+  ): Promise<ChatMessage> => {
+    const response = await apiUpload(
+      `${BASE}/chat/convs/${id(convId)}/images`,
+      file,
+      onProgress,
+      undefined,
+      guestHeaders()
+    )
+    return (await response.json()) as ChatMessage
+  },
+  recall: (convId: string, messageId: number) =>
+    send<{ ok: true }>(
+      "POST",
+      `/chat/convs/${id(convId)}/messages/${messageId}/recall`
+    ),
   answerInvite: (inviteId: number, accept: boolean) =>
     send<{ ok: true }>("POST", `/chat/invites/${inviteId}`, { accept }),
   duty: (on: boolean) => send<SacoSelf>("POST", "/saco/duty", { on }),
@@ -68,5 +89,10 @@ export const floorApi = {
     cau: (tickers: string[]) =>
       send<ThanTaiToday>("POST", "/than-tai/cau", { tickers }),
     results: () => read<ThanTaiResults>("/than-tai/results"),
+    /** Monthly hall of fame; `month` is `YYYY-MM`, omitted = this month. Public. */
+    leaderboard: (month?: string) =>
+      read<ThanTaiLeaderboard>(
+        `/than-tai/leaderboard${month ? `?month=${id(month)}` : ""}`
+      ),
   },
 }

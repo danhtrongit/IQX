@@ -114,6 +114,8 @@ export interface Peer extends Profile, PeerState {
   id: string
   /** The account holds an active SACO right: a SACO badge sits before the name. Absent otherwise. */
   saco?: boolean
+  /** That SACO's id (what `POST chat/open` takes): tapping the figure opens the chat with them. */
+  sacoId?: string
 }
 
 export interface MeResponse {
@@ -219,6 +221,28 @@ export interface ThanTaiResults {
   asOf: number
 }
 
+/** One line of the monthly hall of fame. */
+export interface LeaderRow {
+  rank: number
+  name: string
+  avatar: string
+  color: string
+  correct: number
+  total: number
+}
+
+/** `GET /than-tai/leaderboard`: top 10 of the month by correct VNINDEX calls, and the caller's own line. */
+export interface ThanTaiLeaderboard {
+  /** `YYYY-MM`. */
+  month: string
+  /** Trading days of the month that already have a settled close. */
+  scoredDays: number
+  rows: LeaderRow[]
+  /** The caller's line with the real rank; null for guests and for people with nothing scored. */
+  me: LeaderRow | null
+  asOf: number
+}
+
 /** Admin library: one quẻ (trigram keys `can|khon|chan|kham|can_son|ton|ly|doai`). */
 export interface AdminQue {
   id: number
@@ -286,11 +310,22 @@ export type HanhConfigPatch = Partial<
 /** Who wrote a message: the user, the SACO, or the system (match notice, SACO removed). */
 export type Sender = "u" | "s" | "x"
 
+/** An image in a message, at its size after the server re-encoded it. */
+export interface ChatImage {
+  id: string
+  w: number
+  h: number
+}
+
 export interface ChatMessage {
   id: number
   from: Sender
+  /** Empty for an image message and for a recalled one (the staff history keeps the original text). */
   text: string
   at: number
+  image?: ChatImage
+  /** The sender recalled it: no text, no image (see `chat-preview.ts`). */
+  recalled?: true
 }
 
 /** The SACO behind this account. `active` false: rights removed, old chats read-only. */
@@ -349,10 +384,24 @@ export interface InviteEvent {
   id: number
   userName: string
   deadline: number
+  /** First message the visitor already sent (up to 120 characters); absent for an old-style search. */
+  preview?: string
 }
 
+/** `auto`: nobody accepted, the conversation went to a SACO by ranking. */
 export type InviteResult =
-  "accept" | "decline" | "timeout" | "skip-off" | "skip-busy" | "cancel"
+  | "accept"
+  | "decline"
+  | "timeout"
+  | "skip-off"
+  | "skip-busy"
+  | "cancel"
+  | "auto"
+
+/** Answer of `POST chat/start`: sent into the matched conversation, or queued while a SACO is found. */
+export type StartResult =
+  | { convId: string; message: ChatMessage }
+  | { pending: true }
 
 // ---------- SACO nhận định (posts) ----------
 
@@ -362,6 +411,8 @@ export interface PostCard {
   sacoName: string
   headline: string
   publishedAt: number
+  /** Lần sửa gần nhất của tác giả sau khi đăng; null nếu chưa sửa. */
+  editedAt: number | null
   hearts: number
   comments: number
   hearted: boolean
@@ -388,7 +439,8 @@ export interface PostComment {
   reported: boolean
 }
 
-export type PostStatus = "draft" | "published" | "hidden"
+/** `hidden`: quản trị ẩn; `withdrawn`: tác giả tự thu hồi (đăng lại được). */
+export type PostStatus = "draft" | "published" | "hidden" | "withdrawn"
 
 export interface MyPost {
   id: string
@@ -396,6 +448,7 @@ export interface MyPost {
   status: PostStatus
   savedAt: number
   publishedAt: number | null
+  editedAt: number | null
   hearts: number
   comments: number
   newComments: number
@@ -431,12 +484,15 @@ export type ServerMessage =
   | { type: "peer:update"; peer: Peer }
   | { type: "chat:msg"; convId: string; message: ChatMessage }
   | { type: "chat:read"; convId: string; side: "user" | "saco"; at: number }
+  | { type: "chat:recall"; convId: string; messageId: number }
   | { type: "chat:typing"; convId: string; side: "user" | "saco" }
   | { type: "chat:inbox" }
   | { type: "chat:match"; event: MatchEvent }
   | { type: "chat:invite"; invite: InviteEvent }
   | { type: "chat:invite:end"; id: number }
   | { type: "post:new"; post: PostCard }
+  /** The author edited a published post: same card shape as `post:new`. */
+  | { type: "post:updated"; post: PostCard }
   | { type: "post:hidden"; id: string }
   | { type: "post:heart"; id: string; hearts: number }
   | { type: "post:comment"; postId: string; comments: number }

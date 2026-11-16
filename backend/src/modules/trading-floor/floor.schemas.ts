@@ -6,7 +6,7 @@
 import type { SchemaObject } from '@nestjs/swagger';
 import { z } from 'zod';
 
-import { FLOOR_AVATARS, FLOOR_OUTFIT_COLORS } from './floor-types.js';
+import { FLOOR_AVATARS, FLOOR_OUTFIT_COLORS, INVITE_RESULTS } from './floor-types.js';
 
 export const openapi = (schema: z.ZodType): SchemaObject =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
@@ -22,6 +22,7 @@ export type FloorProfileBody = z.infer<typeof floorProfileBodySchema>;
 
 export const floorIdParamSchema = z.uuid();
 export const floorInviteIdParamSchema = z.coerce.number().int().min(1).max(2_147_483_647);
+export const floorMessageIdParamSchema = z.coerce.number().int().min(1).max(Number.MAX_SAFE_INTEGER);
 
 /** Độ dài thật (1.000 ký tự sau khi làm sạch) do service kiểm tra để trả đúng mã lỗi. */
 export const floorChatSendBodySchema = z.strictObject({ text: z.string().max(4000) });
@@ -76,6 +77,8 @@ const chatMessage = z.object({
   from: z.enum(['u', 's', 'x']),
   text: z.string(),
   at: z.number(),
+  image: z.object({ id: z.string(), w: z.number().int(), h: z.number().int() }).optional(),
+  recalled: z.literal(true).optional(),
 });
 
 const convSummary = z.object({
@@ -143,6 +146,12 @@ export const FLOOR_INBOX_SCHEMA = openapi(
 export const FLOOR_MATCH_SCHEMA = openapi(
   z.union([z.object({ convId: z.string() }), z.object({ running: z.literal(true) })]),
 );
+export const FLOOR_START_SCHEMA = openapi(
+  z.union([
+    z.object({ convId: z.string(), message: chatMessage }),
+    z.object({ pending: z.literal(true) }),
+  ]),
+);
 export const FLOOR_OK_SCHEMA = openapi(z.object({ ok: z.literal(true) }));
 export const FLOOR_CONV_SUMMARY_SCHEMA = openapi(convSummary);
 export const FLOOR_CONV_DETAIL_SCHEMA = openapi(
@@ -176,7 +185,7 @@ export const FLOOR_MANAGE_INVITES_SCHEMA = openapi(
         userName: z.string(),
         sacoName: z.string(),
         sacoIcon: z.string(),
-        result: z.enum(['accept', 'decline', 'timeout', 'skip-off', 'skip-busy', 'cancel']),
+        result: z.enum(INVITE_RESULTS),
       }),
     ),
   }),

@@ -11,6 +11,7 @@ import {
   hexLines,
   openingStep,
   serverOffset,
+  shouldAutoOpenThanTai,
   splitSegments,
   tickerSuggestions,
   topWidths,
@@ -190,5 +191,57 @@ describe("describeFailure", () => {
       text: "Bạn đã dâng lễ cầu mã hôm nay rồi.",
     })
     expect(describeFailure(new ApiError("x", 400)).kind).toBe("other")
+  })
+})
+
+describe("shouldAutoOpenThanTai", () => {
+  const deadline = at("2026-11-15T04:30:00Z") // 11:30 VN
+  const early = at("2026-11-15T02:45:00Z") // 09:45 VN
+  const late = at("2026-11-15T05:00:00Z") // 12:00 VN
+
+  it("opens for a visitor who can still pray, on a day not shown yet", () => {
+    expect(
+      shouldAutoOpenThanTai({ status: "chua_khan", deadline }, early, null)
+    ).toBe(true)
+    expect(
+      shouldAutoOpenThanTai(
+        { status: "dang_do", deadline },
+        early,
+        "2026-11-14"
+      )
+    ).toBe(true)
+  })
+
+  it("does not open twice on the same Vietnam day", () => {
+    expect(
+      shouldAutoOpenThanTai(
+        { status: "chua_khan", deadline },
+        early,
+        "2026-11-15"
+      )
+    ).toBe(false)
+    // 17:30 UTC on the 15th is already 00:30 VN of the 16th: a new day.
+    expect(
+      shouldAutoOpenThanTai(
+        { status: "chua_khan", deadline: at("2026-11-16T04:30:00Z") },
+        at("2026-11-15T17:30:00Z"),
+        "2026-11-15"
+      )
+    ).toBe(true)
+  })
+
+  it("stays closed when the ritual is done or the 11:30 deadline has passed", () => {
+    expect(
+      shouldAutoOpenThanTai({ status: "da_xong", deadline }, early, null)
+    ).toBe(false)
+    expect(
+      shouldAutoOpenThanTai({ status: "het_gio", deadline }, early, null)
+    ).toBe(false)
+    expect(
+      shouldAutoOpenThanTai({ status: "chua_khan", deadline }, late, null)
+    ).toBe(false)
+    expect(
+      shouldAutoOpenThanTai({ status: "dang_do", deadline }, deadline, null)
+    ).toBe(false)
   })
 })

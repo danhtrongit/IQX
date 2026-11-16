@@ -1,7 +1,10 @@
 /**
  * Quy tắc thuần của Nhắn tin với SACO (port từ `shared/chat.ts` và `server/chat.ts` của IQX-KhuGiaoDich):
- * làm sạch tin, giới hạn tần suất, biểu tượng SACO và đổi chỗ trong hàng khớp.
+ * làm sạch tin, giới hạn tần suất, biểu tượng SACO, đổi chỗ trong hàng khớp và chọn SACO khi không ai
+ * nhận lời, quyền thu hồi tin và giới hạn ảnh.
  */
+
+import type { ChatSender } from './floor-types.js';
 
 export const CHAT_RULES = {
   /** Thời gian một SACO có để nhận lời mời từ Chat SACO. */
@@ -18,6 +21,68 @@ export const CHAT_RULES = {
   /** Số tin tối đa khi trưởng nhóm xem lại một cuộc chat. */
   staffHistory: 5_000,
 } as const;
+
+/** Chat SACO nhắn trước: số tin tối đa chờ trong một lượt phân phối, độ dài bản xem trước trên lời mời. */
+export const DISPATCH_RULES = {
+  maxQueued: 5,
+  previewMax: 120,
+} as const;
+
+/** Bản xem trước của tin đầu tiên trên lời mời gửi SACO: một dòng, tối đa 120 ký tự (kể cả dấu "…"). */
+export function invitePreview(text: string, max: number = DISPATCH_RULES.previewMax): string {
+  const line = text.replace(/\s+/g, ' ').trim();
+  const chars = Array.from(line);
+  return chars.length > max ? `${chars.slice(0, max - 1).join('').trimEnd()}…` : line;
+}
+
+/** Một SACO trong thứ hạng khi chọn người nhận cuộc chat không ai nhận lời. */
+export interface DispatchCandidate {
+  readonly id: string;
+  readonly userId: string;
+  readonly active: boolean;
+  readonly onDuty: boolean;
+  /** Chủ tài khoản đang có socket. */
+  readonly online: boolean;
+}
+
+/**
+ * Người nhận khi không SACO nào nhận lời (hoặc không ai đang trực): SACO còn hoạt động xếp cao nhất đang
+ * có socket (trực hay không đều được), không có thì SACO còn hoạt động xếp cao nhất. Không bao giờ là
+ * chính người chat. `ranking` theo đúng thứ tự khớp; null khi không còn SACO nào.
+ */
+export function pickFallbackSaco(
+  ranking: readonly DispatchCandidate[],
+  ownerId: string,
+): string | null {
+  const eligible = ranking.filter((saco) => saco.active && saco.userId !== ownerId);
+  return (eligible.find((saco) => saco.online) ?? eligible[0])?.id ?? null;
+}
+
+/** Ảnh trong chat: mỗi người gửi tối đa 10 ảnh trong một cuộc chat mỗi 10 phút (ngoài giới hạn gửi tin). */
+export const IMAGE_RULES = {
+  perWindow: 10,
+  windowMs: 10 * 60_000,
+} as const;
+
+/**
+ * Cửa sổ trượt ảnh của một người trong một cuộc chat: các mốc còn trong cửa sổ, và có được gửi thêm
+ * không. Không đổi mảng đầu vào.
+ */
+export function imageWindow(
+  times: readonly number[],
+  now: number,
+): { allowed: boolean; kept: number[] } {
+  const kept = times.filter((at) => at <= now && now - at < IMAGE_RULES.windowMs);
+  return { allowed: kept.length < IMAGE_RULES.perWindow, kept };
+}
+
+/**
+ * Thu hồi: chỉ người gửi thu hồi tin của chính mình (phía người chat thu hồi tin `u`, phía SACO tin `s`),
+ * tin hệ thống không bao giờ. Không giới hạn thời gian.
+ */
+export function canRecall(from: ChatSender, side: 'user' | 'saco'): boolean {
+  return from === (side === 'user' ? 'u' : 's');
+}
 
 /** Bộ thời gian có thể sửa để test rút ngắn cửa sổ lời mời (KGD `timing`). */
 export const floorChatTiming = { inviteMs: CHAT_RULES.inviteMs as number };

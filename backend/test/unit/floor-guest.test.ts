@@ -11,6 +11,7 @@ import {
 } from '../../src/modules/trading-floor/floor-actor.js';
 import { FloorEvents } from '../../src/modules/trading-floor/floor-events.js';
 import { FloorPresence } from '../../src/modules/trading-floor/floor-presence.js';
+import { FLOOR_GUEST_CREATE_MAX } from '../../src/modules/trading-floor/floor-profile.logic.js';
 import { FloorProfileService } from '../../src/modules/trading-floor/floor-profile.service.js';
 import type { FloorProfileRepository } from '../../src/modules/trading-floor/floor-profile.repository.js';
 import { FloorHub, type FloorHubSocket } from '../../src/modules/trading-floor/floor.hub.js';
@@ -102,16 +103,18 @@ describe('FloorProfileService guests', () => {
     ).resolves.toBeDefined();
   });
 
-  it('allows 10 creations per IP per hour then answers 429 GUEST_RATE_LIMIT', async () => {
+  it('allows FLOOR_GUEST_CREATE_MAX creations per IP per hour then answers 429 GUEST_RATE_LIMIT', async () => {
     const { service } = makeService();
     const input = { name: 'Khách', avatar: 'male01', color: 'default' } as const;
     const t0 = 5_000_000;
-    for (let i = 0; i < 10; i++) await service.createGuest('1.1.1.1', input, t0 + i);
-    await expect(service.createGuest('1.1.1.1', input, t0 + 20)).rejects.toMatchObject({
+    for (let i = 0; i < FLOOR_GUEST_CREATE_MAX; i++)
+      await service.createGuest('1.1.1.1', input, t0 + i);
+    const full = t0 + FLOOR_GUEST_CREATE_MAX;
+    await expect(service.createGuest('1.1.1.1', input, full)).rejects.toMatchObject({
       status: 429,
       response: { code: 'GUEST_RATE_LIMIT' },
     });
-    await expect(service.createGuest('2.2.2.2', input, t0 + 20)).resolves.toBeDefined();
+    await expect(service.createGuest('2.2.2.2', input, full)).resolves.toBeDefined();
     await expect(service.createGuest('1.1.1.1', input, t0 + 3_600_001)).resolves.toBeDefined();
   });
 
@@ -200,7 +203,7 @@ function makeHub() {
     typingOwner: '',
   };
   const profileListeners: Array<(id: string, profile: FloorProfile) => void> = [];
-  const sacoListeners: Array<(id: string, saco: boolean) => void> = [];
+  const sacoListeners: Array<(id: string, sacoId: string | null) => void> = [];
   const guestProfile: FloorProfile = { name: 'Khách Vui', avatar: 'female01', color: 'plum' };
   const hub = new FloorHub(
     {} as never,
@@ -225,7 +228,7 @@ function makeHub() {
         profileListeners.push(fn);
         return () => undefined;
       },
-      onSacoChanged: (fn: (id: string, saco: boolean) => void) => {
+      onSacoChanged: (fn: (id: string, sacoId: string | null) => void) => {
         sacoListeners.push(fn);
         return () => undefined;
       },
@@ -363,19 +366,22 @@ describe('FloorHub guests', () => {
     await hub.message(plain, JSON.stringify({ type: 'auth', token: 'acct-2' }));
     await hub.message(plain, HELLO);
 
-    expect(saco.last('welcome')).toMatchObject({ self: { saco: true } });
+    expect(saco.last('welcome')).toMatchObject({ self: { saco: true, sacoId: 'saco-1' } });
     const joins = guest.sent.filter((m) => m.type === 'peer:join').map((m) => m.peer);
     expect(joins).toHaveLength(2);
-    expect(joins[0]).toMatchObject({ saco: true });
+    // The SACO id rides along so a tap on the figure opens the chat with that SACO.
+    expect(joins[0]).toMatchObject({ saco: true, sacoId: 'saco-1' });
     expect(joins[1]).not.toHaveProperty('saco');
+    expect(joins[1]).not.toHaveProperty('sacoId');
     const peers = plain.last('welcome')!.peers as Array<Record<string, unknown>>;
-    expect(peers.filter((p) => p.saco === true)).toHaveLength(1);
+    expect(peers.filter((p) => p.saco === true && p.sacoId === 'saco-1')).toHaveLength(1);
 
     // Quyền bị gỡ rồi tài khoản khác được gán: cả sàn thấy nhãn đổi ngay.
-    for (const fn of sacoListeners) fn('acct-saco', false);
+    for (const fn of sacoListeners) fn('acct-saco', null);
     expect(guest.last('peer:update')!.peer).not.toHaveProperty('saco');
-    for (const fn of sacoListeners) fn('acct-2', true);
-    expect(guest.last('peer:update')).toMatchObject({ peer: { saco: true } });
+    expect(guest.last('peer:update')!.peer).not.toHaveProperty('sacoId');
+    for (const fn of sacoListeners) fn('acct-2', 'saco-2');
+    expect(guest.last('peer:update')).toMatchObject({ peer: { saco: true, sacoId: 'saco-2' } });
   });
 
   it('the owner account still speaks in public and everyone on the floor hears it', async () => {

@@ -1502,6 +1502,11 @@
       "requestType": "FloorChatConversationData",
       "responseType": "FloorChatConversationResponses"
     },
+    "GET /api/v2/trading-floor/chat/images/{imageId}": {
+      "operationId": "floorChatImage",
+      "requestType": "FloorChatImageData",
+      "responseType": "FloorChatImageResponses"
+    },
     "GET /api/v2/trading-floor/chat/inbox": {
       "operationId": "floorChatInbox",
       "requestType": "FloorChatInboxData",
@@ -1596,6 +1601,11 @@
       "operationId": "tradingFloorSacoPost",
       "requestType": "TradingFloorSacoPostData",
       "responseType": "TradingFloorSacoPostResponses"
+    },
+    "GET /api/v2/trading-floor/than-tai/leaderboard": {
+      "operationId": "thanTaiLeaderboard",
+      "requestType": "ThanTaiLeaderboardData",
+      "responseType": "ThanTaiLeaderboardResponses"
     },
     "GET /api/v2/trading-floor/than-tai/results": {
       "operationId": "thanTaiResults",
@@ -2557,6 +2567,16 @@
       "requestType": "TelegramControllerWebhook1Data",
       "responseType": "TelegramControllerWebhook1Responses"
     },
+    "POST /api/v2/trading-floor/chat/convs/{id}/images": {
+      "operationId": "floorChatSendImage",
+      "requestType": "FloorChatSendImageData",
+      "responseType": "FloorChatSendImageResponses"
+    },
+    "POST /api/v2/trading-floor/chat/convs/{id}/messages/{messageId}/recall": {
+      "operationId": "floorChatRecall",
+      "requestType": "FloorChatRecallData",
+      "responseType": "FloorChatRecallResponses"
+    },
     "POST /api/v2/trading-floor/chat/convs/{id}/read": {
       "operationId": "floorChatRead",
       "requestType": "FloorChatReadData",
@@ -2586,6 +2606,11 @@
       "operationId": "floorChatOpen",
       "requestType": "FloorChatOpenData",
       "responseType": "FloorChatOpenResponses"
+    },
+    "POST /api/v2/trading-floor/chat/start": {
+      "operationId": "floorChatStart",
+      "requestType": "FloorChatStartData",
+      "responseType": "FloorChatStartResponses"
     },
     "POST /api/v2/trading-floor/guest": {
       "operationId": "floorGuestCreate",
@@ -2652,6 +2677,11 @@
       "requestType": "TradingFloorSacoPostCommentsSeenData",
       "responseType": "TradingFloorSacoPostCommentsSeenResponses"
     },
+    "POST /api/v2/trading-floor/saco/posts/{id}/edit": {
+      "operationId": "tradingFloorSacoPostEdit",
+      "requestType": "TradingFloorSacoPostEditData",
+      "responseType": "TradingFloorSacoPostEditResponses"
+    },
     "POST /api/v2/trading-floor/saco/posts/{id}/images": {
       "operationId": "tradingFloorSacoPostImageUpload",
       "requestType": "TradingFloorSacoPostImageUploadData",
@@ -2661,6 +2691,16 @@
       "operationId": "tradingFloorSacoPostPublish",
       "requestType": "TradingFloorSacoPostPublishData",
       "responseType": "TradingFloorSacoPostPublishResponses"
+    },
+    "POST /api/v2/trading-floor/saco/posts/{id}/republish": {
+      "operationId": "tradingFloorSacoPostRepublish",
+      "requestType": "TradingFloorSacoPostRepublishData",
+      "responseType": "TradingFloorSacoPostRepublishResponses"
+    },
+    "POST /api/v2/trading-floor/saco/posts/{id}/withdraw": {
+      "operationId": "tradingFloorSacoPostWithdraw",
+      "requestType": "TradingFloorSacoPostWithdrawData",
+      "responseType": "TradingFloorSacoPostWithdrawResponses"
     },
     "POST /api/v2/trading-floor/than-tai/cau": {
       "operationId": "thanTaiCau",

@@ -47,6 +47,19 @@ export function PostReader({
       }
     )
     const offs = [
+      // Tác giả vừa sửa bài đang mở: tải lại nội dung âm thầm, giữ nguyên chỗ đang đọc.
+      floorSocket.on("post:updated", (message) => {
+        if (message.post.id !== postId) return
+        postsApi.detail(postId, controller.signal).then(
+          (post) => {
+            if (!controller.signal.aborted)
+              setState((current) =>
+                current.status === "ready" ? { status: "ready", post } : current
+              )
+          },
+          () => undefined
+        )
+      }),
       floorSocket.on("post:hidden", (message) => {
         if (message.id === postId) setState({ status: "gone" })
       }),
@@ -166,6 +179,7 @@ export function PostReader({
             <PostArticle
               sacoName={post.sacoName}
               publishedAt={post.publishedAt}
+              editedAt={post.editedAt}
               headline={post.headline}
               bodyHtml={post.bodyHtml}
             />

@@ -1,0 +1,166 @@
+/* Hall of fame panel. Every rule sits under .lb so nothing leaks into the floor. */
+.tf-root .lb {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.tf-root .lb-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.tf-root .lb-month {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  color: var(--fg);
+}
+.tf-root .lb-month span {
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.tf-root .lb-state {
+  margin: 0;
+  padding: 18px;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+}
+.tf-root .lb-state p {
+  margin: 0;
+}
+.tf-root .lb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.tf-root .lb-row {
+  display: grid;
+  grid-template-columns: 32px 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--raise);
+  border: 1px solid transparent;
+}
+.tf-root .lb-top1,
+.tf-root .lb-top2,
+.tf-root .lb-top3 {
+  background: linear-gradient(90deg, rgba(227, 179, 65, 0.16), var(--raise));
+}
+.tf-root .lb-me {
+  border-color: var(--accent);
+}
+.tf-root .lb-rank {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.tf-root .lb-top1 .lb-rank,
+.tf-root .lb-top2 .lb-rank,
+.tf-root .lb-top3 .lb-rank {
+  color: #2a1a08;
+}
+.tf-root .lb-top1 .lb-rank {
+  background: #f3c64a;
+}
+.tf-root .lb-top2 .lb-rank {
+  background: #cfd5de;
+}
+.tf-root .lb-top3 .lb-rank {
+  background: #c98a52;
+}
+.tf-root .lb-avatar {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+.tf-root .lb-who {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tf-root .lb-name {
+  min-width: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tf-root .lb-you {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #23170a;
+  font-size: 11px;
+  font-weight: 800;
+}
+.tf-root .lb-score {
+  display: grid;
+  justify-items: end;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+.tf-root .lb-score small {
+  color: var(--dim);
+  font-size: 12px;
+}
+.tf-root .lb-gap {
+  margin: 4px 0;
+  text-align: center;
+  color: var(--dim);
+  letter-spacing: 0.3em;
+  line-height: 1;
+}
+.tf-root .lb-pinned {
+  margin-top: 0;
+}
+.tf-root .lb-guest {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 14px;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raise);
+}
+.tf-root .lb-guest p {
+  margin: 0;
+  font-weight: 700;
+}
+.tf-root .lb-guest .btn {
+  min-width: 140px;
+}
+@media (max-width: 380px) {
+  .tf-root .lb-row {
+    grid-template-columns: 28px 34px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .tf-root .lb-avatar {
+    width: 34px;
+    height: 34px;
+  }
+}

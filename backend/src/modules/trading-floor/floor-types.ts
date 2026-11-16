@@ -65,17 +65,30 @@ export interface FloorPeer extends FloorProfile, FloorPeerState {
   id: string;
   /** Tài khoản đang giữ quyền SACO còn hoạt động: cả sàn thấy nhãn SACO cạnh tên. Không có khi không phải SACO. */
   saco?: true;
+  /** Mã SACO (`tf_sacos.id`, cái `POST chat/open` nhận) khi `saco`: chạm vào nhân vật để nhắn SACO đó. */
+  sacoId?: string;
 }
 
 // ---------- chat ----------
 
 export type ChatSender = 'u' | 's' | 'x';
 
+/** Ảnh trong một tin: phát ở `GET /api/v2/trading-floor/chat/images/:id`, kích thước sau khi nén. */
+export interface ChatImage {
+  id: string;
+  w: number;
+  h: number;
+}
+
 export interface ChatMessage {
   id: number;
   from: ChatSender;
+  /** Trống với tin ảnh, và với tin đã thu hồi (trừ lịch sử của trưởng nhóm, nơi chữ gốc được giữ). */
   text: string;
   at: number;
+  image?: ChatImage;
+  /** Người gửi đã thu hồi tin: ảnh không còn. */
+  recalled?: true;
 }
 
 export interface SacoSelf {
@@ -124,9 +137,32 @@ export interface InviteEvent {
   id: number;
   userName: string;
   deadline: number;
+  /** Tin đầu tiên người chat đã gửi (cắt 120 ký tự); không có với lượt tìm kiểu cũ (`chat/match`). */
+  preview?: string;
 }
 
-export type InviteResult = 'accept' | 'decline' | 'timeout' | 'skip-off' | 'skip-busy' | 'cancel';
+/** `auto`: không SACO nào nhận lời, cuộc chat được chuyển theo thứ hạng. */
+export type InviteResult =
+  | 'accept'
+  | 'decline'
+  | 'timeout'
+  | 'skip-off'
+  | 'skip-busy'
+  | 'cancel'
+  | 'auto';
+
+export const INVITE_RESULTS = [
+  'accept',
+  'decline',
+  'timeout',
+  'skip-off',
+  'skip-busy',
+  'cancel',
+  'auto',
+] as const satisfies readonly InviteResult[];
+
+/** Trả lời của `POST chat/start`: tin đã vào cuộc chat đang khớp, hoặc đang chờ phân phối. */
+export type StartResult = { convId: string; message: ChatMessage } | { pending: true };
 
 // ---------- quản trị SACO ----------
 

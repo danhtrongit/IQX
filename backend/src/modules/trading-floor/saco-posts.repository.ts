@@ -9,9 +9,9 @@ import type { SqlClient } from '../../platform/database/database.service.js';
 
 export const SACO_POSTS_REPOSITORY = Symbol('SACO_POSTS_REPOSITORY');
 
-export type DbPostStatus = 'draft' | 'published' | 'hidden';
+export type DbPostStatus = 'draft' | 'published' | 'hidden' | 'withdrawn';
 export type DbCommentStatus = 'visible' | 'hidden' | 'deleted';
-export type PostLogAction = 'publish' | 'hide' | 'unhide';
+export type PostLogAction = 'publish' | 'hide' | 'unhide' | 'edit' | 'withdraw' | 'republish';
 export type PostActorRole = 'saco' | 'admin' | 'team_lead';
 
 export type SacoRow = {
@@ -40,6 +40,7 @@ export type PostRow = {
   createdAt: Date;
   savedAt: Date;
   publishedAt: Date | null;
+  editedAt: Date | null;
   heartCount: number;
   commentCount: number;
   newComments: number;
@@ -139,7 +140,7 @@ const POST_COLUMNS = `
   s.on_duty AS "sacoOnDuty", s.user_id AS "sacoUserId", s.lead_user_id AS "leadUserId",
   COALESCE(l.full_name, '') AS "leadName", p.headline, p.body_html AS "bodyHtml", p.status,
   p.revision, p.created_at AS "createdAt", p.saved_at AS "savedAt", p.published_at AS "publishedAt",
-  p.heart_count AS "heartCount", p.comment_count AS "commentCount",
+  p.edited_at AS "editedAt", p.heart_count AS "heartCount", p.comment_count AS "commentCount",
   (SELECT count(*)::int FROM tf_post_comments nc
     WHERE nc.post_id = p.id AND nc.status = 'visible' AND nc.user_id <> s.user_id
       AND nc.created_at > COALESCE(p.comments_seen_at, p.published_at)) AS "newComments",
@@ -176,14 +177,21 @@ export abstract class SacoPostsRepository {
     tx: SqlClient,
     input: { id: string; headline: string; bodyHtml: string },
   ): Promise<void>;
+  /** Sửa tiêu điểm và nội dung của bài đã đăng tại chỗ: giữ nguyên trạng thái và giờ đăng. */
+  abstract editPublished(
+    tx: SqlClient,
+    input: { id: string; headline: string; bodyHtml: string },
+  ): Promise<void>;
   abstract deleteDraft(tx: SqlClient, id: string, sacoId: string): Promise<boolean>;
+  /** Xoá hẳn một bài đã thu hồi; ảnh, tim, bình luận và nhật ký đi theo (ON DELETE CASCADE). */
+  abstract deleteWithdrawn(tx: SqlClient, id: string, sacoId: string): Promise<boolean>;
   abstract listMine(db: SqlClient, sacoId: string, limit: number): Promise<PostRow[]>;
   abstract markCommentsSeen(db: SqlClient, id: string, sacoId: string): Promise<boolean>;
 
   abstract listManage(
     db: SqlClient,
     scope: StaffScope,
-    status: 'published' | 'hidden' | null,
+    status: 'published' | 'hidden' | 'withdrawn' | null,
     limit: number,
   ): Promise<ManagePostRow[]>;
   abstract setStatus(
@@ -336,6 +344,27 @@ export class PgSacoPostsRepository extends SacoPostsRepository {
     return rows.length > 0;
   }
 
+  async editPublished(
+    tx: SqlClient,
+    input: { id: string; headline: string; bodyHtml: string },
+  ): Promise<void> {
+    await tx.query(
+      `UPDATE tf_posts
+          SET headline = $2, body_html = $3, revision = revision + 1, saved_at = now(),
+              edited_at = now()
+        WHERE id = $1`,
+      [input.id, input.headline, input.bodyHtml],
+    );
+  }
+
+  async deleteWithdrawn(tx: SqlClient, id: string, sacoId: string): Promise<boolean> {
+    const rows = await tx.query(
+      `DELETE FROM tf_posts WHERE id = $1 AND saco_id = $2 AND status = 'withdrawn' RETURNING id`,
+      [id, sacoId],
+    );
+    return rows.length > 0;
+  }
+
   listMine(db: SqlClient, sacoId: string, limit: number) {
     return db.query<PostRow>(
       `SELECT ${POST_COLUMNS} ${POST_FROM}
@@ -357,7 +386,7 @@ export class PgSacoPostsRepository extends SacoPostsRepository {
   listManage(
     db: SqlClient,
     scope: StaffScope,
-    status: 'published' | 'hidden' | null,
+    status: 'published' | 'hidden' | 'withdrawn' | null,
     limit: number,
   ): Promise<ManagePostRow[]> {
     return db.query<ManagePostRow>(
@@ -371,7 +400,7 @@ export class PgSacoPostsRepository extends SacoPostsRepository {
          FROM tf_posts p
          JOIN tf_sacos s ON s.id = p.saco_id
          LEFT JOIN users l ON l.id = s.lead_user_id
-        WHERE p.status IN ('published', 'hidden')
+        WHERE p.status IN ('published', 'hidden', 'withdrawn')
           AND ($1::text IS NULL OR p.status = $1)
           AND ($2::uuid IS NULL OR s.lead_user_id = $2)
         ORDER BY p.published_at DESC, p.id DESC

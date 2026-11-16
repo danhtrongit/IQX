@@ -8,6 +8,8 @@ import {
 } from "./assets.ts"
 
 export const DEPTH_LABEL = 1_000_000
+/** Space between a pill and the name after it. */
+const BADGE_GAP = 4
 const FACINGS: Facing[] = ["e", "se", "s", "sw", "w", "nw", "n", "ne"]
 
 /** 8-way facing of a screen-space direction (y down). */
@@ -82,6 +84,9 @@ export class Avatar {
   private bubble: Phaser.GameObjects.Text | null = null
   private bubbleTimer: Phaser.Time.TimerEvent | null = null
   private bob = 0
+  /** How far the name tag is raised to clear the tag of a figure in front, and where it is heading. */
+  private tagLift = 0
+  private tagLiftTarget = 0
   private shown: string | null = null
   /** World units per second the figure is moving at; the walk cycle runs in proportion so feet do not slide. */
   private speed = 0
@@ -138,7 +143,21 @@ export class Avatar {
 
   /** Name tag height above the feet. */
   private get headY(): number {
-    return this.y - this.height
+    return this.y - this.height - this.tagLift
+  }
+
+  /** World box of the name tag with its pills where it sits unraised; null for a figure without a tag. */
+  tagBox(): { x: number; y: number; w: number; h: number } | null {
+    if (!this.tag) return null
+    const w =
+      this.tag.width + this.badges.reduce((sum, b) => sum + b.w + BADGE_GAP, 0)
+    const h = this.tag.height
+    return { x: this.x - w / 2, y: this.y - this.height - h, w, h }
+  }
+
+  /** Raises the name tag by `lift` world units (0 puts it back); it eases there over a few frames. */
+  liftTag(lift: number): void {
+    this.tagLiftTarget = lift
   }
 
   /** Anchor of the speech bubble: above the name tag (or the head), or beside the head on the right. */
@@ -178,6 +197,14 @@ export class Avatar {
 
   /** Glide characters (no walk art yet) bob while moving; the walk takes over once its sheet has loaded. */
   tick(dtMs: number): void {
+    if (this.tagLift !== this.tagLiftTarget) {
+      const gap = this.tagLiftTarget - this.tagLift
+      this.tagLift =
+        Math.abs(gap) < 0.5
+          ? this.tagLiftTarget
+          : this.tagLift + gap * Math.min(1, dtMs / 90)
+      this.place()
+    }
     if (this.moving && this.shown === null && this.walkFor(this.facing))
       this.refresh()
     if (this.moving && !this.walkFor(this.facing)) {
@@ -226,6 +253,15 @@ export class Avatar {
     this.shadow.destroy()
     this.tag?.destroy()
     this.clearBadges()
+  }
+
+  /** World rectangle of the figure with its name tag and pills, for tap and hover tests. */
+  bounds(): Phaser.Geom.Rectangle {
+    const r = this.sprite.getBounds()
+    if (this.tag) Phaser.Geom.Rectangle.Union(r, this.tag.getBounds(), r)
+    for (const b of this.badges)
+      Phaser.Geom.Rectangle.Union(r, b.label.getBounds(), r)
+    return r
   }
 
   /** Replaces the pills before the name where the character stands (a SACO right granted or removed). */
@@ -282,7 +318,7 @@ export class Avatar {
     this.sprite.setPosition(this.x, this.y - lift).setDepth(this.y)
     this.shadow.setPosition(this.x, this.y - 1).setDepth(this.y - 0.5)
     if (this.tag && this.badges.length) {
-      const gap = 4
+      const gap = BADGE_GAP
       const badgesW = this.badges.reduce((sum, b) => sum + b.w + gap, 0)
       let left = this.x - (badgesW + this.tag.width) / 2
       // Level with the first line of the name tag (13px text + 2px padding).

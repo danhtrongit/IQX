@@ -5,9 +5,20 @@
  * chỉ tài khoản. Quyền trong từng cuộc trò chuyện do service kiểm tra (người ngoài cuộc nhận 404).
  */
 
-import { Body, Controller, Get, HttpCode, Param, Post, Req } from '@nestjs/common';
+import type { MultipartFile } from '@fastify/multipart';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 import { CurrentUser, Public, type AuthenticatedUser } from '../auth/index.js';
 import { FloorActors, ownerIdOf } from './floor-actor.js';
@@ -20,12 +31,14 @@ import {
   FLOOR_MESSAGE_SCHEMA,
   FLOOR_OK_SCHEMA,
   FLOOR_SACO_SELF_SCHEMA,
+  FLOOR_START_SCHEMA,
   floorChatOpenBodySchema,
   floorChatSendBodySchema,
   floorDutyBodySchema,
   floorIdParamSchema,
   floorInviteAnswerBodySchema,
   floorInviteIdParamSchema,
+  floorMessageIdParamSchema,
 } from './floor.schemas.js';
 import type {
   ChatMessage,
@@ -33,8 +46,14 @@ import type {
   ConvSummary,
   Inbox,
   SacoSelf,
+  StartResult,
 } from './floor-types.js';
 import type { z } from 'zod';
+
+type MultipartRequest = FastifyRequest & {
+  isMultipart(): boolean;
+  file(): Promise<MultipartFile | undefined>;
+};
 
 @ApiTags('Khu giao dịch')
 @ApiBearerAuth()
@@ -59,6 +78,22 @@ export class FloorChatController {
   @ApiOkResponse({ schema: FLOOR_INBOX_SCHEMA })
   async inbox(@Req() req: FastifyRequest): Promise<Inbox> {
     return this.chat.inbox(await this.ownerOf(req));
+  }
+
+  @Public()
+  @Post('chat/start')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'floorChatStart',
+    summary:
+      'Chat SACO nhắn trước: gửi vào cuộc chat đang khớp, hoặc xếp tin chờ và phân phối cho một SACO (kết quả qua WebSocket chat:match)',
+  })
+  @ApiOkResponse({ schema: FLOOR_START_SCHEMA })
+  async start(
+    @Req() req: FastifyRequest,
+    @Body({ schema: floorChatSendBodySchema }) body: z.infer<typeof floorChatSendBodySchema>,
+  ): Promise<StartResult> {
+    return this.chat.start(await this.ownerOf(req), body.text);
   }
 
   @Public()
@@ -124,6 +159,72 @@ export class FloorChatController {
     @Body({ schema: floorChatSendBodySchema }) body: z.infer<typeof floorChatSendBodySchema>,
   ): Promise<ChatMessage> {
     return this.chat.send(await this.ownerOf(req), id, body.text);
+  }
+
+  @Public()
+  @Post('chat/convs/:id/images')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'floorChatSendImage',
+    summary: 'Gửi một ảnh (JPG, PNG, WebP, tối đa 5 MB, trường file), máy chủ nén lại thành WebP',
+  })
+  @ApiOkResponse({ schema: FLOOR_MESSAGE_SCHEMA })
+  async sendImage(
+    @Req() req: MultipartRequest,
+    @Param('id', { schema: floorIdParamSchema }) id: string,
+  ): Promise<ChatMessage> {
+    const owner = await this.ownerOf(req);
+    if (!req.isMultipart())
+      throw new BadRequestException({
+        code: 'MULTIPART_REQUIRED',
+        message: 'Content-Type phải là multipart/form-data',
+      });
+    const file = await req.file();
+    if (!file)
+      throw new BadRequestException({
+        code: 'MULTIPART_FILE_REQUIRED',
+        message: 'Yêu cầu một file multipart',
+      });
+    return this.chat.sendImage(owner, id, file.file);
+  }
+
+  @Public()
+  @Get('chat/images/:imageId')
+  @ApiOperation({
+    operationId: 'floorChatImage',
+    summary: 'Ảnh trong chat (WebP), phát theo uuid khó đoán; 404 khi tin đã thu hồi',
+  })
+  @ApiOkResponse({
+    description: 'Ảnh WebP',
+    content: { 'image/webp': { schema: { type: 'string', format: 'binary' } } },
+  })
+  async image(
+    @Param('imageId', { schema: floorIdParamSchema }) imageId: string,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    const file = await this.chat.openImage(imageId);
+    reply.header('Content-Type', 'image/webp');
+    reply.header('Content-Length', String(file.size));
+    reply.header('Cache-Control', 'private, max-age=31536000, immutable');
+    reply.header('X-Content-Type-Options', 'nosniff');
+    await reply.send(this.chat.readImage(file.path));
+  }
+
+  @Public()
+  @Post('chat/convs/:id/messages/:messageId/recall')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'floorChatRecall',
+    summary: 'Thu hồi một tin của chính mình (lặp lại không lỗi); hai bên nhận chat:recall',
+  })
+  @ApiOkResponse({ schema: FLOOR_OK_SCHEMA })
+  async recall(
+    @Req() req: FastifyRequest,
+    @Param('id', { schema: floorIdParamSchema }) id: string,
+    @Param('messageId', { schema: floorMessageIdParamSchema }) messageId: number,
+  ): Promise<{ ok: true }> {
+    await this.chat.recall(await this.ownerOf(req), id, messageId);
+    return { ok: true };
   }
 
   @Public()

@@ -1,4 +1,5 @@
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import sharp from 'sharp';
 import { WebSocket } from 'ws';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -430,6 +431,99 @@ describe('system acceptance: Khu giao dịch', () => {
     expect(next).toMatchObject({ status: 'chua_khan', step: 1, la: null });
     expect(next.day.date).toBe('2026-11-13');
     setClock('2026-11-12T03:00:00Z');
+  });
+
+  it('Thần Tài: bảng vinh danh tháng chỉ chấm ngày đã có giá đóng cửa, chỉ xếp tài khoản có hồ sơ', async () => {
+    const board = (session: Session | null, query = '?month=2026-11') =>
+      ok(session, 'GET', `/than-tai/leaderboard${query}`);
+    try {
+      // Nến VNINDEX: 02/11 +10 (tăng), 03/11 0 (đi ngang), 04/11 -10 (giảm), 05/11 +5 (tăng), 12/11 +15
+      // (hôm nay). 09/11 không có nến (nghỉ). Nến 30/10 là tham chiếu của 02/11.
+      await stack.query('delete from market_index_bars');
+      await stack.query(
+        `insert into market_index_bars (symbol, trade_date, open, high, low, close, volume) values
+           ('VNINDEX', '2026-10-30', 1700, 1700, 1700, 1700, 1),
+           ('VNINDEX', '2026-11-02', 1710, 1710, 1710, 1710, 1),
+           ('VNINDEX', '2026-11-03', 1710, 1710, 1710, 1710, 1),
+           ('VNINDEX', '2026-11-04', 1700, 1700, 1700, 1700, 1),
+           ('VNINDEX', '2026-11-05', 1705, 1705, 1705, 1705, 1),
+           ('VNINDEX', '2026-11-12', 1720, 1720, 1720, 1720, 1)`,
+      );
+      const created = await call(null, 'POST', '/guest', {
+        name: 'Khách Bảng',
+        avatar: 'female01',
+        color: 'default',
+      });
+      const guestToken = (created.json() as { token: string }).token;
+      const [guestRow] = await stack.query<{ id: string }>(
+        `select id from tf_guests where display_name = 'Khách Bảng'`,
+      );
+      const [la] = await stack.query<{ id: number }>('select id from tf_kd_la order by id limit 1');
+      await stack.query('delete from tf_khan_daily');
+      const calls: Array<[string, ...string[]]> = [
+        // u1 đoán đúng cả bốn ngày đã chốt; 09/11 (không có nến) và 12/11 (chưa 15:00) chưa chấm.
+        [`u:${u1.id}`, 'up', 'flat', 'down', 'up', 'up', 'up'],
+        [`u:${u2.id}`, 'up', 'up', 'down', 'down'],
+        [`u:${u3.id}`, 'up'],
+        // Khách và tài khoản chưa có hồ sơ trên sàn không được xếp hạng.
+        [`g:${guestRow!.id}`, 'up', 'flat', 'down', 'up'],
+        [`u:${memberA.id}`, 'up', 'flat', 'down', 'up'],
+      ];
+      const days = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-09', '2026-11-12'];
+      for (const [actorKey, ...picks] of calls) {
+        for (const [index, pick] of picks.entries()) {
+          await stack.query(
+            `insert into tf_khan_daily (actor_key, ngay, la_id, hang, du_doan, step)
+             values ($1, $2, $3, 'dai_cat', $4, 3)`,
+            [actorKey, days[index], la!.id, pick],
+          );
+        }
+      }
+      // Một người chỉ mới gieo quẻ (chưa dự đoán) không có mặt.
+      await stack.query(
+        `insert into tf_khan_daily (actor_key, ngay, la_id, hang, step) values ($1, '2026-11-02', $2, 'dai_cat', 2)`,
+        [`u:${outsider.id}`, la!.id],
+      );
+
+      setClock('2026-11-12T03:00:00Z'); // 10:00: nến 12/11 đã có nhưng phiên chưa chốt
+      const anon = await board(null);
+      expect(anon).toMatchObject({ month: '2026-11', scoredDays: 4, me: null });
+      expect(anon.rows).toEqual([
+        { rank: 1, name: 'Nam Bình', avatar: 'male02', color: 'forest', correct: 4, total: 4 },
+        { rank: 2, name: 'Người 2', avatar: 'female01', color: 'default', correct: 2, total: 4 },
+        { rank: 3, name: 'Người 3', avatar: 'female01', color: 'default', correct: 1, total: 1 },
+      ]);
+      expect((await board(u2)).me).toMatchObject({ rank: 2, correct: 2, total: 4 });
+      expect((await board(memberA)).me).toBeNull();
+      const guestView = await app.inject({
+        method: 'GET',
+        url: `${BASE}/than-tai/leaderboard?month=2026-11`,
+        headers: { 'x-floor-guest': guestToken },
+      });
+      expect(guestView.statusCode).toBe(200);
+      expect(guestView.json()).toMatchObject({ me: null, scoredDays: 4 });
+
+      // Sau 15:00 nến 12/11 được chấm (kết quả được nhớ 60 giây nên đồng hồ nhảy qua hạn nhớ).
+      setClock('2026-11-12T08:30:00Z'); // 15:30
+      const after = await board(u1);
+      expect(after.scoredDays).toBe(5);
+      expect(after.rows[0]).toMatchObject({ name: 'Nam Bình', correct: 5, total: 5 });
+      expect(after.me).toMatchObject({ rank: 1, correct: 5, total: 5 });
+
+      // Mặc định là tháng hiện tại; tháng chưa có ngày nào được chấm thì trống.
+      expect((await board(null, '')).month).toBe('2026-11');
+      expect(await board(null, '?month=2026-10')).toMatchObject({
+        month: '2026-10',
+        scoredDays: 0,
+        rows: [],
+        me: null,
+      });
+      const bad = await call(null, 'GET', '/than-tai/leaderboard?month=2026-13');
+      expect(bad.statusCode).toBe(422);
+    } finally {
+      setClock('2026-11-12T03:00:00Z');
+      await stack.query('delete from market_index_bars');
+    }
   });
 
   it('quản trị Thần Tài: chỉ quản trị viên, sửa lá/quẻ/hành có kiểm tra độ dài và ghi nhật ký', async () => {
@@ -884,5 +978,196 @@ describe('system acceptance: Khu giao dịch', () => {
     await ok(memberA, 'POST', '/saco/duty', { on: false });
     guestSocket.socket.close();
   });
-});
 
+  it('Chat SACO nhắn trước: gửi ngay, không ai trực thì tự chuyển cho SACO đang online, SACO trực nhận lời mời kèm tin', async () => {
+    const guestCall = (token: string, method: string, path: string, payload?: unknown) =>
+      app.inject({
+        method: method as 'GET',
+        url: `${BASE}${path}`,
+        headers: { 'x-floor-guest': token },
+        ...(payload === undefined ? {} : { payload: payload as Json }),
+      });
+    const guestOk = async (token: string, method: string, path: string, payload?: unknown): Promise<Body> => {
+      const response = await guestCall(token, method, path, payload);
+      expect(response.statusCode, `${method} ${path}: ${response.body}`).toBe(200);
+      return response.json();
+    };
+    const newGuest = async (name: string): Promise<string> => {
+      const created = await call(null, 'POST', '/guest', { name, avatar: 'female02', color: 'default' });
+      expect(created.statusCode, created.body).toBe(200);
+      return (created.json() as { token: string }).token;
+    };
+
+    // Không ai trực: SACO B (hạng 1) không có socket, SACO A (hạng 2) đang mở trang nhưng quên bật trực.
+    const sacoSocket = await authed(memberA);
+    const token = await newGuest('Khách Ba');
+    const guestSocket = await connect(`guest:${token}`);
+    await waitFor(guestSocket, (m) => m.type === 'ready', 'ready của khách ba');
+    expect(errorOf(await guestCall(token, 'POST', '/chat/start', { text: '   ' }))).toBe('MESSAGE_INVALID');
+    expect(await guestOk(token, 'POST', '/chat/start', { text: '  Cho em hỏi về FPT  ' })).toEqual({ pending: true });
+    const matched = await waitFor(guestSocket, (m) => m.type === 'chat:match' && m.event.state === 'matched', 'tự chuyển');
+    const convId = matched.event.convId as string;
+    await waitFor(sacoSocket, (m) => m.type === 'chat:msg' && m.convId === convId && m.message.from === 'u', 'tin chờ tới SACO A');
+    const thread = await guestOk(token, 'GET', `/chat/convs/${convId}`);
+    expect(thread).toMatchObject({ peerName: 'Sư Tử Vàng', matched: true, writable: true });
+    expect(thread.messages.map((m: Body) => [m.from, m.text])).toEqual([
+      ['x', 'Khách Ba được chuyển tới Sư Tử Vàng'],
+      ['u', 'Cho em hỏi về FPT'],
+    ]);
+    const sacoInbox = await ok(memberA, 'GET', '/chat/inbox');
+    expect(sacoInbox.asSaco.find((c: Body) => c.id === convId)).toMatchObject({ unread: 1, matched: true });
+    // Đã có SACO: tin sau đi thẳng vào cuộc chat.
+    await sleep(300);
+    const next = await guestOk(token, 'POST', '/chat/start', { text: 'Tin thứ hai' });
+    expect(next).toMatchObject({ convId, message: { from: 'u', text: 'Tin thứ hai' } });
+    const auto = await stack.query<{ result: string; saco_id: string }>(
+      "select result, saco_id from tf_chat_invites where result = 'auto'",
+    );
+    expect(auto).toEqual([{ result: 'auto', saco_id: sacoA }]);
+
+    // SACO trực: lời mời 5 giây kèm bản xem trước; đồng ý thì giữ câu "được khớp".
+    await ok(memberA, 'POST', '/saco/duty', { on: true });
+    const fourth = await newGuest('Khách Bốn');
+    const fourthSocket = await connect(`guest:${fourth}`);
+    await waitFor(fourthSocket, (m) => m.type === 'ready', 'ready của khách bốn');
+    expect(await guestOk(fourth, 'POST', '/chat/start', { text: 'Em muốn mở tài khoản' })).toEqual({ pending: true });
+    const invite = await waitFor(
+      sacoSocket,
+      (m) => m.type === 'chat:invite' && m.invite.userName === 'Khách Bốn (khách)',
+      'lời mời kèm tin',
+    );
+    expect(invite.invite.preview).toBe('Em muốn mở tài khoản');
+    await sleep(300);
+    expect(await guestOk(fourth, 'POST', '/chat/start', { text: 'Còn ai không ạ' })).toEqual({ pending: true });
+    await ok(memberA, 'POST', `/chat/invites/${invite.invite.id}`, { accept: true });
+    const accepted = await waitFor(fourthSocket, (m) => m.type === 'chat:match' && m.event.state === 'matched', 'khớp khách bốn');
+    const fourthThread = await guestOk(fourth, 'GET', `/chat/convs/${accepted.event.convId}`);
+    expect(fourthThread.messages.map((m: Body) => m.text)).toEqual([
+      'Khách Bốn được khớp với Sư Tử Vàng qua Chat SACO',
+      'Em muốn mở tài khoản',
+      'Còn ai không ạ',
+    ]);
+    await ok(memberA, 'POST', '/saco/duty', { on: false });
+    guestSocket.socket.close();
+    fourthSocket.socket.close();
+  });
+
+  it('ảnh và thu hồi tin: khách và SACO gửi ảnh, thu hồi chỉ tin của mình, lịch sử trưởng nhóm giữ chữ gốc', async () => {
+    const newGuest = async (name: string): Promise<string> => {
+      const created = await call(null, 'POST', '/guest', { name, avatar: 'male02', color: 'default' });
+      expect(created.statusCode, created.body).toBe(200);
+      return (created.json() as { token: string }).token;
+    };
+    const guestCall = (token: string, method: string, path: string, payload?: unknown) =>
+      app.inject({
+        method: method as 'GET',
+        url: `${BASE}${path}`,
+        headers: { 'x-floor-guest': token },
+        ...(payload === undefined ? {} : { payload: payload as Json }),
+      });
+    const multipart = (bytes: Buffer, mime: string) => {
+      const boundary = `iqx-chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      return {
+        payload: Buffer.concat([
+          Buffer.from(
+            `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="a"\r\nContent-Type: ${mime}\r\n\r\n`,
+          ),
+          bytes,
+          Buffer.from(`\r\n--${boundary}--\r\n`),
+        ]),
+        headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+      };
+    };
+    const upload = (headers: Record<string, string>, convId: string, bytes: Buffer, mime = 'image/png') => {
+      const body = multipart(bytes, mime);
+      return app.inject({
+        method: 'POST',
+        url: `${BASE}/chat/convs/${convId}/images`,
+        headers: { ...headers, ...body.headers },
+        payload: body.payload,
+      });
+    };
+    const png = (width: number, height: number) =>
+      sharp({ create: { width, height, channels: 3, background: { r: 30, g: 120, b: 200 } } })
+        .png()
+        .toBuffer();
+
+    const token = await newGuest('Khách Ảnh');
+    const guestHeaders = { 'x-floor-guest': token };
+    const conv = (await guestCall(token, 'POST', '/chat/open', { sacoId: sacoA })).json() as Body;
+    const sacoSocket = await authed(memberA);
+
+    // Khách gửi ảnh lớn: nén về cạnh dài 1600, phát lại được theo uuid, SACO nhận qua socket.
+    const sent = await upload(guestHeaders, conv.id, await png(2400, 1200));
+    expect(sent.statusCode, sent.body).toBe(200);
+    const imageMessage = sent.json() as Body;
+    expect(imageMessage).toMatchObject({ from: 'u', text: '', image: { w: 1600, h: 800 } });
+    const served = await call(null, 'GET', `/chat/images/${imageMessage.image.id}`);
+    expect(served.statusCode).toBe(200);
+    expect(served.headers['content-type']).toBe('image/webp');
+    expect(served.headers['cache-control']).toBe('private, max-age=31536000, immutable');
+    expect((await sharp(served.rawPayload).metadata()).width).toBe(1600);
+    await waitFor(
+      sacoSocket,
+      (m) => m.type === 'chat:msg' && m.convId === conv.id && m.message.image?.id === imageMessage.image.id,
+      'ảnh tới SACO',
+    );
+    expect((await call(null, 'GET', '/chat/images/00000000-0000-4000-8000-000000000000')).statusCode).toBe(404);
+
+    // Sai định dạng, người ngoài cuộc, không có danh tính.
+    await sleep(300);
+    const bad = await upload(guestHeaders, conv.id, Buffer.from('not an image at all'), 'image/png');
+    expect(bad.statusCode).toBe(415);
+    const other = await newGuest('Khách Lạ');
+    expect((await upload({ 'x-floor-guest': other }, conv.id, await png(10, 10))).statusCode).toBe(404);
+    expect((await upload({}, conv.id, await png(10, 10))).statusCode).toBe(401);
+
+    // SACO (tài khoản) cũng gửi ảnh được.
+    await sleep(300);
+    const sacoImage = await upload(authHeader(memberA.accessToken), conv.id, await png(300, 600));
+    expect(sacoImage.statusCode, sacoImage.body).toBe(200);
+    expect(sacoImage.json()).toMatchObject({ from: 's', image: { w: 300, h: 600 } });
+
+    // Khách nhắn chữ rồi thu hồi; SACO không thu hồi được tin của khách; thu hồi lặp lại không lỗi.
+    await sleep(300);
+    const secret = (await guestCall(token, 'POST', `/chat/convs/${conv.id}/send`, { text: 'Số tài khoản của em' })).json() as Body;
+    const forbidden = await call(memberA, 'POST', `/chat/convs/${conv.id}/messages/${secret.id}/recall`);
+    expect(forbidden.statusCode).toBe(403);
+    expect(errorOf(forbidden)).toBe('RECALL_FORBIDDEN');
+    expect((await guestCall(other, 'POST', `/chat/convs/${conv.id}/messages/${secret.id}/recall`)).statusCode).toBe(404);
+    for (const id of [secret.id, secret.id, imageMessage.id]) {
+      const recalled = await guestCall(token, 'POST', `/chat/convs/${conv.id}/messages/${id}/recall`);
+      expect(recalled.statusCode, recalled.body).toBe(200);
+    }
+    await waitFor(sacoSocket, (m) => m.type === 'chat:recall' && m.messageId === secret.id, 'chat:recall tới SACO');
+    expect(
+      sacoSocket.messages.filter((m) => m.type === 'chat:recall' && m.messageId === secret.id),
+    ).toHaveLength(1);
+    expect((await call(null, 'GET', `/chat/images/${imageMessage.image.id}`)).statusCode).toBe(404);
+
+    // Hai bên thấy "đã thu hồi" (không chữ, không ảnh), kể cả sau khi tải lại; hộp thư cũng vậy.
+    const reloaded = (await guestCall(token, 'GET', `/chat/convs/${conv.id}`)).json() as Body;
+    const byId = (list: Body[], id: number) => list.find((m: Body) => m.id === id);
+    expect(byId(reloaded.messages, secret.id)).toEqual({ id: secret.id, from: 'u', text: '', at: secret.at, recalled: true });
+    expect(byId(reloaded.messages, imageMessage.id)).not.toHaveProperty('image');
+    expect(byId(reloaded.messages, sacoImage.json().id)).toMatchObject({ image: { w: 300 } });
+    const sacoView = await ok(memberA, 'GET', `/chat/convs/${conv.id}`);
+    expect(byId(sacoView.messages, secret.id)).toMatchObject({ text: '', recalled: true });
+    expect((await ok(memberA, 'GET', '/chat/inbox')).asSaco.find((c: Body) => c.id === conv.id).last).toMatchObject({
+      id: secret.id,
+      recalled: true,
+      text: '',
+    });
+
+    // Lịch sử của trưởng nhóm giữ chữ gốc kèm dấu thu hồi; ảnh đã thu hồi thì mất.
+    const staff = await ok(lead, 'GET', `/manage/convs/${conv.id}`);
+    expect(byId(staff.messages, secret.id)).toMatchObject({ text: 'Số tài khoản của em', recalled: true });
+    expect(byId(staff.messages, imageMessage.id)).toMatchObject({ recalled: true });
+    expect(byId(staff.messages, imageMessage.id)).not.toHaveProperty('image');
+    const rows = await stack.query<{ text: string; recalled: boolean }>(
+      'select text, recalled_at is not null as recalled from tf_chat_messages where id = $1',
+      [secret.id],
+    );
+    expect(rows).toEqual([{ text: 'Số tài khoản của em', recalled: true }]);
+  });
+});

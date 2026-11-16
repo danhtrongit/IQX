@@ -58,7 +58,6 @@
 .tf-root .hall-queue,
 .tf-root .join-backdrop,
 .tf-root .sheet-backdrop,
-.tf-root .chat-ov,
 .tf-root .invite-card {
   pointer-events: auto;
 }
@@ -555,6 +554,34 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Phones: the top row holds the index, the head count and the name without one chip covering another. */
+@media (max-width: 640px) {
+  .tf-root .hud-top .brand {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .tf-root .hud-top .index-mini {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tf-root .hud-right {
+    flex: 0 0 auto;
+  }
+  /* The app header right above already has the login button. */
+  .tf-root .hud-top .chip-login {
+    display: none;
+  }
+}
+@media (max-width: 380px) {
+  .tf-root .hud-top .brand b {
+    display: none;
+  }
+  .tf-root .hud-top .me {
+    max-width: 100px;
+  }
+}
 .tf-root .hint {
   position: absolute;
   left: 50%;
@@ -949,8 +976,18 @@
     max-width: 116px;
     gap: 4px;
   }
+  /* Four shortcuts must stay clear of the Chat SACO button at the right edge on a 360px phone. */
+  .tf-root .shortcuts {
+    gap: 2px;
+    padding: 3px;
+    left: 8px;
+  }
   .tf-root .shortcut {
-    min-width: 52px;
+    min-width: 48px;
+    padding: 2px 4px;
+  }
+  .tf-root .shortcut small {
+    font-size: 10px;
   }
   .tf-root .hint {
     bottom: calc(86px + var(--safe-b));
@@ -1678,6 +1715,12 @@
   color: var(--muted);
   min-height: 32px;
 }
+@media (pointer: coarse) {
+  .tf-root .duty button {
+    min-height: 44px;
+    padding: 5px 14px;
+  }
+}
 .tf-root .duty button.on {
   background: #2b3245;
   color: var(--fg);
@@ -1714,6 +1757,10 @@
   color: var(--accent-2);
   font-weight: 800;
   font-size: 14px;
+}
+.tf-root .find-saco.on {
+  border-style: solid;
+  background: rgba(227, 179, 65, 0.2);
 }
 .tf-root .find-saco small {
   font-weight: 400;
@@ -1801,7 +1848,73 @@
 }
 .tf-root .thread-head .back {
   display: none;
-  font-size: 22px;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+}
+/* "SACO đang có mặt" on the new Chat SACO thread: one row, scrolls sideways on phones. */
+.tf-root .saco-present {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 6px 14px;
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+.tf-root .saco-present-label {
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.tf-root .saco-present-list {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding-right: 14px;
+}
+.tf-root .saco-present-list::-webkit-scrollbar {
+  display: none;
+}
+.tf-root .saco-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  max-width: 180px;
+  padding: 4px 12px 4px 5px;
+  border-radius: 999px;
+  border: 1px solid #14c8ac;
+  background: rgba(20, 200, 172, 0.12);
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 700;
+}
+.tf-root .saco-chip:hover {
+  background: rgba(20, 200, 172, 0.22);
+}
+.tf-root .saco-chip-av {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #14c8ac;
+  color: #022a26;
+  font-weight: 800;
+}
+.tf-root .saco-chip-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .tf-root .thread-who {
   flex: 1;
@@ -1850,6 +1963,22 @@
   align-self: flex-end;
   background: #2a5bd7;
 }
+/* The top bar's name chip is `.me` too: keep its inline-flex, bold and narrow max-width out of the thread. */
+.tf-root .bubble.me {
+  display: block;
+  max-width: 78%;
+  font-weight: inherit;
+}
+.tf-root .bubble-row.me {
+  display: flex;
+  max-width: 88%;
+  justify-content: flex-start;
+  font-weight: inherit;
+  gap: 2px;
+}
+.tf-root .bubble-row .bubble.me {
+  max-width: calc(100% - 46px);
+}
 .tf-root .bubble time {
   display: block;
   font-size: 10px;
@@ -1867,11 +1996,194 @@
   border-radius: 999px;
   padding: 3px 10px;
 }
+.tf-root .sys.connecting {
+  color: var(--accent-2);
+  animation: tf-breathe 1.6s ease-in-out infinite;
+}
+@keyframes tf-breathe {
+  50% {
+    opacity: 0.55;
+  }
+}
+.tf-root .sys.warn {
+  color: #ffa39e;
+  background: rgba(255, 69, 58, 0.1);
+  border-radius: 10px;
+}
 .tf-root .seen {
   align-self: flex-end;
   font-size: 11px;
   color: var(--dim);
   margin-top: -2px;
+}
+/* Images and recall in chat (UX-06). */
+.tf-root .bubble.recalled {
+  font-style: italic;
+  color: var(--muted);
+  background: transparent;
+  border: 1px dashed var(--line);
+}
+.tf-root .bubble.has-image {
+  padding: 4px 4px 6px;
+}
+.tf-root .bubble.has-image time {
+  padding-right: 6px;
+}
+.tf-root .bubble-img {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: zoom-in;
+}
+.tf-root .bubble-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tf-root .bubble-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 88%;
+  align-self: flex-start;
+}
+.tf-root .bubble-row.me {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.tf-root .bubble-row .bubble {
+  max-width: calc(100% - 46px);
+  align-self: auto;
+}
+.tf-root .bubble-more {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dim);
+}
+.tf-root .bubble-more:hover,
+.tf-root .bubble-more[aria-expanded="true"] {
+  color: var(--fg);
+  background: var(--raise);
+}
+.tf-root .bubble-actions {
+  align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 92%;
+  font-size: 13px;
+  color: var(--muted);
+}
+.tf-root .bubble-actions.me {
+  align-self: flex-end;
+  justify-content: flex-end;
+  text-align: right;
+  max-width: 92%;
+  font-weight: inherit;
+}
+.tf-root .bubble-actions.confirm {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raise);
+}
+.tf-root .bubble-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.tf-root .bubble-actions .btn {
+  min-height: 44px;
+  gap: 6px;
+}
+.tf-root .btn.danger {
+  background: rgba(255, 69, 58, 0.16);
+  border-color: rgba(255, 69, 58, 0.55);
+  color: #ffa39e;
+}
+.tf-root .upload-bar {
+  position: relative;
+  margin: 0 12px 4px;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--raise);
+}
+.tf-root .upload-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(90, 169, 255, 0.35);
+  transition: width 0.15s ease;
+}
+.tf-root .upload-bar small {
+  position: relative;
+  display: block;
+  line-height: 22px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--fg);
+}
+.tf-root .composer .attach {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--muted);
+}
+.tf-root .composer .attach:not(:disabled):hover {
+  color: var(--fg);
+}
+.tf-root .composer .attach:disabled {
+  opacity: 0.45;
+}
+.tf-root .img-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: calc(56px + var(--safe-t, 0px)) 12px calc(16px + var(--safe-b, 0px));
+  background: rgba(4, 7, 12, 0.92);
+}
+.tf-root .img-viewer img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
+.tf-root .img-viewer-close {
+  position: absolute;
+  top: calc(8px + var(--safe-t, 0px));
+  right: 8px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(19, 26, 40, 0.85);
+  color: var(--fg);
+}
+@media (max-width: 640px) {
+  .tf-root .bubble-img {
+    max-width: min(240px, 100%);
+  }
 }
 .tf-root .typing {
   height: 20px;
@@ -1888,7 +2200,7 @@
 .tf-root .composer input {
   flex: 1;
   min-width: 0;
-  min-height: 40px;
+  min-height: 44px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--raise);
@@ -1898,6 +2210,11 @@
 }
 .tf-root .composer input:focus {
   border-color: var(--info);
+}
+.tf-root .composer .send {
+  min-height: 44px;
+  min-width: 56px;
+  flex: none;
 }
 .tf-root .readonly {
   padding: 12px;
@@ -1909,7 +2226,14 @@
 }
 @media (max-width: 640px) {
   .tf-root .sheet-body.sheet-chat {
-    height: 82cqh;
+    /* --kb: height the on-screen keyboard covers while the chat composer has focus (ChatPanel). */
+    height: min(82cqh, calc(100cqh - var(--kb, 0px) - 76px));
+  }
+  .tf-root .sheet-backdrop:has(.sheet-chat) {
+    padding-bottom: var(--kb, 0px);
+  }
+  .tf-root .sheet:has(.sheet-chat) {
+    max-height: min(90cqh, calc(100cqh - var(--kb, 0px)));
   }
   .tf-root .chat-body {
     grid-template-columns: minmax(0, 1fr);
@@ -1930,58 +2254,7 @@
     display: grid;
   }
 }
-/* Chat SACO matching and the SACO invite */
-.tf-root .chat-ov {
-  position: absolute;
-  inset: 0;
-  z-index: 25;
-  background: rgba(5, 10, 20, 0.72);
-  display: grid;
-  place-items: center;
-  padding: 16px;
-  animation: tf-fade 0.15s ease-out;
-}
-.tf-root .chat-ov-box {
-  width: min(340px, 100%);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 22px 20px;
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  text-align: center;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
-}
-.tf-root .chat-ov-box h3 {
-  font-size: 17px;
-}
-.tf-root .spin {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  border: 4px solid var(--line);
-  border-top-color: var(--accent);
-  animation: tf-spin 1s linear infinite;
-}
-@keyframes tf-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.tf-root .pbar {
-  width: 100%;
-  height: 6px;
-  background: var(--raise);
-  border-radius: 9px;
-  overflow: hidden;
-}
-.tf-root .pbar i {
-  display: block;
-  height: 100%;
-  background: var(--accent);
-  transition: width 0.1s linear;
-}
+/* Chat SACO: the SACO invite */
 .tf-root .invite-card {
   position: absolute;
   z-index: 30;
@@ -2001,9 +2274,28 @@
   gap: 12px;
   align-items: center;
 }
+.tf-root .invite-text {
+  min-width: 0;
+}
 .tf-root .invite-row h3 {
   font-size: 15px;
   margin: 0 0 2px;
+  overflow-wrap: anywhere;
+}
+/* What the visitor already wrote: two lines at most, so the card stays short on a phone. */
+.tf-root .invite-preview {
+  margin: 12px 0 0;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--accent);
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .tf-root .ring {
   width: 54px;
@@ -2042,6 +2334,7 @@
   flex: 1;
   font-weight: 800;
   border: 0;
+  min-height: 44px;
 }
 .tf-root .invite-actions .accept {
   background: var(--good);

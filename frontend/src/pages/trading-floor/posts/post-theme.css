@@ -250,6 +250,12 @@
   color: var(--tfp-muted);
   font-variant-numeric: tabular-nums;
 }
+.tf-post-theme .tf-post-author-edited {
+  color: var(--tfp-muted);
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.85;
+}
 .tf-post-theme .tf-post-headline {
   margin: 0;
   padding: 12px 14px;

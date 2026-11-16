@@ -25,12 +25,12 @@ export type DraftBody = z.infer<typeof draftBodySchema>;
 export const heartBodySchema = z.strictObject({ on: z.boolean() });
 export const commentBodySchema = z.strictObject({ text: z.string().max(5000) });
 export const manageListQuerySchema = z.object({
-  status: z.enum(['published', 'hidden']).optional(),
+  status: z.enum(['published', 'hidden', 'withdrawn']).optional(),
 });
 
 // ----------------------------------------------------------------- response
 
-export const postStatusSchema = z.enum(['draft', 'published', 'hidden']);
+export const postStatusSchema = z.enum(['draft', 'published', 'hidden', 'withdrawn']);
 
 export const postCardSchema = z.object({
   id: z.string(),
@@ -38,6 +38,8 @@ export const postCardSchema = z.object({
   sacoName: z.string(),
   headline: z.string(),
   publishedAt: z.number(),
+  /** Lần sửa gần nhất của tác giả sau khi đăng; null nếu chưa sửa. */
+  editedAt: z.number().nullable(),
   hearts: z.number(),
   comments: z.number(),
   hearted: z.boolean(),
@@ -79,6 +81,7 @@ export const myPostSchema = z.object({
   status: postStatusSchema,
   savedAt: z.number(),
   publishedAt: z.number().nullable(),
+  editedAt: z.number().nullable(),
   hearts: z.number(),
   comments: z.number(),
   newComments: z.number(),
@@ -122,7 +125,7 @@ export const managePostDetailSchema = myPostDetailSchema.extend({
   leadName: z.string(),
   log: z.array(
     z.object({
-      action: z.enum(['publish', 'hide', 'unhide']),
+      action: z.enum(['publish', 'hide', 'unhide', 'edit', 'withdraw', 'republish']),
       actorName: z.string(),
       actorRole: manageActorRoleSchema,
       at: z.number(),

@@ -101,8 +101,13 @@ export const myPostsApi = {
   get: (postId: string, signal?: AbortSignal) => api<MyPostDetail>(`${BASE}/saco/posts/${id(postId)}`, { signal }),
   save: (postId: string, input: DraftInput, keepalive = false) =>
     api<SavedDraft>(`${BASE}/saco/posts/${id(postId)}`, { ...send("PUT", input), keepalive }),
+  /** Xoá nháp, hoặc xoá hẳn bài đã thu hồi. */
   remove: (postId: string) => api<unknown>(`${BASE}/saco/posts/${id(postId)}`, { method: "DELETE" }),
   publish: (postId: string, input: DraftInput) => api<MyPostDetail>(`${BASE}/saco/posts/${id(postId)}/publish`, send("POST", input)),
+  /** Sửa bài đã đăng tại chỗ: giữ giờ đăng, tim, bình luận; 409 `DRAFT_STALE` nếu bản đã cũ. */
+  edit: (postId: string, input: DraftInput) => api<MyPostDetail>(`${BASE}/saco/posts/${id(postId)}/edit`, send("POST", input)),
+  withdraw: (postId: string) => api<MyPostDetail>(`${BASE}/saco/posts/${id(postId)}/withdraw`, send("POST")),
+  republish: (postId: string) => api<MyPostDetail>(`${BASE}/saco/posts/${id(postId)}/republish`, send("POST")),
   commentsSeen: (postId: string) => api<unknown>(`${BASE}/saco/posts/${id(postId)}/comments-seen`, send("POST")),
   commentReports: (signal?: AbortSignal) => api<{ items: CommentReport[] }>(`${BASE}/saco/comment-reports`, { signal }),
   /** Tải một ảnh lên nháp (trường `file`); máy chủ kiểm tra lại định dạng và nén. */

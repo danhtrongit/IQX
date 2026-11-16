@@ -1,6 +1,8 @@
 /** Step 4: what the whole floor thinks today — VNINDEX split and the 5 most prayed tickers. */
+import { Trophy } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 
+import { openPanel } from "../../bridge.ts"
 import { floorApi } from "../../net/api.ts"
 import type { ThanTaiResults, ThanTaiToday } from "../../net/types.ts"
 import {
@@ -83,6 +85,13 @@ export function StepResults({ today, onOpenCard, onClose }: Props) {
       {data && <Prediction data={data} mine={today.prediction} />}
       {data && <TopTickers data={data} mine={today.tickers} done={done} />}
       <div className="tt-act">
+        <button
+          type="button"
+          className="tt-btn-ghost"
+          onClick={() => openPanel("leaderboard")}
+        >
+          <Trophy size={16} aria-hidden="true" /> Xem bảng vinh danh
+        </button>
         <button type="button" className="tt-btn-main" onClick={onClose}>
           {done ? "Hoàn tất" : "Đóng"}
         </button>
