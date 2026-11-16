@@ -124,8 +124,8 @@ export class FloorProfileService {
   }
 
   /**
-   * Khách tạo nhân vật chỉ bằng tên và dáng: sinh token ngẫu nhiên, lưu băm. Mỗi IP tối đa 10 lần mỗi
-   * giờ (429 `GUEST_RATE_LIMIT`).
+   * Khách tạo nhân vật chỉ bằng tên và dáng: sinh token ngẫu nhiên, lưu băm. Mỗi IP tối đa
+   * `FLOOR_GUEST_CREATE_MAX` lần mỗi giờ (429 `GUEST_RATE_LIMIT`).
    */
   async createGuest(
     ip: string | null | undefined,

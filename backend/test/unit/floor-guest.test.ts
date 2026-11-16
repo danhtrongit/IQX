@@ -11,6 +11,7 @@ import {
 } from '../../src/modules/trading-floor/floor-actor.js';
 import { FloorEvents } from '../../src/modules/trading-floor/floor-events.js';
 import { FloorPresence } from '../../src/modules/trading-floor/floor-presence.js';
+import { FLOOR_GUEST_CREATE_MAX } from '../../src/modules/trading-floor/floor-profile.logic.js';
 import { FloorProfileService } from '../../src/modules/trading-floor/floor-profile.service.js';
 import type { FloorProfileRepository } from '../../src/modules/trading-floor/floor-profile.repository.js';
 import { FloorHub, type FloorHubSocket } from '../../src/modules/trading-floor/floor.hub.js';
@@ -102,16 +103,18 @@ describe('FloorProfileService guests', () => {
     ).resolves.toBeDefined();
   });
 
-  it('allows 10 creations per IP per hour then answers 429 GUEST_RATE_LIMIT', async () => {
+  it('allows FLOOR_GUEST_CREATE_MAX creations per IP per hour then answers 429 GUEST_RATE_LIMIT', async () => {
     const { service } = makeService();
     const input = { name: 'Khách', avatar: 'male01', color: 'default' } as const;
     const t0 = 5_000_000;
-    for (let i = 0; i < 10; i++) await service.createGuest('1.1.1.1', input, t0 + i);
-    await expect(service.createGuest('1.1.1.1', input, t0 + 20)).rejects.toMatchObject({
+    for (let i = 0; i < FLOOR_GUEST_CREATE_MAX; i++)
+      await service.createGuest('1.1.1.1', input, t0 + i);
+    const full = t0 + FLOOR_GUEST_CREATE_MAX;
+    await expect(service.createGuest('1.1.1.1', input, full)).rejects.toMatchObject({
       status: 429,
       response: { code: 'GUEST_RATE_LIMIT' },
     });
-    await expect(service.createGuest('2.2.2.2', input, t0 + 20)).resolves.toBeDefined();
+    await expect(service.createGuest('2.2.2.2', input, full)).resolves.toBeDefined();
     await expect(service.createGuest('1.1.1.1', input, t0 + 3_600_001)).resolves.toBeDefined();
   });
 

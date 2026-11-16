@@ -21,8 +21,12 @@ export const FLOOR_EMOTE_MAX = 60;
 /** Toạ độ lớn nhất chấp nhận (giống `WORLD_MAX` của KGD). */
 export const FLOOR_WORLD_MAX = 10_000;
 
-/** Khách: mỗi IP tạo tối đa bấy nhiêu nhân vật trong một giờ. */
-export const FLOOR_GUEST_CREATE_MAX = 10;
+/**
+ * Khách: mỗi IP tạo tối đa bấy nhiêu nhân vật trong một giờ. Cả một văn phòng, hoặc rất nhiều thuê bao
+ * 4G của một nhà mạng, ra Internet bằng chung một IP, nên hạn mức phải đủ rộng cho họ; nó chỉ chặn việc
+ * tạo nhân vật hàng loạt.
+ */
+export const FLOOR_GUEST_CREATE_MAX = 120;
 export const FLOOR_GUEST_CREATE_WINDOW_MS = 60 * 60 * 1000;
 
 /** Giới hạn tần suất của một kết nối (ms). */
