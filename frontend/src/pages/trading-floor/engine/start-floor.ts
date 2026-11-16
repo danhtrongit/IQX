@@ -11,7 +11,12 @@ import * as Phaser from "phaser"
 import { floorSocket } from "../net/socket.ts"
 import { startChat } from "../net/chat.ts"
 import { startMarket } from "../net/market.ts"
-import { loadAvatarArt } from "./assets.ts"
+import {
+  liteDevice,
+  liteManifest,
+  loadAvatarArt,
+  renderRatio,
+} from "./assets.ts"
 import { OfficeScene } from "./OfficeScene.ts"
 import { stopRecolorWorker } from "./tintArt.ts"
 
@@ -41,15 +46,15 @@ export function startFloor(
   const stopChat = startChat()
   floorSocket.start()
 
-  const pixels = (css: number): number =>
-    Math.round(css * window.devicePixelRatio)
+  const lite = liteDevice()
+  const pixels = (css: number): number => Math.round(css * renderRatio())
 
   void (async () => {
     await fontsReady()
     const manifest = await loadAvatarArt()
     if (disposed) return
     const bounds = container.getBoundingClientRect()
-    scene = new OfficeScene(manifest)
+    scene = new OfficeScene(lite ? liteManifest(manifest) : manifest, lite)
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: container,
@@ -57,14 +62,16 @@ export function startFloor(
       height: pixels(Math.max(1, bounds.height)),
       backgroundColor: "#0c111b",
       antialias: true,
+      // Multisampling triples the canvas buffers; textures stay smooth without it.
+      antialiasGL: !lite,
       banner: false,
       // The floor has no sound, and Phaser must not grab focus from the HTML fields around it.
       audio: { noAudio: true },
       autoFocus: false,
       // Smoothing averages frame time, which makes walking speed depend on frame rate.
       fps: { smoothStep: false },
-      // One canvas pixel per device pixel; the camera zoom carries the device pixel ratio.
-      scale: { mode: Phaser.Scale.NONE, zoom: 1 / window.devicePixelRatio },
+      // One canvas pixel per rendered pixel; the camera zoom carries the render ratio.
+      scale: { mode: Phaser.Scale.NONE, zoom: 1 / renderRatio() },
       scene: [scene],
     })
     // The canvas follows its container (the area under the IQX header), not the window.
@@ -73,7 +80,7 @@ export function startFloor(
       const rect = container.getBoundingClientRect()
       if (rect.width < 1 || rect.height < 1) return
       game.scale.resize(pixels(rect.width), pixels(rect.height))
-      game.scale.setZoom(1 / window.devicePixelRatio)
+      game.scale.setZoom(1 / renderRatio())
     }
     observer = new ResizeObserver(resize)
     observer.observe(container)

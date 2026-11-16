@@ -99,6 +99,79 @@ export async function loadAvatarArt(): Promise<Manifest> {
   return manifest
 }
 
+/**
+ * Phones and tablets get the lite floor: an iPhone reloads the page ("the tab keeps resetting") once
+ * the full character sheets of a busy floor are in memory. Touch-first devices and machines that
+ * report 4 GB of RAM or less count.
+ */
+export function liteDevice(): boolean {
+  if (typeof window === "undefined") return false
+  const memory = (navigator as { deviceMemory?: number }).deviceMemory
+  return (
+    window.matchMedia?.("(pointer: coarse)").matches === true ||
+    (memory !== undefined && memory <= 4)
+  )
+}
+
+/** Device pixels the canvas draws per CSS pixel: the lite floor stops at 2, a third of the buffer of a 3x phone. */
+export function renderRatio(): number {
+  const dpr = window.devicePixelRatio || 1
+  return liteDevice() ? Math.min(dpr, LITE_MAX_RATIO) : dpr
+}
+
+const LITE_MAX_RATIO = 2
+const FULL_SUFFIX = "@2x.webp"
+const LITE_SUFFIX = "@1x.webp"
+
+function liteFrame<T extends FrameArt>(art: T): T {
+  if (!art.file.endsWith(FULL_SUFFIX)) return art
+  const half: T = {
+    ...art,
+    file: art.file.slice(0, -FULL_SUFFIX.length) + LITE_SUFFIX,
+    density: art.density / 2,
+    anchor: [art.anchor[0] / 2, art.anchor[1] / 2],
+  }
+  if ("cell" in half && typeof half.cell === "number") half.cell /= 2
+  return half
+}
+
+const liteFrames = <T extends FrameArt>(
+  frames: Partial<Record<Facing, T>>
+): Partial<Record<Facing, T>> =>
+  Object.fromEntries(
+    Object.entries(frames).map(([facing, art]) => [facing, liteFrame(art)])
+  )
+
+/**
+ * The same manifest pointing at the half-size character sheets (`*@1x.webp`, a quarter of the pixels,
+ * written by `scripts/trading-floor-lite-art.py`). Masks stay as they are: a mask is scaled onto its
+ * sheet when an outfit is recoloured.
+ */
+export function liteManifest(manifest: Manifest): Manifest {
+  return {
+    ...manifest,
+    characters: Object.fromEntries(
+      Object.entries(manifest.characters).map(([id, c]) => [
+        id,
+        {
+          ...c,
+          idle: liteFrames(c.idle),
+          walk: liteFrames(c.walk),
+          ...(c.actions && {
+            actions: Object.fromEntries(
+              Object.entries(c.actions).map(([name, a]) => [
+                name,
+                liteFrames(a),
+              ])
+            ),
+          }),
+          ...(c.statue && { statue: liteFrame(c.statue) }),
+        },
+      ])
+    ),
+  }
+}
+
 export function walkAnimKey(art: WalkArt): string {
   return art.anim ?? `walk:${art.file}`
 }

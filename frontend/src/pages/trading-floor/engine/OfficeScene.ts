@@ -38,6 +38,7 @@ import {
   type CharacterArt,
   type Manifest,
   type WalkArt,
+  renderRatio,
   walkAnimKey,
 } from "./assets.ts"
 import { Avatar, facingOf } from "./Avatar.ts"
@@ -112,6 +113,15 @@ const PEER_BUFFER_S = 0.14
 const PEER_TELEPORT = 260
 /** Unused walk sheets and recoloured outfits are freed this long after the last figure wearing them left. */
 const ART_SWEEP_MS = 20_000
+/** How often overlapping name tags are sorted out, the gap left between two, and how high one may climb. */
+const TAG_DECLUTTER_MS = 120
+const TAG_GAP = 2
+const TAG_MAX_STEPS = 4
+/**
+ * Recoloured outfits kept at once. Each one is a full set of walk sheets drawn on canvases, and phones
+ * allow little canvas memory: past the limit a newcomer keeps the character's own colours.
+ */
+const TINT_LIMIT = { lite: 6, full: 20 }
 
 const clamp = (v: number, lo: number, hi: number): number =>
   Math.max(lo, Math.min(hi, v))
@@ -144,6 +154,7 @@ export class OfficeScene extends Phaser.Scene {
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {}
   private last = { t: 0, facing: "s" as Facing, moving: false }
   private hintKey = ""
+  private declutterAt = 0
   private userZoom = 1
   private ledTiles: {
     sym: Phaser.GameObjects.Text
@@ -166,9 +177,13 @@ export class OfficeScene extends Phaser.Scene {
   private greetQueue: string[] = []
   private deityFreeAt = 0
 
-  constructor(manifest: Manifest) {
+  /** Phones and tablets: half-size art (the manifest passed in), fewer recoloured outfits. */
+  private readonly lite: boolean
+
+  constructor(manifest: Manifest, lite = false) {
     super("office")
     this.manifest = manifest
+    this.lite = lite
   }
 
   preload(): void {
@@ -347,6 +362,14 @@ export class OfficeScene extends Phaser.Scene {
     await this.ensureWalks(charId)
     if (!this.sys.isActive() || !current() || color === "default") return
     const key = `${charId}|${color}`
+    // The player always wears the colour they picked; other figures only while there is room.
+    const limit = this.lite ? TINT_LIMIT.lite : TINT_LIMIT.full
+    if (
+      avatar !== this.player &&
+      !this.tinted.has(key) &&
+      this.tinted.size >= limit
+    )
+      return
     this.tinted.add(key)
     const tinted = await getTintedCharacterArt(
       this,
@@ -1231,7 +1254,7 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   applyZoom(): void {
-    const dpr = window.devicePixelRatio || 1
+    const dpr = renderRatio()
     const cssW = this.scale.width / dpr
     const cssH = this.scale.height / dpr
     // The room fills the screen edge to edge by default (the smallest zoom that shows no void past the
@@ -1331,6 +1354,39 @@ export class OfficeScene extends Phaser.Scene {
     for (const peer of this.peers.values()) this.movePeer(peer, dt, delta)
     this.greetVisitors(time)
     this.updateHint()
+    this.declutterTags(time)
+  }
+
+  /**
+   * Keeps name tags readable in a crowd: a tag that would cover the tag of a figure standing in front
+   * steps up above it. Figures in front (lower on screen) keep their tag in place.
+   */
+  private declutterTags(time: number): void {
+    if (time < this.declutterAt) return
+    this.declutterAt = time + TAG_DECLUTTER_MS
+    const figures = [...this.peers.values()].map((p) => p.avatar)
+    if (this.player) figures.push(this.player)
+    figures.sort((a, b) => b.y - a.y)
+    const placed: { x: number; y: number; w: number; h: number }[] = []
+    for (const figure of figures) {
+      const box = figure.tagBox()
+      if (!box) continue
+      let lift = 0
+      for (let step = 0; step < TAG_MAX_STEPS; step++) {
+        const top = box.y - lift
+        const hit = placed.find(
+          (p) =>
+            p.x < box.x + box.w &&
+            box.x < p.x + p.w &&
+            p.y < top + box.h &&
+            top < p.y + p.h
+        )
+        if (!hit) break
+        lift = box.y + box.h - hit.y + TAG_GAP
+      }
+      figure.liftTag(lift)
+      placed.push({ ...box, y: box.y - lift })
+    }
   }
 
   /**
