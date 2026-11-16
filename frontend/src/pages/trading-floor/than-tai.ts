@@ -174,6 +174,21 @@ export function effectiveStatus(
   return today.status
 }
 
+/**
+ * Whether the altar should open by itself when a visitor enters the floor: only while they can
+ * still pray today (not started, or in progress, before 11:30), and once per Vietnam day.
+ * `now` is the server clock; `lastShown` is the `YYYY-MM-DD` of the last automatic opening.
+ */
+export function shouldAutoOpenThanTai(
+  today: Pick<ThanTaiToday, "status" | "deadline">,
+  now: number,
+  lastShown: string | null
+): boolean {
+  if (lastShown === vnDate(now)) return false
+  const status = effectiveStatus(today, now)
+  return status === "chua_khan" || status === "dang_do"
+}
+
 // ---------- altar wording ----------
 
 export interface AltarCopy {

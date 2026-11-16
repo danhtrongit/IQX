@@ -147,12 +147,16 @@ describe("ThanTaiPanel", () => {
     )
     expect(await within(dialog).findByText("水雷屯")).toBeTruthy()
     expect(within(dialog).getByText(/☵ Khảm trên/)).toBeTruthy()
-    // The luận stays behind its button on the first reading.
-    expect(within(dialog).queryByText(LA.chot)).toBeNull()
-    await user.click(
-      within(dialog).getByRole("button", { name: "Xin thầy luận" })
-    )
+    // The luận shows at once: no Thoán, no Hào động, no reveal button.
     expect(within(dialog).getByText(LA.chot)).toBeTruthy()
+    expect(within(dialog).queryByText("Thoán rằng")).toBeNull()
+    expect(within(dialog).queryByText(/Hào động/)).toBeNull()
+    expect(
+      within(dialog).queryByRole("button", { name: "Xin thầy luận" })
+    ).toBeNull()
+    expect(
+      within(dialog).getByRole("button", { name: "Chia sẻ quẻ" })
+    ).toBeTruthy()
     expect(
       within(dialog).getByText("Luận theo ngũ hành, mang tính tham khảo vui.")
     ).toBeTruthy()
@@ -201,9 +205,7 @@ describe("ThanTaiPanel", () => {
       today({ status: "dang_do", step: 3, la: LA, prediction: "down" })
     )
     render(<ThanTaiPanel />)
-    await user.click(
-      await screen.findByRole("button", { name: "Khấn tiếp" })
-    )
+    await user.click(await screen.findByRole("button", { name: "Khấn tiếp" }))
     expect(screen.getByText("Cầu mã tăng")).toBeTruthy()
   })
 

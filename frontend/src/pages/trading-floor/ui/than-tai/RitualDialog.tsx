@@ -9,6 +9,7 @@ import { cx } from "../utils.ts"
 import { StepCau } from "./StepCau.tsx"
 import { StepDraw } from "./StepDraw.tsx"
 import { StepPredict } from "./StepPredict.tsx"
+import { CoinRain } from "./ShrineArt.tsx"
 import { StepResults } from "./StepResults.tsx"
 import type { Act, Step } from "./types.ts"
 
@@ -26,6 +27,10 @@ interface Props {
   /** Step 3 offered or skipped. */
   onFinished: () => void
   onClose: () => void
+  /** The window moved to another step: the coin rain stops. */
+  onStep: () => void
+  /** The coin rain to play behind the window's content, if any. */
+  rain: { key: number; count: number } | null
 }
 
 export function RitualDialog({
@@ -37,9 +42,18 @@ export function RitualDialog({
   onDrawn,
   onFinished,
   onClose,
+  onStep,
+  rain,
 }: Props) {
-  const [step, setStep] = useState<Step>(initialStep)
+  const [step, setStepState] = useState<Step>(initialStep)
   const [justDrawn, setJustDrawn] = useState(false)
+  const setStep = useCallback(
+    (next: Step) => {
+      setStepState(next)
+      onStep()
+    },
+    [onStep]
+  )
   const panelRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
 
@@ -85,7 +99,7 @@ export function RitualDialog({
         return { fail }
       }
     },
-    [onExpired, onToday]
+    [onExpired, onToday, setStep]
   )
 
   const done = today.status === "da_xong"
@@ -103,6 +117,7 @@ export function RitualDialog({
         aria-label="Khấn Thần Tài"
         tabIndex={-1}
       >
+        {rain && <CoinRain key={rain.key} count={rain.count} />}
         <button
           type="button"
           className="tt-x"

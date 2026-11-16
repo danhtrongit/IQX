@@ -1,6 +1,6 @@
-/** The Kinh Dịch card: back 卦, front with day line, rank seal, hexagram, verses and (on request) the luận. */
-import { Compass, Sparkles } from "lucide-react"
-import { useState, type CSSProperties } from "react"
+/** The Kinh Dịch card: back 卦, front with day line, rank seal, hexagram and the luận. */
+import { Compass } from "lucide-react"
+import type { CSSProperties } from "react"
 
 import type { HanhGroup, ThanTaiDay, ThanTaiLa } from "../../net/types.ts"
 import { HANG_META, HANH_COLOR, hexLines } from "../../than-tai.ts"
@@ -11,12 +11,9 @@ interface Props {
   day: ThanTaiDay
   /** Just drawn: flip, press the seal, and Đại cát shines. Off with reduced motion. */
   animate: boolean
-  /** Show the luận at once (reviewing later the same day). */
-  full: boolean
 }
 
-export function QueCard({ la, day, animate, full }: Props) {
-  const [revealed, setRevealed] = useState(full)
+export function QueCard({ la, day, animate }: Props) {
   const hang = HANG_META[la.hang]
   const dai = la.hang === "dai_cat"
   const style = { "--hc": hang.color } as CSSProperties
@@ -69,46 +66,16 @@ export function QueCard({ la, day, animate, full }: Props) {
             </div>
           </div>
           <div className="tt-tuong">{la.que.tuong}</div>
-          <div className="tt-orn">❖</div>
-          <div className="tt-sec">
-            <div className="tt-k">Thoán rằng</div>
-            <div className="tt-van">“{la.que.thoan}”</div>
-            <div className="tt-ng2">{la.que.thoanNghia}</div>
-          </div>
-          <div className="tt-sec tt-sec-mv">
-            <div className="tt-k">Hào động · {la.haoDong.ten}</div>
-            <div className="tt-van">“{la.haoDong.van}”</div>
-            <div className="tt-ng2">{la.haoDong.nghia}</div>
-          </div>
-          {revealed ? (
-            <Luan la={la} day={day} rise={!full} />
-          ) : (
-            <button
-              type="button"
-              className="tt-btn-luan"
-              onClick={() => setRevealed(true)}
-            >
-              <Sparkles size={16} aria-hidden="true" />
-              Xin thầy luận
-            </button>
-          )}
+          <Luan la={la} day={day} />
         </article>
       </div>
     </div>
   )
 }
 
-function Luan({
-  la,
-  day,
-  rise,
-}: {
-  la: ThanTaiLa
-  day: ThanTaiDay
-  rise: boolean
-}) {
+function Luan({ la, day }: { la: ThanTaiLa; day: ThanTaiDay }) {
   return (
-    <div className={cx("tt-lun", rise && "tt-lun-rise")}>
+    <div className="tt-lun">
       <div className="tt-orn">❖</div>
       <div className="tt-sec">
         <div className="tt-k">Thầy luận</div>
