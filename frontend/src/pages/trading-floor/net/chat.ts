@@ -4,6 +4,7 @@
  */
 import { openPanel, Store, toast, ui } from "../bridge.ts"
 import { floorApi } from "./api.ts"
+import { messagePreview } from "./chat-preview.ts"
 import { floorSocket } from "./socket.ts"
 import type { ChatMessage, ConvDetail, Inbox, InviteEvent } from "./types.ts"
 
@@ -106,6 +107,69 @@ async function markRead(id: string): Promise<void> {
 export function view(id: string | null): void {
   chat.viewing.set(id)
   if (id !== null) void loadThread(id)
+}
+
+/** Images accepted by the server (it re-checks the bytes): JPG, PNG, WebP up to 5 MB. */
+export const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"]
+export const IMAGE_MAX_BYTES = 5 * 1024 * 1024
+
+/** Upload progress (0 to 100) of the image being sent, by conversation. */
+export const uploads = new Store<Record<string, number>>({})
+
+export async function sendImage(id: string, file: File): Promise<boolean> {
+  if (!IMAGE_TYPES.includes(file.type)) {
+    toast("Chỉ gửi được ảnh JPG, PNG hoặc WebP.", "warn")
+    return false
+  }
+  if (file.size > IMAGE_MAX_BYTES) {
+    toast("Ảnh tối đa 5 MB.", "warn")
+    return false
+  }
+  if (uploads.get()[id] !== undefined) {
+    toast("Đang gửi một ảnh, chờ chút nhé.", "warn")
+    return false
+  }
+  const progress = (percent: number) =>
+    uploads.update((u) => ({ ...u, [id]: Math.round(percent) }))
+  progress(0)
+  try {
+    const message = await floorApi.sendImage(id, file, progress)
+    appendMessage(id, message)
+    return true
+  } catch (e) {
+    toast((e as Error).message, "warn")
+    return false
+  } finally {
+    uploads.update((u) => {
+      const next = { ...u }
+      delete next[id]
+      return next
+    })
+  }
+}
+
+/** Recalls one of the visitor's own messages; the socket tells the other side. */
+export async function recallMessage(convId: string, messageId: number): Promise<void> {
+  try {
+    await floorApi.recall(convId, messageId)
+    markRecalled(convId, messageId)
+  } catch (e) {
+    toast((e as Error).message, "warn")
+  }
+}
+
+function markRecalled(convId: string, messageId: number): void {
+  const t = chat.threads.get()[convId]
+  if (!t) return
+  const strip = (m: ChatMessage): ChatMessage =>
+    m.id === messageId && !m.recalled
+      ? { id: m.id, from: m.from, text: "", at: m.at, recalled: true }
+      : m
+  putThread({
+    ...t,
+    messages: t.messages.map(strip),
+    last: t.last ? strip(t.last) : t.last,
+  })
 }
 
 export async function sendText(id: string, text: string): Promise<boolean> {
@@ -329,7 +393,7 @@ export function startChat(): () => void {
         const peer =
           box && [...box.asUser, ...box.asSaco].find((c) => c.id === convId)
         toast(
-          `${peer?.peerName ?? (mine === "saco" ? "Khách" : "SACO")}: ${message.text.slice(0, 80)}`,
+          `${peer?.peerName ?? (mine === "saco" ? "Khách" : "SACO")}: ${messagePreview(message).slice(0, 80)}`,
           "info"
         )
       }
@@ -338,6 +402,10 @@ export function startChat(): () => void {
     floorSocket.on("chat:read", ({ convId, side, at }) => {
       const t = chat.threads.get()[convId]
       if (t && t.side !== side) putThread({ ...t, peerReadAt: at })
+      refreshInbox()
+    }),
+    floorSocket.on("chat:recall", ({ convId, messageId }) => {
+      markRecalled(convId, messageId)
       refreshInbox()
     }),
     floorSocket.on("chat:typing", ({ convId, side }) => {
@@ -362,5 +430,6 @@ export function startChat(): () => void {
     freshTimer = null
     acceptedAt = 0
     for (const store of Object.values(chat)) (store as Store<unknown>).reset()
+    uploads.reset()
   }
 }

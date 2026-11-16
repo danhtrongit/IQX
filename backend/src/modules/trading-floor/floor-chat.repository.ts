@@ -1,6 +1,7 @@
 /**
- * Lưu trữ Nhắn tin với SACO: cuộc trò chuyện (`tf_chat_convs`), tin nhắn, nhật ký lời mời. Nobody
- * edits or deletes a message. Chỉ đọc và ghi; quy tắc nằm ở `FloorChatService`.
+ * Lưu trữ Nhắn tin với SACO: cuộc trò chuyện (`tf_chat_convs`), tin nhắn, nhật ký lời mời. Không ai sửa
+ * hay xoá tin; người gửi chỉ thu hồi (`recalled_at`): hai bên thấy "đã thu hồi", lịch sử của trưởng nhóm
+ * và quản trị vẫn giữ nguyên chữ. Chỉ đọc và ghi; quy tắc nằm ở `FloorChatService`.
  *
  * Mọi mốc thời gian do dịch vụ truyền vào (cùng độ chính xác mili giây) để so sánh `created_at` với
  * `*_read_at` không bị lệch giữa đồng hồ JS và đồng hồ cơ sở dữ liệu.
@@ -11,7 +12,7 @@ import { Injectable } from '@nestjs/common';
 import type { SqlClient } from '../../platform/database/database.service.js';
 import { splitOwner } from './floor-actor.js';
 import { guestLabel } from './floor-chat.logic.js';
-import type { ChatMessage, ChatSender, InviteResult } from './floor-types.js';
+import type { ChatImage, ChatMessage, ChatSender, InviteResult } from './floor-types.js';
 
 export const FLOOR_CHAT_REPOSITORY = Symbol('FLOOR_CHAT_REPOSITORY');
 
@@ -48,6 +49,14 @@ export interface MatchedConvRef {
   readonly sacoId: string;
 }
 
+/** Một tin để kiểm tra quyền thu hồi. */
+export interface ChatMessageRef {
+  readonly id: number;
+  readonly from: ChatSender;
+  readonly imageId: string | null;
+  readonly recalled: boolean;
+}
+
 export interface StaffInviteRow {
   readonly at: number;
   readonly userName: string;
@@ -80,16 +89,39 @@ export interface FloorChatRepository {
     options?: { direct?: boolean },
   ): Promise<string>;
   markMatched(db: SqlClient, convId: string, at: Date): Promise<void>;
+  /** `image`: tin ảnh (chữ để trống). */
   insertMessage(
     db: SqlClient,
     convId: string,
     sender: ChatSender,
     text: string,
     at: Date,
+    image?: ChatImage,
   ): Promise<ChatMessage>;
   markRead(db: SqlClient, convId: string, side: 'user' | 'saco', at: Date): Promise<void>;
-  /** Tin gần nhất theo thứ tự cũ → mới. */
-  messages(db: SqlClient, convId: string, limit: number): Promise<ChatMessage[]>;
+  /**
+   * Tin gần nhất theo thứ tự cũ → mới. Hai bên thấy tin thu hồi trống chữ, không ảnh; `staff` (lịch sử
+   * của trưởng nhóm) giữ chữ gốc kèm dấu thu hồi.
+   */
+  messages(
+    db: SqlClient,
+    convId: string,
+    limit: number,
+    options?: { staff?: boolean },
+  ): Promise<ChatMessage[]>;
+  findMessage(db: SqlClient, convId: string, messageId: number): Promise<ChatMessageRef | null>;
+  /** Đánh dấu thu hồi; null khi tin đã thu hồi từ trước (hoặc không có). */
+  recallMessage(
+    db: SqlClient,
+    convId: string,
+    messageId: number,
+    at: Date,
+  ): Promise<{ imageId: string | null } | null>;
+  /** Cuộc chat của một ảnh, để phát; null khi không có ảnh này. */
+  chatImage(
+    db: SqlClient,
+    imageId: string,
+  ): Promise<{ convId: string; recalled: boolean } | null>;
   /** `userId` là chủ cuộc chat (uuid tài khoản hoặc `g:<uuid khách>`). */
   convIdsOfSaco(db: SqlClient, sacoId: string): Promise<Array<{ id: string; userId: string }>>;
   insertInvite(
@@ -112,22 +144,43 @@ const toDateOrNull = (value: unknown): Date | null =>
 const USER_NAME = `coalesce(nullif(btrim(p.display_name), ''), nullif(btrim(g.display_name), ''), nullif(btrim(u.full_name), ''), u.username)`;
 const OWNER_ID = `coalesce(c.user_id::text, 'g:' || c.guest_id::text)`;
 
-export const toChatMessage = (row: Row): ChatMessage => ({
-  id: Number(row.id),
-  from: row.sender as ChatSender,
-  text: String(row.text),
-  at: toDate(row.created_at).getTime(),
-});
+const MESSAGE_COLUMNS = 'id, sender, text, created_at, image_id, image_w, image_h, recalled_at';
 
-const lastOf = (row: Row): ChatMessage | null =>
+/**
+ * Một dòng `tf_chat_messages` thành tin. Tin thu hồi: hai bên nhận chữ trống, không ảnh, `recalled`;
+ * `staff` giữ chữ gốc (ảnh thì đã xoá).
+ */
+export const toChatMessage = (row: Row, staff = false): ChatMessage => {
+  const recalled = row.recalled_at !== null && row.recalled_at !== undefined;
+  const message: ChatMessage = {
+    id: Number(row.id),
+    from: row.sender as ChatSender,
+    text: recalled && !staff ? '' : String(row.text),
+    at: toDate(row.created_at).getTime(),
+  };
+  if (recalled) message.recalled = true;
+  else if (row.image_id !== null && row.image_id !== undefined) {
+    message.image = { id: String(row.image_id), w: Number(row.image_w), h: Number(row.image_h) };
+  }
+  return message;
+};
+
+const lastOf = (row: Row, staff = false): ChatMessage | null =>
   row.last_id === null || row.last_id === undefined
     ? null
-    : toChatMessage({
-        id: row.last_id,
-        sender: row.last_sender,
-        text: row.last_text,
-        created_at: row.last_created,
-      });
+    : toChatMessage(
+        {
+          id: row.last_id,
+          sender: row.last_sender,
+          text: row.last_text,
+          created_at: row.last_created,
+          image_id: row.last_image_id,
+          image_w: row.last_image_w,
+          image_h: row.last_image_h,
+          recalled_at: row.last_recalled_at,
+        },
+        staff,
+      );
 
 /** Câu SELECT một cuộc trò chuyện cho phía `side`: số chưa đọc đếm tin của bên kia sau mốc đã đọc. */
 function convSelect(side: 'user' | 'saco'): string {
@@ -140,9 +193,10 @@ function convSelect(side: 'user' | 'saco'): string {
            s.on_duty as saco_on_duty, s.user_id as saco_user_id,
            ${USER_NAME} as user_name, (c.guest_id is not null) as user_guest,
            lm.id as last_id, lm.sender as last_sender, lm.text as last_text,
-           lm.created_at as last_created,
+           lm.created_at as last_created, lm.image_id as last_image_id, lm.image_w as last_image_w,
+           lm.image_h as last_image_h, lm.recalled_at as last_recalled_at,
            (select count(*) from tf_chat_messages m
-             where m.conv_id = c.id and m.sender = '${other}'
+             where m.conv_id = c.id and m.sender = '${other}' and m.recalled_at is null
                and m.created_at > coalesce(c.${readColumn}, '-infinity'::timestamptz))::int as unread
       from tf_chat_convs c
       join tf_sacos s on s.id = c.saco_id
@@ -150,7 +204,7 @@ function convSelect(side: 'user' | 'saco'): string {
       left join tf_guests g on g.id = c.guest_id
       left join tf_profiles p on p.user_id = c.user_id
       left join lateral (
-        select id, sender, text, created_at from tf_chat_messages
+        select ${MESSAGE_COLUMNS} from tf_chat_messages
          where conv_id = c.id order by id desc limit 1
       ) lm on true`;
 }
@@ -261,11 +315,12 @@ export class PgFloorChatRepository implements FloorChatRepository {
     sender: ChatSender,
     text: string,
     at: Date,
+    image?: ChatImage,
   ): Promise<ChatMessage> {
     const rows = await db.query<Row>(
-      `insert into tf_chat_messages (conv_id, sender, text, created_at)
-       values ($1, $2, $3, $4) returning id, sender, text, created_at`,
-      [convId, sender, text, at],
+      `insert into tf_chat_messages (conv_id, sender, text, created_at, image_id, image_w, image_h)
+       values ($1, $2, $3, $4, $5, $6, $7) returning ${MESSAGE_COLUMNS}`,
+      [convId, sender, text, at, image?.id ?? null, image?.w ?? null, image?.h ?? null],
     );
     await db.query(`update tf_chat_convs set last_at = greatest(last_at, $2) where id = $1`, [
       convId,
@@ -287,13 +342,69 @@ export class PgFloorChatRepository implements FloorChatRepository {
     );
   }
 
-  async messages(db: SqlClient, convId: string, limit: number): Promise<ChatMessage[]> {
+  async messages(
+    db: SqlClient,
+    convId: string,
+    limit: number,
+    options: { staff?: boolean } = {},
+  ): Promise<ChatMessage[]> {
     const rows = await db.query<Row>(
-      `select id, sender, text, created_at from tf_chat_messages
+      `select ${MESSAGE_COLUMNS} from tf_chat_messages
         where conv_id = $1 order by id desc limit $2`,
       [convId, limit],
     );
-    return rows.map(toChatMessage).reverse();
+    return rows.map((row) => toChatMessage(row, options.staff === true)).reverse();
+  }
+
+  async findMessage(
+    db: SqlClient,
+    convId: string,
+    messageId: number,
+  ): Promise<ChatMessageRef | null> {
+    const rows = await db.query<Row>(
+      `select id, sender, image_id, recalled_at from tf_chat_messages where id = $1 and conv_id = $2`,
+      [messageId, convId],
+    );
+    const row = rows[0];
+    return row
+      ? {
+          id: Number(row.id),
+          from: row.sender as ChatSender,
+          imageId: row.image_id === null || row.image_id === undefined ? null : String(row.image_id),
+          recalled: row.recalled_at !== null && row.recalled_at !== undefined,
+        }
+      : null;
+  }
+
+  async recallMessage(
+    db: SqlClient,
+    convId: string,
+    messageId: number,
+    at: Date,
+  ): Promise<{ imageId: string | null } | null> {
+    const rows = await db.query<Row>(
+      `update tf_chat_messages set recalled_at = $3
+        where id = $1 and conv_id = $2 and recalled_at is null
+        returning image_id`,
+      [messageId, convId, at],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return { imageId: row.image_id === null || row.image_id === undefined ? null : String(row.image_id) };
+  }
+
+  async chatImage(
+    db: SqlClient,
+    imageId: string,
+  ): Promise<{ convId: string; recalled: boolean } | null> {
+    const rows = await db.query<Row>(
+      `select conv_id, recalled_at from tf_chat_messages where image_id = $1`,
+      [imageId],
+    );
+    const row = rows[0];
+    return row
+      ? { convId: String(row.conv_id), recalled: row.recalled_at !== null && row.recalled_at !== undefined }
+      : null;
   }
 
   async convIdsOfSaco(
@@ -374,5 +485,5 @@ const toStaffConv = (row: Row): StaffConvRow => ({
   sacoName: String(row.saco_name),
   sacoIcon: String(row.saco_icon),
   matched: row.matched === true,
-  last: lastOf(row),
+  last: lastOf(row, true),
 });

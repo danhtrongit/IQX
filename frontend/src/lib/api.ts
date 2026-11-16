@@ -432,13 +432,14 @@ export async function apiResponse(path: string, options: RequestInit = {}): Prom
   return executeWithSession(path, makeRequest, options.signal ?? undefined)
 }
 
-/** Multipart upload transport with real XHR progress and shared auth refresh. */
-export function apiUpload(path: string, file: File, onProgress: (percent: number) => void, signal?: AbortSignal): Promise<Response> {
+/** Multipart upload transport with real XHR progress and shared auth refresh; `headers` are sent as is. */
+export function apiUpload(path: string, file: File, onProgress: (percent: number) => void, signal?: AbortSignal, headers: Record<string, string> = {}): Promise<Response> {
   const send = (token: string | null): Promise<Response> => new Promise((resolve, reject) => {
     if (signal?.aborted) { reject(new DOMException("Đã huỷ tải tệp", "AbortError")); return }
     if (typeof XMLHttpRequest === "undefined") { reject(new Error("Trình duyệt không hỗ trợ tải tệp")); return }
     const xhr = new XMLHttpRequest()
     xhr.open("POST", requestUrl(path))
+    for (const [name, value] of Object.entries(headers)) xhr.setRequestHeader(name, value)
     if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`)
     xhr.upload.onprogress = event => { if (event.lengthComputable) onProgress((event.loaded / event.total) * 100) }
     const abort = () => xhr.abort()

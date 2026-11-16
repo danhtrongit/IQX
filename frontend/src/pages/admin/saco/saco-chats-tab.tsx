@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { errorMessage } from "@/lib/api"
 import { cn } from "@/lib/utils"
+import { chatImageUrl, imageBox, staffPreview } from "@/pages/trading-floor/net/chat-preview"
 import type { ChatMessage } from "@/pages/trading-floor/net/types"
 import { formatVnDateTime } from "@/pages/trading-floor/posts/format"
 
@@ -62,7 +63,7 @@ function ConvRow({ conv, active, onSelect }: { conv: ManageConv; active: boolean
       {conv.matched && <Badge variant="secondary" className="ml-auto h-5 shrink-0 px-1.5 text-[10px]">Khớp</Badge>}
     </span>
     <span className="flex min-w-0 gap-2 text-xs text-muted-foreground">
-      <span className="min-w-0 flex-1 truncate">{conv.last?.text ?? "Chưa có tin nhắn"}</span>
+      <span className="min-w-0 flex-1 truncate">{conv.last ? staffPreview(conv.last) : "Chưa có tin nhắn"}</span>
       {conv.last && <span className="shrink-0 tabular-nums">{formatVnDateTime(conv.last.at)}</span>}
     </span>
   </button>
@@ -94,7 +95,23 @@ function Transcript({ convId }: { convId: string }) {
             : <li key={message.id} className={cn("flex", message.from === "s" ? "justify-end" : "justify-start")}>
               <div className={cn("max-w-[80%] rounded-lg border px-3 py-2 text-sm", message.from === "s" ? "border-primary/30 bg-primary/10" : "border-border bg-muted/50")}>
                 <p className="text-[11px] text-muted-foreground">{message.from === "s" ? sacoName : userName} · {SENDER_LABEL[message.from]} · <span className="tabular-nums">{formatVnDateTime(message.at)}</span></p>
-                <p className="mt-0.5 whitespace-pre-wrap break-words">{message.text}</p>
+                {message.image && (
+                  <a href={chatImageUrl(message.image.id)} target="_blank" rel="noreferrer" className="mt-1 block w-fit">
+                    <img
+                      src={chatImageUrl(message.image.id)}
+                      alt="Ảnh trong cuộc chat"
+                      loading="lazy"
+                      width={imageBox(message.image.w, message.image.h).width}
+                      height={imageBox(message.image.w, message.image.h).height}
+                      className="h-auto max-w-full rounded-md border object-cover"
+                    />
+                  </a>
+                )}
+                {(message.text || message.recalled) && (
+                  <p className={cn("mt-0.5 whitespace-pre-wrap break-words", message.recalled && "italic text-muted-foreground")}>
+                    {staffPreview(message)}
+                  </p>
+                )}
               </div>
             </li>)}
         </ol>}

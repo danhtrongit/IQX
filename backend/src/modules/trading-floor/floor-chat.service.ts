@@ -35,12 +35,15 @@ import {
 
 import { DatabaseService } from '../../platform/database/index.js';
 import { isGuestKey } from './floor-actor.js';
+import { FloorChatImagesService } from './floor-chat-images.service.js';
 import {
+  canRecall,
   CHAT_RULES,
   cleanText,
   DISPATCH_RULES,
   floorChatTiming,
   guestLabel,
+  imageWindow,
   invitePreview,
   pickFallbackSaco,
 } from './floor-chat.logic.js';
@@ -109,6 +112,8 @@ const noSaco = () =>
 export class FloorChatService implements OnApplicationShutdown {
   private readonly logger = new Logger(FloorChatService.name);
   private readonly lastSend = new Map<string, number>();
+  /** Mốc gửi ảnh gần đây theo `ownerId|convId` (10 ảnh mỗi 10 phút). */
+  private readonly imageLog = new Map<string, number[]>();
   /** Lời mời đang chờ, theo mã SACO: mỗi SACO chỉ một lời mời tại một thời điểm. */
   private readonly pending = new Map<string, Pending>();
   /** Lượt tìm đang chạy, theo tài khoản: mỗi người một lượt. */
@@ -126,6 +131,7 @@ export class FloorChatService implements OnApplicationShutdown {
     private readonly presence: FloorPresence,
     private readonly events: FloorEvents,
     @Inject(FLOOR_CLOCK) private readonly clock: FloorClock,
+    private readonly images: FloorChatImagesService,
   ) {
     // Đóng tab hoặc mất mạng khi đang tìm thì coi như huỷ; lời mời đang chờ bị thu hồi. Lượt có tin chờ
     // vẫn được chuyển ngay cho một SACO (xem `runMatch`) để tin không mất.
@@ -193,6 +199,91 @@ export class FloorChatService implements OnApplicationShutdown {
     const text = requireText(raw);
     this.throttle(ownerId);
     return this.insertText(found, text);
+  }
+
+  /**
+   * Gửi một ảnh (luồng multipart): cùng giới hạn gửi tin, thêm tối đa 10 ảnh mỗi người mỗi cuộc chat
+   * trong 10 phút. Ảnh được nén rồi lưu trước, ghi tin sau; ghi tin lỗi thì xoá tệp.
+   */
+  async sendImage(
+    ownerId: string,
+    convId: string,
+    stream: AsyncIterable<Buffer | Uint8Array>,
+  ): Promise<ChatMessage> {
+    const found = await this.writableMember(ownerId, convId);
+    const nowMs = this.clock.now().getTime();
+    const key = `${ownerId}|${convId}`;
+    const window = imageWindow(this.imageLog.get(key) ?? [], nowMs);
+    if (!window.allowed) {
+      throw new HttpException(
+        { code: 'IMAGE_RATE_LIMIT', message: 'Bạn gửi nhiều ảnh quá, chờ vài phút rồi gửi tiếp nhé.' },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    this.throttle(ownerId);
+    this.imageLog.set(key, [...window.kept, nowMs]);
+    if (this.imageLog.size > 2000) this.pruneImageLog(nowMs);
+    const image = await this.images.compress(stream);
+    const imageId = randomUUID();
+    await this.images.save(convId, imageId, image.data);
+    const { conv, side } = found;
+    const now = this.clock.now();
+    let message: ChatMessage;
+    try {
+      message = await this.database.transaction(async (tx) => {
+        const saved = await this.chat.insertMessage(
+          tx,
+          convId,
+          side === 'user' ? 'u' : 's',
+          '',
+          now,
+          { id: imageId, w: image.width, h: image.height },
+        );
+        await this.chat.markRead(tx, convId, side, now);
+        return saved;
+      });
+    } catch (error) {
+      await this.images.remove(convId, imageId);
+      throw error;
+    }
+    this.broadcast(conv, { type: 'chat:msg', convId, message });
+    return message;
+  }
+
+  /**
+   * Thu hồi tin của chính mình (không giới hạn thời gian, kể cả khi cuộc chat đã chỉ đọc). Lặp lại thì
+   * không làm gì. Ảnh của tin bị xoá; hai bên nhận `chat:recall`.
+   */
+  async recall(ownerId: string, convId: string, messageId: number): Promise<void> {
+    const { conv, side } = await this.member(ownerId, convId);
+    const found = await this.chat.findMessage(this.database, convId, messageId);
+    if (!found) {
+      throw new NotFoundException({ code: 'MESSAGE_NOT_FOUND', message: 'Không tìm thấy tin nhắn.' });
+    }
+    if (!canRecall(found.from, side)) {
+      throw new ForbiddenException({
+        code: 'RECALL_FORBIDDEN',
+        message: 'Bạn chỉ thu hồi được tin nhắn của chính mình.',
+      });
+    }
+    if (found.recalled) return;
+    const changed = await this.chat.recallMessage(this.database, convId, messageId, this.clock.now());
+    if (!changed) return;
+    if (changed.imageId) await this.images.remove(convId, changed.imageId);
+    this.broadcast(conv, { type: 'chat:recall', convId, messageId });
+  }
+
+  /** Ảnh của một tin để phát công khai theo uuid; 404 khi không có hoặc đã thu hồi. */
+  async openImage(imageId: string): Promise<{ path: string; size: number }> {
+    const row = await this.chat.chatImage(this.database, imageId);
+    if (!row || row.recalled) {
+      throw new NotFoundException({ code: 'IMAGE_NOT_FOUND', message: 'Không tìm thấy ảnh' });
+    }
+    return this.images.open(row.convId, imageId);
+  }
+
+  readImage(path: string): NodeJS.ReadableStream {
+    return this.images.read(path);
   }
 
   async markRead(ownerId: string, convId: string): Promise<void> {
@@ -608,6 +699,14 @@ export class FloorChatService implements OnApplicationShutdown {
   private broadcast(conv: { userId: string; sacoId: string }, message: { type: string; [key: string]: unknown }): void {
     this.events.toUser(conv.userId, message);
     this.events.toSaco(conv.sacoId, message);
+  }
+
+  private pruneImageLog(now: number): void {
+    for (const [key, times] of this.imageLog) {
+      const kept = imageWindow(times, now).kept;
+      if (kept.length) this.imageLog.set(key, kept);
+      else this.imageLog.delete(key);
+    }
   }
 
   private pruneSendLog(now: number): void {

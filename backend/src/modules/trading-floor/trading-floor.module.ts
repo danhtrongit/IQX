@@ -17,6 +17,7 @@ import { MarketExtendedModule } from '../market-extended/index.js';
 import { FloorActors } from './floor-actor.js';
 import { FLOOR_CHAT_REPOSITORY, PgFloorChatRepository } from './floor-chat.repository.js';
 import { FloorChatController } from './floor-chat.controller.js';
+import { FloorChatImagesService } from './floor-chat-images.service.js';
 import { FloorBots } from './floor-bots.js';
 import { FloorChatService } from './floor-chat.service.js';
 import { FLOOR_CLOCK, systemFloorClock } from './floor-clock.js';
@@ -66,6 +67,7 @@ import { ThanTaiService } from './than-tai.service.js';
     FloorPresence,
     FloorProfileService,
     ThanTaiService,
+    FloorChatImagesService,
     FloorChatService,
     FloorSacoService,
     FloorBots,

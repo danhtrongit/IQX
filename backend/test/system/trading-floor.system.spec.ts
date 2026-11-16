@@ -1,4 +1,5 @@
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import sharp from 'sharp';
 import { WebSocket } from 'ws';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -956,5 +957,124 @@ describe('system acceptance: Khu giao dịch', () => {
     await ok(memberA, 'POST', '/saco/duty', { on: false });
     guestSocket.socket.close();
     fourthSocket.socket.close();
+  });
+
+  it('ảnh và thu hồi tin: khách và SACO gửi ảnh, thu hồi chỉ tin của mình, lịch sử trưởng nhóm giữ chữ gốc', async () => {
+    const newGuest = async (name: string): Promise<string> => {
+      const created = await call(null, 'POST', '/guest', { name, avatar: 'male02', color: 'default' });
+      expect(created.statusCode, created.body).toBe(200);
+      return (created.json() as { token: string }).token;
+    };
+    const guestCall = (token: string, method: string, path: string, payload?: unknown) =>
+      app.inject({
+        method: method as 'GET',
+        url: `${BASE}${path}`,
+        headers: { 'x-floor-guest': token },
+        ...(payload === undefined ? {} : { payload: payload as Json }),
+      });
+    const multipart = (bytes: Buffer, mime: string) => {
+      const boundary = `iqx-chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      return {
+        payload: Buffer.concat([
+          Buffer.from(
+            `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="a"\r\nContent-Type: ${mime}\r\n\r\n`,
+          ),
+          bytes,
+          Buffer.from(`\r\n--${boundary}--\r\n`),
+        ]),
+        headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+      };
+    };
+    const upload = (headers: Record<string, string>, convId: string, bytes: Buffer, mime = 'image/png') => {
+      const body = multipart(bytes, mime);
+      return app.inject({
+        method: 'POST',
+        url: `${BASE}/chat/convs/${convId}/images`,
+        headers: { ...headers, ...body.headers },
+        payload: body.payload,
+      });
+    };
+    const png = (width: number, height: number) =>
+      sharp({ create: { width, height, channels: 3, background: { r: 30, g: 120, b: 200 } } })
+        .png()
+        .toBuffer();
+
+    const token = await newGuest('Khách Ảnh');
+    const guestHeaders = { 'x-floor-guest': token };
+    const conv = (await guestCall(token, 'POST', '/chat/open', { sacoId: sacoA })).json() as Body;
+    const sacoSocket = await authed(memberA);
+
+    // Khách gửi ảnh lớn: nén về cạnh dài 1600, phát lại được theo uuid, SACO nhận qua socket.
+    const sent = await upload(guestHeaders, conv.id, await png(2400, 1200));
+    expect(sent.statusCode, sent.body).toBe(200);
+    const imageMessage = sent.json() as Body;
+    expect(imageMessage).toMatchObject({ from: 'u', text: '', image: { w: 1600, h: 800 } });
+    const served = await call(null, 'GET', `/chat/images/${imageMessage.image.id}`);
+    expect(served.statusCode).toBe(200);
+    expect(served.headers['content-type']).toBe('image/webp');
+    expect(served.headers['cache-control']).toBe('private, max-age=31536000, immutable');
+    expect((await sharp(served.rawPayload).metadata()).width).toBe(1600);
+    await waitFor(
+      sacoSocket,
+      (m) => m.type === 'chat:msg' && m.convId === conv.id && m.message.image?.id === imageMessage.image.id,
+      'ảnh tới SACO',
+    );
+    expect((await call(null, 'GET', '/chat/images/00000000-0000-4000-8000-000000000000')).statusCode).toBe(404);
+
+    // Sai định dạng, người ngoài cuộc, không có danh tính.
+    await sleep(300);
+    const bad = await upload(guestHeaders, conv.id, Buffer.from('not an image at all'), 'image/png');
+    expect(bad.statusCode).toBe(415);
+    const other = await newGuest('Khách Lạ');
+    expect((await upload({ 'x-floor-guest': other }, conv.id, await png(10, 10))).statusCode).toBe(404);
+    expect((await upload({}, conv.id, await png(10, 10))).statusCode).toBe(401);
+
+    // SACO (tài khoản) cũng gửi ảnh được.
+    await sleep(300);
+    const sacoImage = await upload(authHeader(memberA.accessToken), conv.id, await png(300, 600));
+    expect(sacoImage.statusCode, sacoImage.body).toBe(200);
+    expect(sacoImage.json()).toMatchObject({ from: 's', image: { w: 300, h: 600 } });
+
+    // Khách nhắn chữ rồi thu hồi; SACO không thu hồi được tin của khách; thu hồi lặp lại không lỗi.
+    await sleep(300);
+    const secret = (await guestCall(token, 'POST', `/chat/convs/${conv.id}/send`, { text: 'Số tài khoản của em' })).json() as Body;
+    const forbidden = await call(memberA, 'POST', `/chat/convs/${conv.id}/messages/${secret.id}/recall`);
+    expect(forbidden.statusCode).toBe(403);
+    expect(errorOf(forbidden)).toBe('RECALL_FORBIDDEN');
+    expect((await guestCall(other, 'POST', `/chat/convs/${conv.id}/messages/${secret.id}/recall`)).statusCode).toBe(404);
+    for (const id of [secret.id, secret.id, imageMessage.id]) {
+      const recalled = await guestCall(token, 'POST', `/chat/convs/${conv.id}/messages/${id}/recall`);
+      expect(recalled.statusCode, recalled.body).toBe(200);
+    }
+    await waitFor(sacoSocket, (m) => m.type === 'chat:recall' && m.messageId === secret.id, 'chat:recall tới SACO');
+    expect(
+      sacoSocket.messages.filter((m) => m.type === 'chat:recall' && m.messageId === secret.id),
+    ).toHaveLength(1);
+    expect((await call(null, 'GET', `/chat/images/${imageMessage.image.id}`)).statusCode).toBe(404);
+
+    // Hai bên thấy "đã thu hồi" (không chữ, không ảnh), kể cả sau khi tải lại; hộp thư cũng vậy.
+    const reloaded = (await guestCall(token, 'GET', `/chat/convs/${conv.id}`)).json() as Body;
+    const byId = (list: Body[], id: number) => list.find((m: Body) => m.id === id);
+    expect(byId(reloaded.messages, secret.id)).toEqual({ id: secret.id, from: 'u', text: '', at: secret.at, recalled: true });
+    expect(byId(reloaded.messages, imageMessage.id)).not.toHaveProperty('image');
+    expect(byId(reloaded.messages, sacoImage.json().id)).toMatchObject({ image: { w: 300 } });
+    const sacoView = await ok(memberA, 'GET', `/chat/convs/${conv.id}`);
+    expect(byId(sacoView.messages, secret.id)).toMatchObject({ text: '', recalled: true });
+    expect((await ok(memberA, 'GET', '/chat/inbox')).asSaco.find((c: Body) => c.id === conv.id).last).toMatchObject({
+      id: secret.id,
+      recalled: true,
+      text: '',
+    });
+
+    // Lịch sử của trưởng nhóm giữ chữ gốc kèm dấu thu hồi; ảnh đã thu hồi thì mất.
+    const staff = await ok(lead, 'GET', `/manage/convs/${conv.id}`);
+    expect(byId(staff.messages, secret.id)).toMatchObject({ text: 'Số tài khoản của em', recalled: true });
+    expect(byId(staff.messages, imageMessage.id)).toMatchObject({ recalled: true });
+    expect(byId(staff.messages, imageMessage.id)).not.toHaveProperty('image');
+    const rows = await stack.query<{ text: string; recalled: boolean }>(
+      'select text, recalled_at is not null as recalled from tf_chat_messages where id = $1',
+      [secret.id],
+    );
+    expect(rows).toEqual([{ text: 'Số tài khoản của em', recalled: true }]);
   });
 });

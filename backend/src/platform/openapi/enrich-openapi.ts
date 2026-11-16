@@ -577,6 +577,7 @@ function applyV2RequestMetadata(document: OpenAPIObject): void {
     '/api/v2/admin/lessons/courses/{courseId}/thumbnail',
     '/api/v2/admin/lessons/episodes/{episodeId}/file',
     '/api/v2/trading-floor/saco/posts/{id}/images',
+    '/api/v2/trading-floor/chat/convs/{id}/images',
   ]) {
     const operation = document.paths[path]?.post as
       (OperationObject & { requestBody?: Record<string, unknown> }) | undefined;
