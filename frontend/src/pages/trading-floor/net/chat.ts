@@ -417,7 +417,13 @@ export function startChat(): () => void {
       if (event.state === "matched") adoptFresh(event.convId)
       else if (event.state === "none") failFresh("none", NO_SACO_TEXT)
     }),
-    floorSocket.on("chat:invite", ({ invite }) => chat.invite.set(invite)),
+    // The countdown runs on this device's clock: a phone a minute off the server would show "0 giây".
+    floorSocket.on("chat:invite", ({ invite }) =>
+      chat.invite.set({
+        ...invite,
+        deadline: Date.now() + CHAT_RULES.inviteMs,
+      })
+    ),
     floorSocket.on("chat:invite:end", ({ id }) => {
       if (chat.invite.get()?.id === id) chat.invite.set(null)
     }),

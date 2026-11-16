@@ -1705,6 +1705,12 @@
   color: var(--muted);
   min-height: 32px;
 }
+@media (pointer: coarse) {
+  .tf-root .duty button {
+    min-height: 44px;
+    padding: 5px 14px;
+  }
+}
 .tf-root .duty button.on {
   background: #2b3245;
   color: var(--fg);
