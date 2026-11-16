@@ -35149,7 +35149,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 898 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 906 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -176173,6 +176173,36 @@
                           "minimum": -9007199254740991,
                           "type": "integer"
                         },
+                        "image": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "h": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "w": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "w",
+                            "h"
+                          ],
+                          "type": "object"
+                        },
+                        "recalled": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        },
                         "text": {
                           "type": "string"
                         }
@@ -176207,6 +176237,36 @@
                             "maximum": 9007199254740991,
                             "minimum": -9007199254740991,
                             "type": "integer"
+                          },
+                          "image": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "h": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "w": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "w",
+                              "h"
+                            ],
+                            "type": "object"
+                          },
+                          "recalled": {
+                            "enum": [
+                              true
+                            ],
+                            "type": "boolean"
                           },
                           "text": {
                             "type": "string"
@@ -176312,6 +176372,258 @@
         },
         "security": [],
         "summary": "Một cuộc trò chuyện với tin nhắn gần nhất và mốc đã xem của bên kia",
+        "tags": [
+          "Khu giao dịch"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/chat/convs/{id}/images": {
+      "post": {
+        "operationId": "floorChatSendImage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "at": {
+                      "type": "number"
+                    },
+                    "from": {
+                      "enum": [
+                        "u",
+                        "s",
+                        "x"
+                      ],
+                      "type": "string"
+                    },
+                    "id": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "image": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "h": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "w": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "w",
+                        "h"
+                      ],
+                      "type": "object"
+                    },
+                    "recalled": {
+                      "enum": [
+                        true
+                      ],
+                      "type": "boolean"
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "from",
+                    "text",
+                    "at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Gửi một ảnh (JPG, PNG, WebP, tối đa 5 MB, trường file), máy chủ nén lại thành WebP",
+        "tags": [
+          "Khu giao dịch"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/chat/convs/{id}/messages/{messageId}/recall": {
+      "post": {
+        "operationId": "floorChatRecall",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ok": {
+                      "enum": [
+                        true
+                      ],
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Thu hồi một tin của chính mình (lặp lại không lỗi); hai bên nhận chat:recall",
         "tags": [
           "Khu giao dịch"
         ],
@@ -176465,6 +176777,36 @@
                       "minimum": -9007199254740991,
                       "type": "integer"
                     },
+                    "image": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "h": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "w": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "w",
+                        "h"
+                      ],
+                      "type": "object"
+                    },
+                    "recalled": {
+                      "enum": [
+                        true
+                      ],
+                      "type": "boolean"
+                    },
                     "text": {
                       "type": "string"
                     }
@@ -176531,6 +176873,83 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/trading-floor/chat/images/{imageId}": {
+      "get": {
+        "operationId": "floorChatImage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "imageId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/webp": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Ảnh WebP"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Ảnh trong chat (WebP), phát theo uuid khó đoán; 404 khi tin đã thu hồi",
+        "tags": [
+          "Khu giao dịch"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/trading-floor/chat/inbox": {
       "get": {
         "operationId": "floorChatInbox",
@@ -176568,6 +176987,36 @@
                                 "maximum": 9007199254740991,
                                 "minimum": -9007199254740991,
                                 "type": "integer"
+                              },
+                              "image": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "h": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "w": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "w",
+                                  "h"
+                                ],
+                                "type": "object"
+                              },
+                              "recalled": {
+                                "enum": [
+                                  true
+                                ],
+                                "type": "boolean"
                               },
                               "text": {
                                 "type": "string"
@@ -176650,6 +177099,36 @@
                                 "maximum": 9007199254740991,
                                 "minimum": -9007199254740991,
                                 "type": "integer"
+                              },
+                              "image": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "h": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "w": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "w",
+                                  "h"
+                                ],
+                                "type": "object"
+                              },
+                              "recalled": {
+                                "enum": [
+                                  true
+                                ],
+                                "type": "boolean"
                               },
                               "text": {
                                 "type": "string"
@@ -177159,6 +177638,36 @@
                           "minimum": -9007199254740991,
                           "type": "integer"
                         },
+                        "image": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "h": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "w": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "w",
+                            "h"
+                          ],
+                          "type": "object"
+                        },
+                        "recalled": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        },
                         "text": {
                           "type": "string"
                         }
@@ -177259,6 +177768,181 @@
         },
         "security": [],
         "summary": "Nhắn SACO: mở (hoặc dùng lại) cuộc chat trực tiếp với một SACO",
+        "tags": [
+          "Khu giao dịch"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/chat/start": {
+      "post": {
+        "operationId": "floorChatStart",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "text": {
+                    "maxLength": 4000,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "convId": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "at": {
+                              "type": "number"
+                            },
+                            "from": {
+                              "enum": [
+                                "u",
+                                "s",
+                                "x"
+                              ],
+                              "type": "string"
+                            },
+                            "id": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "image": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "h": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "id": {
+                                  "type": "string"
+                                },
+                                "w": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "w",
+                                "h"
+                              ],
+                              "type": "object"
+                            },
+                            "recalled": {
+                              "enum": [
+                                true
+                              ],
+                              "type": "boolean"
+                            },
+                            "text": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "from",
+                            "text",
+                            "at"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "convId",
+                        "message"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "pending": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "pending"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Chat SACO nhắn trước: gửi vào cuộc chat đang khớp, hoặc xếp tin chờ và phân phối cho một SACO (kết quả qua WebSocket chat:match)",
         "tags": [
           "Khu giao dịch"
         ],
@@ -177623,6 +178307,36 @@
                                 "minimum": -9007199254740991,
                                 "type": "integer"
                               },
+                              "image": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "h": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "w": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "w",
+                                  "h"
+                                ],
+                                "type": "object"
+                              },
+                              "recalled": {
+                                "enum": [
+                                  true
+                                ],
+                                "type": "boolean"
+                              },
                               "text": {
                                 "type": "string"
                               }
@@ -177793,6 +178507,36 @@
                           "minimum": -9007199254740991,
                           "type": "integer"
                         },
+                        "image": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "h": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "w": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "w",
+                            "h"
+                          ],
+                          "type": "object"
+                        },
+                        "recalled": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        },
                         "text": {
                           "type": "string"
                         }
@@ -177827,6 +178571,36 @@
                             "maximum": 9007199254740991,
                             "minimum": -9007199254740991,
                             "type": "integer"
+                          },
+                          "image": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "h": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "w": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "w",
+                              "h"
+                            ],
+                            "type": "object"
+                          },
+                          "recalled": {
+                            "enum": [
+                              true
+                            ],
+                            "type": "boolean"
                           },
                           "text": {
                             "type": "string"
@@ -177982,7 +178756,8 @@
                               "timeout",
                               "skip-off",
                               "skip-busy",
-                              "cancel"
+                              "cancel",
+                              "auto"
                             ],
                             "type": "string"
                           },
@@ -178106,7 +178881,8 @@
             "schema": {
               "enum": [
                 "published",
-                "hidden"
+                "hidden",
+                "withdrawn"
               ],
               "type": "string"
             }
@@ -178155,7 +178931,8 @@
                             "enum": [
                               "draft",
                               "published",
-                              "hidden"
+                              "hidden",
+                              "withdrawn"
                             ],
                             "type": "string"
                           }
@@ -178292,6 +179069,10 @@
                     "comments": {
                       "type": "number"
                     },
+                    "editedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
                     "headline": {
                       "type": "string"
                     },
@@ -178312,7 +179093,10 @@
                             "enum": [
                               "publish",
                               "hide",
-                              "unhide"
+                              "unhide",
+                              "edit",
+                              "withdraw",
+                              "republish"
                             ],
                             "type": "string"
                           },
@@ -178364,7 +179148,8 @@
                       "enum": [
                         "draft",
                         "published",
-                        "hidden"
+                        "hidden",
+                        "withdrawn"
                       ],
                       "type": "string"
                     }
@@ -178375,6 +179160,7 @@
                     "status",
                     "savedAt",
                     "publishedAt",
+                    "editedAt",
                     "hearts",
                     "comments",
                     "newComments",
@@ -181490,6 +182276,10 @@
                           "comments": {
                             "type": "number"
                           },
+                          "editedAt": {
+                            "nullable": true,
+                            "type": "number"
+                          },
                           "headline": {
                             "type": "string"
                           },
@@ -181518,6 +182308,7 @@
                           "sacoName",
                           "headline",
                           "publishedAt",
+                          "editedAt",
                           "hearts",
                           "comments",
                           "hearted"
@@ -181618,6 +182409,10 @@
                     "comments": {
                       "type": "number"
                     },
+                    "editedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
                     "headline": {
                       "type": "string"
                     },
@@ -181655,6 +182450,7 @@
                     "sacoName",
                     "headline",
                     "publishedAt",
+                    "editedAt",
                     "hearts",
                     "comments",
                     "hearted",
@@ -182556,6 +183352,10 @@
                           "comments": {
                             "type": "number"
                           },
+                          "editedAt": {
+                            "nullable": true,
+                            "type": "number"
+                          },
                           "headline": {
                             "type": "string"
                           },
@@ -182579,7 +183379,8 @@
                             "enum": [
                               "draft",
                               "published",
-                              "hidden"
+                              "hidden",
+                              "withdrawn"
                             ],
                             "type": "string"
                           }
@@ -182590,6 +183391,7 @@
                           "status",
                           "savedAt",
                           "publishedAt",
+                          "editedAt",
                           "hearts",
                           "comments",
                           "newComments"
@@ -182687,6 +183489,10 @@
                     "comments": {
                       "type": "number"
                     },
+                    "editedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
                     "headline": {
                       "type": "string"
                     },
@@ -182713,7 +183519,8 @@
                       "enum": [
                         "draft",
                         "published",
-                        "hidden"
+                        "hidden",
+                        "withdrawn"
                       ],
                       "type": "string"
                     }
@@ -182724,6 +183531,7 @@
                     "status",
                     "savedAt",
                     "publishedAt",
+                    "editedAt",
                     "hearts",
                     "comments",
                     "newComments",
@@ -182894,7 +183702,7 @@
             "bearer": []
           }
         ],
-        "summary": "Xoá bản nháp",
+        "summary": "Xoá bản nháp, hoặc xoá hẳn bài đã thu hồi (kèm ảnh, tim, bình luận)",
         "tags": [
           "Trading Floor Posts"
         ],
@@ -182928,6 +183736,10 @@
                     "comments": {
                       "type": "number"
                     },
+                    "editedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
                     "headline": {
                       "type": "string"
                     },
@@ -182954,7 +183766,8 @@
                       "enum": [
                         "draft",
                         "published",
-                        "hidden"
+                        "hidden",
+                        "withdrawn"
                       ],
                       "type": "string"
                     }
@@ -182965,6 +183778,7 @@
                     "status",
                     "savedAt",
                     "publishedAt",
+                    "editedAt",
                     "hearts",
                     "comments",
                     "newComments",
@@ -183275,6 +184089,184 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/trading-floor/saco/posts/{id}/edit": {
+      "post": {
+        "operationId": "tradingFloorSacoPostEdit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "baseRevision": {
+                    "maximum": 2000000000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "bodyHtml": {
+                    "maxLength": 900000,
+                    "type": "string"
+                  },
+                  "headline": {
+                    "maxLength": 2000,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "headline",
+                  "bodyHtml",
+                  "baseRevision"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bodyHtml": {
+                      "type": "string"
+                    },
+                    "comments": {
+                      "type": "number"
+                    },
+                    "editedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "headline": {
+                      "type": "string"
+                    },
+                    "hearts": {
+                      "type": "number"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "newComments": {
+                      "type": "number"
+                    },
+                    "publishedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "revision": {
+                      "type": "number"
+                    },
+                    "savedAt": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "published",
+                        "hidden",
+                        "withdrawn"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "headline",
+                    "status",
+                    "savedAt",
+                    "publishedAt",
+                    "editedAt",
+                    "hearts",
+                    "comments",
+                    "newComments",
+                    "bodyHtml",
+                    "revision"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa bài đã đăng tại chỗ (kiểm tra như khi đăng, giữ giờ đăng, tim, bình luận); baseRevision cũ trả 409 DRAFT_STALE; bài bị ẩn hoặc đã thu hồi trả 409",
+        "tags": [
+          "Trading Floor Posts"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/trading-floor/saco/posts/{id}/images": {
       "post": {
         "operationId": "tradingFloorSacoPostImageUpload",
@@ -183398,7 +184390,7 @@
             "bearer": []
           }
         ],
-        "summary": "Tải ảnh vào nháp (JPG, PNG, WebP, tối đa 5 MB), máy chủ nén lại thành WebP",
+        "summary": "Tải ảnh vào nháp hoặc bài đang đăng của mình (JPG, PNG, WebP, tối đa 5 MB), máy chủ nén lại thành WebP",
         "tags": [
           "Trading Floor Posts"
         ],
@@ -183465,6 +184457,10 @@
                     "comments": {
                       "type": "number"
                     },
+                    "editedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
                     "headline": {
                       "type": "string"
                     },
@@ -183491,7 +184487,8 @@
                       "enum": [
                         "draft",
                         "published",
-                        "hidden"
+                        "hidden",
+                        "withdrawn"
                       ],
                       "type": "string"
                     }
@@ -183502,6 +184499,7 @@
                     "status",
                     "savedAt",
                     "publishedAt",
+                    "editedAt",
                     "hearts",
                     "comments",
                     "newComments",
@@ -183571,6 +184569,300 @@
           }
         ],
         "summary": "Lưu rồi đăng bài; đăng lại bài đã đăng trả về chính bài đó",
+        "tags": [
+          "Trading Floor Posts"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/saco/posts/{id}/republish": {
+      "post": {
+        "operationId": "tradingFloorSacoPostRepublish",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bodyHtml": {
+                      "type": "string"
+                    },
+                    "comments": {
+                      "type": "number"
+                    },
+                    "editedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "headline": {
+                      "type": "string"
+                    },
+                    "hearts": {
+                      "type": "number"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "newComments": {
+                      "type": "number"
+                    },
+                    "publishedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "revision": {
+                      "type": "number"
+                    },
+                    "savedAt": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "published",
+                        "hidden",
+                        "withdrawn"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "headline",
+                    "status",
+                    "savedAt",
+                    "publishedAt",
+                    "editedAt",
+                    "hearts",
+                    "comments",
+                    "newComments",
+                    "bodyHtml",
+                    "revision"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đăng lại bài đã thu hồi với giờ đăng gốc; đăng lại bài đang đăng thì bỏ qua",
+        "tags": [
+          "Trading Floor Posts"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/saco/posts/{id}/withdraw": {
+      "post": {
+        "operationId": "tradingFloorSacoPostWithdraw",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bodyHtml": {
+                      "type": "string"
+                    },
+                    "comments": {
+                      "type": "number"
+                    },
+                    "editedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "headline": {
+                      "type": "string"
+                    },
+                    "hearts": {
+                      "type": "number"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "newComments": {
+                      "type": "number"
+                    },
+                    "publishedAt": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "revision": {
+                      "type": "number"
+                    },
+                    "savedAt": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "published",
+                        "hidden",
+                        "withdrawn"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "headline",
+                    "status",
+                    "savedAt",
+                    "publishedAt",
+                    "editedAt",
+                    "hearts",
+                    "comments",
+                    "newComments",
+                    "bodyHtml",
+                    "revision"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thu hồi bài đã đăng: biến khỏi khu, giữ tim và bình luận; thu hồi lại thì bỏ qua",
         "tags": [
           "Trading Floor Posts"
         ],
@@ -184379,6 +185671,182 @@
         },
         "security": [],
         "summary": "Bước 1: gieo quẻ (một lá mỗi ngày; gọi lại trả đúng lá đã gieo; sau 11:30 là HET_GIO)",
+        "tags": [
+          "Khu giao dịch · Thần Tài"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/trading-floor/than-tai/leaderboard": {
+      "get": {
+        "operationId": "thanTaiLeaderboard",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "asOf": {
+                      "type": "number"
+                    },
+                    "me": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "color": {
+                          "type": "string"
+                        },
+                        "correct": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "rank": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "total": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "rank",
+                        "name",
+                        "avatar",
+                        "color",
+                        "correct",
+                        "total"
+                      ],
+                      "type": "object"
+                    },
+                    "month": {
+                      "type": "string"
+                    },
+                    "rows": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar": {
+                            "type": "string"
+                          },
+                          "color": {
+                            "type": "string"
+                          },
+                          "correct": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "rank": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "total": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "rank",
+                          "name",
+                          "avatar",
+                          "color",
+                          "correct",
+                          "total"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "scoredDays": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "month",
+                    "scoredDays",
+                    "rows",
+                    "me",
+                    "asOf"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Bảng vinh danh theo tháng (`?month=YYYY-MM`, mặc định tháng này): top 10 tài khoản dự đoán đúng VNINDEX nhiều nhất và dòng của người gọi. Chỉ chấm ngày đã có giá đóng cửa; khách xem được nhưng không được xếp hạng",
         "tags": [
           "Khu giao dịch · Thần Tài"
         ],
@@ -189424,11 +190892,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 685,
+    "authenticatedOperations": 688,
     "noContentResponses": 18,
-    "operations": 916,
-    "publicOperations": 231,
-    "responseSchemas": 898,
+    "operations": 924,
+    "publicOperations": 236,
+    "responseSchemas": 906,
     "untypedResponses": 0
   }
 }
