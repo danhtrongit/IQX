@@ -2,6 +2,7 @@ import {
   ChartCandlestick,
   ClipboardList,
   Landmark,
+  Trophy,
   type LucideIcon,
 } from "lucide-react"
 
@@ -32,6 +33,12 @@ const PLACES: {
     icon: ChartCandlestick,
     name: "Bảng điện",
     text: "Chỉ số VN-Index, VN30, HNX, UPCoM cập nhật trong phiên.",
+  },
+  {
+    kind: "leaderboard",
+    icon: Trophy,
+    name: "Tượng Vinh danh",
+    text: "Ba tượng ở khu bên phải là ba người dự đoán VNINDEX đúng nhiều nhất tháng này, lấy từ lượt khấn Thần Tài.",
   },
 ]
 

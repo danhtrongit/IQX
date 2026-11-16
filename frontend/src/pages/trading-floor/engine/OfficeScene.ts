@@ -30,17 +30,19 @@ import {
   type Peer,
   type PostCard,
   type Profile,
+  type ThanTaiLeaderboard,
   nameBadges,
   normalizeAvatarId,
 } from "../net/types.ts"
 import {
   ASSET_ROOT,
   type CharacterArt,
+  type FrameArt,
   type Manifest,
   type WalkArt,
   walkAnimKey,
 } from "./assets.ts"
-import { Avatar, facingOf } from "./Avatar.ts"
+import { Avatar, DEPTH_LABEL, facingOf } from "./Avatar.ts"
 import {
   BOARDS,
   NAV_CELL,
@@ -88,6 +90,20 @@ interface Hot {
   rect: Phaser.Geom.Rectangle
   interact: Interact
   depth: number
+}
+
+/** One statue of the hall of fame: the figure, its caption, the numbered disc above it. */
+interface Statue {
+  img: Phaser.GameObjects.Image
+  name: Phaser.GameObjects.Text
+  sub: Phaser.GameObjects.Text
+  mark: Phaser.GameObjects.Graphics
+  markText: Phaser.GameObjects.Text
+  /** Where the statue stands (top of the podium) and its size relative to the art. */
+  top: number
+  base: number
+  /** Texture the slot wants, so a late load never overwrites a newer choice. */
+  file: string
 }
 
 interface RemotePeer {
@@ -158,6 +174,9 @@ export class OfficeScene extends Phaser.Scene {
   private postLines: Phaser.GameObjects.Text[] = []
   private readonly disposers: (() => void)[] = []
   private disposed = false
+  /** Hall of fame, in rank order (1, 2, 3). */
+  private readonly statues: Statue[] = []
+  private readonly statueLoads = new Map<string, Promise<void>>()
   private shrineGlow!: Phaser.GameObjects.Image
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter
   /** Thần Tài on the shrine when his art exists, and who he has already greeted. */
@@ -204,6 +223,7 @@ export class OfficeScene extends Phaser.Scene {
     this.buildBoards()
     for (const p of PLACEMENTS) this.place(p)
     this.buildShrine()
+    this.buildStatues()
     this.buildPeople()
     this.buildLabels()
     this.setupInput()
@@ -650,6 +670,7 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   private place(p: Placement): void {
+    if (p.id.startsWith("statue-")) return // built by buildStatues
     if (p.id === "thantai" && this.manifest.characters.thantai) return // an animated figure, built by buildShrine
     const art = p.art ? this.prop(p.art) : undefined
     const depth = p.flat ? DEPTH.FLAT : p.y
@@ -956,6 +977,160 @@ export class OfficeScene extends Phaser.Scene {
     })
   }
 
+  // ---------- hall of fame ----------
+
+  private buildStatues(): void {
+    for (const rank of [1, 2, 3]) {
+      const p = PLACEMENTS.find((x) => x.id === `statue-${rank}`)!
+      // `top` is where the statue stands; `face` is the middle of the podium's front, for the name.
+      let top = p.y - p.h + 4
+      let face = p.y - p.h * 0.6 + 8
+      const art = this.prop("podium")
+      if (art) {
+        const podium = this.add
+          .image(p.x, p.y, art.file)
+          .setOrigin(art.origin?.[0] ?? 0.5, art.origin?.[1] ?? 1)
+          .setScale(1 / art.density)
+          .setDepth(p.y)
+        // A round podium seen from 22 degrees above: its top face is an ellipse 0.375 x width tall.
+        const lid = podium.displayWidth * 0.375
+        top = p.y - podium.displayHeight + lid / 2
+        face = (p.y - podium.displayHeight + lid + p.y) / 2
+      } else {
+        const g = this.add.graphics({ x: p.x, y: p.y }).setDepth(p.y)
+        drawPlaceholder(g, p.placeholder ?? "podium", p.w, p.h)
+      }
+      if (p.foot)
+        this.nav.blockRect(
+          p.x - p.foot[0] / 2,
+          p.y - p.foot[1],
+          p.foot[0],
+          p.foot[1]
+        )
+      const base = rank === 1 ? 1.1 : 1
+      const img = this.add
+        .image(p.x, top, "__WHITE")
+        .setDepth(p.y + 0.5)
+        .setVisible(false)
+      const name = this.text(p.x, face, "", 12, "#2a1a08", "800")
+        .setOrigin(0.5, 0.5)
+        .setDepth(p.y + 1)
+      const sub = this.text(p.x, p.y + 6, "", 12, "#ffe7a3", "700")
+        .setOrigin(0.5, 0)
+        .setBackgroundColor("rgba(12,17,27,0.6)")
+        .setPadding(6, 2, 6, 2)
+        .setDepth(DEPTH_LABEL + p.y)
+      // The rank mark: a gold, silver or bronze disc with the number (no emoji), drawn by placeMark.
+      const mark = this.add.graphics().setDepth(p.y + 1)
+      const markText = this.text(p.x, top, String(rank), 15, "#2a1a08", "800")
+        .setOrigin(0.5, 0.5)
+        .setDepth(p.y + 1.1)
+      this.statues.push({ img, name, sub, mark, markText, top, base, file: "" })
+      this.addHot(
+        new Phaser.Geom.Rectangle(
+          p.x - p.w / 2,
+          top - 110 * base,
+          p.w,
+          p.y - top + 110 * base
+        ),
+        p.interact!,
+        p.y
+      )
+    }
+  }
+
+  /** The top 3 of the month (people with at least one correct call) take the statues; the rest stay empty. */
+  private updateStatues(board: ThanTaiLeaderboard | null): void {
+    if (this.disposed) return
+    this.statues.forEach((s, i) => {
+      const rank = i + 1
+      const row = board?.rows.find((r) => r.rank === rank && r.correct > 0)
+      // An empty podium shows the first character, dimmed.
+      const art = this.character(row?.avatar ?? "male01").statue
+      s.file = art?.file ?? ""
+      if (art) {
+        const apply = (): void => {
+          if (this.disposed || s.file !== art.file) return
+          if (!this.textures.exists(art.file)) return
+          s.img.setVisible(true)
+          this.setFrame(s.img, art, s.base)
+          this.placeMark(s, rank, Boolean(row))
+        }
+        if (this.textures.exists(art.file)) apply()
+        else void this.loadStatueArt(art).then(apply)
+      } else {
+        s.img.setVisible(false)
+      }
+      if (row) {
+        s.img.setAlpha(1).clearTint()
+        s.name.setText(
+          row.name.length > 14 ? `${row.name.slice(0, 13)}…` : row.name
+        )
+        s.sub.setText(`${row.correct}/${row.total} lần đúng`).setVisible(true)
+      } else {
+        s.img.setAlpha(0.35).setTint(0x8a8f99)
+        s.name.setText("Chưa có")
+        s.sub.setText("").setVisible(false)
+      }
+      this.placeMark(s, rank, Boolean(row))
+    })
+  }
+
+  /** Draws the numbered disc above the statue's head (above the podium while the art has not loaded). */
+  private placeMark(s: Statue, rank: number, filled: boolean): void {
+    const headY = s.img.visible
+      ? s.img.y - s.img.displayHeight * s.img.originY
+      : s.top - 110 * s.base
+    const cy = headY - 20
+    const colour = [0xf3c64a, 0xcfd5de, 0xc98a52][rank - 1]!
+    const r = 15
+    s.mark
+      .clear()
+      .setAlpha(filled ? 1 : 0.4)
+      .fillStyle(0x2a1a08, 0.35)
+      .fillCircle(s.img.x, cy + 2, r + 1)
+      .fillStyle(colour, 1)
+      .fillCircle(s.img.x, cy, r)
+      .lineStyle(2, 0x2a1a08, 0.9)
+      .strokeCircle(s.img.x, cy, r)
+    s.markText.setPosition(s.img.x, cy).setAlpha(filled ? 1 : 0.5)
+  }
+
+  /** Statue pictures are not preloaded (only the top 3 of the month need one): a picture loads when first wanted. */
+  private loadStatueArt(art: FrameArt): Promise<void> {
+    const existing = this.statueLoads.get(art.file)
+    if (existing) return existing
+    const job = (this.loadChain = this.loadChain.then(
+      () =>
+        new Promise<void>((resolve) => {
+          if (this.textures.exists(art.file) || !this.sys.isActive())
+            return resolve()
+          this.load.setPath(ASSET_ROOT)
+          this.load.image(art.file, art.file)
+          // COMPLETE fires after a failure too; the slot then simply stays without a statue.
+          this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve())
+          this.load.start()
+        })
+    ))
+    this.statueLoads.set(art.file, job)
+    return job
+  }
+
+  private setFrame(
+    img: Phaser.GameObjects.Image,
+    art: FrameArt,
+    base: number
+  ): void {
+    const src = this.textures.get(art.file).getSourceImage() as {
+      width: number
+      height: number
+    }
+    img
+      .setTexture(art.file)
+      .setOrigin(art.anchor[0] / src.width, art.anchor[1] / src.height)
+      .setScale(base / art.density)
+  }
+
   // ---------- people ----------
 
   private buildPeople(): void {
@@ -1247,7 +1422,9 @@ export class OfficeScene extends Phaser.Scene {
     this.updateLedIndex(world.indices.get())
     this.updateLedTiles(world.vn30.get())
     this.updatePosts(world.posts.get())
+    this.updateStatues(world.leaderboard.get())
     this.disposers.push(
+      world.leaderboard.subscribe((v) => this.updateStatues(v)),
       world.indices.subscribe((v) => this.updateLedIndex(v)),
       world.vn30.subscribe((v) => this.updateLedTiles(v)),
       world.posts.subscribe((v) => this.updatePosts(v))

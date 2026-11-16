@@ -33,22 +33,31 @@ import {
   type ThanTaiRepository,
 } from './than-tai.repository.js';
 import {
+  LEADERBOARD_RULES,
+  MONTH_RE,
   THAN_TAI_RULES,
   buildDay,
   deadlineOf,
   drawHang,
   isBeforeDeadline,
+  lastSettledDay,
+  monthOfDay,
+  nextMonth,
   normaliseTickers,
   pickLa,
+  rankTallies,
   statusOf,
   stepOf,
+  tallyCalls,
   unlistedTickers,
   vnDay,
   vnindexReference,
   type Direction,
   type Hanh,
   type HanhConfig,
+  type LeaderRow,
   type Rng,
+  type ThanTaiLeaderboard,
   type ThanTaiResults,
   type ThanTaiToday,
 } from './than-tai.logic.js';
@@ -63,12 +72,25 @@ const hetGio = (): ConflictException =>
     message: 'Đã qua 11:30, không khấn tiếp được.',
   });
 
+/** Bảng xếp hạng của một tháng được nhớ trong bộ nhớ chừng này (ms) và tối đa chừng này tháng. */
+const LEADERBOARD_TTL_MS = 60_000;
+const LEADERBOARD_MAX_MONTHS = 6;
+
+interface RankedMonth {
+  month: string;
+  scoredDays: number;
+  /** Mọi người có hạng, đã sắp xếp; `rows`/`me` cắt từ đây. */
+  ranked: Array<LeaderRow & { actorKey: string }>;
+  asOf: number;
+}
+
 const conflict = (code: string, message: string): ConflictException =>
   new ConflictException({ code, message });
 
 @Injectable()
 export class ThanTaiService {
   private readonly rng: Rng;
+  private readonly boards = new Map<string, { at: number; value: Promise<RankedMonth> }>();
 
   constructor(
     private readonly database: DatabaseService,
@@ -204,6 +226,63 @@ export class ThanTaiService {
       flat: tally.flat,
       down: tally.down,
       top5: tally.top5,
+      asOf: nowMs,
+    };
+  }
+
+  /**
+   * Bảng vinh danh của tháng `month` (mặc định tháng hiện tại, giờ Việt Nam): top 10 tài khoản dự đoán
+   * VNINDEX đúng nhiều nhất và dòng của người gọi. Tính lúc đọc từ `tf_khan_daily` ghép với nến VNINDEX đã
+   * chốt (không có điểm lưu sẵn), nhớ 60 giây mỗi tháng. Khách không được xếp hạng.
+   */
+  async leaderboard(actor: FloorActor | null, month?: string): Promise<ThanTaiLeaderboard> {
+    const nowMs = this.clock.now().getTime();
+    const key = month && MONTH_RE.test(month) ? month : monthOfDay(vnDay(nowMs));
+    const board = await this.rankedMonth(key, nowMs);
+    const mine = actor ? board.ranked.find((row) => row.actorKey === actor.key) : undefined;
+    const strip = ({ actorKey: _actorKey, ...row }: LeaderRow & { actorKey: string }): LeaderRow =>
+      row;
+    return {
+      month: board.month,
+      scoredDays: board.scoredDays,
+      rows: board.ranked.slice(0, LEADERBOARD_RULES.top).map(strip),
+      me: mine ? strip(mine) : null,
+      asOf: board.asOf,
+    };
+  }
+
+  private rankedMonth(month: string, nowMs: number): Promise<RankedMonth> {
+    const cached = this.boards.get(month);
+    if (cached && nowMs - cached.at < LEADERBOARD_TTL_MS && nowMs >= cached.at) return cached.value;
+    const value = this.computeMonth(month, nowMs);
+    this.boards.set(month, { at: nowMs, value });
+    // Lỗi không được nhớ: lần đọc sau tính lại.
+    value.catch(() => {
+      if (this.boards.get(month)?.value === value) this.boards.delete(month);
+    });
+    while (this.boards.size > LEADERBOARD_MAX_MONTHS) {
+      this.boards.delete(this.boards.keys().next().value as string);
+    }
+    return value;
+  }
+
+  private async computeMonth(month: string, nowMs: number): Promise<RankedMonth> {
+    const data = await this.repository.monthData(
+      this.database,
+      month,
+      nextMonth(month),
+      lastSettledDay(nowMs),
+    );
+    const profiles = new Map(
+      data.calls.map((call) => [
+        call.actorKey,
+        { name: call.name, avatar: call.avatar, color: call.color },
+      ]),
+    );
+    return {
+      month,
+      scoredDays: data.scoredDays,
+      ranked: rankTallies(tallyCalls(data.calls), profiles),
       asOf: nowMs,
     };
   }

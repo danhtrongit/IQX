@@ -949,8 +949,18 @@
     max-width: 116px;
     gap: 4px;
   }
+  /* Four shortcuts must stay clear of the Chat SACO button at the right edge on a 360px phone. */
+  .tf-root .shortcuts {
+    gap: 2px;
+    padding: 3px;
+    left: 8px;
+  }
   .tf-root .shortcut {
-    min-width: 52px;
+    min-width: 48px;
+    padding: 2px 4px;
+  }
+  .tf-root .shortcut small {
+    font-size: 10px;
   }
   .tf-root .hint {
     bottom: calc(86px + var(--safe-b));

@@ -6,6 +6,7 @@ import {
   MessagesSquare,
   PenLine,
   Pencil,
+  Trophy,
   type LucideIcon,
 } from "lucide-react"
 import { useNavigate } from "react-router"
@@ -35,6 +36,7 @@ const SHORTCUTS: { kind: InteractKind; icon: LucideIcon; label: string }[] = [
   { kind: "thantai", icon: Landmark, label: "Thần Tài" },
   { kind: "posts", icon: ClipboardList, label: "Nhận định" },
   { kind: "market", icon: ChartCandlestick, label: "Bảng điện" },
+  { kind: "leaderboard", icon: Trophy, label: "Vinh danh" },
 ]
 
 export function Hud({ onEditProfile }: { onEditProfile: () => void }) {

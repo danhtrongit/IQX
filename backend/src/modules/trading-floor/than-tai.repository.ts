@@ -7,7 +7,9 @@
 import { Injectable } from '@nestjs/common';
 
 import type { SqlClient } from '../../platform/database/database.service.js';
+import { cleanAvatar, cleanOutfitColor } from './floor-profile.logic.js';
 import {
+  DIRECTIONS,
   HANG_LABEL,
   HANG_LIST,
   HANH_LIST,
@@ -17,6 +19,7 @@ import {
   type Hanh,
   type HanhConfig,
   type HanhMau,
+  type ScoredCall,
   type ThanTaiLa,
   type TrigramView,
 } from './than-tai.logic.js';
@@ -35,6 +38,19 @@ export interface KhanRow {
 export interface TopTicker {
   ticker: string;
   count: number;
+}
+
+/** Lượt dự đoán của một tài khoản trong một ngày đã chốt, kèm hồ sơ trên sàn để hiển thị. */
+export interface MonthCall extends ScoredCall {
+  name: string;
+  avatar: string;
+  color: string;
+}
+
+export interface MonthData {
+  /** Số ngày giao dịch đã chốt (có nến và nến liền trước) trong tháng. */
+  scoredDays: number;
+  calls: MonthCall[];
 }
 
 export interface DayTally {
@@ -134,6 +150,11 @@ export interface ThanTaiRepository {
     input: { actorKey: string; ngay: string; tickers: readonly string[]; at: Date },
   ): Promise<boolean>;
   tally(db: SqlClient, ngay: string, top: number): Promise<DayTally>;
+  /**
+   * Các lượt dự đoán của tài khoản (không phải khách, có hồ sơ trên sàn) trong những ngày của tháng
+   * `[from, to)` đã có giá đóng cửa chốt, tới hết `lastDay`. Ghép với nến VNINDEX ngay trong SQL.
+   */
+  monthData(db: SqlClient, from: string, to: string, lastDay: string): Promise<MonthData>;
 
   adminListLa(db: SqlClient): Promise<AdminLa[]>;
   adminFindLa(db: SqlClient, id: number): Promise<AdminLa | null>;
@@ -148,6 +169,7 @@ export interface ThanTaiRepository {
 type Row = Record<string, unknown>;
 
 const HANG_SET = new Set<string>(HANG_LIST);
+const DIRECTION_SET = new Set<string>(DIRECTIONS);
 const HANH_SET = new Set<string>(HANH_LIST);
 
 const toHang = (value: unknown): Hang =>
@@ -253,6 +275,24 @@ const LA_COLUMNS = `l.id, l.que_id, l.hao_dong, l.ten_hao, l.hao_van, l.hao_nghi
 const QUE_COLUMNS = `id, ten, chu_han, hao, que_tren, que_duoi, tuong, thoan, thoan_nghia, updated_at`;
 
 const HANH_COLUMNS = `hanh, nganh, mau, huong, updated_at`;
+
+/**
+ * Các ngày VNINDEX đã chốt của tháng `[$1, $2)` tới hết `$3`: `change` là giá đóng cửa trừ giá đóng cửa của
+ * nến liền trước (làm tròn 2 số, cùng cách `FloorMarketPort.indexClose`). Ngày không có nến liền trước thì
+ * không có dòng nên không được chấm.
+ */
+const SETTLED_DAYS_CTE = `
+  with days as (
+    select b.trade_date, round(b.close - prev.close, 2) as change
+      from market_index_bars b
+      join lateral (
+        select c.close from market_index_bars c
+         where c.symbol = b.symbol and c.trade_date < b.trade_date
+         order by c.trade_date desc limit 1
+      ) prev on true
+     where b.symbol = 'VNINDEX'
+       and b.trade_date >= $1::date and b.trade_date < $2::date and b.trade_date <= $3::date
+  )`;
 
 @Injectable()
 export class PgThanTaiRepository implements ThanTaiRepository {
@@ -377,6 +417,38 @@ export class PgThanTaiRepository implements ThanTaiRepository {
       flat: Number(row.flat ?? 0),
       down: Number(row.down ?? 0),
       top5: tickers.map((item) => ({ ticker: String(item.ticker), count: Number(item.count) })),
+    };
+  }
+
+  async monthData(db: SqlClient, from: string, to: string, lastDay: string): Promise<MonthData> {
+    const params = [`${from}-01`, `${to}-01`, lastDay];
+    const [counted, calls] = await Promise.all([
+      db.query<Row>(`${SETTLED_DAYS_CTE} select count(*)::int as days from days`, params),
+      db.query<Row>(
+        `${SETTLED_DAYS_CTE}
+         select k.actor_key, k.ngay::text as ngay, k.du_doan, d.change::float8 as change,
+                p.display_name, p.avatar, p.color
+           from days d
+           join tf_khan_daily k
+             on k.ngay = d.trade_date and k.du_doan is not null and k.actor_key like 'u:%'
+           join tf_profiles p on 'u:' || p.user_id::text = k.actor_key
+           join users u on u.id = p.user_id and u.deleted_at is null`,
+        params,
+      ),
+    ]);
+    return {
+      scoredDays: Number(counted[0]?.days ?? 0),
+      calls: calls
+        .filter((row) => DIRECTION_SET.has(String(row.du_doan)))
+        .map((row) => ({
+          actorKey: String(row.actor_key),
+          ngay: String(row.ngay),
+          duDoan: String(row.du_doan) as Direction,
+          change: row.change === null ? null : Number(row.change),
+          name: String(row.display_name),
+          avatar: cleanAvatar(row.avatar) ?? 'male01',
+          color: cleanOutfitColor(row.color),
+        })),
     };
   }
 

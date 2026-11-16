@@ -4,7 +4,9 @@ import {
   HANG_LIST,
   HANG_WEIGHT,
   HANH_LIST,
+  MONTH_RE,
   buildDay,
+  compareTallies,
   dayCalendar,
   deadlineOf,
   drawHang,
@@ -13,11 +15,16 @@ import {
   isSameVnDay,
   julianDayNumber,
   kiengHanh,
+  lastSettledDay,
+  nextMonth,
   normaliseTickers,
+  outcomeOf,
   parseQuoteTime,
   pickLa,
+  rankTallies,
   statusOf,
   stepOf,
+  tallyCalls,
   unlistedTickers,
   vnDay,
   vnTimeOn,
@@ -26,6 +33,8 @@ import {
   type Hanh,
   type HanhConfig,
   type KhanProgress,
+  type MonthTally,
+  type ScoredCall,
 } from '../../src/modules/trading-floor/than-tai.logic.js';
 
 /** Epoch ms của HH:MM:SS giờ Việt Nam. */
@@ -436,5 +445,153 @@ describe('parseQuoteTime', () => {
     expect(parseQuoteTime('')).toBeNull();
     expect(parseQuoteTime('không phải giờ')).toBeNull();
     expect(parseQuoteTime(null)).toBeNull();
+  });
+});
+
+describe('bảng vinh danh: kết quả của ngày', () => {
+  it('up above zero, down below, flat exactly zero', () => {
+    expect(outcomeOf(9.62)).toBe('up');
+    expect(outcomeOf(0.01)).toBe('up');
+    expect(outcomeOf(-0.01)).toBe('down');
+    expect(outcomeOf(0)).toBe('flat');
+    expect(outcomeOf(-0)).toBe('flat');
+  });
+
+  it('has no outcome without a known change', () => {
+    expect(outcomeOf(null)).toBeNull();
+    expect(outcomeOf(Number.NaN)).toBeNull();
+  });
+});
+
+describe('bảng vinh danh: ngày đã chốt', () => {
+  it('today counts only from 15:00 Vietnam time', () => {
+    expect(lastSettledDay(vn('2026-11-12', 14, 59, 59))).toBe('2026-11-11');
+    expect(lastSettledDay(vn('2026-11-12', 15, 0))).toBe('2026-11-12');
+    expect(lastSettledDay(vn('2026-11-12', 23, 59))).toBe('2026-11-12');
+  });
+
+  it('uses the Vietnam date at the UTC day boundary', () => {
+    // 2026-11-12 17:30 UTC is 00:30 on the 13th in Vietnam: the 12th is settled, the 13th is not.
+    expect(lastSettledDay(Date.UTC(2026, 10, 12, 17, 30))).toBe('2026-11-12');
+  });
+
+  it('rolls back over a month boundary', () => {
+    expect(lastSettledDay(vn('2026-12-01', 9, 0))).toBe('2026-11-30');
+  });
+});
+
+describe('bảng vinh danh: tháng', () => {
+  it('accepts YYYY-MM only', () => {
+    for (const ok of ['2026-11', '2026-01', '2099-12']) expect(MONTH_RE.test(ok)).toBe(true);
+    for (const bad of ['2026-13', '2026-00', '2026-1', '26-11', '2026-11-01', 'abc', ''])
+      expect(MONTH_RE.test(bad)).toBe(false);
+  });
+
+  it('finds the next month, across the year end', () => {
+    expect(nextMonth('2026-11')).toBe('2026-12');
+    expect(nextMonth('2026-12')).toBe('2027-01');
+    expect(nextMonth('2026-01')).toBe('2026-02');
+  });
+});
+
+const call = (actorKey: string, ngay: string, duDoan: ScoredCall['duDoan'], change: number | null) =>
+  ({ actorKey, ngay, duDoan, change }) satisfies ScoredCall;
+
+describe('bảng vinh danh: gộp lượt', () => {
+  it('counts correct calls and totals per account', () => {
+    const tallies = tallyCalls([
+      call('u:a', '2026-11-02', 'up', 5),
+      call('u:a', '2026-11-03', 'down', 5),
+      call('u:a', '2026-11-04', 'flat', 0),
+      call('u:b', '2026-11-02', 'down', 5),
+    ]);
+    const a = tallies.find((row) => row.actorKey === 'u:a')!;
+    expect(a).toMatchObject({ correct: 2, total: 3, reachedOn: '2026-11-04' });
+    expect(tallies.find((row) => row.actorKey === 'u:b')).toMatchObject({
+      correct: 0,
+      total: 1,
+      reachedOn: '',
+    });
+  });
+
+  it('skips days whose change is unknown', () => {
+    expect(tallyCalls([call('u:a', '2026-11-02', 'up', null)])).toEqual([]);
+  });
+});
+
+const tally = (actorKey: string, correct: number, total: number, reachedOn: string): MonthTally => ({
+  actorKey,
+  correct,
+  total,
+  reachedOn,
+});
+
+describe('bảng vinh danh: thứ tự xếp hạng', () => {
+  const order = (rows: MonthTally[]) => [...rows].sort(compareTallies).map((row) => row.actorKey);
+
+  it('more correct calls first', () => {
+    expect(order([tally('u:a', 3, 3, '2026-11-05'), tally('u:b', 5, 9, '2026-11-09')])).toEqual([
+      'u:b',
+      'u:a',
+    ]);
+  });
+
+  it('then higher accuracy', () => {
+    expect(order([tally('u:a', 4, 8, '2026-11-02'), tally('u:b', 4, 5, '2026-11-09')])).toEqual([
+      'u:b',
+      'u:a',
+    ]);
+  });
+
+  it('then the one who reached that count earlier', () => {
+    expect(order([tally('u:a', 4, 5, '2026-11-09'), tally('u:b', 4, 5, '2026-11-06')])).toEqual([
+      'u:b',
+      'u:a',
+    ]);
+  });
+
+  it('then by actor key, so the order is always the same', () => {
+    expect(order([tally('u:b', 4, 5, '2026-11-06'), tally('u:a', 4, 5, '2026-11-06')])).toEqual([
+      'u:a',
+      'u:b',
+    ]);
+  });
+
+  it('compares accuracy exactly, not through rounded fractions', () => {
+    // 1/3 vs 2/6 are the same accuracy: falls through to the date.
+    expect(compareTallies(tally('u:a', 2, 6, '2026-11-02'), tally('u:b', 1, 3, '2026-11-09'))).toBe(
+      -1,
+    );
+    expect(compareTallies(tally('u:a', 2, 6, '2026-11-09'), tally('u:b', 2, 6, '2026-11-02'))).toBe(
+      1,
+    );
+  });
+});
+
+describe('bảng vinh danh: xếp hạng', () => {
+  const profiles = new Map(
+    ['a', 'b', 'c'].map((id) => [`u:${id}`, { name: `Người ${id}`, avatar: 'male01', color: 'default' }]),
+  );
+
+  it('numbers ranks from 1 and drops accounts without a floor profile', () => {
+    const rows = rankTallies(
+      [
+        tally('u:c', 1, 4, '2026-11-02'),
+        tally('u:ghost', 9, 9, '2026-11-02'),
+        tally('u:a', 3, 4, '2026-11-02'),
+        tally('u:b', 2, 4, '2026-11-02'),
+      ],
+      profiles,
+    );
+    expect(rows.map((row) => [row.rank, row.actorKey, row.correct, row.total])).toEqual([
+      [1, 'u:a', 3, 4],
+      [2, 'u:b', 2, 4],
+      [3, 'u:c', 1, 4],
+    ]);
+    expect(rows[0]).toMatchObject({ name: 'Người a', avatar: 'male01', color: 'default' });
+  });
+
+  it('is empty when nobody was scored', () => {
+    expect(rankTallies([], profiles)).toEqual([]);
   });
 });

@@ -52,6 +52,12 @@ on `tf_khan_daily`, second call returns the same lá.
 | POST | `/than-tai/predict` | `{ direction: 'up'|'flat'|'down' }` | `ThanTaiToday` · errors `CHUA_GIEO_QUE`, `DA_DU_DOAN`, `HET_GIO` |
 | POST | `/than-tai/cau` | `{ tickers: string[] }` (0–3, `[]` = skip) | `ThanTaiToday` · errors `CHUA_DU_DOAN`, `DA_CAU`, `MA_KHONG_HOP_LE`, `QUA_3_MA`, `HET_GIO` |
 | GET | `/than-tai/results` | – | `ThanTaiResults` · `403 KET_QUA_CHUA_MO` when the caller is not `da_xong` and it is before 11:30. Anonymous allowed after 11:30. |
+| GET | `/than-tai/leaderboard?month=YYYY-MM` | – | `ThanTaiLeaderboard` `{ month, scoredDays, rows: LeaderRow[≤10], me: LeaderRow \| null, asOf }` with `LeaderRow = { rank, name, avatar, color, correct, total }`. Public (guests can read, `me` is null for them). Month defaults to the current VN month; a bad month is 422. |
+
+Leaderboard rules (hall of fame, no stored scores, computed at read time and cached ~60 s per month): accounts only
+(`u:`), floor profile required; a day is scored only when `market_index_bars` holds its VNINDEX close and the previous
+bar (today only from 15:00 VN); outcome `up` if close - previous close > 0, `down` if < 0, `flat` if 0 (the "tham chiếu"
+shown in step 2 is that previous close); order: correct desc, accuracy desc, earliest date reaching that count, actor key.
 
 Admin (role admin only, under `api/v2/trading-floor/manage/than-tai`):
 `GET /la` → `{ items: AdminLa[] }` (all 64 quẻ joined with their lá, active or not);
