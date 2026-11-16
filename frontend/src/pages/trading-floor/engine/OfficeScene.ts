@@ -1010,9 +1010,8 @@ export class OfficeScene extends Phaser.Scene {
   private buildStatues(): void {
     for (const rank of [1, 2, 3]) {
       const p = PLACEMENTS.find((x) => x.id === `statue-${rank}`)!
-      // `top` is where the statue stands; `face` is the middle of the podium's front, for the name.
+      // `top` is where the statue stands.
       let top = p.y - p.h + 4
-      let face = p.y - p.h * 0.6 + 8
       const art = this.prop("podium")
       if (art) {
         const podium = this.add
@@ -1023,7 +1022,6 @@ export class OfficeScene extends Phaser.Scene {
         // A round podium seen from 22 degrees above: its top face is an ellipse 0.375 x width tall.
         const lid = podium.displayWidth * 0.375
         top = p.y - podium.displayHeight + lid / 2
-        face = (p.y - podium.displayHeight + lid + p.y) / 2
       } else {
         const g = this.add.graphics({ x: p.x, y: p.y }).setDepth(p.y)
         drawPlaceholder(g, p.placeholder ?? "podium", p.w, p.h)
@@ -1040,13 +1038,16 @@ export class OfficeScene extends Phaser.Scene {
         .image(p.x, top, "__WHITE")
         .setDepth(p.y + 0.5)
         .setVisible(false)
-      const name = this.text(p.x, face, "", 12, "#2a1a08", "800")
-        .setOrigin(0.5, 0.5)
-        .setDepth(p.y + 1)
-      const sub = this.text(p.x, p.y + 6, "", 12, "#ffe7a3", "700")
+      // Name and score sit under the podium on dark plates: text on the speckled podium was hard to read.
+      const name = this.text(p.x, p.y + 6, "", 13, "#ffffff", "800")
         .setOrigin(0.5, 0)
-        .setBackgroundColor("rgba(12,17,27,0.6)")
-        .setPadding(6, 2, 6, 2)
+        .setBackgroundColor("rgba(12,17,27,0.86)")
+        .setPadding(8, 3, 8, 3)
+        .setDepth(DEPTH_LABEL + p.y)
+      const sub = this.text(p.x, p.y + 30, "", 12, "#ffd76a", "700")
+        .setOrigin(0.5, 0)
+        .setBackgroundColor("rgba(12,17,27,0.86)")
+        .setPadding(8, 2, 8, 3)
         .setDepth(DEPTH_LABEL + p.y)
       // The rank mark: a gold, silver or bronze disc with the number (no emoji), drawn by placeMark.
       const mark = this.add.graphics().setDepth(p.y + 1)
@@ -1092,7 +1093,7 @@ export class OfficeScene extends Phaser.Scene {
       if (row) {
         s.img.setAlpha(1).clearTint()
         s.name.setText(
-          row.name.length > 14 ? `${row.name.slice(0, 13)}…` : row.name
+          row.name.length > 18 ? `${row.name.slice(0, 17)}…` : row.name
         )
         s.sub.setText(`${row.correct}/${row.total} lần đúng`).setVisible(true)
       } else {
