@@ -20,6 +20,7 @@ import {
   FLOOR_MESSAGE_SCHEMA,
   FLOOR_OK_SCHEMA,
   FLOOR_SACO_SELF_SCHEMA,
+  FLOOR_START_SCHEMA,
   floorChatOpenBodySchema,
   floorChatSendBodySchema,
   floorDutyBodySchema,
@@ -33,6 +34,7 @@ import type {
   ConvSummary,
   Inbox,
   SacoSelf,
+  StartResult,
 } from './floor-types.js';
 import type { z } from 'zod';
 
@@ -59,6 +61,22 @@ export class FloorChatController {
   @ApiOkResponse({ schema: FLOOR_INBOX_SCHEMA })
   async inbox(@Req() req: FastifyRequest): Promise<Inbox> {
     return this.chat.inbox(await this.ownerOf(req));
+  }
+
+  @Public()
+  @Post('chat/start')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'floorChatStart',
+    summary:
+      'Chat SACO nhắn trước: gửi vào cuộc chat đang khớp, hoặc xếp tin chờ và phân phối cho một SACO (kết quả qua WebSocket chat:match)',
+  })
+  @ApiOkResponse({ schema: FLOOR_START_SCHEMA })
+  async start(
+    @Req() req: FastifyRequest,
+    @Body({ schema: floorChatSendBodySchema }) body: z.infer<typeof floorChatSendBodySchema>,
+  ): Promise<StartResult> {
+    return this.chat.start(await this.ownerOf(req), body.text);
   }
 
   @Public()

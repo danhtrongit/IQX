@@ -114,6 +114,8 @@ export interface Peer extends Profile, PeerState {
   id: string
   /** The account holds an active SACO right: a SACO badge sits before the name. Absent otherwise. */
   saco?: boolean
+  /** That SACO's id (what `POST chat/open` takes): tapping the figure opens the chat with them. */
+  sacoId?: string
 }
 
 export interface MeResponse {
@@ -349,10 +351,24 @@ export interface InviteEvent {
   id: number
   userName: string
   deadline: number
+  /** First message the visitor already sent (up to 120 characters); absent for an old-style search. */
+  preview?: string
 }
 
+/** `auto`: nobody accepted, the conversation went to a SACO by ranking. */
 export type InviteResult =
-  "accept" | "decline" | "timeout" | "skip-off" | "skip-busy" | "cancel"
+  | "accept"
+  | "decline"
+  | "timeout"
+  | "skip-off"
+  | "skip-busy"
+  | "cancel"
+  | "auto"
+
+/** Answer of `POST chat/start`: sent into the matched conversation, or queued while a SACO is found. */
+export type StartResult =
+  | { convId: string; message: ChatMessage }
+  | { pending: true }
 
 // ---------- SACO nhận định (posts) ----------
 
