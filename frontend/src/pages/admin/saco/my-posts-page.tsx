@@ -1,8 +1,8 @@
 /**
  * /admin/saco/posts "Bài của tôi": mọi bài của SACO đang đăng nhập, mới nhất ở trên. Nháp:
  * Sửa, Xoá. Còn lại: Xem (mở bằng `?view=<id>`, cũng là nơi trình soạn chuyển bài sau khi lưu).
- * Đã đăng: thêm Sửa bài, Thu hồi bài. Đã thu hồi: Đăng lại, Xoá vĩnh viễn. Trên điện thoại ẩn
- * cột Giờ, Tim, Bình luận và các nút xuống dòng thay vì tràn.
+ * Đã đăng: thêm Sửa bài, Thu hồi bài. Đã thu hồi: Đăng lại, Xoá vĩnh viễn. Trên điện thoại mỗi
+ * bài là một thẻ xếp dọc (câu tiêu điểm, trạng thái và giờ, rồi các nút) thay cho hàng của bảng.
  */
 import { Link, useNavigate, useSearchParams } from "react-router"
 import { PenLine } from "lucide-react"
@@ -63,13 +63,13 @@ export function MyPostsPage() {
   })
 
   const items = posts.data?.items ?? []
-  const writeNew = <Button type="button" onClick={() => navigate("/admin/saco/posts/new")}><PenLine data-icon="inline-start" />Viết bài mới</Button>
+  const writeNew = <Button type="button" className={TOUCH_BUTTON} onClick={() => navigate("/admin/saco/posts/new")}><PenLine data-icon="inline-start" />Viết bài mới</Button>
 
   return <WorkspacePage title="Bài của tôi" description="Bài nhận định của bạn, mới nhất ở trên. Bài đã đăng sửa được và thu hồi được; bài thu hồi đăng lại được.">
     {posts.isError ? <PanelState title="Không tải được bài của bạn" description={errorMessage(posts.error)} action={{ label: "Thử lại", onClick: () => void posts.refetch() }} />
       : <Card className="gap-0 overflow-hidden py-0">
-        <Table>
-          <TableHeader>
+        <Table className="max-sm:block">
+          <TableHeader className="max-sm:hidden">
             <TableRow className="hover:bg-transparent">
               <TableHead className="pl-3">Câu tiêu điểm</TableHead>
               <TableHead className={PHONE_HIDDEN}>Giờ</TableHead>
@@ -79,18 +79,21 @@ export function MyPostsPage() {
               <TableHead className="pr-3 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="max-sm:block">
             {posts.isLoading ? <TableLoadingRows colSpan={COLS} />
               : items.length === 0 ? <TableNoticeRow colSpan={COLS}>Bạn chưa có bài nào. Bấm “Viết bài mới” để soạn bài nhận định đầu tiên.</TableNoticeRow>
               : items.map((post) => {
                 const status = POST_STATUS[post.status]
                 const isDraft = post.status === "draft"
-                return <TableRow key={post.id}>
-                  <TableCell className="max-w-[360px] pl-3 whitespace-normal">
+                return <TableRow key={post.id} className="max-sm:flex max-sm:flex-col max-sm:gap-2 max-sm:p-3">
+                  <TableCell className="max-w-[360px] pl-3 whitespace-normal max-sm:block max-sm:max-w-none max-sm:p-0">
                     {post.headline ? <span className="font-medium">{post.headline}</span> : <span className="text-muted-foreground">(chưa có câu tiêu điểm)</span>}
                   </TableCell>
                   <TableCell className={`${PHONE_HIDDEN} tabular-nums text-muted-foreground`}>{formatVnDateTime(post.publishedAt ?? post.savedAt)}</TableCell>
-                  <TableCell><StatusBadge label={status.label} tone={status.tone} /></TableCell>
+                  <TableCell className="max-sm:flex max-sm:items-center max-sm:gap-2 max-sm:p-0">
+                    <StatusBadge label={status.label} tone={status.tone} />
+                    <span className="text-xs tabular-nums text-muted-foreground sm:hidden">{formatVnDateTime(post.publishedAt ?? post.savedAt)}</span>
+                  </TableCell>
                   <TableCell className={`${PHONE_HIDDEN} text-right tabular-nums`}>{isDraft ? "—" : post.hearts}</TableCell>
                   <TableCell className={`${PHONE_HIDDEN} text-right tabular-nums`}>
                     {isDraft ? "—" : <span className="inline-flex items-center justify-end gap-1.5">
@@ -98,8 +101,8 @@ export function MyPostsPage() {
                       {post.newComments > 0 && <Badge variant="default" className="h-5 px-1.5 text-[10px]">{post.newComments} mới</Badge>}
                     </span>}
                   </TableCell>
-                  <TableCell className="pr-3 text-right">
-                    <div className="flex flex-wrap justify-end gap-2">
+                  <TableCell className="pr-3 text-right max-sm:block max-sm:p-0 max-sm:text-left">
+                    <div className="flex flex-wrap justify-end gap-2 max-sm:justify-start">
                       {isDraft ? <>
                         <Button asChild variant="outline" className={TOUCH_BUTTON}><Link to={`/admin/saco/posts/${post.id}`}>Sửa</Link></Button>
                         <Button type="button" variant="destructive" className={TOUCH_BUTTON} onClick={() => askDelete(post)}>Xoá</Button>
@@ -108,7 +111,7 @@ export function MyPostsPage() {
                           Xem
                           {post.newComments > 0 && <span className="sm:hidden">({post.newComments} mới)</span>}
                         </Button>
-                        <MyPostActionButtons post={post} actions={actions} className="justify-end" />
+                        <MyPostActionButtons post={post} actions={actions} className="justify-end max-sm:justify-start" />
                       </>}
                     </div>
                   </TableCell>
