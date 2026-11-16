@@ -429,7 +429,12 @@ function Thread({ c, summary, thread, fresh, onBack }: ThreadProps) {
   const waiting = fresh !== undefined && fresh.convId === null
   const local: ChatMessage[] =
     fresh && !thread
-      ? fresh.sent.map((m) => ({ id: -m.key, from: "u", text: m.text, at: m.at }))
+      ? fresh.sent.map((m) => ({
+          id: -m.key,
+          from: "u",
+          text: m.text,
+          at: m.at,
+        }))
       : []
   const messages = thread?.messages ?? local
   const typing = typingUntil > now
@@ -579,7 +584,9 @@ function Thread({ c, summary, thread, fresh, onBack }: ThreadProps) {
         >
           <span style={{ width: `${uploading}%` }} />
           <small>
-            {uploading < 100 ? `Đang gửi ảnh… ${uploading}%` : "Đang xử lý ảnh…"}
+            {uploading < 100
+              ? `Đang gửi ảnh… ${uploading}%`
+              : "Đang xử lý ảnh…"}
           </small>
         </div>
       )}
@@ -656,9 +663,7 @@ function Thread({ c, summary, thread, fresh, onBack }: ThreadProps) {
           SACO này không còn hoạt động. Bạn vẫn xem được tin nhắn cũ.
         </p>
       )}
-      {viewer && (
-        <ImageViewer image={viewer} onClose={() => setViewer(null)} />
-      )}
+      {viewer && <ImageViewer image={viewer} onClose={() => setViewer(null)} />}
     </>
   )
 }
@@ -765,6 +770,7 @@ function Bubble({
   onOpenImage: (image: ChatImage) => void
 }) {
   const [step, setStep] = useState<"idle" | "menu" | "confirm">("idle")
+  // The actions of the last message open under the fold of the thread: bring them into view.
   if (m.from === "x") {
     return (
       <div className="sys">
@@ -824,7 +830,7 @@ function Bubble({
         bubble
       )}
       {step === "menu" && (
-        <div className={cx("bubble-actions", me && "me")}>
+        <div className={cx("bubble-actions", me && "me")} ref={reveal}>
           <button
             type="button"
             className="btn ghost small"
@@ -836,7 +842,11 @@ function Bubble({
         </div>
       )}
       {step === "confirm" && (
-        <div className={cx("bubble-actions confirm", me && "me")} role="alert">
+        <div
+          className={cx("bubble-actions confirm", me && "me")}
+          role="alert"
+          ref={reveal}
+        >
           <span>Thu hồi tin này? Cả hai bên sẽ không xem được nữa.</span>
           <span className="bubble-actions-row">
             <button
@@ -862,4 +872,8 @@ function Bubble({
       {seen && <div className="seen">Đã xem</div>}
     </>
   )
+}
+
+function reveal(node: HTMLElement | null): void {
+  node?.scrollIntoView({ block: "nearest" })
 }

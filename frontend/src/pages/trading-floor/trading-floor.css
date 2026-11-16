@@ -1947,6 +1947,22 @@
   align-self: flex-end;
   background: #2a5bd7;
 }
+/* The top bar's name chip is `.me` too: keep its inline-flex, bold and narrow max-width out of the thread. */
+.tf-root .bubble.me {
+  display: block;
+  max-width: 78%;
+  font-weight: inherit;
+}
+.tf-root .bubble-row.me {
+  display: flex;
+  max-width: 88%;
+  justify-content: flex-start;
+  font-weight: inherit;
+  gap: 2px;
+}
+.tf-root .bubble-row .bubble.me {
+  max-width: calc(100% - 46px);
+}
 .tf-root .bubble time {
   display: block;
   font-size: 10px;
@@ -2058,6 +2074,8 @@
   align-self: flex-end;
   justify-content: flex-end;
   text-align: right;
+  max-width: 92%;
+  font-weight: inherit;
 }
 .tf-root .bubble-actions.confirm {
   padding: 8px 10px;
