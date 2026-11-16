@@ -144,7 +144,7 @@ function ManagePostDialog({ post, onClose }: { post: ManagePost | null; onClose:
     {detail.isError ? <PanelState title="Không tải được bài" description={errorMessage(detail.error)} action={{ label: "Thử lại", onClick: () => void detail.refetch() }} />
       : !detail.data ? <div className="space-y-3" role="status" aria-label="Đang tải bài"><Skeleton className="h-6 w-40" /><Skeleton className="h-16 w-full" /><Skeleton className="h-40 w-full" /></div>
       : <div className="space-y-4">
-        <PostPreviewBody sacoName={detail.data.sacoName} publishedAt={detail.data.publishedAt} headline={detail.data.headline} bodyHtml={detail.data.bodyHtml} />
+        <PostPreviewBody sacoName={detail.data.sacoName} publishedAt={detail.data.publishedAt} editedAt={detail.data.editedAt} headline={detail.data.headline} bodyHtml={detail.data.bodyHtml} />
         <section aria-labelledby="post-log-title" className="space-y-2">
           <h3 id="post-log-title" className="text-sm font-semibold">Nhật ký bài</h3>
           {detail.data.log.length === 0 ? <p className="text-xs text-muted-foreground">Chưa có thao tác nào.</p>

@@ -15,12 +15,16 @@ export const POST_STATUS: Record<PostStatus, { label: string; tone: Tone }> = {
   draft: { label: "Nháp", tone: "neutral" },
   published: { label: "Đã đăng", tone: "success" },
   hidden: { label: "Đã ẩn", tone: "warning" },
+  withdrawn: { label: "Đã thu hồi", tone: "neutral" },
 }
 
 const POST_LOG_ACTION: Record<string, string> = {
   publish: "Đăng",
   hide: "Ẩn",
   unhide: "Bỏ ẩn",
+  edit: "Sửa bài",
+  withdraw: "Thu hồi",
+  republish: "Đăng lại",
 }
 
 const ACTOR_ROLE: Record<string, string> = {
@@ -31,3 +35,6 @@ const ACTOR_ROLE: Record<string, string> = {
 
 export const postLogAction = (action: string) => POST_LOG_ACTION[action] ?? action
 export const actorRoleLabel = (role: string) => ACTOR_ROLE[role] ?? role
+
+/** Nút đủ cao để chạm trên điện thoại (từ 44px), gọn lại trên màn hình rộng. */
+export const TOUCH_BUTTON = "h-auto min-h-11 px-3 sm:min-h-8 sm:px-2.5 pointer-coarse:min-h-11"

@@ -362,6 +362,8 @@ export interface PostCard {
   sacoName: string
   headline: string
   publishedAt: number
+  /** Lần sửa gần nhất của tác giả sau khi đăng; null nếu chưa sửa. */
+  editedAt: number | null
   hearts: number
   comments: number
   hearted: boolean
@@ -388,7 +390,8 @@ export interface PostComment {
   reported: boolean
 }
 
-export type PostStatus = "draft" | "published" | "hidden"
+/** `hidden`: quản trị ẩn; `withdrawn`: tác giả tự thu hồi (đăng lại được). */
+export type PostStatus = "draft" | "published" | "hidden" | "withdrawn"
 
 export interface MyPost {
   id: string
@@ -396,6 +399,7 @@ export interface MyPost {
   status: PostStatus
   savedAt: number
   publishedAt: number | null
+  editedAt: number | null
   hearts: number
   comments: number
   newComments: number
@@ -437,6 +441,8 @@ export type ServerMessage =
   | { type: "chat:invite"; invite: InviteEvent }
   | { type: "chat:invite:end"; id: number }
   | { type: "post:new"; post: PostCard }
+  /** The author edited a published post: same card shape as `post:new`. */
+  | { type: "post:updated"; post: PostCard }
   | { type: "post:hidden"; id: string }
   | { type: "post:heart"; id: string; hearts: number }
   | { type: "post:comment"; postId: string; comments: number }

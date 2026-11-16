@@ -277,6 +277,9 @@ describe('system acceptance: SACO nhận định', () => {
       const blocked = await call(saco, 'DELETE', `/saco/posts/${postId}`);
       expect(blocked.statusCode).toBe(409);
       expect(errorOf(blocked)).toBe('POST_NOT_DRAFT');
+      expect(blocked.json()).toMatchObject({
+        error: { message: 'Chỉ xoá được bản nháp hoặc bài đã thu hồi' },
+      });
     });
   });
 
@@ -897,7 +900,7 @@ describe('system acceptance: SACO nhận định', () => {
       expect((await call(null, 'GET', `/post-images/${draftId}`)).statusCode).toBe(404);
     });
 
-    it('bài chỉ có ảnh vẫn đăng được; ảnh ngoài bị lọc; không tải thêm ảnh vào bài đã đăng', async () => {
+    it('bài chỉ có ảnh vẫn đăng được; ảnh ngoài bị lọc; tải thêm ảnh vào bài đã đăng chỉ tác giả', async () => {
       const html = `<figure data-align="center" data-width="60"><img src="${BASE}/post-images/${imageId}" alt=""><figcaption>Biểu đồ</figcaption></figure><img src="https://evil.test/x.png">`;
       const published = await call(saco, 'POST', `/saco/posts/${draftId}/publish`, {
         headline: 'Bài chỉ có ảnh',
@@ -913,9 +916,11 @@ describe('system acceptance: SACO nhận định', () => {
       // Ảnh của bài đã đăng vẫn phát công khai.
       expect((await call(null, 'GET', `/post-images/${imageId}`)).statusCode).toBe(200);
 
+      // Tác giả vẫn tải thêm ảnh vào bài đã đăng của mình (để sửa bài); người khác thì không.
       const late = await upload(saco, draftId, await png(20, 20), 'image/png', 'late.png');
-      expect(late.statusCode).toBe(409);
-      expect(errorOf(late)).toBe('POST_NOT_DRAFT');
+      expect(late.statusCode, late.body).toBe(200);
+      const other = await upload(saco2, draftId, await png(20, 20), 'image/png', 'x.png');
+      expect(other.statusCode).toBe(404);
     });
 
     it('xoá nháp xoá luôn ảnh của nháp (dòng dữ liệu và tệp)', async () => {
@@ -928,6 +933,295 @@ describe('system acceptance: SACO nhận định', () => {
       const mediaRoot = process.env.MEDIA_ROOT;
       if (mediaRoot)
         expect(existsSync(join(mediaRoot, 'trading-floor', 'posts', draft))).toBe(false);
+    });
+  });
+
+  describe('tác giả sửa, thu hồi, đăng lại và xoá hẳn', () => {
+    const inToday = async (id: string) =>
+      (
+        (await call(u1, 'GET', '/posts/today')).json() as { items: Array<{ id: string }> }
+      ).items.some((item) => item.id === id);
+    const mineOf = async (session: Session, id: string) =>
+      (await call(session, 'GET', `/saco/posts/${id}`)).json() as Json & {
+        revision: number;
+        status: string;
+      };
+
+    it('sửa bài đã đăng tại chỗ: giữ giờ đăng, tim, bình luận; phát post:updated; ghi nhật ký', async () => {
+      const id = await publishPost(saco, 'Tiêu điểm ban đầu', '<p>Nội dung cũ.</p>');
+      await call(u1, 'POST', `/posts/${id}/heart`, { on: true });
+      expect((await comment(u2, id, 'Bình luận giữ lại')).statusCode).toBe(200);
+      const before = await mineOf(saco, id);
+      expect(before.editedAt).toBeNull();
+
+      const eventsBefore = events.length;
+      const edited = await call(saco, 'POST', `/saco/posts/${id}/edit`, {
+        headline: '  Tiêu điểm đã sửa ',
+        bodyHtml: '<p>Nội dung mới.</p><script>alert(1)</script>',
+        baseRevision: before.revision,
+      });
+      expect(edited.statusCode, edited.body).toBe(200);
+      const after = edited.json() as Json & { revision: number };
+      expect(after).toMatchObject({
+        status: 'published',
+        headline: 'Tiêu điểm đã sửa',
+        bodyHtml: '<p>Nội dung mới.</p>',
+        publishedAt: before.publishedAt,
+        hearts: 1,
+        comments: 1,
+      });
+      expect(after.revision).toBe(before.revision + 1);
+      expect(typeof after.editedAt).toBe('number');
+
+      const updated = events
+        .slice(eventsBefore)
+        .filter((message) => message.type === 'post:updated');
+      expect(updated).toHaveLength(1);
+      expect(updated[0]).toMatchObject({
+        post: {
+          id,
+          sacoName: 'Cú Đêm',
+          headline: 'Tiêu điểm đã sửa',
+          publishedAt: before.publishedAt,
+          editedAt: after.editedAt,
+          hearts: 1,
+          comments: 1,
+        },
+      });
+      expect(
+        events.slice(eventsBefore).filter((message) => message.type === 'post:new'),
+      ).toHaveLength(0);
+
+      const reader = (await call(u1, 'GET', `/posts/${id}`)).json() as Json;
+      expect(reader).toMatchObject({
+        headline: 'Tiêu điểm đã sửa',
+        bodyHtml: '<p>Nội dung mới.</p>',
+        editedAt: after.editedAt,
+        hearted: true,
+      });
+      const log = await stack.query(
+        'select action from tf_post_log where post_id = $1 order by id',
+        [id],
+      );
+      expect(log.map((row) => row.action)).toEqual(['publish', 'edit']);
+    });
+
+    it('sửa kiểm tra như khi đăng và bảo vệ bằng baseRevision', async () => {
+      const id = await publishPost(saco, 'Bài để kiểm tra sửa');
+      const { revision } = await mineOf(saco, id);
+      const edit = (payload: Json) => call(saco, 'POST', `/saco/posts/${id}/edit`, payload);
+      const empty = await edit({ headline: '  ', bodyHtml: '<p>x</p>', baseRevision: revision });
+      expect(empty.statusCode).toBe(422);
+      expect(errorOf(empty)).toBe('HEADLINE_REQUIRED');
+      const long = await edit({
+        headline: 'a'.repeat(91),
+        bodyHtml: '<p>x</p>',
+        baseRevision: revision,
+      });
+      expect(errorOf(long)).toBe('HEADLINE_TOO_LONG');
+      const blank = await edit({ headline: 'Ổn', bodyHtml: '<p>  </p>', baseRevision: revision });
+      expect(errorOf(blank)).toBe('BODY_EMPTY');
+      const stale = await edit({
+        headline: 'Ổn',
+        bodyHtml: '<p>x</p>',
+        baseRevision: revision + 5,
+      });
+      expect(stale.statusCode).toBe(409);
+      expect(errorOf(stale)).toBe('DRAFT_STALE');
+      expect(
+        (await edit({ headline: 'Ổn', bodyHtml: '<p>x</p>', baseRevision: revision })).statusCode,
+      ).toBe(200);
+      // Lưu lần hai với revision cũ bị từ chối.
+      expect(
+        errorOf(await edit({ headline: 'Ổn 2', bodyHtml: '<p>y</p>', baseRevision: revision })),
+      ).toBe('DRAFT_STALE');
+      // PUT nháp vẫn không đụng được bài đã đăng.
+      const put = await call(saco, 'PUT', `/saco/posts/${id}`, {
+        headline: 'sửa',
+        bodyHtml: '<p>x</p>',
+        baseRevision: revision + 1,
+      });
+      expect(errorOf(put)).toBe('POST_NOT_DRAFT');
+    });
+
+    it('chỉ tác giả sửa, thu hồi, đăng lại, xoá; nháp không sửa bằng đường sửa bài', async () => {
+      const id = await publishPost(saco, 'Của Cú Đêm');
+      const { revision } = await mineOf(saco, id);
+      const body = { headline: 'Chiếm bài', bodyHtml: '<p>x</p>', baseRevision: revision };
+      expect((await call(saco2, 'POST', `/saco/posts/${id}/edit`, body)).statusCode).toBe(404);
+      expect((await call(saco2, 'POST', `/saco/posts/${id}/withdraw`)).statusCode).toBe(404);
+      expect((await call(saco2, 'POST', `/saco/posts/${id}/republish`)).statusCode).toBe(404);
+      expect((await call(saco2, 'DELETE', `/saco/posts/${id}`)).statusCode).toBe(404);
+      expect((await call(u1, 'POST', `/saco/posts/${id}/edit`, body)).statusCode).toBe(403);
+      expect((await call(u1, 'POST', `/saco/posts/${id}/withdraw`)).statusCode).toBe(403);
+      expect((await call(lead, 'POST', `/saco/posts/${id}/withdraw`)).statusCode).toBe(403);
+      expect((await call(null, 'POST', `/saco/posts/${id}/edit`, body)).statusCode).toBe(401);
+
+      const draft = ((await call(saco, 'POST', '/saco/posts')).json() as { id: string }).id;
+      const onDraft = await call(saco, 'POST', `/saco/posts/${draft}/edit`, {
+        ...body,
+        baseRevision: 0,
+      });
+      expect(onDraft.statusCode).toBe(409);
+      expect(errorOf(onDraft)).toBe('POST_NOT_PUBLISHED');
+      expect(errorOf(await call(saco, 'POST', `/saco/posts/${draft}/withdraw`))).toBe(
+        'POST_NOT_PUBLISHED',
+      );
+    });
+
+    it('thu hồi: biến khỏi bảng, người đọc nhận 410, giữ tim và bình luận, phát post:hidden', async () => {
+      const id = await publishPost(saco, 'Bài sẽ thu hồi');
+      await call(u1, 'POST', `/posts/${id}/heart`, { on: true });
+      await comment(u2, id, 'Vẫn còn sau khi thu hồi');
+      expect(await inToday(id)).toBe(true);
+
+      const eventsBefore = events.length;
+      const withdrawn = await call(saco, 'POST', `/saco/posts/${id}/withdraw`);
+      expect(withdrawn.statusCode, withdrawn.body).toBe(200);
+      expect(withdrawn.json()).toMatchObject({ status: 'withdrawn', hearts: 1, comments: 1 });
+      expect(
+        events.slice(eventsBefore).filter((message) => message.type === 'post:hidden'),
+      ).toEqual([{ type: 'post:hidden', id }]);
+      expect(await inToday(id)).toBe(false);
+      const gone = await call(u1, 'GET', `/posts/${id}`);
+      expect(gone.statusCode).toBe(410);
+      expect(errorOf(gone)).toBe('POST_UNAVAILABLE');
+      expect((await call(u1, 'POST', `/posts/${id}/heart`, { on: true })).statusCode).toBe(410);
+      expect((await call(u1, 'GET', `/posts/${id}/comments`)).statusCode).toBe(410);
+
+      // Thu hồi lần hai là bỏ qua: không phát lại, không thêm nhật ký.
+      const count = events.length;
+      expect((await call(saco, 'POST', `/saco/posts/${id}/withdraw`)).statusCode).toBe(200);
+      expect(events.length).toBe(count);
+
+      const mine = (await call(saco, 'GET', '/saco/posts')).json() as {
+        items: Array<{ id: string; status: string }>;
+      };
+      expect(mine.items.find((item) => item.id === id)?.status).toBe('withdrawn');
+      const counts = await stack.query<{ hearts: number; comments: number }>(
+        `select (select count(*)::int from tf_post_hearts where post_id = $1) as hearts,
+                (select count(*)::int from tf_post_comments where post_id = $1) as comments`,
+        [id],
+      );
+      expect(counts[0]).toEqual({ hearts: 1, comments: 1 });
+      const log = await stack.query(
+        'select action from tf_post_log where post_id = $1 order by id',
+        [id],
+      );
+      expect(log.map((row) => row.action)).toEqual(['publish', 'withdraw']);
+
+      // Không sửa được bài đã thu hồi.
+      const { revision } = await mineOf(saco, id);
+      const edit = await call(saco, 'POST', `/saco/posts/${id}/edit`, {
+        headline: 'Sửa',
+        bodyHtml: '<p>x</p>',
+        baseRevision: revision,
+      });
+      expect(edit.statusCode).toBe(409);
+      expect(errorOf(edit)).toBe('POST_WITHDRAWN');
+
+      // Quản trị thấy bài với trạng thái thu hồi nhưng không ẩn hay bỏ ẩn được.
+      const manage = (await call(admin, 'GET', '/manage/posts?status=withdrawn')).json() as {
+        items: Array<{ id: string; status: string }>;
+      };
+      expect(manage.items.find((item) => item.id === id)?.status).toBe('withdrawn');
+      expect((await call(lead, 'GET', `/manage/posts/${id}`)).statusCode).toBe(200);
+      expect(errorOf(await call(admin, 'POST', `/manage/posts/${id}/unhide`))).toBe(
+        'POST_WITHDRAWN',
+      );
+      expect(errorOf(await call(lead, 'POST', `/manage/posts/${id}/hide`))).toBe('POST_WITHDRAWN');
+      expect((await mineOf(saco, id)).status).toBe('withdrawn');
+    });
+
+    it('đăng lại giữ giờ đăng gốc và phát post:new; bài của ngày cũ không lên bảng hôm nay', async () => {
+      const id = await publishPost(saco, 'Bài thu hồi rồi đăng lại');
+      const original = (await mineOf(saco, id)).publishedAt;
+      await call(saco, 'POST', `/saco/posts/${id}/withdraw`);
+      const eventsBefore = events.length;
+      const back = await call(saco, 'POST', `/saco/posts/${id}/republish`);
+      expect(back.statusCode, back.body).toBe(200);
+      expect(back.json()).toMatchObject({ status: 'published', publishedAt: original });
+      expect(
+        events.slice(eventsBefore).filter((message) => message.type === 'post:new'),
+      ).toHaveLength(1);
+      expect(await inToday(id)).toBe(true);
+      expect((await call(u1, 'GET', `/posts/${id}`)).statusCode).toBe(200);
+      // Đăng lại bài đang đăng là bỏ qua.
+      const count = events.length;
+      expect((await call(saco, 'POST', `/saco/posts/${id}/republish`)).statusCode).toBe(200);
+      expect(events.length).toBe(count);
+      const log = await stack.query(
+        'select action from tf_post_log where post_id = $1 order by id',
+        [id],
+      );
+      expect(log.map((row) => row.action)).toEqual(['publish', 'withdraw', 'republish']);
+
+      const old = await publishPost(saco, 'Bài cũ thu hồi');
+      await stack.query(
+        "update tf_posts set published_at = now() - interval '3 days' where id = $1",
+        [old],
+      );
+      await call(saco, 'POST', `/saco/posts/${old}/withdraw`);
+      const oldBefore = events.length;
+      expect((await call(saco, 'POST', `/saco/posts/${old}/republish`)).statusCode).toBe(200);
+      expect(events.slice(oldBefore).filter((message) => message.type === 'post:new')).toHaveLength(
+        0,
+      );
+    });
+
+    it('xoá vĩnh viễn chỉ áp dụng cho bài đã thu hồi: xoá cả ảnh, tim, bình luận, nhật ký', async () => {
+      const id = await publishPost(saco, 'Bài sẽ xoá hẳn');
+      await call(u1, 'POST', `/posts/${id}/heart`, { on: true });
+      await comment(u2, id, 'Sẽ biến mất cùng bài');
+      const png = await sharp({
+        create: { width: 40, height: 40, channels: 3, background: { r: 10, g: 90, b: 200 } },
+      })
+        .png()
+        .toBuffer();
+      const { payload, headers } = multipartFile(png, 'image/png', 'a.png');
+      const uploaded = await app.inject({
+        method: 'POST',
+        url: `${BASE}/saco/posts/${id}/images`,
+        headers: { ...authHeader(saco.accessToken), ...headers },
+        payload,
+      });
+      expect(uploaded.statusCode, uploaded.body).toBe(200);
+      const imageId = (uploaded.json() as { id: string }).id;
+
+      const blocked = await call(saco, 'DELETE', `/saco/posts/${id}`);
+      expect(blocked.statusCode).toBe(409);
+      expect(errorOf(blocked)).toBe('POST_NOT_DRAFT');
+
+      await call(saco, 'POST', `/saco/posts/${id}/withdraw`);
+      const removed = await call(saco, 'DELETE', `/saco/posts/${id}`);
+      expect(removed.statusCode, removed.body).toBe(200);
+      expect((await call(saco, 'GET', `/saco/posts/${id}`)).statusCode).toBe(404);
+      expect((await call(null, 'GET', `/post-images/${imageId}`)).statusCode).toBe(404);
+      const left = await stack.query<{ n: number }>(
+        `select (select count(*) from tf_post_hearts where post_id = $1)
+              + (select count(*) from tf_post_comments where post_id = $1)
+              + (select count(*) from tf_post_images where post_id = $1)
+              + (select count(*) from tf_post_log where post_id = $1) as n`,
+        [id],
+      );
+      expect(Number(left[0]?.n)).toBe(0);
+    });
+
+    it('bài bị trưởng nhóm ẩn thì tác giả không sửa, thu hồi hay đăng lại được', async () => {
+      const id = await publishPost(saco, 'Bài bị ẩn, tác giả bó tay');
+      await call(lead, 'POST', `/manage/posts/${id}/hide`);
+      const { revision } = await mineOf(saco, id);
+      const edit = await call(saco, 'POST', `/saco/posts/${id}/edit`, {
+        headline: 'Sửa',
+        bodyHtml: '<p>x</p>',
+        baseRevision: revision,
+      });
+      expect(edit.statusCode).toBe(409);
+      expect(errorOf(edit)).toBe('POST_HIDDEN');
+      expect(errorOf(await call(saco, 'POST', `/saco/posts/${id}/withdraw`))).toBe('POST_HIDDEN');
+      expect(errorOf(await call(saco, 'POST', `/saco/posts/${id}/republish`))).toBe('POST_HIDDEN');
+      expect(errorOf(await call(saco, 'DELETE', `/saco/posts/${id}`))).toBe('POST_NOT_DRAFT');
+      expect((await mineOf(saco, id)).status).toBe('hidden');
     });
   });
 });

@@ -15,6 +15,7 @@ const card = (
   headline: `Câu tiêu điểm ${id}`,
   publishedAt,
   hearts: 0,
+  editedAt: null,
   comments: 0,
   hearted: false,
   ...extra,
@@ -46,6 +47,37 @@ describe("applyPostEvent", () => {
       post: card("b", 2_000, { hearts: 5, hearted: false }),
     })
     expect(next[0]).toMatchObject({ id: "b", hearts: 5, hearted: true })
+  })
+
+  it("updates an edited post in place, keeping order and the viewer's own heart", () => {
+    const next = applyPostEvent(today, {
+      type: "post:updated",
+      post: card("b", 2_000, {
+        headline: "Đã sửa",
+        editedAt: 2_500,
+        hearts: 4,
+        comments: 2,
+        hearted: false,
+      }),
+    })
+    expect(next.map((post) => post.id)).toEqual(["b", "a"])
+    expect(next[0]).toMatchObject({
+      headline: "Đã sửa",
+      editedAt: 2_500,
+      hearts: 4,
+      comments: 2,
+      hearted: true,
+    })
+    expect(next[1]).toBe(today[1])
+  })
+
+  it("ignores an edit of a post that is not on the board", () => {
+    expect(
+      applyPostEvent(today, {
+        type: "post:updated",
+        post: card("zzz", 5_000, { editedAt: 5_100 }),
+      })
+    ).toBe(today)
   })
 
   it("removes a hidden post and ignores unknown ids", () => {

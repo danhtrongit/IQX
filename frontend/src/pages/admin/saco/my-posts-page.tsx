@@ -1,7 +1,8 @@
 /**
  * /admin/saco/posts "Bài của tôi": mọi bài của SACO đang đăng nhập, mới nhất ở trên. Nháp:
- * Sửa, Xoá. Đã đăng / Đã ẩn: Xem (mở bằng `?view=<id>`, cũng là nơi trình soạn chuyển bài đã
- * đăng tới). Trên điện thoại ẩn cột Giờ, Tim, Bình luận.
+ * Sửa, Xoá. Còn lại: Xem (mở bằng `?view=<id>`, cũng là nơi trình soạn chuyển bài sau khi lưu).
+ * Đã đăng: thêm Sửa bài, Thu hồi bài. Đã thu hồi: Đăng lại, Xoá vĩnh viễn. Trên điện thoại ẩn
+ * cột Giờ, Tim, Bình luận và các nút xuống dòng thay vì tràn.
  */
 import { Link, useNavigate, useSearchParams } from "react-router"
 import { PenLine } from "lucide-react"
@@ -20,8 +21,10 @@ import type { MyPost } from "@/pages/trading-floor/net/types"
 import { formatVnDateTime } from "@/pages/trading-floor/posts/format"
 
 import { useDeleteDraft, useMyPosts } from "./hooks"
-import { POST_STATUS } from "./labels"
+import { POST_STATUS, TOUCH_BUTTON } from "./labels"
+import { MyPostActionButtons } from "./my-post-actions"
 import { MyPostViewDialog } from "./my-post-view"
+import { useMyPostActions } from "./use-my-post-actions"
 
 const COLS = 6
 const PHONE_HIDDEN = "hidden sm:table-cell"
@@ -30,6 +33,7 @@ export function MyPostsPage() {
   const posts = useMyPosts()
   const remove = useDeleteDraft()
   const confirm = useConfirmDialog()
+  const actions = useMyPostActions()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const viewing = params.get("view")
@@ -61,7 +65,7 @@ export function MyPostsPage() {
   const items = posts.data?.items ?? []
   const writeNew = <Button type="button" onClick={() => navigate("/admin/saco/posts/new")}><PenLine data-icon="inline-start" />Viết bài mới</Button>
 
-  return <WorkspacePage title="Bài của tôi" description="Bài nhận định của bạn, mới nhất ở trên. Bài đã đăng không sửa được; muốn đính chính thì đăng bài mới.">
+  return <WorkspacePage title="Bài của tôi" description="Bài nhận định của bạn, mới nhất ở trên. Bài đã đăng sửa được và thu hồi được; bài thu hồi đăng lại được.">
     {posts.isError ? <PanelState title="Không tải được bài của bạn" description={errorMessage(posts.error)} action={{ label: "Thử lại", onClick: () => void posts.refetch() }} />
       : <Card className="gap-0 overflow-hidden py-0">
         <Table>
@@ -95,14 +99,17 @@ export function MyPostsPage() {
                     </span>}
                   </TableCell>
                   <TableCell className="pr-3 text-right">
-                    <div className="flex justify-end gap-1">
+                    <div className="flex flex-wrap justify-end gap-2">
                       {isDraft ? <>
-                        <Button asChild variant="outline" size="xs"><Link to={`/admin/saco/posts/${post.id}`}>Sửa</Link></Button>
-                        <Button type="button" variant="destructive" size="xs" onClick={() => askDelete(post)}>Xoá</Button>
-                      </> : <Button type="button" variant="outline" size="xs" onClick={() => setViewing(post.id)}>
-                        Xem
-                        {post.newComments > 0 && <span className="sm:hidden">({post.newComments} mới)</span>}
-                      </Button>}
+                        <Button asChild variant="outline" className={TOUCH_BUTTON}><Link to={`/admin/saco/posts/${post.id}`}>Sửa</Link></Button>
+                        <Button type="button" variant="destructive" className={TOUCH_BUTTON} onClick={() => askDelete(post)}>Xoá</Button>
+                      </> : <>
+                        <Button type="button" variant="outline" className={TOUCH_BUTTON} onClick={() => setViewing(post.id)}>
+                          Xem
+                          {post.newComments > 0 && <span className="sm:hidden">({post.newComments} mới)</span>}
+                        </Button>
+                        <MyPostActionButtons post={post} actions={actions} className="justify-end" />
+                      </>}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -113,5 +120,6 @@ export function MyPostsPage() {
       </Card>}
     <MyPostViewDialog postId={viewing} onClose={() => setViewing(null)} />
     {confirm.element}
+    {actions.element}
   </WorkspacePage>
 }

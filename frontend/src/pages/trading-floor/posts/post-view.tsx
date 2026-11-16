@@ -157,11 +157,14 @@ export function PostBody({
 export function PostArticle({
   sacoName,
   publishedAt,
+  editedAt,
   headline,
   bodyHtml,
 }: {
   sacoName: string
   publishedAt: number | null
+  /** Có giá trị khi tác giả đã sửa bài sau khi đăng. */
+  editedAt?: number | null
   headline: string
   bodyHtml: string
 }) {
@@ -172,6 +175,9 @@ export function PostArticle({
         <span className="tf-post-author-time">
           {publishedAt ? `Đăng ${formatVnTime(publishedAt)}` : "Chưa đăng"}
         </span>
+        {editedAt ? (
+          <span className="tf-post-author-edited">Đã chỉnh sửa</span>
+        ) : null}
       </p>
       <h2 className="tf-post-headline">
         {headline || "(chưa có câu tiêu điểm)"}

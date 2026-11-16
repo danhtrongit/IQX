@@ -97,7 +97,10 @@ export class SacoPostsAuthorController {
   }
 
   @Delete('posts/:id')
-  @ApiOperation({ operationId: 'tradingFloorSacoPostDelete', summary: 'Xoá bản nháp' })
+  @ApiOperation({
+    operationId: 'tradingFloorSacoPostDelete',
+    summary: 'Xoá bản nháp, hoặc xoá hẳn bài đã thu hồi (kèm ảnh, tim, bình luận)',
+  })
   @ApiOkResponse({ schema: openapi(okSchema) })
   remove(
     @CurrentUser() user: AuthenticatedUser,
@@ -110,7 +113,8 @@ export class SacoPostsAuthorController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'tradingFloorSacoPostImageUpload',
-    summary: 'Tải ảnh vào nháp (JPG, PNG, WebP, tối đa 5 MB), máy chủ nén lại thành WebP',
+    summary:
+      'Tải ảnh vào nháp hoặc bài đang đăng của mình (JPG, PNG, WebP, tối đa 5 MB), máy chủ nén lại thành WebP',
   })
   @ApiOkResponse({ schema: openapi(imageResponseSchema) })
   async uploadImage(
@@ -145,6 +149,50 @@ export class SacoPostsAuthorController {
     @Body({ schema: draftBodySchema }) body: z.infer<typeof draftBodySchema>,
   ) {
     return this.posts.publish(user, id, body);
+  }
+
+  @Post('posts/:id/edit')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'tradingFloorSacoPostEdit',
+    summary:
+      'Sửa bài đã đăng tại chỗ (kiểm tra như khi đăng, giữ giờ đăng, tim, bình luận); baseRevision cũ trả 409 DRAFT_STALE; bài bị ẩn hoặc đã thu hồi trả 409',
+  })
+  @ApiOkResponse({ schema: openapi(myPostDetailSchema) })
+  edit(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @Body({ schema: draftBodySchema }) body: z.infer<typeof draftBodySchema>,
+  ) {
+    return this.posts.editPost(user, id, body);
+  }
+
+  @Post('posts/:id/withdraw')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'tradingFloorSacoPostWithdraw',
+    summary: 'Thu hồi bài đã đăng: biến khỏi khu, giữ tim và bình luận; thu hồi lại thì bỏ qua',
+  })
+  @ApiOkResponse({ schema: openapi(myPostDetailSchema) })
+  withdraw(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', { schema: uuidParamSchema }) id: string,
+  ) {
+    return this.posts.withdrawPost(user, id);
+  }
+
+  @Post('posts/:id/republish')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'tradingFloorSacoPostRepublish',
+    summary: 'Đăng lại bài đã thu hồi với giờ đăng gốc; đăng lại bài đang đăng thì bỏ qua',
+  })
+  @ApiOkResponse({ schema: openapi(myPostDetailSchema) })
+  republish(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', { schema: uuidParamSchema }) id: string,
+  ) {
+    return this.posts.republishPost(user, id);
   }
 
   @Post('posts/:id/comments-seen')

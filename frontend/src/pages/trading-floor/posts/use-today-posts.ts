@@ -69,6 +69,7 @@ export function useTodayPosts(): ReadonlySet<string> {
         apply(message)
         flash(message.post.id)
       }),
+      floorSocket.on("post:updated", apply),
       floorSocket.on("post:hidden", apply),
       floorSocket.on("post:heart", apply),
       floorSocket.on("post:comment", apply),
