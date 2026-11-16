@@ -13,6 +13,7 @@ import {
   chat,
   NEW_THREAD,
   NO_SACO_TEXT,
+  openDirectChat,
   resetFresh,
   sendFresh,
   sendText,
@@ -21,7 +22,7 @@ import {
   view,
   type FreshThread,
 } from "../../net/chat.ts"
-import { sendTyping } from "../../net/presence.ts"
+import { floorSacos, sendTyping } from "../../net/presence.ts"
 import type {
   ChatMessage,
   ConvDetail,
@@ -490,6 +491,8 @@ function Thread({ c, summary, thread, fresh, onBack }: ThreadProps) {
           </small>
         </div>
       </header>
+      {/* Before sending, the visitor can also pick one of the SACOs standing on the floor. */}
+      {waiting && fresh.state !== "pending" && <PresentSacos />}
       <div
         className="msgs"
         ref={box}
@@ -564,6 +567,32 @@ function Thread({ c, summary, thread, fresh, onBack }: ThreadProps) {
         </p>
       )}
     </>
+  )
+}
+
+/** "SACO đang có mặt": SACOs standing on the floor right now; a tap opens the chat with one of them. */
+function PresentSacos() {
+  const sacos = useStore(floorSacos)
+  if (sacos.length === 0) return null
+  return (
+    <div className="saco-present" role="group" aria-label="SACO đang có mặt">
+      <span className="saco-present-label">SACO đang có mặt</span>
+      <div className="saco-present-list">
+        {sacos.map((s) => (
+          <button
+            key={s.sacoId}
+            type="button"
+            className="saco-chip"
+            onClick={() => void openDirectChat(s.sacoId)}
+          >
+            <span className="saco-chip-av" aria-hidden="true">
+              {s.name.trim().charAt(0).toUpperCase()}
+            </span>
+            <span className="saco-chip-name">{s.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
 

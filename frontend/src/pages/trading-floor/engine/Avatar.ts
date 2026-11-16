@@ -228,6 +228,15 @@ export class Avatar {
     this.clearBadges()
   }
 
+  /** World rectangle of the figure with its name tag and pills, for tap and hover tests. */
+  bounds(): Phaser.Geom.Rectangle {
+    const r = this.sprite.getBounds()
+    if (this.tag) Phaser.Geom.Rectangle.Union(r, this.tag.getBounds(), r)
+    for (const b of this.badges)
+      Phaser.Geom.Rectangle.Union(r, b.label.getBounds(), r)
+    return r
+  }
+
   /** Replaces the pills before the name where the character stands (a SACO right granted or removed). */
   setBadges(badges: NameBadge[]): void {
     this.clearBadges()

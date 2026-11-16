@@ -84,8 +84,8 @@ type Conn = {
   guest: boolean;
   /** Được nói công khai dù chat chung đã tắt (`FLOOR_PUBLIC_CHAT_USERS`); null khi chưa tra username. */
   publicChat: boolean | null;
-  /** Tài khoản đang giữ quyền SACO còn hoạt động: nhân vật mang nhãn SACO. */
-  saco: boolean;
+  /** Mã SACO khi tài khoản giữ quyền SACO còn hoạt động: nhân vật mang nhãn SACO và chạm vào để nhắn. */
+  sacoId: string | null;
   /** Có khi đã `hello`: nhân vật đang đứng trên sàn. */
   peer: FloorPeer | null;
   /** Đã `hello` nhưng sảnh đầy người thật: đang xếp hàng với vị trí mới nhất mình báo. */
@@ -136,7 +136,7 @@ export class FloorHub {
     this.unsubscribe.push(
       events.subscribe((target, message) => this.relay(target, message)),
       presence.onProfileChanged((userId, profile) => this.profileChanged(userId, profile)),
-      presence.onSacoChanged((userId, saco) => this.sacoChanged(userId, saco)),
+      presence.onSacoChanged((userId, sacoId) => this.sacoChanged(userId, sacoId)),
     );
     bots?.attach({
       humans: () => [...this.floor].map((conn) => conn.peer!),
@@ -153,7 +153,7 @@ export class FloorHub {
       userId: null,
       guest: false,
       publicChat: null,
-      saco: false,
+      sacoId: null,
       peer: null,
       waiting: null,
       windowStartedAt: this.now(),
@@ -325,7 +325,7 @@ export class FloorHub {
     try {
       const saco = await this.sacos.findByUser(this.database, userId);
       if (!saco?.active || conn.closed) return;
-      conn.saco = true;
+      conn.sacoId = saco.id;
       this.presence.bindSaco(saco.id, userId);
       const invite = this.chat.pendingInvite(saco.id);
       if (invite) this.send(conn, { type: 'chat:invite', invite });
@@ -382,7 +382,10 @@ export class FloorHub {
     this.bots?.wake();
     this.bots?.fit(FLOOR_CAPACITY - this.floor.size - 1);
     const peer: FloorPeer = { id: conn.peerId, ...profile, ...state };
-    if (conn.saco) peer.saco = true;
+    if (conn.sacoId) {
+      peer.saco = true;
+      peer.sacoId = conn.sacoId;
+    }
     const others = [...[...this.floor].map((other) => other.peer!), ...(this.bots?.peers() ?? [])];
     conn.peer = peer;
     this.floor.add(conn);
@@ -513,13 +516,18 @@ export class FloorHub {
   }
 
   /** Quyền SACO vừa được gán hoặc gỡ: nhân vật của tài khoản đang đứng trên sàn đổi nhãn ngay. */
-  private sacoChanged(userId: string, saco: boolean): void {
+  private sacoChanged(userId: string, sacoId: string | null): void {
     for (const conn of this.byUser.get(userId) ?? []) {
-      if (conn.saco === saco) continue;
-      conn.saco = saco;
+      if (conn.sacoId === sacoId) continue;
+      conn.sacoId = sacoId;
       if (!conn.peer) continue;
-      if (saco) conn.peer.saco = true;
-      else delete conn.peer.saco;
+      if (sacoId) {
+        conn.peer.saco = true;
+        conn.peer.sacoId = sacoId;
+      } else {
+        delete conn.peer.saco;
+        delete conn.peer.sacoId;
+      }
       this.toFloor({ type: 'peer:update', peer: conn.peer });
     }
   }

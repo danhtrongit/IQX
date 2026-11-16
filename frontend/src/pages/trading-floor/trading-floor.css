@@ -1809,6 +1809,69 @@
   height: 44px;
   flex: none;
 }
+/* "SACO đang có mặt" on the new Chat SACO thread: one row, scrolls sideways on phones. */
+.tf-root .saco-present {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 6px 14px;
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+.tf-root .saco-present-label {
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.tf-root .saco-present-list {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding-right: 14px;
+}
+.tf-root .saco-present-list::-webkit-scrollbar {
+  display: none;
+}
+.tf-root .saco-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  max-width: 180px;
+  padding: 4px 12px 4px 5px;
+  border-radius: 999px;
+  border: 1px solid #14c8ac;
+  background: rgba(20, 200, 172, 0.12);
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 700;
+}
+.tf-root .saco-chip:hover {
+  background: rgba(20, 200, 172, 0.22);
+}
+.tf-root .saco-chip-av {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #14c8ac;
+  color: #022a26;
+  font-weight: 800;
+}
+.tf-root .saco-chip-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .tf-root .thread-who {
   flex: 1;
   min-width: 0;

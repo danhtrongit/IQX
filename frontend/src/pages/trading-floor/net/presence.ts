@@ -1,5 +1,5 @@
 /** Real-time presence: who is in the office, where they walk and emotes. */
-import { Emitter, toast, ui } from "../bridge.ts"
+import { Emitter, Store, toast, ui } from "../bridge.ts"
 import { floorSocket, type FloorSocketStatus } from "./socket.ts"
 import type { Peer, PeerState } from "./types.ts"
 
@@ -26,6 +26,51 @@ export function isSelf(id: string): boolean {
   return id === selfId
 }
 
+/** A SACO standing on the floor. */
+export interface FloorSaco {
+  sacoId: string
+  name: string
+}
+
+/** SACOs on the floor right now, one entry per SACO in arrival order, never this account's own. */
+export const floorSacos = new Store<FloorSaco[]>([])
+/** Connection id → the SACO behind that figure. */
+const sacoPeers = new Map<string, FloorSaco>()
+let selfSacoId: string | null = null
+
+/** This account holds that SACO right: nobody opens a chat with themself. */
+export function isOwnSaco(sacoId: string): boolean {
+  return sacoId === selfSacoId
+}
+
+function syncSacos(): void {
+  const seen = new Set<string>()
+  const list: FloorSaco[] = []
+  for (const s of sacoPeers.values()) {
+    if (s.sacoId === selfSacoId || seen.has(s.sacoId)) continue
+    seen.add(s.sacoId)
+    list.push(s)
+  }
+  const prev = floorSacos.get()
+  const same =
+    prev.length === list.length &&
+    prev.every((p, i) => p.sacoId === list[i].sacoId && p.name === list[i].name)
+  if (!same) floorSacos.set(list)
+}
+
+function trackSaco(p: Peer): void {
+  if (p.id === selfId) selfSacoId = p.sacoId ?? null
+  else if (p.sacoId) sacoPeers.set(p.id, { sacoId: p.sacoId, name: p.name })
+  else sacoPeers.delete(p.id)
+  syncSacos()
+}
+
+function forgetSacos(): void {
+  sacoPeers.clear()
+  selfSacoId = null
+  syncSacos()
+}
+
 export let sendState: (state: PeerState) => void = () => undefined
 export let sendEmote: (text: string) => void = () => undefined
 export let sendTyping: (convId: string) => void = () => undefined
@@ -40,6 +85,7 @@ export function startPresence(start: PeerState): () => void {
   const off: (() => void)[] = []
   peers.clear()
   selfId = null
+  forgetSacos()
 
   const countOnline = (): void => ui.online.set(peers.size + (selfId ? 1 : 0))
   const forgetPeers = (): void => {
@@ -47,6 +93,7 @@ export function startPresence(start: PeerState): () => void {
     for (const id of peers) presence.emit("leave", { id })
     peers.clear()
     selfId = null
+    forgetSacos()
     countOnline()
   }
 
@@ -87,6 +134,9 @@ export function startPresence(start: PeerState): () => void {
       selfId = m.self.id
       peers.clear()
       for (const p of m.peers) if (p.id !== selfId) peers.add(p.id)
+      sacoPeers.clear()
+      trackSaco(m.self)
+      for (const p of m.peers) if (p.id !== selfId) trackSaco(p)
       presence.emit("welcome", {
         self: m.self,
         peers: m.peers.filter((p) => p.id !== selfId),
@@ -97,10 +147,14 @@ export function startPresence(start: PeerState): () => void {
     floorSocket.on("peer:join", (m) => {
       if (m.peer.id === selfId) return
       peers.add(m.peer.id)
+      trackSaco(m.peer)
       presence.emit("join", m.peer)
       countOnline()
     }),
-    floorSocket.on("peer:update", (m) => presence.emit("update", m.peer)),
+    floorSocket.on("peer:update", (m) => {
+      trackSaco(m.peer)
+      presence.emit("update", m.peer)
+    }),
     floorSocket.on("peer:state", (m) =>
       presence.emit("state", {
         id: m.id,
@@ -112,6 +166,7 @@ export function startPresence(start: PeerState): () => void {
     ),
     floorSocket.on("peer:leave", (m) => {
       peers.delete(m.id)
+      if (sacoPeers.delete(m.id)) syncSacos()
       presence.emit("leave", { id: m.id })
       countOnline()
     }),
@@ -166,6 +221,7 @@ export function startPresence(start: PeerState): () => void {
     sendTyping = () => undefined
     peers.clear()
     selfId = null
+    forgetSacos()
     ui.queue.set(null)
   }
 }

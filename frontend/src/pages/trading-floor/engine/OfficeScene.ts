@@ -17,7 +17,9 @@ import {
 } from "../net/market/heat.ts"
 import type { IndexQuote, Quote } from "../net/market/types.ts"
 import { PRICE_COLORS, indexTone } from "../net/market/tone.ts"
+import { openDirectChat } from "../net/chat.ts"
 import {
+  isOwnSaco,
   isSelf,
   presence,
   sendEmote,
@@ -102,6 +104,8 @@ interface RemotePeer {
   moving: boolean
   /** Scene time of the last report. */
   at: number
+  /** The SACO behind this figure: a tap opens the chat with them. */
+  sacoId?: string
 }
 
 /** A walking peer reports every 100 ms; this long without a word means they stopped (lost packet, hidden tab). */
@@ -1069,6 +1073,7 @@ export class OfficeScene extends Phaser.Scene {
       facing: p.facing,
       moving: p.moving,
       at: this.time.now,
+      sacoId: p.sacoId,
     })
     void this.dress(
       avatar,
@@ -1149,10 +1154,16 @@ export class OfficeScene extends Phaser.Scene {
     }
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (!this.player || ui.panel.get() || appDialogOpen()) return
+      // A SACO's figure (or name tag) opens the chat with that SACO instead of walking there.
+      const sacoId = this.sacoAt(pointer.worldX, pointer.worldY)
+      if (sacoId) return void openDirectChat(sacoId)
       const hot = this.hotAt(pointer.worldX, pointer.worldY)
       if (hot) this.goInteract(hot.interact)
       else this.walkTo({ x: pointer.worldX, y: pointer.worldY })
     })
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) =>
+      this.hoverSaco(pointer)
+    )
     this.input.on(
       "wheel",
       (_p: unknown, _o: unknown, _dx: number, dy: number) => {
@@ -1161,6 +1172,35 @@ export class OfficeScene extends Phaser.Scene {
         this.applyZoom()
       }
     )
+  }
+
+  /** Mouse over a SACO's figure: the pointer cursor says it can be clicked. */
+  private hoverSaco(pointer: Phaser.Input.Pointer): void {
+    if (pointer.wasTouch) return
+    const over =
+      !ui.panel.get() && this.sacoAt(pointer.worldX, pointer.worldY) !== null
+    this.input.setDefaultCursor(over ? "pointer" : "")
+  }
+
+  /**
+   * The SACO whose figure or name tag is at this world point (the front-most one). The target is at
+   * least 44 CSS px each way at the current zoom, so a small figure on a phone is still easy to tap.
+   */
+  private sacoAt(x: number, y: number): string | null {
+    const cam = this.cameras.main
+    const min = (44 * (window.devicePixelRatio || 1)) / cam.zoom
+    let found: { sacoId: string; depth: number } | null = null
+    for (const peer of this.peers.values()) {
+      if (!peer.sacoId || isOwnSaco(peer.sacoId)) continue
+      const b = peer.avatar.bounds()
+      const w = Math.max(b.width, min)
+      const h = Math.max(b.height, min)
+      if (Math.abs(x - b.centerX) > w / 2 || Math.abs(y - b.centerY) > h / 2)
+        continue
+      if (!found || peer.avatar.y > found.depth)
+        found = { sacoId: peer.sacoId, depth: peer.avatar.y }
+    }
+    return found?.sacoId ?? null
   }
 
   private hotAt(x: number, y: number): Hot | undefined {

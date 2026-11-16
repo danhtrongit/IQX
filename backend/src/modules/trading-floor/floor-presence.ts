@@ -16,7 +16,8 @@ import type { FloorProfile } from './floor-types.js';
 
 type UserListener = (userId: string) => void;
 type ProfileListener = (userId: string, profile: FloorProfile) => void;
-type SacoListener = (userId: string, saco: boolean) => void;
+/** `sacoId` null: tài khoản vừa mất quyền SACO. */
+type SacoListener = (userId: string, sacoId: string | null) => void;
 
 @Injectable()
 export class FloorPresence {
@@ -58,8 +59,8 @@ export class FloorPresence {
     if (userId === null) this.owners.delete(sacoId);
     else this.owners.set(sacoId, userId);
     if (before === userId) return;
-    if (before !== null) this.sacoChanged(before, false);
-    if (userId !== null) this.sacoChanged(userId, true);
+    if (before !== null) this.sacoChanged(before, null);
+    if (userId !== null) this.sacoChanged(userId, sacoId);
   }
 
   /** Tài khoản vừa nhận hoặc mất quyền SACO: hub gắn hoặc gỡ nhãn SACO của các nhân vật đang đứng trên sàn. */
@@ -68,10 +69,10 @@ export class FloorPresence {
     return () => this.sacoListeners.delete(listener);
   }
 
-  private sacoChanged(userId: string, saco: boolean): void {
+  private sacoChanged(userId: string, sacoId: string | null): void {
     for (const listener of [...this.sacoListeners]) {
       try {
-        listener(userId, saco);
+        listener(userId, sacoId);
       } catch {
         // Người nghe tự ghi log.
       }

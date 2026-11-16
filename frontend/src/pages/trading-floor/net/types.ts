@@ -114,6 +114,8 @@ export interface Peer extends Profile, PeerState {
   id: string
   /** The account holds an active SACO right: a SACO badge sits before the name. Absent otherwise. */
   saco?: boolean
+  /** That SACO's id (what `POST chat/open` takes): tapping the figure opens the chat with them. */
+  sacoId?: string
 }
 
 export interface MeResponse {

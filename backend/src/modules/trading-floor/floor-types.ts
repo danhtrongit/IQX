@@ -65,6 +65,8 @@ export interface FloorPeer extends FloorProfile, FloorPeerState {
   id: string;
   /** Tài khoản đang giữ quyền SACO còn hoạt động: cả sàn thấy nhãn SACO cạnh tên. Không có khi không phải SACO. */
   saco?: true;
+  /** Mã SACO (`tf_sacos.id`, cái `POST chat/open` nhận) khi `saco`: chạm vào nhân vật để nhắn SACO đó. */
+  sacoId?: string;
 }
 
 // ---------- chat ----------

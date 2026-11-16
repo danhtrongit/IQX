@@ -200,7 +200,7 @@ function makeHub() {
     typingOwner: '',
   };
   const profileListeners: Array<(id: string, profile: FloorProfile) => void> = [];
-  const sacoListeners: Array<(id: string, saco: boolean) => void> = [];
+  const sacoListeners: Array<(id: string, sacoId: string | null) => void> = [];
   const guestProfile: FloorProfile = { name: 'Khách Vui', avatar: 'female01', color: 'plum' };
   const hub = new FloorHub(
     {} as never,
@@ -225,7 +225,7 @@ function makeHub() {
         profileListeners.push(fn);
         return () => undefined;
       },
-      onSacoChanged: (fn: (id: string, saco: boolean) => void) => {
+      onSacoChanged: (fn: (id: string, sacoId: string | null) => void) => {
         sacoListeners.push(fn);
         return () => undefined;
       },
@@ -363,19 +363,22 @@ describe('FloorHub guests', () => {
     await hub.message(plain, JSON.stringify({ type: 'auth', token: 'acct-2' }));
     await hub.message(plain, HELLO);
 
-    expect(saco.last('welcome')).toMatchObject({ self: { saco: true } });
+    expect(saco.last('welcome')).toMatchObject({ self: { saco: true, sacoId: 'saco-1' } });
     const joins = guest.sent.filter((m) => m.type === 'peer:join').map((m) => m.peer);
     expect(joins).toHaveLength(2);
-    expect(joins[0]).toMatchObject({ saco: true });
+    // The SACO id rides along so a tap on the figure opens the chat with that SACO.
+    expect(joins[0]).toMatchObject({ saco: true, sacoId: 'saco-1' });
     expect(joins[1]).not.toHaveProperty('saco');
+    expect(joins[1]).not.toHaveProperty('sacoId');
     const peers = plain.last('welcome')!.peers as Array<Record<string, unknown>>;
-    expect(peers.filter((p) => p.saco === true)).toHaveLength(1);
+    expect(peers.filter((p) => p.saco === true && p.sacoId === 'saco-1')).toHaveLength(1);
 
     // Quyền bị gỡ rồi tài khoản khác được gán: cả sàn thấy nhãn đổi ngay.
-    for (const fn of sacoListeners) fn('acct-saco', false);
+    for (const fn of sacoListeners) fn('acct-saco', null);
     expect(guest.last('peer:update')!.peer).not.toHaveProperty('saco');
-    for (const fn of sacoListeners) fn('acct-2', true);
-    expect(guest.last('peer:update')).toMatchObject({ peer: { saco: true } });
+    expect(guest.last('peer:update')!.peer).not.toHaveProperty('sacoId');
+    for (const fn of sacoListeners) fn('acct-2', 'saco-2');
+    expect(guest.last('peer:update')).toMatchObject({ peer: { saco: true, sacoId: 'saco-2' } });
   });
 
   it('the owner account still speaks in public and everyone on the floor hears it', async () => {
