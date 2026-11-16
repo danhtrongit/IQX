@@ -27,9 +27,12 @@ export function Altar({ today, status, now, onOpen }: Props) {
           Khu giao dịch › <b>Tượng Thần Tài</b>
         </div>
         <div className="tt-clock">
-          <Clock size={13} aria-hidden="true" /> {vnClock(now)} · hạn khấn{" "}
-          <i>{vnClock(today.deadline)}</i> · ngày <i>{today.day.canChi}</i> hành{" "}
-          <i>{today.day.hanhLabel}</i>
+          <Clock size={13} aria-hidden="true" />
+          {/* One text run, so a narrow phone wraps it between words and not between the pieces. */}
+          <span>
+            {vnClock(now)} · hạn khấn <i>{vnClock(today.deadline)}</i> · ngày{" "}
+            <i>{today.day.canChi}</i> hành <i>{today.day.hanhLabel}</i>
+          </span>
         </div>
       </div>
 
