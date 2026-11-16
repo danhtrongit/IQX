@@ -7,8 +7,11 @@ import {
   cleanSacoName,
   cleanText,
   guestLabel,
+  invitePreview,
   moveInOrder,
+  pickFallbackSaco,
   pickSacoIcon,
+  type DispatchCandidate,
   type OrderEntry,
 } from '../../src/modules/trading-floor/floor-chat.logic.js';
 
@@ -93,5 +96,63 @@ describe('guestLabel', () => {
     expect(guestLabel('Minh Anh', true)).toBe('Minh Anh (khách)');
     expect(guestLabel('Minh Anh', false)).toBe('Minh Anh');
     expect(guestLabel('', true)).toBe('Khách (khách)');
+  });
+});
+
+describe('invitePreview', () => {
+  it('keeps short text on one line', () => {
+    expect(invitePreview('  Chào SACO,\n\ncho em hỏi  ')).toBe('Chào SACO, cho em hỏi');
+  });
+
+  it('cuts long text to 120 characters including the ellipsis', () => {
+    const preview = invitePreview('a'.repeat(300));
+    expect(Array.from(preview)).toHaveLength(120);
+    expect(preview.endsWith('…')).toBe(true);
+    expect(invitePreview('b'.repeat(120))).toBe('b'.repeat(120));
+  });
+
+  it('never splits a surrogate pair', () => {
+    const preview = invitePreview('𝐀'.repeat(200), 10);
+    expect(Array.from(preview)).toHaveLength(10);
+    expect(preview).toBe(`${'𝐀'.repeat(9)}…`);
+  });
+});
+
+describe('pickFallbackSaco', () => {
+  const saco = (
+    id: string,
+    patch: Partial<DispatchCandidate> = {},
+  ): DispatchCandidate => ({
+    id,
+    userId: `user-${id}`,
+    active: true,
+    onDuty: false,
+    online: false,
+    ...patch,
+  });
+
+  it('picks the highest-ranked SACO with a socket, on duty or not', () => {
+    const ranking = [saco('a'), saco('b', { online: true }), saco('c', { online: true, onDuty: true })];
+    expect(pickFallbackSaco(ranking, 'visitor')).toBe('b');
+  });
+
+  it('falls back to the highest-ranked active SACO when nobody is connected', () => {
+    expect(pickFallbackSaco([saco('a'), saco('b')], 'visitor')).toBe('a');
+  });
+
+  it('skips inactive SACOs', () => {
+    const ranking = [saco('a', { active: false, online: true }), saco('b'), saco('c', { online: true })];
+    expect(pickFallbackSaco(ranking, 'visitor')).toBe('c');
+    expect(pickFallbackSaco([saco('a', { active: false })], 'visitor')).toBeNull();
+  });
+
+  it('never gives the conversation to the visitor themself', () => {
+    const ranking = [saco('a', { online: true }), saco('b')];
+    expect(pickFallbackSaco(ranking, 'user-a')).toBe('b');
+    expect(pickFallbackSaco([saco('a', { online: true })], 'user-a')).toBeNull();
+  });
+
+  it('returns null when there is no SACO at all', () => {
+    expect(pickFallbackSaco([], 'visitor')).toBeNull();
   });
 });

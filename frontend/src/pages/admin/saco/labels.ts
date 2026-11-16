@@ -9,6 +9,7 @@ export const INVITE_RESULT: Record<InviteResult, { label: string; tone: Tone }> 
   "skip-off": { label: "Bỏ qua · vắng", tone: "neutral" },
   "skip-busy": { label: "Bỏ qua · đang có lời mời khác", tone: "neutral" },
   cancel: { label: "Người dùng huỷ", tone: "neutral" },
+  auto: { label: "Tự chuyển theo thứ hạng", tone: "warning" },
 }
 
 export const POST_STATUS: Record<PostStatus, { label: string; tone: Tone }> = {

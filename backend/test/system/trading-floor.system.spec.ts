@@ -884,5 +884,77 @@ describe('system acceptance: Khu giao dịch', () => {
     await ok(memberA, 'POST', '/saco/duty', { on: false });
     guestSocket.socket.close();
   });
-});
 
+  it('Chat SACO nhắn trước: gửi ngay, không ai trực thì tự chuyển cho SACO đang online, SACO trực nhận lời mời kèm tin', async () => {
+    const guestCall = (token: string, method: string, path: string, payload?: unknown) =>
+      app.inject({
+        method: method as 'GET',
+        url: `${BASE}${path}`,
+        headers: { 'x-floor-guest': token },
+        ...(payload === undefined ? {} : { payload: payload as Json }),
+      });
+    const guestOk = async (token: string, method: string, path: string, payload?: unknown): Promise<Body> => {
+      const response = await guestCall(token, method, path, payload);
+      expect(response.statusCode, `${method} ${path}: ${response.body}`).toBe(200);
+      return response.json();
+    };
+    const newGuest = async (name: string): Promise<string> => {
+      const created = await call(null, 'POST', '/guest', { name, avatar: 'female02', color: 'default' });
+      expect(created.statusCode, created.body).toBe(200);
+      return (created.json() as { token: string }).token;
+    };
+
+    // Không ai trực: SACO B (hạng 1) không có socket, SACO A (hạng 2) đang mở trang nhưng quên bật trực.
+    const sacoSocket = await authed(memberA);
+    const token = await newGuest('Khách Ba');
+    const guestSocket = await connect(`guest:${token}`);
+    await waitFor(guestSocket, (m) => m.type === 'ready', 'ready của khách ba');
+    expect(errorOf(await guestCall(token, 'POST', '/chat/start', { text: '   ' }))).toBe('MESSAGE_INVALID');
+    expect(await guestOk(token, 'POST', '/chat/start', { text: '  Cho em hỏi về FPT  ' })).toEqual({ pending: true });
+    const matched = await waitFor(guestSocket, (m) => m.type === 'chat:match' && m.event.state === 'matched', 'tự chuyển');
+    const convId = matched.event.convId as string;
+    await waitFor(sacoSocket, (m) => m.type === 'chat:msg' && m.convId === convId && m.message.from === 'u', 'tin chờ tới SACO A');
+    const thread = await guestOk(token, 'GET', `/chat/convs/${convId}`);
+    expect(thread).toMatchObject({ peerName: 'Sư Tử Vàng', matched: true, writable: true });
+    expect(thread.messages.map((m: Body) => [m.from, m.text])).toEqual([
+      ['x', 'Khách Ba được chuyển tới Sư Tử Vàng'],
+      ['u', 'Cho em hỏi về FPT'],
+    ]);
+    const sacoInbox = await ok(memberA, 'GET', '/chat/inbox');
+    expect(sacoInbox.asSaco.find((c: Body) => c.id === convId)).toMatchObject({ unread: 1, matched: true });
+    // Đã có SACO: tin sau đi thẳng vào cuộc chat.
+    await sleep(300);
+    const next = await guestOk(token, 'POST', '/chat/start', { text: 'Tin thứ hai' });
+    expect(next).toMatchObject({ convId, message: { from: 'u', text: 'Tin thứ hai' } });
+    const auto = await stack.query<{ result: string; saco_id: string }>(
+      "select result, saco_id from tf_chat_invites where result = 'auto'",
+    );
+    expect(auto).toEqual([{ result: 'auto', saco_id: sacoA }]);
+
+    // SACO trực: lời mời 5 giây kèm bản xem trước; đồng ý thì giữ câu "được khớp".
+    await ok(memberA, 'POST', '/saco/duty', { on: true });
+    const fourth = await newGuest('Khách Bốn');
+    const fourthSocket = await connect(`guest:${fourth}`);
+    await waitFor(fourthSocket, (m) => m.type === 'ready', 'ready của khách bốn');
+    expect(await guestOk(fourth, 'POST', '/chat/start', { text: 'Em muốn mở tài khoản' })).toEqual({ pending: true });
+    const invite = await waitFor(
+      sacoSocket,
+      (m) => m.type === 'chat:invite' && m.invite.userName === 'Khách Bốn (khách)',
+      'lời mời kèm tin',
+    );
+    expect(invite.invite.preview).toBe('Em muốn mở tài khoản');
+    await sleep(300);
+    expect(await guestOk(fourth, 'POST', '/chat/start', { text: 'Còn ai không ạ' })).toEqual({ pending: true });
+    await ok(memberA, 'POST', `/chat/invites/${invite.invite.id}`, { accept: true });
+    const accepted = await waitFor(fourthSocket, (m) => m.type === 'chat:match' && m.event.state === 'matched', 'khớp khách bốn');
+    const fourthThread = await guestOk(fourth, 'GET', `/chat/convs/${accepted.event.convId}`);
+    expect(fourthThread.messages.map((m: Body) => m.text)).toEqual([
+      'Khách Bốn được khớp với Sư Tử Vàng qua Chat SACO',
+      'Em muốn mở tài khoản',
+      'Còn ai không ạ',
+    ]);
+    await ok(memberA, 'POST', '/saco/duty', { on: false });
+    guestSocket.socket.close();
+    fourthSocket.socket.close();
+  });
+});

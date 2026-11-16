@@ -124,9 +124,32 @@ export interface InviteEvent {
   id: number;
   userName: string;
   deadline: number;
+  /** Tin đầu tiên người chat đã gửi (cắt 120 ký tự); không có với lượt tìm kiểu cũ (`chat/match`). */
+  preview?: string;
 }
 
-export type InviteResult = 'accept' | 'decline' | 'timeout' | 'skip-off' | 'skip-busy' | 'cancel';
+/** `auto`: không SACO nào nhận lời, cuộc chat được chuyển theo thứ hạng. */
+export type InviteResult =
+  | 'accept'
+  | 'decline'
+  | 'timeout'
+  | 'skip-off'
+  | 'skip-busy'
+  | 'cancel'
+  | 'auto';
+
+export const INVITE_RESULTS = [
+  'accept',
+  'decline',
+  'timeout',
+  'skip-off',
+  'skip-busy',
+  'cancel',
+  'auto',
+] as const satisfies readonly InviteResult[];
+
+/** Trả lời của `POST chat/start`: tin đã vào cuộc chat đang khớp, hoặc đang chờ phân phối. */
+export type StartResult = { convId: string; message: ChatMessage } | { pending: true };
 
 // ---------- quản trị SACO ----------
 

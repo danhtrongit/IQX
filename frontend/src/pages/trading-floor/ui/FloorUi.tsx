@@ -3,7 +3,7 @@ import { useState } from "react"
 import { ui } from "../bridge.ts"
 import { PostsLayer } from "../posts/posts-layer.tsx"
 import { useStore } from "../use-store.ts"
-import { InviteCard, MatchOverlay } from "./ChatOverlays.tsx"
+import { InviteCard } from "./ChatOverlays.tsx"
 import { Hud } from "./Hud.tsx"
 import { JoinScreen } from "./JoinScreen.tsx"
 import { PanelHost } from "./PanelHost.tsx"
@@ -59,7 +59,6 @@ export function FloorUi({ suggestedName }: { suggestedName: string }) {
           </p>
         </div>
       )}
-      {ready && profile && <MatchOverlay />}
       {ready && profile && <InviteCard />}
       <Toasts />
     </>

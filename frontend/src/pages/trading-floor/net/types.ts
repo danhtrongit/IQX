@@ -349,10 +349,24 @@ export interface InviteEvent {
   id: number
   userName: string
   deadline: number
+  /** First message the visitor already sent (up to 120 characters); absent for an old-style search. */
+  preview?: string
 }
 
+/** `auto`: nobody accepted, the conversation went to a SACO by ranking. */
 export type InviteResult =
-  "accept" | "decline" | "timeout" | "skip-off" | "skip-busy" | "cancel"
+  | "accept"
+  | "decline"
+  | "timeout"
+  | "skip-off"
+  | "skip-busy"
+  | "cancel"
+  | "auto"
+
+/** Answer of `POST chat/start`: sent into the matched conversation, or queued while a SACO is found. */
+export type StartResult =
+  | { convId: string; message: ChatMessage }
+  | { pending: true }
 
 // ---------- SACO nhận định (posts) ----------
 
