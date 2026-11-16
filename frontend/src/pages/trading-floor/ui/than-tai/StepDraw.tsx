@@ -7,6 +7,7 @@ import { THAN_TAI } from "../../than-tai.ts"
 import { cx } from "../utils.ts"
 import { wait } from "./hooks.ts"
 import { QueCard } from "./QueCard.tsx"
+import { ShareButton } from "./ShareQue.tsx"
 import { TubeArt } from "./ShrineArt.tsx"
 import type { Act, Step } from "./types.ts"
 
@@ -14,7 +15,7 @@ interface Props {
   today: ThanTaiToday
   reduced: boolean
   act: Act
-  /** The card was drawn in this dialog: animate it and keep the luận behind its button. */
+  /** The card was drawn in this dialog: animate it. */
   justDrawn: boolean
   onDrawn: (today: ThanTaiToday) => void
   onGo: (step: Step) => void
@@ -63,9 +64,8 @@ export function StepDraw({
           la={today.la}
           day={today.day}
           animate={justDrawn && !reduced}
-          full={!justDrawn}
         />
-        <div className="tt-act">
+        <div className="tt-act tt-act-card">
           <button
             type="button"
             className="tt-btn-main"
@@ -73,6 +73,7 @@ export function StepDraw({
           >
             {next.label}
           </button>
+          <ShareButton la={today.la} day={today.day} />
         </div>
       </>
     )

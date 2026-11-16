@@ -9,6 +9,7 @@ import { JoinScreen } from "./JoinScreen.tsx"
 import { PanelHost } from "./PanelHost.tsx"
 import { QuickChat } from "./QuickChat.tsx"
 import { Toasts } from "./Toasts.tsx"
+import { useThanTaiAutoOpen } from "./than-tai/use-auto-open.ts"
 
 const noop = (): void => undefined
 
@@ -19,6 +20,7 @@ export function FloorUi({ suggestedName }: { suggestedName: string }) {
   const ready = useStore(ui.ready)
   const queue = useStore(ui.queue)
   const [editing, setEditing] = useState(false)
+  useThanTaiAutoOpen()
 
   return (
     <>

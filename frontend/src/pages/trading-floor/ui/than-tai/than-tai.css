@@ -574,6 +574,14 @@
   font-size: 16px;
   line-height: 1;
 }
+/* The coin rain is the panel's first child (z-index 0); everything else paints over it. */
+.tt .tt-panel > :not(.tt-fx):not(.tt-x) {
+  position: relative;
+  z-index: 1;
+}
+.tt .tt-x {
+  z-index: 2;
+}
 .tt .tt-ptitle {
   font-family: var(--tt-serif);
   font-weight: 800;
@@ -663,6 +671,28 @@
   color: #3a2300;
   background: linear-gradient(180deg, #fff0b3, #f2c14e 45%, #c8901a);
   box-shadow: 0 8px 20px rgba(242, 193, 78, 0.2);
+}
+.tt .tt-act-card {
+  flex-direction: column;
+  align-items: stretch;
+}
+.tt .tt-btn-share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+.tt .tt-act-card > button {
+  width: 100%;
+  max-width: 340px;
+  align-self: center;
+}
+.tt .tt-act-card .tt-btn-main {
+  min-height: 44px;
 }
 .tt .tt-btn-main:disabled {
   filter: grayscale(0.8);
@@ -969,25 +999,6 @@
   color: #9b7a3a;
   margin-bottom: 3px;
 }
-.tt .tt-van {
-  font-family: var(--tt-serif);
-  font-style: italic;
-  font-size: 16px;
-  color: #3d240a;
-  line-height: 1.5;
-}
-.tt .tt-ng2 {
-  font-size: 13px;
-  color: #6b5330;
-  margin-top: 2px;
-}
-.tt .tt-sec-mv {
-  border-left: 3px solid #c81e1e;
-  padding-left: 10px;
-}
-.tt .tt-sec-mv .tt-k {
-  color: #c81e1e;
-}
 .tt .tt-luan {
   margin: 0;
   font-size: 14.5px;
@@ -1076,19 +1087,6 @@
   letter-spacing: 2px;
   color: #9b7a3a;
   font-weight: 800;
-}
-.tt .tt-btn-luan {
-  margin-top: 10px;
-  border: 0;
-  border-radius: 999px;
-  padding: 11px 22px;
-  font-weight: 800;
-  color: #fff3c4;
-  background: linear-gradient(180deg, #c81e1e, #8b1010);
-  box-shadow: 0 6px 16px rgba(139, 16, 16, 0.35);
-}
-.tt .tt-lun-rise {
-  animation: tt-rise 0.5s ease;
 }
 
 /* VNINDEX prediction */
@@ -1489,11 +1487,12 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 60;
+  z-index: 0;
   overflow: hidden;
 }
 .tt .tt-coin {
   position: absolute;
+  pointer-events: none;
   top: -40px;
   width: 26px;
   height: 26px;
@@ -1617,7 +1616,6 @@
   justify-content: center;
   padding: 0;
 }
-.tt .tt-btn-luan,
 .tt .tt-clock,
 .tt .tt-btn-main {
   display: inline-flex;
@@ -1627,4 +1625,13 @@
 }
 .tt .tt-mau svg {
   flex: none;
+}
+
+/* long quẻ names and luận text wrap inside the card on narrow phones */
+.tt .tt-ten,
+.tt .tt-luan,
+.tt .tt-chot,
+.tt .tt-tuong,
+.tt .tt-ng {
+  overflow-wrap: anywhere;
 }

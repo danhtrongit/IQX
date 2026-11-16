@@ -19,7 +19,6 @@ import {
   useServerNow,
 } from "../than-tai/hooks.ts"
 import { RitualDialog } from "../than-tai/RitualDialog.tsx"
-import { CoinRain } from "../than-tai/ShrineArt.tsx"
 import type { Step } from "../than-tai/types.ts"
 import "../than-tai/than-tai.css"
 
@@ -40,7 +39,7 @@ export function ThanTaiPanel() {
   const [rain, setRain] = useState(0)
   const reduced = useReducedMotion()
   const now = useServerNow(offset)
-  const timers = useRef(new Set<ReturnType<typeof setTimeout>>())
+  const rainTimers = useRef(new Set<ReturnType<typeof setTimeout>>())
   const loadedDay = useRef<string | null>(null)
   useSerifFont()
 
@@ -77,39 +76,50 @@ export function ThanTaiPanel() {
   }, [now, today, dialog, load])
 
   useEffect(() => {
-    const pending = timers.current
+    const pending = rainTimers.current
     return () => {
       for (const t of pending) clearTimeout(t)
       pending.clear()
     }
   }, [])
 
-  const later = useCallback((fn: () => void, ms: number) => {
+  const rainLater = useCallback((fn: () => void, ms: number) => {
     const t = setTimeout(() => {
-      timers.current.delete(t)
+      rainTimers.current.delete(t)
       fn()
     }, ms)
-    timers.current.add(t)
+    rainTimers.current.add(t)
+  }, [])
+
+  /** Stops the coins now and cancels one that is still waiting to start. */
+  const stopRain = useCallback(() => {
+    for (const t of rainTimers.current) clearTimeout(t)
+    rainTimers.current.clear()
+    setRain(0)
   }, [])
 
   const startRain = useCallback(
     (delay = 0) => {
       if (reduced) return
-      later(() => {
+      rainLater(() => {
         setRain((n) => n + 1)
-        later(() => setRain(0), THAN_TAI.rainMs + 2000)
+        rainLater(() => setRain(0), THAN_TAI.rainMs + 2000)
       }, delay)
     },
-    [later, reduced]
+    [rainLater, reduced]
   )
 
-  const close = useCallback(() => setDialog(null), [])
+  const close = useCallback(() => {
+    stopRain()
+    setDialog(null)
+  }, [stopRain])
 
   const expired = useCallback(() => {
     toast(MSG_HET_GIO, "warn")
+    stopRain()
     setDialog(null)
     void load()
-  }, [load])
+  }, [load, stopRain])
 
   const drawn = useCallback(
     (next: ThanTaiToday) => {
@@ -170,9 +180,10 @@ export function ThanTaiPanel() {
           onDrawn={drawn}
           onFinished={finished}
           onClose={close}
+          onStep={stopRain}
+          rain={rain > 0 ? { key: rain, count: RAIN_COINS } : null}
         />
       )}
-      {rain > 0 && <CoinRain key={rain} count={RAIN_COINS} />}
     </div>
   )
 }
