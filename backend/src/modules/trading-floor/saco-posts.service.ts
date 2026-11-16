@@ -2,8 +2,11 @@
  * SACO nhận định (spec "SACO nhận định"): người dùng đọc bài, thả tim, bình luận; SACO viết nháp,
  * đăng và theo dõi bài của mình; quản trị viên và trưởng nhóm ẩn bài vi phạm.
  *
- * Sự kiện thời gian thực (`post:new`, `post:hidden`, `post:heart`, `post:comment`) chỉ phát sau khi
- * transaction đã commit, qua `FloorEvents`.
+ * Tác giả còn sửa bài đã đăng (`post:updated`), thu hồi bài (`withdrawn`, phát `post:hidden` như khi bị
+ * ẩn), đăng lại và xoá hẳn bài đã thu hồi.
+ *
+ * Sự kiện thời gian thực (`post:new`, `post:updated`, `post:hidden`, `post:heart`, `post:comment`) chỉ
+ * phát sau khi transaction đã commit, qua `FloorEvents`.
  */
 
 import {
@@ -83,6 +86,19 @@ const notDraft = (message = 'Bài đã đăng, không sửa được') =>
   new ConflictException({ code: 'POST_NOT_DRAFT', message });
 const draftStale = () =>
   new ConflictException({ code: 'DRAFT_STALE', message: 'Nháp đã được sửa ở nơi khác' });
+const editStale = () =>
+  new ConflictException({ code: 'DRAFT_STALE', message: 'Bài đã được sửa ở nơi khác' });
+const notPublished = (row: Pick<PostRow, 'status'>) =>
+  row.status === 'hidden'
+    ? new ConflictException({
+        code: 'POST_HIDDEN',
+        message: 'Bài đang bị ẩn bởi quản trị, bạn không thể sửa hay thu hồi',
+      })
+    : row.status === 'withdrawn'
+      ? new ConflictException({ code: 'POST_WITHDRAWN', message: 'Bài đã được thu hồi' })
+      : new ConflictException({ code: 'POST_NOT_PUBLISHED', message: 'Bài chưa được đăng' });
+const withdrawnByAuthor = () =>
+  new ConflictException({ code: 'POST_WITHDRAWN', message: 'Bài đã được tác giả thu hồi' });
 const invalid = (code: string, message: string) =>
   new UnprocessableEntityException({ code, message });
 
@@ -92,6 +108,7 @@ const toCard = (row: PostRow, hearted = row.hearted): PostCard => ({
   sacoName: row.sacoName,
   headline: row.headline,
   publishedAt: row.publishedAt ? ms(row.publishedAt) : 0,
+  editedAt: row.editedAt ? ms(row.editedAt) : null,
   hearts: row.heartCount,
   comments: row.commentCount,
   hearted,
@@ -103,6 +120,7 @@ const toMyPost = (row: PostRow): MyPost => ({
   status: row.status,
   savedAt: ms(row.savedAt),
   publishedAt: row.publishedAt ? ms(row.publishedAt) : null,
+  editedAt: row.editedAt ? ms(row.editedAt) : null,
   hearts: row.heartCount,
   comments: row.commentCount,
   newComments: row.newComments,
@@ -355,13 +373,15 @@ export class SacoPostsService {
     throw row.status === 'draft' ? draftStale() : notDraft();
   }
 
+  /** Xoá bản nháp, hoặc xoá hẳn bài đã thu hồi (kèm ảnh, tim, bình luận). Bài đang đăng thì không xoá. */
   async deleteDraft(user: AuthenticatedUser, id: string): Promise<{ ok: true }> {
     const saco = await this.requireSaco(user.id);
     await this.database.transaction(async (tx) => {
       const row = await this.repository.lockPost(tx, id);
       if (!row || row.sacoId !== saco.id) throw postNotFound();
-      if (row.status !== 'draft') throw notDraft('Chỉ xoá được bản nháp');
-      await this.repository.deleteDraft(tx, id, saco.id);
+      if (row.status === 'draft') await this.repository.deleteDraft(tx, id, saco.id);
+      else if (row.status === 'withdrawn') await this.repository.deleteWithdrawn(tx, id, saco.id);
+      else throw notDraft('Chỉ xoá được bản nháp hoặc bài đã thu hồi');
     });
     await this.images.removePostFiles(id);
     return { ok: true };
@@ -390,6 +410,65 @@ export class SacoPostsService {
     return toMyPostDetail(row);
   }
 
+  /**
+   * Tác giả sửa bài đã đăng tại chỗ: cùng kiểm tra như khi đăng, giữ trạng thái, giờ đăng, tim và bình
+   * luận. `baseRevision` cũ trả 409 DRAFT_STALE. Bài bị ẩn hay đã thu hồi thì không sửa được.
+   */
+  async editPost(user: AuthenticatedUser, id: string, body: DraftBody): Promise<MyPostDetail> {
+    const saco = await this.requireSaco(user.id);
+    await this.database.transaction(async (tx) => {
+      const row = await this.repository.lockPost(tx, id);
+      if (!row || row.sacoId !== saco.id) throw postNotFound();
+      if (row.status !== 'published') throw notPublished(row);
+      if (row.revision !== body.baseRevision) throw editStale();
+      const headline = cleanHeadline(body.headline);
+      if (!headline) throw invalid('HEADLINE_REQUIRED', 'Cần nhập câu tiêu điểm');
+      if (charLength(headline) > HEADLINE_MAX)
+        throw invalid('HEADLINE_TOO_LONG', `Câu tiêu điểm tối đa ${HEADLINE_MAX} ký tự`);
+      const bodyHtml = sanitizePostHtml(body.bodyHtml);
+      if (isBodyEmpty(bodyHtml)) throw invalid('BODY_EMPTY', 'Nội dung bài đang trống');
+      await this.repository.editPublished(tx, { id, headline, bodyHtml });
+      await this.repository.insertLog(tx, id, 'edit', user.id, 'saco');
+    });
+    const row = await this.ownPost(id, saco);
+    this.events.toAll({ type: 'post:updated', post: toCard(row, false) });
+    return toMyPostDetail(row);
+  }
+
+  /** Tác giả thu hồi bài đã đăng: biến khỏi khu như bài bị ẩn (phát `post:hidden`). Thu hồi lại thì bỏ qua. */
+  async withdrawPost(user: AuthenticatedUser, id: string): Promise<MyPostDetail> {
+    const saco = await this.requireSaco(user.id);
+    const changed = await this.database.transaction(async (tx) => {
+      const row = await this.repository.lockPost(tx, id);
+      if (!row || row.sacoId !== saco.id) throw postNotFound();
+      if (row.status === 'withdrawn') return false;
+      if (row.status !== 'published') throw notPublished(row);
+      await this.repository.setStatus(tx, id, 'published', 'withdrawn');
+      await this.repository.insertLog(tx, id, 'withdraw', user.id, 'saco');
+      return true;
+    });
+    if (changed) this.events.toAll({ type: 'post:hidden', id });
+    return toMyPostDetail(await this.ownPost(id, saco));
+  }
+
+  /** Tác giả đăng lại bài đã thu hồi với giờ đăng gốc; chỉ lên bảng nếu vẫn là bài hôm nay. */
+  async republishPost(user: AuthenticatedUser, id: string): Promise<MyPostDetail> {
+    const saco = await this.requireSaco(user.id);
+    const changed = await this.database.transaction(async (tx) => {
+      const row = await this.repository.lockPost(tx, id);
+      if (!row || row.sacoId !== saco.id) throw postNotFound();
+      if (row.status === 'published') return false;
+      if (row.status !== 'withdrawn') throw notPublished(row);
+      await this.repository.setStatus(tx, id, 'withdrawn', 'published');
+      await this.repository.insertLog(tx, id, 'republish', user.id, 'saco');
+      return true;
+    });
+    const row = await this.ownPost(id, saco);
+    if (changed && row.publishedAt && ms(row.publishedAt) >= vnDayStart(this.now()).getTime())
+      this.events.toAll({ type: 'post:new', post: toCard(row, false) });
+    return toMyPostDetail(row);
+  }
+
   async markCommentsSeen(user: AuthenticatedUser, id: string): Promise<{ ok: true }> {
     const saco = await this.requireSaco(user.id);
     if (!(await this.repository.markCommentsSeen(this.database, id, saco.id))) throw postNotFound();
@@ -403,7 +482,7 @@ export class SacoPostsService {
   ): Promise<{ id: string; url: string; width: number; height: number }> {
     const saco = await this.requireSaco(user.id);
     const row = await this.ownPost(id, saco);
-    if (row.status !== 'draft') throw notDraft();
+    if (row.status !== 'draft' && row.status !== 'published') throw notDraft();
     if ((await this.repository.countImages(this.database, id)) >= POST_IMAGES_PER_POST)
       throw new ConflictException({
         code: 'TOO_MANY_IMAGES',
@@ -421,7 +500,7 @@ export class SacoPostsService {
 
   async managePosts(
     user: AuthenticatedUser,
-    status: 'published' | 'hidden' | undefined,
+    status: 'published' | 'hidden' | 'withdrawn' | undefined,
   ): Promise<{ items: ManagePost[] }> {
     const scope = await this.staffScope(user);
     const rows = await this.repository.listManage(
@@ -463,6 +542,7 @@ export class SacoPostsService {
       const row = await this.repository.lockPost(tx, id);
       if (!row || row.status === 'draft' || !inScope(scope, row)) throw postNotFound();
       if (row.status === 'hidden') return false;
+      if (row.status === 'withdrawn') throw withdrawnByAuthor();
       await this.repository.setStatus(tx, id, 'published', 'hidden');
       await this.repository.insertLog(tx, id, 'hide', user.id, staffRole(user));
       await recordAudit(tx, audit, {
@@ -493,6 +573,7 @@ export class SacoPostsService {
       const row = await this.repository.lockPost(tx, id);
       if (!row || row.status === 'draft') throw postNotFound();
       if (row.status === 'published') return false;
+      if (row.status === 'withdrawn') throw withdrawnByAuthor();
       await this.repository.setStatus(tx, id, 'hidden', 'published');
       await this.repository.insertLog(tx, id, 'unhide', user.id, 'admin');
       await recordAudit(tx, audit, {

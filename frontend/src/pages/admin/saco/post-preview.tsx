@@ -7,16 +7,17 @@ import type { ReactNode } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { PostArticle, PostDisclaimer, PostTheme, SacoCard } from "@/pages/trading-floor/posts/post-view"
 
-export function PostPreviewBody({ sacoName, publishedAt, headline, bodyHtml, children }: {
+export function PostPreviewBody({ sacoName, publishedAt, editedAt, headline, bodyHtml, children }: {
   sacoName: string
   publishedAt: number | null
+  editedAt?: number | null
   headline: string
   bodyHtml: string
   /** Phần thêm dưới thẻ SACO (bình luận, nhật ký…), vẫn trong chủ đề của bài. */
   children?: ReactNode
 }) {
   return <PostTheme className="grid gap-[18px] rounded-lg bg-[var(--tfp-panel)] p-4 sm:p-5">
-    <PostArticle sacoName={sacoName} publishedAt={publishedAt} headline={headline} bodyHtml={bodyHtml} />
+    <PostArticle sacoName={sacoName} publishedAt={publishedAt} editedAt={editedAt} headline={headline} bodyHtml={bodyHtml} />
     <SacoCard name={sacoName} onDuty={false} />
     {children}
     <PostDisclaimer />

@@ -2,12 +2,14 @@
  * /admin/saco/posts/new và /admin/saco/posts/:id: trình soạn bài nhận định (spec "Trình soạn
  * bài trong quản trị"). Cột trái soạn, cột phải xem trước khung (điện thoại: xem trước ở dưới).
  * Tự lưu nháp sau khoảng 1 giây ngừng gõ với `baseRevision`; mất mạng thì giữ bản nháp trên máy
- * và lưu lại khi có mạng; 409 `DRAFT_STALE` thì dừng tự lưu và mời tải bản mới nhất. Bài đã đăng
+ * và lưu lại khi có mạng; 409 `DRAFT_STALE` thì dừng tự lưu và mời tải bản mới nhất.
+ * Bài đang đăng mở ở chế độ sửa: không tự lưu lên máy chủ, nội dung đã đăng chỉ đổi khi bấm
+ * "Lưu thay đổi"; rời đi khi còn thay đổi chưa lưu thì hỏi xác nhận. Bài bị ẩn hoặc đã thu hồi
  * không sửa được: mở ở đây sẽ chuyển sang trang xem.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Navigate, useNavigate, useParams } from "react-router"
-import { Eye, Save, Send } from "lucide-react"
+import { Navigate, useBlocker, useNavigate, useParams } from "react-router"
+import { Eye, Save, Send, X } from "lucide-react"
 import { EditorContent, ReactNodeViewRenderer, useEditor, type Editor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { TableKit } from "@tiptap/extension-table"
@@ -21,6 +23,7 @@ import { WorkspacePage } from "@/components/layout/workspace-page"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { ConfirmDialog } from "@/pages/admin/core/components/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/use-auth"
@@ -31,6 +34,7 @@ import { formatVnTime } from "@/pages/trading-floor/posts/format"
 import { PostCardView, PostTheme } from "@/pages/trading-floor/posts/post-view"
 
 import { isApiError, myPostsApi, type DraftInput } from "./api"
+import { TOUCH_BUTTON } from "./labels"
 import { EditorToolbar } from "./editor-toolbar"
 import { Figure } from "./figure-node"
 import { FigureView } from "./figure-view"
@@ -132,8 +136,8 @@ function PostEditorLoader({ postId }: { postId: string }) {
       <div role="status" aria-label="Đang tải bài" className="space-y-4"><Skeleton className="h-8 w-full" /><Skeleton className="h-80 w-full" /></div>
     </WorkspacePage>
   }
-  // Không sửa bài sau khi đăng: chuyển sang trang xem của bài.
-  if (post.data.status !== "draft") return <Navigate replace to={`/admin/saco/posts?view=${encodeURIComponent(postId)}`} />
+  // Chỉ nháp và bài đang đăng soạn được; bài ẩn hoặc đã thu hồi chuyển sang trang xem của bài.
+  if (post.data.status !== "draft" && post.data.status !== "published") return <Navigate replace to={`/admin/saco/posts?view=${encodeURIComponent(postId)}`} />
   return <PostEditor key={generation} post={post.data} onReload={reload} />
 }
 
@@ -150,21 +154,24 @@ function PostEditor({ post, onReload }: { post: MyPostDetail; onReload: () => Pr
   const invalidate = useInvalidateMyPosts()
 
   // Bản nháp chưa lưu trên máy này (cùng revision với máy chủ) được khôi phục.
+  const editing = post.status === "published"
   const initial = useMemo(() => {
+    // Sửa bài đã đăng không dùng bản nháp trên máy: mọi thay đổi chỉ có hiệu lực khi bấm Lưu thay đổi.
+    if (editing) return { headline: post.headline, bodyHtml: post.bodyHtml, restored: false }
     const backup = readBackup(post.id)
     if (backup && backup.baseRevision === post.revision && (backup.headline !== post.headline || backup.bodyHtml !== post.bodyHtml)) {
       return { headline: backup.headline, bodyHtml: backup.bodyHtml, restored: true }
     }
     if (backup) clearBackup(post.id)
     return { headline: post.headline, bodyHtml: post.bodyHtml, restored: false }
-  }, [post])
+  }, [post, editing])
 
   const [headline, setHeadline] = useState(initial.headline)
   const [status, setStatus] = useState<SaveStatus>({ kind: "saved", at: post.savedAt })
   const [stale, setStale] = useState(false)
   const [uploading, setUploading] = useState(0)
   const [publishing, setPublishing] = useState(false)
-  const [preview, setPreview] = useState<{ html: string; at: number } | null>(null)
+  const [preview, setPreview] = useState<{ html: string; at: number; edited: boolean } | null>(null)
 
   const headlineRef = useRef(initial.headline)
   const revision = useRef(post.revision)
@@ -193,7 +200,7 @@ function PostEditor({ post, onReload }: { post: MyPostDetail; onReload: () => Pr
   /** Một lần lưu; các lần lưu chạy nối tiếp nhau để luôn gửi đúng `baseRevision` mới nhất. */
   const saveNow = useCallback((): Promise<boolean> => {
     const run = async (): Promise<boolean> => {
-      if (staleRef.current || done.current) return false
+      if (editing || staleRef.current || done.current) return false
       if (!dirty.current) return true
       const draft = currentDraft()
       if (!draft) return false
@@ -226,16 +233,16 @@ function PostEditor({ post, onReload }: { post: MyPostDetail; onReload: () => Pr
     const next = queue.current.then(run, run)
     queue.current = next
     return next
-  }, [currentDraft, markStale, post.id])
+  }, [currentDraft, editing, markStale, post.id])
 
   const scheduleSave = useCallback(() => {
-    if (staleRef.current || done.current) return
+    if (editing || staleRef.current || done.current) return
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => {
       timer.current = null
       void saveNow()
     }, AUTOSAVE_MS)
-  }, [saveNow])
+  }, [editing, saveNow])
 
   const markChanged = useCallback(() => {
     version.current += 1
@@ -327,9 +334,14 @@ function PostEditor({ post, onReload }: { post: MyPostDetail; onReload: () => Pr
   // Có mạng lại: lưu phần còn dang dở.
   useEffect(() => {
     const onOnline = () => {
-      if (dirty.current) void saveNow()
+      if (dirty.current && !editing) void saveNow()
     }
-    const onBeforeUnload = () => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (editing) {
+        // Sửa bài đã đăng: báo trước khi đóng tab nếu còn thay đổi chưa lưu.
+        if (dirty.current && !done.current) event.preventDefault()
+        return
+      }
       const draft = dirty.current && !done.current ? currentDraft() : null
       if (draft) writeBackup(post.id, draft)
     }
@@ -339,17 +351,17 @@ function PostEditor({ post, onReload }: { post: MyPostDetail; onReload: () => Pr
       window.removeEventListener("online", onOnline)
       window.removeEventListener("beforeunload", onBeforeUnload)
     }
-  }, [currentDraft, post.id, saveNow])
+  }, [currentDraft, editing, post.id, saveNow])
 
   // Rời trình soạn khi còn chữ chưa lưu: giữ trên máy và gửi một lần lưu cuối.
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current)
-    if (!dirty.current || done.current || staleRef.current) return
+    if (editing || !dirty.current || done.current || staleRef.current) return
     const draft = currentDraft()
     if (!draft) return
     writeBackup(post.id, draft)
     void myPostsApi.save(post.id, draft, true).then(() => clearBackup(post.id), () => undefined)
-  }, [currentDraft, post.id])
+  }, [currentDraft, editing, post.id])
 
   const onHeadline = (value: string) => {
     setHeadline(value)
@@ -393,22 +405,60 @@ function PostEditor({ post, onReload }: { post: MyPostDetail; onReload: () => Pr
     }
   }
 
+  /** Lưu thay đổi của bài đã đăng: kiểm tra như khi đăng, máy chủ cập nhật tại chỗ và báo người đọc. */
+  const saveEdit = async () => {
+    const current = editorRef.current
+    if (!current || publishing) return
+    const problem = validatePost({ headline, bodyHtml: current.getHTML() })
+    if (problem) {
+      toast.error(problem)
+      return
+    }
+    setPublishing(true)
+    try {
+      if (staleRef.current) return
+      await myPostsApi.edit(post.id, { headline: headline.trim(), bodyHtml: current.getHTML(), baseRevision: revision.current })
+      done.current = true
+      dirty.current = false
+      toast.success("Đã lưu thay đổi. Người đọc thấy bản mới ngay.")
+      void invalidate()
+      navigate(`/admin/saco/posts?view=${encodeURIComponent(post.id)}`)
+    } catch (error) {
+      if (isApiError(error, "DRAFT_STALE")) markStale()
+      else toast.error(errorMessage(error))
+    } finally {
+      setPublishing(false)
+    }
+  }
+
+  // Rời trang sửa bài khi còn thay đổi chưa lưu: hỏi xác nhận (bỏ thay đổi nếu rời đi).
+  const blocker = useBlocker(({ currentLocation, nextLocation }) =>
+    editing && dirty.current && !done.current && currentLocation.pathname !== nextLocation.pathname)
+
   const counter = headlineCounter(headline)
   const sacoName = me.data?.saco?.name ?? user?.full_name ?? "SACO"
   const busy = stale || publishing
 
   return <WorkspacePage
-    title="Soạn bài nhận định"
-    actions={<>
-      <Button type="button" variant="outline" disabled={!editor} onClick={() => setPreview({ html: editor.getHTML(), at: Date.now() })}><Eye data-icon="inline-start" />Xem trước bài dài</Button>
+    title={editing ? "Sửa bài nhận định" : "Soạn bài nhận định"}
+    actions={editing ? <>
+      <Button type="button" variant="outline" className={TOUCH_BUTTON} disabled={!editor} onClick={() => setPreview({ html: editor.getHTML(), at: post.publishedAt ?? 0, edited: true })}><Eye data-icon="inline-start" />Xem trước bài dài</Button>
+      <Button type="button" variant="outline" className={TOUCH_BUTTON} disabled={publishing} onClick={() => navigate(`/admin/saco/posts?view=${encodeURIComponent(post.id)}`)}><X data-icon="inline-start" />Huỷ</Button>
+      <Button type="button" className={TOUCH_BUTTON} disabled={busy || uploading > 0} onClick={() => void saveEdit()}><Save data-icon="inline-start" />{publishing ? "Đang lưu…" : "Lưu thay đổi"}</Button>
+    </> : <>
+      <Button type="button" variant="outline" disabled={!editor} onClick={() => setPreview({ html: editor.getHTML(), at: Date.now(), edited: false })}><Eye data-icon="inline-start" />Xem trước bài dài</Button>
       <Button type="button" variant="outline" disabled={busy || status.kind === "saving"} onClick={() => void saveDraft()}><Save data-icon="inline-start" />Lưu nháp</Button>
       <Button type="button" disabled={busy || uploading > 0} onClick={() => void publish()}><Send data-icon="inline-start" />{publishing ? "Đang đăng…" : "Đăng bài"}</Button>
     </>}
   >
+    {editing && !stale && <Alert>
+      <AlertTitle>Bạn đang sửa bài đã đăng</AlertTitle>
+      <AlertDescription>Người đọc vẫn thấy bản cũ cho tới khi bạn bấm “Lưu thay đổi”. Giờ đăng, tim và bình luận được giữ nguyên.</AlertDescription>
+    </Alert>}
     {stale && <Alert variant="destructive">
-      <AlertTitle>Nháp đã được sửa ở nơi khác</AlertTitle>
+      <AlertTitle>{editing ? "Bài đã được sửa ở nơi khác" : "Nháp đã được sửa ở nơi khác"}</AlertTitle>
       <AlertDescription>
-        <p>Bản này đã cũ nên tự lưu đã dừng. Tải bản mới nhất để soạn tiếp.</p>
+        <p>{editing ? "Bản này đã cũ nên chưa lưu được. Tải bản mới nhất để sửa tiếp; thay đổi chưa lưu ở đây sẽ mất." : "Bản này đã cũ nên tự lưu đã dừng. Tải bản mới nhất để soạn tiếp."}</p>
         <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => void onReload()}>Tải bản mới nhất</Button>
       </AlertDescription>
     </Alert>}
@@ -434,7 +484,9 @@ function PostEditor({ post, onReload }: { post: MyPostDetail; onReload: () => Pr
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <span className="text-sm font-medium" id="saco-body-label">Nội dung bài</span>
-            <SaveLine status={status} uploading={uploading} onRetry={() => void saveNow()} />
+            {editing
+              ? <p className="text-xs text-muted-foreground" role="status" aria-live="polite">{uploading > 0 ? `Đang tải ${uploading} ảnh…` : "Chưa lưu cho tới khi bấm Lưu thay đổi"}</p>
+              : <SaveLine status={status} uploading={uploading} onRetry={() => void saveNow()} />}
           </div>
           <Card className="saco-editor gap-0 py-0" aria-labelledby="saco-body-label">
             <EditorToolbar editor={editor} disabled={stale} onPickImages={(files) => void uploadFiles(files)} />
@@ -453,8 +505,21 @@ function PostEditor({ post, onReload }: { post: MyPostDetail; onReload: () => Pr
       </aside>
     </div>
 
+    <ConfirmDialog
+      request={blocker.state === "blocked" ? {
+        title: "Bỏ thay đổi chưa lưu?",
+        description: "Bài đang đăng vẫn giữ nội dung cũ. Các thay đổi bạn vừa sửa sẽ mất.",
+        confirmLabel: "Rời đi, bỏ thay đổi",
+        tone: "destructive",
+        run: () => undefined,
+      } : null}
+      pending={false}
+      onOpenChange={(open) => { if (!open && blocker.state === "blocked") blocker.reset() }}
+      onConfirm={() => { if (blocker.state === "blocked") blocker.proceed() }}
+    />
+
     <PostPreviewDialog open={preview !== null} onOpenChange={(open) => !open && setPreview(null)} title="Xem trước bài dài">
-      {preview !== null && <PostPreviewBody sacoName={sacoName} publishedAt={preview.at} headline={headline.trim()} bodyHtml={preview.html} />}
+      {preview !== null && <PostPreviewBody sacoName={sacoName} publishedAt={preview.at} editedAt={preview.edited ? preview.at : null} headline={headline.trim()} bodyHtml={preview.html} />}
     </PostPreviewDialog>
   </WorkspacePage>
 }

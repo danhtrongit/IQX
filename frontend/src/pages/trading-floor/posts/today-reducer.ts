@@ -2,12 +2,14 @@ import type { PostCard, ServerMessageOf } from "../net/types"
 
 export type PostEvent =
   | ServerMessageOf<"post:new">
+  | ServerMessageOf<"post:updated">
   | ServerMessageOf<"post:hidden">
   | ServerMessageOf<"post:heart">
   | ServerMessageOf<"post:comment">
 
 export const POST_EVENT_TYPES = [
   "post:new",
+  "post:updated",
   "post:hidden",
   "post:heart",
   "post:comment",
@@ -32,6 +34,13 @@ export function applyPostEvent(list: PostCard[], event: PostEvent): PostCard[] {
         ...list.filter((post) => post.id !== event.post.id),
       ].sort(byNewest)
     }
+    case "post:updated":
+      // Chỉ cập nhật bài đang có trên bảng (bài của ngày khác hay đã gỡ thì bỏ qua) và giữ tim của
+      // chính mình vì sự kiện phát chung có `hearted` luôn false.
+      return patch(list, event.post.id, (post) => ({
+        ...event.post,
+        hearted: post.hearted,
+      }))
     case "post:hidden":
       return list.some((post) => post.id === event.id)
         ? list.filter((post) => post.id !== event.id)
