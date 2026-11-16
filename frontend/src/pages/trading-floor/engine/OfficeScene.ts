@@ -59,6 +59,7 @@ import {
 } from "./layout.ts"
 import { NavGrid, type Point } from "./nav.ts"
 import { drawPlaceholder } from "./placeholders.ts"
+import { liftTags, type TagBox } from "./tags.ts"
 import { evictTintedArt, getTintedCharacterArt } from "./tintArt.ts"
 
 const DEPTH = {
@@ -1366,27 +1367,16 @@ export class OfficeScene extends Phaser.Scene {
     this.declutterAt = time + TAG_DECLUTTER_MS
     const figures = [...this.peers.values()].map((p) => p.avatar)
     if (this.player) figures.push(this.player)
-    figures.sort((a, b) => b.y - a.y)
-    const placed: { x: number; y: number; w: number; h: number }[] = []
-    for (const figure of figures) {
-      const box = figure.tagBox()
-      if (!box) continue
-      let lift = 0
-      for (let step = 0; step < TAG_MAX_STEPS; step++) {
-        const top = box.y - lift
-        const hit = placed.find(
-          (p) =>
-            p.x < box.x + box.w &&
-            box.x < p.x + p.w &&
-            p.y < top + box.h &&
-            top < p.y + p.h
-        )
-        if (!hit) break
-        lift = box.y + box.h - hit.y + TAG_GAP
-      }
-      figure.liftTag(lift)
-      placed.push({ ...box, y: box.y - lift })
-    }
+    const tagged = figures
+      .map((figure) => ({ figure, box: figure.tagBox() }))
+      .filter((t): t is { figure: Avatar; box: TagBox } => t.box !== null)
+      .sort((a, b) => b.figure.y - a.figure.y)
+    const lifts = liftTags(
+      tagged.map((t) => t.box),
+      TAG_GAP,
+      TAG_MAX_STEPS
+    )
+    tagged.forEach((t, i) => t.figure.liftTag(lifts[i]))
   }
 
   /**

@@ -95,7 +95,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
           {guest && (
             <button
               type="button"
-              className="chip"
+              className="chip chip-login"
               onClick={() => openAuth("login")}
               aria-label="Đăng nhập tài khoản IQX"
             >

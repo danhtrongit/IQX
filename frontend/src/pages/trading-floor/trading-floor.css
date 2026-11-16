@@ -555,6 +555,34 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Phones: the top row holds the index, the head count and the name without one chip covering another. */
+@media (max-width: 640px) {
+  .tf-root .hud-top .brand {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .tf-root .hud-top .index-mini {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tf-root .hud-right {
+    flex: 0 0 auto;
+  }
+  /* The app header right above already has the login button. */
+  .tf-root .hud-top .chip-login {
+    display: none;
+  }
+}
+@media (max-width: 380px) {
+  .tf-root .hud-top .brand b {
+    display: none;
+  }
+  .tf-root .hud-top .me {
+    max-width: 100px;
+  }
+}
 .tf-root .hint {
   position: absolute;
   left: 50%;

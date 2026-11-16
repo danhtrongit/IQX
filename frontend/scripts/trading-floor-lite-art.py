@@ -24,7 +24,7 @@ def main() -> None:
                 raise SystemExit(f"{source}: odd size {width}x{height}")
             half = image.convert("RGBA").resize((width // 2, height // 2), Image.Resampling.BOX)
         target = source.with_name(source.name.replace("@2x.webp", "@1x.webp"))
-        half.save(target, "WEBP", quality=90, method=6)
+        half.save(target, "WEBP", quality=90, method=4)
         made += 1
     print(f"{made} files written under {ROOT}")
 
