@@ -1654,7 +1654,18 @@
     gap: 8px;
   }
 }
-@media (max-width: 620px) and (max-height: 600px) {
+/* Also a phone held sideways, which is wide but very short. */
+@media (max-width: 950px) and (max-height: 600px) {
+  .tt .tt-crumb {
+    display: none;
+  }
+  .tt .tt-topbar {
+    justify-content: center;
+  }
+  .tt .tt-cta {
+    margin-top: 12px;
+    gap: 8px;
+  }
   .tt .tt-plaque,
   .tt .tt-lantern {
     display: none;
@@ -1668,6 +1679,15 @@
   }
   .tt .tt-table {
     height: 60px;
+  }
+}
+/* A phone held sideways has no room for the statue: the clock, the status and the button stay. */
+@media (max-width: 950px) and (max-height: 480px) {
+  .tt .tt-altar {
+    display: none;
+  }
+  .tt .tt-shrine {
+    padding-top: 0;
   }
 }
 @media (max-width: 380px) {
