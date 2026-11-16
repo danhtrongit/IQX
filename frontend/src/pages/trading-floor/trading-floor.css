@@ -1682,6 +1682,19 @@
   color: #9ccaff;
   font-size: 14px;
 }
+/* The "SACO" pill, same teal as the name badge on the floor. */
+.tf-root .chat-av.saco-tag {
+  width: auto;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid #c9fff4;
+  background: linear-gradient(180deg, #7ff2dc, #14c8ac);
+  color: #022a26;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
 .tf-root .saco-bar {
   display: flex;
   flex-wrap: wrap;

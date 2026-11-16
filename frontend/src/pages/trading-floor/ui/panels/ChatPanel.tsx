@@ -342,7 +342,8 @@ function preview(c: ConvSummary): string {
 }
 
 function avatarText(c: ConvSummary): string {
-  return c.peerIcon || c.peerName.slice(0, 1).toUpperCase()
+  // A SACO shows the same "SACO" pill as on the floor (no emoji); a user shows an initial.
+  return c.side === "user" ? "SACO" : c.peerName.slice(0, 1).toUpperCase()
 }
 
 function ConvItem({
@@ -361,7 +362,7 @@ function ConvItem({
       onClick={onClick}
     >
       <span
-        className={cx("chat-av xs", c.side === "saco" && "user")}
+        className={cx("chat-av xs", c.side === "saco" ? "user" : "saco-tag")}
         aria-hidden="true"
       >
         {avatarText(c)}
@@ -515,7 +516,10 @@ function Thread({ c, summary, thread, fresh, onBack }: ThreadProps) {
           <ChevronLeft size={22} aria-hidden="true" />
         </button>
         <span
-          className={cx("chat-av xs", c.side === "saco" && "user")}
+          className={cx(
+            "chat-av xs",
+            c.side === "saco" ? "user" : c.id !== NEW_THREAD && "saco-tag"
+          )}
           aria-hidden="true"
         >
           {c.id === NEW_THREAD ? (

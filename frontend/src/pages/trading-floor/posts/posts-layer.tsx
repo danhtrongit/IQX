@@ -42,9 +42,10 @@ function PostsBoard({
 }) {
   const top = posts.slice(0, BOARD_ROWS)
   const compact = useCompactScreen()
-  // Trên điện thoại bảng mặc định thu gọn thành một dải tiêu đề để không che sàn.
-  const [expanded, setExpanded] = useState(false)
-  if (compact && !expanded) {
+  // Trên điện thoại bảng mặc định thu gọn thành một dải tiêu đề để không che sàn; màn rộng mặc định mở.
+  // Chạm dải tiêu đề của bảng đang mở để thu lại như lúc đầu.
+  const [expanded, setExpanded] = useState(!compact)
+  if (!expanded) {
     return (
       <button
         type="button"
@@ -65,17 +66,15 @@ function PostsBoard({
   }
   return (
     <div className="tf-posts-board-wrap">
-      {compact && (
-        <button
-          type="button"
-          className="tf-posts-board-collapse"
-          onClick={() => setExpanded(false)}
-          aria-expanded={true}
-          aria-label="Thu gọn SACO nhận định"
-        >
-          <ChevronUp aria-hidden="true" />
-        </button>
-      )}
+      <button
+        type="button"
+        className="tf-posts-board-collapse"
+        onClick={() => setExpanded(false)}
+        aria-expanded={true}
+        aria-label="Thu gọn SACO nhận định"
+      >
+        <ChevronUp aria-hidden="true" />
+      </button>
       <button
         type="button"
         className="tf-posts-board tf-post-theme"
