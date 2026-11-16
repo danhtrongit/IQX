@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CHAT_RULES,
+  IMAGE_RULES,
   SACO_ICONS,
+  canRecall,
+  imageWindow,
   cleanField,
   cleanSacoName,
   cleanText,
@@ -154,5 +157,34 @@ describe('pickFallbackSaco', () => {
 
   it('returns null when there is no SACO at all', () => {
     expect(pickFallbackSaco([], 'visitor')).toBeNull();
+  });
+});
+
+describe('canRecall', () => {
+  it('lets each side recall only its own messages, never a system line', () => {
+    expect(canRecall('u', 'user')).toBe(true);
+    expect(canRecall('s', 'user')).toBe(false);
+    expect(canRecall('s', 'saco')).toBe(true);
+    expect(canRecall('u', 'saco')).toBe(false);
+    expect(canRecall('x', 'user')).toBe(false);
+    expect(canRecall('x', 'saco')).toBe(false);
+  });
+});
+
+describe('imageWindow', () => {
+  it('allows up to ten images in ten minutes', () => {
+    const now = 1_000_000;
+    const nine = Array.from({ length: 9 }, (_, i) => now - i * 1000);
+    expect(imageWindow(nine, now).allowed).toBe(true);
+    const ten = [...nine, now - 30_000];
+    expect(imageWindow(ten, now)).toMatchObject({ allowed: false });
+  });
+
+  it('forgets images older than the window and does not touch its input', () => {
+    const now = 5_000_000;
+    const times = [now - IMAGE_RULES.windowMs, now - IMAGE_RULES.windowMs + 1, now];
+    const result = imageWindow(times, now);
+    expect(result.kept).toEqual([now - IMAGE_RULES.windowMs + 1, now]);
+    expect(times).toHaveLength(3);
   });
 });

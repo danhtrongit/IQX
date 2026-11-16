@@ -1,5 +1,5 @@
 /** REST client of the trading floor: `/api/v2/trading-floor/*`, through the shared authenticated `api`. */
-import { api as http } from "@/lib/api"
+import { api as http, apiUpload } from "@/lib/api"
 
 import { guestHeaders } from "./guest.ts"
 import type {
@@ -55,6 +55,26 @@ export const floorApi = {
     send<ChatMessage>("POST", `/chat/convs/${id(convId)}/send`, { text }),
   read: (convId: string) =>
     send<{ ok: true }>("POST", `/chat/convs/${id(convId)}/read`),
+  /** One image (JPG, PNG, WebP up to 5 MB) into a conversation, with upload progress in percent. */
+  sendImage: async (
+    convId: string,
+    file: File,
+    onProgress: (percent: number) => void
+  ): Promise<ChatMessage> => {
+    const response = await apiUpload(
+      `${BASE}/chat/convs/${id(convId)}/images`,
+      file,
+      onProgress,
+      undefined,
+      guestHeaders()
+    )
+    return (await response.json()) as ChatMessage
+  },
+  recall: (convId: string, messageId: number) =>
+    send<{ ok: true }>(
+      "POST",
+      `/chat/convs/${id(convId)}/messages/${messageId}/recall`
+    ),
   answerInvite: (inviteId: number, accept: boolean) =>
     send<{ ok: true }>("POST", `/chat/invites/${inviteId}`, { accept }),
   duty: (on: boolean) => send<SacoSelf>("POST", "/saco/duty", { on }),

@@ -1,8 +1,10 @@
 /**
  * Quy tắc thuần của Nhắn tin với SACO (port từ `shared/chat.ts` và `server/chat.ts` của IQX-KhuGiaoDich):
  * làm sạch tin, giới hạn tần suất, biểu tượng SACO, đổi chỗ trong hàng khớp và chọn SACO khi không ai
- * nhận lời.
+ * nhận lời, quyền thu hồi tin và giới hạn ảnh.
  */
+
+import type { ChatSender } from './floor-types.js';
 
 export const CHAT_RULES = {
   /** Thời gian một SACO có để nhận lời mời từ Chat SACO. */
@@ -54,6 +56,32 @@ export function pickFallbackSaco(
 ): string | null {
   const eligible = ranking.filter((saco) => saco.active && saco.userId !== ownerId);
   return (eligible.find((saco) => saco.online) ?? eligible[0])?.id ?? null;
+}
+
+/** Ảnh trong chat: mỗi người gửi tối đa 10 ảnh trong một cuộc chat mỗi 10 phút (ngoài giới hạn gửi tin). */
+export const IMAGE_RULES = {
+  perWindow: 10,
+  windowMs: 10 * 60_000,
+} as const;
+
+/**
+ * Cửa sổ trượt ảnh của một người trong một cuộc chat: các mốc còn trong cửa sổ, và có được gửi thêm
+ * không. Không đổi mảng đầu vào.
+ */
+export function imageWindow(
+  times: readonly number[],
+  now: number,
+): { allowed: boolean; kept: number[] } {
+  const kept = times.filter((at) => at <= now && now - at < IMAGE_RULES.windowMs);
+  return { allowed: kept.length < IMAGE_RULES.perWindow, kept };
+}
+
+/**
+ * Thu hồi: chỉ người gửi thu hồi tin của chính mình (phía người chat thu hồi tin `u`, phía SACO tin `s`),
+ * tin hệ thống không bao giờ. Không giới hạn thời gian.
+ */
+export function canRecall(from: ChatSender, side: 'user' | 'saco'): boolean {
+  return from === (side === 'user' ? 'u' : 's');
 }
 
 /** Bộ thời gian có thể sửa để test rút ngắn cửa sổ lời mời (KGD `timing`). */

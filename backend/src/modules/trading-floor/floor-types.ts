@@ -73,11 +73,22 @@ export interface FloorPeer extends FloorProfile, FloorPeerState {
 
 export type ChatSender = 'u' | 's' | 'x';
 
+/** Ảnh trong một tin: phát ở `GET /api/v2/trading-floor/chat/images/:id`, kích thước sau khi nén. */
+export interface ChatImage {
+  id: string;
+  w: number;
+  h: number;
+}
+
 export interface ChatMessage {
   id: number;
   from: ChatSender;
+  /** Trống với tin ảnh, và với tin đã thu hồi (trừ lịch sử của trưởng nhóm, nơi chữ gốc được giữ). */
   text: string;
   at: number;
+  image?: ChatImage;
+  /** Người gửi đã thu hồi tin: ảnh không còn. */
+  recalled?: true;
 }
 
 export interface SacoSelf {

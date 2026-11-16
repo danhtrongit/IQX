@@ -57,7 +57,18 @@ function makeService(owner: string) {
     matchedConv: [] as string[],
     ensureConv: [] as string[],
     findByUser: [] as string[],
-    inserted: [] as Array<{ sender: string; text: string }>,
+    inserted: [] as Array<{ sender: string; text: string; image?: unknown }>,
+    recalled: [] as number[],
+    removed: [] as string[],
+    saved: [] as string[],
+  };
+  let nowMs = 1_000_000;
+  /** Message 7 from the guest (with an image), 8 from the SACO, 9 a system line, 10 already recalled. */
+  const stored: Record<number, { from: string; imageId: string | null; recalled: boolean }> = {
+    7: { from: 'u', imageId: 'img-7', recalled: false },
+    8: { from: 's', imageId: null, recalled: false },
+    9: { from: 'x', imageId: null, recalled: false },
+    10: { from: 'u', imageId: null, recalled: true },
   };
   const chat = {
     convView: async (_db: unknown, _id: string, side: 'user' | 'saco') => view(owner, guest, side),
@@ -74,12 +85,32 @@ function makeService(owner: string) {
       calls.ensureConv.push(ownerId);
       return CONV_ID;
     },
-    insertMessage: async (_db: unknown, _id: string, sender: string, text: string, at: Date) => {
-      calls.inserted.push({ sender, text });
-      return { id: 1, from: sender, text, at: at.getTime() };
+    insertMessage: async (
+      _db: unknown,
+      _id: string,
+      sender: string,
+      text: string,
+      at: Date,
+      image?: { id: string; w: number; h: number },
+    ) => {
+      calls.inserted.push(image ? { sender, text, image } : { sender, text });
+      return { id: 1, from: sender, text, at: at.getTime(), ...(image ? { image } : {}) };
     },
     markRead: async () => undefined,
     messages: async () => [],
+    findMessage: async (_db: unknown, _conv: string, id: number) => {
+      const row = stored[id];
+      return row ? { id, ...row } : null;
+    },
+    recallMessage: async (_db: unknown, _conv: string, id: number) => {
+      const row = stored[id];
+      if (!row || row.recalled) return null;
+      row.recalled = true;
+      calls.recalled.push(id);
+      return { imageId: row.imageId };
+    },
+    chatImage: async (_db: unknown, imageId: string) =>
+      imageId === 'img-7' ? { convId: CONV_ID, recalled: stored[7]!.recalled } : null,
   } as unknown as FloorChatRepository;
   const sacos = {
     findByUser: async (_db: unknown, userId: string) => {
@@ -100,9 +131,19 @@ function makeService(owner: string) {
     { displayName: async () => 'Minh Anh' } as never,
     presence,
     events,
-    { now: () => new Date(1_000_000) },
+    { now: () => new Date(nowMs) },
+    {
+      compress: async () => ({ data: Buffer.from('webp'), width: 800, height: 600 }),
+      save: async (_conv: string, id: string) => void calls.saved.push(id),
+      remove: async (_conv: string, id: string) => void calls.removed.push(id),
+      open: async (_conv: string, id: string) => ({ path: `/media/${id}.webp`, size: 4 }),
+      read: () => null,
+    } as never,
   );
-  return { service, calls, emitted, presence };
+  const tick = (ms = 1000) => {
+    nowMs += ms;
+  };
+  return { service, calls, emitted, presence, tick };
 }
 
 describe('FloorChatService with guests', () => {
@@ -173,5 +214,64 @@ describe('FloorChatService with guests', () => {
     expect((await service.conversation(SACO_USER, CONV_ID)).online).toBe(false);
     presence.connected(GUEST);
     expect((await service.conversation(SACO_USER, CONV_ID)).online).toBe(true);
+  });
+
+  it('sends an image message for a guest and limits images per conversation', async () => {
+    const { service, calls, emitted, tick } = makeService(GUEST);
+    const message = await service.sendImage(GUEST, CONV_ID, (async function* () {})());
+    expect(message).toMatchObject({ from: 'u', text: '', image: { w: 800, h: 600 } });
+    expect(calls.saved).toHaveLength(1);
+    expect(calls.inserted[0]).toMatchObject({ sender: 'u', text: '', image: { id: calls.saved[0] } });
+    expect(emitted.some((e) => e.message.type === 'chat:msg')).toBe(true);
+    for (let i = 0; i < 9; i += 1) {
+      tick();
+      await service.sendImage(GUEST, CONV_ID, (async function* () {})());
+    }
+    tick();
+    await expect(service.sendImage(GUEST, CONV_ID, (async function* () {})())).rejects.toMatchObject({
+      response: { code: 'IMAGE_RATE_LIMIT' },
+    });
+    // Ten minutes later the window has moved on.
+    tick(10 * 60_000);
+    await service.sendImage(GUEST, CONV_ID, (async function* () {})());
+    expect(calls.saved).toHaveLength(11);
+  });
+
+  it('recalls only the sender’s own messages, deletes the image and tells both sides once', async () => {
+    const { service, calls, emitted } = makeService(GUEST);
+    await expect(service.recall(GUEST, CONV_ID, 8)).rejects.toMatchObject({
+      response: { code: 'RECALL_FORBIDDEN' },
+    });
+    await expect(service.recall(SACO_USER, CONV_ID, 9)).rejects.toMatchObject({
+      response: { code: 'RECALL_FORBIDDEN' },
+    });
+    await expect(service.recall(GUEST, CONV_ID, 99)).rejects.toMatchObject({
+      response: { code: 'MESSAGE_NOT_FOUND' },
+    });
+    await service.recall(GUEST, CONV_ID, 7);
+    await service.recall(GUEST, CONV_ID, 7);
+    await service.recall(GUEST, CONV_ID, 10);
+    expect(calls.recalled).toEqual([7]);
+    expect(calls.removed).toEqual(['img-7']);
+    const recalls = emitted.filter((e) => e.message.type === 'chat:recall');
+    expect(recalls.map((e) => e.target)).toEqual([
+      { kind: 'user', userId: GUEST },
+      { kind: 'saco', sacoId: SACO_ID },
+    ]);
+    expect(recalls[0]!.message).toEqual({ type: 'chat:recall', convId: CONV_ID, messageId: 7 });
+    // The recalled image is no longer served.
+    await expect(service.openImage('img-7')).rejects.toMatchObject({
+      response: { code: 'IMAGE_NOT_FOUND' },
+    });
+    await service.recall(SACO_USER, CONV_ID, 8);
+    expect(calls.recalled).toEqual([7, 8]);
+  });
+
+  it('serves an image that was not recalled and refuses unknown ones', async () => {
+    const { service } = makeService(GUEST);
+    expect(await service.openImage('img-7')).toEqual({ path: '/media/img-7.webp', size: 4 });
+    await expect(service.openImage('nope')).rejects.toMatchObject({
+      response: { code: 'IMAGE_NOT_FOUND' },
+    });
   });
 });

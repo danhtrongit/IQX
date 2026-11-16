@@ -89,7 +89,8 @@ function makeService(sacos: FloorSacoRow[], options: { matched?: string } = {}) 
   const repo = {
     listActive: async () => sacos.filter((s) => s.active),
     findById: async (_db: unknown, id: string) => sacos.find((s) => s.id === id) ?? null,
-    findByUser: async (_db: unknown, userId: string) => sacos.find((s) => s.userId === userId) ?? null,
+    findByUser: async (_db: unknown, userId: string) =>
+      sacos.find((s) => s.userId === userId) ?? null,
   } as unknown as FloorSacoRepository;
   const events = new FloorEvents();
   const emitted: Array<{ target: FloorTarget; message: FloorMessage }> = [];
@@ -103,6 +104,7 @@ function makeService(sacos: FloorSacoRow[], options: { matched?: string } = {}) 
     presence,
     events,
     { now: () => new Date(nowMs) },
+    {} as never,
   );
   const tick = () => {
     nowMs += 1000;
@@ -114,7 +116,10 @@ function makeService(sacos: FloorSacoRow[], options: { matched?: string } = {}) 
   const invitesTo = (sacoId: string) =>
     emitted
       .filter(
-        (e) => e.target.kind === 'saco' && e.target.sacoId === sacoId && e.message.type === 'chat:invite',
+        (e) =>
+          e.target.kind === 'saco' &&
+          e.target.sacoId === sacoId &&
+          e.message.type === 'chat:invite',
       )
       .map((e) => (e.message as unknown as { invite: Record<string, unknown> }).invite);
   return { service, presence, log, emitted, tick, matchEvents, invitesTo };

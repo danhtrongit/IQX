@@ -288,11 +288,22 @@ export type HanhConfigPatch = Partial<
 /** Who wrote a message: the user, the SACO, or the system (match notice, SACO removed). */
 export type Sender = "u" | "s" | "x"
 
+/** An image in a message, at its size after the server re-encoded it. */
+export interface ChatImage {
+  id: string
+  w: number
+  h: number
+}
+
 export interface ChatMessage {
   id: number
   from: Sender
+  /** Empty for an image message and for a recalled one (the staff history keeps the original text). */
   text: string
   at: number
+  image?: ChatImage
+  /** The sender recalled it: no text, no image (see `chat-preview.ts`). */
+  recalled?: true
 }
 
 /** The SACO behind this account. `active` false: rights removed, old chats read-only. */
@@ -447,6 +458,7 @@ export type ServerMessage =
   | { type: "peer:update"; peer: Peer }
   | { type: "chat:msg"; convId: string; message: ChatMessage }
   | { type: "chat:read"; convId: string; side: "user" | "saco"; at: number }
+  | { type: "chat:recall"; convId: string; messageId: number }
   | { type: "chat:typing"; convId: string; side: "user" | "saco" }
   | { type: "chat:inbox" }
   | { type: "chat:match"; event: MatchEvent }

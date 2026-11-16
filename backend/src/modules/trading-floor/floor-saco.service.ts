@@ -349,7 +349,10 @@ export class FloorSacoService {
     }
     return {
       ...conv,
-      messages: await this.chat.messages(this.database, convId, CHAT_RULES.staffHistory),
+      // Lịch sử của trưởng nhóm giữ chữ gốc của tin đã thu hồi (kèm dấu thu hồi) để đối chiếu.
+      messages: await this.chat.messages(this.database, convId, CHAT_RULES.staffHistory, {
+        staff: true,
+      }),
     };
   }
 

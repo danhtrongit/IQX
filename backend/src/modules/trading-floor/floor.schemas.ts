@@ -22,6 +22,7 @@ export type FloorProfileBody = z.infer<typeof floorProfileBodySchema>;
 
 export const floorIdParamSchema = z.uuid();
 export const floorInviteIdParamSchema = z.coerce.number().int().min(1).max(2_147_483_647);
+export const floorMessageIdParamSchema = z.coerce.number().int().min(1).max(Number.MAX_SAFE_INTEGER);
 
 /** Độ dài thật (1.000 ký tự sau khi làm sạch) do service kiểm tra để trả đúng mã lỗi. */
 export const floorChatSendBodySchema = z.strictObject({ text: z.string().max(4000) });
@@ -76,6 +77,8 @@ const chatMessage = z.object({
   from: z.enum(['u', 's', 'x']),
   text: z.string(),
   at: z.number(),
+  image: z.object({ id: z.string(), w: z.number().int(), h: z.number().int() }).optional(),
+  recalled: z.literal(true).optional(),
 });
 
 const convSummary = z.object({
