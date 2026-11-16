@@ -365,19 +365,41 @@
   margin-left: 6px;
   flex: none;
 }
+/* Phủ cả dải tiêu đề của bảng đang mở: chạm vào đâu trên dải cũng thu bảng lại. */
 .tf-root .tf-posts-board-collapse {
   position: absolute;
   z-index: 16;
   top: calc(56px + env(safe-area-inset-top, 0px));
   right: 12px;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 27px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: min(300px, calc(100% - 24px));
+  height: 44px;
+  padding: 0 12px;
   border: 0;
-  border-radius: 0 12px 0 8px;
+  border-radius: 12px 12px 0 0;
   background: transparent;
   color: var(--tfp-gold-ink);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.tf-root .tf-posts-board-collapse svg {
+  width: 18px;
+  height: 18px;
+}
+.tf-root .tf-posts-board-wrap .tf-posts-board-title {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.tf-root .tf-posts-board.tf-posts-board--collapsed {
+  width: auto;
+  padding: 0;
+}
+.tf-root .tf-posts-board--collapsed .tf-posts-board-title {
+  display: flex;
+  align-items: center;
 }
 @media (max-width: 640px) {
   .tf-root .tf-posts-board {
@@ -385,14 +407,6 @@
     right: 12px;
     width: min(300px, calc(100% - 24px));
     max-width: none;
-  }
-  .tf-root .tf-posts-board--collapsed {
-    width: auto;
-    padding: 0;
-  }
-  .tf-root .tf-posts-board--collapsed .tf-posts-board-title {
-    display: flex;
-    align-items: center;
   }
   .tf-root .tf-posts-panel {
     left: 0;
