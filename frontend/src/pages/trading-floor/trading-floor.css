@@ -1990,7 +1990,7 @@
   gap: 2px;
 }
 .tf-root .bubble-row .bubble.me {
-  max-width: calc(100% - 46px);
+  max-width: none;
 }
 .tf-root .bubble time {
   display: block;
@@ -2069,8 +2069,10 @@
   align-self: flex-end;
   flex-direction: row-reverse;
 }
+/* The row caps the width and the bubble shrinks inside it: a max-width of its own made short lines wrap. */
 .tf-root .bubble-row .bubble {
-  max-width: calc(100% - 46px);
+  max-width: none;
+  min-width: 0;
   align-self: auto;
 }
 .tf-root .bubble-more {
@@ -2526,4 +2528,10 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+/* Slim dark scrollbars in every scroller of the floor UI, instead of the browser's light default. */
+.tf-root * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
 }
