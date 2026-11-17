@@ -30,6 +30,7 @@ import {
 import { PRICE_COLORS, indexTone } from "../net/market/tone.ts"
 import { publicChatAllowedFor } from "../net/types.ts"
 import { useStore } from "../use-store.ts"
+import { FxBar } from "./FxBar.tsx"
 import { isTouchDevice, SACO_POSTS_PATH, cx } from "./utils.ts"
 
 const SHORTCUTS: { kind: InteractKind; icon: LucideIcon; label: string }[] = [
@@ -141,6 +142,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
           </button>
         ))}
       </nav>
+      <FxBar />
 
       <div className="emote-wrap">
         {saco && (

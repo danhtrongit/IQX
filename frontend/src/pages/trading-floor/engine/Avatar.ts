@@ -84,6 +84,7 @@ export class Avatar {
   private bubble: Phaser.GameObjects.Text | null = null
   private bubbleTimer: Phaser.Time.TimerEvent | null = null
   private bob = 0
+  private hopY = 0
   /** How far the name tag is raised to clear the tag of a figure in front, and where it is heading. */
   private tagLift = 0
   private tagLiftTarget = 0
@@ -193,6 +194,11 @@ export class Avatar {
     if (Math.abs(speed - this.speed) < 1) return
     this.speed = speed
     this.applyPace()
+  }
+
+  hop(dy: number): void {
+    this.hopY = dy
+    this.place()
   }
 
   /** Glide characters (no walk art yet) bob while moving; the walk takes over once its sheet has loaded. */
@@ -315,7 +321,7 @@ export class Avatar {
     const lift = this.bob
       ? Math.abs(Math.sin(this.bob * Math.PI * 3.2)) * 2.4
       : 0
-    this.sprite.setPosition(this.x, this.y - lift).setDepth(this.y)
+    this.sprite.setPosition(this.x, this.y - lift + this.hopY).setDepth(this.y)
     this.shadow.setPosition(this.x, this.y - 1).setDepth(this.y - 0.5)
     if (this.tag && this.badges.length) {
       const gap = BADGE_GAP

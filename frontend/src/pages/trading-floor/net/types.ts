@@ -400,8 +400,7 @@ export type InviteResult =
 
 /** Answer of `POST chat/start`: sent into the matched conversation, or queued while a SACO is found. */
 export type StartResult =
-  | { convId: string; message: ChatMessage }
-  | { pending: true }
+  { convId: string; message: ChatMessage } | { pending: true }
 
 // ---------- SACO nhận định (posts) ----------
 
@@ -468,13 +467,17 @@ export type ClientMessage =
   | { type: "emote"; text: string }
   | { type: "chat:typing"; convId: string }
   | { type: "ping" }
+  | { type: "fx"; kind: "xaxui" }
+  | { type: "fx"; kind: "gay"; text: string }
+  | { type: "rain:give"; amount: number; coins?: { x: number; y: number }[] }
+  | { type: "rain:grab"; rainId: string; coin: number }
 
 /** Messages the server sends. */
 export type ServerMessage =
   | { type: "ready"; userId: string; guest?: boolean }
   | { type: "error"; code: string; message?: string }
   | { type: "pong" }
-  | { type: "welcome"; self: Peer; peers: Peer[] }
+  | { type: "welcome"; self: Peer; peers: Peer[]; rains?: Rain[] }
   /** The hall is full: waiting in line, `position` 1 is next. */
   | { type: "queue"; position: number; total: number; capacity: number }
   | { type: "peer:join"; peer: Peer }
@@ -496,6 +499,47 @@ export type ServerMessage =
   | { type: "post:hidden"; id: string }
   | { type: "post:heart"; id: string; hearts: number }
   | { type: "post:comment"; postId: string; comments: number }
+  | {
+      type: "peer:fx"
+      id: string
+      kind: "xaxui" | "gay"
+      name?: string
+      text?: string
+    }
+  | { type: "rain:start"; rain: Rain }
+  | { type: "rain:given"; rainId: string; amount: number; balance: number }
+  | {
+      type: "rain:taken"
+      rainId: string
+      coin: number
+      by: string
+      name: string
+    }
+  | {
+      type: "rain:caught"
+      rainId: string
+      coin: number
+      value: number
+      balance: number
+    }
+  | { type: "rain:end"; rainId: string }
+  | { type: "rain:refund"; rainId: string; amount: number; balance: number }
+
+export const RAIN_COIN_VALUE = 10
+export const RAIN_MIN = 50
+export const RAIN_MAX = 1000
+export const FX_XAXUI_COOLDOWN_MS = 8000
+export const FX_GAY_COOLDOWN_MS = 20000
+export const FX_GAY_TEXT_MAX = 80
+
+export interface Rain {
+  id: string
+  by: string | null
+  giverName: string | null
+  value: number
+  endsAt: number
+  coins: { i: number; x: number; y: number }[]
+}
 
 export type ServerMessageType = ServerMessage["type"]
 export type ServerMessageOf<T extends ServerMessageType> = Extract<

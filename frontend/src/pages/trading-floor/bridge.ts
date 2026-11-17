@@ -133,6 +133,7 @@ export const ui = {
   chatLog: new Store<ChatLine[]>([]),
   /** Place in line while the hall is full (1 = next), null when on the floor. */
   queue: new Store<{ position: number; capacity: number } | null>(null),
+  walletTick: new Store<number>(0),
 }
 
 let chatLineId = 0
@@ -209,6 +210,10 @@ export const commands = new Emitter<{
   celebrate: { luck: number; name: string; self: boolean }
   /** UI → game: the player walks to an interactable and opens it. */
   goTo: InteractKind
+  /** UI → game: new floor effects (Xả xui, Gáy). */
+  fx: { kind: "xaxui" } | { kind: "gay"; text: string }
+  /** UI → game: rain of coins. */
+  rainGive: number
 }>()
 
 const toastTimers = new Set<ReturnType<typeof setTimeout>>()
