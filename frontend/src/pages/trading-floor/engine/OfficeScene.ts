@@ -3,11 +3,20 @@ import {
   appDialogOpen,
   commands,
   logChat,
+  needLogin,
   openInteract,
   typing,
   ui,
   world,
 } from "../bridge.ts"
+import {
+  ensureFxTextures,
+  playXaXui,
+  playGay,
+  dropCoin,
+  playRainBurst,
+  type FloorCoin,
+} from "./floor-fx.ts"
 import { formatIndex, formatPercent } from "../net/market/format.ts"
 import {
   heatColour,
@@ -28,6 +37,13 @@ import {
 } from "../net/presence.ts"
 import { floorSocket } from "../net/socket.ts"
 import {
+  startFx,
+  sendFx,
+  sendRainGive,
+  floorFx,
+  sendRainGrab,
+} from "../net/fx.ts"
+import {
   type Facing,
   type Peer,
   type PostCard,
@@ -35,6 +51,9 @@ import {
   type ThanTaiLeaderboard,
   nameBadges,
   normalizeAvatarId,
+  RAIN_COIN_VALUE,
+  RAIN_MIN,
+  RAIN_MAX,
 } from "../net/types.ts"
 import {
   ASSET_ROOT,
@@ -200,6 +219,12 @@ export class OfficeScene extends Phaser.Scene {
   private readonly nearDeity = new Set<string>()
   private greetQueue: string[] = []
   private deityFreeAt = 0
+  private readonly rainsMap = new Map<
+    string,
+    { mine: boolean; coins: Map<number, FloorCoin> }
+  >()
+  private lastGrabCheck = 0
+  private readonly recentGrab = new Map<string, number>()
 
   /** Phones and tablets: half-size art (the manifest passed in), fewer recoloured outfits. */
   private readonly lite: boolean
@@ -237,6 +262,7 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   create(): void {
+    ensureFxTextures(this)
     this.makeTextures()
     this.makeAnims()
     this.buildRoom()
@@ -249,6 +275,8 @@ export class OfficeScene extends Phaser.Scene {
     this.setupInput()
     this.setupCamera()
     this.bindData()
+    this.setupFx()
+    this.disposers.push(startFx())
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.dispose())
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.dispose())
     ui.ready.set(true)
@@ -257,6 +285,8 @@ export class OfficeScene extends Phaser.Scene {
   /** Detaches everything this scene hung on the bridge stores, the socket and the window. Safe to call twice. */
   dispose(): void {
     if (this.disposed) return
+    this.rainsMap.forEach((r) => r.coins.forEach((c) => c.remove()))
+    this.rainsMap.clear()
     this.disposed = true
     for (const off of this.disposers.splice(0)) off()
   }
@@ -487,6 +517,111 @@ export class OfficeScene extends Phaser.Scene {
       c.stroke()
       tex.refresh()
     }
+  }
+
+  private setupFx() {
+    this.disposers.push(
+      commands.on("fx", (arg) => {
+        if (arg.kind === "xaxui") {
+          if (this.player)
+            playXaXui(this, this.player.x, this.player.y, {
+              local: true,
+              hop: (d) => this.player?.hop(d),
+            })
+          sendFx("xaxui")
+        } else if (arg.kind === "gay") {
+          if (this.player)
+            playGay(
+              this,
+              this.player.x,
+              this.player.y,
+              this.player.name,
+              arg.text
+            )
+          sendFx("gay", arg.text)
+        }
+      }),
+      commands.on("rainGive", (amount) => {
+        if (amount < RAIN_MIN || amount > RAIN_MAX || amount % 10 !== 0) return
+        const coins = Math.round(amount / RAIN_COIN_VALUE)
+        const spots: { x: number; y: number }[] = []
+        if (this.player) {
+          const { x, y } = this.player
+          for (let i = 0; i < coins; i++) {
+            for (let attempt = 0; attempt < 50; attempt++) {
+              const angle = Math.random() * Math.PI * 2
+              const dist = 60 + Math.random() * 240
+              const sx = clamp(x + Math.cos(angle) * dist, 40, 2008)
+              const sy = clamp(y + Math.sin(angle) * dist, 260, 1368)
+              if (this.nav.free({ x: sx, y: sy })) {
+                spots.push({ x: sx, y: sy })
+                break
+              }
+            }
+          }
+        }
+        sendRainGive(amount, spots.length === coins ? spots : undefined)
+      }),
+      floorFx.on("fx", (msg) => {
+        if (isSelf(msg.id)) return
+        const peer = this.peers.get(msg.id)
+        if (peer) {
+          if (msg.kind === "xaxui")
+            playXaXui(this, peer.avatar.x, peer.avatar.y, {
+              local: false,
+              hop: (d) => peer.avatar.hop(d),
+            })
+          else if (msg.kind === "gay")
+            playGay(
+              this,
+              peer.avatar.x,
+              peer.avatar.y,
+              msg.name ?? peer.avatar.name,
+              msg.text ?? ""
+            )
+        }
+      }),
+      floorFx.on("rainStart", (rain) => {
+        const figure = rain.by
+          ? isSelf(rain.by)
+            ? this.player
+            : this.peers.get(rain.by)?.avatar
+          : null
+        if (figure) playRainBurst(this, figure.x, figure.y)
+        const coins = new Map<number, FloorCoin>()
+        rain.coins.forEach((c, i) => {
+          const coin = dropCoin(this, c.x, c.y, {
+            delayMs: i * 35,
+            mine: rain.by !== null && isSelf(rain.by),
+          })
+          coins.set(c.i, coin)
+        })
+        this.rainsMap.set(rain.id, {
+          mine: rain.by !== null && isSelf(rain.by),
+          coins,
+        })
+      }),
+      floorFx.on("rainTaken", (msg) => {
+        const rain = this.rainsMap.get(msg.rainId)
+        const coin = rain?.coins.get(msg.coin)
+        if (coin) {
+          coin.pick(isSelf(msg.by), 10)
+          rain!.coins.delete(msg.coin)
+        }
+      }),
+      floorFx.on("rainEnd", (msg) => {
+        const rain = this.rainsMap.get(msg.rainId)
+        if (rain) {
+          rain.coins.forEach((c) => c.remove())
+          this.rainsMap.delete(msg.rainId)
+        }
+      }),
+      floorFx.on("rainReset", () => {
+        this.recentGrab.clear()
+        this.rainsMap.forEach((r) => r.coins.forEach((c) => c.remove()))
+        this.rainsMap.clear()
+      })
+    )
   }
 
   /**
@@ -1354,6 +1489,21 @@ export class OfficeScene extends Phaser.Scene {
     }
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (!this.player || ui.panel.get() || appDialogOpen()) return
+      for (const [, rain] of this.rainsMap) {
+        if (rain.mine) continue
+        for (const [, coin] of rain.coins) {
+          if (
+            Math.hypot(pointer.worldX - coin.x, pointer.worldY - coin.y) < 30
+          ) {
+            if (ui.guest.get()) {
+              needLogin("Đăng nhập để nhặt lộc")
+              return
+            }
+            this.walkTo({ x: coin.x, y: coin.y })
+            return
+          }
+        }
+      }
       // A SACO's figure (or name tag) opens the chat with that SACO instead of walking there.
       const sacoId = this.sacoAt(pointer.worldX, pointer.worldY)
       if (sacoId) return void openDirectChat(sacoId)
@@ -1569,7 +1719,29 @@ export class OfficeScene extends Phaser.Scene {
 
   update(time: number, delta: number): void {
     const dt = Math.min(delta, 50) / 1000
-    if (this.player) this.movePlayer(dt, delta, time)
+    if (this.player) {
+      this.movePlayer(dt, delta, time)
+      if (time - this.lastGrabCheck > 100) {
+        this.lastGrabCheck = time
+        if (!ui.guest.get()) {
+          for (const [rainId, rain] of this.rainsMap) {
+            if (rain.mine) continue
+            for (const [coinIndex, coin] of rain.coins) {
+              const key = `${rainId}:${coinIndex}`
+              if (
+                Math.hypot(this.player.x - coin.x, this.player.y - coin.y) < 40
+              ) {
+                const last = this.recentGrab.get(key)
+                if (last === undefined || time - last > 1500) {
+                  sendRainGrab(rainId, coinIndex)
+                  this.recentGrab.set(key, time)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     for (const peer of this.peers.values()) this.movePeer(peer, dt, delta)
     this.greetVisitors(time)
     this.updateHint()

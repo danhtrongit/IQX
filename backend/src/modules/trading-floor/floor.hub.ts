@@ -10,7 +10,11 @@
  * id tài khoản: cùng một người mở hai tab là hai nhân vật. Hồ sơ lấy từ `tf_profiles`, không tin trình
  * duyệt.
  *
- * Client → server: `auth`, `hello`, `state`, `emote`, `chat:typing`, `ping`. Server → client: xem hợp đồng WS.
+ * Hành động trên sàn (`docs/trading-floor-fx/SPEC.md`): Xả xui (mọi người), Gáy và Tán lộc (chỉ tài
+ * khoản). Mưa lộc và ví xu do `FloorFx` giữ; hub chỉ kiểm tra quyền, giới hạn tần suất và phát khung.
+ *
+ * Client → server: `auth`, `hello`, `state`, `emote`, `chat:typing`, `fx`, `rain:give`, `rain:grab`,
+ * `ping`. Server → client: xem hợp đồng WS.
  */
 
 import { randomUUID } from 'node:crypto';
@@ -24,6 +28,8 @@ import { FloorBots } from './floor-bots.js';
 import { FLOOR_CAPACITY } from './floor-bots.logic.js';
 import { FloorChatService } from './floor-chat.service.js';
 import { FloorEvents, type FloorMessage, type FloorTarget } from './floor-events.js';
+import { cleanGayText, FX_GAY_COOLDOWN_MS, FX_XAXUI_COOLDOWN_MS } from './floor-fx.logic.js';
+import { FloorFx } from './floor-fx.service.js';
 import { FloorPresence } from './floor-presence.js';
 import {
   cleanEmote,
@@ -97,10 +103,20 @@ type Conn = {
   stateRefilledAt: number;
   lastEmote: number;
   lastTyping: number;
+  /** Lần Xả xui / Gáy gần nhất (ms), để giới hạn tần suất. */
+  lastXaxui: number;
+  lastGay: number;
   authTimer: ReturnType<typeof setTimeout> | null;
   queue: Promise<void>;
   closed: boolean;
 };
+
+const RAIN_ERRORS = {
+  BAD_AMOUNT: 'Số xu tán lộc phải là bội của 10, từ 50 đến 1000',
+  RAIN_BUSY: 'Mưa lộc của bạn vẫn đang rơi',
+  RAIN_FULL: 'Sàn đang có đủ 3 cơn mưa lộc, chờ một chút',
+  XU_INSUFFICIENT: 'Không đủ xu để tán lộc',
+} as const;
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -130,6 +146,7 @@ export class FloorHub {
     @Inject(FLOOR_SACO_REPOSITORY) private readonly sacos: FloorSacoRepository,
     @Optional() @Inject(FLOOR_HUB_OPTIONS) options?: FloorHubOptions,
     @Optional() private readonly bots?: FloorBots,
+    @Optional() private readonly fx?: FloorFx,
   ) {
     this.now = options?.now ?? Date.now;
     this.authTimeoutMs = options?.authTimeoutMs ?? 10_000;
@@ -141,6 +158,12 @@ export class FloorHub {
     bots?.attach({
       humans: () => [...this.floor].map((conn) => conn.peer!),
       broadcast: (payload, droppable) => this.toFloor(payload, undefined, droppable),
+    });
+    fx?.attach({
+      broadcast: (payload) => this.toFloor(payload),
+      toUser: (userId, payload) => {
+        for (const conn of this.byUser.get(userId) ?? []) this.send(conn, payload);
+      },
     });
   }
 
@@ -163,6 +186,8 @@ export class FloorHub {
       stateRefilledAt: this.now(),
       lastEmote: 0,
       lastTyping: 0,
+      lastXaxui: 0,
+      lastGay: 0,
       authTimer: null,
       queue: Promise.resolve(),
       closed: false,
@@ -262,9 +287,20 @@ export class FloorHub {
         case 'chat:typing':
           await this.onTyping(conn, message);
           return;
-        default:
-          this.error(conn, 'BAD_MESSAGE', 'Loại thông điệp không được hỗ trợ');
+        case 'fx':
+          if (!this.fx) break;
+          this.onFx(conn, message);
+          return;
+        case 'rain:give':
+          if (!this.fx) break;
+          await this.onRainGive(conn, this.fx, message);
+          return;
+        case 'rain:grab':
+          if (!this.fx) break;
+          await this.onRainGrab(conn, this.fx, message);
+          return;
       }
+      this.error(conn, 'BAD_MESSAGE', 'Loại thông điệp không được hỗ trợ');
     } catch {
       this.error(conn, 'INTERNAL', 'Có lỗi xảy ra, thử lại sau');
     }
@@ -389,7 +425,12 @@ export class FloorHub {
     const others = [...[...this.floor].map((other) => other.peer!), ...(this.bots?.peers() ?? [])];
     conn.peer = peer;
     this.floor.add(conn);
-    this.send(conn, { type: 'welcome', self: peer, peers: others });
+    this.send(conn, {
+      type: 'welcome',
+      self: peer,
+      peers: others,
+      rains: this.fx?.publicRains() ?? [],
+    });
     this.toFloor({ type: 'peer:join', peer }, conn);
     this.bots?.humanJoined(peer);
     return true;
@@ -488,6 +529,111 @@ export class FloorHub {
     await this.chat.typing(conn.userId!, convId);
   }
 
+  // ================================================================== Xả xui, Gáy, Tán lộc
+
+  /** Xả xui (mọi người) và Gáy (chỉ tài khoản); người gửi tự chạy hiệu ứng nên không nhận lại. */
+  private onFx(conn: Conn, message: Record<string, unknown>): void {
+    const peer = conn.peer;
+    if (!peer) {
+      this.error(conn, 'NOT_ON_FLOOR', 'Hãy vào khu trước');
+      return;
+    }
+    const now = this.now();
+    if (message.kind === 'xaxui') {
+      if (now - conn.lastXaxui < FX_XAXUI_COOLDOWN_MS) {
+        this.error(conn, 'FX_COOLDOWN', 'Chờ một chút rồi xả xui tiếp');
+        return;
+      }
+      conn.lastXaxui = now;
+      this.toFloor({ type: 'peer:fx', id: peer.id, kind: 'xaxui' }, conn);
+      return;
+    }
+    if (message.kind === 'gay') {
+      if (conn.guest) {
+        this.error(conn, 'LOGIN_REQUIRED', 'Đăng nhập để gáy');
+        return;
+      }
+      if (now - conn.lastGay < FX_GAY_COOLDOWN_MS) {
+        this.error(conn, 'FX_COOLDOWN', 'Chờ một chút rồi gáy tiếp');
+        return;
+      }
+      const text = cleanGayText(message.text);
+      if (!text) {
+        this.error(conn, 'BAD_TEXT', 'Câu gáy cần từ 1 đến 80 ký tự');
+        return;
+      }
+      conn.lastGay = now;
+      this.toFloor({ type: 'peer:fx', id: peer.id, kind: 'gay', name: peer.name, text }, conn);
+      return;
+    }
+    this.error(conn, 'BAD_MESSAGE', 'Hành động không được hỗ trợ');
+  }
+
+  private async onRainGive(
+    conn: Conn,
+    fx: FloorFx,
+    message: Record<string, unknown>,
+  ): Promise<void> {
+    const peer = conn.peer;
+    if (!peer) {
+      this.error(conn, 'NOT_ON_FLOOR', 'Hãy vào khu trước');
+      return;
+    }
+    if (conn.guest) {
+      this.error(conn, 'LOGIN_REQUIRED', 'Đăng nhập để tán lộc');
+      return;
+    }
+    const userId = conn.userId!;
+    const result = await fx.startRain({
+      userId,
+      peerId: peer.id,
+      name: peer.name,
+      amount: message.amount,
+      pos: { x: peer.x, y: peer.y },
+      spots: message.coins,
+    });
+    if (!result.ok) {
+      this.error(conn, result.code, RAIN_ERRORS[result.code]);
+      return;
+    }
+    this.toFloor({ type: 'rain:start', rain: result.rain });
+    const given = {
+      type: 'rain:given',
+      rainId: result.rain.id,
+      amount: message.amount,
+      balance: result.balance,
+    };
+    for (const socket of this.byUser.get(userId) ?? []) this.send(socket, given);
+  }
+
+  /** Nhặt xu: thất bại (đã có người nhặt, quá xa, của mình, đã tạnh) thì im lặng. */
+  private async onRainGrab(
+    conn: Conn,
+    fx: FloorFx,
+    message: Record<string, unknown>,
+  ): Promise<void> {
+    const peer = conn.peer;
+    if (!peer) return;
+    if (conn.guest) {
+      this.error(conn, 'LOGIN_REQUIRED', 'Đăng nhập để nhặt xu');
+      return;
+    }
+    const { rainId, coin } = message;
+    if (typeof rainId !== 'string' || typeof coin !== 'number') return;
+    const userId = conn.userId!;
+    const caught = await fx.grab({ userId, rainId, coin, pos: { x: peer.x, y: peer.y } });
+    if (!caught) return;
+    this.toFloor({ type: 'rain:taken', rainId, coin, by: peer.id, name: peer.name });
+    const frame = {
+      type: 'rain:caught',
+      rainId,
+      coin,
+      value: caught.value,
+      balance: caught.balance,
+    };
+    for (const socket of this.byUser.get(userId) ?? []) this.send(socket, frame);
+  }
+
   // ================================================================== sự kiện từ dịch vụ
 
   private relay(target: FloorTarget, message: FloorMessage): void {
@@ -555,6 +701,7 @@ export class FloorHub {
       this.queue.splice(queued, 1);
       for (const other of this.queue) this.sendQueue(other);
     }
+    if (conn.peer) this.fx?.peerLeft(conn.peer.id);
     if (this.floor.delete(conn) && conn.peer) {
       this.toFloor({ type: 'peer:leave', id: conn.peer.id });
       if (this.queue.length) void this.admitQueued().catch(() => undefined);

@@ -28,7 +28,10 @@ export type CoinLedgerKind =
   | 'flashback_refund'
   | 'signup_bonus'
   | 'card_purchase'
-  | 'dojo_reward';
+  | 'dojo_reward'
+  | 'floor_rain_give'
+  | 'floor_rain_catch'
+  | 'floor_rain_refund';
 
 export interface WalletState {
   readonly balance: number;

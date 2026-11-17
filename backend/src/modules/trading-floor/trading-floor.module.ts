@@ -22,6 +22,8 @@ import { FloorBots } from './floor-bots.js';
 import { FloorChatService } from './floor-chat.service.js';
 import { FLOOR_CLOCK, systemFloorClock } from './floor-clock.js';
 import { FloorEventsModule } from './floor-events.js';
+import { FLOOR_FX_REPOSITORY, PgFloorFxRepository } from './floor-fx.repository.js';
+import { FloorFx } from './floor-fx.service.js';
 import { FloorGuestController } from './floor-guest.controller.js';
 import { FloorManageController } from './floor-manage.controller.js';
 import { FLOOR_MARKET, PgFloorMarket } from './floor-market.js';
@@ -62,6 +64,8 @@ import { ThanTaiService } from './than-tai.service.js';
     { provide: THAN_TAI_REPOSITORY, useExisting: PgThanTaiRepository },
     PgFloorMarket,
     { provide: FLOOR_MARKET, useExisting: PgFloorMarket },
+    PgFloorFxRepository,
+    { provide: FLOOR_FX_REPOSITORY, useExisting: PgFloorFxRepository },
     { provide: FLOOR_CLOCK, useValue: systemFloorClock },
     FloorActors,
     FloorPresence,
@@ -71,6 +75,7 @@ import { ThanTaiService } from './than-tai.service.js';
     FloorChatService,
     FloorSacoService,
     FloorBots,
+    FloorFx,
     FloorHub,
     FloorWsGateway,
   ],
