@@ -211,7 +211,10 @@ export const commands = new Emitter<{
   /** UI → game: the player walks to an interactable and opens it. */
   goTo: InteractKind
   /** UI → game: new floor effects (Xả xui, Gáy). */
-  fx: { kind: "xaxui" } | { kind: "gay"; text: string }
+  fx:
+    | { kind: "xaxui" }
+    | { kind: "gay"; text: string }
+    | { kind: "khan"; text: string }
   /** UI → game: rain of coins. */
   rainGive: number
 }>()

@@ -17,12 +17,14 @@ import {
 import { DatabaseService } from '../../platform/database/database.service.js';
 import {
   coinSpots,
+  FX_COSTS,
   RAIN_COIN_VALUE,
   RAIN_GRAB_REACH,
   RAIN_MAX_LIVE,
   RAIN_TTL_MS,
   validAmount,
   withinReach,
+  type FloorFxKind,
   type FxPoint,
 } from './floor-fx.logic.js';
 import { FLOOR_FX_REPOSITORY, FloorFxRepository } from './floor-fx.repository.js';
@@ -57,6 +59,10 @@ export interface FloorFxSink {
 export type StartRainResult =
   | { ok: true; rain: PublicRain; balance: number }
   | { ok: false; code: 'BAD_AMOUNT' | 'RAIN_BUSY' | 'RAIN_FULL' | 'XU_INSUFFICIENT' };
+
+export type ChargeFxResult =
+  | { ok: true; cost: number; balance: number }
+  | { ok: false; code: 'XU_INSUFFICIENT' };
 
 interface LiveRain {
   id: string;
@@ -111,6 +117,22 @@ export class FloorFx implements OnApplicationBootstrap, OnModuleDestroy {
     for (const rain of this.live.values()) if (rain.timer) clearTimeout(rain.timer);
     this.live.clear();
     this.pending.clear();
+  }
+
+  // ================================================================== Xả xui, Gáy, Khấn
+
+  /** Trừ phí một lần dùng (SPEC v2); hub gọi sau khi đã kiểm tra quyền, cooldown và câu chữ. */
+  async chargeFx(input: {
+    userId: string;
+    kind: FloorFxKind;
+    text: string | null;
+  }): Promise<ChargeFxResult> {
+    const cost = FX_COSTS[input.kind];
+    const charged = await this.database.transaction((tx) =>
+      this.repo.chargeFx(tx, { userId: input.userId, kind: input.kind, cost, text: input.text }),
+    );
+    if (charged === 'insufficient') return { ok: false, code: 'XU_INSUFFICIENT' };
+    return { ok: true, cost, balance: charged.balance };
   }
 
   // ================================================================== tán lộc

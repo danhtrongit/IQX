@@ -12,6 +12,9 @@ const TEX_SPARK = "fx-spark"
 const TEX_COIN = "fx-coin"
 const TEX_COIN_SHADOW = "fx-coin-shadow"
 const TEX_GLINT = "fx-glint"
+const TEX_INCENSE = "fx-incense"
+const TEX_BOWL = "fx-bowl"
+const TEX_AURA = "fx-aura"
 
 const FIREWORK_COLORS = [0xffd84d, 0xff4d5a, 0xff6ec7, 0x4df3ff, 0x7cff50]
 
@@ -170,6 +173,75 @@ export function ensureFxTextures(scene: Phaser.Scene): void {
     c.closePath()
     c.fill()
   })
+
+  makeCanvasTex(scene, TEX_INCENSE, 3, 34, 2, (c) => {
+    // Bamboo foot at bottom
+    c.fillStyle = "#c89b54"
+    c.fillRect(0.9, 26, 1.2, 8)
+    // Dark-red incense stick body
+    const bodyGrad = c.createLinearGradient(0.5, 4, 2.5, 4)
+    bodyGrad.addColorStop(0, "#4a0906")
+    bodyGrad.addColorStop(0.5, "#8c1812")
+    bodyGrad.addColorStop(1, "#4a0906")
+    c.fillStyle = bodyGrad
+    c.fillRect(0.6, 3.5, 1.8, 22.5)
+    // Thin ash collar below tip
+    c.fillStyle = "#524a46"
+    c.fillRect(0.6, 2.5, 1.8, 1.2)
+    // Glowing orange tip
+    const tipGrad = c.createRadialGradient(1.5, 1.5, 0.2, 1.5, 1.5, 1.8)
+    tipGrad.addColorStop(0, "#fff4b8")
+    tipGrad.addColorStop(0.45, "#ff7b00")
+    tipGrad.addColorStop(1, "rgba(255,90,0,0)")
+    c.fillStyle = tipGrad
+    c.beginPath()
+    c.arc(1.5, 1.5, 1.6, 0, Math.PI * 2)
+    c.fill()
+  })
+
+  makeCanvasTex(scene, TEX_BOWL, 22, 15, 2, (c) => {
+    // Soft ground shadow
+    c.fillStyle = "rgba(0,0,0,0.32)"
+    c.beginPath()
+    c.ellipse(11, 13, 8.5, 2, 0, 0, Math.PI * 2)
+    c.fill()
+    // Gold incense bowl body
+    const bowlGrad = c.createLinearGradient(2, 4, 20, 12)
+    bowlGrad.addColorStop(0, "#ffe47a")
+    bowlGrad.addColorStop(0.45, "#d99518")
+    bowlGrad.addColorStop(1, "#7d4a06")
+    c.fillStyle = bowlGrad
+    c.beginPath()
+    c.moveTo(2.5, 4.5)
+    c.quadraticCurveTo(3, 12.5, 11, 12.5)
+    c.quadraticCurveTo(19, 12.5, 19.5, 4.5)
+    c.closePath()
+    c.fill()
+    c.strokeStyle = "#6e3f04"
+    c.lineWidth = 0.9
+    c.stroke()
+    // Rim and ash bed
+    c.fillStyle = "#574f48"
+    c.beginPath()
+    c.ellipse(11, 4.5, 8.5, 2.7, 0, 0, Math.PI * 2)
+    c.fill()
+    c.strokeStyle = "#ffd666"
+    c.lineWidth = 1.2
+    c.stroke()
+    c.fillStyle = "#7a7169"
+    c.beginPath()
+    c.ellipse(11, 4.4, 6.2, 1.7, 0, 0, Math.PI * 2)
+    c.fill()
+  })
+
+  makeCanvasTex(scene, TEX_AURA, 128, 128, 2, (c) => {
+    const g = c.createRadialGradient(64, 64, 0, 64, 64, 64)
+    g.addColorStop(0, "rgba(255,224,130,0.95)")
+    g.addColorStop(0.35, "rgba(255,190,80,0.45)")
+    g.addColorStop(1, "rgba(255,160,40,0)")
+    c.fillStyle = g
+    c.fillRect(0, 0, 128, 128)
+  })
 }
 
 /**
@@ -310,14 +382,181 @@ export function playXaXui(
   })
 }
 
+interface BannerCardStyle {
+  plateFill: number
+  headerText: string
+  bodyText: string
+  bodyFontSize: string
+  bodyFontWeight: string
+  bodyFill: string
+  bodyStroke: string
+  bodyStrokeThickness: number
+  wordWrapWidth: number
+  shadow?: boolean
+}
+
+function createBannerCard(
+  scene: Phaser.Scene,
+  x: number,
+  baseY: number,
+  depth: number,
+  opts: BannerCardStyle
+): Phaser.GameObjects.Container {
+  const platePad = 14
+  const headerGap = 2
+
+  const banner = scene.add
+    .text(0, -platePad, opts.bodyText, {
+      fontFamily: FONT_FAMILY,
+      fontSize: opts.bodyFontSize,
+      fontStyle: opts.bodyFontWeight,
+      color: opts.bodyFill,
+      stroke: opts.bodyStroke,
+      strokeThickness: opts.bodyStrokeThickness,
+      align: "center",
+      wordWrap: { width: opts.wordWrapWidth, useAdvancedWrap: true },
+      padding: { x: 8, y: 8 },
+      resolution: 3,
+    })
+    .setOrigin(0.5, 1)
+  if (opts.shadow) {
+    banner.setShadow(0, 3, "rgba(0,0,0,0.6)", 6, true, true)
+  }
+
+  const header = scene.add
+    .text(0, -platePad - banner.height - headerGap, opts.headerText, {
+      fontFamily: FONT_FAMILY,
+      fontSize: "14px",
+      fontStyle: "700",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 3,
+      align: "center",
+      padding: { x: 6, y: 4 },
+      resolution: 3,
+    })
+    .setOrigin(0.5, 1)
+
+  const contentW = Math.max(banner.width, header.width)
+  const contentH = banner.height + headerGap + header.height
+  const plateW = contentW + platePad * 2
+  const plateH = contentH + platePad * 2
+
+  const plate = scene.add.graphics()
+  plate.fillStyle(opts.plateFill, 0.85)
+  plate.fillRoundedRect(-plateW / 2, -plateH, plateW, plateH, 12)
+  plate.lineStyle(2, 0xffd56a, 1)
+  plate.strokeRoundedRect(-plateW / 2, -plateH, plateW, plateH, 12)
+
+  return scene.add.container(x, baseY, [plate, banner, header]).setDepth(depth)
+}
+
+function scheduleBannerDestroy(
+  scene: Phaser.Scene,
+  card: Phaser.GameObjects.Container,
+  stayMs: number
+): void {
+  scene.time.delayedCall(stayMs, () => {
+    if (!scene.sys.isActive()) {
+      card.destroy()
+      return
+    }
+    if (!card.scene) return
+    scene.tweens.add({
+      targets: card,
+      alpha: 0,
+      duration: 350,
+      onComplete: () => card.destroy(),
+    })
+  })
+}
+
+function spawnFireworkBurst(
+  scene: Phaser.Scene,
+  bx: number,
+  by: number,
+  outerColor: number,
+  innerColor: number,
+  depth: number
+): void {
+  const flash = scene.add
+    .circle(bx, by, 16, 0xffffff, 1)
+    .setBlendMode("ADD")
+    .setScale(0)
+    .setAlpha(0.9)
+    .setDepth(depth)
+  scene.tweens.add({
+    targets: flash,
+    scale: 2.2,
+    alpha: 0,
+    duration: 220,
+    ease: "Quad.easeOut",
+    onComplete: () => flash.destroy(),
+  })
+
+  const total = Phaser.Math.Between(70, 110)
+  const outerCount = Math.round(total * 0.6)
+  const innerCount = total - outerCount
+
+  const outerBurst = scene.add
+    .particles(bx, by, TEX_SPARK, {
+      speed: { min: 155, max: 245 },
+      angle: { min: 0, max: 360 },
+      gravityY: 165,
+      scale: { start: 0.95, end: 0 },
+      alpha: { start: 1, end: 0 },
+      lifespan: { min: 600, max: 820 },
+      tint: outerColor,
+      blendMode: "ADD",
+      emitting: false,
+    })
+    .setDepth(depth)
+  outerBurst.explode(outerCount)
+
+  const innerBurst = scene.add
+    .particles(bx, by, TEX_SPARK, {
+      speed: { min: 45, max: 115 },
+      angle: { min: 0, max: 360 },
+      gravityY: 140,
+      scale: { start: 0.85, end: 0 },
+      alpha: { start: 1, end: 0 },
+      lifespan: { min: 560, max: 780 },
+      tint: innerColor,
+      blendMode: "ADD",
+      emitting: false,
+    })
+    .setDepth(depth)
+  innerBurst.explode(innerCount)
+
+  const glitter = scene.add
+    .particles(bx, by, TEX_SPARK, {
+      x: { min: -16, max: 16 },
+      y: { min: -10, max: 10 },
+      speedX: { min: -35, max: 35 },
+      speedY: { min: -20, max: 20 },
+      gravityY: 130,
+      scale: { start: 0.65, end: 0 },
+      alpha: { start: 0.95, end: 0 },
+      lifespan: { min: 620, max: 820 },
+      tint: [0xfff0a0, 0xffd24d],
+      blendMode: "ADD",
+      emitting: false,
+    })
+    .setDepth(depth)
+  glitter.explode(12)
+
+  scene.time.delayedCall(880, () => {
+    if (outerBurst.scene) outerBurst.destroy()
+    if (innerBurst.scene) innerBurst.destroy()
+    if (glitter.scene) glitter.destroy()
+  })
+}
+
 /**
- * "Gay" (crow / brag): 3-5 fireworks bursts launched from around the figure (x, y): each a rocket
- * trail rising 220-360 units above the head, then a radial burst of 40-70 colored spark particles
- * (gold, red, pink, cyan, lime; ADD blend) with gravity, slight drag and fade over ~1.2 s, staggered
- * 0-700 ms. Plus a big banner text `text` above the head (y - 150): Be Vietnam Pro 800 20px,
- * gold fill #ffe08a with dark stroke, word-wrapped at 260, origin (0.5,1), pops in with scale
- * 0.6->1.08->1 and floats up 24 units, stays 4.5 s, fades out. `name` is shown as a small line
- * "<name> gay:" above the text (13px, #ffffff, 600). Destroy everything after.
+ * "Gay" (crow / brag): 6-8 fireworks bursts launched from around the figure (x, y) rising 260-420
+ * units above the head, staggered 0-1100 ms, each bursting into 2 coloured rings + white flash +
+ * falling gold glitter, followed by a final golden willow burst at ~1300 ms with camera flash.
+ * Plus a rounded dark-red banner plate above the head (y - 150) staying 5 s before fading out.
  */
 export function playGay(
   scene: Phaser.Scene,
@@ -330,22 +569,29 @@ export function playGay(
   ensureFxTextures(scene)
 
   const effectDepth = DEPTH_LABEL + y + 2
-  const count = Phaser.Math.Between(3, 5)
+  const count = Phaser.Math.Between(6, 8)
   const headY = y - 108
 
   for (let i = 0; i < count; i += 1) {
-    const delay = i === 0 ? 0 : Phaser.Math.Between(120, 700)
+    const delay =
+      i === 0
+        ? 0
+        : Math.min(
+            1100,
+            Math.round((i / (count - 1)) * 1020) + Phaser.Math.Between(0, 80)
+          )
     scene.time.delayedCall(delay, () => {
       if (!scene.sys.isActive()) return
       const startX = x + Phaser.Math.Between(-56, 56)
       const startY = y - 30
       const apexX = startX + Phaser.Math.Between(-36, 36)
-      const apexY = headY - Phaser.Math.Between(220, 360)
-      const color = FIREWORK_COLORS[i % FIREWORK_COLORS.length]
+      const apexY = headY - Phaser.Math.Between(260, 420)
+      const outerColor = FIREWORK_COLORS[i % FIREWORK_COLORS.length]
+      const innerColor = FIREWORK_COLORS[(i + 2) % FIREWORK_COLORS.length]
 
       const rocket = scene.add
         .image(startX, startY, TEX_SPARK)
-        .setTint(color)
+        .setTint(outerColor)
         .setBlendMode("ADD")
         .setScale(0.75)
         .setDepth(effectDepth)
@@ -357,7 +603,7 @@ export function playGay(
           alpha: { start: 0.85, end: 0 },
           lifespan: 240,
           frequency: 26,
-          tint: color,
+          tint: outerColor,
           blendMode: "ADD",
           follow: rocket,
         })
@@ -382,110 +628,299 @@ export function playGay(
           const by = rocket.y
           rocket.destroy()
           if (!scene.sys.isActive()) return
-
-          const burst = scene.add
-            .particles(bx, by, TEX_SPARK, {
-              speed: { min: 65, max: 215 },
-              angle: { min: 0, max: 360 },
-              gravityY: 165,
-              // Subtle air drag via speed damping curve
-              scale: { start: 0.95, end: 0 },
-              alpha: { start: 1, end: 0 },
-              lifespan: { min: 900, max: 1200 },
-              tint: FIREWORK_COLORS,
-              blendMode: "ADD",
-              emitting: false,
-            })
-            .setDepth(effectDepth)
-          // Apply gentle air drag across particle lifetimes
-          burst.particleBringToTop = false
-          burst.explode(Phaser.Math.Between(42, 56))
-          scene.time.delayedCall(1260, () => {
-            if (burst.scene) burst.destroy()
-          })
+          spawnFireworkBurst(scene, bx, by, outerColor, innerColor, effectDepth)
         },
       })
     })
   }
 
-  // Banner text and "<name> gáy:" header above the head
+  // Final golden willow burst above the head
+  scene.time.delayedCall(1300, () => {
+    if (!scene.sys.isActive()) return
+    const wx = x + Phaser.Math.Between(-16, 16)
+    const wy = headY - Phaser.Math.Between(290, 350)
+
+    const flash = scene.add
+      .circle(wx, wy, 20, 0xffffff, 1)
+      .setBlendMode("ADD")
+      .setScale(0)
+      .setAlpha(0.9)
+      .setDepth(effectDepth)
+    scene.tweens.add({
+      targets: flash,
+      scale: 2.2,
+      alpha: 0,
+      duration: 220,
+      ease: "Quad.easeOut",
+      onComplete: () => flash.destroy(),
+    })
+
+    const willow = scene.add
+      .particles(wx, wy, TEX_SPARK, {
+        speed: { min: 45, max: 245 },
+        angle: { min: 0, max: 360 },
+        gravityY: 160,
+        scale: { start: 1.05, end: 0.08 },
+        alpha: { start: 1, end: 0 },
+        lifespan: 1800,
+        tint: [0xfff4b8, 0xffd84d, 0xffb732],
+        blendMode: "ADD",
+        emitting: false,
+      })
+      .setDepth(effectDepth)
+    willow.explode(140)
+    scene.time.delayedCall(1860, () => {
+      if (willow.scene) willow.destroy()
+    })
+
+    scene.cameras.main?.flash(120, 255, 220, 140, false)
+  })
+
   const baseY = y - 150
-  const banner = scene.add
-    .text(x, baseY, text, {
-      fontFamily: FONT_FAMILY,
-      fontSize: "20px",
-      fontStyle: "800",
-      color: "#ffe08a",
-      stroke: "#1d1204",
-      strokeThickness: 5,
-      align: "center",
-      wordWrap: { width: 260 },
-      resolution: 3,
-    })
-    .setOrigin(0.5, 1)
-    .setScale(0.6)
-    .setDepth(effectDepth)
+  const card = createBannerCard(scene, x, baseY, effectDepth, {
+    plateFill: 0x5a0e0e,
+    headerText: `${name} gáy:`,
+    bodyText: text,
+    bodyFontSize: "26px",
+    bodyFontWeight: "800",
+    bodyFill: "#ffe08a",
+    bodyStroke: "#3a1a00",
+    bodyStrokeThickness: 6,
+    wordWrapWidth: 300,
+    shadow: true,
+  }).setScale(0.6)
 
-  const nameLabel = scene.add
-    .text(x, baseY - banner.height - 4, `${name} gáy:`, {
-      fontFamily: FONT_FAMILY,
-      fontSize: "13px",
-      fontStyle: "600",
-      color: "#ffffff",
-      stroke: "#121622",
-      strokeThickness: 3,
-      align: "center",
-      resolution: 3,
-    })
-    .setOrigin(0.5, 1)
-    .setScale(0.6)
-    .setDepth(effectDepth)
+  scene.tweens.add({
+    targets: card,
+    scale: 1.08,
+    duration: 140,
+    ease: "Quad.easeOut",
+    onComplete: () => {
+      if (!card.scene) return
+      scene.tweens.add({
+        targets: card,
+        scale: 1,
+        duration: 110,
+        ease: "Sine.easeOut",
+      })
+    },
+  })
+  scene.tweens.add({
+    targets: card,
+    y: baseY - 24,
+    duration: 500,
+    ease: "Quad.easeOut",
+  })
 
-  const popIn = (target: Phaser.GameObjects.Text, liftY: number): void => {
-    scene.tweens.add({
-      targets: target,
-      scale: 1.08,
-      duration: 140,
-      ease: "Quad.easeOut",
-      onComplete: () => {
-        if (!target.scene) return
-        scene.tweens.add({
-          targets: target,
-          scale: 1,
-          duration: 110,
-          ease: "Sine.easeOut",
-        })
-      },
-    })
-    scene.tweens.add({
-      targets: target,
-      y: liftY,
-      duration: 500,
-      ease: "Quad.easeOut",
-    })
+  scheduleBannerDestroy(scene, card, 5000)
+}
+
+/**
+ * "Khan Than Tai" (prayer to the god of wealth): three lit incense sticks in a gold bowl on the
+ * floor at (x + 26, y - 6) with curling smoke wisps for 3.5 s, figure bows 3 times via `opts.hop`,
+ * warm gold aura + 20 rising gold sparks, and a calm dark-red prayer banner staying 4.5 s.
+ */
+export function playKhan(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  name: string,
+  text: string,
+  opts: { hop?: (dy: number) => void } = {}
+): void {
+  if (!scene.sys.isActive()) return
+  ensureFxTextures(scene)
+
+  const effectDepth = DEPTH_LABEL + y + 2
+  const bowlX = x + 26
+  const bowlY = y - 6
+
+  const bowl = scene.add
+    .image(bowlX, bowlY, TEX_BOWL)
+    .setOrigin(0.5, 0.72)
+    .setScale(0.7)
+    .setDepth(bowlY)
+
+  const stickScale = 0.65
+  const stickTipDist = 34 * 2 * stickScale - 2
+  const stickSpecs = [
+    { dx: -3, angle: -11 },
+    { dx: 0, angle: 0 },
+    { dx: 3, angle: 11 },
+  ]
+
+  const sticks: Phaser.GameObjects.Image[] = []
+  const smokes: Phaser.GameObjects.Particles.ParticleEmitter[] = []
+
+  for (const spec of stickSpecs) {
+    const sx = bowlX + spec.dx
+    const sy = bowlY - 6
+    const stick = scene.add
+      .image(sx, sy, TEX_INCENSE)
+      .setOrigin(0.5, 1)
+      .setScale(stickScale)
+      .setAngle(spec.angle)
+      .setDepth(bowlY - 0.1)
+    sticks.push(stick)
+
+    const rad = Phaser.Math.DegToRad(spec.angle)
+    const tipX = sx + Math.sin(rad) * stickTipDist
+    const tipY = sy - Math.cos(rad) * stickTipDist
+    const smoke = scene.add
+      .particles(tipX, tipY, TEX_SMOKE, {
+        speedY: { min: -30, max: -18 },
+        speedX: { min: -6, max: 6 },
+        alpha: { start: 0.5, end: 0 },
+        scale: { start: 0.3, end: 1.1 },
+        rotate: { min: -30, max: 30 },
+        lifespan: 2200,
+        frequency: 140,
+        tint: 0xf0f0f0,
+      })
+      .setDepth(effectDepth)
+    smokes.push(smoke)
   }
 
-  popIn(banner, baseY - 24)
-  popIn(nameLabel, baseY - banner.height - 4 - 24)
-
-  scene.time.delayedCall(4500, () => {
+  scene.time.delayedCall(3500, () => {
+    for (const s of smokes) {
+      if (s.scene) s.stop()
+    }
     if (!scene.sys.isActive()) {
-      banner.destroy()
-      nameLabel.destroy()
+      bowl.destroy()
+      for (const st of sticks) st.destroy()
+      for (const s of smokes) s.destroy()
       return
     }
-    const targets = [banner, nameLabel].filter((t) => t.scene)
-    if (!targets.length) return
-    scene.tweens.add({
-      targets,
-      alpha: 0,
-      duration: 350,
-      onComplete: () => {
-        banner.destroy()
-        nameLabel.destroy()
-      },
-    })
+    const fadeTargets = [bowl, ...sticks, ...smokes].filter((o) => o.scene)
+    if (fadeTargets.length) {
+      scene.tweens.add({
+        targets: fadeTargets,
+        alpha: 0,
+        duration: 600,
+        onComplete: () => {
+          bowl.destroy()
+          for (const st of sticks) st.destroy()
+          for (const s of smokes) s.destroy()
+        },
+      })
+    }
   })
+
+  if (opts.hop) {
+    const hopFn = opts.hop
+    const bowState = { dy: 0 }
+    const runBowCycle = (remaining: number): void => {
+      if (!scene.sys.isActive()) return
+      scene.tweens.add({
+        targets: bowState,
+        dy: 7,
+        duration: 260,
+        ease: "Sine.easeInOut",
+        onUpdate: () => {
+          if (scene.sys.isActive()) hopFn(bowState.dy)
+        },
+        onComplete: () => {
+          if (!scene.sys.isActive()) return
+          scene.tweens.add({
+            targets: bowState,
+            dy: 0,
+            duration: 260,
+            ease: "Sine.easeInOut",
+            onUpdate: () => {
+              if (scene.sys.isActive()) hopFn(bowState.dy)
+            },
+            onComplete: () => {
+              if (!scene.sys.isActive()) return
+              if (remaining > 1) {
+                scene.time.delayedCall(120, () => runBowCycle(remaining - 1))
+              } else {
+                hopFn(0)
+              }
+            },
+          })
+        },
+      })
+    }
+    runBowCycle(3)
+  }
+
+  const auraKey = scene.textures.exists("glow") ? "glow" : TEX_AURA
+  const aura = scene.add
+    .image(x, y - 50, auraKey)
+    .setBlendMode("ADD")
+    .setAlpha(0)
+    .setScale(1.2)
+    .setDepth(y - 1)
+  scene.tweens.add({
+    targets: aura,
+    scale: 1.6,
+    duration: 2400,
+    ease: "Sine.easeOut",
+  })
+  scene.tweens.add({
+    targets: aura,
+    alpha: 0.55,
+    duration: 700,
+    ease: "Sine.easeOut",
+    onComplete: () => {
+      if (!aura.scene || !scene.sys.isActive()) {
+        aura.destroy()
+        return
+      }
+      scene.tweens.add({
+        targets: aura,
+        alpha: 0,
+        duration: 1700,
+        ease: "Sine.easeInOut",
+        onComplete: () => aura.destroy(),
+      })
+    },
+  })
+
+  const auraSparks = scene.add
+    .particles(x, y - 45, TEX_SPARK, {
+      x: { min: -28, max: 28 },
+      y: { min: -35, max: 25 },
+      speedX: { min: -10, max: 10 },
+      speedY: { min: -42, max: -18 },
+      scale: { start: 0.7, end: 0 },
+      alpha: { start: 0.95, end: 0 },
+      lifespan: { min: 1400, max: 2100 },
+      tint: [0xfff0a0, 0xffd24d, 0xffb830],
+      blendMode: "ADD",
+      emitting: false,
+    })
+    .setDepth(y + 4)
+  auraSparks.explode(20)
+  scene.time.delayedCall(2160, () => {
+    if (auraSparks.scene) auraSparks.destroy()
+  })
+
+  const baseY = y - 150
+  const card = createBannerCard(scene, x, baseY, effectDepth, {
+    plateFill: 0x3a0d06,
+    headerText: `${name} khấn:`,
+    bodyText: text,
+    bodyFontSize: "20px",
+    bodyFontWeight: "700",
+    bodyFill: "#ffd56a",
+    bodyStroke: "#2a0a00",
+    bodyStrokeThickness: 4,
+    wordWrapWidth: 280,
+  }).setAlpha(0)
+  scene.tweens.add({
+    targets: card,
+    alpha: 1,
+    duration: 300,
+    ease: "Quad.easeOut",
+  })
+  scene.tweens.add({
+    targets: card,
+    y: baseY - 16,
+    duration: 500,
+    ease: "Sine.easeOut",
+  })
+  scheduleBannerDestroy(scene, card, 4500)
 }
 
 /** One coin lying on the floor (part of a "tan loc" coin rain). */

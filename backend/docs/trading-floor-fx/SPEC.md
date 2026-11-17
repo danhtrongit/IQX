@@ -81,3 +81,48 @@ Grab failures (taken, too far, own coin, ended) are silent: no error frame.
 Coin spots: when the client sends `coins`, the server keeps them only if the count equals `amount / 10` and every spot is a
 finite number inside the world (x 40..2008, y 260..1368) and within 360 units of the giver; otherwise the server scatters
 the coins itself in a ring 60..300 units around the giver, clamped to the same box.
+
+---
+
+# v2 (owner request 2026-11-18)
+
+Changes to the table above:
+
+| Action | Cost (paid from the xu wallet) | Who | Cooldown |
+| --- | --- | --- | --- |
+| **Xả xui** | **50 xu** each time | accounts only (guests: `LOGIN_REQUIRED`) | **5 s** |
+| **Gáy** | **100 xu** each time | accounts only | 20 s |
+| **Khấn Thần Tài** (new) | **50 xu** each time | accounts only | 10 s |
+| Tán lộc | unchanged | unchanged | unchanged |
+
+**Khấn Thần Tài**: the figure turns to face the shrine (north), bows three times, three incense sticks smoke in front
+of it, a warm gold aura rises, the shrine glows, and the user's prayer (1..80 chars, same cleaning as Gáy) shows above
+the head in red/gold. Everyone on the floor sees it.
+
+**Bad words**: Gáy and Khấn texts are refused with error `BAD_WORDS` ("Câu có từ ngữ không phù hợp") and nothing is
+charged when they contain basic Vietnamese/English profanity. The check is the same on server and client
+(`floor-fx.logic.ts` `hasBadWords`, mirrored in `frontend/src/pages/trading-floor/net/bad-words.ts`): lower-case,
+NFC, then
+- match these words with their diacritics as whole words (`đụ` but not `đụng`, `đĩ` but not `đĩa`): `địt`, `đụ`, `lồn`, `cặc`, `buồi`, `đéo`, `đĩ`, `cứt`, `đcm`, `đkm`, `đmm`;
+- after removing diacritics (`đ`→`d`) and treating every character that is not a letter or digit as a separator, match
+  these whole tokens: `dm dmm dcm dkm dit djt dmcs vcl vkl vcc clm cmm loz fuck fucking shit bitch dick pussy`
+  (never plain `cac`, `lon`, `du`, `vl`: they are ordinary Vietnamese words without diacritics); the same tokens are
+  also matched against each whitespace-separated chunk with its punctuation removed (`Đ.M`, `v.c.l`);
+- with every separator removed, match these substrings: `ditme`, `dume`, `duma`, `concac`, `conlon`, `occho`.
+
+**Charging** (backend): `coin_ledger.kind` gains `floor_fx_fee` (delta < 0), migration
+`0055_floor_fx_fees.sql` (same rebuild pattern as 0054 + sign CHECK `ck_coin_ledger_floor_fx_sign`). Unique key
+`floor_fx_fee:<random uuid>`, `ref {kind, text?}`, policy `iqx-floor-fx-v1`. Order in the hub: on the floor → account →
+cooldown → text valid → no bad words → charge → broadcast. Insufficient balance → `XU_INSUFFICIENT`, cooldown not
+consumed.
+
+**Messages**:
+- client → server: `{type:'fx', kind:'xaxui'}`, `{type:'fx', kind:'gay', text}`, `{type:'fx', kind:'khan', text}`
+- server → others on the floor: `{type:'peer:fx', id, kind, name?, text?}` (kind `khan` carries name + text like `gay`)
+- server → the sender's sockets (new): `{type:'fx:done', kind, text?, cost, balance}`. **The sender plays its own effect
+  when `fx:done` arrives** (no longer before the server answers), so a refused action shows nothing.
+
+**Sound** (frontend only): short clips in `frontend/public/sounds/khu-giao-dich/` (`xaxui.mp3` egg crack,
+`rooster.mp3`, `firework.mp3`, `coins.mp3` coin rain, `coin.mp3` own pickup, `bell.mp3` khấn). A speaker toggle on the
+action bar (remembered in localStorage `iqx.floor.sound`, default on). Other people's actions play quieter the farther
+they stand from the player.

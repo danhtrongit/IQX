@@ -6,7 +6,13 @@ import type { ClientMessage, Rain } from "./types.ts"
 const walletChanged = (): void => ui.walletTick.update((n) => n + 1)
 
 export const floorFx = new Emitter<{
-  fx: { id: string; kind: "xaxui" | "gay"; name?: string; text?: string }
+  fx: {
+    id: string
+    kind: "xaxui" | "gay" | "khan"
+    name?: string
+    text?: string
+  }
+  selfFx: { kind: "xaxui" | "gay" | "khan"; text?: string }
   rainStart: Rain
   rainTaken: { rainId: string; coin: number; by: string; name: string }
   rainEnd: { rainId: string }
@@ -28,6 +34,12 @@ export function startFx() {
   unsub.push(
     floorSocket.on("peer:fx", (msg) => {
       floorFx.emit("fx", msg)
+    })
+  )
+  unsub.push(
+    floorSocket.on("fx:done", (msg) => {
+      floorFx.emit("selfFx", { kind: msg.kind, text: msg.text })
+      walletChanged()
     })
   )
   unsub.push(
@@ -78,6 +90,7 @@ function handleError(code: string) {
     "LOGIN_REQUIRED",
     "FX_COOLDOWN",
     "BAD_TEXT",
+    "BAD_WORDS",
     "BAD_AMOUNT",
     "XU_INSUFFICIENT",
     "RAIN_BUSY",
@@ -89,6 +102,7 @@ function handleError(code: string) {
     LOGIN_REQUIRED: "Đăng nhập để dùng tính năng này",
     FX_COOLDOWN: "Chờ một chút rồi thử lại",
     BAD_TEXT: "Nội dung không hợp lệ",
+    BAD_WORDS: "Câu có từ ngữ không phù hợp",
     BAD_AMOUNT: "Số lượng không hợp lệ",
     XU_INSUFFICIENT: "Không đủ xu",
     RAIN_BUSY: "Bạn đang có một cơn mưa lộc chưa kết thúc",
@@ -98,7 +112,7 @@ function handleError(code: string) {
   toast(messages[code] || "Có lỗi xảy ra", "warn")
 }
 
-export function sendFx(kind: "xaxui" | "gay", text?: string) {
+export function sendFx(kind: "xaxui" | "gay" | "khan", text?: string) {
   floorSocket.send({ type: "fx", kind, text } as ClientMessage)
 }
 

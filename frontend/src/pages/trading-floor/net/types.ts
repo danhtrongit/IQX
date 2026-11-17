@@ -469,6 +469,7 @@ export type ClientMessage =
   | { type: "ping" }
   | { type: "fx"; kind: "xaxui" }
   | { type: "fx"; kind: "gay"; text: string }
+  | { type: "fx"; kind: "khan"; text: string }
   | { type: "rain:give"; amount: number; coins?: { x: number; y: number }[] }
   | { type: "rain:grab"; rainId: string; coin: number }
 
@@ -502,9 +503,17 @@ export type ServerMessage =
   | {
       type: "peer:fx"
       id: string
-      kind: "xaxui" | "gay"
+      kind: FxKind
       name?: string
       text?: string
+    }
+  /** Only to the sender's sockets: the action was paid; play it now. */
+  | {
+      type: "fx:done"
+      kind: FxKind
+      text?: string
+      cost: number
+      balance: number
     }
   | { type: "rain:start"; rain: Rain }
   | { type: "rain:given"; rainId: string; amount: number; balance: number }
@@ -528,9 +537,13 @@ export type ServerMessage =
 export const RAIN_COIN_VALUE = 10
 export const RAIN_MIN = 50
 export const RAIN_MAX = 1000
-export const FX_XAXUI_COOLDOWN_MS = 8000
+export const FX_XAXUI_COOLDOWN_MS = 5000
 export const FX_GAY_COOLDOWN_MS = 20000
+export const FX_KHAN_COOLDOWN_MS = 10000
 export const FX_GAY_TEXT_MAX = 80
+/** Xu paid per action (SPEC v2). */
+export const FX_COSTS = { xaxui: 50, gay: 100, khan: 50 } as const
+export type FxKind = keyof typeof FX_COSTS
 
 export interface Rain {
   id: string

@@ -1,8 +1,11 @@
 /**
- * Lưu trữ mưa lộc (`tf_coin_rains`, `tf_coin_grabs`) và ghi ví xu (`coin_wallets` + `coin_ledger`).
+ * Lưu trữ mưa lộc (`tf_coin_rains`, `tf_coin_grabs`), phí hành động trên sàn (Xả xui, Gáy, Khấn) và
+ * ghi ví xu (`coin_wallets` + `coin_ledger`).
  * Mọi hàm ghi chạy trong transaction của người gọi; ví khoá `FOR UPDATE` và `seq = last_seq + 1`
  * như `FlashbackRepository.lockWallet/saveWallet/appendLedger`.
  */
+
+import { randomUUID } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
 
@@ -11,6 +14,14 @@ import type { SqlClient } from '../../platform/database/database.service.js';
 export const FLOOR_FX_REPOSITORY = Symbol('FLOOR_FX_REPOSITORY');
 
 export const FLOOR_RAIN_POLICY = 'iqx-floor-rain-v1';
+export const FLOOR_FX_POLICY = 'iqx-floor-fx-v1';
+
+export interface FxCharge {
+  readonly userId: string;
+  readonly kind: string;
+  readonly cost: number;
+  readonly text: string | null;
+}
 
 export interface NewCoinRain {
   readonly giverUserId: string;
@@ -43,6 +54,8 @@ export abstract class FloorFxRepository {
   abstract grab(tx: SqlClient, input: CoinGrab): Promise<{ balance: number; value: number } | null>;
   /** Chốt cơn mưa một lần duy nhất và hoàn phần chưa ai nhặt; null khi đã chốt hoặc không có. */
   abstract settle(tx: SqlClient, rainId: string): Promise<RainSettlement | null>;
+  /** Trừ phí một lần Xả xui / Gáy / Khấn (ledger 'floor_fx_fee'); 'insufficient' khi ví không đủ. */
+  abstract chargeFx(tx: SqlClient, input: FxCharge): Promise<{ balance: number } | 'insufficient'>;
   /** Các cơn mưa đã hết giờ mà chưa chốt (tiến trình API khởi động lại giữa chừng). */
   abstract listUnsettledExpired(db: SqlClient, limit?: number): Promise<string[]>;
 }
@@ -55,7 +68,7 @@ const toInt = (value: unknown, field: string): number => {
   return n;
 };
 
-type LedgerKind = 'floor_rain_give' | 'floor_rain_catch' | 'floor_rain_refund';
+type LedgerKind = 'floor_rain_give' | 'floor_rain_catch' | 'floor_rain_refund' | 'floor_fx_fee';
 
 @Injectable()
 export class PgFloorFxRepository extends FloorFxRepository {
@@ -140,6 +153,24 @@ export class PgFloorFxRepository extends FloorFxRepository {
     return { giverUserId, refund, balance };
   }
 
+  async chargeFx(tx: SqlClient, input: FxCharge): Promise<{ balance: number } | 'insufficient'> {
+    const wallet = await this.lockWallet(tx, input.userId);
+    if (wallet.balance < input.cost) return 'insufficient';
+    const balance = await this.move(
+      tx,
+      input.userId,
+      wallet,
+      {
+        kind: 'floor_fx_fee',
+        delta: -input.cost,
+        uniqueKey: `floor_fx_fee:${randomUUID()}`,
+        ref: input.text === null ? { kind: input.kind } : { kind: input.kind, text: input.text },
+      },
+      FLOOR_FX_POLICY,
+    );
+    return { balance };
+  }
+
   async listUnsettledExpired(db: SqlClient, limit = 50): Promise<string[]> {
     const rows = await db.query<Row>(
       `select id from tf_coin_rains
@@ -183,6 +214,7 @@ export class PgFloorFxRepository extends FloorFxRepository {
     userId: string,
     wallet: { balance: number; lastSeq: number },
     entry: { kind: LedgerKind; delta: number; uniqueKey: string; ref: Record<string, unknown> },
+    policy: string = FLOOR_RAIN_POLICY,
   ): Promise<number> {
     const balance = wallet.balance + entry.delta;
     const seq = wallet.lastSeq + 1;
@@ -200,7 +232,7 @@ export class PgFloorFxRepository extends FloorFxRepository {
         balance,
         entry.uniqueKey,
         JSON.stringify(entry.ref),
-        FLOOR_RAIN_POLICY,
+        policy,
       ],
     );
     if (!inserted[0]) return wallet.balance;

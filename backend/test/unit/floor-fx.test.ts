@@ -6,6 +6,7 @@ import {
   cleanGayText,
   coinSpots,
   FX_GAY_TEXT_MAX,
+  hasBadWords,
   RAIN_BOX,
   RAIN_SCATTER_MAX,
   validAmount,
@@ -14,6 +15,7 @@ import {
 import {
   FloorFxRepository,
   type CoinGrab,
+  type FxCharge,
   type NewCoinRain,
   type RainSettlement,
 } from '../../src/modules/trading-floor/floor-fx.repository.js';
@@ -81,6 +83,40 @@ describe('floor-fx logic', () => {
     expect(cleanGayText(42)).toBeNull();
     expect(cleanGayText('a'.repeat(200))).toHaveLength(FX_GAY_TEXT_MAX);
   });
+
+  it('flags basic Vietnamese/English profanity', () => {
+    for (const text of [
+      'đm mày',
+      'dit me no',
+      'Đ.M',
+      'con cặc',
+      'fuck you',
+      'd i t m e',
+      'ĐỊT',
+      'vãi lồn',
+      'đụ má',
+      'cứt',
+      'concac',
+      'v.c.l',
+    ])
+      expect(hasBadWords(text), text).toBe(true);
+  });
+
+  it('lets ordinary sentences through', () => {
+    for (const text of [
+      'các bạn ơi',
+      'lon bia',
+      'du lịch',
+      'đụng đỉnh',
+      'đĩa cơm',
+      'cứu với',
+      'VNINDEX lên 2000',
+      'Thần Tài phù hộ, mua đâu lãi đó',
+      'Về bờ rồi',
+      'admin đẹp trai',
+    ])
+      expect(hasBadWords(text), text).toBe(false);
+  });
 });
 
 // ================================================================== fakes
@@ -137,6 +173,16 @@ class FakeFxRepo extends FloorFxRepository {
     const balance = (this.wallets.get(rain.giver) ?? 0) + refund;
     this.wallets.set(rain.giver, balance);
     return { giverUserId: rain.giver, refund, balance };
+  }
+
+  readonly fees: FxCharge[] = [];
+
+  async chargeFx(_tx: unknown, input: FxCharge): Promise<{ balance: number } | 'insufficient'> {
+    const balance = this.wallets.get(input.userId) ?? 0;
+    if (balance < input.cost) return 'insufficient';
+    this.wallets.set(input.userId, balance - input.cost);
+    this.fees.push(input);
+    return { balance: balance - input.cost };
   }
 
   async listUnsettledExpired(): Promise<string[]> {
@@ -234,42 +280,79 @@ describe('FloorHub fx', () => {
     vi.useRealTimers();
   });
 
-  it('xả xui reaches the others but not the sender, then cools down', async () => {
+  it('xả xui costs 50 xu: fx:done to the sender, peer:fx to the others, 5 s cooldown', async () => {
     const t = makeHub();
     stop = () => (t.hub.shutdown(), t.fx.onModuleDestroy());
-    const a = await t.join({ guest: GUEST_TOKEN });
+    t.repo.wallets.set('acct-a', 1_000);
+    const a = await t.join({ token: 'acct-a' });
     const b = await t.join({ token: 'acct-b' });
     const selfId = (a.last('welcome')!.self as { id: string }).id;
     await t.say(a, { type: 'fx', kind: 'xaxui' });
     expect(b.last('peer:fx')).toEqual({ type: 'peer:fx', id: selfId, kind: 'xaxui' });
     expect(a.last('peer:fx')).toBeUndefined();
+    expect(a.last('fx:done')).toEqual({ type: 'fx:done', kind: 'xaxui', cost: 50, balance: 950 });
+    expect(b.last('fx:done')).toBeUndefined();
+    expect(t.repo.wallets.get('acct-a')).toBe(950);
+    expect(t.repo.fees).toEqual([{ userId: 'acct-a', kind: 'xaxui', cost: 50, text: null }]);
 
+    t.tick(4_999);
     await t.say(a, { type: 'fx', kind: 'xaxui' });
     expect(a.last('error')).toMatchObject({ code: 'FX_COOLDOWN' });
     expect(b.all('peer:fx')).toHaveLength(1);
-    t.tick(8_000);
+    expect(t.repo.wallets.get('acct-a')).toBe(950);
+    t.tick(1);
     await t.say(a, { type: 'fx', kind: 'xaxui' });
     expect(b.all('peer:fx')).toHaveLength(2);
+    expect(a.last('fx:done')).toMatchObject({ balance: 900 });
   });
 
-  it('a guest cannot gáy, give or grab', async () => {
+  it('every socket of the sender gets fx:done', async () => {
+    const t = makeHub();
+    stop = () => (t.hub.shutdown(), t.fx.onModuleDestroy());
+    t.repo.wallets.set('acct-a', 1_000);
+    const a1 = await t.join({ token: 'acct-a' });
+    const a2 = await t.join({ token: 'acct-a' });
+    await t.say(a1, { type: 'fx', kind: 'xaxui' });
+    expect(a2.last('fx:done')).toMatchObject({ kind: 'xaxui', balance: 950 });
+    expect(a2.last('peer:fx')).toMatchObject({ kind: 'xaxui' });
+  });
+
+  it('a guest cannot xả xui, gáy, khấn, give or grab', async () => {
     const t = makeHub();
     stop = () => (t.hub.shutdown(), t.fx.onModuleDestroy());
     const g = await t.join({ guest: GUEST_TOKEN });
+    const b = await t.join({ token: 'acct-b' });
+    await t.say(g, { type: 'fx', kind: 'xaxui' });
+    expect(g.last('error')).toEqual({
+      type: 'error',
+      code: 'LOGIN_REQUIRED',
+      message: 'Đăng nhập để dùng tính năng này',
+    });
     await t.say(g, { type: 'fx', kind: 'gay', text: 'Lên!' });
-    expect(g.last('error')).toMatchObject({ code: 'LOGIN_REQUIRED' });
+    await t.say(g, { type: 'fx', kind: 'khan', text: 'Phù hộ' });
     await t.say(g, { type: 'rain:give', amount: 100 });
-    expect(g.all('error')).toHaveLength(2);
-    expect(g.last('error')).toMatchObject({ code: 'LOGIN_REQUIRED' });
+    expect(g.all('error')).toHaveLength(4);
+    expect(g.all('error').every((e) => e.code === 'LOGIN_REQUIRED')).toBe(true);
+    expect(b.all('peer:fx')).toHaveLength(0);
   });
 
-  it('an account gáy: others get the name and the cleaned text; bad text is BAD_TEXT', async () => {
+  it('an unknown fx kind is BAD_MESSAGE', async () => {
     const t = makeHub();
     stop = () => (t.hub.shutdown(), t.fx.onModuleDestroy());
+    const a = await t.join({ token: 'acct-a' });
+    await t.say(a, { type: 'fx', kind: 'toString' });
+    expect(a.last('error')).toMatchObject({ code: 'BAD_MESSAGE' });
+  });
+
+  it('gáy costs 100 xu: others get the name and the cleaned text; bad text is BAD_TEXT', async () => {
+    const t = makeHub();
+    stop = () => (t.hub.shutdown(), t.fx.onModuleDestroy());
+    t.repo.wallets.set('acct-a', 1_000);
     const a = await t.join({ token: 'acct-a' });
     const b = await t.join({ token: 'acct-b' });
     await t.say(a, { type: 'fx', kind: 'gay', text: '<>  ' });
     expect(a.last('error')).toMatchObject({ code: 'BAD_TEXT' });
+    expect(t.repo.wallets.get('acct-a')).toBe(1_000);
     await t.say(a, { type: 'fx', kind: 'gay', text: '  Về bờ   rồi ' });
     expect(b.last('peer:fx')).toMatchObject({
       kind: 'gay',
@@ -277,8 +360,101 @@ describe('FloorHub fx', () => {
       text: 'Về bờ rồi',
     });
     expect(a.last('peer:fx')).toBeUndefined();
+    expect(a.last('fx:done')).toEqual({
+      type: 'fx:done',
+      kind: 'gay',
+      text: 'Về bờ rồi',
+      cost: 100,
+      balance: 900,
+    });
     await t.say(a, { type: 'fx', kind: 'gay', text: 'Lần nữa' });
     expect(a.last('error')).toMatchObject({ code: 'FX_COOLDOWN' });
+    t.tick(20_000);
+    await t.say(a, { type: 'fx', kind: 'gay', text: 'Lần nữa' });
+    expect(a.last('fx:done')).toMatchObject({ balance: 800 });
+  });
+
+  it('khấn costs 50 xu, carries name + text, cools down 10 s', async () => {
+    const t = makeHub();
+    stop = () => (t.hub.shutdown(), t.fx.onModuleDestroy());
+    t.repo.wallets.set('acct-a', 1_000);
+    const a = await t.join({ token: 'acct-a' });
+    const b = await t.join({ token: 'acct-b' });
+    const selfId = (a.last('welcome')!.self as { id: string }).id;
+    await t.say(a, { type: 'fx', kind: 'khan', text: 'Thần Tài phù hộ' });
+    expect(b.last('peer:fx')).toEqual({
+      type: 'peer:fx',
+      id: selfId,
+      kind: 'khan',
+      name: 'Tên acct-a',
+      text: 'Thần Tài phù hộ',
+    });
+    expect(a.last('fx:done')).toEqual({
+      type: 'fx:done',
+      kind: 'khan',
+      text: 'Thần Tài phù hộ',
+      cost: 50,
+      balance: 950,
+    });
+    expect(t.repo.fees.at(-1)).toEqual({
+      userId: 'acct-a',
+      kind: 'khan',
+      cost: 50,
+      text: 'Thần Tài phù hộ',
+    });
+    // Cooldowns are per kind: xả xui still works right away.
+    await t.say(a, { type: 'fx', kind: 'xaxui' });
+    expect(a.last('fx:done')).toMatchObject({ kind: 'xaxui', balance: 900 });
+    t.tick(9_999);
+    await t.say(a, { type: 'fx', kind: 'khan', text: 'Lần nữa' });
+    expect(a.last('error')).toMatchObject({ code: 'FX_COOLDOWN' });
+    t.tick(1);
+    await t.say(a, { type: 'fx', kind: 'khan', text: 'Lần nữa' });
+    expect(a.last('fx:done')).toMatchObject({ kind: 'khan', balance: 850 });
+  });
+
+  it('not enough xu is XU_INSUFFICIENT and does not start the cooldown', async () => {
+    const t = makeHub();
+    stop = () => (t.hub.shutdown(), t.fx.onModuleDestroy());
+    t.repo.wallets.set('acct-a', 30);
+    const a = await t.join({ token: 'acct-a' });
+    const b = await t.join({ token: 'acct-b' });
+    await t.say(a, { type: 'fx', kind: 'xaxui' });
+    expect(a.last('error')).toEqual({
+      type: 'error',
+      code: 'XU_INSUFFICIENT',
+      message: 'Không đủ xu',
+    });
+    expect(a.last('fx:done')).toBeUndefined();
+    expect(b.all('peer:fx')).toHaveLength(0);
+    t.repo.wallets.set('acct-a', 80);
+    await t.say(a, { type: 'fx', kind: 'xaxui' });
+    expect(a.last('fx:done')).toMatchObject({ kind: 'xaxui', balance: 30 });
+    expect(b.all('peer:fx')).toHaveLength(1);
+  });
+
+  it('bad words are BAD_WORDS and nothing is charged', async () => {
+    const t = makeHub();
+    stop = () => (t.hub.shutdown(), t.fx.onModuleDestroy());
+    t.repo.wallets.set('acct-a', 1_000);
+    const a = await t.join({ token: 'acct-a' });
+    const b = await t.join({ token: 'acct-b' });
+    const bad = ['đm mày', 'dit me no', 'Đ.M', 'con cặc', 'fuck you', 'd i t m e'];
+    for (const [i, text] of bad.entries()) {
+      await t.say(a, { type: 'fx', kind: i % 2 ? 'gay' : 'khan', text });
+      expect(a.last('error'), text).toEqual({
+        type: 'error',
+        code: 'BAD_WORDS',
+        message: 'Câu có từ ngữ không phù hợp',
+      });
+    }
+    expect(a.all('error')).toHaveLength(bad.length);
+    expect(t.repo.wallets.get('acct-a')).toBe(1_000);
+    expect(t.repo.fees).toHaveLength(0);
+    expect(b.all('peer:fx')).toHaveLength(0);
+    // A refused sentence does not start the cooldown.
+    await t.say(a, { type: 'fx', kind: 'gay', text: 'Lên đỉnh' });
+    expect(a.last('fx:done')).toMatchObject({ kind: 'gay', balance: 900 });
   });
 
   it('fx before hello is NOT_ON_FLOOR', async () => {

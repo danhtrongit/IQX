@@ -4,10 +4,19 @@
  */
 
 /** Xả xui: mỗi nhân vật cách nhau tối thiểu bấy nhiêu ms. */
-export const FX_XAXUI_COOLDOWN_MS = 8_000;
+export const FX_XAXUI_COOLDOWN_MS = 5_000;
 /** Gáy: mỗi nhân vật cách nhau tối thiểu bấy nhiêu ms. */
 export const FX_GAY_COOLDOWN_MS = 20_000;
 export const FX_GAY_TEXT_MAX = 80;
+/** Khấn Thần Tài: mỗi nhân vật cách nhau tối thiểu bấy nhiêu ms. */
+export const FX_KHAN_COOLDOWN_MS = 10_000;
+
+/** Giá mỗi lần dùng (xu), trừ vào ví người dùng (v2, 2026-11-18). */
+export const FX_COSTS = { xaxui: 50, gay: 100, khan: 50 } as const;
+export type FloorFxKind = keyof typeof FX_COSTS;
+
+export const isFloorFxKind = (value: unknown): value is FloorFxKind =>
+  typeof value === 'string' && Object.hasOwn(FX_COSTS, value);
 
 /** Một đồng xu trong mưa lộc đáng bấy nhiêu xu. */
 export const RAIN_COIN_VALUE = 10;
@@ -52,6 +61,37 @@ export function cleanGayText(raw: unknown): string | null {
     .slice(0, FX_GAY_TEXT_MAX)
     .trim();
   return text || null;
+}
+
+// Từ ngữ tục tĩu cơ bản (SPEC v2). Giữ đúng như bản sao ở frontend `net/bad-words.ts`.
+/** Từ có dấu, khớp nguyên từ (để "đụng", "đĩa", "cứu" không dính). */
+const BAD_DIACRITIC_WORDS = ['địt', 'đụ', 'lồn', 'cặc', 'buồi', 'đéo', 'đĩ', 'cứt', 'đcm', 'đkm', 'đmm'];
+const BAD_DIACRITIC_RE = new RegExp(
+  `(^|[^\\p{L}\\p{N}])(${BAD_DIACRITIC_WORDS.join('|')})(?=$|[^\\p{L}\\p{N}])`,
+  'u',
+);
+/** Từ đã bỏ dấu, khớp nguyên token (không có `cac`, `lon`, `du`, `vl`: là từ thường khi bỏ dấu). */
+const BAD_TOKENS = new Set([
+  'dm', 'dmm', 'dcm', 'dkm', 'dit', 'djt', 'dmcs', 'vcl', 'vkl', 'vcc', 'clm', 'cmm', 'loz',
+  'fuck', 'fucking', 'shit', 'bitch', 'dick', 'pussy',
+]);
+/** Chuỗi con sau khi bỏ hết ký tự không phải chữ/số (bắt "d i t m e", "Đ.M"...). */
+const BAD_JOINED = ['ditme', 'dume', 'duma', 'concac', 'conlon', 'occho'];
+
+/** Câu Gáy / Khấn có từ ngữ tục tĩu cơ bản (tiếng Việt, tiếng Anh). */
+export function hasBadWords(text: string): boolean {
+  const lower = text.normalize('NFC').toLowerCase();
+  if (BAD_DIACRITIC_RE.test(lower)) return true;
+  const plain = lower
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/đ/g, 'd');
+  if (plain.split(/[^a-z0-9]+/).some((token) => BAD_TOKENS.has(token))) return true;
+  // Từ viết chèn dấu ("Đ.M", "v.c.l", "đ-m"): mỗi cụm giữa khoảng trắng, bỏ ký tự lạ, xét lại.
+  if (plain.split(/\s+/).some((chunk) => BAD_TOKENS.has(chunk.replace(/[^a-z0-9]/g, ''))))
+    return true;
+  const joined = plain.replace(/[^a-z0-9]/g, '');
+  return BAD_JOINED.some((word) => joined.includes(word));
 }
 
 /** Số xu tán: số nguyên, bội của 10, từ 50 đến 1000. */
