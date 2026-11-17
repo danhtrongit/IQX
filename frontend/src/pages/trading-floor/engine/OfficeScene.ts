@@ -13,10 +13,12 @@ import {
   ensureFxTextures,
   playXaXui,
   playGay,
+  playKhan,
   dropCoin,
   playRainBurst,
   type FloorCoin,
 } from "./floor-fx.ts"
+import { playFx, distanceVolume } from "./fx-sound.ts"
 import { formatIndex, formatPercent } from "../net/market/format.ts"
 import {
   heatColour,
@@ -522,23 +524,8 @@ export class OfficeScene extends Phaser.Scene {
   private setupFx() {
     this.disposers.push(
       commands.on("fx", (arg) => {
-        if (arg.kind === "xaxui") {
-          if (this.player)
-            playXaXui(this, this.player.x, this.player.y, {
-              local: true,
-              hop: (d) => this.player?.hop(d),
-            })
-          sendFx("xaxui")
-        } else if (arg.kind === "gay") {
-          if (this.player)
-            playGay(
-              this,
-              this.player.x,
-              this.player.y,
-              this.player.name,
-              arg.text
-            )
-          sendFx("gay", arg.text)
+        if (arg.kind === "xaxui" || arg.kind === "gay" || arg.kind === "khan") {
+          sendFx(arg.kind, "text" in arg ? arg.text : undefined)
         }
       }),
       commands.on("rainGive", (amount) => {
@@ -562,16 +549,60 @@ export class OfficeScene extends Phaser.Scene {
         }
         sendRainGive(amount, spots.length === coins ? spots : undefined)
       }),
+      floorFx.on("selfFx", (msg) => {
+        if (!this.player) return
+        if (msg.kind === "xaxui") {
+          playXaXui(this, this.player.x, this.player.y, {
+            local: true,
+            hop: (d) => this.player?.hop(d),
+          })
+          setTimeout(() => playFx("xaxui"), 250)
+        } else if (msg.kind === "gay") {
+          playGay(
+            this,
+            this.player.x,
+            this.player.y,
+            this.player.name,
+            msg.text ?? ""
+          )
+          playFx("rooster")
+          setTimeout(() => playFx("firework"), 500)
+          setTimeout(() => playFx("firework"), 1300)
+        } else if (msg.kind === "khan") {
+          this.player.set("n", false)
+          sendState({
+            x: this.player.x,
+            y: this.player.y,
+            facing: "n",
+            moving: false,
+          })
+          playKhan(
+            this,
+            this.player.x,
+            this.player.y,
+            this.player.name,
+            msg.text ?? "",
+            { hop: (d) => this.player?.hop(d) }
+          )
+          this.celebrate(3)
+          playFx("bell")
+        }
+      }),
       floorFx.on("fx", (msg) => {
         if (isSelf(msg.id)) return
         const peer = this.peers.get(msg.id)
         if (peer) {
-          if (msg.kind === "xaxui")
+          const vol = distanceVolume(
+            peer.avatar.x - (this.player?.x ?? 0),
+            peer.avatar.y - (this.player?.y ?? 0)
+          )
+          if (msg.kind === "xaxui") {
             playXaXui(this, peer.avatar.x, peer.avatar.y, {
               local: false,
               hop: (d) => peer.avatar.hop(d),
             })
-          else if (msg.kind === "gay")
+            setTimeout(() => playFx("xaxui", vol), 250)
+          } else if (msg.kind === "gay") {
             playGay(
               this,
               peer.avatar.x,
@@ -579,6 +610,20 @@ export class OfficeScene extends Phaser.Scene {
               msg.name ?? peer.avatar.name,
               msg.text ?? ""
             )
+            playFx("rooster", vol)
+            setTimeout(() => playFx("firework", vol), 500)
+            setTimeout(() => playFx("firework", vol), 1300)
+          } else if (msg.kind === "khan") {
+            playKhan(
+              this,
+              peer.avatar.x,
+              peer.avatar.y,
+              msg.name ?? peer.avatar.name,
+              msg.text ?? ""
+            )
+            this.celebrate(2)
+            playFx("bell", vol)
+          }
         }
       }),
       floorFx.on("rainStart", (rain) => {
@@ -587,7 +632,15 @@ export class OfficeScene extends Phaser.Scene {
             ? this.player
             : this.peers.get(rain.by)?.avatar
           : null
-        if (figure) playRainBurst(this, figure.x, figure.y)
+        if (figure) {
+          playRainBurst(this, figure.x, figure.y)
+          if (figure === this.player) playFx("coins")
+          else if (this.player)
+            playFx(
+              "coins",
+              distanceVolume(figure.x - this.player.x, figure.y - this.player.y)
+            )
+        }
         const coins = new Map<number, FloorCoin>()
         rain.coins.forEach((c, i) => {
           const coin = dropCoin(this, c.x, c.y, {
@@ -606,6 +659,7 @@ export class OfficeScene extends Phaser.Scene {
         const coin = rain?.coins.get(msg.coin)
         if (coin) {
           coin.pick(isSelf(msg.by), 10)
+          if (isSelf(msg.by)) playFx("coin")
           rain!.coins.delete(msg.coin)
         }
       }),

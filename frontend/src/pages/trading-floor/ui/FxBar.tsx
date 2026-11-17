@@ -1,48 +1,63 @@
-/**
- * Floor actions everyone sees (backend/docs/trading-floor-fx/SPEC.md): Xả xui (stomp an egg),
- * Gáy (fireworks + a sentence) and Tán lộc (a rain of 10-xu coins paid from the wallet).
- */
 import { useEffect, useRef, useState, type FormEvent } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { Coins, Egg, Megaphone } from "lucide-react"
+import { Coins, Egg, Megaphone, Flame, Volume2, VolumeX } from "lucide-react"
 
 import { useAuth } from "@/hooks/use-auth"
 import { formatXu, shopKeys } from "@/pages/demo-trading/shop/shop-model"
 import { useShopState } from "@/pages/demo-trading/shop/use-shop"
 
 import { commands, needLogin, ui } from "../bridge.ts"
+import { fxSoundOn, setFxSound } from "../engine/fx-sound.ts"
+import { hasBadWords } from "../net/bad-words.ts"
+import { floorFx } from "../net/fx.ts"
 import {
+  FX_COSTS,
   FX_GAY_COOLDOWN_MS,
   FX_GAY_TEXT_MAX,
+  FX_KHAN_COOLDOWN_MS,
   FX_XAXUI_COOLDOWN_MS,
   RAIN_COIN_VALUE,
   RAIN_MAX,
   RAIN_MIN,
+  type FxKind,
 } from "../net/types.ts"
 import { useStore } from "../use-store.ts"
 import { cx } from "./utils.ts"
 
 const PRESETS = [50, 100, 200, 500, 1000]
+const COOLDOWN: Record<FxKind, number> = {
+  xaxui: FX_XAXUI_COOLDOWN_MS,
+  gay: FX_GAY_COOLDOWN_MS,
+  khan: FX_KHAN_COOLDOWN_MS,
+}
 
 export function FxBar() {
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const guest = useStore(ui.guest)
   const shop = useShopState()
-  const [xaxuiUntil, setXaxuiUntil] = useState(0)
-  const [gayUntil, setGayUntil] = useState(0)
+  const soundOn = useStore(fxSoundOn)
+  const [cooldowns, setCooldowns] = useState({ xaxui: 0, gay: 0, khan: 0 })
   const [now, setNow] = useState(() => Date.now())
-  const [open, setOpen] = useState<"gay" | "rain" | null>(null)
-  const [gayText, setGayText] = useState("")
+  const [open, setOpen] = useState<"gay" | "khan" | "rain" | null>(null)
+  const [text, setText] = useState("")
   const [amount, setAmount] = useState(100)
   const barRef = useRef<HTMLDivElement>(null)
 
-  const cooling = xaxuiUntil > now || gayUntil > now
   useEffect(() => {
-    if (!cooling) return
     const tick = setInterval(() => setNow(Date.now()), 500)
     return () => clearInterval(tick)
-  }, [cooling])
+  }, [])
+
+  // The cooldown starts once the server has taken the xu (`fx:done`): a refused action can be retried at once.
+  useEffect(
+    () =>
+      floorFx.on("selfFx", ({ kind }) => {
+        const t = Date.now()
+        setCooldowns((prev) => ({ ...prev, [kind]: t + COOLDOWN[kind] }))
+      }),
+    []
+  )
 
   useEffect(() => {
     if (!user) return
@@ -67,41 +82,51 @@ export function FxBar() {
     }
   }, [open])
 
+  const balance = shop.data?.wallet.balance
+  const badWords = hasBadWords(text)
+  const canAfford = (cost: number) => balance != null && balance >= cost
+
   const xaxui = (): void => {
-    const t = Date.now()
-    if (xaxuiUntil > t) return
+    if (needLogin("Đăng nhập để xả xui")) return
     commands.emit("fx", { kind: "xaxui" })
-    setXaxuiUntil(t + FX_XAXUI_COOLDOWN_MS)
-    setNow(t)
   }
 
-  const toggle = (kind: "gay" | "rain"): void => {
+  const toggle = (kind: "gay" | "khan" | "rain"): void => {
     if (guest) {
-      needLogin(kind === "gay" ? "Đăng nhập để gáy" : "Đăng nhập để tán lộc")
+      needLogin(
+        kind === "gay"
+          ? "Đăng nhập để gáy"
+          : kind === "khan"
+            ? "Đăng nhập để khấn Thần Tài"
+            : "Đăng nhập để tán lộc"
+      )
       return
     }
     setOpen((cur) => (cur === kind ? null : kind))
+    setText("")
   }
 
-  const submitGay = (e: FormEvent): void => {
+  const submitText = (e: FormEvent): void => {
     e.preventDefault()
-    const text = gayText.trim()
-    if (!text || gayUntil > Date.now()) return
-    commands.emit("fx", { kind: "gay", text })
-    const t = Date.now()
-    setGayUntil(t + FX_GAY_COOLDOWN_MS)
-    setNow(t)
-    setGayText("")
+    if (
+      !open ||
+      open === "rain" ||
+      !text.trim() ||
+      badWords ||
+      cooldowns[open] > Date.now()
+    )
+      return
+    commands.emit("fx", { kind: open, text: text.trim() })
+    setText("")
     setOpen(null)
   }
 
-  const balance = shop.data?.wallet.balance
-  const validAmount =
+  const rainError = !(
     Number.isInteger(amount) &&
     amount >= RAIN_MIN &&
     amount <= RAIN_MAX &&
     amount % RAIN_COIN_VALUE === 0
-  const rainError = !validAmount
+  )
     ? `Chọn từ ${RAIN_MIN} đến ${formatXu(RAIN_MAX)} xu, chẵn chục`
     : balance != null && amount > balance
       ? "Không đủ xu"
@@ -114,7 +139,8 @@ export function FxBar() {
     setOpen(null)
   }
 
-  const left = (until: number): number => Math.ceil((until - now) / 1000)
+  const left = (until: number): number =>
+    Math.ceil(Math.max(0, until - now) / 1000)
   const stop = (e: { stopPropagation: () => void }): void => e.stopPropagation()
 
   return (
@@ -123,52 +149,95 @@ export function FxBar() {
         type="button"
         className="fx-btn"
         onClick={xaxui}
-        disabled={xaxuiUntil > now}
-        title="Xả xui: đạp vỡ quả trứng xui"
+        disabled={
+          cooldowns.xaxui > now ||
+          (!guest && balance != null && balance < FX_COSTS.xaxui)
+        }
+        title={
+          !guest && balance != null && balance < FX_COSTS.xaxui
+            ? `Cần ${FX_COSTS.xaxui} xu`
+            : `Xả xui · ${FX_COSTS.xaxui} xu`
+        }
       >
-        <Egg size={20} aria-hidden="true" />
-        <small>{xaxuiUntil > now ? `${left(xaxuiUntil)}s` : "Xả xui"}</small>
+        <Egg size={20} />
+        <small>
+          {cooldowns.xaxui > now ? `${left(cooldowns.xaxui)}s` : "Xả xui"}
+        </small>
       </button>
       <button
         type="button"
         className={cx("fx-btn", open === "gay" && "on")}
         onClick={() => toggle("gay")}
-        disabled={gayUntil > now}
+        disabled={cooldowns.gay > now}
         aria-expanded={open === "gay"}
-        title="Gáy: bắn pháo bông kèm một câu"
+        title={`Gáy · ${FX_COSTS.gay} xu`}
       >
-        <Megaphone size={20} aria-hidden="true" />
-        <small>{gayUntil > now ? `${left(gayUntil)}s` : "Gáy"}</small>
+        <Megaphone size={20} />
+        <small>{cooldowns.gay > now ? `${left(cooldowns.gay)}s` : "Gáy"}</small>
+      </button>
+      <button
+        type="button"
+        className={cx("fx-btn", open === "khan" && "on")}
+        onClick={() => toggle("khan")}
+        disabled={cooldowns.khan > now}
+        aria-expanded={open === "khan"}
+        title={`Khấn Thần Tài · ${FX_COSTS.khan} xu`}
+      >
+        <Flame size={20} />
+        <small>
+          {cooldowns.khan > now ? `${left(cooldowns.khan)}s` : "Khấn"}
+        </small>
       </button>
       <button
         type="button"
         className={cx("fx-btn", "fx-gold", open === "rain" && "on")}
         onClick={() => toggle("rain")}
         aria-expanded={open === "rain"}
-        title="Tán lộc: rải mưa xu cho cả sàn nhặt"
+        title="Tán lộc"
       >
-        <Coins size={20} aria-hidden="true" />
+        <Coins size={20} />
         <small>Tán lộc</small>
       </button>
+      <button
+        type="button"
+        className="fx-btn fx-sound"
+        onClick={() => setFxSound(!soundOn)}
+        aria-label={soundOn ? "Tắt tiếng" : "Bật tiếng"}
+      >
+        {soundOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
+      </button>
 
-      {open === "gay" && (
-        <form className="fx-pop" onSubmit={submitGay} onKeyDown={stop}>
-          <b>Gáy cho cả sàn nghe</b>
+      {(open === "gay" || open === "khan") && (
+        <form className="fx-pop" onSubmit={submitText} onKeyDown={stop}>
+          <b>{open === "gay" ? "Gáy" : "Khấn Thần Tài"}</b>
+          <p className="fx-muted">
+            Mỗi lần {open === "gay" ? FX_COSTS.gay : FX_COSTS.khan} xu · Số dư{" "}
+            {balance != null ? formatXu(balance) : "…"} xu
+          </p>
           <input
             maxLength={FX_GAY_TEXT_MAX}
-            placeholder="Gáy một câu cho cả sàn nghe"
-            value={gayText}
-            onChange={(e) => setGayText(e.target.value)}
+            placeholder={
+              open === "gay" ? "Gáy một câu..." : "Con xin Thần Tài phù hộ..."
+            }
+            value={text}
+            onChange={(e) => setText(e.target.value)}
             autoFocus
           />
-          <div className="fx-row">
-            <small>
-              {gayText.length}/{FX_GAY_TEXT_MAX}
-            </small>
-            <button type="submit" className="fx-go" disabled={!gayText.trim()}>
-              Gáy
-            </button>
-          </div>
+          {badWords && <p className="fx-error">Câu có từ ngữ không phù hợp</p>}
+          {!canAfford(open === "gay" ? FX_COSTS.gay : FX_COSTS.khan) && (
+            <p className="fx-error">Không đủ xu</p>
+          )}
+          <button
+            type="submit"
+            className="fx-go"
+            disabled={
+              !text.trim() ||
+              badWords ||
+              !canAfford(open === "gay" ? FX_COSTS.gay : FX_COSTS.khan)
+            }
+          >
+            {open === "gay" ? "Gáy" : "Khấn"}
+          </button>
         </form>
       )}
 
@@ -196,22 +265,16 @@ export function FxBar() {
             min={RAIN_MIN}
             max={RAIN_MAX}
             step={RAIN_COIN_VALUE}
-            value={Number.isFinite(amount) ? amount : ""}
+            value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
-            aria-label="Số xu tán lộc"
           />
-          <p className="fx-muted">
-            {validAmount
-              ? `= ${amount / RAIN_COIN_VALUE} đồng xu, mỗi đồng ${RAIN_COIN_VALUE} xu. Xu không ai nhặt sau 45 giây được hoàn lại.`
-              : " "}
-          </p>
           {rainError && <p className="fx-error">{rainError}</p>}
           <button
             type="submit"
             className="fx-go"
             disabled={!!rainError || balance == null}
           >
-            Tán lộc {validAmount ? `${formatXu(amount)} xu` : ""}
+            Tán lộc {formatXu(amount)} xu
           </button>
         </form>
       )}

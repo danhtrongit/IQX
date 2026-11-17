@@ -31,7 +31,8 @@ export type CoinLedgerKind =
   | 'dojo_reward'
   | 'floor_rain_give'
   | 'floor_rain_catch'
-  | 'floor_rain_refund';
+  | 'floor_rain_refund'
+  | 'floor_fx_fee';
 
 export interface WalletState {
   readonly balance: number;

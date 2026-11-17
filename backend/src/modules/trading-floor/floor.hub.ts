@@ -10,8 +10,10 @@
  * id tài khoản: cùng một người mở hai tab là hai nhân vật. Hồ sơ lấy từ `tf_profiles`, không tin trình
  * duyệt.
  *
- * Hành động trên sàn (`docs/trading-floor-fx/SPEC.md`): Xả xui (mọi người), Gáy và Tán lộc (chỉ tài
- * khoản). Mưa lộc và ví xu do `FloorFx` giữ; hub chỉ kiểm tra quyền, giới hạn tần suất và phát khung.
+ * Hành động trên sàn (`docs/trading-floor-fx/SPEC.md`, v2): Xả xui (50 xu), Gáy (100 xu), Khấn Thần Tài
+ * (50 xu) và Tán lộc, tất cả chỉ cho tài khoản. Câu Gáy / Khấn có từ tục bị từ chối (`BAD_WORDS`), không
+ * trừ xu. Mưa lộc và ví xu do `FloorFx` giữ; hub chỉ kiểm tra quyền, giới hạn tần suất và phát khung.
+ * Người gửi chỉ chạy hiệu ứng của mình khi nhận `fx:done` (đã trừ xu).
  *
  * Client → server: `auth`, `hello`, `state`, `emote`, `chat:typing`, `fx`, `rain:give`, `rain:grab`,
  * `ping`. Server → client: xem hợp đồng WS.
@@ -28,7 +30,15 @@ import { FloorBots } from './floor-bots.js';
 import { FLOOR_CAPACITY } from './floor-bots.logic.js';
 import { FloorChatService } from './floor-chat.service.js';
 import { FloorEvents, type FloorMessage, type FloorTarget } from './floor-events.js';
-import { cleanGayText, FX_GAY_COOLDOWN_MS, FX_XAXUI_COOLDOWN_MS } from './floor-fx.logic.js';
+import {
+  cleanGayText,
+  FX_GAY_COOLDOWN_MS,
+  FX_KHAN_COOLDOWN_MS,
+  FX_XAXUI_COOLDOWN_MS,
+  hasBadWords,
+  isFloorFxKind,
+  type FloorFxKind,
+} from './floor-fx.logic.js';
 import { FloorFx } from './floor-fx.service.js';
 import { FloorPresence } from './floor-presence.js';
 import {
@@ -103,12 +113,19 @@ type Conn = {
   stateRefilledAt: number;
   lastEmote: number;
   lastTyping: number;
-  /** Lần Xả xui / Gáy gần nhất (ms), để giới hạn tần suất. */
+  /** Lần Xả xui / Gáy / Khấn gần nhất (ms), để giới hạn tần suất. */
   lastXaxui: number;
   lastGay: number;
+  lastKhan: number;
   authTimer: ReturnType<typeof setTimeout> | null;
   queue: Promise<void>;
   closed: boolean;
+};
+
+const FX_COOLDOWN: Record<FloorFxKind, number> = {
+  xaxui: FX_XAXUI_COOLDOWN_MS,
+  gay: FX_GAY_COOLDOWN_MS,
+  khan: FX_KHAN_COOLDOWN_MS,
 };
 
 const RAIN_ERRORS = {
@@ -188,6 +205,7 @@ export class FloorHub {
       lastTyping: 0,
       lastXaxui: 0,
       lastGay: 0,
+      lastKhan: 0,
       authTimer: null,
       queue: Promise.resolve(),
       closed: false,
@@ -289,7 +307,7 @@ export class FloorHub {
           return;
         case 'fx':
           if (!this.fx) break;
-          this.onFx(conn, message);
+          await this.onFx(conn, this.fx, message);
           return;
         case 'rain:give':
           if (!this.fx) break;
@@ -531,42 +549,71 @@ export class FloorHub {
 
   // ================================================================== Xả xui, Gáy, Tán lộc
 
-  /** Xả xui (mọi người) và Gáy (chỉ tài khoản); người gửi tự chạy hiệu ứng nên không nhận lại. */
-  private onFx(conn: Conn, message: Record<string, unknown>): void {
+  /**
+   * Xả xui, Gáy, Khấn (chỉ tài khoản, có phí). Thứ tự: trên sàn → tài khoản → cooldown → câu hợp lệ →
+   * không có từ tục → trừ xu → phát. Không đủ xu thì không tính cooldown. Người gửi nhận `fx:done`
+   * (mọi socket của họ) và tự chạy hiệu ứng; người khác nhận `peer:fx`.
+   */
+  private async onFx(conn: Conn, fx: FloorFx, message: Record<string, unknown>): Promise<void> {
     const peer = conn.peer;
     if (!peer) {
       this.error(conn, 'NOT_ON_FLOOR', 'Hãy vào khu trước');
       return;
     }
+    const kind = message.kind;
+    if (!isFloorFxKind(kind)) {
+      this.error(conn, 'BAD_MESSAGE', 'Hành động không được hỗ trợ');
+      return;
+    }
+    if (conn.guest || !conn.userId) {
+      this.error(conn, 'LOGIN_REQUIRED', 'Đăng nhập để dùng tính năng này');
+      return;
+    }
     const now = this.now();
-    if (message.kind === 'xaxui') {
-      if (now - conn.lastXaxui < FX_XAXUI_COOLDOWN_MS) {
-        this.error(conn, 'FX_COOLDOWN', 'Chờ một chút rồi xả xui tiếp');
-        return;
-      }
-      conn.lastXaxui = now;
-      this.toFloor({ type: 'peer:fx', id: peer.id, kind: 'xaxui' }, conn);
+    if (now - FloorHub.lastFx(conn, kind) < FX_COOLDOWN[kind]) {
+      this.error(conn, 'FX_COOLDOWN', 'Chờ một chút rồi thử lại');
       return;
     }
-    if (message.kind === 'gay') {
-      if (conn.guest) {
-        this.error(conn, 'LOGIN_REQUIRED', 'Đăng nhập để gáy');
-        return;
-      }
-      if (now - conn.lastGay < FX_GAY_COOLDOWN_MS) {
-        this.error(conn, 'FX_COOLDOWN', 'Chờ một chút rồi gáy tiếp');
-        return;
-      }
-      const text = cleanGayText(message.text);
+    let text: string | null = null;
+    if (kind !== 'xaxui') {
+      text = cleanGayText(message.text);
       if (!text) {
-        this.error(conn, 'BAD_TEXT', 'Câu gáy cần từ 1 đến 80 ký tự');
+        this.error(conn, 'BAD_TEXT', 'Câu cần từ 1 đến 80 ký tự');
         return;
       }
-      conn.lastGay = now;
-      this.toFloor({ type: 'peer:fx', id: peer.id, kind: 'gay', name: peer.name, text }, conn);
+      if (hasBadWords(text)) {
+        this.error(conn, 'BAD_WORDS', 'Câu có từ ngữ không phù hợp');
+        return;
+      }
+    }
+    const userId = conn.userId;
+    const charged = await fx.chargeFx({ userId, kind, text });
+    if (!charged.ok) {
+      this.error(conn, 'XU_INSUFFICIENT', 'Không đủ xu');
       return;
     }
-    this.error(conn, 'BAD_MESSAGE', 'Hành động không được hỗ trợ');
+    FloorHub.setLastFx(conn, kind, this.now());
+    this.toFloor(
+      text === null
+        ? { type: 'peer:fx', id: peer.id, kind }
+        : { type: 'peer:fx', id: peer.id, kind, name: peer.name, text },
+      conn,
+    );
+    const done =
+      text === null
+        ? { type: 'fx:done', kind, cost: charged.cost, balance: charged.balance }
+        : { type: 'fx:done', kind, text, cost: charged.cost, balance: charged.balance };
+    for (const socket of this.byUser.get(userId) ?? []) this.send(socket, done);
+  }
+
+  private static lastFx(conn: Conn, kind: FloorFxKind): number {
+    return kind === 'xaxui' ? conn.lastXaxui : kind === 'gay' ? conn.lastGay : conn.lastKhan;
+  }
+
+  private static setLastFx(conn: Conn, kind: FloorFxKind, at: number): void {
+    if (kind === 'xaxui') conn.lastXaxui = at;
+    else if (kind === 'gay') conn.lastGay = at;
+    else conn.lastKhan = at;
   }
 
   private async onRainGive(
