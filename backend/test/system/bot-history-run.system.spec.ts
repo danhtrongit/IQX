@@ -209,7 +209,7 @@ describe('system acceptance: Bot history reads a real buy-then-sell run', () => 
     expect(sessions.items.map((item) => item.session)).toEqual([exit, entry]);
     expect(sessions.items[0]).toMatchObject({
       run_status: 'succeeded',
-      policy_version: 'iqx-bot-v1.0',
+      policy_version: 'iqx-bot-v1.1',
       universe: { kind: 'vn30', revision: 0, name: 'VN30' },
       config_revision: 1,
       counts: { buy: 0, sell: 1 },

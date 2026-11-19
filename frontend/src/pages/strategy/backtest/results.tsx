@@ -26,7 +26,8 @@ import {
   chartPoints,
   conditionNames,
   configCaption,
-  exitReasonLabel,
+  exitConditionText,
+  exitReasonText,
   OUTCOME_LABEL,
   snapshotParams,
   thinPoints,
@@ -156,7 +157,11 @@ function Assumptions({ run, result }: { run: RunResponse; result: RunResult }) {
         </p>
         <p>
           Một mã, tối đa một vị thế. Mỗi lần mua dùng tối đa tiền khả dụng gồm phí, làm tròn xuống lô {fmtInt(snapshot.lot_size)} cổ phiếu. Phí: mua {fmtNumber(snapshot.fees.buy * 100)}%, bán gồm thuế {fmtNumber(snapshot.fees.sell * 100)}%
-          {snapshot.fee_preset === "none" ? " (không tính phí)" : ""}. Không có stop, chốt lời, trailing hay giới hạn thời gian giữ. Không ép bán cuối kỳ.
+          {snapshot.fee_preset === "none" ? " (không tính phí)" : ""}.{" "}
+          {snapshot.profile.max_holding == null
+            ? "Không có stop, chốt lời, trailing hay giới hạn thời gian giữ."
+            : `Không có stop, chốt lời hay trailing. Giữ tối đa ${fmtInt(snapshot.profile.max_holding)} phiên: hết thời gian giữ thì bán dù điều kiện Bán chưa đạt.`}{" "}
+          Không ép bán cuối kỳ.
         </p>
         {simulation && (
           <p>
@@ -201,7 +206,7 @@ function TradeDetail({ trade, run, indicators, onClose }: { trade: ClosedTrade; 
           <dt className="font-semibold text-price-down">Bán</dt>
           <dd>Tín hiệu {fmtDate(trade.exit_signal_date)} · khớp {fmtDate(trade.exit_date)}</dd>
           <dd>{fmtInt(trade.qty)} cổ phiếu × {fmtNumber(trade.exit_price, 0)} đ · phí và thuế {fmtVnd(trade.exit_fee_tax)}</dd>
-          <dd>Thực nhận <strong className="tabular-nums">{fmtVnd(trade.exit_net)}</strong> ({exitReasonLabel(trade.exit_reason)})</dd>
+          <dd>Thực nhận <strong className="tabular-nums">{fmtVnd(trade.exit_net)}</strong> ({exitReasonText(trade)})</dd>
         </div>
         <div className="sm:col-span-2">
           <dt className="text-muted-foreground">Giữ {fmtInt(trade.hold)} phiên · lãi/lỗ thuần</dt>
@@ -304,7 +309,7 @@ function TradeHistory({ run, result, indicators }: { run: RunResponse; result: R
                   <td className="px-3 py-2.5 text-right">{fmtNumber(trade.entry_price, 0)}</td>
                   <td className="px-3 py-2.5 text-right">{fmtInt(trade.qty)}</td>
                   <td className="px-3 py-2.5">{fmtDate(trade.exit_date)}</td>
-                  <td className="max-w-[180px] px-3 py-2.5 font-sans break-words">{conditionNames(trade.exit_conditions, indicators)}</td>
+                  <td className="max-w-[180px] px-3 py-2.5 font-sans break-words">{exitConditionText(trade, indicators)}</td>
                   <td className="px-3 py-2.5 text-right">{fmtNumber(trade.exit_price, 0)}</td>
                   <td className="px-3 py-2.5 text-right">{fmtInt(trade.hold)}</td>
                   <td className={`px-3 py-2.5 text-right font-semibold ${toneClass(trade.pnl)}`}>{fmtSignedPercent(trade.pnl_pct, 1)}</td>

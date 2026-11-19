@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 import type { RuleOp } from '../quant/v2/index.js';
-import { indicatorConfigSchema } from '../strategy-config/strategy-config.schemas.js';
+import {
+  indicatorConfigSchema,
+  maxHoldingSchema,
+} from '../strategy-config/strategy-config.schemas.js';
 
 /** Longest requested range (inclusive days), same bound as the legacy backtest. */
 const MAX_RANGE_DAYS = 3653;
@@ -130,15 +133,18 @@ export const backtestRunBodySchema = z
     /**
      * Backtest bản nháp (spec Tab IQX §3.3): indicators replacing those of `shared_revision` for
      * this run only. Validated like a saved PATCH; nothing is written to the shared config.
+     * `max_holding` (Giữ tối đa) replaces the saved one when present (null = no time exit);
+     * absent keeps the saved one. `indicators` may be empty only when `max_holding` is sent.
      */
     draft: z
       .strictObject({
-        indicators: z
-          .record(z.string().regex(/^[a-z0-9_]{1,64}$/), indicatorConfigSchema)
-          .refine((value) => Object.keys(value).length > 0, {
-            message: 'Cần ít nhất một chỉ báo.',
-          }),
+        indicators: z.record(z.string().regex(/^[a-z0-9_]{1,64}$/), indicatorConfigSchema),
+        max_holding: maxHoldingSchema.nullable().optional(),
       })
+      .refine(
+        (value) => Object.keys(value.indicators).length > 0 || value.max_holding !== undefined,
+        { path: ['indicators'], message: 'Cần ít nhất một chỉ báo.' },
+      )
       .optional(),
     /** The Chiến lược IQX the draft started from (display and statistics only). */
     origin: strategyOriginSchema.optional(),
@@ -348,6 +354,8 @@ const pendingOrderViewSchema = z.object({
   action: z.enum(['buy', 'sell']),
   signal_date: z.string(),
   reason: z.literal('end_of_range'),
+  /** Sell of a run with a Giữ tối đa: `sell_consensus` or `max_holding` (same codes as a trade). */
+  exit_reason: z.string().optional(),
   note: z.string(),
   evidence: conditionEvidenceSchema.nullable(),
 });
@@ -370,7 +378,12 @@ const simulationSchema = z.object({
   signal_after_open_fill: z.boolean(),
   position_policy: z.literal('single_symbol_long_only_one_position'),
   sizing: z.literal('all_available_cash_including_buy_fee_rounded_down_to_lot'),
-  exits: z.literal('none: no stop, take-profit, trailing or max holding'),
+  exits: z.enum([
+    'none: no stop, take-profit, trailing or max holding',
+    'max_holding_only: no stop, take-profit or trailing',
+  ]),
+  /** Giữ tối đa (phiên) applied by the run; null/absent = no time exit. */
+  max_holding: z.number().int().nullable().optional(),
   min_held_bars: z.number().int(),
   min_held_bars_status: z.literal('carried_over_from_reference_engine_pending_product_decision'),
   fee_model: z.literal('buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate'),
@@ -396,12 +409,15 @@ const runOptionsSchema = z.object({
 const configSchema = z.looseObject({
   schema_version: z.string(),
   indicators: z.record(z.string(), z.unknown()),
+  /** Giữ tối đa (phiên) of the run's config; absent/null = no time exit. */
+  max_holding: z.number().int().nullable().optional(),
 });
 
 const executionProfileSchema = z.object({
   stop_loss: z.literal('none'),
   take_profit_pct: z.null(),
-  max_holding: z.null(),
+  /** Giữ tối đa (phiên) of the run's config; null = no time exit. */
+  max_holding: z.number().int().nullable(),
   trailing: z.literal('none'),
   position_size: z.literal('all_cash'),
   lot_size: z.number().int(),
@@ -525,6 +541,8 @@ const runResultSchema = z.object({
       reason: z.literal('end_of_range'),
       action: z.enum(['buy', 'sell']),
       signalIndex: z.number().int(),
+      exit_reason: z.string().optional(),
+      concurrent_reasons: z.array(z.string()).optional(),
     }),
   ),
   contract: z.literal('iqx-strategy-backtest-1.0'),

@@ -29,7 +29,7 @@ import {
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 type Trend = 'up' | 'down';
 
-describe('system acceptance: Bot policy iqx-bot-v1.0 on a real ledger', () => {
+describe('system acceptance: Bot policy iqx-bot-v1.1 on a real ledger', () => {
   let stack: SystemStack;
   const grants = new Set<string>(['indicator:ma']);
   const session = '2026-09-28'; // Monday
@@ -248,7 +248,7 @@ describe('system acceptance: Bot policy iqx-bot-v1.0 on a real ledger', () => {
       eligible: true,
       account: { cash_vnd: '100000000', nav_vnd: '100000000', valuation_complete: true },
       bot: {
-        policy_version: 'iqx-bot-v1.0',
+        policy_version: 'iqx-bot-v1.1',
         candidate_order: 'gtgd20_desc_symbol_asc',
         new_buys_enabled: true,
       },

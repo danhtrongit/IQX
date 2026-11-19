@@ -151,6 +151,19 @@ export function mergeIndicatorPatch(
   return merged;
 }
 
+/**
+ * Giữ tối đa of a PATCH or a draft over `config`: a number sets it, null removes it (the key is
+ * dropped so a config without a time exit hashes as before), undefined keeps the saved value.
+ */
+export function withMaxHolding(
+  config: SharedConfig,
+  maxHolding: number | null | undefined,
+): SharedConfig {
+  if (maxHolding === undefined) return config;
+  const { max_holding: _previous, ...rest } = config;
+  return maxHolding === null ? rest : { ...rest, max_holding: maxHolding };
+}
+
 @Injectable()
 export class SharedConfigService implements SharedConfigReaderPort {
   constructor(
@@ -309,7 +322,10 @@ export class SharedConfigService implements SharedConfigReaderPort {
       const base = latest
         ? readStoredConfig(latest.config, registry).config
         : defaultConfig(registry);
-      const merged = mergeIndicatorPatch(base, input.indicators);
+      const merged = withMaxHolding(
+        mergeIndicatorPatch(base, input.indicators),
+        input.max_holding,
+      );
       this.assertLearned(merged, input.indicators, grants);
       // Indicators already master ON in the saved config and untouched by this PATCH are not
       // re-checked against grants.
@@ -402,9 +418,11 @@ export class SharedConfigService implements SharedConfigReaderPort {
   }
 
   private replay(row: RevisionRow, input: SharedConfigPatchInput): SharedConfigSaveResult {
+    const stored = isRecord(row.config) ? row.config.max_holding : undefined;
     const samePayload =
       row.revision - 1 === input.expected_revision &&
-      canonicalJson(row.patch) === canonicalJson(input.indicators);
+      canonicalJson(row.patch) === canonicalJson(input.indicators) &&
+      (input.max_holding === undefined || (input.max_holding ?? null) === (stored ?? null));
     if (!samePayload) {
       throw new ConflictException({
         code: 'IDEMPOTENCY_KEY_REUSED',

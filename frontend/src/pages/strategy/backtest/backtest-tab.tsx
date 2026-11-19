@@ -54,6 +54,7 @@ import {
   changedIndicators,
   defaultIndicators,
   maxHoldingError,
+  maxHoldingValue,
   removeSide,
   strategyDefinitionOf,
   strategyErrors,
@@ -124,7 +125,11 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
   }
   /** Bản nháp: every indicator of the form, or `null` when the form shows the saved config. */
   const [draft, setDraft] = useState<Indicators | null>(null)
-  const [maxHolding, setMaxHolding] = useState(() => (compose?.initial ? String(compose.initial.max_holding) : ""))
+  /**
+   * Giữ tối đa typed in the form; `null` = the saved config's value (not edited). Compose mode
+   * always has its own text (the strategy's value, or empty for a new one).
+   */
+  const [maxHolding, setMaxHolding] = useState<string | null>(() => (compose ? (compose.initial ? String(compose.initial.max_holding) : "") : null))
   const [iqx, setIqx] = useState<IqxStrategyItem | null>(null)
   const [confirmIqx, setConfirmIqx] = useState<{ item: IqxStrategyItem; lead?: string } | null>(null)
   /** Bumped by every draft edit: a run of an older draft cannot be saved for the Bot. */
@@ -158,7 +163,7 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
   const saveForBot = useMutation({ mutationFn: saveDraftForBot })
 
   const composeOnChange = compose?.onChange
-  const composeKey = compose && draft ? JSON.stringify([draft, maxHolding]) : null
+  const composeKey = compose && draft ? JSON.stringify([draft, maxHolding ?? ""]) : null
   useEffect(() => {
     if (!composeOnChange || !composeKey) return
     const [indicators, holding] = JSON.parse(composeKey) as [Indicators, string]
@@ -182,12 +187,20 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
   const savedRevision = state.saved_revision
   const shown = draft ? withIndicators(savedConfig, draft) : savedConfig
   const changed = draft ? changedIndicators(savedConfig.indicators, draft) : {}
-  const draftOpen = !!compose || (draft !== null && (Object.keys(changed).length > 0 || iqx !== null))
+  // Giữ tối đa is a draft field like the cards: applied by a run, saved for the Bot with them.
+  const savedHolding = savedConfig.max_holding ?? null
+  const holdingText = maxHolding ?? (savedHolding === null ? "" : String(savedHolding))
+  const holdingValue = maxHoldingValue(holdingText)
+  const holdingChanged = !compose && maxHolding !== null && holdingValue !== savedHolding
+  const draftOpen = !!compose || holdingChanged || (draft !== null && (Object.keys(changed).length > 0 || iqx !== null))
+  const holdingError = maxHoldingError(holdingText, { optional: !compose })
   const capital = Number(capitalText.replace(/[^\d]/g, ""))
   const buyReady = library.some((indicator) => isSideUsed(shown, indicator.id, "buy"))
   const rangeDays = daysBetween(start, end)
   const blocked =
-    !buyReady
+    holdingError
+      ? holdingError
+      : !buyReady
       ? "Chưa có điều kiện Mua đang dùng. Thêm chỉ báo vào Mua từ thư viện rồi lưu."
       : !symbol
         ? "Chọn mã cổ phiếu."
@@ -205,8 +218,7 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
   const stale =
     !!snapshot &&
     (snapshot.symbol !== symbol || snapshot.requested_start !== start || snapshot.requested_end !== end || snapshot.capital !== capital || snapshot.execution !== execution || snapshot.fee_preset !== fee || revisionMoved || (!!ranDraft && ranDraft.runId === viewed?.run_id && !viewedIsThisDraft))
-  const holdingError = draftOpen ? maxHoldingError(maxHolding) : null
-  const botSaveBlocked = !viewed?.result || !viewedIsThisDraft ? (viewed?.result && ranDraft?.runId === viewed.run_id ? DRAFT_STALE : "Bấm Chạy trước khi Lưu cho Bot.") : stale ? DRAFT_STALE : Object.keys(changed).length === 0 ? "Bản nháp đang giống cấu hình đã lưu." : null
+  const botSaveBlocked = !viewed?.result || !viewedIsThisDraft ? (viewed?.result && ranDraft?.runId === viewed.run_id ? DRAFT_STALE : "Bấm Chạy trước khi Lưu cho Bot.") : stale ? DRAFT_STALE : Object.keys(changed).length === 0 && !holdingChanged ? "Bản nháp đang giống cấu hình đã lưu." : null
 
   function bumpDraft(next: Indicators) {
     setDraft(next)
@@ -215,7 +227,9 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
 
   function startRun() {
     if (blocked || run.isPending) return
-    const sendDraft = draftOpen && Object.keys(changed).length > 0
+    // Compose sends its own Giữ tối đa; the Backtest draft only when it differs from the saved one.
+    const sendHolding = compose ? holdingValue !== null : holdingChanged
+    const sendDraft = draftOpen && (Object.keys(changed).length > 0 || sendHolding)
     const rev = draftRev
     const body: RunRequest = {
       idempotency_key: newKey(),
@@ -224,7 +238,7 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
       start,
       end,
       assumptions: { capital, fee_preset: fee, execution },
-      ...(sendDraft ? { draft: { indicators: changed } } : {}),
+      ...(sendDraft ? { draft: { indicators: changed, ...(sendHolding ? { max_holding: holdingValue } : {}) } } : {}),
       ...(sendDraft && iqx && !compose ? { origin: { type: "iqx_strategy" as const, id: iqx.id, version: iqx.version } } : {}),
       ...(sendDraft && compose ? { trial: true } : {}),
     }
@@ -266,7 +280,7 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
   function backToSaved() {
     setDraft(null)
     setIqx(null)
-    setMaxHolding("")
+    setMaxHolding(null)
     setDraftRev((value) => value + 1)
     setModal(null)
     toast.success(`Bản nháp đã về cấu hình Bot bản ${savedRevision}.`)
@@ -277,7 +291,13 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
     setSaveError(null)
     saveKey.current ??= newKey()
     saveForBot.mutate(
-      { expected_revision: savedRevision, idempotency_key: saveKey.current, indicators: changed, source: { backtest_run_id: viewed.run_id } },
+      {
+        expected_revision: savedRevision,
+        idempotency_key: saveKey.current,
+        indicators: changed,
+        ...(holdingChanged ? { max_holding: holdingValue } : {}),
+        source: { backtest_run_id: viewed.run_id },
+      },
       {
         onSuccess: (result) => {
           saveKey.current = null
@@ -285,7 +305,7 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
           setSavedFromRun({ runId: viewed.run_id, revision: result.revision })
           setDraft(null)
           setIqx(null)
-          setMaxHolding("")
+          setMaxHolding(null)
           setRanDraft(null)
           setModal(null)
           const when = effectiveText(result.status, result.effective_session)
@@ -308,9 +328,10 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
   })()
 
   async function confirmRemove(indicator: TechnicalIndicator, side: Side) {
-    if (draftOpen && draft) {
-      const current = draft[indicator.id]
-      if (current) bumpDraft({ ...draft, [indicator.id]: removeSide(current, side) })
+    if (draftOpen) {
+      const base = draft ?? savedConfig?.indicators ?? {}
+      const current = base[indicator.id]
+      if (current) bumpDraft({ ...base, [indicator.id]: removeSide(current, side) })
       setModal(null)
       return
     }
@@ -435,24 +456,26 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
             <SidePanel side="sell" indicators={library} config={shown} onEdit={(indicator) => setModal({ kind: "config", indicator, side: "sell", adding: false })} onRemove={(indicator) => askRemove(indicator, "sell")} />
           </div>
 
-          {draftOpen && (
-            <section className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-4" aria-label="Giữ tối đa">
-              <div className="space-y-1.5">
-                <Label htmlFor="bt-hold" className={FIELD_LABEL}>Giữ tối đa (phiên)</Label>
-                <Input
-                  id="bt-hold"
-                  inputMode="numeric"
-                  value={maxHolding}
-                  className="w-28 font-mono tabular-nums"
-                  aria-invalid={!!holdingError}
-                  onChange={(event) => { setMaxHolding(event.target.value.replace(/[^\d]/g, "")); setDraftRev((value) => value + 1) }}
-                />
-              </div>
-              <p className="min-w-0 flex-1 text-[11px] leading-4 text-muted-foreground" data-testid="hold-note">
-                {holdingError ?? "Ghi theo chiến lược. Chưa áp dụng khi chạy: Backtest và Bot hiện chưa giới hạn thời gian giữ."}
-              </p>
-            </section>
-          )}
+          <section className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-4" aria-label="Giữ tối đa">
+            <div className="space-y-1.5">
+              <Label htmlFor="bt-hold" className={FIELD_LABEL}>Giữ tối đa (phiên)</Label>
+              <Input
+                id="bt-hold"
+                inputMode="numeric"
+                value={holdingText}
+                placeholder={compose ? undefined : "Không"}
+                className="w-28 font-mono tabular-nums"
+                aria-invalid={!!holdingError}
+                onChange={(event) => { setMaxHolding(event.target.value.replace(/[^\d]/g, "")); setDraftRev((value) => value + 1) }}
+              />
+            </div>
+            <p className={`min-w-0 flex-1 text-[11px] leading-4 ${holdingError ? "text-destructive" : "text-muted-foreground"}`} data-testid="hold-note">
+              {holdingError ??
+                (holdingValue === null
+                  ? "Để trống: không giới hạn thời gian giữ, chỉ bán khi điều kiện Bán đạt."
+                  : `Bán khi đã giữ ${holdingValue} phiên dù điều kiện Bán chưa đạt; nếu cùng lúc điều kiện Bán đạt thì chỉ một lệnh Bán. Không ép bán cuối kỳ.`)}
+            </p>
+          </section>
 
           <section className="grid gap-4 rounded-lg border border-border bg-card p-4 md:grid-cols-[1fr_auto] md:items-end" aria-label="Giả định backtest">
             <div className="min-w-0 space-y-3">
@@ -474,7 +497,7 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
                 </div>
               </div>
               <p className="text-[11px] leading-4 text-muted-foreground" data-testid="execution-caveat">
-                {EXECUTION_COPY[execution]} Một mã, một vị thế, mua tối đa tiền khả dụng; không stop, chốt lời hay giới hạn thời gian giữ.
+                {EXECUTION_COPY[execution]} Một mã, một vị thế, mua tối đa tiền khả dụng; không stop hay chốt lời{holdingValue === null || holdingError ? ", không giới hạn thời gian giữ" : `, giữ tối đa ${holdingValue} phiên`}.
               </p>
             </div>
             <div className="flex flex-col gap-2 md:w-52">
@@ -567,7 +590,7 @@ export function BacktestTab({ initialSymbol, compose }: { initialSymbol?: string
           <dl className="space-y-1 rounded-md border border-border bg-muted/40 p-3 text-xs leading-5" data-testid="save-bot-summary">
             <div><dt className="inline font-semibold">Cấu hình: </dt><dd className="inline">Lần chạy lúc {new Date(viewed.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}{iqx ? ` · từ ${iqxTitle("strategy", iqx.content.name)}` : ""}</dd></div>
             <div><dt className="inline font-semibold">Chỉ báo bật: </dt><dd className="inline">Mua {activeConditions(shown, "buy", library).map((item) => item.name).join(", ") || "—"} · Bán {activeConditions(shown, "sell", library).map((item) => item.name).join(", ") || "—"}</dd></div>
-            {maxHolding && <div><dt className="inline font-semibold">Giữ tối đa: </dt><dd className="inline">{maxHolding} phiên (Bot chưa áp dụng)</dd></div>}
+            <div><dt className="inline font-semibold">Giữ tối đa: </dt><dd className="inline">{holdingValue === null ? "không giới hạn" : `${holdingValue} phiên`}</dd></div>
           </dl>
           <p className="text-xs leading-5 text-muted-foreground">Cấu hình này sẽ thay cấu hình Bot từ phiên giao dịch hợp lệ kế tiếp. Không tạo lệnh ngay.</p>
           {saveError && <ErrorLine>{saveError}</ErrorLine>}

@@ -72,11 +72,21 @@ export function strategyDefinitionOf(indicators: Indicators, maxHolding: number)
   return { max_holding: maxHolding, indicators: Object.fromEntries(used.map(([id, value]) => [id, structuredClone(value)])) }
 }
 
-export function maxHoldingError(text: string): string | null {
+/**
+ * Giữ tối đa of the form (3–250 sessions, integer). A Chiến lược IQX always has one; the Backtest
+ * draft may leave it empty (`optional`) = no time exit, like a config saved before the field.
+ */
+export function maxHoldingError(text: string, options: { optional?: boolean } = {}): string | null {
+  if (options.optional && text.trim() === "") return null
   const value = Number(text.trim())
   return text.trim() !== "" && Number.isInteger(value) && value >= IQX_MAX_HOLDING.min && value <= IQX_MAX_HOLDING.max
     ? null
     : `Giữ tối đa phải từ ${IQX_MAX_HOLDING.min} đến ${IQX_MAX_HOLDING.max} phiên, số nguyên.`
+}
+
+/** The Giữ tối đa a run or "Lưu cho Bot" sends: null for an empty field (no time exit). */
+export function maxHoldingValue(text: string): number | null {
+  return text.trim() === "" ? null : Number(text.trim())
 }
 
 /** Publish checks of a Chiến lược IQX the form can tell before the server (§5.4). */

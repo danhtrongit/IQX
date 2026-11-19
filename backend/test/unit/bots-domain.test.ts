@@ -7,10 +7,14 @@ import {
   BOT_POLICY_HASH,
   BOT_POLICY_SNAPSHOT,
   BOT_REASON_LABELS,
+  BOT_V1_0_POLICY,
+  BOT_V1_0_POLICY_HASH,
+  EXECUTABLE_BOT_POLICY_VERSIONS,
   LEGACY_ACADEMY_POLICY,
   LEGACY_ACADEMY_POLICY_HASH,
   LEGACY_BOT_V1_RULE_SNAPSHOT,
   LEGACY_BOT_V1_RULE_HASH,
+  botExitDecision,
   botRuleReceipt,
   candidateFromSnapshot,
   canonicalHash,
@@ -63,10 +67,10 @@ const universePin = {
   symbols_hash: 'e'.repeat(64),
 };
 
-describe('Bot policy iqx-bot-v1.0 domain', () => {
+describe('Bot policy iqx-bot-v1.1 domain', () => {
   it('A02 freezes the exact policy: universe source, ranking and no stop/target/trailing', () => {
     expect(BOT_POLICY).toBe(BOT_POLICY_SNAPSHOT);
-    expect(BOT_POLICY.policy_version).toBe('iqx-bot-v1.0');
+    expect(BOT_POLICY.policy_version).toBe('iqx-bot-v1.1');
     expect(BOT_POLICY.initial_cash_vnd).toBe(100_000_000);
     expect(BOT_POLICY.universe).toMatchObject({
       default_source: 'vn30',
@@ -81,7 +85,10 @@ describe('Bot policy iqx-bot-v1.0 domain', () => {
     expect(BOT_POLICY.protective_stop_enabled).toBe(false);
     expect(BOT_POLICY.fixed_take_profit_enabled).toBe(false);
     expect(BOT_POLICY.implicit_trailing_enabled).toBe(false);
-    expect(BOT_POLICY.implicit_max_holding_enabled).toBe(false);
+    // Giữ tối đa only from the pinned shared config (null = none), never an implicit default.
+    expect(BOT_POLICY).not.toHaveProperty('implicit_max_holding_enabled');
+    expect(BOT_POLICY.max_holding_source).toBe('shared_config_max_holding');
+    expect(BOT_POLICY.max_holding_exit).toBe('sell_all_at_close_of_session_held_n');
     expect(BOT_POLICY.require_five_ai_layers).toBe(false);
     expect(BOT_POLICY.max_new_buys_per_session).toBe(2);
     expect(BOT_POLICY.buy_budget_nav_ratio).toBe('0.12');
@@ -89,8 +96,15 @@ describe('Bot policy iqx-bot-v1.0 domain', () => {
     expect(BOT_POLICY_HASH).toBe(canonicalHash(BOT_POLICY_SNAPSHOT));
     // Pins the policy: any change to a rule must be a deliberate new version/hash.
     expect(BOT_POLICY_HASH).toBe(
+      '1cc052d935877f051938b063718590099eb5bb598ce145e26605ffc36afdf245',
+    );
+    // The previous policy stays frozen at its pinned hash so v1.0 receipts keep verifying.
+    expect(BOT_V1_0_POLICY.policy_version).toBe('iqx-bot-v1.0');
+    expect(BOT_V1_0_POLICY.implicit_max_holding_enabled).toBe(false);
+    expect(BOT_V1_0_POLICY_HASH).toBe(
       'f06da0d40a06a60055a98af6d5c85e17c11d5f9314ab4f498d18602f6c805974',
     );
+    expect([...EXECUTABLE_BOT_POLICY_VERSIONS].sort()).toEqual(['iqx-bot-v1.0', 'iqx-bot-v1.1']);
     expect(Object.isFrozen(BOT_POLICY)).toBe(true);
     expect(Object.isFrozen(BOT_POLICY.universe)).toBe(true);
     expect(BOT_POLICY).not.toHaveProperty('protective_stop');
@@ -153,7 +167,7 @@ describe('Bot policy iqx-bot-v1.0 domain', () => {
     expect(verifyRuleReceipt(receipt.snapshot, receipt.hash)).toMatchObject({
       valid: true,
       kind: 'bot',
-      policyVersion: 'iqx-bot-v1.0',
+      policyVersion: 'iqx-bot-v1.1',
       pin,
       universe: universePin,
     });
@@ -170,6 +184,26 @@ describe('Bot policy iqx-bot-v1.0 domain', () => {
       verifyRuleReceipt({ ...receipt.snapshot, candidate_order: 'random' }, receipt.hash).valid,
     ).toBe(false);
     expect(botRuleReceipt(null, [], 'a'.repeat(64)).snapshot.universe_pin).toBeNull();
+  });
+
+  it('F02b a receipt written under iqx-bot-v1.0 still verifies; a tampered one does not', () => {
+    const snapshot = {
+      ...BOT_V1_0_POLICY,
+      shared_config: pin,
+      granted_capabilities: ['indicator:ma'],
+      data_hash: 'a'.repeat(64),
+      universe_pin: universePin,
+    };
+    const hash = canonicalHash(snapshot);
+    expect(verifyRuleReceipt(snapshot, hash)).toMatchObject({
+      valid: true,
+      kind: 'bot',
+      policyVersion: 'iqx-bot-v1.0',
+      pin,
+    });
+    // A v1.0 label on the v1.1 policy body (or the reverse) is not a valid receipt.
+    const mixed = { ...snapshot, policy_version: 'iqx-bot-v1.1' };
+    expect(verifyRuleReceipt(mixed, canonicalHash(mixed)).valid).toBe(false);
   });
 
   it('F03 verifies a historical academy-activation receipt read-only', () => {
@@ -343,5 +377,43 @@ describe('Bot policy iqx-bot-v1.0 domain', () => {
       fee_rules: feeRules,
     };
     expect(snapshotHash(input)).toBe(snapshotHash({ ...input, snapshot_hash: 'ignored' }));
+  });
+});
+
+describe('Bot Giữ tối đa exit decision (Bot spec P13–P16, same-session close)', () => {
+  it('P13 due when the holding this sell records reaches N, not one session later', () => {
+    expect(botExitDecision(false, 60, 59)).toBeNull();
+    expect(botExitDecision(false, 60, 60)).toEqual({
+      reason: 'max_holding',
+      indicator_met: false,
+      time_due: true,
+    });
+  });
+
+  it('P14 Sell conditions off or missing never stop the time exit', () => {
+    expect(botExitDecision(null, 10, 12)).toMatchObject({ reason: 'max_holding', time_due: true });
+  });
+
+  it('P15 both true: one sell, primary reason the Sell conditions, both flags kept', () => {
+    expect(botExitDecision(true, 10, 10)).toEqual({
+      reason: 'academy_sell',
+      indicator_met: true,
+      time_due: true,
+    });
+  });
+
+  it('null Giữ tối đa (or an unknown holding) behaves exactly as before', () => {
+    expect(botExitDecision(true, null, null)).toEqual({
+      reason: 'academy_sell',
+      indicator_met: true,
+      time_due: false,
+    });
+    expect(botExitDecision(false, null, 500)).toBeNull();
+    expect(botExitDecision(null, 10, null)).toBeNull();
+  });
+
+  it('labels the max_holding journal reason', () => {
+    expect(BOT_DECISION_REASON_CODES).toContain('max_holding');
+    expect(BOT_REASON_LABELS.max_holding).toBe('Bán do hết thời gian giữ tối đa');
   });
 });

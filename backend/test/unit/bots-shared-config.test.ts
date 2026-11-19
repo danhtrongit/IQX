@@ -5,6 +5,7 @@ import {
   BOT_DECISION_REASON_CODES,
   BOT_POLICY,
   BotService,
+  BOT_V1_0_POLICY,
   LEGACY_ACADEMY_POLICY,
   canonicalHash,
   snapshotHash,
@@ -299,6 +300,15 @@ class FakeBotDatabase {
     }
     if (sql.startsWith('select r.* from bot_run_receipts r where r.user_id = $1')) {
       return [...this.receipts].reverse().slice(0, 1);
+    }
+    if (sql.startsWith('select count(*)::int as n from bot_nav_daily')) {
+      const n = this.nav.filter(
+        (row) =>
+          row.bot_account_id === v[0] &&
+          String(row.trading_date) >= String(v[1]) &&
+          String(row.trading_date) < String(v[2]),
+      ).length;
+      return [{ n }];
     }
     if (sql.startsWith('select holidays from virtual_trading_configs')) {
       return this.holidays === null ? [] : [{ holidays: this.holidays }];
@@ -949,7 +959,7 @@ describe('Bot policy receipts and cutover', () => {
     expect(verifyRuleReceipt(null, 'a'.repeat(64)).valid).toBe(false);
   });
 
-  it('F11 a new run is frozen under iqx-bot-v1.0 with config pin, grants and universe pin', async () => {
+  it('F11 a new run is frozen under iqx-bot-v1.1 with config pin, grants and universe pin', async () => {
     const run = await runBot({
       config: academyConfig({ buy: ['ma'], revision: 8 }),
       trends: { AAA: 'up' },
@@ -962,7 +972,7 @@ describe('Bot policy receipts and cutover', () => {
       }),
       universeOptions: { revisionId: 'revision-row-4' },
     });
-    expect(run.receipt?.policy_version).toBe('iqx-bot-v1.0');
+    expect(run.receipt?.policy_version).toBe('iqx-bot-v1.1');
     expect(run.receipt?.universe_revision).toBe(4);
     expect(run.receipt?.universe_kind).toBe('custom');
     const verified = verifyRuleReceipt(run.receipt?.rule_snapshot, String(run.receipt?.rule_hash));
@@ -1065,6 +1075,160 @@ describe('Bot policy receipts and cutover', () => {
 
     expect(result.status).toBe('failed');
     expect(result.issues.map((row) => row.code)).toContain('unsupported_rule_version');
+    expect(db.executions).toEqual([]);
+  });
+});
+
+describe('BotService: Giữ tối đa of the shared config (Bot spec P13–P16)', () => {
+  // SESSION is Wed 2026-09-23; a position bought Mon 2026-09-14 has held 7 trading sessions
+  // [14..22] when it is sold at the close of the 23rd.
+  const opened = { opened_session: '2026-09-14' };
+  const withHold = (config: SharedConfig, maxHolding: number): SharedConfig => ({
+    ...config,
+    max_holding: maxHolding,
+  });
+  const calendarDb = () => {
+    const db = new FakeBotDatabase([position(opened)]);
+    db.holidays = [];
+    return db;
+  };
+
+  it('M01 (P13/P14) Sell conditions OFF: sold at the close of the session holding reaches N', async () => {
+    const run = await runBot({
+      db: calendarDb(),
+      config: withHold(academyConfig({ buy: ['ma'] }), 7),
+      snapshot: marketSnapshot({ symbols: { AAA: member(), HOLD: held('19500') } }),
+    });
+    expect(executions(run.db, 'sell')).toMatchObject([
+      { symbol: 'HOLD', price_vnd: '19500', reason: 'max_holding' },
+    ]);
+    const [decision] = decisions(run.db, 'max_holding');
+    expect(decision).toMatchObject({ action: 'sell', symbol: 'HOLD' });
+    expect(decision?.data_refs).toMatchObject({
+      exit: { indicator_met: false, time_due: true, max_holding: 7, held_sessions: 7 },
+    });
+    expect(String(decision?.reason)).toMatch(/Hết thời gian giữ/);
+    expect(run.db.positions[0]).toMatchObject({ status: 'closed', closed_session: SESSION });
+    const payload = run.db.snapshots[0]?.payload as BotMarketSnapshotInput;
+    expect(payload.shared_config_signals?.max_holding).toBe(7);
+  });
+
+  it('M02 one session short of N keeps the position', async () => {
+    const run = await runBot({
+      db: calendarDb(),
+      config: withHold(academyConfig({ buy: ['ma'] }), 8),
+      snapshot: marketSnapshot({ symbols: { AAA: member(), HOLD: held('19500') } }),
+    });
+    expect(executions(run.db, 'sell')).toEqual([]);
+    expect(decisions(run.db, 'no_active_sell_conditions')).toHaveLength(1);
+    expect(run.db.positions[0]?.status).toBe('open');
+  });
+
+  it('M03 (P14) Sell conditions ON but not met still exit on time', async () => {
+    const run = await runBot({
+      db: calendarDb(),
+      config: withHold(academyConfig({ sell: ['ma'] }), 5),
+      snapshot: marketSnapshot({ symbols: { AAA: member(), HOLD: held('25000') } }),
+      trends: { HOLD: 'up' },
+    });
+    expect(executions(run.db, 'sell')).toMatchObject([{ reason: 'max_holding' }]);
+    expect(decisions(run.db, 'academy_sell_not_met')).toEqual([]);
+  });
+
+  it('M04 (P15) Sell conditions and time both due: one sell, reason academy_sell, both flags', async () => {
+    const run = await runBot({
+      db: calendarDb(),
+      config: withHold(academyConfig({ sell: ['ma'] }), 7),
+      snapshot: marketSnapshot({ symbols: { AAA: member(), HOLD: held('19500') } }),
+      trends: { HOLD: 'down' },
+    });
+    expect(executions(run.db, 'sell')).toHaveLength(1);
+    expect(executions(run.db, 'sell')[0]).toMatchObject({ reason: 'academy_sell' });
+    expect(run.db.ledger.filter((row) => String(row.sql).includes("'sell'"))).toHaveLength(1);
+    const [decision] = decisions(run.db, 'academy_sell');
+    expect(decision?.data_refs).toMatchObject({
+      exit: { indicator_met: true, time_due: true, max_holding: 7, held_sessions: 7 },
+    });
+    expect(decisions(run.db, 'max_holding')).toEqual([]);
+  });
+
+  it('M05 without a verified calendar the Bot counts its own valued sessions', async () => {
+    const db = new FakeBotDatabase([position(opened)]);
+    db.holidays = null;
+    db.nav = ['2026-09-14', '2026-09-15', '2026-09-22', '2026-09-23'].map((date) => ({
+      bot_account_id: ACCOUNT,
+      trading_date: date,
+    }));
+    const run = await runBot({
+      db,
+      config: withHold(academyConfig({ buy: ['ma'] }), 3),
+      snapshot: marketSnapshot({ symbols: { AAA: member(), HOLD: held('19500') } }),
+    });
+    const [decision] = decisions(run.db, 'max_holding');
+    expect(decision?.data_refs).toMatchObject({ exit: { held_sessions: 3 } });
+  });
+
+  it('M06 no Giữ tối đa: nothing frozen, no time exit, journal unchanged', async () => {
+    const run = await runBot({
+      db: calendarDb(),
+      config: academyConfig({ sell: ['ma'] }),
+      positions: [position({ opened_session: '2025-01-01' })],
+      snapshot: marketSnapshot({ symbols: { AAA: member(), HOLD: held('19500') } }),
+      trends: { HOLD: 'down' },
+    });
+    const payload = run.db.snapshots[0]?.payload as BotMarketSnapshotInput;
+    expect(payload.shared_config_signals).not.toHaveProperty('max_holding');
+    const [decision] = decisions(run.db, 'academy_sell');
+    expect(decision?.data_refs).not.toHaveProperty('exit');
+    expect(String(decision?.reason)).not.toMatch(/Giữ tối đa/);
+  });
+
+  it('M07 a run left running under iqx-bot-v1.0 is still executed, not failed', async () => {
+    const db = new FakeBotDatabase([position()]);
+    const payload = marketSnapshot({ symbols: { HOLD: held('12000') } });
+    const digest = snapshotHash(payload);
+    const rule = {
+      ...BOT_V1_0_POLICY,
+      shared_config: null,
+      granted_capabilities: [],
+      data_hash: digest,
+      universe_pin: null,
+    };
+    db.receipts.push({
+      id: 'v10-running',
+      user_id: USER,
+      bot_account_id: ACCOUNT,
+      trading_date: SESSION,
+      status: 'running',
+      started_at: '2026-09-23T12:00:00Z',
+      completed_at: null,
+      issues: [],
+      rule_snapshot: rule,
+      rule_hash: canonicalHash(rule),
+      policy_version: 'iqx-bot-v1.0',
+      source_snapshot_hash: digest,
+      blocked_symbols_at_start: ['HOLD'],
+      nav_basis_vnd: null,
+      buy_count: 0,
+      sell_count: 0,
+    });
+    db.snapshots.push({
+      id: 's1',
+      bot_run_id: 'v10-running',
+      trading_date: SESSION,
+      snapshot_hash: digest,
+      payload,
+    });
+    const service = new BotService(
+      db as unknown as DatabaseService,
+      provider(marketSnapshot()),
+      reader(null),
+      undefined,
+      universePort(verifiedUniverse(['AAA'])),
+    );
+    const result = await service.runAccountSession(USER, SESSION);
+    expect(result.status).toBe('succeeded');
+    expect(result.issues.map((row) => row.code)).not.toContain('unsupported_rule_version');
     expect(db.executions).toEqual([]);
   });
 });

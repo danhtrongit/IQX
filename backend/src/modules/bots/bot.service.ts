@@ -19,6 +19,7 @@ import {
 import { QUANT_MARKET_DATA, type QuantMarketDataProvider } from '../quant/quant.types.js';
 import {
   configHash,
+  configMaxHolding,
   indicatorCapability,
   loadTechnicalRegistry,
   sideSignalsWithEvidence,
@@ -47,7 +48,11 @@ import {
   type Candidate,
   type FeeRules,
 } from './bot.domain.js';
-import { loadTradingCalendar, openHoldingSessions } from './bot-holding.js';
+import {
+  loadTradingCalendar,
+  openHoldingSessions,
+  tradingSessionsBetween,
+} from './bot-holding.js';
 import {
   blockedGate,
   gateConfigSides,
@@ -61,12 +66,16 @@ import {
   activeSideIndicators,
   BOT_SHARED_CONFIG_MARKET_SYMBOL,
   BOT_SHARED_CONFIG_WARMUP_SESSIONS,
+  EXECUTABLE_BOT_POLICY_VERSIONS,
+  botExitDecision,
   botRuleReceipt,
+  frozenMaxHolding,
   needsMarketContext,
   parseSharedConfigSignals,
   sharedConfigBuySymbols,
   unavailableSideRules,
   verifyRuleReceipt,
+  type BotExitDecision,
   type BotSharedConfigPin,
 } from './bot.shared-config.js';
 import {
@@ -263,6 +272,19 @@ function dedupeIssues(rows: readonly BotIssue[]): BotIssue[] {
 
 function json(value: unknown): string {
   return JSON.stringify(value);
+}
+
+/** Journal text of a sell: the Sell conditions, Giữ tối đa, or both (one sell, one fee). */
+function sellReasonText(
+  exit: BotExitDecision & { max_holding: number | null; held_sessions: number | null },
+  close: bigint,
+  qty: number | string,
+): string {
+  const time = `giữ ${exit.held_sessions ?? '—'} phiên, đạt Giữ tối đa ${exit.max_holding ?? '—'} phiên`;
+  if (exit.reason === 'max_holding')
+    return `Hết thời gian giữ (${time}) tại ${close}; Bot bán toàn bộ ${qty} cổ phiếu dù điều kiện Bán chưa đạt.`;
+  const both = exit.time_due ? ` Đồng thời ${time}; chỉ ghi một lệnh Bán.` : '';
+  return `Điều kiện Bán đạt tại ${close}; Bot bán toàn bộ ${qty} cổ phiếu.${both}`;
 }
 
 function rankTuple(candidate: Candidate): [string, string, string] {
@@ -895,10 +917,13 @@ export class BotService {
     const sellEvaluations = new Map(
       sellSymbols.map((symbol) => [symbol, evaluate(symbol, 'sell')]),
     );
+    const maxHolding = configMaxHolding(config);
     const signals: FrozenAcademySignals = {
       revision: pin.revision,
       config_hash: pin.config_hash,
       effective_session: pin.effective_session,
+      // Giữ tối đa of the pinned config (absent when it has none, as in every earlier snapshot).
+      ...(maxHolding !== null ? { max_holding: maxHolding } : {}),
       buy_active: buyActive,
       sell_active: sellActive,
       buy_status: sides.buy.status,
@@ -957,7 +982,10 @@ export class BotService {
     tradingDate: string,
   ): Promise<BotRunResult> {
     const verified = verifyRuleReceipt(run.rule_snapshot, run.rule_hash);
-    if (verified.policyVersion !== BOT_POLICY.policy_version && run.status !== 'succeeded') {
+    if (
+      !EXECUTABLE_BOT_POLICY_VERSIONS.has(verified.policyVersion ?? '') &&
+      run.status !== 'succeeded'
+    ) {
       // A run frozen under a retired policy is never executed by the current one; one that
       // never completed is closed so it cannot block the account's later sessions.
       if (run.status === 'running' && verified.valid) {
@@ -1405,8 +1433,28 @@ export class BotService {
     }
 
     // SELL STEP FIRST, over EVERY position held at session start, whatever the buy
-    // universe is and whether or not anything can be bought. There is no stop, target,
-    // trailing or holding-time exit: only the effective Sell conditions can sell.
+    // universe is and whether or not anything can be bought. There is no stop, target or
+    // trailing exit: only the effective Sell conditions and the config's Giữ tối đa can sell.
+    const maxHolding = frozenMaxHolding(shared);
+    const tradingDate = isoDate(run.trading_date);
+    const calendar =
+      maxHolding !== null && startingPositions.some((position) => position.status === 'open')
+        ? await loadTradingCalendar(tx)
+        : null;
+    // Sessions from the buy session (inclusive) to this one (exclusive) = the holding this sell
+    // records. Without the trading calendar, the Bot's own valued sessions are counted (the same
+    // fallback as the history table).
+    const heldSessions = async (position: BotPositionRow): Promise<number | null> => {
+      if (maxHolding === null) return null;
+      const opened = isoDate(position.opened_session);
+      if (calendar) return tradingSessionsBetween(opened, tradingDate, calendar);
+      const rows = await tx.query<{ n: number | string }>(
+        `select count(*)::int as n from bot_nav_daily
+          where bot_account_id = $1 and trading_date >= $2::date and trading_date < $3::date`,
+        [context.account_id, opened, tradingDate],
+      );
+      return Number(rows[0]?.n ?? 0);
+    };
     for (const position of startingPositions) {
       if (position.status !== 'open') continue;
       const inUniverse = universeVerified ? universeMembers.has(position.symbol) : null;
@@ -1433,7 +1481,9 @@ export class BotService {
         continue;
       }
       const signal = sellSide.state === 'active' ? (shared?.sell[position.symbol] ?? null) : null;
-      if (signal === true) {
+      const held = await heldSessions(position);
+      const exit = botExitDecision(signal, maxHolding, held);
+      if (exit) {
         if (!feeRules) {
           await this.insertDecision(tx, run.id, {
             key: `bot:academy:${run.id}:${position.symbol}:ledger-error`,
@@ -1456,7 +1506,18 @@ export class BotService {
           cash,
           revision,
           conditionFor(position.symbol, 'sell'),
-          refs,
+          maxHolding === null
+            ? refs
+            : {
+                ...refs,
+                exit: {
+                  indicator_met: exit.indicator_met,
+                  time_due: exit.time_due,
+                  max_holding: maxHolding,
+                  held_sessions: held,
+                },
+              },
+          { ...exit, max_holding: maxHolding, held_sessions: held },
         );
         if (execution.applied) cash += execution.netCashDeltaVnd;
         continue;
@@ -1822,6 +1883,13 @@ export class BotService {
     decisionConfigRevision: number | null,
     conditionSnapshot: ConditionSnapshot,
     dataRefs: Record<string, unknown>,
+    exit: BotExitDecision & { max_holding: number | null; held_sessions: number | null } = {
+      reason: 'academy_sell',
+      indicator_met: true,
+      time_due: false,
+      max_holding: null,
+      held_sessions: null,
+    },
   ): Promise<{ netCashDeltaVnd: bigint; applied: boolean }> {
     const key = `bot:academy:${accountId}:${isoDate(run.trading_date)}:${position.symbol}:sell`;
     const existing = await tx.query<{ net_cash_delta_vnd: string }>(
@@ -1860,7 +1928,7 @@ export class BotService {
         BOT_POLICY.execution_model,
         key,
         json([]),
-        'academy_sell',
+        exit.reason,
         sourceHash,
       ],
     );
@@ -1892,8 +1960,8 @@ export class BotService {
       key: `${key}:decision`,
       symbol: position.symbol,
       action: 'sell',
-      reasonCode: 'academy_sell',
-      reason: `Điều kiện Bán đạt tại ${close}; Bot bán toàn bộ ${position.qty_open} cổ phiếu.`,
+      reasonCode: exit.reason,
+      reason: sellReasonText(exit, close, position.qty_open),
       dataRefs,
       executionId: id,
       decisionConfigRevision,

@@ -33,7 +33,7 @@ function expectNullable(value: SchemaObject, type: string): void {
   expect(value.oneOf?.[1]).toMatchObject({ enum: [null], nullable: true });
 }
 
-describe('Bot policy iqx-bot-v1.0 OpenAPI contract', () => {
+describe('Bot policy iqx-bot-v1.1 OpenAPI contract', () => {
   let app: NestFastifyApplication;
   let document: OpenAPIObject;
 
@@ -68,7 +68,7 @@ describe('Bot policy iqx-bot-v1.0 OpenAPI contract', () => {
     expect(properties(document, 'BotOverview')).not.toHaveProperty('cap6_graduated_at');
     expect(properties(document, 'BotConfig').policy_version).toEqual({
       type: 'string',
-      enum: ['iqx-bot-v1.0'],
+      enum: ['iqx-bot-v1.1'],
     });
     expect(properties(document, 'BotConfig')).not.toHaveProperty('product_stage');
     expect(properties(document, 'BotConfig').candidate_order_owner_confirmation).toEqual({

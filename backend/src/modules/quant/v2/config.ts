@@ -5,6 +5,7 @@ import { canonicalJson } from './hash.js';
 import { isFiniteNumber } from './indicators.js';
 import { loadTechnicalRegistry } from './technical-registry.js';
 import {
+  MAX_HOLDING_LIMITS,
   RULE_VERSION,
   SCHEMA_VERSION,
   type EngineValidationError,
@@ -23,6 +24,7 @@ const CONFIG_KEYS = new Set([
   'rule_version',
   'indicators',
   'saved_at',
+  'max_holding',
 ]);
 const INDICATOR_KEYS = new Set(['master_enabled', 'buy', 'sell']);
 const SIDE_KEYS = new Set(['enabled', 'params', 'rules']);
@@ -221,6 +223,20 @@ export function validateConfig(
     (typeof config.saved_at !== 'string' || Number.isNaN(Date.parse(config.saved_at)))
   ) {
     errors.push({ path: 'saved_at', message: 'saved_at phải là thời điểm ISO 8601.' });
+  }
+  const maxHolding = config.max_holding;
+  if (
+    maxHolding !== undefined &&
+    maxHolding !== null &&
+    (typeof maxHolding !== 'number' ||
+      !Number.isInteger(maxHolding) ||
+      maxHolding < MAX_HOLDING_LIMITS.min ||
+      maxHolding > MAX_HOLDING_LIMITS.max)
+  ) {
+    errors.push({
+      path: 'max_holding',
+      message: `Giữ tối đa phải từ ${MAX_HOLDING_LIMITS.min} đến ${MAX_HOLDING_LIMITS.max} phiên, số nguyên.`,
+    });
   }
   const indicators = config.indicators;
   if (!isRecord(indicators)) {

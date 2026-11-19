@@ -1601,7 +1601,7 @@ function localResponseSchemas(): Record<string, SchemaObject> {
       execution_model: { type: 'string', enum: ['same_session_close'] },
       initial_cash_vnd: string(),
       activated_at: dateTime(),
-      policy_version: { type: 'string', enum: ['iqx-bot-v1.0'] },
+      policy_version: { type: 'string', enum: ['iqx-bot-v1.1'] },
       candidate_order: { type: 'string', enum: ['gtgd20_desc_symbol_asc'] },
       candidate_order_owner_confirmation: { type: 'string', enum: ['confirmed'] },
       new_buys_enabled: boolean(),

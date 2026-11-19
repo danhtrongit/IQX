@@ -214,6 +214,21 @@ describe("Bot main", () => {
       expect(within(sell).queryByRole("list", { name: "ĐIỀU KIỆN BÁN chờ hiệu lực" })).toBeNull()
     })
 
+    it("shows Giữ tối đa on the Sell card, and a changed one under the pending revision", async () => {
+      pendingWorld(() => undefined)
+      world.effectiveMaxHolding = 30
+      world.maxHolding = 12
+      await renderMain()
+      const sell = await screen.findByRole("region", { name: "ĐIỀU KIỆN BÁN" })
+      expect((await within(sell).findByTestId("max-holding-effective")).textContent).toBe(
+        "Giữ tối đa 30 phiên: Bot bán khi đã giữ đủ 30 phiên dù điều kiện Bán chưa đạt.",
+      )
+      expect(within(sell).getByTestId("max-holding-pending").textContent).toBe("Giữ tối đa: 12 phiên")
+      const buy = screen.getByRole("region", { name: "ĐIỀU KIỆN MUA" })
+      expect(within(buy).queryByTestId("max-holding-effective")).toBeNull()
+      expect(within(buy).queryByText(/Chờ hiệu lực/)).toBeNull()
+    })
+
     it("an old-format revision in force still lists the pending side that reads the same as it", async () => {
       // The server reads an old-format revision back as the new defaults, so its Sell side can equal
       // the pending one; the card only says it is outdated, so the pending conditions must be listed.

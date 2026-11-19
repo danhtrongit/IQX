@@ -84,9 +84,12 @@ describe("tab IQX of the Backtest", () => {
     expect(patches()).toHaveLength(0)
 
     const results = await run(user)
-    const body = posts("/strategy/backtests")[0]!.body as { shared_revision: number; draft: { indicators: Record<string, unknown> }; origin: unknown; trial?: boolean }
+    const body = posts("/strategy/backtests")[0]!.body as { shared_revision: number; draft: { indicators: Record<string, unknown>; max_holding?: number | null }; origin: unknown; trial?: boolean }
     expect(body.shared_revision).toBe(3)
     expect(Object.keys(body.draft.indicators).sort()).toEqual(["bollinger", "ma", "macd", "rsi"])
+    // Giữ tối đa of the strategy is applied by the run (no longer "chưa áp dụng").
+    expect(body.draft.max_holding).toBe(item.content.definition.max_holding)
+    expect(screen.getByTestId("hold-note").textContent).not.toMatch(/Chưa áp dụng/)
     expect(body.origin).toEqual({ type: "iqx_strategy", id: item.id, version: 1 })
     expect(body.trial).toBeUndefined()
     expect(within(results).getByTestId("run-source").textContent).toBe(`Bản nháp · từ Chiến lược IQX ${item.content.name} (v1)`)
@@ -113,14 +116,39 @@ describe("tab IQX of the Backtest", () => {
     await user.click(screen.getByRole("button", { name: "Lưu cho Bot" }))
     const dialog = await screen.findByRole("dialog", { name: "Lưu cho Bot" })
     expect(within(dialog).getByTestId("save-bot-summary").textContent).toMatch(/Lần chạy lúc \d{2}:\d{2} · từ Chiến lược IQX · /)
+    expect(within(dialog).getByTestId("save-bot-summary").textContent).toContain("Giữ tối đa: 40 phiên")
     await user.click(within(dialog).getByRole("button", { name: "Lưu cho Bot" }))
     await waitFor(() => expect(patches()).toHaveLength(1))
-    const body = patches()[0]!.body as { expected_revision: number; indicators: Record<string, unknown>; source: { backtest_run_id: string } }
+    const body = patches()[0]!.body as { expected_revision: number; indicators: Record<string, unknown>; max_holding?: number | null; source: { backtest_run_id: string } }
     expect(body.expected_revision).toBe(3)
+    expect(body.max_holding).toBe(40)
     expect(Object.keys(body.indicators).sort()).toEqual(["bollinger", "ma", "macd", "rsi"])
     expect(body.source.backtest_run_id).toBe(posts("/strategy/backtests").length === 2 ? "bbbbbbbb-bbbb-4bbb-8bbb-000000000002" : "")
     await waitFor(() => expect(screen.queryByTestId("draft-badge")).toBeNull())
     expect(mocks.toast.success).toHaveBeenCalledWith(expect.stringMatching(/^Đã lưu cho Bot \(bản 4\)/))
+  })
+
+  it("Giữ tối đa alone opens the draft: validated 3–250, sent with the run, empty = no time exit", async () => {
+    const user = userEvent.setup()
+    await renderTab()
+    const hold = (await screen.findByLabelText("Giữ tối đa (phiên)")) as HTMLInputElement
+    expect(hold.value).toBe("")
+    expect(screen.getByTestId("hold-note").textContent).toMatch(/không giới hạn thời gian giữ/)
+    expect(screen.queryByTestId("draft-badge")).toBeNull()
+
+    await user.type(hold, "2")
+    expect(screen.getByTestId("hold-note").textContent).toBe("Giữ tối đa phải từ 3 đến 250 phiên, số nguyên.")
+    expect(screen.getByRole("button", { name: "Chạy backtest" }).hasAttribute("disabled")).toBe(true)
+
+    await user.clear(hold)
+    await user.type(hold, "25")
+    expect(screen.getByTestId("draft-badge")).toBeTruthy()
+    await run(user)
+    const body = posts("/strategy/backtests")[0]!.body as { draft: { indicators: Record<string, unknown>; max_holding?: number | null } }
+    expect(body.draft).toEqual({ indicators: {}, max_holding: 25 })
+
+    await user.clear(hold)
+    expect(screen.queryByTestId("draft-badge")).toBeNull()
   })
 
   it("a second Dùng asks first; Về cấu hình đã lưu drops the draft after a confirm", async () => {

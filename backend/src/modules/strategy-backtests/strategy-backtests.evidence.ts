@@ -45,11 +45,15 @@ export function buildRunExtras(
 
   const pending: PendingOrderView[] = result.canceled.map((order) => {
     const date = bars[order.signalIndex]?.date ?? '';
+    const timeExit = order.exit_reason === 'max_holding';
     return {
       action: order.action,
       signal_date: date,
       reason: 'end_of_range',
-      note: 'Tín hiệu ở phiên cuối khoảng kiểm thử; chưa có phiên khớp trong khoảng nên lệnh chưa khớp và không tính vào giao dịch.',
+      ...(order.exit_reason ? { exit_reason: order.exit_reason } : {}),
+      note: timeExit
+        ? 'Hết thời gian giữ ở phiên cuối khoảng kiểm thử; chưa có phiên khớp trong khoảng nên lệnh Bán chưa khớp, không ép bán và không tính vào giao dịch.'
+        : 'Tín hiệu ở phiên cuối khoảng kiểm thử; chưa có phiên khớp trong khoảng nên lệnh chưa khớp và không tính vào giao dịch.',
       evidence: date ? at(order.action, date) : null,
     };
   });

@@ -1098,6 +1098,39 @@ describe('StrategyBacktestsService', () => {
       expect(() => body({ shared_revision: 0 })).toThrow();
     });
 
+    it('applies the draft Giữ tối đa (alone or with indicators) and records it on the run', async () => {
+      const run = await service().create(
+        OWNER,
+        body({ draft: { indicators: {}, max_holding: 5 } }),
+      );
+      expect(run.status).toBe('succeeded');
+      const snapshot = run.snapshot!;
+      expect(snapshot.config.max_holding).toBe(5);
+      expect(snapshot.config_hash).toBe(configHash({ ...savedConfig, max_holding: 5 }));
+      expect(snapshot.profile.max_holding).toBe(5);
+      expect(snapshot.simulation).toMatchObject({
+        exits: 'max_holding_only: no stop, take-profit or trailing',
+        max_holding: 5,
+      });
+      expect(run.result!.trades.length).toBeGreaterThan(0);
+      for (const trade of run.result!.trades) {
+        expect(trade.hold).toBeLessThanOrEqual(5);
+        expect(['sell_consensus', 'max_holding']).toContain(trade.exit_reason);
+      }
+      expect(run.result!.trades.some((trade) => trade.exit_reason === 'max_holding')).toBe(true);
+      // The saved revision without Giữ tối đa runs exactly as before.
+      const saved = await service().create(OWNER, body({ idempotency_key: 'run-key-0003' }));
+      expect(saved.snapshot!.profile.max_holding).toBeNull();
+      expect(saved.snapshot!.simulation).toMatchObject({
+        exits: 'none: no stop, take-profit, trailing or max holding',
+      });
+      expect(saved.result!.trades.every((trade) => trade.exit_reason === 'sell_consensus')).toBe(
+        true,
+      );
+      expect(() => body({ draft: { indicators: {} } })).toThrow();
+      expect(() => body({ draft: { indicators: {}, max_holding: 2 } })).toThrow();
+    });
+
     it('refuses an invalid draft with 422 CONFIG_INVALID and stores nothing', async () => {
       const bad = draftMa();
       (bad.buy.rules[0] as Record<string, unknown>).period = 7;

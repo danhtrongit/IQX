@@ -71,6 +71,8 @@ export type SharedConfig = {
   revision: number
   rule_version: string
   indicators: Record<string, IndicatorConfig>
+  /** Giữ tối đa (phiên): sold after N sessions even when Bán is not met; absent/null = none. */
+  max_holding?: number | null
 }
 
 export type EffectiveStatus = "pending" | "effective" | "calendar_unavailable"
