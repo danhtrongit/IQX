@@ -144518,7 +144518,8 @@
                               "flashback_refund",
                               "signup_bonus",
                               "card_purchase",
-                              "dojo_reward"
+                              "dojo_reward",
+                              "demo_exchange_refund"
                             ],
                             "type": "string"
                           },
@@ -144665,6 +144666,7 @@
     },
     "/api/v2/shop/demo-exchange": {
       "post": {
+        "deprecated": true,
         "operationId": "exchangeShopDemoCash",
         "parameters": [],
         "requestBody": {
@@ -144701,7 +144703,7 @@
               }
             }
           },
-          "required": true
+          "required": false
         },
         "responses": {
           "200": {
@@ -144771,7 +144773,7 @@
                 }
               }
             },
-            "description": ""
+            "description": "Legacy shape, never returned since update 19-11"
           },
           "400": {
             "content": {
@@ -144793,8 +144795,8 @@
             },
             "description": "Authentication required"
           },
-          "409": {
-            "description": "INSUFFICIENT_XU, INSUFFICIENT_CASH (details[0] has cash_available_vnd/amount_vnd/shortfall_vnd), IDEMPOTENCY_KEY_REUSED"
+          "410": {
+            "description": "DEMO_EXCHANGE_REMOVED: đổi xu <-> tiền Demo đã bỏ; xu và tiền Demo không đổi"
           },
           "422": {
             "content": {
@@ -144832,7 +144834,7 @@
             "bearer": []
           }
         ],
-        "summary": "Đổi xu hai chiều với tiền Demo Trading (1 xu = 10.000 VND; idempotent)",
+        "summary": "Đã bỏ: không còn đổi xu <-> tiền Demo (luôn 410 DEMO_EXCHANGE_REMOVED)",
         "tags": [
           "Shop"
         ],
@@ -145080,6 +145082,7 @@
     },
     "/api/v2/shop/premium-purchases": {
       "post": {
+        "deprecated": true,
         "operationId": "purchaseShopPremiumWithXu",
         "parameters": [],
         "requestBody": {
@@ -145118,7 +145121,7 @@
               }
             }
           },
-          "required": true
+          "required": false
         },
         "responses": {
           "200": {
@@ -145191,7 +145194,7 @@
                 }
               }
             },
-            "description": ""
+            "description": "Legacy shape, never returned since update 19-11"
           },
           "400": {
             "content": {
@@ -145213,8 +145216,8 @@
             },
             "description": "Authentication required"
           },
-          "409": {
-            "description": "PREMIUM_PURCHASE_LIMIT, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu), IDEMPOTENCY_KEY_REUSED"
+          "410": {
+            "description": "SHOP_PREMIUM_REMOVED: Premium mua bằng xu đã bỏ; xu không đổi"
           },
           "422": {
             "content": {
@@ -145252,7 +145255,7 @@
             "bearer": []
           }
         ],
-        "summary": "Mua Premium 30 ngày bằng xu (idempotent; tối đa 1 lần mỗi 30 ngày)",
+        "summary": "Đã bỏ: Premium không còn bán bằng xu (luôn 410 SHOP_PREMIUM_REMOVED, không trừ xu)",
         "tags": [
           "Shop"
         ],

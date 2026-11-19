@@ -1,6 +1,8 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Put, Query } from '@nestjs/common';
 import {
+  ApiBody,
   ApiConflictResponse,
+  ApiGoneResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -27,10 +29,8 @@ import {
   purchaseStatusSchema,
   shopStateSchema,
   type ActiveMascotBody,
-  type DemoExchangeBody,
   type EvolveBody,
   type LedgerQuery,
-  type PremiumPurchaseBody,
   type PurchaseBody,
 } from './shop.schemas.js';
 import { ShopService } from './shop.service.js';
@@ -139,39 +139,50 @@ export class ShopController {
     return this.shop.evolvePet(user.id, mascotId, body);
   }
 
+  /**
+   * Removed by update 19-11 (Bố cục SPEC §7): always 410 `SHOP_PREMIUM_REMOVED`, the body is not
+   * validated and xu, the coin ledger and Premium are never touched. The legacy body/200 shapes
+   * stay documented (deprecated) so older clients keep compiling until they drop the call.
+   */
   @Post('premium-purchases')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'purchaseShopPremiumWithXu',
-    summary: 'Mua Premium 30 ngày bằng xu (idempotent; tối đa 1 lần mỗi 30 ngày)',
+    deprecated: true,
+    summary: 'Đã bỏ: Premium không còn bán bằng xu (luôn 410 SHOP_PREMIUM_REMOVED, không trừ xu)',
   })
-  @ApiOkResponse({ schema: openApi(premiumPurchaseResultSchema) })
-  @ApiConflictResponse({
-    description:
-      'PREMIUM_PURCHASE_LIMIT, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu), IDEMPOTENCY_KEY_REUSED',
+  @ApiBody({ required: false, schema: openApi(premiumPurchaseBodySchema) })
+  @ApiOkResponse({
+    description: 'Legacy shape, never returned since update 19-11',
+    schema: openApi(premiumPurchaseResultSchema),
   })
-  purchasePremium(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body({ schema: premiumPurchaseBodySchema }) body: PremiumPurchaseBody,
-  ) {
-    return this.shop.purchasePremium(user.id, body);
+  @ApiGoneResponse({
+    description: 'SHOP_PREMIUM_REMOVED: Premium mua bằng xu đã bỏ; xu không đổi',
+  })
+  purchasePremium(): never {
+    return this.shop.purchasePremium();
   }
 
+  /**
+   * Removed by update 19-11 (Bố cục SPEC §8.1): both directions always answer 410
+   * `DEMO_EXCHANGE_REMOVED`; xu and Demo cash never change.
+   */
   @Post('demo-exchange')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'exchangeShopDemoCash',
-    summary: 'Đổi xu hai chiều với tiền Demo Trading (1 xu = 10.000 VND; idempotent)',
+    deprecated: true,
+    summary: 'Đã bỏ: không còn đổi xu <-> tiền Demo (luôn 410 DEMO_EXCHANGE_REMOVED)',
   })
-  @ApiOkResponse({ schema: openApi(demoExchangeResultSchema) })
-  @ApiConflictResponse({
-    description:
-      'INSUFFICIENT_XU, INSUFFICIENT_CASH (details[0] has cash_available_vnd/amount_vnd/shortfall_vnd), IDEMPOTENCY_KEY_REUSED',
+  @ApiBody({ required: false, schema: openApi(demoExchangeBodySchema) })
+  @ApiOkResponse({
+    description: 'Legacy shape, never returned since update 19-11',
+    schema: openApi(demoExchangeResultSchema),
   })
-  exchangeDemo(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body({ schema: demoExchangeBodySchema }) body: DemoExchangeBody,
-  ) {
-    return this.shop.exchangeDemo(user.id, body);
+  @ApiGoneResponse({
+    description: 'DEMO_EXCHANGE_REMOVED: đổi xu <-> tiền Demo đã bỏ; xu và tiền Demo không đổi',
+  })
+  exchangeDemo(): never {
+    return this.shop.exchangeDemo();
   }
 }

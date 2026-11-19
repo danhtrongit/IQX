@@ -34,7 +34,10 @@ export type TradingAccount = {
   cashAvailableVnd: Money;
   cashReservedVnd: Money;
   cashPendingVnd: Money;
-  /** Net capital deposited from outside (xu converted into cash, minus cash converted out). */
+  /**
+   * Legacy net capital (old grant + xu converted into cash − cash converted back). Since update
+   * 19-11 it is 100.000.000 VND on every account and no longer the base of the profit %.
+   */
   netDepositedCashVnd: Money;
   activatedAt: Date;
   resetAt: Date | null;
