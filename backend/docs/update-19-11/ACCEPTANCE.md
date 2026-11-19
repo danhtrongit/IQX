@@ -28,7 +28,7 @@ QA run: 2026-11-20, branch `u1911-qa`. First pass on `main` 16221ef6. Second pas
 
 | Spec | PASS | FAIL | NOT-TESTABLE-LOCALLY | NOT TESTED |
 | --- | --- | --- | --- | --- |
-| Bố cục v1.3 §9 (N01–N22) | 21 | 0 | 1 (N20) | 0 |
+| Bố cục v1.3 §9 (N01–N22) | 22 | 0 | 0 | 0 |
 | Tab IQX §7 (items 1–29) | 29 | 0 | 0 | 0 |
 
 The first pass found one product bug, beside N13 and v1.2 §5. It is **fixed** in f79936e2; see "Bug found (fixed)" at the end. No new product bug was found in the second pass.
@@ -74,7 +74,7 @@ The first pass found one product bug, beside N13 and v1.2 §5. It is **fixed** i
 | N17 | unit `demo-capital-consistency.test.ts`; api: the admin PnL is based on 100,000,000 | PASS |
 | N18 | e2e `N18 LUYỆN TẬP ↔ FLASHBACK nhiều lần…`: 3 round trips. Each section keeps its tool, the Giao dịch tab (Tin tức) and its collapsed or open state | PASS |
 | N19 | e2e `N19 link cũ §6…` (16 old links plus `/hoc-vien/<lesson>`); e2e `demo-tabs` and `introduction` redirect tests; prod: 14 links match, status 200, no 404 text | PASS. The web has no room-invite URL (the room UI only has "Sao chép ID"). `view=flashback&room=123456` keeps `room=` on prod, so the "invite link goes straight into the room" part only covers keeping the parameter. |
-| N20 | — | NOT-TESTABLE-LOCALLY. It needs before and after snapshots of production user data around the deploy. |
+| N20 | Prod 2026-11-20: backup `pre-u1911-20261119T194728Z.dump` restored into a throwaway DB and compared with live after both deploys (row hashes) | PASS. Same rows and hashes: bot_accounts 50, bot_positions 29, bot_instances 50, bot_cash_ledger 80, practice_progress 20, cd_user_progress 6, cd_user_cards 35, mascot_ownerships 66, pet_levels 1, fb_rooms 184, fb_room_members 352, virtual_positions 21, virtual_orders 85, virtual_trades 82; shared_config_revisions 242 identical on its old columns (0057 only added `source_label`, all NULL). coin_wallets differ only for the 3 §8.2 refunds (+1000, +100, +1000 xu). virtual_trading_accounts changed only as §8.2 (logged in demo_reset_100m_log). |
 | N21 | e2e `N21 LUYỆN TẬP {360,390}px…` and `N21 FLASHBACK {360,390}px…`: no horizontal overflow, the rail works, tapping a tool opens its panel layer, closing works, and the Giao dịch tabs switch. Prod: no overflow at 360 and 390. Screenshots: `e2e-N21-*`, `prod-{360,390}-*` | PASS |
 | N22 | e2e `N22 {900,1024,1440,1920}px` with the panel open and collapsed on Giao dịch, Bot, Shop and Flashback. It asserts `data-rail="column"` at every width, no overflow, and the rail at the right edge. Prod check at the same widths was done on 2026-11-19, before the fix. Screenshots: `e2e-N22-*`, `prod-{900,1024,1440,1920}-*` | PASS (on f79936e2). The first pass failed at 900 px: Bot, Học viện, Flashback and Shop showed a top rail bar. Since f79936e2 the bar applies only below 768 px, so at 900 px the rail is a column at the right edge. Prod keeps the old 900 px behaviour until this is deployed. |
 
