@@ -446,7 +446,7 @@ describe("LUYỆN TẬP layout behaviour", () => {
 
   it("puts the long-form tools in a bar above the main area on phones; the bar opens the layer", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
-      matches: query === "(max-width: 900px)",
+      matches: (query === "(max-width: 900px)" || query === "(max-width: 767px)"),
       media: query,
       addEventListener() {},
       removeEventListener() {},

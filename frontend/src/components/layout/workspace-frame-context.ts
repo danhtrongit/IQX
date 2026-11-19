@@ -13,6 +13,25 @@ function overlaySnapshot() {
   return typeof window.matchMedia === "function" && window.matchMedia(OVERLAY_QUERY).matches
 }
 
+/** Phones (layout v1.3 N21/N22): only here may a long-form section turn its rail into a top bar. */
+const PHONE_QUERY = "(max-width: 767px)"
+
+function subscribePhone(onChange: () => void) {
+  if (typeof window.matchMedia !== "function") return () => {}
+  const media = window.matchMedia(PHONE_QUERY)
+  media.addEventListener("change", onChange)
+  return () => media.removeEventListener("change", onChange)
+}
+
+function phoneSnapshot() {
+  return typeof window.matchMedia === "function" && window.matchMedia(PHONE_QUERY).matches
+}
+
+/** `true` below 768px. Between 768px and 900px the panel is a layer but the rail stays at the right edge. */
+export function useWorkspacePhone(): boolean {
+  return useSyncExternalStore(subscribePhone, phoneSnapshot, () => false)
+}
+
 /** `true` at 900px and below, where the panel is a layer. Works outside the frame too. */
 export function useWorkspaceOverlay(): boolean {
   return useSyncExternalStore(subscribeOverlay, overlaySnapshot, () => false)

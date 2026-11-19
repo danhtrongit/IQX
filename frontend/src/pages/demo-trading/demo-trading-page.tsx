@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useLayoutEffect, type ComponentProps } from "react"
+import { lazy, Suspense, useCallback, useLayoutEffect, useRef, type ComponentProps } from "react"
 import { useLocation, useNavigate, useSearchParams } from "react-router"
 
 import { PanelState } from "@/components/layout/panel-state"
@@ -150,8 +150,12 @@ function DemoWorkspace({ section }: { section: WorkspaceSection }) {
   // A direct link to a tool always shows its panel; a collapsed panel belongs to its own tool only.
   const openRequested = navigationState?.openPanel === true
   const collapsedTool = sectionMemory?.collapsedTool ?? null
+  // An "open the panel" link is honoured once per navigation; a later click on the rail may collapse it again.
+  const handledOpenKey = useRef<string | null>(null)
   useLayoutEffect(() => {
-    if (collapsedTool !== null && (openRequested || collapsedTool !== activeId)) workspaceMemory.setCollapsedTool(section, null)
+    const freshOpen = openRequested && handledOpenKey.current !== location.key
+    if (freshOpen) handledOpenKey.current = location.key
+    if (collapsedTool !== null && (freshOpen || collapsedTool !== activeId)) workspaceMemory.setCollapsedTool(section, null)
   }, [location.key, openRequested, collapsedTool, activeId, section])
 
   function selectSymbol(nextSymbol: string) {

@@ -111,7 +111,7 @@ beforeEach(() => {
   media.listeners = new Set()
   vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} })
   vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query === "(max-width: 900px)" && media.matches,
+    matches: (query === "(max-width: 900px)" || query === "(max-width: 767px)") && media.matches,
     media: query,
     addEventListener: (_: string, listener: () => void) => media.listeners.add(listener),
     removeEventListener: (_: string, listener: () => void) => media.listeners.delete(listener),

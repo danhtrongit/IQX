@@ -23,7 +23,6 @@ const mainTabs = (page: Page) => page.getByRole("tablist", { name: "Nội dung g
 const tradingTabs = (page: Page) => page.locator('[data-trading-panel]:not([hidden]) [role="tablist"][aria-label="Giao dịch"]')
 const tradingTab = (page: Page, id: string) => tradingTabs(page).locator(`[data-trading-tab="${id}"]`)
 const visiblePanels = (page: Page) => page.locator("[data-trading-panel]:not([hidden])")
-const param = (page: Page, key: string) => new URL(page.url()).searchParams.get(key)
 const mainWidth = (page: Page) => page.locator(".workspace-main").evaluate((element) => Math.round(element.getBoundingClientRect().width))
 
 async function member(page: Page, options: MemberOptions = {}) {
@@ -225,11 +224,7 @@ test.describe("Bố cục v1.3 · máy tính", () => {
     await expect(frame(page)).toHaveAttribute("data-panel-collapsed", "false")
   })
 
-  test("BUG N13/v1.2 §5: sau khi mở Shop bằng nút xu, bấm Shop không thu được panel", async ({ page }) => {
-    // demo-trading-page.tsx:151-155: while `location.state.openPanel` is true (set by the coin chip and every
-    // cross-section link), the layout effect clears `collapsedTool` again right after the click, so the panel
-    // re-opens at once. Marked as an expected failure: it starts passing once the bug is fixed.
-    test.fail(true, "Known product bug: panel cannot be collapsed after arriving with state.openPanel")
+  test("N13/v1.2 §5: sau khi mở Shop bằng nút xu, bấm Shop thu được panel", async ({ page }) => {
     await page.goto("/luyen-tap?tool=bot")
     await page.getByTestId("header-coin-chip").click()
     await expect(page).toHaveURL(/\/flashback\?tool=shop/)
@@ -395,8 +390,8 @@ test.describe("Bố cục v1.3 · N22 900/1024/1440/1920", () => {
           const box = await rail(page).boundingBox()
           const layout = await frame(page).getAttribute("data-rail")
           report.push(`${width}px ${url} ${state}: rail=${layout} x=${Math.round(box!.x)} right=${Math.round(box!.x + box!.width)}`)
-          if (width > 900) {
-            expect(layout).toBe("column")
+          expect(layout).toBe("column")
+          if (width > 900 || state === "open") {
             expect(Math.round(box!.x + box!.width), `${url} ${state}`).toBe(width)
           }
         }

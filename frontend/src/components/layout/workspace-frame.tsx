@@ -13,7 +13,7 @@ import {
   WorkspaceFrameContext,
   WorkspaceToggleRegistryContext,
   useWorkspaceFrame,
-  useWorkspaceOverlay,
+  useWorkspaceOverlay, useWorkspacePhone,
   useWorkspaceToggleRegistry,
   type WorkspaceFrameState,
 } from "./workspace-frame-context"
@@ -94,6 +94,7 @@ export function WorkspaceFrame({
   // The control that last opened the layer; Escape and the close button return focus to it.
   const triggerRef = useRef<HTMLElement | null>(null)
   const overlay = useWorkspaceOverlay()
+  const phone = useWorkspacePhone()
   const [openState, setOpenState] = useState(defaultPanelOpen)
   const [wasOverlay, setWasOverlay] = useState(overlay)
   if (wasOverlay !== overlay) {
@@ -116,7 +117,7 @@ export function WorkspaceFrame({
   const open = overlay && openState && !panelHidden
   const collapsed = !overlay && collapsedValue
   const panelShown = !panelHidden && (overlay ? open : !collapsed)
-  const railBar = overlay && phoneRail === "bar" && !railHidden
+  const railBar = overlay && phone && phoneRail === "bar" && !railHidden
 
   const setCollapsed = useCallback((next: boolean) => {
     if (controlledCollapsed === undefined) setUncontrolledCollapsed(next)

@@ -172,7 +172,7 @@ export async function mockMember(page: Page, options: MemberOptions = {}) {
     const p = url.pathname.replace(/^.*\/api\/v2/, "")
     const method = route.request().method()
     const raw = route.request().postData()
-    let body: unknown = null
+    let body: unknown
     try { body = raw ? JSON.parse(raw) : null } catch { body = raw }
     calls?.push({ method, path: p, body })
 
