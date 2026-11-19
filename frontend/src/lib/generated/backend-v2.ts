@@ -55162,7 +55162,8 @@ export type ListShopCoinLedgerResponses = {
         | "flashback_refund"
         | "signup_bonus"
         | "card_purchase"
-        | "dojo_reward";
+        | "dojo_reward"
+        | "demo_exchange_refund";
       label: {
         card_id: string | null;
         card_name: string | null;
@@ -55182,7 +55183,7 @@ export type ListShopCoinLedgerResponse =
   ListShopCoinLedgerResponses[keyof ListShopCoinLedgerResponses];
 
 export type ExchangeShopDemoCashData = {
-  body: {
+  body?: {
     amount: number;
     direction: "xu_to_cash" | "cash_to_xu";
     idempotency_key: string;
@@ -55202,9 +55203,9 @@ export type ExchangeShopDemoCashErrors = {
    */
   401: ApiErrorV2;
   /**
-   * INSUFFICIENT_XU, INSUFFICIENT_CASH (details[0] has cash_available_vnd/amount_vnd/shortfall_vnd), IDEMPOTENCY_KEY_REUSED
+   * DEMO_EXCHANGE_REMOVED: đổi xu <-> tiền Demo đã bỏ; xu và tiền Demo không đổi
    */
-  409: unknown;
+  410: unknown;
   /**
    * Request validation failed
    */
@@ -55223,6 +55224,9 @@ export type ExchangeShopDemoCashError =
   ExchangeShopDemoCashErrors[keyof ExchangeShopDemoCashErrors];
 
 export type ExchangeShopDemoCashResponses = {
+  /**
+   * Legacy shape, never returned since update 19-11
+   */
   200: {
     amount: number;
     balance_xu: number;
@@ -55307,7 +55311,7 @@ export type EvolveShopPetResponse =
   EvolveShopPetResponses[keyof EvolveShopPetResponses];
 
 export type PurchaseShopPremiumWithXuData = {
-  body: {
+  body?: {
     days?: number;
     expected_price_xu: number;
     idempotency_key: string;
@@ -55328,9 +55332,9 @@ export type PurchaseShopPremiumWithXuErrors = {
    */
   401: ApiErrorV2;
   /**
-   * PREMIUM_PURCHASE_LIMIT, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu), IDEMPOTENCY_KEY_REUSED
+   * SHOP_PREMIUM_REMOVED: Premium mua bằng xu đã bỏ; xu không đổi
    */
-  409: unknown;
+  410: unknown;
   /**
    * Request validation failed
    */
@@ -55349,6 +55353,9 @@ export type PurchaseShopPremiumWithXuError =
   PurchaseShopPremiumWithXuErrors[keyof PurchaseShopPremiumWithXuErrors];
 
 export type PurchaseShopPremiumWithXuResponses = {
+  /**
+   * Legacy shape, never returned since update 19-11
+   */
   200: {
     days_granted: number;
     ends_at: string;
