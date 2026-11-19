@@ -1,7 +1,7 @@
 /**
  * Update 19-11 acceptance (frontend-observable cases), API mocked:
  * - `backend/docs/update-19-11/IQX-Bo-Cuc-SPEC.md` §9: N01–N13, N15 (UI), N18, N19, N21, N22.
- * - `backend/docs/update-19-11/IQX-Tab-IQX-Loc-Backtest-SPEC.md` §7: 1, 2, 4, 6 (UI), 9, 10, 12, 14, 15, 17, 23/24, 29.
+ * - `backend/docs/update-19-11/IQX-Tab-IQX-Loc-Backtest-SPEC.md` §7: 1, 2, 4, 5, 6 (UI), 7, 8, 9, 10, 12, 14, 15, 17, 21, 23/24, 29.
  * Screenshots of key states go to `backend/docs/update-19-11/evidence/` (`e2e-*.png`).
  */
 import path from "node:path"
@@ -672,3 +672,306 @@ test.describe("Tab IQX · 390px (§7.5 item 29)", () => {
   })
 })
 
+
+/* ═══════════════════════ Tab IQX §7 items 5, 7, 8, 21 ═══════════════════════ */
+
+type Calls = NonNullable<MemberOptions["calls"]>
+type Definition = Record<string, unknown>
+
+const runBodies = (calls: Calls) => calls.filter((call) => call.method === "POST" && call.path === "/strategy/screener/run").map((call) => call.body as Definition)
+/** A definition without `origin` (the only field allowed to differ from a filter built by hand). */
+const withoutOrigin = (definition: Definition) => {
+  const { origin: _origin, ...rest } = definition
+  void _origin
+  return rest
+}
+
+async function runFilter(page: Page, calls: Calls) {
+  const before = runBodies(calls).length
+  await page.getByRole("button", { name: "Chạy bộ lọc" }).click()
+  await expect.poll(() => runBodies(calls).length).toBe(before + 1)
+  return runBodies(calls).at(-1)!
+}
+
+async function useIqxFilter(page: Page, name: string) {
+  const library = filterLibrary(page)
+  await library.getByRole("tab", { name: "IQX" }).click()
+  await library.getByRole("button", { name: `Dùng ${name}` }).click()
+  await expect(page.getByTestId("iqx-filter-strip")).toContainText(name)
+}
+
+/** Sets one field of a technical card (input or select) by its accessible name. */
+async function setField(page: Page, label: string, value: string) {
+  const field = page.getByRole("region", { name: "Kỹ thuật" }).getByLabel(label, { exact: true })
+  if ((await field.evaluate((element) => element.tagName)) === "SELECT") await field.selectOption(value)
+  else await field.fill(value)
+}
+
+async function setSwitch(page: Page, name: string, on: boolean) {
+  const control = page.getByRole("region", { name: "Kỹ thuật" }).getByRole("switch", { name })
+  if ((await control.getAttribute("aria-checked")) !== String(on)) await control.click()
+  await expect(control).toHaveAttribute("aria-checked", String(on))
+}
+
+/** Thị trường of the two technical Bộ lọc IQX: basket VN100, GTGD TB20 ≥ {min} tỷ. */
+async function setMarket(page: Page, avgMin: string) {
+  const market = page.getByRole("region", { name: "Thị trường" })
+  await market.getByRole("group", { name: "Rổ chỉ số" }).getByRole("button", { name: "VN100" }).click()
+  await market.getByLabel("Giá trị giao dịch bình quân tối thiểu (tỷ đồng)").fill(avgMin)
+}
+
+async function addTechnical(page: Page, name: string) {
+  const library = filterLibrary(page)
+  await library.getByRole("tab", { name: "Kỹ thuật" }).click()
+  await library.getByRole("button", { name: `Thêm ${name} vào điều kiện kỹ thuật` }).click()
+}
+
+/** §2.4 by hand: the same items and values as the seed of each Bộ lọc IQX, entered in the form like a user would. */
+const BY_HAND: Record<string, (page: Page) => Promise<void>> = {
+  hoiphuc: async (page) => {
+    await setMarket(page, "5")
+    await addTechnical(page, "Bollinger Bands")
+    await addTechnical(page, "RSI")
+    await addTechnical(page, "Khối lượng")
+    await setField(page, "Hành động giá với Bollinger (dòng 1, Bollinger Bands)", "reenter_lower")
+    await setField(page, "Chu kỳ Bollinger (dòng 1, Bollinger Bands)", "20")
+    await setField(page, "Hệ số độ lệch chuẩn (dòng 1, Bollinger Bands)", "2")
+    await setSwitch(page, "Bật dòng 1 của Bollinger Bands", true)
+    await setField(page, "Biến động giá (dòng 2, Bollinger Bands)", "up")
+    await setSwitch(page, "Bật dòng 2 của Bollinger Bands", false)
+    await setField(page, "Biến động độ rộng dải (dòng 3, Bollinger Bands)", "narrow")
+    await setSwitch(page, "Bật dòng 3 của Bollinger Bands", false)
+    await setField(page, "Chu kỳ RSI (dòng 1, RSI)", "14")
+    await setField(page, "Dấu so sánh (dòng 1, RSI)", "<")
+    await setField(page, "Ngưỡng RSI (dòng 1, RSI)", "35")
+    await setSwitch(page, "Bật dòng 2 của RSI", false)
+    await setField(page, "Số phiên tham chiếu", "20")
+    await setField(page, "Hệ số khối lượng", "1,1")
+  },
+  phadinh: async (page) => {
+    await setMarket(page, "10")
+    await addTechnical(page, "Donchian Channel")
+    await addTechnical(page, "OBV")
+    await addTechnical(page, "Bollinger Bands")
+    await setSwitch(page, "Bật dòng 1 của Bollinger Bands", false)
+    await setField(page, "Biến động giá (dòng 2, Bollinger Bands)", "up")
+    await setSwitch(page, "Bật dòng 2 của Bollinger Bands", false)
+    await setField(page, "Biến động độ rộng dải (dòng 3, Bollinger Bands)", "widen")
+    await setSwitch(page, "Bật dòng 3 của Bollinger Bands", true)
+  },
+}
+
+/** Every field of the technical region, for a readable diff when a template cannot be matched by hand. */
+const technicalFields = (page: Page) =>
+  page.getByRole("region", { name: "Kỹ thuật" }).locator("input, select, [role=switch]").evaluateAll((elements) =>
+    elements.map((element) => `${element.getAttribute("aria-label") ?? (element.id ? document.querySelector(`label[for="${element.id}"]`)?.textContent : "")} = ${element.getAttribute("role") === "switch" ? element.getAttribute("aria-checked") : (element as HTMLInputElement).value}`),
+  )
+
+test.describe("Tab IQX · §7.1 item 5, 7, 8 và §7.4 item 21", () => {
+  for (const slug of ["hoiphuc", "phadinh"]) {
+    const item = IQX_FILTERS.find((entry) => entry.slug === slug)!
+    test(`§7.1 item 5: ${item.content.name} — lệnh chạy sau Dùng giống hệt bộ lọc tự dựng tay (trừ origin)`, async ({ page, context }) => {
+      const calls: Calls = []
+      await member(page, { premium: true, calls })
+      await desktop(page)
+      await openFilter(page)
+      await useIqxFilter(page, item.content.name)
+      const fromIqx = await runFilter(page, calls)
+      // The run sends the criteria only; `origin` travels with a save (checked in item 6).
+
+      // A fresh tab (no draft): the same filter entered by hand.
+      const manual = await context.newPage()
+      const manualCalls: Calls = []
+      await member(manual, { premium: true, calls: manualCalls })
+      await desktop(manual)
+      await openFilter(manual)
+      await BY_HAND[slug]!(manual)
+      const byHand = await runFilter(manual, manualCalls)
+      expect(byHand.origin).toBeUndefined()
+      // The name of an unsaved form is the same on both sides ("Bộ lọc chưa lưu").
+      expect(withoutOrigin(fromIqx), (await technicalFields(manual)).join("\n")).toEqual(withoutOrigin(byHand))
+      await manual.close()
+    })
+  }
+
+  test("§7.1 item 7: bấm mã trong kết quả có dải IQX mở Backtest mã đó với Chiến lược IQX đi cặp; hỏi khi bản nháp khác", async ({ page }) => {
+    const calls: Calls = []
+    await member(page, { premium: true, calls })
+    await desktop(page)
+    const filter = IQX_FILTERS.find((entry) => entry.slug === "hoiphuc")!
+    const pair = IQX_STRATEGIES.find((entry) => entry.id === filter.pair!.id)!
+    const other = IQX_STRATEGIES.find((entry) => entry.slug === "macd")!
+
+    // A Backtest draft that differs from the pair.
+    await openBacktest(page)
+    await backtestLibrary(page).getByRole("tab", { name: "IQX" }).click()
+    await backtestLibrary(page).getByRole("button", { name: `Dùng ${other.content.name}` }).click()
+    await expect(page.getByTestId("iqx-strategy-strip")).toContainText(other.content.name)
+
+    // Bộ lọc tab (the Backtest draft stays mounted): Dùng, Chạy, the strip says "Đi cặp với".
+    await page.getByRole("tab", { name: "Bộ lọc" }).click()
+    await expect(page.getByRole("region", { name: "Cơ bản" })).toBeVisible()
+    await useIqxFilter(page, filter.content.name)
+    await page.getByTestId("iqx-filter-strip").getByRole("button", { name: "Xem thêm" }).click()
+    await expect(page.getByTestId("iqx-filter-strip")).toContainText(`Đi cặp với`)
+    await expect(page.getByTestId("iqx-filter-strip")).toContainText(pair.content.name)
+    await runFilter(page, calls)
+    const link = page.locator(`a[href*="iqx=${pair.id}"]`).first()
+    await expect(link).toBeVisible()
+    const href = (await link.getAttribute("href"))!
+    const symbol = new URL(href, "http://x").searchParams.get("symbol")!
+    expect(href).toContain("tab=backtest")
+    await shot(page, "IQX-7-bo-loc-ket-qua-dai-iqx-1440")
+    await link.click()
+
+    // The draft differs: confirm first; Hủy keeps it, then the link again and confirm replaces it.
+    const confirm = page.getByRole("dialog", { name: "Thay bản nháp đang chỉnh?" })
+    await expect(confirm).toBeVisible()
+    await shot(page, "IQX-7-backtest-xac-nhan-1440")
+    await confirm.getByRole("button", { name: "Hủy" }).click()
+    await expect(page.getByTestId("iqx-strategy-strip")).toContainText(other.content.name)
+    await page.getByRole("tab", { name: "Bộ lọc" }).click()
+    await page.locator(`a[href*="iqx=${pair.id}"]`).first().click()
+    await page.getByRole("dialog", { name: "Thay bản nháp đang chỉnh?" }).getByRole("button", { name: "Thay bằng chiến lược IQX" }).click()
+    await expect(page.getByTestId("iqx-strategy-strip")).toContainText(pair.content.name)
+    await expect(page.getByLabel("Giữ tối đa (phiên)")).toHaveValue(String((pair.content as { max_holding?: number }).max_holding ?? 10))
+    await expect(page).toHaveURL(new RegExp(`tab=backtest.*symbol=${symbol}`))
+    await expect(page).not.toHaveURL(/iqx=/)
+    await expect(page.getByRole("region", { name: "Thông tin kiểm thử" })).toContainText(symbol)
+    await shot(page, "IQX-7-backtest-di-cap-1440")
+  })
+
+  test("§7.1 item 7: không có bản nháp thì bấm mã điền ngay Chiến lược IQX đi cặp, không hỏi", async ({ page }) => {
+    const calls: Calls = []
+    await member(page, { premium: true, calls })
+    await desktop(page)
+    const filter = IQX_FILTERS.find((entry) => entry.slug === "phadinh")!
+    const pair = IQX_STRATEGIES.find((entry) => entry.id === filter.pair!.id)!
+    await openFilter(page)
+    await useIqxFilter(page, filter.content.name)
+    await runFilter(page, calls)
+    await page.locator(`a[href*="iqx=${pair.id}"]`).first().click()
+    await expect(page.getByTestId("iqx-strategy-strip")).toContainText(pair.content.name)
+    await expect(page.getByRole("dialog")).toHaveCount(0)
+    await expect(page.getByTestId("draft-badge")).toBeVisible()
+  })
+
+  test("§7.1 item 8: tab IQX, thẻ, dải và chân thư viện không có chữ nào về học bài, khóa, Học viện", async ({ page }) => {
+    const calls: Calls = []
+    await member(page, { premium: true, calls })
+    await desktop(page)
+    // "Tham khảo để học, không phải khuyến nghị (đầu tư)." is the disclaimer the spec requires (§0.4), not a lesson.
+    const lessonText = (text: string) => text.replace(/Tham khảo để học, không phải khuyến nghị( đầu tư)?\./g, "").match(/bài học|\bhọc\b|khóa|khoá|Học viện/gi)
+    const check = async (where: string, locator: ReturnType<Page["locator"]>) => {
+      // Never a vacuous pass: the region is there and has text.
+      await expect(locator.first(), where).toBeVisible()
+      expect((await locator.allInnerTexts()).join(" ").length, where).toBeGreaterThan(40)
+      for (const text of await locator.allInnerTexts()) expect(lessonText(text), `${where}: ${text}`).toBeNull()
+      for (const label of await locator.locator("[aria-label], [title]").evaluateAll((elements) => elements.map((element) => `${element.getAttribute("aria-label") ?? ""} ${element.getAttribute("title") ?? ""}`)))
+        expect(lessonText(label), `${where} (nhãn): ${label}`).toBeNull()
+    }
+
+    await openFilter(page)
+    await filterLibrary(page).getByRole("tab", { name: "IQX" }).click()
+    // Expand every card (Nguồn gốc, Khi nào dễ sai…) before reading.
+    for (const toggle of await filterLibrary(page).locator('[aria-expanded="false"]').all()) await toggle.click().catch(() => undefined)
+    await check("Bộ lọc · tab IQX", filterLibrary(page).getByRole("tabpanel"))
+    await useIqxFilter(page, IQX_FILTERS[5]!.content.name)
+    await check("Bộ lọc · dải IQX", page.getByTestId("iqx-filter-strip"))
+    await runFilter(page, calls)
+    await check("Bộ lọc · dải IQX sau khi chạy", page.getByTestId("iqx-filter-strip"))
+
+    await page.getByRole("tab", { name: "Backtest" }).click()
+    await expect(page.getByRole("heading", { name: "Điều kiện Mua" })).toBeVisible()
+    await backtestLibrary(page).getByRole("tab", { name: "IQX" }).click()
+    for (const toggle of await backtestLibrary(page).locator('[aria-expanded="false"]').all()) await toggle.click().catch(() => undefined)
+    await check("Backtest · tab IQX", backtestLibrary(page).getByRole("tabpanel"))
+    await backtestLibrary(page).getByRole("button", { name: `Dùng ${IQX_STRATEGIES[0]!.content.name}` }).click()
+    await check("Backtest · dải IQX", page.getByTestId("iqx-strategy-strip"))
+    await shot(page, "IQX-8-backtest-tab-iqx-mo-rong-1440")
+  })
+
+  test("§7.4 item 21: quản trị viên soạn và xuất bản bằng đúng form, người dùng bấm Dùng ra đúng định nghĩa đã xuất bản", async ({ page, context }) => {
+    const NEW_ID = "c0000000-0000-4000-8000-000000000099"
+    const list = { filter: [...IQX_FILTERS], strategy: [...IQX_STRATEGIES] }
+    const published: { content?: Record<string, unknown> & { definition: Definition } } = {}
+    const adminCalls: Calls = []
+    await member(page, { premium: true, role: "admin", calls: adminCalls })
+    const detail = (content: Record<string, unknown>, version: number | null) => ({
+      id: NEW_ID, kind: "filter", slug: "thu-nghiem", sort_order: 7, visibility: "shown", status: version === null ? "unpublished" : "shown", current_version: version,
+      name: content.name, idea: content.idea, has_draft: version === null, draft_updated_at: version === null ? "2026-11-20T01:00:00.000Z" : null,
+      updated_at: "2026-11-20T01:00:00.000Z", updated_by: { id: "member-1", name: "Quản trị IQX" }, used_30d: 0,
+      draft: version === null ? content : null, draft_updated_by: null,
+      current: version === null ? null : { version, content, published_at: "2026-11-20T01:00:00.000Z", published_by: { id: "member-1", name: "Quản trị IQX" }, reason: "Ra mắt" },
+      versions: [], history: [],
+    })
+    await page.route("**/api/v2/admin/iqx-templates**", async (route) => {
+      const url = new URL(route.request().url())
+      const method = route.request().method()
+      const body = route.request().postDataJSON() as Record<string, unknown> | null
+      adminCalls.push({ method, path: url.pathname.replace(/^.*\/api\/v2/, ""), body })
+      if (method === "POST" && url.pathname.endsWith("/admin/iqx-templates")) return json(route, detail(body!.draft as Record<string, unknown>, null))
+      if (method === "POST" && url.pathname.endsWith("/publish")) {
+        published.content = structuredClone(body!.content) as typeof published.content
+        list.filter = [...list.filter, { id: NEW_ID, kind: "filter", slug: "thu-nghiem", version: 1, content: published.content as never, pair: null }]
+        return json(route, detail(published.content!, 1))
+      }
+      if (method === "GET" && url.pathname.endsWith("/admin/iqx-templates")) return json(route, { kind: url.searchParams.get("kind"), items: [] })
+      return json(route, detail({ name: "Thử nghiệm" }, null))
+    })
+    await desktop(page)
+    await page.goto("/admin/iqx-templates/filter/new")
+    await expect(page.getByRole("heading", { name: /^Soạn Bộ lọc IQX/ })).toBeVisible()
+    await page.getByLabel("Tên", { exact: true }).fill("Thử nghiệm RSI thấp")
+    await page.getByLabel(/Ý tưởng/).fill("Cổ phiếu VN30 có RSI thấp và khối lượng tăng.")
+    await page.getByLabel(/Nguồn gốc/).fill("Kinh nghiệm giao dịch đảo chiều.")
+    await page.getByLabel(/Khi nào dễ sai/).fill("Khi thị trường giảm kéo dài.")
+    // The form of the Bộ lọc tab in compose mode.
+    await page.getByRole("region", { name: "Thị trường" }).getByRole("group", { name: "Rổ chỉ số" }).getByRole("button", { name: "VN30" }).click()
+    await addTechnical(page, "RSI")
+    await addTechnical(page, "Khối lượng")
+    await setField(page, "Ngưỡng RSI (dòng 1, RSI)", "32")
+    await setSwitch(page, "Bật dòng 2 của RSI", false)
+    await setField(page, "Hệ số khối lượng", "1,5")
+    await shot(page, "IQX-21-admin-soan-1440")
+    await page.getByRole("button", { name: "Xuất bản…" }).click()
+    const dialog = page.getByRole("dialog")
+    await dialog.getByLabel("Lý do thay đổi").fill("Ra mắt mục thử nghiệm")
+    await dialog.getByRole("button", { name: "Xuất bản", exact: true }).click()
+    await expect.poll(() => published.content?.definition ?? null).not.toBeNull()
+    const adminDefinition = published.content!.definition
+    expect(adminDefinition.origin).toBeUndefined()
+    expect(adminDefinition.technical).toEqual([
+      { indicator: "rsi", rules: [{ id: "rsi.level", enabled: true, period: 14, op: "<", threshold: 32 }, { id: "rsi.trend", enabled: false, period: 14, dir: "up" }] },
+      { indicator: "volume", sessions: 20, factor: 1.5, ops: [">", ">"] },
+    ])
+    expect((adminDefinition.market as { baskets: string[] }).baskets).toEqual(["VN30"])
+
+    // A user: Dùng the new item, run, save.
+    const user = await context.newPage()
+    const userCalls: Calls = []
+    await member(user, { premium: true, iqx: list, calls: userCalls })
+    await desktop(user)
+    await openFilter(user)
+    await useIqxFilter(user, "Thử nghiệm RSI thấp")
+    const run = await runFilter(user, userCalls)
+    const { name: _runName, ...runRest } = withoutOrigin(run)
+    const { name: _adminName, ...adminRest } = adminDefinition
+    void _runName
+    void _adminName
+    expect(runRest).toEqual(adminRest)
+    // Saved, the user's filter keeps the published definition with its origin.
+    await user.getByRole("button", { name: "Lưu bộ lọc" }).click()
+    const save = user.getByRole("dialog", { name: "Lưu bộ lọc" })
+    await expect(save.getByLabel("Tên bộ lọc")).toHaveValue("Thử nghiệm RSI thấp (từ Bộ lọc IQX)")
+    await save.getByRole("button", { name: "Lưu bộ lọc" }).click()
+    await expect.poll(() => userCalls.filter((call) => call.method === "POST" && call.path === "/strategy/filters").length).toBe(1)
+    const saved = (userCalls.find((call) => call.method === "POST" && call.path === "/strategy/filters")!.body as { definition: Definition }).definition
+    expect(saved.origin).toEqual({ type: "iqx_filter", id: NEW_ID, version: 1 })
+    const { name: _savedName, ...savedRest } = withoutOrigin(saved)
+    void _savedName
+    expect(savedRest).toEqual(adminRest)
+    await shot(user, "IQX-21-nguoi-dung-dung-1440")
+    await user.close()
+  })
+})
