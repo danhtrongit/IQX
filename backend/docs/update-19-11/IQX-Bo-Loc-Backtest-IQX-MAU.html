@@ -1,0 +1,1116 @@
+<!doctype html>
+<!-- IQX MẪU: thêm tab IQX (bộ lọc và chiến lược dựng sẵn) cho Bộ lọc và Backtest. Dựa trên IQX MẪU v3: Bộ lọc (tab Chiến lược) — 2 nhóm: Cơ bản (gồm Thị trường + chỉ tiêu tài chính, xếp như Dashboard) và Kỹ thuật.
+     Chỉ là chuẩn nội dung và hành vi, KHÔNG thay giao diện iqx.vn. Dữ liệu cổ phiếu là MINH HỌA. -->
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IQX Bộ lọc và Backtest</title>
+<style>
+:root{--navy:#10253e;--ink:#1f2b3a;--ink2:#2b4260;--line:#d6e0eb;--soft:#f3f7fc;--blue:#0867d9;--blue2:#0758b6;--bsoft:#eaf3ff;--green:#137a44;--gsoft:#e6f4ed;--red:#c62f39;--rsoft:#fdeeee;--amber:#7a4306;--asoft:#fff7e8;--canvas:#eef2f7;
+font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #91bff9;outline-offset:2px}
+.page{max-width:1560px;margin:0 auto;padding:18px 18px 40px}
+.ph h1{margin:0;font-size:22px;color:var(--navy)}
+.ph p{margin:4px 0 12px;font-size:13px;color:var(--ink2)}
+.demo{display:inline-block;background:var(--rsoft);color:var(--red);border:1px solid #f1c0c3;font-size:11px;font-weight:800;padding:3px 8px;border-radius:5px;margin-left:8px;vertical-align:3px}
+.stabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.stabs span{padding:10px 16px;font-size:14px;font-weight:700;color:var(--ink2);border-bottom:3px solid transparent;white-space:nowrap}
+.stabs span.on{color:var(--blue2);border-bottom-color:var(--blue)}
+.wrap{display:grid;grid-template-columns:290px minmax(0,1fr);gap:16px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 30px rgba(15,35,66,.05)}
+/* Thư viện */
+.lib{position:sticky;top:12px;max-height:calc(100vh - 24px);display:flex;flex-direction:column}
+.lib-h{padding:14px 14px 10px;border-bottom:1px solid var(--line)}
+.lib-h b{font-size:15px;color:var(--navy)}
+.lib-h .search{margin-top:10px;display:flex;border:1px solid #cbd6e3;border-radius:7px;height:36px;padding:0 10px;align-items:center}
+.lib-h .search input{border:0;outline:0;width:100%;font-size:13px;background:transparent}
+.lib-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.lib-tabs button{height:32px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:12.5px;font-weight:700;color:var(--ink2)}
+.lib-tabs button.on{background:var(--bsoft);border-color:#7fb0ef;color:var(--blue2)}
+.lib-b{overflow:auto;padding:6px 8px 12px;flex:1}
+.sec-h{font-size:12.5px;font-weight:800;color:var(--navy);padding:12px 6px 4px;margin-top:4px;border-top:1px solid var(--line)}
+.sec-h:first-child{border-top:0;margin-top:0}
+.grp{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--navy);padding:10px 6px 4px}
+.it{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 6px;border-radius:6px;font-size:13px;font-weight:600}
+.it:hover{background:var(--soft)}
+.it .add{width:26px;height:26px;border-radius:6px;border:1px solid #9cc2f2;background:var(--bsoft);color:var(--blue2);font-weight:800;font-size:15px;line-height:1;flex:none}
+.it .ok{width:26px;text-align:center;color:var(--green);font-weight:800;flex:none}
+.it .lk{font-size:11px;color:var(--amber);font-weight:700;flex:none}
+.it.locked{opacity:.75}
+.lib-f{border-top:1px solid var(--line);padding:10px 14px;font-size:12px;color:var(--ink2);line-height:1.45}
+.drawerBtn{display:none}
+/* Khu chính */
+.main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px}
+.top h2{margin:0;font-size:17px;color:var(--navy)}
+.top .ver{font-size:13px;color:var(--ink2);margin-top:2px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border-radius:7px;padding:0 12px;height:36px;font-size:13px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--navy);white-space:nowrap}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.pri:hover{background:var(--blue2)}
+.btn.danger{color:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.botcard{padding:11px 16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px}
+.botcard b{color:var(--navy)}
+.sec{padding:14px 16px 16px}
+.sh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.sub-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.4px;margin:4px 0 10px;padding-top:10px;border-top:1px dashed var(--line)}
+.sub-h .tag{font-size:12px;text-transform:none;letter-spacing:0;font-weight:600;margin-left:auto}
+#mkBox{margin-bottom:16px}
+.sh h3{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)}
+.sh .tag{font-size:12px;font-weight:700;color:var(--ink2)}
+.new{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:var(--green);border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:1px;letter-spacing:.3px}
+.mkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px}
+.fld .lab{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--navy);margin-bottom:7px}
+.fld .lab button{border:0;background:none;padding:0;font-size:12px;font-weight:700;color:var(--blue2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;height:32px;padding:0 12px;font-size:13px;font-weight:650}
+.chip.on{background:var(--bsoft);border-color:#7fb0ef;color:var(--blue2)}
+.range{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.inp{display:inline-flex;align-items:center;border:1px solid #cbd6e3;border-radius:7px;height:36px;background:#fff;padding:0 8px;gap:5px}
+.inp input{border:0;outline:0;width:76px;height:34px;font-size:14px;font-variant-numeric:tabular-nums;background:transparent}
+.inp input.s{width:42px}
+.inp span{font-size:12px;color:var(--ink2);white-space:nowrap}
+.inp.bad{border-color:var(--red);background:var(--rsoft)}
+.dash{font-size:12.5px;color:var(--ink2)}
+.hint{font-size:12px;color:var(--ink2);margin-top:6px;line-height:1.45}
+.err{color:var(--red);font-size:12.5px;line-height:1.4;margin-top:6px;font-weight:600}
+.err:empty{display:none}
+.warnbox{background:var(--rsoft);border:1px solid #f1c0c3;color:var(--red);font-size:12.5px;font-weight:600;border-radius:8px;padding:9px 11px;margin-bottom:12px;line-height:1.5}
+.empty{border:1px dashed #b9c9dc;border-radius:10px;padding:14px;text-align:center;font-size:13px;color:var(--ink2);line-height:1.5}
+/* Thẻ điều kiện */
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.card.wide{grid-column:1/-1}
+.ch{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--soft);border-bottom:1px solid var(--line)}
+.ch b{font-size:13.5px;color:var(--navy)}
+.ch small{font-size:11.5px;color:var(--ink2);margin-left:6px;font-weight:600}
+.x{border:0;background:none;color:var(--red);font-size:16px;font-weight:700;padding:2px 6px;line-height:1}
+.cb{padding:10px 12px 12px;display:grid;gap:8px}
+.frow{display:grid;grid-template-columns:minmax(0,1.4fr) 64px minmax(0,1fr);gap:8px;align-items:end}
+.frow>div{min-width:0}
+.inp span{flex:none}
+.frow label{font-size:11.5px;font-weight:700;color:var(--ink2);display:block;margin-bottom:4px}
+.frow select{width:100%;height:36px;border:1px solid #cbd6e3;border-radius:7px;padding:0 6px;font-size:13px;font-weight:600;background:#fff}
+.frow .inp{width:100%;display:flex}
+.frow .inp input{width:auto;flex:1;min-width:0}
+.rule{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid #dce4ed;border-radius:8px}
+.rule.on{border-color:#a9cdf5}
+.rule.off .sent{opacity:.5}
+.sent{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;font-weight:650;line-height:1.35;min-width:0}
+.no{display:grid;place-items:center;width:21px;height:21px;border-radius:5px;background:#e8eef6;color:var(--navy);font-size:10.5px;font-weight:800}
+.rule.on .no{background:var(--bsoft);color:var(--blue2)}
+.sent select,.sent input{border:1px solid #d3dce8;color:var(--blue2);background:#f4f7fb;border-radius:6px;height:32px;padding:0 5px;font-weight:750;font-size:13px}
+.sent input{width:62px;text-align:center;background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
+.sent input.w{width:74px}
+.sent .bad{border-color:var(--red);background:var(--rsoft)}
+.sw{position:relative;display:inline-flex;width:40px;height:22px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}
+.sw i{width:40px;height:22px;border-radius:12px;background:#b9c5d3;transition:.15s}
+.sw i:after{content:"";position:absolute;width:16px;height:16px;top:3px;left:3px;border-radius:50%;background:#fff;transition:.15s}
+.sw input:checked+i{background:var(--blue)}
+.sw input:checked+i:after{transform:translateX(18px)}
+.vparams{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vparams label{font-size:11.5px;font-weight:700;color:var(--ink2);display:block;margin-bottom:4px}
+.vparams .inp{width:100%;display:flex}.vparams .inp input{width:auto;flex:1;min-width:0}
+.vrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid #a9cdf5;border-radius:8px;font-size:13px;font-weight:650;flex-wrap:wrap}
+.vrow select{border:1px solid #d3dce8;color:var(--blue2);background:#f4f7fb;border-radius:6px;height:32px;padding:0 5px;font-weight:750}
+.runbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 2px}
+.runbar .s{font-size:13px;color:var(--ink2);font-weight:600}
+/* Kết quả */
+.rh{padding:14px 16px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.rh .r1{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.rh h3{margin:0;font-size:16px;color:var(--navy);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.badge{font-size:12px;font-weight:800;border-radius:12px;padding:3px 9px;background:var(--bsoft);color:var(--blue2)}
+.badge.stale{background:var(--asoft);color:var(--amber);border:1px solid #f0d9a8}
+.meta{font-size:12.5px;color:var(--ink2);line-height:1.6}
+.meta b{color:var(--navy)}
+.opts{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);align-items:center}
+.opts label{display:flex;gap:6px;align-items:center;font-weight:600;color:var(--ink)}
+.tw{overflow:auto}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;min-width:760px}
+th{background:#f5f8fc;color:var(--navy);font-size:11.5px;font-weight:800;text-align:right;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:bottom;cursor:pointer;user-select:none;line-height:1.3}
+th .sub{display:block;font-weight:600;color:var(--ink2);font-size:10.5px}
+th.l,td.l{text-align:left}
+th.c-mk{background:#f2f5f9}
+th.c-fd{background:#eef5ff;color:var(--blue2)}
+th.c-tc{background:#eefaf3;color:var(--green)}
+th.nos{cursor:default}
+.ar{font-size:10px;margin-left:3px}
+td{padding:7px 9px;border-bottom:1px solid #e7edf4;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;vertical-align:top}
+td .sub{display:block;font-size:10.5px;color:var(--ink2)}
+td.code a{font-weight:800;color:var(--navy);text-decoration:none}
+td.code a:hover{text-decoration:underline}
+td.na{color:var(--amber);font-weight:600}
+td.na .sub{color:var(--amber)}
+tr.fail td{background:#fbfcfe}
+.st{font-size:11.5px;font-weight:800;border-radius:10px;padding:2px 8px;display:inline-block}
+.st.p{background:var(--gsoft);color:var(--green)}.st.f{background:#eef1f5;color:var(--ink2)}.st.e{background:var(--asoft);color:var(--amber)}
+.up{color:var(--green)}.dn{color:var(--red)}.fl{color:#7a6200}
+.tf{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 16px;font-size:12.5px;color:var(--ink2)}
+.pager{display:flex;gap:6px;align-items:center}
+.nores{padding:34px 16px;text-align:center;font-size:14px;color:var(--ink2);line-height:1.6}
+.nores b{color:var(--navy)}
+/* Modal + toast */
+.mb{position:fixed;inset:0;background:#0e1e30a1;display:grid;place-items:center;padding:16px;z-index:80}
+.mb[hidden]{display:none}
+.md{background:#fff;border-radius:12px;width:min(480px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:18px 20px;box-shadow:0 20px 60px #0003}
+.md h3{margin:0 0 6px;color:var(--navy);font-size:17px}
+.md p{margin:0 0 12px;font-size:13px;color:var(--ink2);line-height:1.5}
+.md ul{margin:0 0 12px;padding-left:18px;font-size:13px;color:var(--ink);line-height:1.55}
+.md .tin{width:100%;height:38px;border:1px solid #cbd6e3;border-radius:7px;padding:0 10px;font-size:14px}
+.md .crit{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.5;margin:10px 0;color:var(--ink)}
+.md .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #e7edf4;font-size:13.5px}
+.md .row small{display:block;font-size:12px;color:var(--ink2);margin-top:2px}
+.md .act{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+.md label.ck{display:flex;gap:7px;align-items:flex-start;font-size:13px;margin-top:10px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,16px);background:#17314f;color:#fff;padding:11px 16px;border-radius:9px;font-size:13px;font-weight:650;opacity:0;pointer-events:none;transition:.2s;z-index:90;max-width:min(560px,calc(100% - 32px));line-height:1.45}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:1180px){.mkgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1023px){
+  .wrap{grid-template-columns:1fr}
+  .lib{position:fixed;left:0;top:0;bottom:0;width:min(320px,90vw);max-height:none;border-radius:0;z-index:70;transform:translateX(-105%);transition:.2s}
+  .lib.open{transform:none;box-shadow:0 0 0 100vmax #0e1e3066}
+  .drawerBtn{display:inline-block}
+  .cards{grid-template-columns:1fr}
+}
+@media (max-width:620px){.page{padding:12px 10px 30px}.mkgrid{grid-template-columns:1fr}.frow{grid-template-columns:64px minmax(0,1fr)}.frow>div:first-child{grid-column:1/-1}.vparams{grid-template-columns:1fr}}
+/* ===== Bổ sung: tab IQX + Backtest ===== */
+[hidden]{display:none!important}
+.stabs span[data-tab]{cursor:pointer}
+.lib-tabs.three{grid-template-columns:repeat(3,1fr)}
+.lib-tabs .cnt{display:inline-block;margin-left:4px;background:#e8eef6;color:var(--navy);border-radius:5px;padding:0 5px;font-size:11px}
+.iqc{border:1px solid var(--line);border-radius:10px;padding:10px 11px;margin:6px 2px 8px;background:#fff;display:grid;gap:6px}
+.iqc:hover{border-color:#7fb0ef}
+.iqc.on{border-color:var(--blue);box-shadow:0 0 0 2px #cfe2fb}
+.iqh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.iqh b{font-size:13.5px;color:var(--navy)}
+.iqc p{margin:0;font-size:12.5px;color:var(--ink2);line-height:1.45}
+.iqm{display:flex;gap:5px;flex-wrap:wrap;font-size:11.5px;font-weight:700}
+.iqm .k{border-radius:5px;padding:1px 7px;background:var(--soft);color:var(--navy);border:1px solid var(--line)}
+.iqm .side{display:block;width:100%;font-weight:600;color:var(--ink);font-size:12px;line-height:1.45}
+.iqm .side b{color:var(--green)}.iqm .side.s b{color:var(--red)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.brand-iqx{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:linear-gradient(90deg,#16cdf4,#2f5bff 45%,#7a2ff5);border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:1px;letter-spacing:.3px}
+.iqxban{padding:11px 16px;display:grid;gap:6px;font-size:13px;line-height:1.5;border-color:#a9cdf5;background:#f6faff}
+.iqxban .r1{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.iqxban .lk{border:0;background:none;color:var(--blue2);font-weight:700;font-size:12.5px;padding:0}
+.iqxban dl{display:grid;grid-template-columns:130px 1fr;gap:4px 12px;margin:4px 0 0}
+.iqxban dt{font-weight:700;color:var(--navy)}.iqxban dd{margin:0}
+.iqxban .warn{color:var(--amber)}
+/* Backtest */
+.btpage{padding-top:0}
+.btlib .ind{border:1px solid var(--line);border-radius:10px;padding:10px 11px;margin:6px 2px 8px;background:#fff}
+.btlib .ind b{display:block;font-size:13.5px;color:var(--navy);margin-bottom:8px}
+.btlib .ind .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.addbtn{height:32px;border:1px solid var(--line);border-radius:7px;background:var(--soft);font-weight:700;font-size:13px}
+.addbtn.b{color:var(--green)}.addbtn.s{color:var(--red)}
+.addbtn.has{background:#fff;border-color:#9ccdb2}
+.addbtn.s.has{border-color:#efb3b7}
+.cfg{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13.5px;color:var(--ink2)}
+.cfg .pill{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-weight:700;color:var(--navy)}
+.cfg .draft{background:var(--asoft);color:var(--amber);border:1px solid #f0d9a8;border-radius:6px;padding:2px 8px;font-weight:700;font-size:12.5px}
+.btform{padding:14px 16px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:14px}
+.btform label{display:block;font-size:11.5px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.btform select,.btform input{width:100%;height:38px;border:1px solid #cbd6e3;border-radius:7px;padding:0 10px;font-size:14px;background:#fff}
+.coline{padding:11px 16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px}
+.coline b{color:var(--navy)}
+.conds{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cpanel{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.cph{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px}
+.cph b{flex:1;letter-spacing:.4px}
+.cpanel.buy{border-color:#9fd3b6}.cpanel.buy .cph{background:var(--gsoft);color:var(--green)}
+.cpanel.sell{border-color:#efb3b7}.cpanel.sell .cph{background:var(--rsoft);color:var(--red)}
+.cph .n{font-weight:600;color:var(--ink2)}
+.cph .and{font-size:11px;font-weight:800;border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:5px;padding:1px 6px}
+.cpb{padding:12px;display:grid;gap:10px}
+.icard{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.icard .ih{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px}
+.icard .ih b{font-size:14px;color:var(--navy)}
+.icard .ih .r{display:flex;gap:6px;align-items:center}
+.icard .ln{padding:9px 12px;border-top:1px solid #e7edf4;font-size:13.5px;font-weight:600}
+.icard .ln.none{color:var(--amber);font-weight:600}
+.holdrow{padding:12px 16px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.holdrow label{display:block;font-size:11.5px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.holdrow .inp input{width:60px}
+.holdrow .note{font-size:12.5px;color:var(--ink2);flex:1;min-width:200px}
+.btres{padding:14px 16px;display:grid;gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.kpi small{display:block;font-size:12px;font-weight:700;color:var(--ink2)}
+.kpi b{font-size:18px;color:var(--navy);font-variant-numeric:tabular-nums}
+.kpi b.up{color:var(--green)}.kpi b.dn{color:var(--red)}
+.legend{display:flex;gap:16px;font-size:12.5px;font-weight:700;color:var(--ink)}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.minh{font-size:11.5px;font-weight:800;color:var(--amber);background:var(--asoft);border:1px solid #f0d9a8;border-radius:5px;padding:1px 7px}
+.md .rule{margin-bottom:8px}
+.md .sidettl{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin:4px 0 8px}
+@media (max-width:1023px){.btlib{position:static;max-height:none;transform:none!important}.btform{grid-template-columns:1fr 1fr}.conds{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+@media (max-width:620px){.btform{grid-template-columns:1fr}.iqxban dl{grid-template-columns:1fr}}
+/* ===== Quản trị · Mẫu IQX ===== */
+.roles{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--ink2);margin:0 0 12px}
+.roles button{height:30px;border:1px solid var(--line);background:#fff;border-radius:7px;padding:0 12px;font-weight:700;color:var(--navy)}
+.roles button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.admpage{padding-top:0}
+.admwrap{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px;align-items:start}
+.admnav{padding:10px;display:grid;gap:2px}
+.admnav .grp{padding:10px 8px 4px}
+.admnav span{padding:8px 10px;border-radius:7px;font-size:13.5px;font-weight:650;color:var(--ink)}
+.admnav span.on{background:var(--bsoft);color:var(--blue2)}
+.adm-tabs{grid-template-columns:repeat(2,max-content)!important;margin:0}
+.adm-tabs button{padding:0 16px}
+.admtbl td{vertical-align:middle}
+.admtbl td.l .nm{font-weight:800;color:var(--navy)}
+.admtbl td.l .id{display:block;font-size:12px;color:var(--ink2);white-space:normal;max-width:360px}
+.pillst{font-size:12px;font-weight:800;border-radius:10px;padding:2px 9px;display:inline-block}
+.pillst.shown{background:var(--gsoft);color:var(--green)}.pillst.hidden{background:#eef1f5;color:var(--ink2)}.pillst.draft{background:var(--asoft);color:var(--amber)}
+.chipd{display:inline-block;margin-left:6px;font-size:11px;font-weight:800;color:var(--amber);border:1px solid #f0d9a8;background:var(--asoft);border-radius:5px;padding:0 6px}
+.ord{display:inline-flex;gap:4px}
+.ord button{width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;font-weight:800;color:var(--navy)}
+.ord button:disabled{opacity:.35}
+.rowacts{display:inline-flex;gap:6px}
+.admbar{padding:14px 16px;display:grid;gap:12px;border:2px solid var(--navy)}
+.admbar .r1{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.admbar h3{margin:0;font-size:16px;color:var(--navy)}
+.admbar .tagadm{font-size:11px;font-weight:800;color:#fff;background:var(--navy);border-radius:4px;padding:2px 7px;margin-right:8px;vertical-align:2px}
+.ainfo{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.ainfo label{display:block;font-size:12px;font-weight:800;color:var(--navy);margin-bottom:5px}
+.ainfo label small{font-weight:600;color:var(--ink2)}
+.ainfo input,.ainfo select,.ainfo textarea{width:100%;border:1px solid #cbd6e3;border-radius:7px;padding:8px 10px;font-size:13.5px;background:#fff}
+.ainfo textarea{min-height:58px;resize:vertical}
+.ainfo .full{grid-column:1/-1}
+.admbar .note{font-size:12.5px;color:var(--ink2)}
+.md textarea.tin{height:80px;padding:8px 10px;resize:vertical}
+.hist{display:grid;gap:0}
+.hist .row b{color:var(--navy)}
+body.adm-ed .stabs,body.adm-ed #vLoc .top .acts,body.adm-ed .botcard,body.adm-ed #locBan,body.adm-ed #btBan,body.adm-ed .btmain>.top,body.adm-ed #btSave,body.adm-ed [data-lt="iqx"],body.adm-ed [data-bl="iqx"],body.adm-ed .roles{display:none!important}
+@media (max-width:900px){.admwrap{grid-template-columns:1fr}.admnav{display:flex;flex-wrap:wrap}.ainfo{grid-template-columns:1fr}}
+.ainfo textarea{font:inherit}
+
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="ph"><h1>Chiến lược <span class="demo">MẪU · DỮ LIỆU MINH HỌA</span></h1><p>Theo dõi tín hiệu, kiểm thử chiến lược và sàng lọc doanh nghiệp.</p></div>
+  <div class="roles">Bản mẫu theo vai trò: <button data-role="user" class="on">Người dùng</button><button data-role="admin">Quản trị viên</button></div>
+  <div class="stabs"><span>Cảnh báo</span><span data-tab="bt">Backtest</span><span data-tab="loc" class="on">Bộ lọc</span></div>
+  <div class="wrap" id="vLoc">
+    <aside class="panel lib" id="lib" aria-label="Thư viện">
+      <div class="lib-h">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b>Thư viện</b><button class="btn drawerBtn" id="libClose" style="height:30px">Đóng</button></div>
+        <div class="lib-tabs three"><button data-lt="iqx">IQX</button><button data-lt="fd" class="on">Cơ bản</button><button data-lt="tc">Kỹ thuật</button></div>
+        <label class="search"><input id="libQ" placeholder="Tìm…" aria-label="Tìm trong thư viện"></label>
+      </div>
+      <div class="lib-b" id="libB"></div>
+      <div class="lib-f" id="libF"></div>
+    </aside>
+    <div class="main">
+      <section class="panel top">
+        <div><h2>Bộ lọc doanh nghiệp</h2><div class="ver" id="ver">Bộ lọc chưa lưu</div></div>
+        <div class="acts">
+          <button class="btn drawerBtn" id="libOpen">Thư viện</button>
+          <button class="btn" data-dlg="filters">Bộ lọc đã lưu</button>
+          <button class="btn" data-dlg="lists">Danh mục đã lưu</button>
+          <button class="btn" data-dlg="snaps">Kết quả đã lưu</button>
+          <button class="btn pri" id="saveFilter">Lưu bộ lọc</button>
+        </div>
+      </section>
+      <section class="panel botcard"><span>Danh mục mua mới của Bot: <b id="botSrc">VN30 (mặc định)</b></span><span style="font-size:12.5px;color:var(--ink2)">Giữ nguyên như web hiện tại</span></section>
+      <section class="panel admbar" id="admBarF" hidden></section>
+      <section class="panel iqxban" id="locBan" hidden></section>
+      <section class="panel sec" id="secFd"><div class="sh"><h3>Cơ bản</h3><span class="tag" id="fdTag"></span></div><div class="sub-h">Thị trường <span class="new">MỚI</span><span class="tag">bỏ trống = không lọc</span></div><div id="mkBox"></div><div class="sub-h">Chỉ tiêu tài chính<span class="tag" id="fdCount"></span></div><div id="fdBox"></div></section>
+      <section class="panel sec" id="secTc"></section>
+      <div class="runbar"><button class="btn pri" id="runBtn" style="height:40px;padding:0 18px">▶ Chạy bộ lọc</button><span class="s" id="runSum"></span></div>
+      <div class="err" id="runErr" role="alert"></div>
+      <section class="panel" id="res" hidden></section>
+    </div>
+  </div>
+</div>
+<!-- ============ BACKTEST (mô phỏng bố cục web hiện tại + tab IQX) ============ -->
+<div class="page btpage" id="vBt" hidden>
+  <div class="wrap">
+    <aside class="panel lib btlib" aria-label="Chỉ báo và chiến lược IQX">
+      <div class="lib-h">
+        <div class="lib-tabs"><button data-bl="iqx">IQX</button><button data-bl="ind" class="on">Chỉ báo <span class="cnt">16</span></button></div>
+        <label class="search" id="btSearch"><input id="btQ" placeholder="Tìm chỉ báo…" aria-label="Tìm chỉ báo"></label>
+      </div>
+      <div class="lib-b" id="btLibB"></div>
+      <div class="lib-f" id="btLibF"></div>
+    </aside>
+    <div class="main btmain">
+      <section class="panel top"><div class="cfg">Cấu hình chung <span class="pill" id="btVer">Bản 15</span><span id="btUse">Bot đang dùng bản 15</span><span id="btDraft"></span></div>
+        <div class="acts"><button class="btn" id="btBack">Về cấu hình đã lưu</button><button class="btn" disabled>Tạo cảnh báo</button></div></section>
+      <section class="panel admbar" id="admBarB" hidden></section>
+      <section class="panel iqxban" id="btBan" hidden></section>
+      <section class="panel btform">
+        <div><label for="btSym">Cổ phiếu</label><select id="btSym"></select></div>
+        <div><label for="btFrom">Từ ngày</label><input id="btFrom" type="date" value="2024-11-06"></div>
+        <div><label for="btTo">Đến ngày</label><input id="btTo" type="date" value="2026-11-06"></div>
+        <div><label for="btCap">Vốn ban đầu (VND)</label><input id="btCap" value="100.000.000"></div>
+      </section>
+      <section class="panel coline" id="btCo"></section>
+      <div class="conds">
+        <section class="cpanel buy"><div class="cph"><b>↑ ĐIỀU KIỆN MUA</b><span class="n" id="nBuy"></span><span class="and">AND</span></div><div class="cpb" id="cBuy"></div></section>
+        <section class="cpanel sell"><div class="cph"><b>↓ ĐIỀU KIỆN BÁN</b><span class="n" id="nSell"></span><span class="and">AND</span></div><div class="cpb" id="cSell"></div></section>
+      </div>
+      <section class="panel holdrow">
+        <div><label for="btHold">Giữ tối đa</label><span class="inp"><input id="btHold" inputmode="numeric" value="30"><span>phiên</span></span></div>
+        <button class="btn pri" id="btRun" style="height:38px;padding:0 18px">▶ Chạy</button>
+        <button class="btn" id="btSave" disabled style="height:38px">Lưu cho Bot</button>
+        <span class="note">T+2 · có phí · chỉ dùng nến đã đóng. Chỉnh ở đây chỉ đổi bản nháp, Bot đổi khi bấm Lưu cho Bot.</span>
+      </section>
+      <div class="err" id="btErr" role="alert"></div>
+      <section class="panel btres" id="btRes" hidden></section>
+    </div>
+  </div>
+</div>
+<!-- ============ QUẢN TRỊ · MẪU IQX ============ -->
+<div class="page admpage" id="vAdm" hidden>
+  <div class="admwrap">
+    <nav class="panel admnav" aria-label="Menu quản trị"><div class="grp">Quản lý</div><span>Tổng quan</span><span>Người dùng</span><span>Trưởng nhóm</span><div class="grp">Nội dung</div><span>Bản tin</span><span class="on">Mẫu IQX</span></nav>
+    <div class="main">
+      <section class="panel top"><div><h2>Mẫu IQX</h2><div class="ver">Bộ lọc IQX và Chiến lược IQX hiện trong tab IQX của Bộ lọc và Backtest. Chỉ phiên bản đã xuất bản và đang hiện mới tới người dùng.</div></div>
+        <div class="acts"><button class="btn pri" id="admNew">+ Thêm bộ lọc IQX</button></div></section>
+      <div class="lib-tabs adm-tabs"><button data-ak="f" class="on">Bộ lọc IQX</button><button data-ak="b">Chiến lược IQX</button></div>
+      <section class="panel"><div class="tw" id="admList"></div></section>
+    </div>
+  </div>
+</div>
+
+<div class="mb" id="mb" hidden><div class="md" role="dialog" aria-modal="true" id="md"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   1) ĐIỀU KIỆN 15 CHỈ BÁO — chép nguyên từ IQX_CHI_BAO_MAU_v2.html (SPEC V3).
+      Bộ lọc dùng CHUNG định nghĩa + hàm tính với Bot/Backtest. Mặc định = tab Mua.
+   ===================================================================== */
+const PRESETS=[5,10,20,50,100,200];
+const META=[
+{id:'rsi',name:'RSI',group:'Động lượng'},
+{id:'macd',name:'MACD',group:'Động lượng'},
+{id:'sma',name:'MA / SMA',group:'Đường trung bình'},
+{id:'bb',name:'Bollinger Bands',group:'Biến động'},
+{id:'ema',name:'EMA',group:'Đường trung bình'},
+{id:'cross',name:'MA Cross',group:'Đường trung bình'},
+{id:'dmi',name:'DMI + ADX',group:'Xu hướng'},
+{id:'donchian',name:'Donchian Channel',group:'Kênh giá'},
+{id:'stoch',name:'Stochastic',group:'Động lượng'},
+{id:'cci',name:'CCI',group:'Động lượng'},
+{id:'mfi',name:'MFI',group:'Dòng tiền'},
+{id:'roc',name:'ROC',group:'Động lượng'},
+{id:'willr',name:'Williams %R',group:'Động lượng'},
+{id:'obv',name:'OBV',group:'Khối lượng'},
+{id:'cmf',name:'Chaikin Money Flow',group:'Dòng tiền'},
+];
+/* Khai báo phần tử của câu điều kiện */
+const T=s=>({t:s});                                         // chữ cố định
+const S=(k,opts,a)=>({k,sel:opts,a});                         // ô chọn
+const P=(k,a)=>({k,sel:PRESETS,a,preset:1});                  // chu kỳ chuẩn SMA
+const N=(k,min,max,step,a,w)=>({k,min,max,step,a,w});         // ô nhập số
+const CROSS=[['cắt lên','cắt lên'],['cắt xuống','cắt xuống']];
+const UPDN=[['cắt lên','lên'],['cắt xuống','xuống']];
+const CMP=['>','<'];
+const ALL=['cắt lên','cắt xuống','>','<'];
+const per=(k,a,min=2,max=200)=>N(k,min,max,1,a);
+/* RULES[id] = mảng dòng; mỗi dòng: {parts, buy:{...mặc định}, sell:{...}, on:[mua,bán], pairs:[[nhanh,chậm]]} */
+const RULES={
+ sma:[
+  {parts:[T('Giá cắt'),S('op',UPDN,'Hướng cắt'),T('SMA'),P('period','Chu kỳ SMA')],buy:{op:'cắt lên',period:20},sell:{op:'cắt xuống',period:20},on:1},
+  {parts:[T('SMA'),P('fast','Chu kỳ SMA nhanh'),T('cắt'),S('op',UPDN,'Hướng giao cắt'),T('SMA'),P('slow','Chu kỳ SMA chậm')],buy:{fast:10,slow:20,op:'cắt lên'},sell:{fast:10,slow:20,op:'cắt xuống'},on:0,pairs:[['fast','slow']]},
+  {parts:[T('SMA'),P('period','Chu kỳ SMA'),T('xu hướng'),S('dir',['lên','xuống'],'Xu hướng SMA')],buy:{period:20,dir:'lên'},sell:{period:20,dir:'xuống'},on:0}],
+ ema:[
+  {parts:[T('Giá cắt'),S('op',UPDN,'Hướng cắt'),T('EMA'),per('period','Chu kỳ EMA')],buy:{op:'cắt lên',period:20},sell:{op:'cắt xuống',period:20},on:1},
+  {parts:[T('EMA'),per('fast','Chu kỳ EMA nhanh'),T('cắt'),S('op',UPDN,'Hướng giao cắt'),T('EMA'),per('slow','Chu kỳ EMA chậm')],buy:{fast:10,slow:20,op:'cắt lên'},sell:{fast:10,slow:20,op:'cắt xuống'},on:0,pairs:[['fast','slow']]},
+  {parts:[T('EMA'),per('period','Chu kỳ EMA'),T('xu hướng'),S('dir',['lên','xuống'],'Xu hướng EMA')],buy:{period:20,dir:'lên'},sell:{period:20,dir:'xuống'},on:0}],
+ cross:[
+  {parts:[T('SMA'),P('fast','Chu kỳ SMA nhanh'),T('cắt'),S('op',UPDN,'Hướng giao cắt'),T('SMA'),P('slow','Chu kỳ SMA chậm')],buy:{fast:20,slow:50,op:'cắt lên'},sell:{fast:20,slow:50,op:'cắt xuống'},on:1,pairs:[['fast','slow']]}],
+ rsi:[
+  {parts:[T('RSI'),per('period','Chu kỳ RSI'),S('op',CMP,'Dấu so sánh'),N('threshold',0,100,1,'Ngưỡng RSI')],buy:{period:14,op:'<',threshold:30},sell:{period:14,op:'>',threshold:70},on:1},
+  {parts:[T('RSI'),per('period','Chu kỳ RSI'),T('xu hướng'),S('dir',['lên','xuống'],'Xu hướng RSI')],buy:{period:14,dir:'lên'},sell:{period:14,dir:'xuống'},on:1}],
+ macd:[
+  {parts:[T('MACD'),per('fast','Chu kỳ EMA nhanh'),T('/'),per('slow','Chu kỳ EMA chậm'),S('op',ALL,'Quan hệ MACD với Signal'),T('Signal'),per('signal','Chu kỳ Signal')],buy:{fast:12,slow:26,signal:9,op:'cắt lên'},sell:{fast:12,slow:26,signal:9,op:'cắt xuống'},on:1,pairs:[['fast','slow']]},
+  {parts:[T('MACD'),per('fast','Chu kỳ EMA nhanh'),T('/'),per('slow','Chu kỳ EMA chậm'),S('op',CMP,'Quan hệ với 0'),T('0')],buy:{fast:12,slow:26,op:'>'},sell:{fast:12,slow:26,op:'<'},on:0,pairs:[['fast','slow']]},
+  {parts:[T('Histogram MACD'),per('fast','Chu kỳ EMA nhanh'),T('/'),per('slow','Chu kỳ EMA chậm'),T('/'),per('signal','Chu kỳ Signal'),S('dir',['tăng','giảm'],'Biến động Histogram'),T('so với phiên trước')],buy:{fast:12,slow:26,signal:9,dir:'tăng'},sell:{fast:12,slow:26,signal:9,dir:'giảm'},on:0,pairs:[['fast','slow']]}],
+ stoch:[
+  {parts:[T('%K'),per('k','Chu kỳ %K'),T('làm mượt'),N('smooth',1,10,1,'Làm mượt %K'),S('op',CMP,'Dấu so sánh'),N('threshold',0,100,1,'Ngưỡng Stochastic')],buy:{k:14,smooth:3,op:'<',threshold:20},sell:{k:14,smooth:3,op:'>',threshold:80},on:1},
+  {parts:[T('%K'),per('k','Chu kỳ %K'),T('làm mượt'),N('smooth',1,10,1,'Làm mượt %K'),S('op',CROSS,'Giao cắt Stochastic'),T('%D'),N('d',1,20,1,'Chu kỳ %D')],buy:{k:14,smooth:3,d:3,op:'cắt lên'},sell:{k:14,smooth:3,d:3,op:'cắt xuống'},on:1}],
+ cci:[{parts:[T('CCI'),per('period','Chu kỳ CCI'),S('op',CROSS,'Hướng giao cắt CCI'),N('threshold',-300,300,1,'Ngưỡng CCI',1)],buy:{period:20,op:'cắt lên',threshold:-100},sell:{period:20,op:'cắt xuống',threshold:100},on:1}],
+ mfi:[{parts:[T('MFI'),per('period','Chu kỳ MFI'),S('op',CROSS,'Hướng giao cắt MFI'),N('threshold',0,100,1,'Ngưỡng MFI')],buy:{period:14,op:'cắt lên',threshold:20},sell:{period:14,op:'cắt xuống',threshold:80},on:1}],
+ roc:[{parts:[T('ROC'),per('period','Chu kỳ ROC',2,252),S('op',CROSS,'Hướng giao cắt ROC'),N('threshold',-100,10000,.1,'Ngưỡng ROC (%)',1),T('%')],buy:{period:20,op:'cắt lên',threshold:5},sell:{period:20,op:'cắt xuống',threshold:-5},on:1}],
+ willr:[{parts:[T('Williams %R'),per('period','Chu kỳ Williams %R'),S('op',CROSS,'Hướng giao cắt Williams'),N('threshold',-100,0,1,'Ngưỡng Williams %R')],buy:{period:14,op:'cắt lên',threshold:-80},sell:{period:14,op:'cắt xuống',threshold:-20},on:1}],
+ bb:[
+  {parts:[T('Giá đóng cửa'),S('action',['quay vào dải từ dưới','quay vào dải từ trên','vượt dải trên','phá dải dưới','cắt lên dải giữa','cắt xuống dải giữa'],'Hành động giá với Bollinger'),T('Bollinger'),per('period','Chu kỳ Bollinger'),T('hệ số'),N('mult',1,3.5,.1,'Hệ số độ lệch chuẩn')],buy:{action:'quay vào dải từ dưới',period:20,mult:2},sell:{action:'quay vào dải từ trên',period:20,mult:2},on:1},
+  {parts:[T('Giá đóng cửa'),S('dir',['tăng','giảm'],'Biến động giá'),T('so với phiên trước')],buy:{dir:'tăng'},sell:{dir:'giảm'},on:1},
+  {parts:[T('Độ rộng Bollinger'),per('period','Chu kỳ Bollinger'),T('hệ số'),N('mult',1,3.5,.1,'Hệ số độ lệch chuẩn'),S('dir',['mở rộng','thu hẹp'],'Biến động độ rộng dải')],buy:{period:20,mult:2,dir:'thu hẹp'},sell:{period:20,mult:2,dir:'mở rộng'},on:1}],
+ donchian:[{parts:[T('Giá đóng cửa'),S('op',CMP,'Dấu so sánh'),T('dải'),S('band',['trên','dưới'],'Dải Donchian'),T('Donchian'),per('period','Chu kỳ Donchian',2,252)],buy:{op:'>',band:'trên',period:20},sell:{op:'<',band:'dưới',period:20},on:1}],
+ dmi:[
+  {parts:[T('DMI'),per('period','Chu kỳ DMI'),T(':'),T('+DI'),S('op',ALL,'Quan hệ +DI với −DI'),T('−DI')],buy:{op:'cắt lên',period:14},sell:{op:'cắt xuống',period:14},on:1},
+  {parts:[T('ADX'),per('period','Chu kỳ ADX'),S('op',CMP,'Dấu ADX'),N('threshold',0,100,.1,'Ngưỡng ADX')],buy:{period:14,op:'>',threshold:25},sell:{period:14,op:'>',threshold:25},on:0}],
+ obv:[
+  {parts:[T('OBV'),S('op',ALL,'Quan hệ OBV'),T('SMA'),per('period','Chu kỳ SMA của OBV'),T('của OBV')],buy:{op:'cắt lên',period:20},sell:{op:'cắt xuống',period:20},on:1},
+  {parts:[T('OBV'),S('action',['vượt đỉnh','phá đáy'],'Hướng phá vỡ OBV'),per('period','Số phiên OBV',2,252),T('phiên')],buy:{action:'vượt đỉnh',period:20},sell:{action:'phá đáy',period:20},on:0}],
+ cmf:[{parts:[T('CMF'),per('period','Chu kỳ CMF'),S('op',CROSS,'Hướng giao cắt CMF'),N('threshold',-1,1,.01,'Ngưỡng CMF')],buy:{period:20,op:'cắt lên',threshold:0},sell:{period:20,op:'cắt xuống',threshold:0},on:1}],
+};
+
+const VOL = { n: { min: 5, max: 100, def: 20 }, k: { min: 0.5, max: 3, def: 1.1 }, ops: ['>', '>'] };
+const TECH = [...META, { id: 'vol', name: 'Khối lượng', group: 'Khối lượng' }];
+
+/* 2) CHỈ TIÊU CƠ BẢN — trích một phần registry hiện có (minh họa; web giữ nguyên 42 chỉ tiêu) */
+const PER = { quarter: 'Quý gần nhất', ttm: 'Bốn quý gần nhất', year: 'Năm tài chính gần nhất', three_year: 'Ba năm tài chính gần nhất' };
+const PLAB = { quarter: 'Q3/2026', ttm: 'TTM Q3/2026', year: 'FY2025', three_year: 'FY2022–FY2025' };
+/* Chỉ tiêu cơ bản: danh mục 42 chỉ tiêu hiện có, SẮP XẾP VÀ PHÂN NHÓM GIỐNG DASHBOARD PHÂN TÍCH CƠ BẢN.
+   sec = khối của Dashboard, grp = nhóm trong khối. Tên hiển thị theo Dashboard. */
+const FUND = [];
+const FD = (sec, grp, list) => list.forEach(([id, name, unit, per, nf, fin]) => FUND.push({ id, sec, grp, name, unit, per, nf, fin }));
+FD('Phân tích cơ bản chung', 'Tăng trưởng', [['revenue_yoy', 'Tăng trưởng doanh thu', '%', ['quarter', 'ttm', 'year'], 1, 1], ['profit_yoy', 'Tăng trưởng LNST', '%', ['quarter', 'ttm', 'year'], 1, 0], ['eps_yoy', 'Tăng trưởng EPS', '%', ['quarter', 'ttm', 'year'], 1, 0],
+  ['revenue_cagr3', 'Revenue CAGR 3Y', '%', ['three_year'], 1, 1], ['profit_cagr3', 'Net Profit CAGR 3Y', '%', ['three_year'], 1, 0], ['eps_cagr3', 'EPS CAGR 3Y', '%', ['three_year'], 1, 0]]);
+FD('Phân tích cơ bản chung', 'Ổn định', [['profit_positive_streak', 'Profit Positive Streak', 'năm', ['year'], 0, 0], ['revenue_growth_stability', 'Revenue Growth Stability', 'điểm %', ['three_year'], 1, 1], ['net_margin_stability', 'Margin Stability', 'điểm %', ['three_year'], 1, 1], ['eps_growth_stability', 'EPS Stability', 'điểm %', ['three_year'], 1, 0]]);
+FD('Phân tích cơ bản chung', 'Hiệu quả', [['roe', 'ROE', '%', ['ttm', 'year'], 1, 0], ['roa', 'ROA', '%', ['ttm', 'year'], 1, 0], ['net_margin', 'Biên lợi nhuận ròng', '%', ['ttm', 'quarter', 'year'], 1, 1]]);
+FD('Phân tích cơ bản chung', 'Định giá', [['pe', 'P/E', 'lần', ['ttm', 'year'], 1, 0], ['pb', 'P/B', 'lần', ['ttm', 'year'], 1, 0], ['ps', 'P/S', 'lần', ['ttm', 'year'], 1, 1], ['peg', 'PEG', 'lần', ['ttm'], 2, 0]]);
+FD('Doanh nghiệp sản xuất', 'Hiệu quả và biên lợi nhuận', [['gross_margin', 'Biên lợi nhuận gộp', '%', ['ttm', 'quarter', 'year'], 1, 1], ['roic', 'ROIC', '%', ['ttm'], 1, 1], ['roic_stability', 'ROIC Stability', 'điểm %', ['three_year'], 1, 1], ['asset_turnover', 'Asset Turnover', 'lần', ['ttm', 'year'], 2, 1], ['ccc', 'Cash Conversion Cycle', 'ngày', ['year'], 0, 1]]);
+FD('Doanh nghiệp sản xuất', 'Nợ và khả năng thanh toán', [['debt_equity', 'D/E', 'lần', ['quarter', 'year'], 2, 1], ['current_ratio', 'Current Ratio', 'lần', ['quarter', 'year'], 2, 1], ['interest_coverage', 'Interest Coverage', 'lần', ['ttm', 'quarter', 'year'], 1, 1], ['net_debt_ebitda', 'Net Debt / EBITDA', 'lần', ['ttm', 'year'], 2, 1]]);
+FD('Doanh nghiệp sản xuất', 'Dòng tiền', [['cfo_margin', 'CFO Margin', '%', ['ttm', 'quarter', 'year'], 1, 1], ['cfo_profit', 'CFO / LNST', 'lần', ['ttm', 'quarter', 'year'], 2, 1], ['capex_revenue', 'Capex / Revenue', '%', ['ttm', 'quarter', 'year'], 1, 1], ['fcf_margin', 'FCF Margin', '%', ['ttm', 'quarter', 'year'], 1, 1], ['fcf_positive_streak', 'FCF Positive Streak', 'năm', ['year'], 0, 1]]);
+FD('Doanh nghiệp sản xuất', 'Định giá', [['ev_ebitda', 'EV / EBITDA', 'lần', ['ttm', 'year'], 1, 1], ['fcf_yield', 'FCF Yield', '%', ['ttm', 'year'], 1, 1]]);
+const LEARNED = new Set(FUND.map(m => m.id)); // web không cần học để mở: mọi chỉ tiêu mở // mẫu: 1 chỉ tiêu chưa học để minh họa trạng thái khóa (giữ nguyên như web)
+
+/* 3) DỮ LIỆU MINH HỌA ===================================================== */
+function rng(seed) { let s = seed >>> 0; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+const R = rng(20261029), gs = () => Math.sqrt(-2 * Math.log(R() + 1e-9)) * Math.cos(2 * Math.PI * R());
+const SESSION = '29/10/2026', AS_OF = '30/10/2026 16:40';
+const GROUPS = { thuong: 'Thường', nh: 'Ngân hàng', ck: 'Chứng khoán', bh: 'Bảo hiểm' };
+const EXS = ['HOSE', 'HNX', 'UPCOM'], BASKETS = ['VN30', 'VN100', 'VNMidcap', 'VNSmallcap', 'HNX30'];
+const UNI = (() => {
+  const used = new Set(), L = 'ABCDEGHIKLMNPQRSTVX', out = [];
+  const code = () => { let c; do c = L[R() * L.length | 0] + L[R() * L.length | 0] + L[R() * L.length | 0]; while (used.has(c)); used.add(c); return c; };
+  for (let i = 0; i < 320; i++) {
+    const ex = i < 170 ? 'HOSE' : i < 250 ? 'HNX' : 'UPCOM';
+    const g = R() < 0.08 ? 'nh' : R() < 0.09 ? 'ck' : R() < 0.04 ? 'bh' : 'thuong';
+    const nb = R() < 0.04 ? 40 + (R() * 120 | 0) : 260; // vài mã mới niêm yết: lịch sử ngắn
+    const p0 = Math.exp(Math.log(5) + R() * Math.log(110 / 5));
+    const shares = Math.exp(Math.log(1e7) + Math.pow(R(), 1.6) * Math.log(1.5e9 / 1e7)) * (ex === 'HOSE' ? 1 : ex === 'HNX' ? 0.5 : 0.35) * (g === 'nh' ? 2.5 : 1);
+    const liq = Math.exp(gs() * 0.8) * 0.0025;
+    const C = [], H = [], Lo = [], V = []; let c = p0, mu = gs() * 0.0008, vol = 0.012 + R() * 0.02;
+    for (let t = 0; t < nb; t++) {
+      if (R() < 0.04) mu = gs() * 0.0016;
+      const o = c * (1 + gs() * vol * 0.3), nc = Math.max(0.5, c * (1 + mu + gs() * vol));
+      H.push(+(Math.max(o, nc) * (1 + Math.abs(gs()) * vol * 0.45)).toFixed(2)); Lo.push(+(Math.min(o, nc) * (1 - Math.abs(gs()) * vol * 0.45)).toFixed(2)); C.push(+nc.toFixed(2));
+      V.push(Math.round(shares * liq * Math.exp(gs() * 0.45) * (1 + Math.abs(nc / c - 1) * 25))); c = nc;
+    }
+    const fin = g !== 'thuong', fd = {};
+    for (const m of FUND) for (const p of m.per) { const k = m.id + '.' + p;
+      if (fin && m.fin) { fd[k] = { st: 'not_applicable' }; continue; }
+      if (R() < 0.03) { fd[k] = { st: 'missing' }; continue; }
+      const u = m.unit, id = m.id;
+      const base = { pe: 4 + R() * 26, pb: 0.5 + R() * 3.5, ps: 0.3 + R() * 4, peg: 0.2 + R() * 2.5, ev_ebitda: 3 + R() * 14, debt_equity: Math.abs(gs()) * 0.9, current_ratio: 0.6 + R() * 2.5,
+        interest_coverage: 1 + R() * 20, net_debt_ebitda: -1 + R() * 5, cfo_profit: R() * 2.5, asset_turnover: 0.2 + R() * 2.2, roe: gs() * 9 + 13, roa: gs() * 5 + 6, gross_margin: R() * 40 + 8,
+        net_margin: gs() * 6 + 8, roic: gs() * 8 + 11, fcf_yield: gs() * 5 + 3, capex_revenue: R() * 15 }[id]
+        ?? (u === 'năm' ? (R() * 9 | 0) : u === 'ngày' ? 20 + R() * 180 : u === 'điểm %' ? Math.abs(gs()) * 8 + 1 : gs() * 18 + 9);
+      if (['pe', 'peg', 'ev_ebitda'].includes(id) && R() < 0.07) { fd[k] = { st: 'insufficient_base' }; continue; }
+      fd[k] = { st: 'ok', v: base };
+    }
+    out.push({ code: code(), ex, g, shares, C, H, L: Lo, V, cache: {}, bk: [], fd });
+  }
+  out.forEach(s => { s.T = s.C.length - 1; s.cap = s.C[s.T] * s.shares / 1e6; });
+  const hose = out.filter(s => s.ex === 'HOSE').sort((a, b) => b.cap - a.cap);
+  hose.forEach((s, i) => { if (i < 30) s.bk.push('VN30'); if (i < 100) s.bk.push('VN100'); if (i >= 30 && i < 100) s.bk.push('VNMidcap'); if (i >= 100 && i < 160) s.bk.push('VNSmallcap'); });
+  out.filter(s => s.ex === 'HNX').sort((a, b) => b.cap - a.cap).slice(0, 30).forEach(s => s.bk.push('HNX30'));
+  return out.sort((a, b) => a.code < b.code ? -1 : 1);
+})();
+
+/* 4) HÀM TÍNH CHỈ BÁO — một bộ dùng chung (mẫu); dev dùng đúng hàm của Bot ===== */
+const memo = (s, k, f) => s.cache[k] ?? (s.cache[k] = f());
+const smaA = (a, n) => { const o = Array(a.length).fill(null); let sum = 0, c = 0; for (let i = 0; i < a.length; i++) { if (a[i] == null) { sum = 0; c = 0; continue; } sum += a[i]; c++; if (c > n) { sum -= a[i - n]; c = n; } if (c === n) o[i] = sum / n; } return o; };
+const emaA = (a, n) => { const o = Array(a.length).fill(null), k = 2 / (n + 1); let p = null, st = -1; for (let i = 0; i < a.length; i++) { if (a[i] == null) continue; if (st < 0) st = i; if (i - st + 1 < n) continue; if (p == null) { let s = 0; for (let j = i - n + 1; j <= i; j++) s += a[j]; p = s / n; } else p = a[i] * k + p * (1 - k); o[i] = p; } return o; };
+const wilder = (a, n) => { const o = Array(a.length).fill(null); let p = null, cnt = 0, s = 0; for (let i = 0; i < a.length; i++) { if (a[i] == null) continue; if (p == null) { s += a[i]; cnt++; if (cnt === n) { p = s / n; o[i] = p; } } else { p = (p * (n - 1) + a[i]) / n; o[i] = p; } } return o; };
+const F = {
+  sma: (s, n) => memo(s, 'sma' + n, () => smaA(s.C, n)), ema: (s, n) => memo(s, 'ema' + n, () => emaA(s.C, n)),
+  rsi: (s, n) => memo(s, 'rsi' + n, () => { const C = s.C, o = Array(C.length).fill(null); let g = 0, l = 0;
+    for (let i = 1; i < C.length; i++) { const d = C[i] - C[i - 1], u = Math.max(d, 0), dn = Math.max(-d, 0);
+      if (i <= n) { g += u; l += dn; if (i === n) { g /= n; l /= n; o[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l); } }
+      else { g = (g * (n - 1) + u) / n; l = (l * (n - 1) + dn) / n; o[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l); } } return o; }),
+  macd: (s, f, sl, sg) => memo(s, `macd${f}.${sl}.${sg}`, () => { const a = F.ema(s, f), b = F.ema(s, sl); const m = a.map((v, i) => v != null && b[i] != null ? v - b[i] : null); const g = emaA(m, sg || 9); return { m, g, h: m.map((v, i) => v != null && g[i] != null ? v - g[i] : null) }; }),
+  stoch: (s, k, sm, d) => memo(s, `st${k}.${sm}.${d}`, () => { const raw = s.C.map((c, i) => { if (i < k - 1) return null; let hh = -1e18, ll = 1e18; for (let j = i - k + 1; j <= i; j++) { hh = Math.max(hh, s.H[j]); ll = Math.min(ll, s.L[j]); } return hh === ll ? 50 : 100 * (c - ll) / (hh - ll); }); const K = smaA(raw, sm); return { K, D: smaA(K, d || 3) }; }),
+  cci: (s, n) => memo(s, 'cci' + n, () => { const tp = s.C.map((c, i) => (s.H[i] + s.L[i] + c) / 3), m = smaA(tp, n); return tp.map((v, i) => { if (m[i] == null) return null; let md = 0; for (let j = i - n + 1; j <= i; j++) md += Math.abs(tp[j] - m[i]); md /= n; return md === 0 ? 0 : (v - m[i]) / (0.015 * md); }); }),
+  mfi: (s, n) => memo(s, 'mfi' + n, () => { const tp = s.C.map((c, i) => (s.H[i] + s.L[i] + c) / 3); return tp.map((v, i) => { if (i < n) return null; let p = 0, q = 0; for (let j = i - n + 1; j <= i; j++) { const mf = tp[j] * s.V[j]; if (tp[j] > tp[j - 1]) p += mf; else if (tp[j] < tp[j - 1]) q += mf; } return q === 0 ? 100 : 100 - 100 / (1 + p / q); }); }),
+  roc: (s, n) => memo(s, 'roc' + n, () => s.C.map((c, i) => i < n ? null : 100 * (c / s.C[i - n] - 1))),
+  willr: (s, n) => memo(s, 'wr' + n, () => s.C.map((c, i) => { if (i < n - 1) return null; let hh = -1e18, ll = 1e18; for (let j = i - n + 1; j <= i; j++) { hh = Math.max(hh, s.H[j]); ll = Math.min(ll, s.L[j]); } return hh === ll ? -50 : -100 * (hh - c) / (hh - ll); })),
+  bb: (s, n, k) => memo(s, `bb${n}.${k}`, () => { const mid = F.sma(s, n), up = [], lo = [], bw = []; s.C.forEach((_, i) => { if (mid[i] == null) { up.push(null); lo.push(null); bw.push(null); return; } let q = 0; for (let j = i - n + 1; j <= i; j++) q += (s.C[j] - mid[i]) ** 2; const sd = Math.sqrt(q / n); up.push(mid[i] + k * sd); lo.push(mid[i] - k * sd); bw.push(mid[i] === 0 ? null : 2 * k * sd / mid[i]); }); return { mid, up, lo, bw }; }),
+  don: (s, n) => memo(s, 'don' + n, () => { const up = [], lo = []; s.C.forEach((_, i) => { if (i < n) { up.push(null); lo.push(null); return; } let hh = -1e18, ll = 1e18; for (let j = i - n; j < i; j++) { hh = Math.max(hh, s.H[j]); ll = Math.min(ll, s.L[j]); } up.push(hh); lo.push(ll); }); return { up, lo }; }),
+  dmi: (s, n) => memo(s, 'dmi' + n, () => { const pdm = [null], mdm = [null], tr = [null]; for (let i = 1; i < s.C.length; i++) { const u = s.H[i] - s.H[i - 1], d = s.L[i - 1] - s.L[i]; pdm.push(u > d && u > 0 ? u : 0); mdm.push(d > u && d > 0 ? d : 0); tr.push(Math.max(s.H[i] - s.L[i], Math.abs(s.H[i] - s.C[i - 1]), Math.abs(s.L[i] - s.C[i - 1]))); }
+    const P = wilder(pdm, n), M = wilder(mdm, n), TR = wilder(tr, n); const pdi = P.map((v, i) => v == null || !TR[i] ? null : 100 * v / TR[i]), mdi = M.map((v, i) => v == null || !TR[i] ? null : 100 * v / TR[i]);
+    const dx = pdi.map((v, i) => v == null ? null : (v + mdi[i]) === 0 ? 0 : 100 * Math.abs(v - mdi[i]) / (v + mdi[i])); return { pdi, mdi, adx: wilder(dx, n) }; }),
+  obv: s => memo(s, 'obv', () => { const o = [0]; for (let i = 1; i < s.C.length; i++) o.push(o[i - 1] + (s.C[i] > s.C[i - 1] ? s.V[i] : s.C[i] < s.C[i - 1] ? -s.V[i] : 0)); return o; }),
+  cmf: (s, n) => memo(s, 'cmf' + n, () => { const mfv = s.C.map((c, i) => s.H[i] === s.L[i] ? 0 : ((c - s.L[i]) - (s.H[i] - c)) / (s.H[i] - s.L[i]) * s.V[i]); return s.C.map((_, i) => { if (i < n - 1) return null; let a = 0, b = 0; for (let j = i - n + 1; j <= i; j++) { a += mfv[j]; b += s.V[j]; } return b === 0 ? null : a / b; }); }),
+};
+function op(o, X, Y, t) { const y = i => typeof Y === 'number' ? Y : Y[i]; const x1 = X[t], x0 = X[t - 1], y1 = y(t), y0 = y(t - 1);
+  if (o === '>' || o === '<') { if (x1 == null || y1 == null) return null; return o === '>' ? x1 > y1 : x1 < y1; }
+  if (x1 == null || x0 == null || y1 == null || y0 == null) return null; if (o === 'cắt lên' || o === 'lên') return x0 <= y0 && x1 > y1; return x0 >= y0 && x1 < y1; }
+const trendOk = (dir, X, n, t) => X[t] == null || t - n < 0 || X[t - n] == null ? null : dir === 'lên' ? X[t] > X[t - n] : X[t] < X[t - n];
+const prevOk = (up, X, t) => X[t] == null || X[t - 1] == null ? null : up ? X[t] > X[t - 1] : X[t] < X[t - 1];
+const f1 = (v, d = 1) => v == null || !isFinite(v) ? '—' : v.toLocaleString('vi-VN', { minimumFractionDigits: d, maximumFractionDigits: d });
+/* Mỗi dòng: [true/false/null, tiêu đề cột, giá trị hiển thị, giá trị số để sắp xếp] */
+const EVAL = {
+  sma: [(s, r, t) => { const m = F.sma(s, r.period); return [op(r.op, s.C, m, t), 'Giá / SMA' + r.period, `${f1(s.C[t], 2)} / ${f1(m[t], 2)}`, m[t] && s.C[t] / m[t]]; },
+    (s, r, t) => { const a = F.sma(s, r.fast), b = F.sma(s, r.slow); return [op(r.op, a, b, t), `SMA${r.fast} / SMA${r.slow}`, `${f1(a[t], 2)} / ${f1(b[t], 2)}`, b[t] && a[t] / b[t]]; },
+    (s, r, t) => { const m = F.sma(s, r.period); return [trendOk(r.dir, m, r.period, t), `SMA${r.period} nay / ${r.period} phiên trước`, `${f1(m[t], 2)} / ${f1(m[t - r.period], 2)}`, m[t - r.period] && m[t] / m[t - r.period]]; }],
+  ema: [(s, r, t) => { const m = F.ema(s, r.period); return [op(r.op, s.C, m, t), 'Giá / EMA' + r.period, `${f1(s.C[t], 2)} / ${f1(m[t], 2)}`, m[t] && s.C[t] / m[t]]; },
+    (s, r, t) => { const a = F.ema(s, r.fast), b = F.ema(s, r.slow); return [op(r.op, a, b, t), `EMA${r.fast} / EMA${r.slow}`, `${f1(a[t], 2)} / ${f1(b[t], 2)}`, b[t] && a[t] / b[t]]; },
+    (s, r, t) => { const m = F.ema(s, r.period); return [trendOk(r.dir, m, r.period, t), `EMA${r.period} nay / ${r.period} phiên trước`, `${f1(m[t], 2)} / ${f1(m[t - r.period], 2)}`, m[t - r.period] && m[t] / m[t - r.period]]; }],
+  cross: [(s, r, t) => { const a = F.sma(s, r.fast), b = F.sma(s, r.slow); return [op(r.op, a, b, t), `MA Cross ${r.fast} / ${r.slow}`, `${f1(a[t], 2)} / ${f1(b[t], 2)}`, b[t] && a[t] / b[t]]; }],
+  rsi: [(s, r, t) => { const x = F.rsi(s, r.period); return [op(r.op, x, +r.threshold, t), 'RSI' + r.period, f1(x[t]), x[t]]; },
+    (s, r, t) => { const x = F.rsi(s, r.period); return [trendOk(r.dir, x, r.period, t), `RSI${r.period} nay / ${r.period} phiên trước`, `${f1(x[t])} / ${f1(x[t - r.period])}`, x[t] != null && x[t - r.period] != null ? x[t] - x[t - r.period] : null]; }],
+  macd: [(s, r, t) => { const m = F.macd(s, r.fast, r.slow, r.signal); return [op(r.op, m.m, m.g, t), 'MACD / Signal', `${f1(m.m[t], 2)} / ${f1(m.g[t], 2)}`, m.h[t]]; },
+    (s, r, t) => { const m = F.macd(s, r.fast, r.slow, 9); return [op(r.op, m.m, 0, t), `MACD ${r.fast}/${r.slow}`, f1(m.m[t], 2), m.m[t]]; },
+    (s, r, t) => { const m = F.macd(s, r.fast, r.slow, r.signal); return [prevOk(r.dir === 'tăng', m.h, t), 'Histogram nay / trước', `${f1(m.h[t], 2)} / ${f1(m.h[t - 1], 2)}`, m.h[t]]; }],
+  stoch: [(s, r, t) => { const x = F.stoch(s, r.k, r.smooth, 3); return [op(r.op, x.K, +r.threshold, t), `%K ${r.k},${r.smooth}`, f1(x.K[t]), x.K[t]]; },
+    (s, r, t) => { const x = F.stoch(s, r.k, r.smooth, r.d); return [op(r.op, x.K, x.D, t), '%K / %D', `${f1(x.K[t])} / ${f1(x.D[t])}`, x.K[t]]; }],
+  cci: [(s, r, t) => { const x = F.cci(s, r.period); return [op(r.op, x, +r.threshold, t), 'CCI' + r.period, f1(x[t]), x[t]]; }],
+  mfi: [(s, r, t) => { const x = F.mfi(s, r.period); return [op(r.op, x, +r.threshold, t), 'MFI' + r.period, f1(x[t]), x[t]]; }],
+  roc: [(s, r, t) => { const x = F.roc(s, r.period); return [op(r.op, x, +r.threshold, t), `ROC${r.period} (%)`, f1(x[t]), x[t]]; }],
+  willr: [(s, r, t) => { const x = F.willr(s, r.period); return [op(r.op, x, +r.threshold, t), 'Williams %R' + r.period, f1(x[t]), x[t]]; }],
+  bb: [(s, r, t) => { const b = F.bb(s, r.period, +r.mult), C = s.C; let ok = null;
+      if (b.up[t] != null && b.up[t - 1] != null) { const inside = b.lo[t] <= C[t] && C[t] <= b.up[t];
+        ok = { 'quay vào dải từ dưới': C[t - 1] < b.lo[t - 1] && inside, 'quay vào dải từ trên': C[t - 1] > b.up[t - 1] && inside, 'vượt dải trên': C[t - 1] <= b.up[t - 1] && C[t] > b.up[t],
+          'phá dải dưới': C[t - 1] >= b.lo[t - 1] && C[t] < b.lo[t], 'cắt lên dải giữa': op('cắt lên', C, b.mid, t), 'cắt xuống dải giữa': op('cắt xuống', C, b.mid, t) }[r.action]; }
+      return [ok, `Giá / BB${r.period} dưới · trên`, `${f1(C[t], 2)} / ${f1(b.lo[t], 2)} · ${f1(b.up[t], 2)}`, b.up[t] != null && b.up[t] !== b.lo[t] ? (C[t] - b.lo[t]) / (b.up[t] - b.lo[t]) : null]; },
+    (s, r, t) => [prevOk(r.dir === 'tăng', s.C, t), 'Giá nay / trước', `${f1(s.C[t], 2)} / ${f1(s.C[t - 1], 2)}`, s.C[t] / s.C[t - 1]],
+    (s, r, t) => { const b = F.bb(s, r.period, +r.mult); return [prevOk(r.dir === 'mở rộng', b.bw, t), 'Độ rộng BB nay / trước', `${f1(b.bw[t] * 100, 2)}% / ${f1(b.bw[t - 1] * 100, 2)}%`, b.bw[t]]; }],
+  donchian: [(s, r, t) => { const d = F.don(s, r.period), Y = r.band === 'trên' ? d.up : d.lo; return [op(r.op, s.C, Y, t), `Giá / Donchian${r.period} ${r.band}`, `${f1(s.C[t], 2)} / ${f1(Y[t], 2)}`, Y[t] && s.C[t] / Y[t]]; }],
+  dmi: [(s, r, t) => { const d = F.dmi(s, r.period); return [op(r.op, d.pdi, d.mdi, t), '+DI / −DI', `${f1(d.pdi[t])} / ${f1(d.mdi[t])}`, d.pdi[t] != null ? d.pdi[t] - d.mdi[t] : null]; },
+    (s, r, t) => { const d = F.dmi(s, r.period); return [op(r.op, d.adx, +r.threshold, t), 'ADX' + r.period, f1(d.adx[t]), d.adx[t]]; }],
+  obv: [(s, r, t) => { const o = F.obv(s), m = memo(s, 'obvsma' + r.period, () => smaA(o, r.period)); return [op(r.op, o, m, t), `OBV / SMA${r.period}(OBV) (triệu)`, `${f1(o[t] / 1e6)} / ${f1(m[t] / 1e6)}`, m[t] != null ? o[t] - m[t] : null]; },
+    (s, r, t) => { const o = F.obv(s), n = r.period; if (t - n < 0) return [null, `OBV / ${r.action === 'vượt đỉnh' ? 'đỉnh' : 'đáy'} ${n} phiên (triệu)`, '—', null]; let hh = -1e30, ll = 1e30; for (let j = t - n; j < t; j++) { hh = Math.max(hh, o[j]); ll = Math.min(ll, o[j]); } const ref = r.action === 'vượt đỉnh' ? hh : ll;
+      return [r.action === 'vượt đỉnh' ? o[t] > hh : o[t] < ll, `OBV / ${r.action === 'vượt đỉnh' ? 'đỉnh' : 'đáy'} ${n} phiên (triệu)`, `${f1(o[t] / 1e6)} / ${f1(ref / 1e6)}`, o[t] - ref]; }],
+  cmf: [(s, r, t) => { const x = F.cmf(s, r.period); return [op(r.op, x, +r.threshold, t), 'CMF' + r.period, f1(x[t], 3), x[t]]; }],
+};
+/* Khối lượng: "TB N phiên" theo đúng hàm Bot đang dùng. Mẫu: trung bình N phiên TRƯỚC phiên T. */
+function evalVol(s, v, t) { const n = v.n; let a = null; if (t - n >= 0) { a = 0; for (let j = t - n; j < t; j++) a += s.V[j]; a /= n; }
+  return [[prevOk(v.ops[0] === '>', s.C, t), 'Giá nay / trước', `${f1(s.C[t], 2)} / ${f1(s.C[t - 1], 2)}`, s.C[t] / s.C[t - 1]],
+    [a == null ? null : v.ops[1] === '>' ? s.V[t] > v.k * a : s.V[t] < v.k * a, `KL / ${f1(+v.k)}×TB${n} (nghìn cp)`, a == null ? '—' : `${f1(s.V[t] / 1e3, 0)} / ${f1(v.k * a / 1e3, 0)}`, a ? s.V[t] / a : null]]; }
+
+/* 5) TRẠNG THÁI ========================================================== */
+const clone = x => JSON.parse(JSON.stringify(x));
+const blank = () => ({ schema_version: '4.0', market: { exchanges: [], baskets: [], groups: [], cap_min: '', cap_max: '', gtgd_n: 20, gtgd_min: '', price_min: '', price_max: '' }, fund: [], tech: [], legacy_sector: null });
+const KEY = 'iqx_boloc_v2';
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const DB = load(KEY, null) || { filters: [{ id: 'f-old', name: 'Ngân hàng giá rẻ (bộ lọc cũ 3.0)', versions: [{ stored: '3.0', st: Object.assign(blank(), { market: Object.assign(blank().market, { exchanges: ['HOSE'] }), fund: [{ id: 'pb', period: 'ttm', op: '<', value: '1,5' }], legacy_sector: 'Ngân hàng' }) }] }], lists: [], snaps: [] };
+let cur = { fid: null, ver: 0, st: blank() }, libTab = 'fd', libQ = '', result = null, ranAt = null, page = 0, showAll = false, sel = new Set(), sortK = 'code', sortD = 1;
+const $ = id => document.getElementById(id);
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function toast(m) { const e = $('toast'); e.textContent = m; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('show'), 3600); }
+const num = v => { if (v === '' || v == null) return null; const n = Number(String(v).replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : NaN; };
+const isNum = (v, min, max, step) => { const n = Number(v); if (v === '' || v == null || !isFinite(n) || n < min || n > max) return false; return step !== 1 || Number.isInteger(n); };
+const newTech = id => id === 'vol' ? { id, n: VOL.n.def, k: VOL.k.def, ops: [...VOL.ops] } : { id, rules: RULES[id].map(r => Object.assign({ enabled: !!r.on }, clone(r.buy))) };
+
+/* 6) KIỂM TRA ============================================================ */
+function mkErr(m) { const e = {}; const rg = (a, b, k, lab) => { const x = num(a), y = num(b); if (Number.isNaN(x) || Number.isNaN(y)) e[k] = lab + ': nhập số.'; else if ((x != null && x < 0) || (y != null && y < 0)) e[k] = lab + ' không được âm.'; else if (x != null && y != null && x > y) e[k] = lab + ': "từ" phải nhỏ hơn hoặc bằng "đến".'; };
+  rg(m.cap_min, m.cap_max, 'cap', 'Vốn hóa'); rg(m.price_min, m.price_max, 'price', 'Giá');
+  if (!isNum(m.gtgd_n, 5, 100, 1)) e.gtgd = 'Số phiên phải từ 5 đến 100, số nguyên.'; else { const g = num(m.gtgd_min); if (Number.isNaN(g) || (g != null && g < 0)) e.gtgd = 'Giá trị giao dịch phải là số không âm.'; }
+  return e; }
+function techErr(t) { if (t.id === 'vol') return !isNum(t.n, 5, 100, 1) ? 'Số phiên tham chiếu phải từ 5 đến 100, số nguyên.' : !isNum(t.k, 0.5, 3, 0.1) ? 'Hệ số khối lượng phải từ 0,5 đến 3.' : '';
+  for (let i = 0; i < t.rules.length; i++) { const r = t.rules[i], def = RULES[t.id][i];
+    for (const p of def.parts) { if (p.t != null || (p.sel && !p.preset)) continue;
+      if (p.preset) { if (!PRESETS.includes(Number(r[p.k]))) return `Dòng ${i + 1}: ${p.a} chỉ chọn 5, 10, 20, 50, 100, 200.`; continue; }
+      if (!isNum(r[p.k], p.min, p.max, p.step)) return `Dòng ${i + 1}: ${p.a} phải từ ${p.min} đến ${p.max}${p.step === 1 ? ', số nguyên' : ''}.`; }
+    for (const [a, b] of def.pairs || []) if (Number(r[a]) >= Number(r[b])) return `Dòng ${i + 1}: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.`; }
+  return ''; }
+function firstError(st) {
+  if (st.legacy_sector) return `Chọn lại ngành: ngành ICB “${st.legacy_sector}” của bộ lọc cũ không còn được hỗ trợ.`;
+  const me = Object.values(mkErr(st.market)); if (me.length) return 'Cơ bản · Thị trường: ' + me[0];
+  for (const c of st.fund) { const m = FUND.find(x => x.id === c.id); if (num(c.value) == null || Number.isNaN(num(c.value))) return `Nhập ngưỡng cho “${m.name}”.`; }
+  for (const t of st.tech) { const e = techErr(t); if (e) return `${TECH.find(x => x.id === t.id).name} · ${e}`; }
+  return ''; }
+const sig = st => JSON.stringify([st.market, st.fund.map(c => [c.id, c.period, c.op, num(c.value)]), st.tech, st.legacy_sector]);
+
+/* 7) GIAO DIỆN: THƯ VIỆN ================================================== */
+function renderLib() {
+  document.querySelectorAll('[data-lt]').forEach(b => b.classList.toggle('on', b.dataset.lt === libTab));
+  const q = libQ.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase(); const m = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().includes(q);
+  let h = '';
+  if (libTab === 'iqx') { h = visF().map(x => iqxCard(x, 'f')).join('');
+    $('libF').innerHTML = 'Bộ lọc dựng sẵn bởi IQX. Bấm <b>Dùng</b> để điền sẵn vào form, rồi sửa như tự thiết lập. Tham khảo để học, không phải khuyến nghị.';
+  } else if (libTab === 'fd') { const used = new Set(cur.st.fund.map(c => c.id)); let sec = null, grp = null;
+    for (const x of FUND.filter(x => m(x.name))) {
+      if (x.sec !== sec) { sec = x.sec; grp = null; h += `<div class="sec-h">${esc(sec)}</div>`; }
+      if (x.grp !== grp) { grp = x.grp; h += `<div class="grp">${esc(grp)}</div>`; }
+      const ok = LEARNED.has(x.id);
+      h += `<div class="it ${ok ? '' : 'locked'}"><span>${esc(x.name)}</span>${!ok ? `<span class="lk">Chưa mở</span>` : used.has(x.id) ? '<span class="ok" aria-label="Đã có trong điều kiện">✓</span>' : `<button class="add" data-addf="${x.id}" aria-label="Thêm ${esc(x.name)}">+</button>`}</div>`; }
+    $('libF').innerHTML = 'Thứ tự và nhóm giống <b>Dashboard phân tích cơ bản</b>. Thị trường (sàn, rổ, ngành, vốn hóa, GTGD, giá) luôn nằm đầu khối Cơ bản.';
+  } else { const used = new Set(cur.st.tech.map(t => t.id)); let gname = null;
+    for (const x of [...TECH].sort((a, b) => a.group.localeCompare(b.group, 'vi')).filter(x => m(x.name))) { if (x.group !== gname) { gname = x.group; h += `<div class="grp">${esc(gname)}</div>`; }
+      h += `<div class="it"><span>${esc(x.name)}</span>${used.has(x.id) ? '<span class="ok" aria-label="Đã có trong điều kiện">✓</span>' : `<button class="add" data-addt="${x.id}" aria-label="Thêm ${esc(x.name)}">+</button>`}</div>`; }
+    $('libF').innerHTML = '16 mục. Điều kiện giống hệt Bot và Backtest.';
+  }
+  $('libB').innerHTML = h || '<div class="empty" style="margin:10px">Không có mục phù hợp.</div>';
+}
+
+/* 8) GIAO DIỆN: THỊ TRƯỜNG / CƠ BẢN / KỸ THUẬT ============================ */
+const chip = (k, v, on, lab) => `<button class="chip ${on ? 'on' : ''}" data-chip="${k}" data-v="${esc(v)}" aria-pressed="${on}">${esc(lab ?? v)}</button>`;
+const inp = (k, v, unit, bad, cls = '') => `<label class="inp ${bad ? 'bad' : ''}"><input class="${cls}" inputmode="decimal" data-k="${k}" value="${esc(v)}" placeholder="—" aria-label="${esc(k)}"><span>${unit}</span></label>`;
+function renderMk() { const m = cur.st.market, e = mkErr(m);
+  $('mkBox').innerHTML = `  ${cur.st.legacy_sector ? `<div class="warnbox">Bộ lọc cũ dùng ngành ICB “${esc(cur.st.legacy_sector)}”, không còn được hỗ trợ. Hệ thống không tự đổi: hãy chọn lại Ngành bên dưới (hoặc bấm <button class="btn" data-legacy style="height:28px;margin-left:4px">Lọc mọi ngành</button>).</div>` : ''}
+  <div class="mkgrid">
+    <div class="fld"><div class="lab">Sàn <button data-clr="exchanges">Bỏ chọn</button></div><div class="chips">${EXS.map(x => chip('exchanges', x, m.exchanges.includes(x))).join('')}</div></div>
+    <div class="fld"><div class="lab">Rổ chỉ số <button data-clr="baskets">Bỏ chọn</button></div><div class="chips">${BASKETS.map(x => chip('baskets', x, m.baskets.includes(x))).join('')}</div></div>
+    <div class="fld"><div class="lab">Ngành (nhóm báo cáo tài chính) <button data-clr="groups">Bỏ chọn</button></div><div class="chips">${Object.entries(GROUPS).map(([k, v]) => chip('groups', k, m.groups.includes(k), v)).join('')}</div></div>
+    <div class="fld"><div class="lab">Vốn hóa</div><div class="range">${inp('cap_min', m.cap_min, 'tỷ đ', e.cap)}<span class="dash">đến</span>${inp('cap_max', m.cap_max, 'tỷ đ', e.cap)}</div><div class="err">${e.cap || ''}</div></div>
+    <div class="fld"><div class="lab">Giá trị giao dịch bình quân</div><div class="range"><span class="dash">TB</span>${inp('gtgd_n', m.gtgd_n, 'phiên', e.gtgd, 's')}<span class="dash">≥</span>${inp('gtgd_min', m.gtgd_min, 'tỷ đ', e.gtgd)}</div><div class="err">${e.gtgd || ''}</div></div>
+    <div class="fld"><div class="lab">Giá đóng cửa</div><div class="range">${inp('price_min', m.price_min, 'nghìn đ', e.price)}<span class="dash">đến</span>${inp('price_max', m.price_max, 'nghìn đ', e.price)}</div><div class="err">${e.price || ''}</div></div>
+  </div>
+  <div class="hint">Chọn nhiều trong một mục: mã thuộc một trong các lựa chọn là đạt. Các mục khác nhau: phải đạt tất cả. Giá, vốn hóa, GTGD tính theo phiên đã đóng cửa ${SESSION}.</div>`; }
+function renderFd() { const L = cur.st.fund;
+  $('fdCount').textContent = `${L.length} chỉ tiêu · AND`; $('fdTag').textContent = 'Thị trường + chỉ tiêu tài chính · tất cả phải cùng đúng';
+  $('fdBox').innerHTML = `  ${L.length ? `<div class="cards">${L.map((c, i) => { const m = FUND.find(x => x.id === c.id), bad = num(c.value) == null || Number.isNaN(num(c.value));
+    return `<div class="card"><div class="ch"><b>${esc(m.name)}</b><button class="x" data-rmf="${i}" aria-label="Bỏ điều kiện ${esc(m.name)}">✕</button></div><div class="cb"><div class="frow">
+      <div><label>Kỳ tính</label><select data-fp="${i}">${m.per.map(p => `<option value="${p}" ${p === c.period ? 'selected' : ''}>${PER[p]}</option>`).join('')}</select></div>
+      <div><label>Dấu</label><select data-fo="${i}">${['>', '<'].map(o => `<option ${o === c.op ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
+      <div><label>Ngưỡng</label><label class="inp ${bad ? 'bad' : ''}"><input inputmode="decimal" data-fv="${i}" value="${esc(c.value)}" placeholder="0" aria-label="Ngưỡng ${esc(m.name)}"><span>${m.unit}</span></label></div></div></div></div>`; }).join('')}</div>`
+    : '<div class="empty">Chưa có chỉ tiêu tài chính. Thêm từ Thư viện → Cơ bản.</div>'}`; }
+function ruleHtml(t, i) { const r = t.rules[i]; return RULES[t.id][i].parts.map(p => { if (p.t != null) return `<span>${esc(p.t)}</span>`; const f = `${t.id}.${i}.${p.k}`;
+  if (p.sel) return `<select data-r="${f}" aria-label="${esc(p.a)}">${p.sel.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(r[p.k]) ? 'selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+  return `<input class="${p.w ? 'w' : ''} ${isNum(r[p.k], p.min, p.max, p.step) ? '' : 'bad'}" type="number" inputmode="decimal" min="${p.min}" max="${p.max}" step="${p.step}" data-r="${f}" value="${esc(r[p.k])}" aria-label="${esc(p.a)}">`; }).join(' '); }
+function renderTc() { const L = cur.st.tech; const nOn = L.reduce((a, t) => a + (t.id === 'vol' ? 2 : t.rules.filter(r => r.enabled).length), 0);
+  $('secTc').innerHTML = `<div class="sh"><h3>Kỹ thuật <span class="new">MỚI</span></h3><span class="tag">${L.length} chỉ báo · ${nOn} dòng bật · AND · xét tại phiên ${SESSION}</span></div>
+  ${L.length ? `<div class="cards">${L.map((t, k) => { const meta = TECH.find(x => x.id === t.id), e = techErr(t);
+    let b = t.id === 'vol' ? `<div class="vparams"><div><label>Số phiên tham chiếu</label>${inp('vol.n', t.n, 'phiên', !isNum(t.n, 5, 100, 1))}</div><div><label>Hệ số khối lượng</label>${inp('vol.k', t.k, 'lần', !isNum(t.k, 0.5, 3, 0.1))}</div></div>
+      <div class="vrow"><span>Giá đóng cửa</span><select data-vop="0" aria-label="Dấu giá">${CMP.map(o => `<option ${o === t.ops[0] ? 'selected' : ''}>${o}</option>`).join('')}</select><span>Giá đóng cửa phiên trước</span></div>
+      <div class="vrow"><span>Khối lượng</span><select data-vop="1" aria-label="Dấu khối lượng">${CMP.map(o => `<option ${o === t.ops[1] ? 'selected' : ''}>${o}</option>`).join('')}</select><span>${f1(+t.k)} × TB ${esc(t.n)} phiên</span></div>`
+      : t.rules.map((r, i) => `<div class="rule ${r.enabled ? 'on' : 'off'}"><div class="sent"><span class="no">${String(i + 1).padStart(2, '0')}</span>${ruleHtml(t, i)}</div><label class="sw"><input type="checkbox" data-en="${t.id}.${i}" ${r.enabled ? 'checked' : ''} aria-label="Bật/tắt dòng ${i + 1}"><i></i></label></div>`).join('');
+    return `<div class="card ${t.rules && t.rules.length > 1 ? 'wide' : ''}"><div class="ch"><div><b>${esc(meta.name)}</b><small>${esc(meta.group)}</small></div><button class="x" data-rmt="${t.id}" aria-label="Bỏ ${esc(meta.name)}">✕</button></div><div class="cb">${b}<div class="err">${e}</div></div></div>`; }).join('')}</div>`
+    : '<div class="empty">Chưa có điều kiện kỹ thuật. Thêm từ Thư viện → Kỹ thuật.</div>'}`; }
+function renderRunbar() { const st = cur.st, n = st.fund.length + st.tech.reduce((a, t) => a + (t.id === 'vol' ? 2 : t.rules.filter(r => r.enabled).length), 0);
+  $('runSum').textContent = n ? `${n} điều kiện · AND` : 'Chưa áp tiêu chí: xem toàn bộ doanh nghiệp trong phạm vi.';
+  $('ver').textContent = cur.fid ? `${DB.filters.find(f => f.id === cur.fid).name} · phiên bản ${cur.ver}` : 'Bộ lọc chưa lưu';
+  if (result) { const b = $('staleBadge'); if (b) b.hidden = sig(st) === result.sig; } }
+function renderAll() { renderLib(); renderLocBan(); renderMk(); renderFd(); renderTc(); renderRunbar(); }
+function keepFocus(fn) { const a = document.activeElement, key = a && (a.dataset.k || a.dataset.r || a.dataset.fv), attr = a && (a.dataset.k ? 'k' : a.dataset.r ? 'r' : 'fv'), pos = a && a.selectionStart; fn();
+  if (key != null) { const el = document.querySelector(`[data-${attr}="${key}"]`); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (e) {} } } }
+
+/* 9) CHẠY BỘ LỌC — bước 1 Thị trường + Kỹ thuật (toàn bộ mã), bước 2 Cơ bản ===== */
+function run() {
+  const err = firstError(cur.st); $('runErr').textContent = err; if (err) return;
+  const st = clone(cur.st), m = st.market, inR = (v, a, b) => v != null && (num(a) == null || v >= num(a)) && (num(b) == null || v <= num(b));
+  const cols = []; st.fund.forEach(c => { const f = FUND.find(x => x.id === c.id); cols.push({ kind: 'fd', lab: f.name, sub: `(${f.unit}) · ${PER[c.period]}`, nf: f.nf }); });
+  const probe = UNI.find(s => s.C.length > 250); st.tech.forEach(t => (t.id === 'vol' ? evalVol(probe, t, probe.T) : t.rules.map((r, i) => r.enabled ? EVAL[t.id][i](probe, r, probe.T) : null)).forEach(x => x && cols.push({ kind: 'tc', lab: x[1], sub: `phiên ${SESSION.slice(0, 5)}` })));
+  const rows = [];
+  for (const s of UNI) { const T = s.T;
+    if (m.exchanges.length && !m.exchanges.includes(s.ex)) continue;
+    if (m.baskets.length && !m.baskets.some(b => s.bk.includes(b))) continue;
+    if (m.groups.length && !m.groups.includes(s.g)) continue;
+    let gtgd = null; if (T - m.gtgd_n + 1 >= 0) { gtgd = 0; for (let j = T - m.gtgd_n + 1; j <= T; j++) gtgd += s.C[j] * s.V[j]; gtgd = gtgd / m.gtgd_n / 1e6; }
+    const mkOn = { cap: num(m.cap_min) != null || num(m.cap_max) != null, price: num(m.price_min) != null || num(m.price_max) != null, g: num(m.gtgd_min) != null };
+    if (mkOn.cap && !inR(s.cap, m.cap_min, m.cap_max)) continue;
+    if (mkOn.price && !inR(s.C[T], m.price_min, m.price_max)) continue;
+    if (mkOn.g && (gtgd == null || gtgd < num(m.gtgd_min))) continue;
+    const cells = []; let pass = true, exc = false;
+    for (const c of st.fund) { const d = s.fd[c.id + '.' + c.period]; const f = FUND.find(x => x.id === c.id);
+      if (d.st !== 'ok') { exc = true; cells.push({ t: '—', sub: { missing: 'Chưa đủ dữ liệu', not_applicable: 'Không áp dụng', insufficient_base: 'Không tính được' }[d.st], na: 1, v: null }); continue; }
+      const thr = num(c.value); if (!(c.op === '>' ? d.v > thr : d.v < thr)) pass = false; cells.push({ t: f1(d.v, f.nf), sub: PLAB[c.period], v: d.v }); }
+    for (const t of st.tech) { const res = t.id === 'vol' ? evalVol(s, t, T) : t.rules.map((r, i) => r.enabled ? EVAL[t.id][i](s, r, T) : null);
+      for (const x of res) { if (!x) continue; if (x[0] == null) { exc = true; cells.push({ t: '—', sub: 'Chưa đủ lịch sử giá', na: 1, v: null }); } else { if (!x[0]) pass = false; cells.push({ t: x[2], v: x[3] }); } } }
+    rows.push({ code: s.code, name: 'Công ty CP ' + s.code, ex: s.ex, g: GROUPS[s.g], p: s.C[T], ch: (s.C[T] / s.C[T - 1] - 1) * 100, cap: s.cap, gtgd, cells, status: exc ? 'e' : pass ? 'p' : 'f' });
+  }
+  result = { rows, cols, sig: sig(cur.st), gN: m.gtgd_n, counts: { universe: rows.length, p: rows.filter(r => r.status === 'p').length, f: rows.filter(r => r.status === 'f').length, e: rows.filter(r => r.status === 'e').length } };
+  ranAt = new Date(); page = 0; sel.clear(); sortK = 'code'; sortD = 1; renderRes();
+}
+const SORTS = { code: r => r.code, name: r => r.name, ex: r => r.ex, g: r => r.g, p: r => r.p, ch: r => r.ch, cap: r => r.cap, gtgd: r => r.gtgd };
+function sortedRows() { const list = result.rows.filter(r => showAll || r.status === 'p'); const key = SORTS[sortK] || (r => r.cells[+sortK.slice(1)].v);
+  return list.sort((a, b) => { const x = key(a), y = key(b); if (x == null && y == null) return a.code < b.code ? -1 : 1; if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : (a.code < b.code ? -1 : 1)) * sortD; }); }
+function renderRes() {
+  const R2 = result, c = R2.counts, list = sortedRows(), PG = 50, pages = Math.max(1, Math.ceil(list.length / PG)); page = Math.min(page, pages - 1);
+  const rows = list.slice(page * PG, page * PG + PG), passed = R2.rows.filter(r => r.status === 'p');
+  const ar = k => sortK === k ? `<span class="ar">${sortD > 0 ? '▲' : '▼'}</span>` : '';
+  const th = (k, l, sub = '', cls = '') => `<th class="${cls}" data-sort="${k}" scope="col" aria-sort="${sortK === k ? (sortD > 0 ? 'ascending' : 'descending') : 'none'}">${l}${ar(k)}${sub ? `<span class="sub">${sub}</span>` : ''}</th>`;
+  const allOnPage = rows.filter(r => r.status === 'p'); const ckAll = allOnPage.length && allOnPage.every(r => sel.has(r.code));
+  let h = `<div class="rh"><div class="r1"><h3>Kết quả sàng lọc <span class="badge">${c.p} doanh nghiệp</span><span class="badge stale" id="staleBadge" ${sig(cur.st) === R2.sig ? 'hidden' : ''}>Điều kiện đã đổi · cần lọc lại</span></h3>
+    <div class="acts"><button class="btn" data-save="list" ${c.p ? '' : 'disabled'}>Lưu danh mục</button><button class="btn" data-save="snap" ${c.p ? '' : 'disabled'}>Lưu kết quả</button><button class="btn pri" data-save="bot" ${c.p ? '' : 'disabled'}>Áp dụng cho Bot</button></div></div>
+    <div class="meta">Cơ bản: báo cáo mới nhất đã công bố · Mốc dữ liệu: <b>${AS_OF}</b> · Nguồn VCI<br>Thị trường và kỹ thuật: phiên đã đóng cửa <b>${SESSION}</b><br>${c.universe} doanh nghiệp trong phạm vi · <b>${c.p}</b> đạt · ${c.f} không đạt ngưỡng · ${c.e} có điều kiện không tính được</div>
+    <div class="opts"><label><input type="checkbox" id="showAll" ${showAll ? 'checked' : ''}> Hiện cả doanh nghiệp không đạt</label><span>${sel.size ? `Đã chọn <b>${sel.size}</b> mã. Lưu và áp dụng dùng đúng các mã này.` : c.p ? `Chưa chọn riêng: lưu và áp dụng dùng toàn bộ ${c.p} mã đạt, kể cả các trang khác.` : 'Chưa có mã nào đạt điều kiện để lưu hoặc áp dụng.'}</span></div></div>`;
+  if (!list.length) h += `<div class="nores"><b>Không có doanh nghiệp nào đạt tất cả điều kiện.</b>${c.e ? '<br>Một số doanh nghiệp chưa đủ dữ liệu cho điều kiện đang chọn.' : ''}<br>Điều kiện dạng "cắt lên / cắt xuống / vượt / phá" chỉ đúng tại đúng phiên xảy ra.</div>`;
+  else { h += `<div class="tw"><table aria-label="Kết quả sàng lọc doanh nghiệp"><thead><tr><th class="nos" style="width:34px"><input type="checkbox" id="ckAll" ${ckAll ? 'checked' : ''} aria-label="Chọn tất cả mã đạt trong trang này"></th>
+      ${th('code', 'Mã', '', 'l')}${th('name', 'Doanh nghiệp', '', 'l')}${th('ex', 'Sàn', '', 'l c-mk')}${th('g', 'Ngành', '', 'l c-mk')}${th('p', 'Giá', '(nghìn đ)', 'c-mk')}${th('ch', '+/− %', '', 'c-mk')}${th('cap', 'Vốn hóa', '(tỷ đ)', 'c-mk')}${th('gtgd', 'GTGD TB' + R2.gN, '(tỷ đ)', 'c-mk')}
+      ${R2.cols.map((cl, j) => th('c' + j, esc(cl.lab), esc(cl.sub), cl.kind === 'fd' ? 'c-fd' : 'c-tc')).join('')}${showAll ? '<th class="nos">Điều kiện</th>' : ''}</tr></thead><tbody>`;
+    for (const r of rows) h += `<tr class="${r.status === 'p' ? '' : 'fail'}"><td><input type="checkbox" data-ck="${r.code}" ${sel.has(r.code) ? 'checked' : ''} ${r.status === 'p' ? '' : 'disabled'} aria-label="Chọn ${r.code}"></td>
+      <td class="l code"><a href="#" aria-label="Backtest ${r.code}" data-bt="${r.code}">${r.code}</a></td><td class="l">${esc(r.name)}</td><td class="l">${r.ex}</td><td class="l">${r.g}</td><td>${f1(r.p, 2)}</td><td class="${r.ch > 0 ? 'up' : r.ch < 0 ? 'dn' : 'fl'}">${r.ch > 0 ? '+' : ''}${f1(r.ch, 2)}</td><td>${f1(r.cap, 0)}</td><td>${f1(r.gtgd, 1)}</td>
+      ${r.cells.map(x => `<td class="${x.na ? 'na' : ''}">${x.t}${x.sub ? `<span class="sub">${x.sub}</span>` : ''}</td>`).join('')}${showAll ? `<td><span class="st ${r.status}">${{ p: 'Đạt', f: 'Không đạt', e: 'Thiếu dữ liệu' }[r.status]}</span></td>` : ''}</tr>`;
+    h += `</tbody></table></div><div class="tf"><span>Hiển thị từ ${page * PG + 1} đến ${page * PG + rows.length} trên ${list.length} doanh nghiệp. Bấm tiêu đề cột để sắp xếp toàn bộ kết quả.</span>${pages > 1 ? `<span class="pager"><button class="btn" data-pg="-1" ${page ? '' : 'disabled'}>Trang trước</button><span>Trang ${page + 1}/${pages}</span><button class="btn" data-pg="1" ${page < pages - 1 ? '' : 'disabled'}>Trang sau</button></span>` : ''}</div>`; }
+  $('res').innerHTML = h; $('res').hidden = false;
+}
+
+/* 10) HỘP THOẠI (giữ nguyên chức năng web hiện có; mẫu rút gọn) ============= */
+const crit = st => { const m = st.market, p = []; if (m.exchanges.length) p.push(m.exchanges.join(', ')); if (m.baskets.length) p.push(m.baskets.join(', ')); if (m.groups.length) p.push(m.groups.map(g => GROUPS[g]).join(', '));
+  if (num(m.cap_min) != null || num(m.cap_max) != null) p.push(`Vốn hóa ${m.cap_min || '…'}–${m.cap_max || '…'} tỷ`); if (num(m.gtgd_min) != null) p.push(`GTGD TB${m.gtgd_n} ≥ ${m.gtgd_min} tỷ`); if (num(m.price_min) != null || num(m.price_max) != null) p.push(`Giá ${m.price_min || '…'}–${m.price_max || '…'}`);
+  st.fund.forEach(c => { const f = FUND.find(x => x.id === c.id); p.push(`${f.name} (${PER[c.period]}) ${c.op} ${c.value} ${f.unit}`); });
+  st.tech.forEach(t => p.push(TECH.find(x => x.id === t.id).name + (t.id === 'vol' ? '' : ` (${t.rules.filter(r => r.enabled).length} dòng)`)));
+  return p.length ? p.join(' · ') : 'Chưa áp tiêu chí: toàn bộ doanh nghiệp trong phạm vi'; };
+function dlg(html) { $('md').innerHTML = html; $('mb').hidden = false; const f = $('md').querySelector('input,button'); f && f.focus(); }
+const close = () => $('mb').hidden = true;
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+function selCodes() { return sel.size ? [...sel] : result.rows.filter(r => r.status === 'p').map(r => r.code); }
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('[data-close]') || t === $('mb')) return close();
+  const d = t.closest('[data-dlg]');
+  if (d) { const k = d.dataset.dlg;
+    if (k === 'filters') return dlg(`<h3>Bộ lọc đã lưu</h3><p>Giữ tiêu chí của từng điều kiện (cơ bản, thị trường, kỹ thuật). Mở lại sẽ tính bằng dữ liệu mới nhất tại thời điểm chạy.</p>
+      ${DB.filters.length ? DB.filters.map(f => { const v = f.versions[f.versions.length - 1]; return `<div class="row"><div><b>${esc(f.name)}</b><small>${esc(crit(v.st))}${v.st.legacy_sector ? ' · <span style="color:var(--red);font-weight:700">Cần chọn lại ngành</span>' : ''}</small><small>Phiên bản ${f.versions.length}${v.stored === '3.0' ? ' · định nghĩa cũ 3.0' : ''}</small></div><div class="acts"><button class="btn" data-use="${f.id}">Dùng</button><button class="btn danger" data-delf="${f.id}">Xóa</button></div></div>`; }).join('') : '<p>Chưa có bộ lọc đã lưu.</p>'}
+      <div class="act"><button class="btn" data-close>Đóng</button></div>`);
+    const L = k === 'lists' ? DB.lists : DB.snaps;
+    return dlg(`<h3>${k === 'lists' ? 'Danh mục đã lưu' : 'Kết quả đã lưu'}</h3><p>${k === 'lists' ? 'Danh mục giữ đúng tập mã và số liệu tại lúc lưu. Áp dụng cho Bot là thao tác riêng.' : 'Mỗi kết quả giữ nguyên các dòng số liệu và nguồn tại lúc lưu, gồm cả cột thị trường và kỹ thuật.'}</p>
+      ${L.length ? L.map(x => `<div class="row"><div><b>${esc(x.name)}</b><small>${x.codes.length} mã · phiên kỹ thuật ${SESSION} · lưu ${x.at}</small></div></div>`).join('') : `<p>${k === 'lists' ? 'Chưa có danh mục đã lưu.' : 'Chưa có kết quả đã lưu.'}</p>`}<div class="act"><button class="btn" data-close>Đóng</button></div>`); }
+  if (t.closest('[data-use]')) { const f = DB.filters.find(x => x.id === t.closest('[data-use]').dataset.use), v = f.versions[f.versions.length - 1]; cur = { fid: f.id, ver: f.versions.length, st: Object.assign(blank(), clone(v.st)) }; close(); renderAll();
+    return toast(v.st.legacy_sector ? 'Đã tải bộ lọc cũ. Ngành ICB không còn được hỗ trợ: hãy chọn lại Ngành trước khi chạy.' : 'Đã tải tiêu chí của bộ lọc. Bot và danh mục mua mới không đổi; bấm Chạy bộ lọc để lấy dữ liệu mới nhất.'); }
+  if (t.closest('[data-delf]')) { const id = t.closest('[data-delf]').dataset.delf; DB.filters = DB.filters.filter(x => x.id !== id); if (cur.fid === id) cur.fid = null; store(KEY, DB); close(); renderRunbar(); return toast('Đã xóa bộ lọc.'); }
+  if (t.id === 'saveFilter') { const f = cur.fid && DB.filters.find(x => x.id === cur.fid); const err = firstError(cur.st);
+    return dlg(`<h3>Lưu bộ lọc</h3><label style="font-size:12.5px;font-weight:700;color:var(--navy)">Tên bộ lọc</label><input class="tin" id="fName" maxlength="120" value="${esc(f ? f.name : '')}">
+      ${f ? `<label class="ck"><input type="checkbox" id="asVer" checked> Lưu thành phiên bản mới của “${esc(f.name)}” (đang ở phiên bản ${f.versions.length})</label>` : ''}<div class="crit">${esc(crit(cur.st))}</div>
+      <p>Bộ lọc lưu tiêu chí cơ bản, thị trường và kỹ thuật. Không đổi Bot.</p><div class="err">${err}</div><div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" id="fOk" ${err ? 'disabled' : ''}>Lưu bộ lọc</button></div>`); }
+  if (t.id === 'fOk') { const name = $('fName').value.trim(); if (!name) return toast('Nhập tên bộ lọc.'); const asVer = $('asVer') && $('asVer').checked; let f;
+    if (asVer) { f = DB.filters.find(x => x.id === cur.fid); f.name = name; f.versions.push({ stored: '4.0', st: clone(cur.st) }); }
+    else { f = { id: 'f' + Date.now(), name, versions: [{ stored: '4.0', st: clone(cur.st) }] }; DB.filters.unshift(f); }
+    cur.fid = f.id; cur.ver = f.versions.length; store(KEY, DB); close(); renderRunbar(); return toast(`Đã lưu bộ lọc “${name}” (phiên bản ${f.versions.length}). Bot không đổi.`); }
+  const sv = t.closest('[data-save]');
+  if (sv) { const k = sv.dataset.save, codes = selCodes(), def = `${cur.fid ? DB.filters.find(x => x.id === cur.fid).name : 'Kết quả lọc'} ${today()}`;
+    if (k === 'bot') { const nh = codes.filter(c => result.rows.find(r => r.code === c).ex !== 'HOSE');
+      return dlg(`<h3>Áp dụng danh mục cho Bot</h3><div class="crit">${esc(crit(cur.st))}</div><p><b>${codes.length}</b> mã. Danh mục này thay nguồn mua mới “${esc($('botSrc').textContent)}” của Bot.</p>
+        <ul><li>Có hiệu lực từ phiên giao dịch tiếp theo.</li><li>Không bán cổ phiếu Bot đang giữ.</li><li>VN30 là nguồn mặc định, quay lại bất cứ lúc nào.</li><li>Tập mã giữ cố định, không tự theo dõi thay đổi của bộ lọc.</li></ul>
+        ${nh.length ? `<div class="warnbox">Một số mã không hợp lệ cho nguồn mua của Bot (Bot chỉ mua cổ phiếu HOSE): ${nh.slice(0, 12).join(', ')}${nh.length > 12 ? '…' : ''}. Hãy bỏ chọn rồi xác nhận lại. <span style="display:block;margin-top:4px">Giữ nguyên quy tắc web hiện tại.</span></div>` : ''}
+        <div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" id="botOk" ${nh.length ? 'disabled' : ''}>Áp dụng cho Bot</button></div>`); }
+    return dlg(`<h3>${k === 'list' ? 'Lưu danh mục' : 'Lưu kết quả'}</h3><label style="font-size:12.5px;font-weight:700;color:var(--navy)">${k === 'list' ? 'Tên danh mục' : 'Tên kết quả'}</label><input class="tin" id="sName" maxlength="120" value="${esc(def)}"><div class="crit">${esc(crit(cur.st))}</div>
+      <p>Lưu ${codes.length} mã. ${k === 'list' ? 'Danh mục giữ đúng tập mã, tiêu chí, số liệu và mốc dữ liệu tại lúc lưu. Không mua cổ phiếu và không đổi Bot.' : 'Kết quả giữ nguyên các dòng số liệu (cơ bản, thị trường, kỹ thuật). Không đổi Bot.'}</p>
+      <div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" data-sok="${k}">Lưu</button></div>`); }
+  const so = t.closest('[data-sok]');
+  if (so) { const k = so.dataset.sok, name = $('sName').value.trim(); if (!name) return toast('Nhập tên.'); const codes = selCodes(), at = today();
+    if (k === 'list') { DB.lists.unshift({ name, codes, at }); DB.snaps.unshift({ name, codes, at }); } else DB.snaps.unshift({ name, codes, at }); store(KEY, DB); close();
+    return toast(k === 'list' ? `Đã lưu danh mục “${name}” (${codes.length} mã, phiên ${SESSION}). Bot không đổi; áp dụng cho Bot là thao tác riêng.` : `Đã lưu kết quả “${name}” (${codes.length} mã). Bot không đổi.`); }
+  if (t.id === 'botOk') { const codes = selCodes(); $('botSrc').textContent = `Danh mục từ bộ lọc (${codes.length} mã) · chờ hiệu lực`; close(); return toast(`Đã nhận danh mục ${codes.length} mã, chờ hiệu lực từ phiên tiếp theo. Không có lệnh nào được tạo và cổ phiếu đang giữ không bị bán.`); }
+  if (t.closest('[data-bt]')) { e.preventDefault(); return openBtFromFilter(t.closest('[data-bt]').dataset.bt); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+/* 11) SỰ KIỆN KHU ĐIỀU KIỆN ============================================== */
+document.querySelectorAll('[data-lt]').forEach(b => b.addEventListener('click', () => { libTab = b.dataset.lt; renderLib(); }));
+$('libQ').addEventListener('input', e => { libQ = e.target.value; renderLib(); });
+$('libOpen').addEventListener('click', () => $('lib').classList.add('open')); $('libClose').addEventListener('click', () => $('lib').classList.remove('open'));
+$('libB').addEventListener('click', e => { const a = e.target.closest('[data-addf]'), b = e.target.closest('[data-addt]');
+  if (a) { const m = FUND.find(x => x.id === a.dataset.addf); cur.st.fund.push({ id: m.id, period: m.per[0], op: '>', value: '' }); }
+  else if (b) cur.st.tech.push(newTech(b.dataset.addt)); else return;
+  $('lib').classList.remove('open'); renderAll(); });
+const main = document.querySelector('.main');
+main.addEventListener('click', e => { const t = e.target;
+  const c = t.closest('[data-chip]'); if (c) { const a = cur.st.market[c.dataset.chip], v = c.dataset.v, i = a.indexOf(v); i < 0 ? a.push(v) : a.splice(i, 1); if (c.dataset.chip === 'groups') cur.st.legacy_sector = null; return renderAll(); }
+  const cl = t.closest('[data-clr]'); if (cl) { cur.st.market[cl.dataset.clr] = []; if (cl.dataset.clr === 'groups') cur.st.legacy_sector = null; return renderAll(); }
+  if (t.closest('[data-legacy]')) { cur.st.legacy_sector = null; return renderAll(); }
+  const rf = t.closest('[data-rmf]'); if (rf) { cur.st.fund.splice(+rf.dataset.rmf, 1); return renderAll(); }
+  const rt = t.closest('[data-rmt]'); if (rt) { cur.st.tech = cur.st.tech.filter(x => x.id !== rt.dataset.rmt); return renderAll(); }
+  if (t.id === 'runBtn') return run();
+  const s = t.closest('th[data-sort]'); if (s) { const k = s.dataset.sort; if (sortK === k) sortD = -sortD; else { sortK = k; sortD = ['code', 'name', 'ex', 'g'].includes(k) ? 1 : -1; } page = 0; return renderRes(); }
+  const pg = t.closest('[data-pg]'); if (pg) { page += +pg.dataset.pg; return renderRes(); } });
+main.addEventListener('input', e => { const t = e.target;
+  if (t.dataset.k) { const k = t.dataset.k; if (k.startsWith('vol.')) cur.st.tech.find(x => x.id === 'vol')[k.slice(4)] = t.value === '' ? '' : Number(t.value.replace(',', '.')); else cur.st.market[k] = k === 'gtgd_n' ? (t.value === '' ? '' : Number(t.value)) : t.value; keepFocus(() => { renderMk(); renderTc(); renderRunbar(); }); }
+  else if (t.dataset.fv != null) { cur.st.fund[+t.dataset.fv].value = t.value; keepFocus(() => { renderFd(); renderRunbar(); }); }
+  else if (t.dataset.r && t.tagName === 'INPUT') { const [id, i, k] = t.dataset.r.split('.'); cur.st.tech.find(x => x.id === id).rules[i][k] = t.value === '' ? '' : Number(t.value); keepFocus(() => { renderTc(); renderRunbar(); }); } });
+main.addEventListener('change', e => { const t = e.target;
+  if (t.dataset.r && t.tagName === 'SELECT') { const [id, i, k] = t.dataset.r.split('.'); let v = t.value; if (RULES[id][i].parts.find(p => p.k === k)?.preset) v = Number(v); cur.st.tech.find(x => x.id === id).rules[i][k] = v; return renderAll(); }
+  if (t.dataset.en) { const [id, i] = t.dataset.en.split('.'); cur.st.tech.find(x => x.id === id).rules[i].enabled = t.checked; return renderAll(); }
+  if (t.dataset.vop) { cur.st.tech.find(x => x.id === 'vol').ops[+t.dataset.vop] = t.value; return renderAll(); }
+  if (t.dataset.fp != null) { cur.st.fund[+t.dataset.fp].period = t.value; return renderAll(); }
+  if (t.dataset.fo != null) { cur.st.fund[+t.dataset.fo].op = t.value; return renderAll(); }
+  if (t.id === 'showAll') { showAll = t.checked; page = 0; return renderRes(); }
+  if (t.id === 'ckAll') { sortedRows().slice(page * 50, page * 50 + 50).filter(r => r.status === 'p').forEach(r => t.checked ? sel.add(r.code) : sel.delete(r.code)); return renderRes(); }
+  if (t.dataset.ck) { t.checked ? sel.add(t.dataset.ck) : sel.delete(t.dataset.ck); return renderRes(); } });
+renderAll();
+
+/* =====================================================================
+   12) TAB IQX — Bộ lọc IQX và Chiến lược IQX dựng sẵn.
+   Nguyên tắc: bấm "Dùng" = ĐIỀN SẴN vào đúng form thiết lập hiện có (chip, ô nhập,
+   thẻ chỉ tiêu, thẻ chỉ báo với từng dòng và công tắc). Giao diện sau khi nạp giống hệt
+   khi người dùng tự thêm từng mục. Mẫu gốc không đổi; người dùng sửa trên bản của mình.
+   ===================================================================== */
+const TT = (id, ov) => { const t = newTech(id); if (id === 'vol') Object.assign(t, ov || {}); else (ov || []).forEach((o, i) => o && Object.assign(t.rules[i], o)); return t; };
+const IQXF = [
+ { id: 'giatri', name: 'Giá trị', idea: 'Doanh nghiệp có lãi đều, ít nợ, đang được định giá thấp.', origin: 'Benjamin Graham; Basu (1977); Fama và French (1992)',
+   wrong: 'Cổ phiếu rẻ có thể rẻ vì doanh nghiệp đang gặp vấn đề thật. Có thể mất nhiều năm thị trường mới nhìn nhận lại.', pair: 'dongtien',
+   mk: { exchanges: ['HOSE'], groups: ['thuong'], gtgd_min: '3' }, fund: [['pe', 'ttm', '<', '12'], ['pb', 'ttm', '<', '1,5'], ['debt_equity', 'quarter', '<', '1'], ['profit_positive_streak', 'year', '>', '4'], ['fcf_margin', 'ttm', '>', '0']], tech: () => [] },
+ { id: 'chatluong', name: 'Chất lượng', idea: 'Sinh lời cao trên vốn, biên tốt, nợ thấp, dòng tiền thật.', origin: 'Novy-Marx (2013)',
+   wrong: 'Doanh nghiệp tốt thường đã được định giá cao. Mua đắt vẫn có thể lỗ trong thời gian dài.', pair: 'xuhuong',
+   mk: { groups: ['thuong'], cap_min: '5000' }, fund: [['roic', 'ttm', '>', '15'], ['roe', 'ttm', '>', '15'], ['gross_margin', 'ttm', '>', '25'], ['net_debt_ebitda', 'ttm', '<', '2'], ['cfo_profit', 'ttm', '>', '0,8']], tech: () => [] },
+ { id: 'garp', name: 'Tăng trưởng giá hợp lý', idea: 'Lợi nhuận tăng đều mà giá chưa quá đắt so với tốc độ tăng.', origin: 'Peter Lynch',
+   wrong: 'Tăng trưởng quá khứ có thể không lặp lại. PEG dựa trên tốc độ tăng đã qua.', pair: 'xuhuong',
+   mk: { groups: ['thuong'], gtgd_min: '3' }, fund: [['eps_yoy', 'ttm', '>', '15'], ['roe', 'ttm', '>', '15'], ['peg', 'ttm', '<', '1'], ['debt_equity', 'quarter', '<', '1']], tech: () => [] },
+ { id: 'canslim', name: 'CANSLIM', idea: 'Lợi nhuận tăng mạnh, giá đang dẫn dắt, dòng tiền xác nhận.', origin: 'William O’Neil; Ball và Brown (1968)',
+   wrong: 'Kém hiệu quả khi thị trường chung đi xuống. Cần cắt lỗ kỷ luật.', pair: 'macd',
+   mk: { gtgd_min: '5' }, fund: [['eps_yoy', 'quarter', '>', '25'], ['eps_cagr3', 'three_year', '>', '20'], ['roe', 'ttm', '>', '17']],
+   tech: () => [TT('sma', [{ enabled: false }, { enabled: false }, { enabled: true, period: 50, dir: 'lên' }]), TT('vol', { k: 1.5 })] },
+ { id: 'phadinh', name: 'Phá đỉnh có thanh khoản', idea: 'Mã thanh khoản tốt vượt đỉnh 20 phiên, có dòng tiền xác nhận.', origin: 'Động lượng giá: Jegadeesh và Titman (1993)',
+   wrong: 'Hay thua khi thị trường đi ngang, vì có nhiều cú phá đỉnh giả.', pair: 'phadinh',
+   mk: { baskets: ['VN100'], gtgd_min: '10' }, fund: [],
+   tech: () => [TT('donchian', [{ enabled: true }]), TT('obv', [{ enabled: true }, { enabled: false }]), TT('bb', [{ enabled: false }, { enabled: false }, { enabled: true, dir: 'mở rộng' }])] },
+ { id: 'hoiphuc', name: 'Hồi phục từ quá bán', idea: 'Mã thanh khoản tốt vừa giảm quá mức và bắt đầu quay lại.', origin: 'Hiệu ứng đảo chiều ngắn hạn',
+   wrong: 'Trong xu hướng giảm mạnh, mã quá bán có thể tiếp tục giảm sâu hơn.', pair: 'hoiphuc',
+   mk: { baskets: ['VN100'], gtgd_min: '5' }, fund: [],
+   tech: () => [TT('bb', [{ enabled: true }, { enabled: false }, { enabled: false }]), TT('rsi', [{ enabled: true, threshold: 35 }, { enabled: false }]), TT('vol', { k: 1.1 })] },
+];
+const buildF0 = x => { const st = blank(); Object.assign(st.market, clone(x.mk)); st.fund = x.fund.map(([id, period, op, value]) => ({ id, period, op, value })); st.tech = x.tech(); return st; };
+const buildF = x => clone(x.st);
+const mkCount = st => { const m = st.market; return ['exchanges', 'baskets', 'groups'].filter(k => m[k].length).length + (m.cap_min !== '' || m.cap_max !== '' ? 1 : 0) + (m.gtgd_min !== '' ? 1 : 0) + (m.price_min !== '' || m.price_max !== '' ? 1 : 0); };
+
+/* Thẻ trong tab IQX (dùng chung cho Bộ lọc 'f' và Backtest 'b') */
+function iqxCard(x, kind) {
+  let meta;
+  if (kind === 'f') { const nm = mkCount(x.st), nt = x.st.tech.length;
+    meta = `${nm ? `<span class="k">Thị trường ${nm}</span>` : ''}${x.st.fund.length ? `<span class="k">Cơ bản ${x.st.fund.length}</span>` : ''}${nt ? `<span class="k">Kỹ thuật ${nt}</span>` : ''}`; }
+  else meta = `<span class="side"><b>Mua:</b> ${esc(x.cfg.buy.map(t => techName(t.id)).join(' + '))}</span><span class="side s"><b>Bán:</b> ${esc(x.cfg.sell.map(t => techName(t.id)).join(' + '))} · giữ tối đa ${x.cfg.hold} phiên</span>`;
+  const on = kind === 'f' ? cur.from === x.id : bt.from === x.id;
+  return `<div class="iqc ${on ? 'on' : ''}"><div class="iqh"><b><span class="brand-iqx">IQX</span>${esc(x.name)}</b><button class="btn pri sm" data-iqx${kind}="${x.id}">Dùng</button></div><p>${esc(x.idea)}</p><div class="iqm">${meta}</div></div>`;
+}
+const techName = id => id === 'vol' ? 'Khối lượng' : META.find(m => m.id === id).name;
+
+/* ---------- Bộ lọc: nạp Bộ lọc IQX ---------- */
+const isBlankSt = st => !st.fund.length && !st.tech.length && !st.market.exchanges.length && !st.market.baskets.length && !st.market.groups.length && ['cap_min', 'cap_max', 'gtgd_min', 'price_min', 'price_max'].every(k => st.market[k] === '');
+function applyIqxF(id) { const x = IQXF.find(f => f.id === id); cur = { fid: null, ver: 0, st: buildF(x), from: id, banOpen: false }; result = null; $('res').hidden = true; $('runErr').textContent = ''; close(); renderAll();
+  toast(`Đã điền sẵn Bộ lọc IQX · ${x.name}. Sửa từng điều kiện như tự thiết lập, rồi bấm Chạy bộ lọc.`); }
+function renderLocBan() { const b = $('locBan'); if (!b) return; const x = cur.from && IQXF.find(f => f.id === cur.from); b.hidden = !x; if (!x) return;
+  const p = visB().find(s => s.id === x.pair);
+  b.innerHTML = `<div class="r1"><span><span class="brand-iqx">IQX</span>Bắt đầu từ <b>Bộ lọc IQX · ${esc(x.name)}</b>. ${esc(x.idea)}</span><button class="lk" data-locban>${cur.banOpen ? 'Thu gọn' : 'Xem thêm'}</button></div>
+  ${cur.banOpen ? `<dl><dt>Nguồn gốc</dt><dd>${esc(x.origin)}</dd><dt>Khi nào dễ sai</dt><dd class="warn">${esc(x.wrong)}</dd>${p ? `<dt>Đi cặp với</dt><dd>Chiến lược IQX · <b>${esc(p.name)}</b>. Bấm một mã trong kết quả để Backtest mã đó với chiến lược này.</dd>` : ''}</dl>
+  <div style="font-size:12px;color:var(--ink2)">Tham khảo để học, không phải khuyến nghị đầu tư.</div>` : ''}`; }
+
+$('libB').addEventListener('click', e => { const u = e.target.closest('[data-iqxf]'); if (!u) return; const id = u.dataset.iqxf, x = IQXF.find(f => f.id === id);
+  if (isBlankSt(cur.st)) return applyIqxF(id);
+  dlg(`<h3>Thay bộ lọc đang soạn?</h3><p>Điều kiện hiện tại sẽ được thay bằng <b>Bộ lọc IQX · ${esc(x.name)}</b>. Bộ lọc đã lưu (nếu có) không bị ảnh hưởng.</p><div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" data-iqxfok="${id}">Thay bằng bộ lọc IQX</button></div>`); });
+document.addEventListener('click', e => { const t = e.target;
+  const ok = t.closest('[data-iqxfok]'); if (ok) return applyIqxF(ok.dataset.iqxfok);
+  if (t.closest('[data-locban]')) { cur.banOpen = !cur.banOpen; return renderLocBan(); }
+  const tb = t.closest('[data-tab]'); if (tb) return showTab(tb.dataset.tab); });
+
+/* ---------- Chuyển tab Backtest / Bộ lọc ---------- */
+function showTab(k) { document.querySelectorAll('[data-tab]').forEach(s => s.classList.toggle('on', s.dataset.tab === k)); $('vLoc').hidden = k !== 'loc'; $('vBt').hidden = k !== 'bt'; if (k === 'bt') renderBt(); }
+function openBtFromFilter(code) { const x = cur.from && IQXF.find(f => f.id === cur.from); bt.sym = code; if (!SYMS.some(s => s[0] === code)) SYMS.push([code, 'Công ty CP ' + code + ' (minh họa)', 'HOSE']);
+  showTab('bt'); if (x && visB().some(s => s.id === x.pair)) askLoadB(x.pair, `Mở Backtest ${code}.`); else toast(`Mở Backtest ${code}. Bản nháp giữ nguyên cấu hình đang có.`); }
+
+/* =====================================================================
+   13) BACKTEST — bố cục như web hiện tại (thư viện Chỉ báo trái; Điều kiện Mua / Bán; thẻ có Chỉnh, ✕)
+       + tab IQX: Chiến lược IQX điền sẵn đúng các thẻ chỉ báo như khi tự thêm.
+   ===================================================================== */
+const sideT = (id, sd, ov) => { if (id === 'vol') return Object.assign({ id: 'vol', n: VOL.n.def, k: VOL.k.def, ops: sd === 'buy' ? ['>', '>'] : ['<', '>'] }, ov || {});
+  return { id, rules: RULES[id].map((r, i) => Object.assign({ enabled: !!r.on }, clone(r[sd]), (ov && ov[i]) || {})) }; };
+const IQXB = [
+ { id: 'xuhuong', name: 'Theo xu hướng', idea: 'Đi theo xu hướng trung hạn bằng giao cắt hai đường trung bình.', origin: 'Theo xu hướng (trend following)', wrong: 'Thị trường đi ngang tạo nhiều tín hiệu giả, vào lệnh trễ ở đầu xu hướng.',
+   buy: [['cross', [{ enabled: true }]]], sell: [['cross', [{ enabled: true }]]], hold: 60 },
+ { id: 'phadinh', name: 'Phá đỉnh', idea: 'Mua khi giá vượt đỉnh 20 phiên có khối lượng xác nhận.', origin: 'Kênh Donchian; động lượng giá', wrong: 'Hay thua khi thị trường đi ngang, vì có nhiều cú phá đỉnh giả.',
+   buy: [['donchian', [{ enabled: true }]], ['vol', { k: 1.5 }]], sell: [['donchian', [{ enabled: true, period: 10 }]]], hold: 30 },
+ { id: 'macd', name: 'Động lượng MACD', idea: 'Mua khi động lượng chuyển dương và MACD đang ở vùng tích cực.', origin: 'Gerald Appel (MACD)', wrong: 'Tín hiệu đến chậm; thị trường giật mạnh dễ mua đỉnh, bán đáy.',
+   buy: [['macd', [{ enabled: true }, { enabled: true }, { enabled: false }]]], sell: [['macd', [{ enabled: true }, { enabled: false }, { enabled: false }]]], hold: 40 },
+ { id: 'hoiphuc', name: 'Hồi phục quá bán', idea: 'Mua nhịp hồi ngắn sau khi giá rơi ra ngoài dải dưới Bollinger.', origin: 'Hiệu ứng đảo chiều ngắn hạn', wrong: 'Trong xu hướng giảm mạnh, quá bán có thể còn quá bán hơn.',
+   buy: [['bb', [{ enabled: true }, { enabled: false }, { enabled: false }]], ['rsi', [{ enabled: false }, { enabled: true }]]], sell: [['rsi', [{ enabled: true }, { enabled: false }]]], hold: 10 },
+ { id: 'dongtien', name: 'Theo dòng tiền', idea: 'Mua khi dòng tiền tích lũy chuyển sang tích cực.', origin: 'OBV (Granville); Chaikin Money Flow', wrong: 'Khối lượng bất thường (thỏa thuận, sự kiện) có thể làm sai tín hiệu dòng tiền.',
+   buy: [['obv', [{ enabled: true }, { enabled: false }]], ['cmf', [{ enabled: true }]]], sell: [['cmf', [{ enabled: true }]]], hold: 30 },
+];
+const SYMS = [['FPT', 'Công ty Cổ phần FPT', 'HOSE · Công nghệ Thông tin'], ['HPG', 'Công ty Cổ phần Tập đoàn Hòa Phát', 'HOSE · Thép'], ['MWG', 'Công ty Cổ phần Đầu tư Thế Giới Di Động', 'HOSE · Bán lẻ'], ['SSI', 'Công ty Cổ phần Chứng khoán SSI', 'HOSE · Chứng khoán'], ['VCB', 'Ngân hàng TMCP Ngoại thương Việt Nam', 'HOSE · Ngân hàng']];
+let SAVED = { buy: [sideT('rsi', 'buy', [{ threshold: 32 }, {}])], sell: [sideT('rsi', 'sell', [{ threshold: 73 }, {}])], hold: 30, ver: 15 };
+let bt = { buy: clone(SAVED.buy), sell: clone(SAVED.sell), hold: 30, from: null, sym: 'FPT', lib: 'ind', q: '', banOpen: false }, ranSig = null, edit = null;
+const draftSig = () => JSON.stringify([bt.buy, bt.sell, String(bt.hold)]);
+const savedSig = () => JSON.stringify([SAVED.buy, SAVED.sell, String(SAVED.hold)]);
+
+function lineText(id, r, i) { return RULES[id][i].parts.map(p => { if (p.t != null) return p.t; const v = r[p.k];
+  if (p.sel) { const o = p.sel.find(o => String(Array.isArray(o) ? o[0] : o) === String(v)); return Array.isArray(o) ? o[1] : o; }
+  return typeof v === 'number' ? f1(v, Number.isInteger(v) ? 0 : (p.step < 0.1 ? 2 : 1)) : v; }).join(' ').replace(' : ', ': '); }
+function cardLines(t) { if (t.id === 'vol') return [`Giá đóng cửa ${t.ops[0]} giá đóng cửa phiên trước`, `Khối lượng ${t.ops[1]} ${f1(+t.k)} × TB ${t.n} phiên`];
+  return t.rules.map((r, i) => r.enabled ? lineText(t.id, r, i) : null).filter(Boolean); }
+function sideHtml(sd) { const L = bt[sd]; if (!L.length) return `<div class="empty">Chưa có chỉ báo ${sd === 'buy' ? 'Mua' : 'Bán'}. Thêm từ thư viện Chỉ báo bên trái.</div>`;
+  return L.map((t, k) => { const ls = cardLines(t);
+    return `<div class="icard"><div class="ih"><b>${esc(techName(t.id))}</b><span class="r"><button class="btn sm" data-bedit="${sd}.${k}">Chỉnh</button><button class="x" data-brm="${sd}.${k}" aria-label="Bỏ ${esc(techName(t.id))}">✕</button></span></div>
+      ${ls.length ? ls.map(l => `<div class="ln">${esc(l)}</div>`).join('') : '<div class="ln none">Chưa bật dòng nào: thẻ này không có tác dụng.</div>'}</div>`; }).join(''); }
+function renderBtLib() { document.querySelectorAll('[data-bl]').forEach(b => b.classList.toggle('on', b.dataset.bl === bt.lib)); $('btSearch').hidden = bt.lib !== 'ind';
+  if (bt.lib === 'iqx') { $('btLibB').innerHTML = visB().map(x => iqxCard(x, 'b')).join('');
+    $('btLibF').innerHTML = 'Chiến lược dựng sẵn bởi IQX. Bấm <b>Dùng</b> để điền sẵn các thẻ chỉ báo vào Điều kiện Mua và Bán của bản nháp. Bot không đổi.'; return; }
+  const q = bt.q.toLowerCase(), has = sd => new Set(bt[sd].map(t => t.id)); const hb = has('buy'), hs = has('sell');
+  const ORDER = ['Đường trung bình', 'Động lượng', 'Biến động', 'Kênh giá', 'Xu hướng', 'Khối lượng', 'Dòng tiền']; let h = '';
+  for (const g of ORDER) { const items = TECH.filter(x => x.group === g && x.name.toLowerCase().includes(q)); if (!items.length) continue; h += `<div class="grp">${g}</div>`;
+    h += items.map(x => `<div class="ind"><b>${esc(x.name)}</b><div class="two"><button class="addbtn b ${hb.has(x.id) ? 'has' : ''}" data-badd="buy.${x.id}">${hb.has(x.id) ? '✓' : '+'} Mua</button><button class="addbtn s ${hs.has(x.id) ? 'has' : ''}" data-badd="sell.${x.id}">${hs.has(x.id) ? '✓' : '+'} Bán</button></div></div>`).join(''); }
+  $('btLibB').innerHTML = h; $('btLibF').innerHTML = '16 chỉ báo, giữ nguyên như web hiện tại.'; }
+function renderBt() { renderBtLib();
+  const dirty = draftSig() !== savedSig(); $('btVer').textContent = 'Bản ' + SAVED.ver; $('btUse').textContent = 'Bot đang dùng bản ' + SAVED.ver;
+  $('btDraft').innerHTML = dirty ? '<span class="draft">Bản nháp · chưa lưu cho Bot</span>' : '';
+  const x = bt.from && IQXB.find(s => s.id === bt.from); $('btBan').hidden = !x;
+  if (x) $('btBan').innerHTML = `<div class="r1"><span><span class="brand-iqx">IQX</span>Bản nháp bắt đầu từ <b>Chiến lược IQX · ${esc(x.name)}</b>. ${esc(x.idea)} <b>Bot chưa thay đổi.</b></span><button class="lk" data-btban>${bt.banOpen ? 'Thu gọn' : 'Xem thêm'}</button></div>
+    ${bt.banOpen ? `<dl><dt>Nguồn gốc</dt><dd>${esc(x.origin)}</dd><dt>Khi nào dễ sai</dt><dd class="warn">${esc(x.wrong)}</dd></dl><div style="font-size:12px;color:var(--ink2)">Tham khảo để học, không phải khuyến nghị đầu tư.</div>` : ''}`;
+  $('btSym').innerHTML = SYMS.map(s => `<option value="${s[0]}" ${s[0] === bt.sym ? 'selected' : ''}>${s[0]}</option>`).join('');
+  const sy = SYMS.find(s => s[0] === bt.sym); $('btCo').innerHTML = `<span><b>${esc(sy[1])}</b> · ${esc(sy[2])}</span><span class="minh">Dữ liệu minh họa</span>`;
+  $('nBuy').textContent = bt.buy.length + ' chỉ báo'; $('nSell').textContent = bt.sell.length + ' chỉ báo';
+  $('cBuy').innerHTML = sideHtml('buy'); $('cSell').innerHTML = sideHtml('sell'); $('btHold').value = bt.hold;
+  const stale = ranSig && ranSig !== draftSig(); $('btSave').disabled = !ranSig || stale;
+  $('btErr').textContent = stale ? 'Bản nháp đã sửa sau lần chạy. Bấm Chạy trước khi Lưu cho Bot.' : ''; }
+
+function applyB(id, pre) { const x = IQXB.find(s => s.id === id); bt.buy = clone(x.cfg.buy); bt.sell = clone(x.cfg.sell); bt.hold = x.cfg.hold; bt.from = id; bt.banOpen = false;
+  ranSig = null; $('btRes').hidden = true; close(); renderBt(); toast(`${pre ? pre + ' ' : ''}Đã điền sẵn Chiến lược IQX · ${x.name} vào bản nháp. Bot chưa thay đổi.`); }
+function askLoadB(id, pre) { const x = IQXB.find(s => s.id === id); if (draftSig() === savedSig()) return applyB(id, pre);
+  dlg(`<h3>Thay bản nháp đang chỉnh?</h3><p>Điều kiện Mua, Bán và Giữ tối đa của bản nháp sẽ được thay bằng <b>Chiến lược IQX · ${esc(x.name)}</b>. Cấu hình Bot đang dùng không đổi.</p><div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" data-iqxbok="${id}">Thay bằng chiến lược IQX</button></div>`); }
+
+/* Chỉnh một thẻ: hộp thoại có đủ dòng, công tắc, ô nhập (như form Bot) */
+function editHtml() { const { sd, t } = edit, nm = techName(t.id);
+  let b = t.id === 'vol' ? `<div class="vparams"><div><label>Số phiên tham chiếu</label><span class="inp"><input data-bv="n" value="${esc(t.n)}"><span>phiên</span></span></div><div><label>Hệ số khối lượng</label><span class="inp"><input data-bv="k" value="${esc(t.k)}"><span>lần</span></span></div></div>
+     <div class="vrow" style="margin-top:8px"><span>Giá đóng cửa</span><select data-bvop="0">${CMP.map(o => `<option ${o === t.ops[0] ? 'selected' : ''}>${o}</option>`).join('')}</select><span>Giá đóng cửa phiên trước</span></div>
+     <div class="vrow" style="margin-top:8px"><span>Khối lượng</span><select data-bvop="1">${CMP.map(o => `<option ${o === t.ops[1] ? 'selected' : ''}>${o}</option>`).join('')}</select><span>k × TB N phiên</span></div>`
+    : t.rules.map((r, i) => `<div class="rule ${r.enabled ? 'on' : 'off'}"><div class="sent"><span class="no">${String(i + 1).padStart(2, '0')}</span>${RULES[t.id][i].parts.map(p => { if (p.t != null) return `<span>${esc(p.t)}</span>`;
+        if (p.sel) return `<select data-be="${i}.${p.k}">${p.sel.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(r[p.k]) ? 'selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+        return `<input class="${p.w ? 'w' : ''}" type="number" step="${p.step}" min="${p.min}" max="${p.max}" data-be="${i}.${p.k}" value="${esc(r[p.k])}">`; }).join(' ')}</div>
+        <label class="sw"><input type="checkbox" data-ben="${i}" ${r.enabled ? 'checked' : ''} aria-label="Bật/tắt dòng ${i + 1}"><i></i></label></div>`).join('');
+  return `<h3>${esc(nm)}</h3><div class="sidettl" style="color:${sd === 'buy' ? 'var(--green)' : 'var(--red)'}">${sd === 'buy' ? 'Điều kiện Mua' : 'Điều kiện Bán'}</div>${b}
+    <div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" id="beOk">Lưu vào bản nháp</button></div>`; }
+$('md').addEventListener('change', e => { if (!edit) return; const t = e.target;
+  if (t.dataset.ben != null) { edit.t.rules[+t.dataset.ben].enabled = t.checked; t.closest('.rule').className = 'rule ' + (t.checked ? 'on' : 'off'); }
+  else if (t.dataset.be) { const [i, k] = t.dataset.be.split('.'), p = RULES[edit.t.id][i].parts.find(p => p.k === k); edit.t.rules[i][k] = t.tagName === 'SELECT' && !p.preset ? t.value : Number(t.value); }
+  else if (t.dataset.bvop) edit.t.ops[+t.dataset.bvop] = t.value;
+  else if (t.dataset.bv) edit.t[t.dataset.bv] = Number(String(t.value).replace(',', '.')); });
+
+document.addEventListener('click', e => { const t = e.target;
+  const bl = t.closest('[data-bl]'); if (bl) { bt.lib = bl.dataset.bl; return renderBtLib(); }
+  const ub = t.closest('[data-iqxb]'); if (ub) return askLoadB(ub.dataset.iqxb);
+  const okb = t.closest('[data-iqxbok]'); if (okb) return applyB(okb.dataset.iqxbok);
+  if (t.closest('[data-btban]')) { bt.banOpen = !bt.banOpen; return renderBt(); }
+  const ad = t.closest('[data-badd]'); if (ad) { const [sd, id] = ad.dataset.badd.split('.'); if (bt[sd].some(x => x.id === id)) return toast(`${techName(id)} đã có trong Điều kiện ${sd === 'buy' ? 'Mua' : 'Bán'}.`); bt[sd].push(sideT(id, sd)); return renderBt(); }
+  const rm = t.closest('[data-brm]'); if (rm) { const [sd, k] = rm.dataset.brm.split('.'); bt[sd].splice(+k, 1); return renderBt(); }
+  const ed = t.closest('[data-bedit]'); if (ed) { const [sd, k] = ed.dataset.bedit.split('.'); edit = { sd, k: +k, t: clone(bt[sd][+k]) }; return dlg(editHtml()); }
+  if (t.id === 'beOk') { bt[edit.sd][edit.k] = edit.t; edit = null; close(); return renderBt(); }
+  if (t.closest('[data-close]')) edit = null;
+  if (t.id === 'btBack') { if (draftSig() === savedSig() && !bt.from) return toast('Bản nháp đang giống cấu hình đã lưu.');
+    return dlg(`<h3>Về cấu hình đã lưu?</h3><p>Bản nháp sẽ được thay bằng cấu hình Bot bản ${SAVED.ver}.</p><div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" id="btBackOk">Về cấu hình đã lưu</button></div>`); }
+  if (t.id === 'btBackOk') { bt.buy = clone(SAVED.buy); bt.sell = clone(SAVED.sell); bt.hold = SAVED.hold; bt.from = null; ranSig = null; $('btRes').hidden = true; close(); return renderBt(); }
+  if (t.id === 'btRun') return runBt();
+  if (t.id === 'btSave') { const x = bt.from && IQXB.find(s => s.id === bt.from);
+    return dlg(`<h3>Lưu cho Bot</h3><div class="crit">Cấu hình: Lần chạy lúc ${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}${x ? ' · từ Chiến lược IQX · ' + esc(x.name) : ''}<br>Có hiệu lực từ: Phiên 09/11/2026<br>Giữ tối đa: ${bt.hold} phiên<br>Chỉ báo bật: Mua ${esc(bt.buy.map(t => techName(t.id)).join(', '))} · Bán ${esc(bt.sell.map(t => techName(t.id)).join(', '))}</div>
+      <p>Cấu hình này sẽ thay cấu hình Bot từ phiên 09/11/2026. Không tạo lệnh ngay.</p><div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" id="btSaveOk">Lưu cho Bot</button></div>`); }
+  if (t.id === 'btSaveOk') { SAVED = { buy: clone(bt.buy), sell: clone(bt.sell), hold: bt.hold, ver: SAVED.ver + 1 }; close(); renderBt(); return toast(`Đã lưu cho Bot (bản ${SAVED.ver}). Có hiệu lực từ phiên 09/11/2026.`); } });
+$('btQ').addEventListener('input', e => { bt.q = e.target.value; renderBtLib(); });
+$('btSym').addEventListener('change', e => { bt.sym = e.target.value; renderBt(); });
+$('btHold').addEventListener('input', e => { bt.hold = e.target.value; const s = $('btSave'); const stale = ranSig && ranSig !== draftSig(); s.disabled = !ranSig || stale; $('btErr').textContent = stale ? 'Bản nháp đã sửa sau lần chạy. Bấm Chạy trước khi Lưu cho Bot.' : ''; $('btDraft').innerHTML = draftSig() !== savedSig() ? '<span class="draft">Bản nháp · chưa lưu cho Bot</span>' : ''; });
+
+/* Chạy (kết quả MINH HỌA, để thấy vị trí "Mua và giữ" so sánh) */
+function runBt() { const h = Number(bt.hold);
+  if (!Number.isInteger(h) || h < 3 || h > 250) return $('btErr').textContent = 'Giữ tối đa phải từ 3 đến 250 phiên, số nguyên.';
+  if (!bt.buy.some(t => cardLines(t).length)) return $('btErr').textContent = 'Chưa bật chỉ báo Mua nào: không có giao dịch.';
+  ranSig = draftSig(); let seed = [...ranSig + bt.sym].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7); const r = rng(seed), g = () => (r() + r() + r() - 1.5) * 2;
+  const n = 500, s = [100], b = [100]; let inPos = false; for (let i = 1; i < n; i++) { const m = 0.0003 + g() * 0.014; b.push(b[i - 1] * (1 + m)); if (r() < 0.04) inPos = !inPos; s.push(s[i - 1] * (1 + (inPos ? m : 0))); }
+  const ret = a => (a[a.length - 1] / 100 - 1) * 100, dd = a => { let p = a[0], w = 0; for (const v of a) { p = Math.max(p, v); w = Math.min(w, v / p - 1); } return w * 100; };
+  const W = 760, H = 220, P = { l: 40, r: 16, t: 10, b: 24 }, all = s.concat(b), lo = Math.min(...all), hi = Math.max(...all), x = i => P.l + (W - P.l - P.r) * i / (n - 1), y = v => P.t + (H - P.t - P.b) * (1 - (v - lo) / (hi - lo));
+  const path = a => a.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join('');
+  const grid = [0, 1, 2, 3, 4].map(k => { const v = lo + (hi - lo) * k / 4; return `<line x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}" stroke="#e1e8f1"/><text x="${P.l - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#2b4260">${Math.round(v)}</text>`; }).join('');
+  const k = (lab, v, cls) => `<div class="kpi"><small>${lab}</small><b class="${cls || ''}">${v}</b></div>`, pc = v => (v >= 0 ? '+' : '') + f1(v) + '%';
+  $('btRes').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b style="color:var(--navy)">Kết quả · ${esc(bt.sym)} · Bản nháp${bt.from ? ' (từ Chiến lược IQX · ' + esc(IQXB.find(z => z.id === bt.from).name) + ')' : ''}</b><span class="minh">Số liệu minh họa</span></div>
+    <div class="kpis">${k('Lợi nhuận chiến lược', pc(ret(s)), ret(s) >= 0 ? 'up' : 'dn')}${k('Mua và giữ ' + esc(bt.sym), pc(ret(b)))}${k('Sụt giảm lớn nhất', f1(dd(s)) + '%', 'dn')}${k('Số lệnh', 6 + (seed % 14))}</div>
+    <div class="legend"><span><i style="background:#0867d9"></i>Chiến lược</span><span><i style="background:#d97706"></i>Mua và giữ ${esc(bt.sym)}</span></div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Tài sản theo thời gian, gốc 100: chiến lược so với mua và giữ">${grid}<path d="${path(b)}" fill="none" stroke="#d97706" stroke-width="2"/><path d="${path(s)}" fill="none" stroke="#0867d9" stroke-width="2.4"/></svg>
+    <div style="font-size:12px;color:var(--ink2)">Kết quả quá khứ không bảo đảm kết quả tương lai.</div>`;
+  $('btRes').hidden = false; renderBt(); }
+
+/* Khởi tạo: dựng nội dung đã xuất bản + thông tin quản trị cho từng mẫu */
+const ADM0 = { at: '01/11/2026 09:00', by: 'admin@iqx.vn' };
+IQXF.forEach((x, i) => { x.st = buildF0(x); Object.assign(x, { status: 'shown', ver: 1, order: i, draft: null, uses: [412, 236, 158, 301, 527, 189][i], hist: [{ v: 1, at: ADM0.at, by: ADM0.by, reason: 'Khởi tạo danh sách Bộ lọc IQX', snap: { st: clone(x.st), info: infoOf(x) } }] }); });
+IQXB.forEach((x, i) => { x.cfg = { buy: x.buy.map(([id, o]) => sideT(id, 'buy', o)), sell: x.sell.map(([id, o]) => sideT(id, 'sell', o)), hold: x.hold }; Object.assign(x, { status: 'shown', ver: 1, order: i, draft: null, uses: [174, 263, 98, 141, 120][i], hist: [{ v: 1, at: ADM0.at, by: ADM0.by, reason: 'Khởi tạo danh sách Chiến lược IQX', snap: { cfg: clone(x.cfg), info: infoOf(x) } }] }); });
+function infoOf(x) { return { name: x.name, idea: x.idea, origin: x.origin, wrong: x.wrong, pair: x.pair || '' }; }
+const visF = () => IQXF.filter(x => x.status === 'shown' && x.ver > 0).sort((a, b) => a.order - b.order);
+const visB = () => IQXB.filter(x => x.status === 'shown' && x.ver > 0).sort((a, b) => a.order - b.order);
+renderBt();
+
+/* =====================================================================
+   14) QUẢN TRỊ · MẪU IQX — quản trị viên thêm, sửa, ẩn/hiện, sắp xếp, xuất bản.
+   Soạn mẫu dùng ĐÚNG form Bộ lọc / Backtest mà người dùng thấy (chế độ soạn mẫu).
+   Lưu nháp: người dùng chưa thấy. Xuất bản: tạo phiên bản mới, bắt buộc lý do.
+   ===================================================================== */
+let role = 'user', admKind = 'f', adm = null;
+const KN = { f: 'Bộ lọc IQX', b: 'Chiến lược IQX' }, ARR = k => k === 'f' ? IQXF : IQXB;
+const nowS = () => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+const ME = 'admin@iqx.vn';
+function setRole(r) { role = r; document.querySelectorAll('[data-role]').forEach(b => b.classList.toggle('on', b.dataset.role === r));
+  const isA = r === 'admin'; document.querySelector('.stabs').hidden = isA; $('vAdm').hidden = !isA;
+  if (isA) { $('vLoc').hidden = true; $('vBt').hidden = true; renderAdm(); } else { renderLib(); showTab('loc'); } }
+function renderAdm() { document.querySelectorAll('[data-ak]').forEach(b => b.classList.toggle('on', b.dataset.ak === admKind)); $('admNew').textContent = '+ Thêm ' + KN[admKind].toLowerCase().replace('iqx', 'IQX');
+  const L = ARR(admKind).slice().sort((a, b) => a.order - b.order);
+  const st = x => x.ver === 0 ? '<span class="pillst draft">Chưa xuất bản</span>' : x.status === 'shown' ? '<span class="pillst shown">Đang hiện</span>' : '<span class="pillst hidden">Đã ẩn</span>';
+  $('admList').innerHTML = `<table class="admtbl"><tr><th class="l nos">Thứ tự</th><th class="l nos">Tên</th><th class="l nos">Trạng thái</th><th class="nos">Phiên bản</th><th class="l nos">Cập nhật</th><th class="nos">Người dùng bấm Dùng · 30 ngày</th><th class="l nos">Thao tác</th></tr>
+  ${L.map((x, i) => { const last = x.hist[x.hist.length - 1];
+    return `<tr><td class="l"><span class="ord"><button data-mv="${x.id}.-1" ${i === 0 ? 'disabled' : ''} aria-label="Lên">↑</button><button data-mv="${x.id}.1" ${i === L.length - 1 ? 'disabled' : ''} aria-label="Xuống">↓</button></span></td>
+    <td class="l"><span class="nm"><span class="brand-iqx">IQX</span>${esc(x.name || '(chưa đặt tên)')}</span><span class="id">${esc(x.idea || '')}</span></td>
+    <td class="l">${st(x)}${x.draft ? '<span class="chipd">Có bản nháp</span>' : ''}</td><td>${x.ver ? 'v' + x.ver : '—'}</td>
+    <td class="l">${last ? esc(last.at) + '<span class="sub">' + esc(last.by) + '</span>' : '—'}</td><td>${x.uses ?? 0}</td>
+    <td class="l"><span class="rowacts"><button class="btn sm" data-aed="${x.id}">Sửa</button>${x.ver ? `<button class="btn sm" data-atg="${x.id}">${x.status === 'shown' ? 'Ẩn' : 'Hiện'}</button>` : `<button class="btn sm danger" data-adel="${x.id}">Xóa nháp</button>`}<button class="btn sm" data-ahi="${x.id}">Lịch sử</button></span></td></tr>`; }).join('')}</table>`; }
+
+/* ---- Chế độ soạn mẫu ---- */
+function startEdit(kind, id) { const x = id && ARR(kind).find(z => z.id === id);
+  const src = x ? (x.draft ? clone(x.draft) : (kind === 'f' ? { st: clone(x.st), info: infoOf(x) } : { cfg: clone(x.cfg), info: infoOf(x) }))
+    : (kind === 'f' ? { st: blank(), info: { name: '', idea: '', origin: '', wrong: '', pair: '' } } : { cfg: { buy: [], sell: [], hold: 30 }, info: { name: '', idea: '', origin: '', wrong: '', pair: '' } });
+  adm = { kind, id: x ? x.id : null, info: src.info, prevCur: clone(cur), prevBt: clone(bt), prevRan: ranSig, fromDraft: !!(x && x.draft) };
+  document.body.classList.add('adm-ed'); $('vAdm').hidden = true;
+  if (kind === 'f') { cur = { fid: null, ver: 0, st: src.st }; result = null; $('res').hidden = true; $('runErr').textContent = ''; $('vBt').hidden = true; $('vLoc').hidden = false; libTab = 'fd'; renderAll(); }
+  else { bt.buy = src.cfg.buy; bt.sell = src.cfg.sell; bt.hold = src.cfg.hold; bt.from = null; bt.lib = 'ind'; ranSig = null; $('btRes').hidden = true; $('vLoc').hidden = true; $('vBt').hidden = false; renderBt(); }
+  renderAdmBar(); window.scrollTo(0, 0); }
+function renderAdmBar() { $('admBarF').innerHTML = ''; $('admBarB').innerHTML = ''; $('admBarF').hidden = !(adm && adm.kind === 'f'); $('admBarB').hidden = !(adm && adm.kind === 'b'); if (!adm) return;
+  const x = adm.id && ARR(adm.kind).find(z => z.id === adm.id), i = adm.info, bar = $(adm.kind === 'f' ? 'admBarF' : 'admBarB');
+  const stTxt = !x ? 'Mục mới · chưa xuất bản' : x.ver === 0 ? 'Chưa xuất bản' : `Đang ${x.status === 'shown' ? 'hiện' : 'ẩn'} với người dùng · v${x.ver}${adm.fromDraft ? ' · đang mở bản nháp' : ''}`;
+  bar.innerHTML = `<div class="r1"><h3><span class="tagadm">QUẢN TRỊ</span>Soạn ${KN[adm.kind]} · ${esc(i.name || 'mới')}</h3><span class="note">${stTxt}</span></div>
+   <div class="ainfo">
+    <div><label for="ai-name">Tên <small>(tối đa 40 ký tự)</small></label><input id="ai-name" data-ai="name" maxlength="40" value="${esc(i.name)}"></div>
+    ${adm.kind === 'f' ? `<div><label for="ai-pair">Đi cặp với Chiến lược IQX</label><select id="ai-pair" data-ai="pair"><option value="">Không đi cặp</option>${IQXB.filter(s => s.ver > 0).map(s => `<option value="${s.id}" ${s.id === i.pair ? 'selected' : ''}>${esc(s.name)}${s.status === 'shown' ? '' : ' (đã ẩn)'}</option>`).join('')}</select></div>` : '<div></div>'}
+    <div class="full"><label for="ai-idea">Ý tưởng <small>(1 câu, tối đa 140 ký tự)</small></label><input id="ai-idea" data-ai="idea" maxlength="140" value="${esc(i.idea)}"></div>
+    <div><label for="ai-origin">Nguồn gốc <small>(tối đa 120 ký tự)</small></label><textarea id="ai-origin" data-ai="origin" maxlength="120">${esc(i.origin)}</textarea></div>
+    <div><label for="ai-wrong">Khi nào dễ sai <small>(tối đa 200 ký tự)</small></label><textarea id="ai-wrong" data-ai="wrong" maxlength="200">${esc(i.wrong)}</textarea></div>
+   </div>
+   <div class="note">Phần thiết lập bên dưới là <b>đúng form người dùng thấy</b>. Điền điều kiện như tự thiết lập, ${adm.kind === 'f' ? 'có thể bấm Chạy bộ lọc để thử' : 'chọn một mã rồi bấm Chạy để thử'}. Dòng "Tham khảo để học, không phải khuyến nghị đầu tư." luôn được thêm tự động.</div>
+   <div class="err" id="admErr"></div>
+   <div class="acts"><button class="btn" id="admCancel">Hủy</button><button class="btn" id="admDraft">Lưu nháp</button><button class="btn pri" id="admPub">Xuất bản…</button></div>`; }
+function admCheck() { const i = adm.info;
+  if (!i.name.trim()) return 'Nhập Tên.'; if (!i.idea.trim()) return 'Nhập Ý tưởng.'; if (!i.origin.trim()) return 'Nhập Nguồn gốc.'; if (!i.wrong.trim()) return 'Nhập Khi nào dễ sai.';
+  if (ARR(adm.kind).some(z => z.id !== adm.id && z.ver > 0 && z.name.trim().toLowerCase() === i.name.trim().toLowerCase())) return 'Tên đã được dùng cho mục khác.';
+  if (adm.kind === 'f') { if (isBlankSt(cur.st)) return 'Bộ lọc chưa có điều kiện nào.'; const e = firstError(cur.st); if (e) return e; }
+  else { const h = Number(bt.hold); if (!Number.isInteger(h) || h < 3 || h > 250) return 'Giữ tối đa phải từ 3 đến 250 phiên, số nguyên.'; if (!bt.buy.some(t => cardLines(t).length)) return 'Chưa bật chỉ báo Mua nào.'; if (!bt.sell.some(t => cardLines(t).length)) return 'Chưa bật chỉ báo Bán nào.'; }
+  return ''; }
+const admContent = () => adm.kind === 'f' ? { st: clone(cur.st) } : { cfg: { buy: clone(bt.buy), sell: clone(bt.sell), hold: Number(bt.hold) } };
+function admItem() { let x = adm.id && ARR(adm.kind).find(z => z.id === adm.id);
+  if (!x) { const L = ARR(adm.kind); x = { id: 'moi' + Date.now(), status: 'shown', ver: 0, order: L.length ? Math.max(...L.map(z => z.order)) + 1 : 0, draft: null, uses: 0, hist: [] }; L.push(x); adm.id = x.id; }
+  return x; }
+function exitEdit() { cur = adm.prevCur; Object.assign(bt, adm.prevBt); ranSig = adm.prevRan; adm = null; document.body.classList.remove('adm-ed'); renderAdmBar(); renderAll(); renderBt(); $('btRes').hidden = true; setRole('admin'); }
+
+document.addEventListener('input', e => { const t = e.target; if (t.dataset && t.dataset.ai && adm) { adm.info[t.dataset.ai] = t.value; if (t.dataset.ai === 'name') document.querySelector('.admbar:not([hidden]) h3').lastChild.textContent = `Soạn ${KN[adm.kind]} · ${t.value || 'mới'}`; } });
+document.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.ai === 'pair' && adm) adm.info.pair = t.value; });
+document.addEventListener('click', e => { const t = e.target;
+  const rl = t.closest('[data-role]'); if (rl) return setRole(rl.dataset.role);
+  const ak = t.closest('[data-ak]'); if (ak) { admKind = ak.dataset.ak; return renderAdm(); }
+  if (t.id === 'admNew') return startEdit(admKind, null);
+  const ed = t.closest('[data-aed]'); if (ed) return startEdit(admKind, ed.dataset.aed);
+  const mv = t.closest('[data-mv]'); if (mv) { const [id, d] = mv.dataset.mv.split('.'), L = ARR(admKind).slice().sort((a, b) => a.order - b.order), i = L.findIndex(z => z.id === id), j = i + Number(d);
+    [L[i].order, L[j].order] = [L[j].order, L[i].order]; L[i].hist.push({ kind: 'reorder', at: nowS(), by: ME, reason: 'Đổi thứ tự hiển thị' }); renderAdm(); return toast('Đã đổi thứ tự. Người dùng thấy thứ tự mới ngay.'); }
+  const tg = t.closest('[data-atg]'); if (tg) { const x = ARR(admKind).find(z => z.id === tg.dataset.atg), hide = x.status === 'shown';
+    return dlg(`<h3>${hide ? 'Ẩn' : 'Hiện lại'} ${KN[admKind]} · ${esc(x.name)}?</h3><p>${hide ? 'Mục này biến mất khỏi tab IQX của người dùng. Bộ lọc, bản nháp và cấu hình Bot người dùng đã tạo từ mục này không bị ảnh hưởng.' : 'Mục này hiện lại trong tab IQX với phiên bản đã xuất bản gần nhất (v' + x.ver + ').'}</p>
+      <label style="font-size:12.5px;font-weight:700;color:var(--navy)">Lý do (bắt buộc)</label><textarea class="tin" id="admReason"></textarea><div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" data-atgok="${x.id}">${hide ? 'Ẩn' : 'Hiện lại'}</button></div>`); }
+  const tok = t.closest('[data-atgok]'); if (tok) { const r = $('admReason').value.trim(); if (!r) return toast('Nhập lý do.'); const x = ARR(admKind).find(z => z.id === tok.dataset.atgok); x.status = x.status === 'shown' ? 'hidden' : 'shown';
+    x.hist.push({ kind: x.status === 'shown' ? 'show' : 'hide', at: nowS(), by: ME, reason: r }); close(); renderAdm(); return toast(x.status === 'shown' ? 'Đã hiện lại với người dùng.' : 'Đã ẩn khỏi tab IQX của người dùng.'); }
+  const dl = t.closest('[data-adel]'); if (dl) { const L = ARR(admKind), i = L.findIndex(z => z.id === dl.dataset.adel); L.splice(i, 1); renderAdm(); return toast('Đã xóa bản nháp chưa xuất bản.'); }
+  const hi = t.closest('[data-ahi]'); if (hi) { const x = ARR(admKind).find(z => z.id === hi.dataset.ahi), lab = { reorder: 'Đổi thứ tự', hide: 'Ẩn', show: 'Hiện lại', draft: 'Lưu nháp' };
+    return dlg(`<h3>Lịch sử · ${esc(x.name || 'mục mới')}</h3><div class="hist">${x.hist.slice().reverse().map(h => `<div class="row"><div><b>${h.v ? 'Xuất bản v' + h.v : lab[h.kind]}</b><small>${esc(h.at)} · ${esc(h.by)} · ${esc(h.reason || '')}</small></div>${h.v ? `<button class="btn sm" data-arest="${x.id}.${h.v}">Khôi phục làm bản nháp</button>` : ''}</div>`).join('') || '<p>Chưa có thay đổi.</p>'}</div><div class="act"><button class="btn" data-close>Đóng</button></div>`); }
+  const rs = t.closest('[data-arest]'); if (rs) { const [id, v] = rs.dataset.arest.split('.'), x = ARR(admKind).find(z => z.id === id), h = x.hist.find(z => z.v === Number(v)); x.draft = clone(h.snap); x.hist.push({ kind: 'draft', at: nowS(), by: ME, reason: 'Khôi phục từ v' + v }); close(); renderAdm(); return toast(`Đã tạo bản nháp từ v${v}. Bấm Sửa để xem rồi xuất bản.`); }
+  if (!adm) return;
+  if (t.id === 'admCancel') { exitEdit(); return toast('Đã hủy. Không có gì thay đổi.'); }
+  if (t.id === 'admDraft') { if (!adm.info.name.trim()) return $('admErr').textContent = 'Nhập Tên trước khi lưu nháp.'; const x = admItem(); x.draft = Object.assign(admContent(), { info: clone(adm.info) }); if (x.ver === 0) Object.assign(x, { name: adm.info.name, idea: adm.info.idea });
+    x.hist.push({ kind: 'draft', at: nowS(), by: ME, reason: '' }); exitEdit(); return toast('Đã lưu nháp. Người dùng chưa thấy thay đổi.'); }
+  if (t.id === 'admPub') { const err = admCheck(); $('admErr').textContent = err; if (err) return;
+    const x = adm.id && ARR(adm.kind).find(z => z.id === adm.id), nv = x ? x.ver + 1 : 1;
+    return dlg(`<h3>Xuất bản ${KN[adm.kind]} · ${esc(adm.info.name)} (v${nv})?</h3><p>${x && x.ver ? (x.status === 'shown' ? 'Người dùng thấy phiên bản mới ngay trong tab IQX.' : 'Mục đang ẩn: phiên bản mới được lưu, người dùng chỉ thấy khi bạn bấm Hiện.') : 'Mục mới hiện ngay trong tab IQX, ở cuối danh sách.'} Bộ lọc, bản nháp và cấu hình Bot người dùng đã tạo từ phiên bản cũ <b>không đổi theo</b>.</p>
+      <label style="font-size:12.5px;font-weight:700;color:var(--navy)">Lý do thay đổi (bắt buộc)</label><textarea class="tin" id="admReason"></textarea><div class="act"><button class="btn" data-close>Hủy</button><button class="btn pri" id="admPubOk">Xuất bản</button></div>`); }
+  if (t.id === 'admPubOk') { const r = $('admReason').value.trim(); if (!r) return toast('Nhập lý do thay đổi.'); const x = admItem(), c = admContent();
+    Object.assign(x, adm.info, c); x.ver += 1; x.draft = null; x.hist.push({ v: x.ver, at: nowS(), by: ME, reason: r, snap: Object.assign(clone(c), { info: clone(adm.info) }) }); close();
+    const nm = x.name, v = x.ver; exitEdit(); return toast(`Đã xuất bản ${KN[admKind]} · ${nm} (v${v}).`); } });
+
+</script>
+</body>
+</html>

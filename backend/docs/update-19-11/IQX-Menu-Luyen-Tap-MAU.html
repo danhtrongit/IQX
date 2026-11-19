@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IQX Luyện Tập</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--bg:#f4f6fa;--panel:#ffffff;--line:#dde3ec;--soft:#f2f5f9;--ink:#141c2b;--ink2:#34405a;--blue:#0867d9;--blue2:#0758b6;--bsoft:#e8f1fd;
+  --up:#118a3e;--dn:#d0313c;--amber:#8a5200;--asoft:#fff5e0;--note:#fff3d6;--noteink:#6b4300;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif;font-size:14px}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,select:focus-visible{outline:3px solid #91bff9;outline-offset:2px}
+.demo{background:var(--note);color:var(--noteink);font-size:12.5px;font-weight:600;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.demo code{background:#fff;border:1px solid #f0d9a8;border-radius:6px;padding:2px 8px;font-size:12.5px;color:var(--ink)}
+/* Thanh menu */
+.nav{display:flex;align-items:stretch;background:var(--panel);border-bottom:1px solid var(--line);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-height:64px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:22px;padding-right:18px;margin-right:8px;border-right:1px solid var(--line)}
+.logo i{width:28px;height:22px;border-radius:10px;background:linear-gradient(120deg,#16cdf4,#2f5bff 45%,#7a2ff5 75%,#e33ef0);display:inline-block}
+.menu{display:flex;align-items:stretch}
+.menu button{border:0;background:none;font-weight:700;font-size:15px;letter-spacing:.3px;padding:0 18px;color:var(--ink2);position:relative}
+.menu button.on{background:var(--blue);color:#fff}
+.right{margin-left:auto;display:flex;align-items:center;gap:10px;padding:10px 0;flex-wrap:wrap}
+.xu{border:1px solid #f0d9a8;background:var(--asoft);color:var(--amber);font-weight:800;border-radius:8px;padding:8px 14px}
+.search{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:9px 14px;min-width:260px;color:var(--ink2)}
+.acc{border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-weight:700}
+@media (max-width:1100px){.search{display:none}}
+@media (max-width:700px){.logo{border-right:0}.menu{order:3;width:100%;overflow-x:auto;border-top:1px solid var(--line)}.menu button{padding:14px;white-space:nowrap}}
+/* Khung trang: vùng chính · panel · thanh công cụ */
+.page{display:grid;grid-template-columns:minmax(0,1fr) 520px 104px;min-height:calc(100vh - 110px)}
+.page.closed{grid-template-columns:minmax(0,1fr) 0 104px}
+.page.closed .panelR{display:none}
+.left{min-width:0}
+.panelR{background:var(--panel);border-left:1px solid var(--line);min-width:0;display:flex;flex-direction:column}
+.rail{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;padding:14px 6px;gap:4px}
+.rail .t{font-size:12px;font-weight:800;letter-spacing:.6px;text-align:center;color:var(--ink2);padding:6px 0 12px}
+.rail button{border:0;background:none;border-radius:10px;padding:12px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink2);position:relative;text-align:center;line-height:1.25}
+.rail button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8}
+.rail button.on{background:var(--bsoft);color:var(--blue2)}
+.rail button.on::before{content:"";position:absolute;left:-6px;top:10px;bottom:10px;width:3px;border-radius:2px;background:var(--blue)}
+.rail .soon{font-size:10px;font-weight:800;background:var(--asoft);color:var(--amber);border-radius:4px;padding:1px 5px}
+@media (max-width:1180px){.page{grid-template-columns:minmax(0,1fr) 420px 96px}}
+@media (max-width:900px){.page,.page.closed{grid-template-columns:1fr}.rail{order:-1;flex-direction:row;overflow-x:auto;border-left:0;border-bottom:1px solid var(--line);padding:6px max(16px,env(safe-area-inset-left,0px))}.rail .t{display:none}.rail button{min-width:92px}.rail button.on::before{left:10px;right:10px;top:auto;bottom:-6px;width:auto;height:3px}.panelR{border-left:0;border-top:1px solid var(--line)}}
+/* Vùng chính */
+.subtabs{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.subtabs span{padding:16px 14px 13px;font-weight:600;border-bottom:3px solid transparent}
+.subtabs span.on{border-bottom-color:var(--ink);font-weight:700}
+.chartbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.sel{border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-weight:700;background:var(--panel)}
+.chartbox{background:var(--panel);padding:10px 12px 14px}
+.ohlc{font-size:14px;font-weight:600;padding:4px 8px 6px;display:flex;gap:10px;flex-wrap:wrap}
+svg.chart{width:100%;height:auto;display:block}
+.keep{border:1px dashed #b9c9dc;border-radius:12px;padding:22px;text-align:center;color:var(--ink2);line-height:1.6;background:var(--panel)}
+.keep b{color:var(--ink)}
+.callout{background:var(--bsoft);border:1px solid #9cc2f2;border-radius:10px;padding:10px 14px;font-size:13.5px;line-height:1.5}
+.box{margin:18px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.pet{text-align:center;min-height:500px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pet small{align-self:flex-start;font-size:12.5px;font-weight:700;letter-spacing:.5px;color:var(--ink2)}
+.pet h2{margin:10px 0 0;font-size:30px}
+.orb{width:200px;height:200px;border-radius:50%;margin-top:26px;background:radial-gradient(circle at 40% 35%,#fff,#dbe9ff 55%,#9ec2ff);display:grid;place-items:center;font-size:66px}
+.belts{display:flex;gap:6px;margin:10px 0 18px}
+.belts i{flex:1;height:10px;border-radius:5px;border:1px solid #c9d2de}
+.dojos{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.dojo{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.dojo b{font-size:15px}
+/* Panel phải */
+.ph{padding:18px 22px 12px;border-bottom:1px solid var(--line)}
+.ph h2{margin:0;font-size:20px}
+.ph p{margin:4px 0 0;color:var(--ink2)}
+.ptab{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.ptab button{border:0;background:none;padding:13px 6px;font-weight:700;color:var(--ink2);border-bottom:3px solid transparent}
+.ptab button.on{color:var(--blue2);border-bottom-color:var(--blue)}
+.pbody{overflow:auto;flex:1;padding:16px 22px 28px;display:flex;flex-direction:column;gap:14px}
+.card{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 16px}
+.mb{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:10px;padding:4px}
+.mb button{border:0;border-radius:8px;padding:11px;font-weight:800;font-size:16px;background:none;color:var(--ink2)}
+.mb button.on{background:var(--up);color:#fff}
+.mb button.on.sell{background:var(--dn)}
+.fld label{display:block;font-weight:600;margin-bottom:6px}
+.fld select{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;font-weight:700;background:var(--panel)}
+.quote{display:flex;justify-content:space-between;align-items:center}
+.quote b{font-size:18px}
+.quote .p{font-size:28px;font-weight:800}
+.quote .p small{font-size:14px;margin-left:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 14px;font-size:13.5px;margin-top:10px;font-variant-numeric:tabular-nums}
+.grid3 span{display:flex;justify-content:space-between;gap:6px}
+.grid3 em{font-style:normal;color:var(--ink2)}
+.kv{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;font-variant-numeric:tabular-nums}
+.big{width:100%;border:0;border-radius:8px;padding:13px;font-weight:800;font-size:16px;color:#fff;background:var(--up)}
+.big.sell{background:var(--dn)}
+.tiny{font-size:12.5px;color:var(--ink2);margin:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font-size:12.5px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:4px 10px;color:var(--ink2);background:var(--panel)}
+.chips button.on{background:var(--bsoft);border-color:#9cc2f2;color:var(--blue2)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+th{text-align:right;font-size:12px;color:var(--ink2);font-weight:700;padding:6px;border-bottom:1px solid var(--line)}
+td{text-align:right;padding:9px 6px;border-bottom:1px solid #edf1f6}
+th:first-child,td:first-child{text-align:left}
+tr.pick{cursor:pointer}
+tr.pick:hover td{background:var(--soft)}
+tr.sel td{background:var(--bsoft)}
+.up{color:var(--up)}.dn{color:var(--dn)}
+.news a{display:block;text-decoration:none;color:var(--ink);padding:10px 0;border-bottom:1px solid #edf1f6}
+.news a b{display:block;font-weight:600;line-height:1.4}
+.news a small{color:var(--ink2);font-size:12.5px}
+.lesson{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #edf1f6}
+.lesson button{border:0;background:var(--blue);color:#fff;font-weight:700;border-radius:8px;padding:8px 14px;white-space:nowrap}
+/* Flashback */
+.lobby{padding:20px;display:flex;flex-direction:column;gap:14px}
+.lobby .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lobby .bar .in{border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--panel);min-width:180px;color:var(--ink2)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:9px 14px;font-weight:700}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.room{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.room .row{display:flex;justify-content:space-between;color:var(--ink2);font-size:13px}
+.shopsec{padding:20px;display:flex;flex-direction:column;gap:14px}
+.shopsec h3{margin:6px 0 0;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.item .cv{width:100%;aspect-ratio:5/7;border-radius:10px;border:4px solid;display:grid;place-items:center;background:#fff}
+.item .pv{width:100%;aspect-ratio:1;border-radius:10px;display:grid;place-items:center;font-size:48px;background:var(--soft)}
+.item b{font-size:13.5px}
+.item button{border:0;border-radius:7px;padding:6px 12px;font-weight:700;background:var(--blue);color:#fff;font-size:12.5px}
+.gone{border:1px solid #f3b6ba;background:#fff1f2;color:#8c1d26;border-radius:10px;padding:10px 14px;font-size:13.5px;line-height:1.5}
+hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+[hidden]{display:none!important}
+</style>
+
+<div class="demo"><span>Bản mẫu bố cục menu mới · dữ liệu minh họa</span><span>Đường dẫn: <code id="route"></code></span></div>
+
+<header class="nav">
+  <div class="logo"><i></i>IQX</div>
+  <nav class="menu" aria-label="Menu chính">
+    <button data-top="gioithieu">GIỚI THIỆU</button>
+    <button data-top="luyentap">LUYỆN TẬP</button>
+    <button data-top="flashback">FLASHBACK</button>
+    <button data-top="chienluoc">CHIẾN LƯỢC</button>
+  </nav>
+  <div class="right"><button class="xu" id="xuBtn">◎ 54.050 xu</button><span class="search">Tìm mã hoặc tên công ty…</span><span class="acc">Lê Huy</span></div>
+</header>
+
+<main id="pTool" class="page">
+  <section class="left" id="leftArea"></section>
+  <section class="panelR" id="panelR" aria-label="Panel công cụ"></section>
+  <nav class="rail" id="rail" aria-label="Công cụ"></nav>
+</main>
+<main id="pOther" hidden><div class="box"><div class="keep" id="otherTxt"></div></div></main>
+
+<script>
+const $ = s => document.querySelector(s);
+const IC = {
+  dojo: '<svg viewBox="0 0 24 24"><path d="M7 3v4M7 17v4M17 6v3M17 15v3"/><rect x="5" y="7" width="4" height="10" rx="1"/><rect x="15" y="9" width="4" height="6" rx="1"/></svg>',
+  hoc: '<svg viewBox="0 0 24 24"><path d="M3 5c3-1 6-1 9 1 3-2 6-2 9-1v13c-3-1-6-1-9 1-3-2-6-2-9-1z"/><path d="M12 6v13"/></svg>',
+  bot: '<svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16h6"/></svg>',
+  gd: '<svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 11h11l2-8H6.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>',
+  pt: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+  fb: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></svg>',
+  shop: '<svg viewBox="0 0 24 24"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8a4 4 0 0 1 8 0"/></svg>'
+};
+/* Mỗi mục lớn có thanh công cụ riêng. panel:false = công cụ không có panel phải, vùng chính rộng hết cỡ */
+const SECT = {
+  luyentap: { path: '/luyen-tap', def: 'hoc-vien', tools: [
+    { id: 'candle-dojo', name: 'Candle Dojo', ic: 'dojo', soon: true, panel: false },
+    { id: 'hoc-vien', name: 'Học viện', ic: 'hoc', panel: true },
+    { id: 'bot', name: 'Bot', ic: 'bot', panel: true },
+    { id: 'giao-dich', name: 'Giao dịch', ic: 'gd', panel: true },
+    { id: 'phan-tich', name: 'Dashboard phân tích', ic: 'pt', panel: true }] },
+  flashback: { path: '/flashback', def: 'flashback', tools: [
+    { id: 'flashback', name: 'Flashback', ic: 'fb', panel: false },
+    { id: 'shop', name: 'Shop', ic: 'shop', panel: true }] }
+};
+/* Mỗi mục nhớ riêng công cụ và trạng thái đóng/mở */
+const ST = { luyentap: { tool: 'hoc-vien', open: true }, flashback: { tool: 'flashback', open: true } };
+let top_ = 'luyentap', sym = 'VNM', side = 'buy', gdTab = 'lenh', dmTab = 'giu', newsTab = 'ma', shopTab = 'pet';
+
+const HOLD = [['VNM', 600, 59.87, 57.7], ['FPT', 200, 118.4, 132.5], ['HPG', 1000, 27.9, 26.85], ['MWG', 300, 61.2, 68.4]];
+const Q = { VNM: { p: 57.7, ch: 0.35, tran: 61.5, tc: 57.5, san: 53.5, cao: 58.0, thap: 57.1, kl: '1.065.700' }, FPT: { p: 132.5, ch: 0.9, tran: 140.9, tc: 131.3, san: 122.2, cao: 133.0, thap: 130.8, kl: '2.410.300' },
+  HPG: { p: 26.85, ch: -1.1, tran: 29.0, tc: 27.15, san: 25.3, cao: 27.3, thap: 26.7, kl: '18.204.900' }, MWG: { p: 68.4, ch: 1.3, tran: 72.3, tc: 67.5, san: 62.8, cao: 68.9, thap: 67.2, kl: '5.118.000' } };
+const NEWS = { VNM: ['Vinamilk công bố kết quả kinh doanh quý III/2026', 'VNM chốt quyền trả cổ tức đợt 2 bằng tiền', 'Giá sữa nguyên liệu thế giới giảm'],
+  FPT: ['FPT ký hợp đồng chuyển đổi số với đối tác Nhật Bản', 'Lợi nhuận mảng công nghệ của FPT tăng hai chữ số', 'FPT mở rộng trung tâm dữ liệu'],
+  HPG: ['Hòa Phát đẩy mạnh tiến độ Dung Quất 2', 'Giá thép xây dựng điều chỉnh giảm', 'Sản lượng tiêu thụ tháng 10 tăng'],
+  MWG: ['Bách Hóa Xanh mở thêm cửa hàng', 'MWG: doanh thu 10 tháng đạt 82% kế hoạch', 'Chuỗi An Khang thu hẹp lỗ'] };
+const MKT = ['VN-Index giảm hơn 21 điểm, thanh khoản cải thiện', 'Khối ngoại bán ròng phiên thứ ba liên tiếp', 'Nhóm ngân hàng phân hóa mạnh cuối phiên'];
+const fmt = (n, d = 2) => n.toLocaleString('vi-VN', { minimumFractionDigits: d, maximumFractionDigits: d });
+const money = n => Math.round(n).toLocaleString('vi-VN') + ' đ';
+const CASH = 64018140;
+
+function chartSvg() { let s = 7; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; const n = 120; let c = 1780; const C = [];
+  for (let i = 0; i < n; i++) { const o = c; c = c * (1 + (r() - 0.5) * 0.03); C.push([o, Math.max(o, c) * (1 + r() * 0.006), Math.min(o, c) * (1 - r() * 0.006), c, 300 + r() * 500]); }
+  const W = 900, H = 400, P = 50, hi = Math.max(...C.map(x => x[1])), lo = Math.min(...C.map(x => x[2])), y = v => 14 + 266 * (1 - (v - lo) / (hi - lo)), cw = (W - P - 8) / n;
+  let g = ''; for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4; g += `<line x1="0" x2="${W - P}" y1="${y(v)}" y2="${y(v)}" stroke="#e7ecf3"/><text x="${W - P + 6}" y="${y(v) + 4}" font-size="12" fill="#34405a">${fmt(v, 0)}</text>`; }
+  C.forEach((x, i) => { const col = x[3] >= x[0] ? '#118a3e' : '#d0313c', cx = 4 + i * cw + cw / 2;
+    g += `<line x1="${cx}" x2="${cx}" y1="${y(x[1])}" y2="${y(x[2])}" stroke="${col}"/><rect x="${cx - cw * .32}" y="${y(Math.max(x[0], x[3]))}" width="${cw * .64}" height="${Math.max(1, Math.abs(y(x[0]) - y(x[3])))}" fill="${col}"/><rect x="${cx - cw * .32}" y="${H - 10 - x[4] / 8}" width="${cw * .64}" height="${x[4] / 8}" fill="${col}" opacity=".45"/>`; });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Biểu đồ nến VNINDEX minh họa">${g}</svg>`; }
+
+const toolOf = () => SECT[top_].tools.find(t => t.id === ST[top_].tool);
+const panelOpen = () => toolOf().panel && ST[top_].open;
+
+/* ---------- vùng chính ---------- */
+function renderLeft() { const t = ST[top_].tool, L = $('#leftArea');
+  if (t === 'giao-dich' || t === 'phan-tich') { L.innerHTML = `<div class="subtabs"><span class="on">Biểu đồ</span><span>Bảng giá</span><span>Thị trường</span></div>
+    <div class="chartbar"><span class="sel">${t === 'giao-dich' ? sym : 'VNINDEX'} ⇕</span><span class="sel">1 ngày ▾</span></div>
+    <div class="chartbox"><div class="ohlc"><b>${t === 'giao-dich' ? sym : 'VNINDEX'}</b><span>06/11/2026</span></div>${chartSvg()}<p class="tiny" style="padding:6px 8px 0">Biểu đồ, Bảng giá, Thị trường giữ nguyên. Thu panel thì vùng này giãn ra và biểu đồ vẽ lại.</p></div>`; return; }
+  if (t === 'hoc-vien' || t === 'bot') { L.innerHTML = `<div class="box pet"><small>LINH THÚ CỦA BẠN</small><h2>Bạch Hổ</h2><p style="margin:0;color:var(--ink2)">Học kiến thức. Tự thiết lập điều kiện cho Bot.</p><div class="orb">🐯</div><p class="tiny" style="margin-top:18px">Vùng linh thú giữ nguyên như web hiện tại.</p></div>`; return; }
+  if (t === 'candle-dojo') { const B = ['#F2F2F2', '#F2C200', '#1E9E5A', '#8A5A2B', '#C8312B', '#1A1410'];
+    L.innerHTML = `<div class="box"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 style="margin:0">Candle Dojo</h2><span class="soon" style="background:var(--asoft);color:var(--amber);font-weight:800;border-radius:6px;padding:3px 10px">SẮP CÓ</span></div>
+     <div class="belts">${B.map(c => `<i style="background:${c}"></i>`).join('')}</div>
+     <div class="dojos">${[['Nhập môn', 'Giải phẫu cây nến'], ['Dojo 1', 'Nến đơn · 6 bài'], ['Dojo 2', 'Nến đôi · 9 bài'], ['Dojo 3', 'Nến ba · 5 bài'], ['Dojo 4', 'Mẫu 4 nến · 2 bài'], ['Dojo 5', 'Mẫu 5 nến trở lên · 5 bài']].map(d => `<div class="dojo"><b>${d[0]}</b><span>${d[1]}</span></div>`).join('')}</div>
+     <p class="tiny" style="margin-top:14px">Màn Dojo theo spec Candle Dojo v1.2. Một màn, không có panel phải. Mua thẻ cuối bài dẫn tới FLASHBACK › Shop › Thẻ nến.</p></div>`; return; }
+  if (t === 'flashback') { L.innerHTML = `<div class="lobby"><div class="bar"><span class="in">Nhập ID phòng</span><button class="btn">Vào phòng</button><button class="btn">Chơi phòng bất kỳ</button><button class="btn pri">＋ Tạo phòng</button></div>
+     <div class="chips"><button class="on">Tất cả</button><button>Đang chờ</button><button>Đang chơi</button></div>
+     <div class="rooms">${[['482915', 'Huy', '60 / 30 phiên · 15 phút', '2/4 người', '200 xu', 'Vào'], ['730144', 'Minh', '30 / 30 phiên · 10 phút', '1/2 người', 'Không cược', 'Vào'], ['118206', 'Lan', '45 / 60 phiên · 20 phút', '4/4 người', '500 xu', 'Đang chơi']].map(r => `<div class="room"><div class="row"><b style="color:var(--ink)">#${r[0]}</b><span>Chủ phòng: ${r[1]}</span></div><div class="row"><span>${r[2]}</span><span>${r[3]}</span></div><div class="row"><span>Cược: ${r[4]}</span>${r[5] === 'Vào' ? '<button class="btn pri" style="padding:6px 14px">Vào</button>' : `<b style="color:var(--ink)">${r[5]}</b>`}</div></div>`).join('')}</div>
+     <p class="tiny">Sảnh, phòng chờ, màn chơi giữ nguyên theo spec Flashback v2. Sảnh rộng hết cỡ, không có panel phải. Vào màn chơi thì panel phải là khung đặt lệnh như hiện tại.</p></div>`; return; }
+  if (t === 'shop') { const C = [['Hammer', '#2F7BF5', '300'], ['Doji', '#2F7BF5', '300'], ['Bullish Engulfing', '#8B4DF0', '600'], ['Morning Star', '#E0459B', '1.000'], ['Three-Line Strike', '#E0A100', '2.000'], ['Rising Three Methods', '#E5352B', '3.000']];
+    L.innerHTML = `<div class="shopsec"><div class="gone"><b>Đã bỏ:</b> mua Premium bằng xu. Shop chỉ còn Linh thú và Thẻ nến.</div>
+     <h3>Linh thú <span class="chips"><button class="on">Cửa hàng</button><button>Đã sở hữu</button></span></h3>
+     <div class="grid">${[['Thanh Long', '🐉'], ['Lộc Hươu', '🦌'], ['Phụng Hoàng', '🦚'], ['Kim Quy', '🐢']].map(p => `<div class="item"><div class="pv">${p[1]}</div><b>${p[0]}</b><button>Mua · 2.000 xu</button></div>`).join('')}</div>
+     <hr><h3>Thẻ nến <span class="chips"><button class="on">Cửa hàng</button><button>Đã sở hữu</button></span></h3>
+     <div class="grid">${C.map(c => `<div class="item"><div class="cv" style="border-color:${c[1]}"><svg width="54" height="72" viewBox="0 0 60 80" aria-hidden="true"><line x1="30" x2="30" y1="8" y2="72" stroke="#0B9A5A" stroke-width="3"/><rect x="21" y="34" width="18" height="16" fill="#0B9A5A"/></svg></div><b>${c[0]}</b><button>Mua · ${c[2]} xu</button></div>`).join('')}</div>
+     <p class="tiny">Nội dung Shop giữ nguyên (Linh thú, Thẻ nến theo spec Candle Dojo v1.2), chỉ bỏ Premium.</p></div>`; } }
+
+/* ---------- panel phải ---------- */
+function renderPanel() { const P = $('#panelR'), t = ST[top_].tool;
+  if (!panelOpen()) { P.innerHTML = ''; return; }
+  if (t === 'giao-dich') { const q = Q[sym], h = HOLD.find(x => x[0] === sym); let body = '';
+    if (gdTab === 'lenh') body = `<div class="mb"><button data-side="buy" class="${side === 'buy' ? 'on' : ''}">MUA</button><button data-side="sell" class="sell ${side === 'sell' ? 'on' : ''}">BÁN</button></div>
+      <div class="fld"><label for="sym">Mã cổ phiếu</label><select id="sym">${Object.keys(Q).map(k => `<option ${k === sym ? 'selected' : ''}>${k}</option>`).join('')}</select></div>
+      <div class="card"><div class="quote"><b>★ ${sym}</b><span class="p" style="color:${q.ch < 0 ? 'var(--dn)' : 'var(--up)'}">${fmt(q.p * 1000, 0)}<small>${q.ch > 0 ? '+' : ''}${fmt(q.ch)}%</small></span></div>
+       <div class="grid3"><span><em>Trần</em>${fmt(q.tran * 1000, 0)}</span><span><em>TC</em>${fmt(q.tc * 1000, 0)}</span><span><em>Sàn</em>${fmt(q.san * 1000, 0)}</span><span><em>Cao</em>${fmt(q.cao * 1000, 0)}</span><span><em>Thấp</em>${fmt(q.thap * 1000, 0)}</span><span><em>KL</em>${q.kl}</span></div></div>
+      <div class="card"><div class="kv"><span>Tiền khả dụng</span><b>${money(CASH)}</b></div><div class="kv"><span>CP có thể bán</span><b>${h ? h[1] : 0} CP</b></div></div>
+      <div class="fld"><label for="lt">Loại lệnh</label><select id="lt"><option>MP — Thị trường</option><option>LO — Giới hạn</option></select></div>
+      <button class="big ${side === 'sell' ? 'sell' : ''}">${side === 'buy' ? 'ĐẶT LỆNH MUA' : 'ĐẶT LỆNH BÁN'}</button>`;
+    if (gdTab === 'dm') body = `<div class="card"><div class="kv"><span>Vốn ban đầu</span><b>100.000.000 đ</b></div><div class="kv"><span>Tổng tài sản</span><b>${money(HOLD.reduce((a, x) => a + x[1] * x[3] * 1000, 0) + CASH)}</b></div><div class="kv"><span>Tiền mặt</span><b>${money(CASH)}</b></div></div>
+      <div class="chips"><button data-dm="giu" class="${dmTab === 'giu' ? 'on' : ''}">Đang nắm giữ</button><button data-dm="lenh" class="${dmTab === 'lenh' ? 'on' : ''}">Lệnh trong ngày</button><button data-dm="ls" class="${dmTab === 'ls' ? 'on' : ''}">Lịch sử</button></div>
+      ${dmTab === 'giu' ? `<table><tr><th>Mã</th><th>KL</th><th>Giá vốn</th><th>Giá</th><th>Lãi/lỗ</th></tr>${HOLD.map(x => { const pl = (x[3] / x[2] - 1) * 100; return `<tr class="pick ${x[0] === sym ? 'sel' : ''}" data-pick="${x[0]}"><td><b>${x[0]}</b></td><td>${x[1].toLocaleString('vi-VN')}</td><td>${fmt(x[2])}</td><td>${fmt(x[3])}</td><td class="${pl >= 0 ? 'up' : 'dn'}">${pl >= 0 ? '+' : ''}${fmt(pl)}%</td></tr>`; }).join('')}</table><p class="tiny">Bấm một mã: chuyển sang tab Đặt lệnh với mã đó.</p>` : `<div class="keep">Giữ nguyên nội dung ${dmTab === 'lenh' ? 'Lệnh trong ngày' : 'Lịch sử'} hiện có.</div>`}`;
+    if (gdTab === 'tin') body = `<div class="chips"><button data-nt="ma" class="${newsTab === 'ma' ? 'on' : ''}">${sym}</button><button data-nt="tt" class="${newsTab === 'tt' ? 'on' : ''}">Thị trường</button></div>
+      <div class="news">${(newsTab === 'ma' ? NEWS[sym] : MKT).map((x, i) => `<a href="#" onclick="return false"><b>${x}</b><small>${['2 giờ trước', 'Hôm qua', '04/11/2026'][i]} · Nguồn minh họa</small></a>`).join('')}</div>`;
+    P.innerHTML = `<div class="ph"><h2>Giao dịch</h2><p>Tài khoản demo · ${sym}</p></div>
+     <div class="ptab" role="tablist">${[['lenh', 'Đặt lệnh'], ['dm', 'Danh mục'], ['tin', 'Tin tức']].map(x => `<button role="tab" aria-selected="${gdTab === x[0]}" data-gd="${x[0]}" class="${gdTab === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>
+     <div class="pbody">${body}</div>`; return; }
+  if (t === 'phan-tich') { P.innerHTML = `<div class="ph"><h2>Dashboard phân tích</h2><p>Phân tích cơ bản</p></div><div class="pbody"><div class="keep"><b>Giữ nguyên nội dung Dashboard phân tích.</b><br>Chỉ đổi vị trí: LUYỆN TẬP › Công cụ.</div></div>`; return; }
+  if (t === 'bot') { P.innerHTML = `<div class="ph"><h2>Bot</h2><p>Tài khoản Bot · 100.000.000 đ tiền ảo</p></div><div class="pbody"><div class="keep"><b>Giữ nguyên nội dung Bot.</b><br>Chỉ đổi vị trí: LUYỆN TẬP › Công cụ.</div></div>`; return; }
+  if (t === 'hoc-vien') { P.innerHTML = `<div class="ph"><h2>Học viện</h2><p>116 bài học</p></div><div class="pbody">
+    <div class="card"><div class="lesson"><span>Lãi dự thu / Dư nợ</span><button>Học bài</button></div><div class="lesson"><span>VCSH / Tổng tài sản</span><button>Học bài</button></div><div class="lesson" style="border:0"><span>Bài thi Chương 10</span><button>Làm bài</button></div></div>
+    <p class="tiny">Học viện giữ nguyên nội dung.</p></div>`; return; }
+  if (t === 'shop') { P.innerHTML = `<div class="ph"><h2>Shop</h2><p>Mua bằng xu</p></div><div class="pbody">
+    <div class="card"><div class="kv"><span>Xu của bạn</span><b style="color:var(--amber)">54.050 xu</b></div></div>
+    <div class="card"><b>Đang sử dụng</b><div class="kv"><span>Linh thú</span><b>Bạch Hổ</b></div></div>
+    <div class="card"><b>Thẻ nến · 6 / 47</b><p class="tiny" style="margin-top:6px">Xem kho thẻ →</p></div>
+    <p class="tiny">Panel Shop giữ nguyên. Không còn khối Premium, không còn đổi xu sang tiền demo.</p></div>`; } }
+
+/* ---------- thanh công cụ ---------- */
+function renderRail() { const S = SECT[top_], st = ST[top_];
+  $('#rail').innerHTML = `<div class="t">CÔNG CỤ</div>` + S.tools.map(t => { const on = t.id === st.tool && (!t.panel || st.open);
+    return `<button data-tool="${t.id}" class="${on ? 'on' : ''}" aria-pressed="${on}">${IC[t.ic]}${t.name}${t.soon ? '<span class="soon">SẮP CÓ</span>' : ''}</button>`; }).join(''); }
+
+function route() { let r = '/';
+  if (SECT[top_]) { r = SECT[top_].path + '?tool=' + ST[top_].tool; if (ST[top_].tool === 'giao-dich') r += '&tab=' + { lenh: 'dat-lenh', dm: 'danh-muc', tin: 'tin-tuc' }[gdTab]; }
+  if (top_ === 'chienluoc') r = '/chien-luoc'; $('#route').textContent = r; }
+function render() { document.querySelectorAll('[data-top]').forEach(b => b.classList.toggle('on', b.dataset.top === top_));
+  const tool = !!SECT[top_]; $('#pTool').hidden = !tool; $('#pOther').hidden = tool;
+  if (tool) { $('#pTool').classList.toggle('closed', !panelOpen()); $('#panelR').setAttribute('aria-expanded', panelOpen()); renderRail(); renderLeft(); renderPanel(); }
+  else $('#otherTxt').innerHTML = top_ === 'chienluoc' ? '<b>CHIẾN LƯỢC giữ nguyên:</b> Cảnh báo · Backtest · Bộ lọc.' : '<b>GIỚI THIỆU giữ nguyên.</b>';
+  route(); }
+
+document.addEventListener('click', e => { const t = e.target;
+  if (t.closest('#xuBtn')) { top_ = 'flashback'; ST.flashback = { tool: 'shop', open: true }; return render(); }
+  const tp = t.closest('[data-top]'); if (tp) { top_ = tp.dataset.top; return render(); }
+  const tl = t.closest('[data-tool]'); if (tl) { const st = ST[top_], id = tl.dataset.tool;
+    if (st.tool === id) st.open = !st.open; else { st.tool = id; st.open = true; } return render(); }
+  const g = t.closest('[data-gd]'); if (g) { gdTab = g.dataset.gd; render(); return; }
+  const sd = t.closest('[data-side]'); if (sd) { side = sd.dataset.side; return renderPanel(); }
+  const pk = t.closest('[data-pick]'); if (pk) { sym = pk.dataset.pick; gdTab = 'lenh'; newsTab = 'ma'; return render(); }
+  const dm = t.closest('[data-dm]'); if (dm) { dmTab = dm.dataset.dm; return renderPanel(); }
+  const nt = t.closest('[data-nt]'); if (nt) { newsTab = nt.dataset.nt; return renderPanel(); } });
+document.addEventListener('change', e => { if (e.target.id === 'sym') { sym = e.target.value; render(); } });
+render();
+</script>
+
+</html>
