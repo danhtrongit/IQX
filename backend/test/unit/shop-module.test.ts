@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import { Global, Inject, Injectable, Module, Optional } from '@nestjs/common';
+import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants.js';
 import { Test } from '@nestjs/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -71,5 +72,49 @@ describe('ShopModule is global and exposes LESSON_REWARD_PORT', () => {
     expect(routes(WorkspaceController.prototype)).toEqual(
       expect.arrayContaining(['ensure', 'state']),
     );
+  });
+});
+
+describe('removed xu endpoints (update 19-11 §7, §8.1)', () => {
+  /** Any access to the database or the repository fails the test: the endpoints must not touch them. */
+  const untouchable = new Proxy(
+    {},
+    {
+      get(_target, property) {
+        throw new Error(`unexpected access to ${String(property)}`);
+      },
+    },
+  );
+  const controller = new ShopController(
+    new ShopService(untouchable as DatabaseService, untouchable as never),
+  );
+  const failure = (call: () => unknown) => {
+    try {
+      call();
+    } catch (error) {
+      const http = error as { getStatus(): number; getResponse(): unknown };
+      return { status: http.getStatus(), body: http.getResponse() };
+    }
+    throw new Error('expected a 410');
+  };
+
+  it('POST shop/premium-purchases answers 410 SHOP_PREMIUM_REMOVED without reading anything', () => {
+    expect(failure(() => controller.purchasePremium())).toEqual({
+      status: 410,
+      body: { code: 'SHOP_PREMIUM_REMOVED', message: expect.any(String) },
+    });
+  });
+
+  it('POST shop/demo-exchange answers 410 DEMO_EXCHANGE_REMOVED in both directions', () => {
+    expect(failure(() => controller.exchangeDemo())).toEqual({
+      status: 410,
+      body: { code: 'DEMO_EXCHANGE_REMOVED', message: expect.any(String) },
+    });
+  });
+
+  it('validates no body on the removed routes, so any old payload still gets the 410', () => {
+    for (const method of ['purchasePremium', 'exchangeDemo']) {
+      expect(Reflect.getMetadata(ROUTE_ARGS_METADATA, ShopController, method) ?? {}).toEqual({});
+    }
   });
 });

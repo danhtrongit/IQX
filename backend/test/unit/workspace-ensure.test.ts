@@ -11,10 +11,7 @@ import {
 import type { TradingAccount } from '../../src/modules/trading/trading.types.js';
 import { WorkspaceService } from '../../src/modules/workspace/workspace.service.js';
 import type { DatabaseService } from '../../src/platform/database/database.service.js';
-import {
-  MASCOT_CATALOG_VERSION,
-  MASCOT_PRICE_XU,
-} from '../../src/modules/shop/shop.catalog.js';
+import { MASCOT_CATALOG_VERSION, MASCOT_PRICE_XU } from '../../src/modules/shop/shop.catalog.js';
 import { fundLessons, memoryHarness, type ShopHarness } from './helpers/shop-harness.js';
 
 interface LedgerRow {
@@ -142,23 +139,26 @@ function build(h: ShopHarness = memoryHarness()) {
 }
 
 describe('workspace ensure: manual demo account funding', () => {
-  it('creates the account without capital and one keyed funding row', async () => {
+  it('creates the account with 100.000.000 VND once and one keyed funding row', async () => {
     const { h, store, trading } = build();
     const userId = await h.newUser();
     const first = await trading.ensureInitialAccount(userId);
     expect(first.created).toBe(true);
+    // Update 19-11 §8.1: initial = available = net deposited = 100M, never the admin config.
     expect(first.account).toMatchObject({
       userId,
-      initialCashVnd: 0n,
-      cashAvailableVnd: 0n,
+      initialCashVnd: 100_000_000n,
+      cashAvailableVnd: 100_000_000n,
+      netDepositedCashVnd: 100_000_000n,
       cashReservedVnd: 0n,
       cashPendingVnd: 0n,
     });
-    expect(MANUAL_INITIAL_CASH_VND).toBe(0n);
+    expect(MANUAL_INITIAL_CASH_VND).toBe(100_000_000n);
     expect(store.ledger).toEqual([
       expect.objectContaining({
         accountId: first.account.id,
-        amount: 0n,
+        amount: 100_000_000n,
+        balanceAfter: 100_000_000n,
         kind: 'activate',
         idempotencyKey: `manual:initial_funding:${userId}`,
       }),
@@ -177,7 +177,7 @@ describe('workspace ensure: manual demo account funding', () => {
     await trading.ensureInitialAccount(userId);
     expect(store.accounts.size).toBe(1);
     expect(store.ledger).toHaveLength(1);
-    expect(store.accounts.get(userId)?.cashAvailableVnd).toBe(0n);
+    expect(store.accounts.get(userId)?.cashAvailableVnd).toBe(100_000_000n);
   });
 
   it('never touches or re-funds an existing account, even one that lost money', async () => {
@@ -217,16 +217,16 @@ describe('workspace ensure: manual demo account funding', () => {
 });
 
 describe('legacy POST /virtual-trading/account/activate', () => {
-  it('funds a fixed 0 VND with the shared funding key, not the configured amount', async () => {
+  it('funds a fixed 100.000.000 VND with the shared funding key, not the configured amount', async () => {
     const { h, store, trading } = build();
     const userId = await h.newUser();
     const response = await trading.activateAccount(userId);
     expect(response).toMatchObject({
       user_id: userId,
       status: 'active',
-      initial_cash_vnd: 0,
-      cash_available_vnd: 0,
-      total_cash_vnd: 0,
+      initial_cash_vnd: 100_000_000,
+      cash_available_vnd: 100_000_000,
+      total_cash_vnd: 100_000_000,
     });
     // same response keys as before
     expect(Object.keys(response).sort()).toEqual(
@@ -248,7 +248,7 @@ describe('legacy POST /virtual-trading/account/activate', () => {
     );
     expect(store.ledger).toEqual([
       expect.objectContaining({
-        amount: 0n,
+        amount: 100_000_000n,
         kind: 'activate',
         idempotencyKey: manualFundingKey(userId),
       }),
@@ -263,7 +263,7 @@ describe('legacy POST /virtual-trading/account/activate', () => {
     const second = await h.newUser();
     await trading.ensureInitialAccount(second);
     const again = await trading.activateAccount(second);
-    expect(again.cash_available_vnd).toBe(0);
+    expect(again.cash_available_vnd).toBe(100_000_000);
     await Promise.all([trading.activateAccount(first), trading.activateAccount(second)]);
     expect(store.accounts.size).toBe(2);
     expect(store.ledger.map((row) => row.idempotencyKey).sort()).toEqual(
@@ -296,9 +296,9 @@ describe('workspace ensure: full onboarding', () => {
     expect(first.state).toMatchObject({
       manual_account: {
         exists: true,
-        initial_cash_vnd: 0,
-        cash_available_vnd: 0,
-        total_cash_vnd: 0,
+        initial_cash_vnd: 100_000_000,
+        cash_available_vnd: 100_000_000,
+        total_cash_vnd: 100_000_000,
       },
       bot: { exists: true, instance_id: `bot-${userId}` },
       mascot: { active_mascot_id: 'bach_ho', revision: 1, provisioned: true },
@@ -356,7 +356,7 @@ describe('workspace ensure: full onboarding', () => {
     expect(again.state.wallet.balance).toBe(400);
     expect(again.state.mascot).toMatchObject({ active_mascot_id: 'thanh_long', revision: 2 });
     expect((await h.shop.getShop(userId)).owned_count).toBe(2);
-    expect(again.state.manual_account.cash_available_vnd).toBe(0);
+    expect(again.state.manual_account.cash_available_vnd).toBe(100_000_000);
   });
 
   it('GET state is read-only: it reports "missing" without creating or funding anything', async () => {

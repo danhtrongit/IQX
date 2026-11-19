@@ -29,10 +29,25 @@ const MAX_GROSS_VND = 100_000_000_000n;
 const MAX_PREFLIGHT_QUOTE_AGE_MS = 10_000;
 const LEADERBOARD_HARD_CAP = 200;
 /**
- * Every user's manual demo account starts with exactly this once (Flashback spec 1.3): the
- * Demo account has no capital of its own, the user converts xu into cash to start trading.
+ * Every user's manual demo account is granted exactly this once (update 19-11 §8.1, back to the
+ * old rule): 100.000.000 VND of virtual cash. xu and Demo cash are no longer exchanged.
  */
-export const MANUAL_INITIAL_CASH_VND = 0n;
+export const MANUAL_INITIAL_CASH_VND = 100_000_000n;
+
+/** Fixed capital base of the Demo profit % (update 19-11 §8.1), never the net-deposited cash. */
+export const DEMO_PROFIT_BASE_VND = 100_000_000n;
+
+/** Demo profit in VND: total equity minus the fixed 100.000.000 VND base. */
+export function demoProfitVnd(equityVnd: bigint): bigint {
+  return equityVnd - DEMO_PROFIT_BASE_VND;
+}
+
+/** Demo profit %: `(total equity − 100.000.000) / 100.000.000`, rounded to 2 decimals. */
+export function demoReturnPct(equityVnd: bigint): number {
+  return (
+    Math.round((Number(demoProfitVnd(equityVnd)) / Number(DEMO_PROFIT_BASE_VND)) * 10_000) / 100
+  );
+}
 
 export function manualFundingKey(userId: string): string {
   return `manual:initial_funding:${userId}`;
@@ -67,8 +82,8 @@ function accountResponse(account: TradingAccount) {
     cash_available_vnd: safeMoney(account.cashAvailableVnd),
     cash_reserved_vnd: safeMoney(account.cashReservedVnd),
     cash_pending_vnd: safeMoney(account.cashPendingVnd),
-    // Vốn nạp ròng (đổi xu sang tiền trừ đổi ngược): trình duyệt dùng để phân biệt "chưa có vốn"
-    // với "đã mua hết bằng tiền" (spec 22-10 FB-12).
+    // Legacy field (spec 22-10 FB-12). Since update 19-11 every account holds 100.000.000 VND
+    // here; it is no longer the base of the profit %.
     net_deposited_cash_vnd: safeMoney(account.netDepositedCashVnd),
     total_cash_vnd: safeMoney(
       account.cashAvailableVnd + account.cashReservedVnd + account.cashPendingVnd,
@@ -154,7 +169,7 @@ export class TradingService {
 
   /**
    * Legacy `POST /virtual-trading/account/activate`. It funds exactly like onboarding
-   * (`ensureInitialAccount`: no capital of its own, 0 VND, and the `manual:initial_funding:<user>`
+   * (`ensureInitialAccount`: 100.000.000 VND once, and the `manual:initial_funding:<user>`
    * ledger key), never `config.initialCashVnd`, so the two paths cannot fund an account twice.
    * An account that already exists (for example created by onboarding) is returned untouched.
    */
@@ -166,9 +181,9 @@ export class TradingService {
   }
 
   /**
-   * Onboarding: the manual demo account is created at most once per user with no capital of
-   * its own (0 VND, Flashback spec 1.3 - the user converts xu into cash to start trading) and
-   * one funding ledger row keyed `manual:initial_funding:<user_id>`.
+   * Onboarding: the manual demo account is created at most once per user with 100.000.000 VND
+   * (update 19-11 §8.1; initial = available = net deposited) and one funding ledger row keyed
+   * `manual:initial_funding:<user_id>`.
    * Accounts that already exist (including legacy ones) are never touched or re-funded; two
    * concurrent calls race on `uq_vt_accounts_user_id` and only the winner writes the funding row.
    */
@@ -194,7 +209,7 @@ export class TradingService {
         balanceAfter: MANUAL_INITIAL_CASH_VND,
         kind: 'activate',
         idempotencyKey: manualFundingKey(userId),
-        note: 'Vốn demo ban đầu 0 VND, cấp đúng một lần',
+        note: 'Vốn demo ban đầu 100.000.000 VND, cấp đúng một lần',
       });
       return { account: created, created: true };
     });
@@ -820,14 +835,8 @@ export class TradingService {
     });
     const cash = account.cashAvailableVnd + account.cashReservedVnd + account.cashPendingVnd;
     const nav = cash + pendingRights.cashVnd + totalMarketValue;
-    // % lợi nhuận theo vốn nạp ròng (spec 1.3): tiền đổi từ xu vào không bị tính là lãi.
-    const returnPct =
-      account.netDepositedCashVnd > 0n
-        ? Math.round(
-            (Number(nav - account.netDepositedCashVnd) / Number(account.netDepositedCashVnd)) *
-              10_000,
-          ) / 100
-        : 0;
+    // % lợi nhuận Demo theo vốn cố định 100.000.000 VND (update 19-11 §8.1).
+    const returnPct = demoReturnPct(nav);
     return {
       account: accountResponse(account),
       positions: result,
@@ -943,18 +952,15 @@ export class TradingService {
         account.cashPendingVnd +
         (pendingRights.get(account.id)?.cashVnd ?? 0n) +
         marketValue;
-      // % lợi nhuận theo vốn nạp ròng (spec 1.3).
-      const profit = account.netDepositedCashVnd > 0n ? nav - account.netDepositedCashVnd : 0n;
-      const returnPct =
-        account.netDepositedCashVnd > 0n
-          ? (Number(profit) / Number(account.netDepositedCashVnd)) * 100
-          : 0;
+      // % lợi nhuận Demo theo vốn cố định 100.000.000 VND (update 19-11 §8.1).
+      const profit = demoProfitVnd(nav);
+      const returnPct = demoReturnPct(nav);
       return {
         user_id: account.userId,
         display_name: names.get(account.userId) ?? 'Không xác định',
         nav_vnd: safeMoney(nav)!,
         profit_vnd: safeMoney(profit)!,
-        return_pct: Math.round(returnPct * 100) / 100,
+        return_pct: returnPct,
         initial_cash_vnd: safeMoney(account.initialCashVnd)!,
         valuation_degraded: degraded,
       };

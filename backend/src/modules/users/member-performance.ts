@@ -1,16 +1,15 @@
 import type { SqlClient } from '../../platform/database/index.js';
+import { DEMO_PROFIT_BASE_VND } from '../trading/trading.service.js';
 
 /**
  * Demo Trading and Bot results of users as a percentage only (admin spec v1.1 §5.1.3): the
  * admin and team-lead views never get capital or money values from here.
  *
- * - Demo: `(equity − net_deposited_cash) / net_deposited_cash`, where equity is cash (available,
- *   reserved, pending) + pending cash rights + each open position valued at the latest stored
- *   price (`symbols.current_price_vnd`), falling back to the position's average cost when no
- *   price is stored. The baseline is the capital the user really deposited (cash converted from
- *   xu, minus cash converted back), so money that only entered the account is never counted as
- *   profit (Flashback spec 1.3). Unlike the owner's live portfolio it never fails for a missing
- *   quote. Without a deposited baseline the result is 0.
+ * - Demo: `(equity − 100.000.000) / 100.000.000` (update 19-11 §8.1, the fixed Demo capital;
+ *   the old net-deposited base is gone), where equity is cash (available, reserved, pending) +
+ *   pending cash rights + each open position valued at the latest stored price
+ *   (`symbols.current_price_vnd`), falling back to the position's average cost when no price is
+ *   stored. Unlike the owner's live portfolio it never fails for a missing quote.
  * - Bot: the latest complete `bot_nav_daily` NAV against the account's initial cash (end of
  *   session, `as_of` is that trading date). An account with no NAV row yet uses its cash; one
  *   whose rows are all incomplete has no result (null).
@@ -82,12 +81,11 @@ export async function memberPerformance(
       last_activity_at: Date | string | null;
     }>(
       `select a.user_id, a.id, a.status::text as status, a.activated_at,
-              case when a.net_deposited_cash_vnd > 0 then round(
+              round(
                 (a.cash_available_vnd + a.cash_reserved_vnd + a.cash_pending_vnd
                   + coalesce(r.cash_vnd, 0) + coalesce(pos.value_vnd, 0)
-                  - a.net_deposited_cash_vnd)::numeric
-                  * 100 / a.net_deposited_cash_vnd, 2)::text
-              else '0' end as pnl_pct,
+                  - $2::numeric)
+                  * 100 / $2::numeric, 2)::text as pnl_pct,
               (select max(o.created_at) from virtual_orders o where o.account_id = a.id)
                 as last_activity_at
          from virtual_trading_accounts a
@@ -105,7 +103,7 @@ export async function memberPerformance(
             where e.account_id = a.id and e.status = 'pending_cash'
          ) r on true
         where a.user_id = any($1::uuid[])`,
-      [userIds],
+      [userIds, DEMO_PROFIT_BASE_VND.toString()],
     ),
     client.query<{
       user_id: string;

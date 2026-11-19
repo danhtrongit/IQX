@@ -157,7 +157,7 @@ export class TradingRepository {
        (id, initial_cash_vnd, buy_fee_rate_bps, sell_fee_rate_bps, sell_tax_rate_bps,
         settlement_mode, board_lot_size, trading_enabled, holidays, is_active,
         created_by, created_at, updated_at)
-       values ($1, 0, 15, 15, 10, 'T0', 100, true, '[]', true, $2, now(), now())
+       values ($1, 100000000, 15, 15, 10, 'T0', 100, true, '[]', true, $2, now(), now())
        returning *`,
       [randomUUID(), createdBy ?? null],
     );

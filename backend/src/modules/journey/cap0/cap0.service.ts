@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService, type SqlClient } from '../../../platform/database/index.js';
+import { MANUAL_INITIAL_CASH_VND, manualFundingKey } from '../../trading/trading.service.js';
 import type { KehoachInput, PlacementInput, TaskInput } from './cap0.schemas.js';
 
 type ProgressRow = Record<string, unknown> & {
@@ -49,11 +50,11 @@ type PlanViewRow = Record<string, unknown> & {
 };
 
 /**
- * Vốn mở tài khoản Demo Trading khi vào Cấp 0 (Flashback spec §1.3): tài khoản Demo mới
- * không có vốn, người dùng phải đổi từ xu sang tiền. `virtual_balance_init` ghi lại đúng
- * số vốn mà tài khoản ảo được mở, nên nó cũng bằng 0.
+ * Vốn mở tài khoản Demo Trading khi vào Cấp 0 (update 19-11 §8.1): 100.000.000 VND, cấp một
+ * lần, như onboarding (`TradingService.ensureInitialAccount`, cùng khoá ledger
+ * `manual:initial_funding:<user_id>`). `virtual_balance_init` ghi lại đúng số vốn đó.
  */
-const INITIAL_CASH = 0;
+const INITIAL_CASH = Number(MANUAL_INITIAL_CASH_VND);
 const REASON_LABELS: Record<string, string> = {
   cong_ty_toi_biet: 'Công ty tôi biết',
   nguoi_quen_gioi_thieu: 'Người quen giới thiệu',
@@ -119,14 +120,30 @@ export class Cap0Service {
          returning *`,
         [randomUUID(), userId, INITIAL_CASH],
       );
-      await tx.query(
+      const opened = await tx.query<{ id: string }>(
         `insert into virtual_trading_accounts
           (id, user_id, status, initial_cash_vnd, cash_available_vnd,
            cash_reserved_vnd, cash_pending_vnd, activated_at, created_at, updated_at)
          values ($1, $2, 'active', $3, $3, 0, 0, now(), now(), now())
-         on conflict (user_id) do nothing`,
+         on conflict (user_id) do nothing
+         returning id`,
         [randomUUID(), userId, INITIAL_CASH],
       );
+      if (opened[0]) {
+        await tx.query(
+          `insert into virtual_cash_ledger
+             (id, account_id, amount_vnd, balance_after_vnd, kind, note, idempotency_key, created_at)
+           values ($1, $2, $3, $3, 'activate', $4, $5, now())
+           on conflict (idempotency_key) do nothing`,
+          [
+            randomUUID(),
+            opened[0].id,
+            INITIAL_CASH,
+            'Vốn demo ban đầu 100.000.000 VND, cấp đúng một lần',
+            manualFundingKey(userId),
+          ],
+        );
+      }
       const row = rows[0];
       if (!row) throw new ConflictException('Không thể khởi tạo Cấp 0');
       return progressOutput(row);

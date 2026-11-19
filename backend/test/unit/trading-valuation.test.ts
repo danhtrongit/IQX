@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { TradingService } from '../../src/modules/trading/trading.service.js';
+import {
+  DEMO_PROFIT_BASE_VND,
+  TradingService,
+  demoProfitVnd,
+  demoReturnPct,
+} from '../../src/modules/trading/trading.service.js';
 import type {
   TradingAccount,
   TradingPosition,
@@ -59,7 +64,7 @@ describe('trading portfolio valuation', () => {
     expect(result.nav_vnd).toBe(1_900_000);
     expect(result.total_market_value_vnd).toBe(900_000);
     expect(result.total_unrealized_pnl_vnd).toBe(100_000);
-    expect(result.return_pct).toBe(-5);
+    expect(result.return_pct).toBe(-98.1);
   });
 
   it('does not publish cash-only NAV when a holding cannot be valued', async () => {
@@ -87,24 +92,22 @@ describe('trading portfolio valuation', () => {
     expect(quotes).toBe(0);
   });
 
-  it('measures the profit against the net deposited capital, not the money that came in', async () => {
-    const deposited: TradingAccount = {
+  it('measures the Demo profit against the fixed 100.000.000 VND, never the net deposit', async () => {
+    const rich: TradingAccount = {
       ...account,
-      initialCashVnd: 0n,
-      cashAvailableVnd: 1_100_000n,
+      initialCashVnd: 100_000_000n,
+      cashAvailableVnd: 110_000_000n,
       cashReservedVnd: 0n,
       cashPendingVnd: 0n,
+      // A legacy net deposit must not change the base any more.
       netDepositedCashVnd: 1_000_000n,
     };
-    const result = await service(async () => quote('VCB', 90_000n), [], deposited).getPortfolio(
-      'user',
-    );
-    expect(result.nav_vnd).toBe(1_100_000);
-    // 100.000 lãi trên 1.000.000 vốn nạp ròng là +10%, không phải +100%.
+    const result = await service(async () => quote('VCB', 90_000n), [], rich).getPortfolio('user');
+    expect(result.nav_vnd).toBe(110_000_000);
     expect(result.return_pct).toBe(10);
   });
 
-  it('reports no profit when nothing was deposited into the account', async () => {
+  it('counts an account below 100.000.000 VND as a loss, even with no net deposit', async () => {
     const empty: TradingAccount = {
       ...account,
       initialCashVnd: 0n,
@@ -114,7 +117,16 @@ describe('trading portfolio valuation', () => {
       netDepositedCashVnd: 0n,
     };
     const result = await service(async () => quote('VCB', 90_000n), [], empty).getPortfolio('user');
-    expect(result.return_pct).toBe(0);
+    expect(result.return_pct).toBe(-100);
+  });
+
+  it('computes (equity − 100.000.000) / 100.000.000 with 2 decimals', () => {
+    expect(DEMO_PROFIT_BASE_VND).toBe(100_000_000n);
+    expect(demoProfitVnd(100_000_000n)).toBe(0n);
+    expect(demoReturnPct(100_000_000n)).toBe(0);
+    expect(demoReturnPct(112_345_678n)).toBe(12.35);
+    expect(demoReturnPct(95_000_000n)).toBe(-5);
+    expect(demoProfitVnd(95_000_000n)).toBe(-5_000_000n);
   });
 });
 

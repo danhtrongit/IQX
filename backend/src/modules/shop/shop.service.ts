@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, GoneException, Injectable, NotFoundException } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 
 import { DatabaseService, type SqlClient } from '../../platform/database/database.service.js';
@@ -26,22 +20,12 @@ import {
 } from './shop.catalog.js';
 import {
   ShopRepository,
-  type DemoExchangeDirection,
-  type DemoExchangeRow,
   type LedgerRow,
-  type PremiumXuPurchaseRow,
   type ProfileRow,
   type PurchaseRow,
   type ShopSnapshot,
 } from './shop.repository.js';
-import type {
-  ActiveMascotBody,
-  DemoExchangeBody,
-  EvolveBody,
-  LedgerQuery,
-  PremiumPurchaseBody,
-  PurchaseBody,
-} from './shop.schemas.js';
+import type { ActiveMascotBody, EvolveBody, LedgerQuery, PurchaseBody } from './shop.schemas.js';
 
 const ISO = (value: Date) => value.toISOString();
 
@@ -62,29 +46,9 @@ export function purchaseLedgerKey(userId: string, mascotId: string): string {
   return `mascot_purchase:${userId}:${mascotId}`;
 }
 
-/** Ledger key of one Premium purchase paid with xu (one key per confirmation). */
-export function premiumPurchaseLedgerKey(userId: string, idempotencyKey: string): string {
-  return `premium_purchase:${userId}:${idempotencyKey}`;
-}
-
 /** Ledger key of one evolution step of one mascot (one key per step). */
 export function petEvolveLedgerKey(userId: string, mascotId: string, level: number): string {
   return `pet_evolve:${userId}:${mascotId}:${level}`;
-}
-
-/** Ledger key of one xu <-> cash exchange (one key per confirmation). */
-export function demoExchangeLedgerKey(userId: string, idempotencyKey: string): string {
-  return `demo_exchange:${userId}:${idempotencyKey}`;
-}
-
-/**
- * "Only phone-verified accounts may redeem Premium with xu" (spec 22-10 §1.14). On by default;
- * only an explicit `false`/`0` in `PREMIUM_XU_REDEEM_PHONE_VERIFIED_ONLY` turns it off.
- */
-export function premiumRedeemPhoneVerifiedOnly(): boolean {
-  const raw = process.env.PREMIUM_XU_REDEEM_PHONE_VERIFIED_ONLY?.trim().toLowerCase();
-  if (raw === undefined || raw === '') return true;
-  return !(raw === 'false' || raw === '0');
 }
 
 type OwnedView = { mascot_id: MascotId; source: MascotOwnershipSource; acquired_at: string | null };
@@ -203,6 +167,8 @@ export class ShopService {
       active: state.active,
       provisioned: state.provisioned,
       pet_levels: this.petLevelViews(state.owned, petLevels),
+      // Deprecated since update 19-11 (no Premium for xu, no xu <-> Demo cash exchange): both
+      // endpoints answer 410; the fields stay only so older clients keep parsing this state.
       premium_price_xu: PREMIUM_PRICE_XU,
       premium_duration_days: PREMIUM_DURATION_DAYS,
       exchange: {
@@ -454,7 +420,11 @@ export class ShopService {
           code: 'INSUFFICIENT_XU',
           message: `Chưa đủ xu: có ${wallet.balance} xu, cần ${priceXu} xu`,
           details: [
-            { balance_xu: wallet.balance, price_xu: priceXu, shortfall_xu: priceXu - wallet.balance },
+            {
+              balance_xu: wallet.balance,
+              price_xu: priceXu,
+              shortfall_xu: priceXu - wallet.balance,
+            },
           ],
         });
       }
@@ -491,300 +461,25 @@ export class ShopService {
   }
 
   /**
-   * Premium mua bằng xu (spec 1.2): 3.000 xu cho 30 ngày, cộng vào thời hạn Premium hiện có
-   * (chưa có Premium thì bắt đầu từ lúc mua). Tối đa một lần mỗi 30 ngày.
+   * Premium mua bằng xu đã bỏ (spec 19-11 §7): luôn trả 410 `SHOP_PREMIUM_REMOVED`, không đọc
+   * hay ghi ví xu, sổ cái xu hoặc Premium. Premium đã mua bằng xu trước đây giữ nguyên thời hạn.
    */
-  async purchasePremium(userId: string, input: PremiumPurchaseBody) {
-    const days = input.days ?? PREMIUM_DURATION_DAYS;
-    if (days !== PREMIUM_DURATION_DAYS) {
-      throw new BadRequestException({
-        code: 'INVALID_AMOUNT',
-        message: `Premium mua bằng xu chỉ cấp ${PREMIUM_DURATION_DAYS} ngày`,
-        details: [{ days_granted: PREMIUM_DURATION_DAYS }],
-      });
-    }
-    const uniqueKey = premiumPurchaseLedgerKey(userId, input.idempotency_key);
-    return this.database.transaction(async (tx) => {
-      const wallet = await this.repository.lockWallet(tx, userId);
-
-      // 1. A request that already committed replays its result.
-      const previous = await this.repository.findPremiumXuPurchaseByKey(tx, userId, uniqueKey);
-      if (previous) {
-        if (previous.xuSpent !== PREMIUM_PRICE_XU || previous.daysGranted !== days) {
-          throw new ConflictException({
-            code: 'IDEMPOTENCY_KEY_REUSED',
-            message: 'idempotency_key đã được dùng cho một yêu cầu khác',
-          });
-        }
-        return this.premiumResult(tx, userId, previous, true, null);
-      }
-
-      // 2. The platform has no phone-verification flow yet, so the rule is opt-in by
-      // configuration. It runs after the replay check: a request that already paid always
-      // replays, even when the account lost its verified phone in between.
-      if (premiumRedeemPhoneVerifiedOnly()) {
-        const verifiedAt = await this.repository.findPhoneVerifiedAt(tx, userId);
-        if (!verifiedAt) {
-          throw new ForbiddenException({
-            code: 'PHONE_NOT_VERIFIED',
-            message: 'Cần xác thực số điện thoại mới đổi xu lấy Premium',
-          });
-        }
-      }
-
-      // 3. The price is resolved on the server.
-      if (input.expected_price_xu !== PREMIUM_PRICE_XU) {
-        throw new ConflictException({
-          code: 'PRICE_CHANGED',
-          message: `Giá đã thay đổi, hiện là ${PREMIUM_PRICE_XU} xu. Vui lòng xác nhận lại`,
-          details: [{ current_price_xu: PREMIUM_PRICE_XU, days_granted: days }],
-        });
-      }
-
-      // 4. At most one redemption every 30 days.
-      const last = await this.repository.findLatestPremiumXuPurchase(tx, userId);
-      if (last) {
-        const nextAllowedAt = new Date(
-          last.createdAt.getTime() + PREMIUM_DURATION_DAYS * 24 * 60 * 60 * 1000,
-        );
-        if (nextAllowedAt.getTime() > Date.now()) {
-          throw new ConflictException({
-            code: 'PREMIUM_PURCHASE_LIMIT',
-            message: `Chỉ đổi Premium bằng xu một lần mỗi ${PREMIUM_DURATION_DAYS} ngày`,
-            details: [{ next_allowed_at: nextAllowedAt.toISOString() }],
-          });
-        }
-      }
-
-      // 5. The balance is read under the wallet lock.
-      if (wallet.balance < PREMIUM_PRICE_XU) {
-        throw new ConflictException({
-          code: 'INSUFFICIENT_XU',
-          message: `Chưa đủ xu: có ${wallet.balance} xu, cần ${PREMIUM_PRICE_XU} xu`,
-          details: [
-            {
-              balance_xu: wallet.balance,
-              price_xu: PREMIUM_PRICE_XU,
-              shortfall_xu: PREMIUM_PRICE_XU - wallet.balance,
-            },
-          ],
-        });
-      }
-
-      // 6. The plan is optional; the xu price always covers exactly 30 days. A plan named by
-      // the client must exist and still be on sale.
-      const plan = input.plan_id
-        ? await this.repository.findPremiumPlan(tx, input.plan_id)
-        : await this.repository.findActiveMonthlyPremiumPlan(tx);
-      if (input.plan_id && (!plan || !plan.isActive)) {
-        throw new NotFoundException({
-          code: 'PREMIUM_PLAN_NOT_FOUND',
-          message: 'Không tìm thấy gói Premium',
-        });
-      }
-      if (plan && plan.durationDays !== days) {
-        throw new BadRequestException({
-          code: 'INVALID_AMOUNT',
-          message: `Gói Premium này không đủ ${days} ngày`,
-          details: [{ duration_days: plan.durationDays, days_granted: days }],
-        });
-      }
-
-      // 7. Debit, grant and ledger row commit together.
-      const ledgerId = randomUUID();
-      const seq = wallet.lastSeq + 1;
-      const balanceAfter = wallet.balance - PREMIUM_PRICE_XU;
-      await this.repository.appendLedger(tx, {
-        id: ledgerId,
-        userId,
-        seq,
-        kind: 'premium_purchase',
-        delta: -PREMIUM_PRICE_XU,
-        balanceAfter,
-        uniqueKey,
-        ref: {
-          plan_id: plan?.id ?? null,
-          days,
-          price_xu: PREMIUM_PRICE_XU,
-          idempotency_key: input.idempotency_key,
-        },
-        policyVersion: COIN_POLICY_VERSION,
-      });
-      const purchase = await this.repository.insertPremiumXuPurchase(tx, {
-        id: randomUUID(),
-        userId,
-        planId: plan?.id ?? null,
-        xuSpent: PREMIUM_PRICE_XU,
-        daysGranted: days,
-        uniqueKey,
-        ledgerId,
-      });
-      const grant = await this.repository.grantPremiumDays(tx, {
-        userId,
-        planId: plan?.id ?? null,
-        days,
-        note: 'Premium mua bằng xu',
-      });
-      await this.repository.saveWallet(tx, userId, balanceAfter, seq);
-      return this.premiumResult(tx, userId, purchase, false, grant);
+  purchasePremium(): never {
+    throw new GoneException({
+      code: 'SHOP_PREMIUM_REMOVED',
+      message: 'Premium không còn bán bằng xu',
     });
   }
 
   /**
-   * Đổi xu hai chiều với tiền Demo Trading (spec 1.3): 1 xu = 10.000 VND. Mỗi lần đổi ghi
-   * lịch sử ví xu và lịch sử tài khoản Demo, tất cả trong một transaction; khoá theo thứ tự
-   * cố định (ví xu rồi tài khoản Demo) để không khoá chéo.
+   * Đổi xu <-> tiền Demo đã bỏ cả hai chiều (spec 19-11 §8.1): luôn trả 410
+   * `DEMO_EXCHANGE_REMOVED`, xu và tiền Demo không đổi.
    */
-  async exchangeDemo(userId: string, input: DemoExchangeBody) {
-    const direction = input.direction;
-    const uniqueKey = demoExchangeLedgerKey(userId, input.idempotency_key);
-    return this.database.transaction(async (tx) => {
-      // 1. Khoá theo thứ tự cố định: ví xu rồi tài khoản Demo.
-      const wallet = await this.repository.lockWallet(tx, userId);
-
-      // 2. A request that already committed replays its result. The direction is compared
-      // first: the same key with another direction is a reused key, not a malformed amount.
-      const previous = await this.repository.findDemoExchangeByKey(tx, uniqueKey);
-      if (previous) {
-        if (previous.direction !== direction) {
-          throw new ConflictException({
-            code: 'IDEMPOTENCY_KEY_REUSED',
-            message: 'idempotency_key đã được dùng cho một yêu cầu khác',
-          });
-        }
-        const expected = this.exchangeAmounts(direction, input.amount);
-        if (
-          previous.xuDelta !== expected.xuDelta ||
-          previous.cashDeltaVnd !== expected.cashDeltaVnd
-        ) {
-          throw new ConflictException({
-            code: 'IDEMPOTENCY_KEY_REUSED',
-            message: 'idempotency_key đã được dùng cho một yêu cầu khác',
-          });
-        }
-        return this.exchangeResult(tx, userId, previous, true);
-      }
-
-      const amounts = this.exchangeAmounts(direction, input.amount);
-
-      // 3. The Demo account exists on demand and never carries capital of its own.
-      await this.repository.createDemoAccountIfAbsent(tx, userId);
-      const account = await this.repository.findDemoAccount(tx, userId, true);
-      if (!account) throw new Error('Demo trading account could not be created');
-
-      // 4. Both balances are read under their own lock.
-      if (direction === 'xu_to_cash') {
-        if (wallet.balance < amounts.xuAmount) {
-          throw new ConflictException({
-            code: 'INSUFFICIENT_XU',
-            message: `Chưa đủ xu: có ${wallet.balance} xu, cần ${amounts.xuAmount} xu`,
-            details: [
-              {
-                balance_xu: wallet.balance,
-                price_xu: amounts.xuAmount,
-                shortfall_xu: amounts.xuAmount - wallet.balance,
-              },
-            ],
-          });
-        }
-      } else if (account.cashAvailableVnd < amounts.cashAmount) {
-        throw new ConflictException({
-          code: 'INSUFFICIENT_CASH',
-          message: `Không đủ tiền mặt: có ${account.cashAvailableVnd} VND, cần ${amounts.cashAmount} VND`,
-          details: [
-            {
-              cash_available_vnd: Number(account.cashAvailableVnd),
-              amount_vnd: Number(amounts.cashAmount),
-              shortfall_vnd: Number(amounts.cashAmount - account.cashAvailableVnd),
-            },
-          ],
-        });
-      }
-
-      // 5. Ví xu, lịch sử đổi, tài khoản Demo và ví xu commit cùng nhau.
-      const ledgerId = randomUUID();
-      const seq = wallet.lastSeq + 1;
-      const balanceAfter = wallet.balance + amounts.xuDelta;
-      const cashAfter = account.cashAvailableVnd + amounts.cashDeltaVnd;
-      const netDepositedAfter = account.netDepositedCashVnd + amounts.cashDeltaVnd;
-      await this.repository.appendLedger(tx, {
-        id: ledgerId,
-        userId,
-        seq,
-        kind: direction === 'xu_to_cash' ? 'demo_withdraw' : 'demo_deposit',
-        delta: amounts.xuDelta,
-        balanceAfter,
-        uniqueKey,
-        ref: {
-          direction,
-          amount: input.amount,
-          xu_delta: amounts.xuDelta,
-          cash_delta_vnd: Number(amounts.cashDeltaVnd),
-          idempotency_key: input.idempotency_key,
-        },
-        policyVersion: COIN_POLICY_VERSION,
-      });
-      const exchange = await this.repository.insertDemoExchange(tx, {
-        id: randomUUID(),
-        userId,
-        direction,
-        xuDelta: amounts.xuDelta,
-        cashDeltaVnd: amounts.cashDeltaVnd,
-        uniqueKey,
-      });
-      await this.repository.appendDemoCashLedger(tx, {
-        accountId: account.id,
-        amountVnd: amounts.cashDeltaVnd,
-        balanceAfterVnd: cashAfter,
-        kind: direction === 'xu_to_cash' ? 'demo_exchange_out' : 'demo_exchange_in',
-        note:
-          direction === 'xu_to_cash'
-            ? `Đổi ${amounts.xuAmount} xu ra tiền Demo`
-            : `Đổi ${amounts.cashAmount} VND ra ${amounts.xuAmount} xu`,
-        idempotencyKey: uniqueKey,
-      });
-      await this.repository.saveWallet(tx, userId, balanceAfter, seq);
-      await this.repository.updateDemoAccountCash(tx, {
-        accountId: account.id,
-        cashAvailableVnd: cashAfter,
-        netDepositedCashVnd: netDepositedAfter,
-      });
-      return this.exchangeResult(tx, userId, exchange, false);
+  exchangeDemo(): never {
+    throw new GoneException({
+      code: 'DEMO_EXCHANGE_REMOVED',
+      message: 'Không còn đổi xu sang tiền Demo hoặc ngược lại',
     });
-  }
-
-  /** Số xu và số tiền của một lần đổi, kiểm tra quy tắc của chiều đổi. */
-  private exchangeAmounts(direction: DemoExchangeDirection, amount: number) {
-    if (direction === 'xu_to_cash') {
-      const cashAmount = BigInt(amount) * BigInt(DEMO_CASH_PER_XU);
-      return {
-        xuAmount: amount,
-        cashAmount,
-        xuDelta: -amount,
-        cashDeltaVnd: cashAmount,
-      };
-    }
-    if (amount % DEMO_CASH_PER_XU !== 0) {
-      throw new BadRequestException({
-        code: 'INVALID_AMOUNT',
-        message: `Số tiền đổi phải là bội số của ${DEMO_CASH_PER_XU} đồng`,
-        details: [{ amount_vnd: amount, cash_per_xu: DEMO_CASH_PER_XU }],
-      });
-    }
-    if (amount < DEMO_CASH_MIN_EXCHANGE) {
-      throw new BadRequestException({
-        code: 'INVALID_AMOUNT',
-        message: `Số tiền đổi tối thiểu là ${DEMO_CASH_MIN_EXCHANGE} đồng`,
-        details: [{ amount_vnd: amount, min_exchange_cash_vnd: DEMO_CASH_MIN_EXCHANGE }],
-      });
-    }
-    const xuAmount = amount / DEMO_CASH_PER_XU;
-    return {
-      xuAmount,
-      cashAmount: BigInt(amount),
-      xuDelta: xuAmount,
-      cashDeltaVnd: -BigInt(amount),
-    };
   }
 
   private async evolveResult(
@@ -812,62 +507,6 @@ export class ShopService {
         last_seq: wallet?.lastSeq ?? 0,
       },
       pet_levels: this.petLevelViews(effectiveState(snapshot).owned, levels),
-    };
-  }
-
-  private async premiumResult(
-    db: SqlClient,
-    userId: string,
-    purchase: PremiumXuPurchaseRow,
-    replayed: boolean,
-    grant: { startsAt: Date; endsAt: Date } | null,
-  ) {
-    const [wallet, active] = await Promise.all([
-      this.repository.readWallet(db, userId),
-      grant
-        ? Promise.resolve(grant)
-        : this.repository.findActivePremiumGrant(db, userId),
-    ]);
-    const startsAt = active?.startsAt ?? new Date();
-    const endsAt = active?.endsAt ?? new Date();
-    return {
-      status: 'purchased' as const,
-      replayed,
-      price_xu: purchase.xuSpent,
-      days_granted: purchase.daysGranted,
-      plan_id: purchase.planId,
-      starts_at: ISO(startsAt),
-      ends_at: ISO(endsAt),
-      wallet: {
-        balance: wallet?.balance ?? 0,
-        last_seq: wallet?.lastSeq ?? 0,
-      },
-    };
-  }
-
-  private async exchangeResult(
-    db: SqlClient,
-    userId: string,
-    exchange: DemoExchangeRow,
-    replayed: boolean,
-  ) {
-    const [wallet, account] = await Promise.all([
-      this.repository.readWallet(db, userId),
-      this.repository.findDemoAccount(db, userId, false),
-    ]);
-    return {
-      direction: exchange.direction,
-      amount:
-        exchange.direction === 'xu_to_cash'
-          ? Math.abs(exchange.xuDelta)
-          : Number(exchange.cashDeltaVnd < 0n ? -exchange.cashDeltaVnd : exchange.cashDeltaVnd),
-      xu_delta: exchange.xuDelta,
-      cash_delta_vnd: Number(exchange.cashDeltaVnd),
-      balance_xu: wallet?.balance ?? 0,
-      cash_available_vnd: Number(account?.cashAvailableVnd ?? 0n),
-      net_deposited_cash_vnd: Number(account?.netDepositedCashVnd ?? 0n),
-      cash_per_xu: DEMO_CASH_PER_XU,
-      replayed,
     };
   }
 

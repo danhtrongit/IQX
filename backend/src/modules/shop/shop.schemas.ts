@@ -37,7 +37,7 @@ export const evolveBodySchema = z
   })
   .strict();
 
-/** Premium mua bằng xu: 3.000 xu cho 30 ngày. */
+/** Legacy body of the removed Premium-for-xu purchase (documentation only; never validated). */
 export const premiumPurchaseBodySchema = z
   .object({
     plan_id: z.string().uuid().optional(),
@@ -47,7 +47,7 @@ export const premiumPurchaseBodySchema = z
   })
   .strict();
 
-/** Đổi xu hai chiều với tiền Demo Trading: 1 xu = 10.000 VND. */
+/** Legacy body of the removed xu <-> Demo cash exchange (documentation only; never validated). */
 export const demoExchangeBodySchema = z
   .object({
     direction: z.enum(['xu_to_cash', 'cash_to_xu']),
@@ -72,8 +72,6 @@ export const ledgerQuerySchema = z.object({
 export type PurchaseBody = z.output<typeof purchaseBodySchema>;
 export type ActiveMascotBody = z.output<typeof activeMascotBodySchema>;
 export type EvolveBody = z.output<typeof evolveBodySchema>;
-export type PremiumPurchaseBody = z.output<typeof premiumPurchaseBodySchema>;
-export type DemoExchangeBody = z.output<typeof demoExchangeBodySchema>;
 export type LedgerQuery = z.output<typeof ledgerQuerySchema>;
 
 const mascotId = z.enum(MASCOT_IDS);
@@ -126,10 +124,13 @@ export const shopStateSchema = z.object({
   provisioned: z.boolean(),
   /** Cấp tiến hoá của từng linh thú (1 = chưa tiến hoá). */
   pet_levels: z.array(petLevelSchema),
-  /** Giá Premium mua bằng xu và số ngày được cộng. */
+  /**
+   * Deprecated (update 19-11 §7): Premium is no longer sold for xu and the purchase endpoint
+   * answers 410. Kept only so older clients keep parsing the Shop state.
+   */
   premium_price_xu: z.number().int(),
   premium_duration_days: z.number().int(),
-  /** Tỷ giá đổi xu <-> tiền Demo Trading. */
+  /** Deprecated (update 19-11 §8.1): xu <-> Demo cash exchange is removed (410). */
   exchange: z.object({
     cash_per_xu: z.number().int(),
     min_exchange_cash_vnd: z.number().int(),
@@ -156,6 +157,7 @@ export const ledgerItemSchema = z.object({
     'signup_bonus',
     'card_purchase',
     'dojo_reward',
+    'demo_exchange_refund',
   ]),
   delta: z.number().int(),
   balance_after: z.number().int(),
