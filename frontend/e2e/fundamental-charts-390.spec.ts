@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url"
 import type { Page, Route } from "@playwright/test"
 
 import { buildCatalog, buildItem, buildProgress, catalogItemsOf } from "../src/pages/academy/test-fixtures"
-import { expect, seedMember, test } from "./fixtures"
+import { closePanelLayer, expect, seedMember, test } from "./fixtures"
 
 const CONTENT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../backend/src/modules/academy/content/v4/lessons")
 
@@ -52,12 +52,28 @@ async function mockDashboard(page: Page) {
     { group: "Nợ và khả năng thanh toán", items: [["D/E", "B"]] },
     { group: "Định giá", items: [["P/E", "F"]] },
   ]
+  // Dashboard v2 (update 4-11): catalog by industry, the symbol's industry, then fundamental/valuation data.
+  const industryLabels = { thuong: "Doanh nghiệp sản xuất", nh: "Ngân hàng", ck: "Chứng khoán", bh: "Bảo hiểm" }
+  const names = groups.flatMap(({ items }) => items.map(([name]) => name))
   await page.route("**/api/v2/dashboard/catalog", (route) =>
-    json(route, groups.map(({ group, items }) => ({ group, items: items.map(([name, kind]) => ({ name, kind, na_for_bank: false })) }))),
+    json(route, {
+      industries: Object.entries(industryLabels).map(([nganh, label]) => ({
+        nganh,
+        label,
+        total: names.length,
+        default_charts: names,
+        chapters: [{
+          chapter: "Chỉ tiêu chung",
+          academy_chapter: 8,
+          groups: groups.map(({ group, items }) => ({ group, items: items.map(([name, kind], index) => ({ name, metric_key: `${group}-${index}`, kind })) })),
+        }],
+      })),
+    }),
   )
-  await page.route("**/api/v2/fundamental/**", (route) => json(route, { symbol: "FPT", is_bank: false, per: "q", charts }))
+  await page.route("**/api/v2/dashboard/industry/**", (route) => json(route, { symbol: "FPT", nganh: "thuong", label: industryLabels.thuong }))
+  await page.route("**/api/v2/fundamental/**", (route) => json(route, { symbol: "FPT", nganh: "thuong", is_bank: false, per: "q", charts }))
   await page.route("**/api/v2/valuation/**", (route) =>
-    json(route, { symbol: "FPT", dates: pe.chart.labels, charts: { "P/E": { name: "P/E", kind: "F", unit: "lần", v: pe.chart.main[0]?.v ?? [] } } }),
+    json(route, { symbol: "FPT", nganh: "thuong", dates: pe.chart.labels, charts: { "P/E": { name: "P/E", kind: "F", unit: "lần", v: pe.chart.main[0]?.v ?? [] } } }),
   )
   await page.route("**/api/v2/instruments/FPT", (route) =>
     json(route, { data: { symbol: "FPT", icbLv1: "Công nghệ", icbLv2: "Công nghệ thông tin" }, meta: {} }),
@@ -144,7 +160,8 @@ test.describe("QA-06 · 390px · bộ khuôn biểu đồ chỉ tiêu dùng chun
 
   test("Dashboard phân tích: không tràn ngang, không chữ xám, thẻ ROE vẽ bằng bộ khuôn chung", async ({ page }, testInfo) => {
     await mockDashboard(page)
-    await page.goto("/demo-trading?content=dashboard&symbol=FPT")
+    await page.goto("/luyen-tap?tool=phan-tich&symbol=FPT")
+    await closePanelLayer(page)
     await expect(page.getByRole("heading", { level: 1, name: "Dashboard phân tích" })).toBeVisible()
     const roe = page.locator('[data-chart="ROE"]')
     await roe.getByLabel("Số kỳ hiển thị của ROE").selectOption("8")
@@ -165,7 +182,7 @@ test.describe("QA-06 · 390px · bộ khuôn biểu đồ chỉ tiêu dùng chun
   test("Học viện ch08-l11: không tràn ngang, không chữ xám, biểu đồ đại diện ROE là cùng bộ khuôn", async ({ page }, testInfo) => {
     await seedMember(page)
     await mockAcademy(page, "ch08-l11")
-    await page.goto("/demo-trading?view=academy&lesson=ch08-l11")
+    await page.goto("/luyen-tap?tool=hoc-vien&lesson=ch08-l11")
     const figure = page.locator('[data-chart-id="c8l11-rep"]')
     await expect(figure.locator('[data-fundamental-chart="B"]')).toBeVisible()
     await expect(figure.getByRole("button", { name: "Bảng số" })).toBeVisible()

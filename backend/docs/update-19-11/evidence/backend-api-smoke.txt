@@ -1,0 +1,101 @@
+# IQX update 19-11 backend API smoke (2026-11-19T22:55:11Z), worktree u1911-qa, throwaway Postgres+Redis
+## register qauser28911 (role after register: user)
+$ curl -X POST http://127.0.0.1:3291/api/v2/auth/register -d '{email,password:<redacted>,full_name,username:qauser28911,phone_number}'
+{"id":"b58c910c-0d8e-4b98-a10e-5e7e51e44bad","email":"qauser28911@example.test","username":"qauser28911","username_change_allowed":false,"phone_number":"0912891126","phone_country_code":"+84","phone_national_number":"912891126","phone_e164":"+84912891126","phone_verified_at":null,"full_name":"QA qauser28911","avatar_url":null,"date_of_birth":null,"gender":null,"country":null,"province_state":null,
+HTTP 201
+login qauser28911 -> token <redacted, obtained>
+
+## N15/N17: activate Demo account, expect 100,000,000 cash
+$ curl -X POST http://127.0.0.1:3291/api/v2/virtual-trading/account/activate -H 'Authorization: Bearer <redacted>'
+{"id":"207ffcaf-b0d9-4c35-9f94-e0af0978d086","user_id":"b58c910c-0d8e-4b98-a10e-5e7e51e44bad","status":"active","initial_cash_vnd":100000000,"cash_available_vnd":100000000,"cash_reserved_vnd":0,"cash_pending_vnd":0,"net_deposited_cash_vnd":100000000,"total_cash_vnd":100000000,"activated_at":"2026-11-19T22:55:14.126Z","reset_at":null,"created_at":"2026-11-19T22:55:14.126Z"}
+HTTP 201
+
+$ curl -X GET http://127.0.0.1:3291/api/v2/virtual-trading/account -H 'Authorization: Bearer <redacted>'
+{"id":"207ffcaf-b0d9-4c35-9f94-e0af0978d086","user_id":"b58c910c-0d8e-4b98-a10e-5e7e51e44bad","status":"active","initial_cash_vnd":100000000,"cash_available_vnd":100000000,"cash_reserved_vnd":0,"cash_pending_vnd":0,"net_deposited_cash_vnd":100000000,"total_cash_vnd":100000000,"activated_at":"2026-11-19T22:55:14.126Z","reset_at":null,"created_at":"2026-11-19T22:55:14.126Z"}
+HTTP 200
+
+## coin wallet before (GET /shop wallet)
+$ curl -X GET http://127.0.0.1:3291/api/v2/shop -H 'Authorization: Bearer <redacted>' | (wallet field only)
+{"balance":1000,"last_seq":1}
+coin_wallets.balance (DB): 1000
+
+## N14: POST shop/premium-purchases -> 410 SHOP_PREMIUM_REMOVED
+$ curl -X POST http://127.0.0.1:3291/api/v2/shop/premium-purchases -H 'Authorization: Bearer <redacted>' -d '{"idempotency_key":"qa-prem-0001","expected_price_xu":5000}'
+{"error":{"code":"SHOP_PREMIUM_REMOVED","message":"Premium không còn bán bằng xu"},"request_id":"8b059e42-66d5-4ced-8fce-81cedfcc90e8"}
+HTTP 410
+
+## N16: POST shop/demo-exchange deposit and withdraw -> 410 DEMO_EXCHANGE_REMOVED
+$ curl -X POST http://127.0.0.1:3291/api/v2/shop/demo-exchange -H 'Authorization: Bearer <redacted>' -d '{"direction":"deposit","amount_xu":100,"idempotency_key":"qa-dep-0001"}'
+{"error":{"code":"DEMO_EXCHANGE_REMOVED","message":"Không còn đổi xu sang tiền Demo hoặc ngược lại"},"request_id":"73af60f4-2558-4bdc-944a-df7a6bed335f"}
+HTTP 410
+
+$ curl -X POST http://127.0.0.1:3291/api/v2/shop/demo-exchange -H 'Authorization: Bearer <redacted>' -d '{"direction":"withdraw","amount_vnd":1000000,"idempotency_key":"qa-wd-0001"}'
+{"error":{"code":"DEMO_EXCHANGE_REMOVED","message":"Không còn đổi xu sang tiền Demo hoặc ngược lại"},"request_id":"4daa08db-4365-4daf-87df-add65c13a94a"}
+HTTP 410
+
+## after: coin wallet and Demo account unchanged
+$ curl -X GET http://127.0.0.1:3291/api/v2/shop -H 'Authorization: Bearer <redacted>' | (wallet field only)
+{"balance":1000,"last_seq":1}
+coin_wallets.balance (DB): 1000
+
+$ curl -X GET http://127.0.0.1:3291/api/v2/virtual-trading/account -H 'Authorization: Bearer <redacted>'
+{"id":"207ffcaf-b0d9-4c35-9f94-e0af0978d086","user_id":"b58c910c-0d8e-4b98-a10e-5e7e51e44bad","status":"active","initial_cash_vnd":100000000,"cash_available_vnd":100000000,"cash_reserved_vnd":0,"cash_pending_vnd":0,"net_deposited_cash_vnd":100000000,"total_cash_vnd":100000000,"activated_at":"2026-11-19T22:55:14.126Z","reset_at":null,"created_at":"2026-11-19T22:55:14.126Z"}
+HTTP 200
+
+## DB check: coin_ledger rows of premium/demo kinds for this user
+premium/demo ledger rows: 0
+
+## 7.4.18: admin/iqx-templates as user and team_lead -> 403
+$ curl -X GET http://127.0.0.1:3291/api/v2/admin/iqx-templates?kind=filter -H 'Authorization: Bearer <redacted>'
+{"error":{"code":"INSUFFICIENT_ROLE","message":"Bạn không có quyền thực hiện thao tác này"},"request_id":"e1bd5d82-856c-452d-9b6b-317fb9154321"}
+HTTP 403
+
+## register qalead28911 (role after register: team_lead)
+$ curl -X POST http://127.0.0.1:3291/api/v2/auth/register -d '{email,password:<redacted>,full_name,username:qalead28911,phone_number}'
+{"id":"7eda9a59-7489-4085-a2d7-d4bf84eb620b","email":"qalead28911@example.test","username":"qalead28911","username_change_allowed":false,"phone_number":"0912891171","phone_country_code":"+84","phone_national_number":"912891171","phone_e164":"+84912891171","phone_verified_at":null,"full_name":"QA qalead28911","avatar_url":null,"date_of_birth":null,"gender":null,"country":null,"province_state":null,
+HTTP 201
+login qalead28911 -> token <redacted, obtained>
+
+$ curl -X GET http://127.0.0.1:3291/api/v2/admin/iqx-templates?kind=filter -H 'Authorization: Bearer <redacted>'
+{"error":{"code":"INSUFFICIENT_ROLE","message":"Bạn không có quyền thực hiện thao tác này"},"request_id":"bf1c9f61-bd67-4c1f-8e56-e955447b45e2"}
+HTTP 403
+
+$ curl -X POST http://127.0.0.1:3291/api/v2/admin/iqx-templates/00000000-0000-4000-8000-000000000001/hide -H 'Authorization: Bearer <redacted>' -d '{"reason":"x"}'
+{"error":{"code":"INSUFFICIENT_ROLE","message":"Bạn không có quyền thực hiện thao tác này"},"request_id":"2b453ec9-77cd-430b-a0b6-c762b155878e"}
+HTTP 403
+
+## register qaadmin28911 (role after register: admin)
+$ curl -X POST http://127.0.0.1:3291/api/v2/auth/register -d '{email,password:<redacted>,full_name,username:qaadmin28911,phone_number}'
+{"id":"5f3f447b-263d-455d-9717-fdf8c3e3e15e","email":"qaadmin28911@example.test","username":"qaadmin28911","username_change_allowed":false,"phone_number":"0912891146","phone_country_code":"+84","phone_national_number":"912891146","phone_e164":"+84912891146","phone_verified_at":null,"full_name":"QA qaadmin28911","avatar_url":null,"date_of_birth":null,"gender":null,"country":null,"province_state":nu
+HTTP 201
+login qaadmin28911 -> token <redacted, obtained>
+
+## admin can list; hide without reason -> 422
+$ curl -X GET http://127.0.0.1:3291/api/v2/admin/iqx-templates?kind=strategy -H 'Authorization: Bearer <redacted>'
+{"kind":"strategy","items":[{"id":"42fac1c8-a7c4-4520-bc4d-777778918606","kind":"strategy","slug":"xuhuong","sort_order":1,"visibility":"shown","status":"shown","current_version":1,"name":"Theo xu hướng","idea":"Đi theo xu hướng trung hạn bằng giao cắt hai đường trung bình.","has_draft":false,"draft_updated_at":null,"updated_at":"2026-11-19T19:56:31.100Z","updated_by":{"id":null,"name":"IQX"},"used_30d":0},{"id":"f3d7f804-78bc-4fc3-a0d0-836fc16f31ad","kind":"strategy","slug":"phadinh","sort_order":2,"visibility":"shown","status":"shown","current_version":1,"name":"Phá đỉnh","idea":"Mua khi giá vượt đỉnh 20 phiên có khối lượng xác nhận.","has_draft":false,"draft_updated_at":null,"updated_at":"2026-11-19T19:56:31.100Z","updated_by":{"id":null,"name":"IQX"},"used_30d":0},{"id":"41182f5f-a6fe-4ab8-8be3-6f26d60f7fbf","kind":"strategy","slug":"macd","sort_order":3,"visibility":"shown","status"
+HTTP 200
+
+$ curl -X POST http://127.0.0.1:3291/api/v2/admin/iqx-templates/42fac1c8-a7c4-4520-bc4d-777778918606/hide -H 'Authorization: Bearer <redacted>' -d '{"reason":"   "}'
+{"error":{"code":"VALIDATION_ERROR","message":"Dữ liệu yêu cầu không hợp lệ","details":[{"path":["reason"],"message":"Nhập lý do thay đổi."}]},"request_id":"a1790cae-dddd-4423-823b-29df3c94ba35"}
+HTTP 422
+
+$ curl -X POST http://127.0.0.1:3291/api/v2/admin/iqx-templates/42fac1c8-a7c4-4520-bc4d-777778918606/hide -H 'Authorization: Bearer <redacted>' -d '{}'
+{"error":{"code":"VALIDATION_ERROR","message":"Dữ liệu yêu cầu không hợp lệ","details":[{"path":["reason"],"message":"Invalid input: expected string, received undefined"}]},"request_id":"00543cf5-af7a-4be5-847a-8d39743f91d6"}
+HTTP 422
+
+## N17 admin column: GET admin/users/:id/360 demo_trading (Lợi nhuận Demo Trading)
+$ curl -X GET http://127.0.0.1:3291/api/v2/admin/users/<user id>/360 -H 'Authorization: Bearer <redacted (admin)>' | (performance.demo_trading only)
+{"activated":true,"account_id":"207ffcaf-b0d9-4c35-9f94-e0af0978d086","status":"active","activated_at":"2026-11-19T22:55:14.126Z","pnl_pct":0,"last_activity_at":null}
+HTTP 200
+
+## simulate a gain: set the user's Demo cash_available to 110,000,000 (DB), no positions
+UPDATE 1
+expect admin pnl = (110M - 100M)/100M = 10.00 %
+$ curl -X GET http://127.0.0.1:3291/api/v2/admin/users/<user id>/360 -H 'Authorization: Bearer <redacted (admin)>' | (performance.demo_trading only)
+{"activated":true,"account_id":"207ffcaf-b0d9-4c35-9f94-e0af0978d086","status":"active","activated_at":"2026-11-19T22:55:14.126Z","pnl_pct":10,"last_activity_at":null}
+HTTP 200
+
+## user side: GET virtual-trading/portfolio as the user (expect return_pct 10)
+$ curl -X GET http://127.0.0.1:3291/api/v2/virtual-trading/portfolio -H 'Authorization: Bearer <redacted>' | (summary fields)
+{"account":{"id":"207ffcaf-b0d9-4c35-9f94-e0af0978d086","user_id":"b58c910c-0d8e-4b98-a10e-5e7e51e44bad","status":"active","initial_cash_vnd":100000000,"cash_available_vnd":110000000,"cash_reserved_vnd":0,"cash_pending_vnd":0,"net_deposited_cash_vnd":100000000,"total_cash_vnd":110000000,"activated_at":"2026-11-19T22:55:14.126Z","reset_at":null,"created_at":"2026-11-19T22:55:14.126Z"},"positions":[],"total_market_value_vnd":0,"nav_vnd":110000000,"total_unrealized_pnl_vnd":0,"return_pct":10,"refresh_warnings":[],"pending_rights":{"pending_cash_dividend_vnd":0,"pending_stock_dividend_quantity":0}}
+200

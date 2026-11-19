@@ -159,7 +159,7 @@ async function openMatch(page: Page, iqline: boolean) {
   await recordCanvasText(page)
   await seedMember(page)
   await mockFlashback(page)
-  await page.goto(`/demo-trading?view=flashback&iqline=${iqline ? "1" : "0"}`)
+  await page.goto(`/flashback?tool=flashback&iqline=${iqline ? "1" : "0"}`)
   await page.getByRole("button", { name: "Tạo phòng" }).first().click()
   await page.getByTestId("flashback-create-room").getByRole("button", { name: "Tạo phòng" }).click()
   await expect(page.getByTestId("flashback-room-id")).toBeVisible()
@@ -228,7 +228,7 @@ for (const scheme of ["dark", "light"] as const) {
       near(await dominantAlpha(page, 60, 66, volumeTop + 2, volumeTop + volumeHeight - 2), Math.round(0.7 * 255))
 
       // Cùng dữ liệu, biểu đồ SVG cũ: để so bằng mắt.
-      await page.goto("/demo-trading?view=flashback&iqline=0")
+      await page.goto("/flashback?tool=flashback&iqline=0")
       await expect(page.getByRole("img", { name: "Biểu đồ nến Flashback" })).toBeVisible()
       await expect(page.getByTestId("flashback-session")).toHaveText("Phiên " + START_STEP)
       await expect(page.locator("canvas[data-iqline-layer]")).toHaveCount(0)
@@ -617,7 +617,7 @@ test("?iqline=0 quay lại biểu đồ SVG và không tải mã Canvas của IQ
   expect(loaded).toEqual([])
   // Không có tham số là đường mặc định: tải biểu đồ IQLine của Flashback (cùng trang, ván đang chơi).
   requested.length = 0
-  await page.goto("/demo-trading?view=flashback")
+  await page.goto("/flashback?tool=flashback")
   await expect(page.locator("[data-iqline-root]")).toBeVisible()
   expect(requested.some((url) => /flashback-chart-iqline|IQLineFlashback/i.test(url))).toBe(true)
 })

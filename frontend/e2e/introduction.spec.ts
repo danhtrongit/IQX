@@ -26,28 +26,33 @@ test.describe("introduction landing", () => {
     await expect(header.getByRole("button", { name: "Mở menu điều hướng" })).toBeHidden()
     for (const [name, href] of [
       ["Giới thiệu", "/"],
-      ["Demo Trading", "/demo-trading?view=trading"],
+      ["Luyện tập", "/luyen-tap?tool=candle-dojo"],
+      ["Flashback", "/flashback?tool=flashback"],
       ["Chiến lược", "/chien-luoc"],
-      ["Bài học", "/bai-hoc"],
-      ["Học viện", "/demo-trading?view=academy"],
     ]) {
       await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", href)
     }
+    // Layout v1.3 §1: no DEMO TRADING / HỌC VIỆN in the header.
+    await expect(nav.getByRole("link")).toHaveText(["Giới thiệu", "Luyện tập", "Flashback", "Chiến lược", "Khu giao dịch"])
     await expect(header.getByRole("link", { name: "Bắt đầu ngay" })).toHaveAttribute(
       "href",
-      "/demo-trading?view=academy"
+      "/luyen-tap?tool=hoc-vien"
     )
     const cta = main
       .getByRole("link", { name: "Bắt đầu hành trình", exact: true })
       .first()
-    await expect(cta).toHaveAttribute("href", /^\/demo-trading(?:\?.*)?$/)
+    await expect(cta).toHaveAttribute("href", /^\/luyen-tap(?:\?.*)?$/)
     await expect(cta).toBeInViewport()
     const box = await cta.boundingBox()
     expect(box).not.toBeNull()
     expect(box!.y + box!.height).toBeLessThanOrEqual(768)
 
     await cta.click()
-    await expect(page).toHaveURL(/\/demo-trading\?view=academy$/)
+    await expect(page).toHaveURL(/\/luyen-tap\?tool=hoc-vien$/)
+
+    // An old link to the retired page still opens Học viện (layout v1.3 §6).
+    await page.goto("/demo-trading?view=academy")
+    await expect(page).toHaveURL(/\/luyen-tap\?tool=hoc-vien$/)
 
     await page.goto("/gioi-thieu?utm_source=intro-test")
     await expectReady(page)
@@ -69,17 +74,16 @@ test.describe("introduction landing", () => {
     const nav = menu.getByRole("navigation", { name: "Điều hướng di động" })
     for (const [name, href] of [
       ["Giới thiệu", "/"],
-      ["Demo Trading", "/demo-trading?view=trading"],
+      ["Luyện tập", "/luyen-tap?tool=candle-dojo"],
+      ["Flashback", "/flashback?tool=flashback"],
       ["Chiến lược", "/chien-luoc"],
-      ["Bài học", "/bai-hoc"],
-      ["Học viện", "/demo-trading?view=academy"],
     ]) {
       await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", href)
     }
-    await expect(menu.getByRole("link", { name: "Bắt đầu ngay" })).toHaveAttribute("href", "/demo-trading?view=academy")
-    await nav.getByRole("link", { name: "Demo Trading", exact: true }).click()
+    await expect(menu.getByRole("link", { name: "Bắt đầu ngay" })).toHaveAttribute("href", "/luyen-tap?tool=hoc-vien")
+    await nav.getByRole("link", { name: "Luyện tập", exact: true }).click()
     await expect(menu).not.toBeVisible()
-    await expect(page).toHaveURL(/\/demo-trading\?view=trading$/)
+    await expect(page).toHaveURL(/\/luyen-tap\?tool=candle-dojo$/)
     const overflow = await page.evaluate(() => ({
       width: document.documentElement.scrollWidth,
       client: document.documentElement.clientWidth,

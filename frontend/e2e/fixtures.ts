@@ -60,3 +60,17 @@ export function assertV2Request(page: Page) {
   })
   return () => requests
 }
+
+/**
+ * A URL that names a workspace tool (`/luyen-tap?tool=…`) opens its panel; on phones (≤900px) the panel is a
+ * layer over the main area. Close it so the main area (chart, board…) can be used, as a user would.
+ */
+export async function closePanelLayer(page: Page) {
+  const frame = page.getByTestId("workspace-frame")
+  // Pages outside the workspace (stock detail…) have no frame.
+  await frame.waitFor({ state: "attached", timeout: 10_000 }).catch(() => undefined)
+  if ((await frame.count()) === 0) return
+  if ((await frame.getAttribute("data-panel-open")) !== "true") return
+  await page.locator("[data-panel-close]:visible").first().click()
+  await expect(frame).toHaveAttribute("data-panel-open", "false")
+}

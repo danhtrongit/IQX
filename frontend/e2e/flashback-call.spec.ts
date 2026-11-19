@@ -149,7 +149,7 @@ async function openPlayer(
     ws.onClose(() => server.disconnect(viewer.id))
   })
 
-  await page.goto("/demo-trading?view=flashback")
+  await page.goto("/flashback?tool=flashback")
   return { page, context }
 }
 

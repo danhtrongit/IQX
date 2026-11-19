@@ -6,7 +6,7 @@
  */
 import path from "node:path"
 import type { Page, Route } from "@playwright/test"
-import { expect, test } from "./fixtures"
+import { closePanelLayer, expect, test } from "./fixtures"
 
 const DAY = 86_400
 const ICT = 7 * 3600
@@ -126,12 +126,13 @@ async function useScheme(page: Page, scheme: "light" | "dark") {
   await page.addInitScript((value) => localStorage.setItem("theme", value), scheme)
 }
 
-const URL_CHART = "/demo-trading?content=chart&symbol=FPT&interval=D"
+const URL_CHART = "/luyen-tap?tool=giao-dich&symbol=FPT&interval=D"
 const host = (page: Page) => page.locator('[data-iqline-mode="market"]')
 
 async function openChart(page: Page, url = URL_CHART) {
   await page.goto(url)
   await expect(host(page)).toBeVisible()
+  await closePanelLayer(page)
   await expect(page.getByRole("group", { name: "Chú giải biểu đồ" })).toBeVisible()
   await expect.poll(() => inkOf(page), { timeout: 10_000 }).toBeGreaterThan(200)
 }

@@ -106,7 +106,7 @@ test.describe("Học viện v4 on the real backend", () => {
     }
 
     await signIn(page, session)
-    await page.goto("/demo-trading?view=academy&lesson=ch01-l01")
+    await page.goto("/luyen-tap?tool=hoc-vien&lesson=ch01-l01")
     const panel = page.getByRole("complementary")
     await expect(panel.getByText("116 bài học")).toBeVisible()
     await expect(panel.locator('[data-academy-row="ch01-l02"]').getByRole("button", { name: /Học bài/ })).toBeVisible()
@@ -135,7 +135,7 @@ test.describe("Học viện v4 on the real backend", () => {
     expect(refused.body.error?.code).toBe("ACADEMY_SCENARIO_REQUIRED")
 
     await signIn(page, session)
-    await page.goto("/demo-trading?view=academy&lesson=ch02-l01")
+    await page.goto("/luyen-tap?tool=hoc-vien&lesson=ch02-l01")
     await expect(page.getByRole("button", { name: "Chọn cách xử lý ở phần Tình huống để làm bài kiểm tra" })).toBeDisabled()
     await page.locator("[data-academy-scenario]").getByRole("button").first().click()
     await expect(page.getByRole("button", { name: "Làm bài kiểm tra" })).toBeEnabled()
@@ -147,7 +147,7 @@ test.describe("Học viện v4 on the real backend", () => {
     const session = await register(request)
     await signIn(page, session)
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.goto("/demo-trading?view=academy&lesson=ch04-l04")
+    await page.goto("/luyen-tap?tool=hoc-vien&lesson=ch04-l04")
     await expect(page.getByRole("heading", { level: 2, name: "Khối lượng" })).toBeVisible()
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
     expect(overflow).toBeLessThanOrEqual(0)
@@ -166,7 +166,7 @@ test.describe("Học viện v4 on the real backend", () => {
     expect((await roe())?.learned).toBe(true)
 
     await signIn(page, session)
-    await page.goto("/demo-trading?view=academy&lesson=ch06-l01")
+    await page.goto("/luyen-tap?tool=hoc-vien&lesson=ch06-l01")
     await page.getByRole("button", { name: "Làm bài kiểm tra" }).click()
     await answerQuiz(page, "ch06-l01")
     await expect(page.getByLabel(/^Điểm \d+ trên \d+$/)).toBeVisible()

@@ -304,7 +304,7 @@ for (const theme of ["dark", "light"] as const) {
     }, theme)
     await seedMember(page)
     await mockFlashback(page)
-    await page.goto("/demo-trading?view=flashback")
+    await page.goto("/flashback?tool=flashback")
 
     // Sảnh: vùng chính rộng hết cỡ, không có panel đặt lệnh.
     await expect(page.getByRole("button", { name: "Chơi phòng bất kỳ" })).toBeVisible()
@@ -382,7 +382,7 @@ for (const theme of ["dark", "light"] as const) {
       }, theme)
       await seedMember(page)
       await mockFlashback(page)
-      await page.goto("/demo-trading?view=flashback")
+      await page.goto("/flashback?tool=flashback")
       await page.getByRole("button", { name: "Tạo phòng" }).first().click()
       await expect(page.getByLabel("Chat trong phòng")).toBeVisible()
       await page.getByTestId("flashback-create-room").getByRole("button", { name: "Tạo phòng" }).click()

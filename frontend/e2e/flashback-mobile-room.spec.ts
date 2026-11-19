@@ -95,7 +95,7 @@ for (const [width, height] of [[320, 568], [390, 660], [844, 390]] as const) {
       test(`${label}: Rời phòng, Chat và nút chính luôn trong màn hình`, async ({ page }) => {
         await seedMember(page)
         await mockRoom(page, owner, count, maxPlayers)
-        await page.goto("/demo-trading?view=flashback")
+        await page.goto("/flashback?tool=flashback")
         await expect(page.getByTestId("flashback-room-id")).toHaveText(ROOM_ID)
 
         const primary = owner ? /^Bắt đầu/ : /^Sẵn sàng$/
@@ -128,7 +128,7 @@ for (const [width, height] of [[320, 568], [390, 660], [844, 390]] as const) {
     test("Chat mở khung kéo từ dưới lên, có số tin chưa đọc, đóng lại vẫn còn nút", async ({ page }) => {
       await seedMember(page)
       const state = await mockRoom(page, false, 3, 4)
-      await page.goto("/demo-trading?view=flashback")
+      await page.goto("/flashback?tool=flashback")
       await expect(page.getByTestId("flashback-room-id")).toHaveText(ROOM_ID)
       const chatButton = page.getByTestId("flashback-chat-room-mobile")
       await expect(chatButton).toBeVisible()
