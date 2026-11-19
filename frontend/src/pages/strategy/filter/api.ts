@@ -10,6 +10,8 @@
 import { requestOperation } from "@/lib/contract-client"
 import type { ApiRequestFor } from "@/lib/contract-types"
 
+import type { IqxFilterOrigin } from "../shared/iqx"
+
 import type {
   FilterDefinition,
   ResultPage,
@@ -80,12 +82,15 @@ export function getFilter(id: string, signal?: AbortSignal): Promise<SavedFilter
   return requestOperation("GET /api/v2/strategy/filters/{filterId}", { path: { filterId: id } }, { signal })
 }
 
-export function createFilter(body: { name: string; definition: FilterDefinition; idempotency_key?: string }) {
+/** A saved definition may carry the Bộ lọc IQX it started from (`origin`, never part of the criteria). */
+export type SavedDefinition = FilterDefinition & { origin?: IqxFilterOrigin }
+
+export function createFilter(body: { name: string; definition: SavedDefinition; idempotency_key?: string }) {
   return requestOperation("POST /api/v2/strategy/filters", { body })
 }
 
 /** A new version of an existing filter (an unchanged definition keeps the current version). */
-export function updateFilter(id: string, body: { name: string; definition: FilterDefinition }) {
+export function updateFilter(id: string, body: { name: string; definition: SavedDefinition }) {
   return requestOperation("PUT /api/v2/strategy/filters/{filterId}", { path: { filterId: id }, body })
 }
 

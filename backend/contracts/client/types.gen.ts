@@ -32106,6 +32106,1020 @@ export type AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses = {
 export type AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponse =
   AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses[keyof AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses];
 
+export type ListAdminIqxTemplatesData = {
+  body?: never;
+  path?: never;
+  query: {
+    kind: "filter" | "strategy";
+  };
+  url: "/api/v2/admin/iqx-templates";
+};
+
+export type ListAdminIqxTemplatesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListAdminIqxTemplatesError =
+  ListAdminIqxTemplatesErrors[keyof ListAdminIqxTemplatesErrors];
+
+export type ListAdminIqxTemplatesResponses = {
+  200: {
+    items: Array<{
+      current_version: number | null;
+      draft_updated_at: string | null;
+      has_draft: boolean;
+      id: string;
+      idea: string;
+      kind: "filter" | "strategy";
+      name: string;
+      slug: string;
+      sort_order: number;
+      status: "shown" | "hidden" | "unpublished";
+      updated_at: string;
+      updated_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      used_30d: number;
+      visibility: "shown" | "hidden";
+    }>;
+    kind: "filter" | "strategy";
+  };
+};
+
+export type ListAdminIqxTemplatesResponse =
+  ListAdminIqxTemplatesResponses[keyof ListAdminIqxTemplatesResponses];
+
+export type CreateAdminIqxTemplateData = {
+  body: {
+    draft: {
+      definition?: unknown;
+      idea?: string;
+      name: string;
+      origin?: string;
+      pair_slug?: string | null;
+      when_wrong?: string;
+      [key: string]: unknown;
+    };
+    kind: "filter" | "strategy";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/iqx-templates";
+};
+
+export type CreateAdminIqxTemplateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CreateAdminIqxTemplateError =
+  CreateAdminIqxTemplateErrors[keyof CreateAdminIqxTemplateErrors];
+
+export type CreateAdminIqxTemplateResponses = {
+  200: {
+    current: {
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    } | null;
+    current_version: number | null;
+    draft: {
+      [key: string]: unknown;
+    } | null;
+    draft_updated_at: string | null;
+    draft_updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    has_draft: boolean;
+    history: Array<{
+      action:
+        | "create"
+        | "draft_save"
+        | "publish"
+        | "hide"
+        | "show"
+        | "reorder"
+        | "delete_draft"
+        | "restore";
+      at: string;
+      by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string | null;
+      version: number | null;
+    }>;
+    id: string;
+    idea: string;
+    kind: "filter" | "strategy";
+    name: string;
+    slug: string;
+    sort_order: number;
+    status: "shown" | "hidden" | "unpublished";
+    updated_at: string;
+    updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    used_30d: number;
+    versions: Array<{
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    }>;
+    visibility: "shown" | "hidden";
+  };
+};
+
+export type CreateAdminIqxTemplateResponse =
+  CreateAdminIqxTemplateResponses[keyof CreateAdminIqxTemplateResponses];
+
+export type ReorderAdminIqxTemplatesData = {
+  body: {
+    ids: Array<string>;
+    kind: "filter" | "strategy";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/iqx-templates/order";
+};
+
+export type ReorderAdminIqxTemplatesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ReorderAdminIqxTemplatesError =
+  ReorderAdminIqxTemplatesErrors[keyof ReorderAdminIqxTemplatesErrors];
+
+export type ReorderAdminIqxTemplatesResponses = {
+  200: {
+    items: Array<{
+      current_version: number | null;
+      draft_updated_at: string | null;
+      has_draft: boolean;
+      id: string;
+      idea: string;
+      kind: "filter" | "strategy";
+      name: string;
+      slug: string;
+      sort_order: number;
+      status: "shown" | "hidden" | "unpublished";
+      updated_at: string;
+      updated_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      used_30d: number;
+      visibility: "shown" | "hidden";
+    }>;
+    kind: "filter" | "strategy";
+  };
+};
+
+export type ReorderAdminIqxTemplatesResponse =
+  ReorderAdminIqxTemplatesResponses[keyof ReorderAdminIqxTemplatesResponses];
+
+export type DeleteAdminIqxTemplateData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/iqx-templates/{id}";
+};
+
+export type DeleteAdminIqxTemplateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DeleteAdminIqxTemplateError =
+  DeleteAdminIqxTemplateErrors[keyof DeleteAdminIqxTemplateErrors];
+
+export type DeleteAdminIqxTemplateResponses = {
+  200: {
+    deleted: true;
+    id: string;
+  };
+};
+
+export type DeleteAdminIqxTemplateResponse =
+  DeleteAdminIqxTemplateResponses[keyof DeleteAdminIqxTemplateResponses];
+
+export type GetAdminIqxTemplateData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/iqx-templates/{id}";
+};
+
+export type GetAdminIqxTemplateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetAdminIqxTemplateError =
+  GetAdminIqxTemplateErrors[keyof GetAdminIqxTemplateErrors];
+
+export type GetAdminIqxTemplateResponses = {
+  200: {
+    current: {
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    } | null;
+    current_version: number | null;
+    draft: {
+      [key: string]: unknown;
+    } | null;
+    draft_updated_at: string | null;
+    draft_updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    has_draft: boolean;
+    history: Array<{
+      action:
+        | "create"
+        | "draft_save"
+        | "publish"
+        | "hide"
+        | "show"
+        | "reorder"
+        | "delete_draft"
+        | "restore";
+      at: string;
+      by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string | null;
+      version: number | null;
+    }>;
+    id: string;
+    idea: string;
+    kind: "filter" | "strategy";
+    name: string;
+    slug: string;
+    sort_order: number;
+    status: "shown" | "hidden" | "unpublished";
+    updated_at: string;
+    updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    used_30d: number;
+    versions: Array<{
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    }>;
+    visibility: "shown" | "hidden";
+  };
+};
+
+export type GetAdminIqxTemplateResponse =
+  GetAdminIqxTemplateResponses[keyof GetAdminIqxTemplateResponses];
+
+export type SaveAdminIqxTemplateDraftData = {
+  body: {
+    draft: {
+      definition?: unknown;
+      idea?: string;
+      name: string;
+      origin?: string;
+      pair_slug?: string | null;
+      when_wrong?: string;
+      [key: string]: unknown;
+    };
+    draft_updated_at: string | null;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/iqx-templates/{id}/draft";
+};
+
+export type SaveAdminIqxTemplateDraftErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type SaveAdminIqxTemplateDraftError =
+  SaveAdminIqxTemplateDraftErrors[keyof SaveAdminIqxTemplateDraftErrors];
+
+export type SaveAdminIqxTemplateDraftResponses = {
+  200: {
+    current: {
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    } | null;
+    current_version: number | null;
+    draft: {
+      [key: string]: unknown;
+    } | null;
+    draft_updated_at: string | null;
+    draft_updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    has_draft: boolean;
+    history: Array<{
+      action:
+        | "create"
+        | "draft_save"
+        | "publish"
+        | "hide"
+        | "show"
+        | "reorder"
+        | "delete_draft"
+        | "restore";
+      at: string;
+      by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string | null;
+      version: number | null;
+    }>;
+    id: string;
+    idea: string;
+    kind: "filter" | "strategy";
+    name: string;
+    slug: string;
+    sort_order: number;
+    status: "shown" | "hidden" | "unpublished";
+    updated_at: string;
+    updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    used_30d: number;
+    versions: Array<{
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    }>;
+    visibility: "shown" | "hidden";
+  };
+};
+
+export type SaveAdminIqxTemplateDraftResponse =
+  SaveAdminIqxTemplateDraftResponses[keyof SaveAdminIqxTemplateDraftResponses];
+
+export type HideAdminIqxTemplateData = {
+  body: {
+    reason: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/iqx-templates/{id}/hide";
+};
+
+export type HideAdminIqxTemplateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type HideAdminIqxTemplateError =
+  HideAdminIqxTemplateErrors[keyof HideAdminIqxTemplateErrors];
+
+export type HideAdminIqxTemplateResponses = {
+  200: {
+    current: {
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    } | null;
+    current_version: number | null;
+    draft: {
+      [key: string]: unknown;
+    } | null;
+    draft_updated_at: string | null;
+    draft_updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    has_draft: boolean;
+    history: Array<{
+      action:
+        | "create"
+        | "draft_save"
+        | "publish"
+        | "hide"
+        | "show"
+        | "reorder"
+        | "delete_draft"
+        | "restore";
+      at: string;
+      by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string | null;
+      version: number | null;
+    }>;
+    id: string;
+    idea: string;
+    kind: "filter" | "strategy";
+    name: string;
+    slug: string;
+    sort_order: number;
+    status: "shown" | "hidden" | "unpublished";
+    updated_at: string;
+    updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    used_30d: number;
+    versions: Array<{
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    }>;
+    visibility: "shown" | "hidden";
+  };
+};
+
+export type HideAdminIqxTemplateResponse =
+  HideAdminIqxTemplateResponses[keyof HideAdminIqxTemplateResponses];
+
+export type PublishAdminIqxTemplateData = {
+  body: {
+    content: {
+      definition: unknown;
+      idea: string;
+      name: string;
+      origin: string;
+      pair_slug?: string | null;
+      when_wrong: string;
+      [key: string]: unknown;
+    };
+    draft_updated_at?: string | null;
+    expected_version: number | null;
+    reason: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/iqx-templates/{id}/publish";
+};
+
+export type PublishAdminIqxTemplateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PublishAdminIqxTemplateError =
+  PublishAdminIqxTemplateErrors[keyof PublishAdminIqxTemplateErrors];
+
+export type PublishAdminIqxTemplateResponses = {
+  200: {
+    current: {
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    } | null;
+    current_version: number | null;
+    draft: {
+      [key: string]: unknown;
+    } | null;
+    draft_updated_at: string | null;
+    draft_updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    has_draft: boolean;
+    history: Array<{
+      action:
+        | "create"
+        | "draft_save"
+        | "publish"
+        | "hide"
+        | "show"
+        | "reorder"
+        | "delete_draft"
+        | "restore";
+      at: string;
+      by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string | null;
+      version: number | null;
+    }>;
+    id: string;
+    idea: string;
+    kind: "filter" | "strategy";
+    name: string;
+    slug: string;
+    sort_order: number;
+    status: "shown" | "hidden" | "unpublished";
+    updated_at: string;
+    updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    used_30d: number;
+    versions: Array<{
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    }>;
+    visibility: "shown" | "hidden";
+  };
+};
+
+export type PublishAdminIqxTemplateResponse =
+  PublishAdminIqxTemplateResponses[keyof PublishAdminIqxTemplateResponses];
+
+export type RestoreAdminIqxTemplateData = {
+  body: {
+    version: number;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/iqx-templates/{id}/restore";
+};
+
+export type RestoreAdminIqxTemplateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type RestoreAdminIqxTemplateError =
+  RestoreAdminIqxTemplateErrors[keyof RestoreAdminIqxTemplateErrors];
+
+export type RestoreAdminIqxTemplateResponses = {
+  200: {
+    current: {
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    } | null;
+    current_version: number | null;
+    draft: {
+      [key: string]: unknown;
+    } | null;
+    draft_updated_at: string | null;
+    draft_updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    has_draft: boolean;
+    history: Array<{
+      action:
+        | "create"
+        | "draft_save"
+        | "publish"
+        | "hide"
+        | "show"
+        | "reorder"
+        | "delete_draft"
+        | "restore";
+      at: string;
+      by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string | null;
+      version: number | null;
+    }>;
+    id: string;
+    idea: string;
+    kind: "filter" | "strategy";
+    name: string;
+    slug: string;
+    sort_order: number;
+    status: "shown" | "hidden" | "unpublished";
+    updated_at: string;
+    updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    used_30d: number;
+    versions: Array<{
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    }>;
+    visibility: "shown" | "hidden";
+  };
+};
+
+export type RestoreAdminIqxTemplateResponse =
+  RestoreAdminIqxTemplateResponses[keyof RestoreAdminIqxTemplateResponses];
+
+export type ShowAdminIqxTemplateData = {
+  body: {
+    reason: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/iqx-templates/{id}/show";
+};
+
+export type ShowAdminIqxTemplateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ShowAdminIqxTemplateError =
+  ShowAdminIqxTemplateErrors[keyof ShowAdminIqxTemplateErrors];
+
+export type ShowAdminIqxTemplateResponses = {
+  200: {
+    current: {
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    } | null;
+    current_version: number | null;
+    draft: {
+      [key: string]: unknown;
+    } | null;
+    draft_updated_at: string | null;
+    draft_updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    has_draft: boolean;
+    history: Array<{
+      action:
+        | "create"
+        | "draft_save"
+        | "publish"
+        | "hide"
+        | "show"
+        | "reorder"
+        | "delete_draft"
+        | "restore";
+      at: string;
+      by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string | null;
+      version: number | null;
+    }>;
+    id: string;
+    idea: string;
+    kind: "filter" | "strategy";
+    name: string;
+    slug: string;
+    sort_order: number;
+    status: "shown" | "hidden" | "unpublished";
+    updated_at: string;
+    updated_by: {
+      id: string | null;
+      name: string;
+    } | null;
+    used_30d: number;
+    versions: Array<{
+      content: {
+        [key: string]: unknown;
+      };
+      published_at: string;
+      published_by: {
+        id: string | null;
+        name: string;
+      } | null;
+      reason: string;
+      version: number;
+    }>;
+    visibility: "shown" | "hidden";
+  };
+};
+
+export type ShowAdminIqxTemplateResponse =
+  ShowAdminIqxTemplateResponses[keyof ShowAdminIqxTemplateResponses];
+
 export type JourneyIdentityControllerGrantQa1Data = {
   body: {
     mascot_id: "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang";
@@ -55589,8 +56603,290 @@ export type StrategyBacktestsCreateData = {
       execution?: "next_open" | "same_close";
       fee_preset?: "standard" | "none";
     };
+    draft?: {
+      indicators: {
+        [key: string]: {
+          buy:
+            | {
+                enabled: boolean;
+                rules: Array<{
+                  enabled: boolean;
+                  id: string;
+                  [key: string]: number | string | boolean | boolean | string;
+                }>;
+              }
+            | {
+                enabled: boolean;
+                params: {
+                  [key: string]: number;
+                };
+                rules: Array<
+                  | {
+                      allowed_ops: Array<
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low"
+                      >;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "compare" | "cross";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op:
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low";
+                      rhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    }
+                  | {
+                      allowed_ops: Array<"∈" | "∉">;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "membership";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op: "∈" | "∉";
+                      rhs: {
+                        bounds?: "open";
+                        kind?: "interval";
+                        lower:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        upper:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                      };
+                    }
+                >;
+              };
+          master_enabled: boolean;
+          sell:
+            | {
+                enabled: boolean;
+                rules: Array<{
+                  enabled: boolean;
+                  id: string;
+                  [key: string]: number | string | boolean | boolean | string;
+                }>;
+              }
+            | {
+                enabled: boolean;
+                params: {
+                  [key: string]: number;
+                };
+                rules: Array<
+                  | {
+                      allowed_ops: Array<
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low"
+                      >;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "compare" | "cross";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op:
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low";
+                      rhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    }
+                  | {
+                      allowed_ops: Array<"∈" | "∉">;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "membership";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op: "∈" | "∉";
+                      rhs: {
+                        bounds?: "open";
+                        kind?: "interval";
+                        lower:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        upper:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                      };
+                    }
+                >;
+              };
+        };
+      };
+    };
     end: string;
     idempotency_key: string;
+    origin?: {
+      id: string;
+      type: "iqx_strategy";
+      version: number;
+    };
     research?:
       | {
           kind: "sensitivity";
@@ -55668,6 +56964,7 @@ export type StrategyBacktestsCreateData = {
         market?: "HOSE" | "HNX" | "UPCOM" | "ALL";
       };
     };
+    trial?: boolean;
   };
   path?: never;
   query?: never;
@@ -55898,6 +57195,22 @@ export type StrategyBacktestsCreateResponses = {
           source: string | null;
           symbol: "VNINDEX";
         };
+        buy_and_hold?: {
+          basis: "iqx-buy-hold-1.0";
+          buy_fee: number;
+          capital: number;
+          cash_left: number;
+          curve: Array<{
+            date: string;
+            return_pct: number;
+            value: number;
+          }>;
+          end_value: number;
+          entry_date: string | null;
+          entry_price: number | null;
+          qty: number;
+          return_pct: number;
+        } | null;
         capital: number;
         config: {
           indicators: {
@@ -55973,6 +57286,16 @@ export type StrategyBacktestsCreateResponses = {
         };
         skipped_rows: number;
         slippage: "not_modelled";
+        source?: {
+          kind: "saved" | "draft";
+          label: string;
+          origin: {
+            id: string;
+            name: string;
+            type: "iqx_strategy";
+            version: number;
+          } | null;
+        };
         symbol: string;
         system: {
           data_hash: string;
@@ -56108,6 +57431,22 @@ export type StrategyBacktestsCreateResponses = {
         source: string | null;
         symbol: "VNINDEX";
       };
+      buy_and_hold?: {
+        basis: "iqx-buy-hold-1.0";
+        buy_fee: number;
+        capital: number;
+        cash_left: number;
+        curve: Array<{
+          date: string;
+          return_pct: number;
+          value: number;
+        }>;
+        end_value: number;
+        entry_date: string | null;
+        entry_price: number | null;
+        qty: number;
+        return_pct: number;
+      } | null;
       capital: number;
       config: {
         indicators: {
@@ -56183,6 +57522,16 @@ export type StrategyBacktestsCreateResponses = {
       };
       skipped_rows: number;
       slippage: "not_modelled";
+      source?: {
+        kind: "saved" | "draft";
+        label: string;
+        origin: {
+          id: string;
+          name: string;
+          type: "iqx_strategy";
+          version: number;
+        } | null;
+      };
       symbol: string;
       system: {
         data_hash: string;
@@ -56506,6 +57855,22 @@ export type StrategyBacktestsGetResponses = {
           source: string | null;
           symbol: "VNINDEX";
         };
+        buy_and_hold?: {
+          basis: "iqx-buy-hold-1.0";
+          buy_fee: number;
+          capital: number;
+          cash_left: number;
+          curve: Array<{
+            date: string;
+            return_pct: number;
+            value: number;
+          }>;
+          end_value: number;
+          entry_date: string | null;
+          entry_price: number | null;
+          qty: number;
+          return_pct: number;
+        } | null;
         capital: number;
         config: {
           indicators: {
@@ -56581,6 +57946,16 @@ export type StrategyBacktestsGetResponses = {
         };
         skipped_rows: number;
         slippage: "not_modelled";
+        source?: {
+          kind: "saved" | "draft";
+          label: string;
+          origin: {
+            id: string;
+            name: string;
+            type: "iqx_strategy";
+            version: number;
+          } | null;
+        };
         symbol: string;
         system: {
           data_hash: string;
@@ -56716,6 +58091,22 @@ export type StrategyBacktestsGetResponses = {
         source: string | null;
         symbol: "VNINDEX";
       };
+      buy_and_hold?: {
+        basis: "iqx-buy-hold-1.0";
+        buy_fee: number;
+        capital: number;
+        cash_left: number;
+        curve: Array<{
+          date: string;
+          return_pct: number;
+          value: number;
+        }>;
+        end_value: number;
+        entry_date: string | null;
+        entry_price: number | null;
+        qty: number;
+        return_pct: number;
+      } | null;
       capital: number;
       config: {
         indicators: {
@@ -56791,6 +58182,16 @@ export type StrategyBacktestsGetResponses = {
       };
       skipped_rows: number;
       slippage: "not_modelled";
+      source?: {
+        kind: "saved" | "draft";
+        label: string;
+        origin: {
+          id: string;
+          name: string;
+          type: "iqx_strategy";
+          version: number;
+        } | null;
+      };
       symbol: string;
       system: {
         data_hash: string;
@@ -57229,6 +58630,11 @@ export type ListStrategySavedFiltersResponses = {
           statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
         };
         name: string;
+        origin?: {
+          id: string;
+          type: "iqx_filter";
+          version: number;
+        };
         rules: Array<{
           api_unit: "ratio" | "lần" | "ngày" | "năm";
           id: string;
@@ -57414,6 +58820,11 @@ export type CreateStrategySavedFilterData = {
         statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
       };
       name: string;
+      origin?: {
+        id: string;
+        type: "iqx_filter";
+        version: number;
+      };
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
         id: string;
@@ -57610,6 +59021,11 @@ export type CreateStrategySavedFilterResponses = {
         statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
       };
       name: string;
+      origin?: {
+        id: string;
+        type: "iqx_filter";
+        version: number;
+      };
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
         id: string;
@@ -57891,6 +59307,11 @@ export type GetStrategySavedFilterResponses = {
         statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
       };
       name: string;
+      origin?: {
+        id: string;
+        type: "iqx_filter";
+        version: number;
+      };
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
         id: string;
@@ -58080,6 +59501,11 @@ export type UpdateStrategySavedFilterData = {
         statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
       };
       name: string;
+      origin?: {
+        id: string;
+        type: "iqx_filter";
+        version: number;
+      };
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
         id: string;
@@ -58277,6 +59703,11 @@ export type UpdateStrategySavedFilterResponses = {
         statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
       };
       name: string;
+      origin?: {
+        id: string;
+        type: "iqx_filter";
+        version: number;
+      };
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
         id: string;
@@ -58392,6 +59823,165 @@ export type UpdateStrategySavedFilterResponses = {
 
 export type UpdateStrategySavedFilterResponse =
   UpdateStrategySavedFilterResponses[keyof UpdateStrategySavedFilterResponses];
+
+export type ListStrategyIqxTemplatesData = {
+  body?: never;
+  path?: never;
+  query: {
+    kind: "filter" | "strategy";
+  };
+  url: "/api/v2/strategy/iqx-templates";
+};
+
+export type ListStrategyIqxTemplatesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListStrategyIqxTemplatesError =
+  ListStrategyIqxTemplatesErrors[keyof ListStrategyIqxTemplatesErrors];
+
+export type ListStrategyIqxTemplatesResponses = {
+  200: {
+    items: Array<
+      | {
+          content: {
+            definition: {
+              columns?: Array<{
+                [key: string]: unknown;
+              }>;
+              data_mode?: string;
+              logic: string;
+              market: {
+                [key: string]: unknown;
+              };
+              name: string;
+              rules: Array<{
+                [key: string]: unknown;
+              }>;
+              schema_version: string;
+              technical: Array<{
+                [key: string]: unknown;
+              }>;
+              [key: string]: unknown;
+            };
+            idea: string;
+            name: string;
+            origin: string;
+            pair_slug: string | null;
+            when_wrong: string;
+          };
+          id: string;
+          kind: "filter";
+          pair: {
+            id: string;
+            name: string;
+            slug: string;
+            version: number;
+          } | null;
+          slug: string;
+          version: number;
+        }
+      | {
+          content: {
+            definition: {
+              indicators: {
+                [key: string]: {
+                  [key: string]: unknown;
+                };
+              };
+              max_holding: number;
+            };
+            idea: string;
+            name: string;
+            origin: string;
+            when_wrong: string;
+          };
+          id: string;
+          kind: "strategy";
+          pair: null;
+          slug: string;
+          version: number;
+        }
+    >;
+    kind: "filter" | "strategy";
+  };
+};
+
+export type ListStrategyIqxTemplatesResponse =
+  ListStrategyIqxTemplatesResponses[keyof ListStrategyIqxTemplatesResponses];
+
+export type RecordStrategyIqxTemplateUsedData = {
+  body: {
+    version: number;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/iqx-templates/{id}/used";
+};
+
+export type RecordStrategyIqxTemplateUsedErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type RecordStrategyIqxTemplateUsedError =
+  RecordStrategyIqxTemplateUsedErrors[keyof RecordStrategyIqxTemplateUsedErrors];
+
+export type RecordStrategyIqxTemplateUsedResponses = {
+  200: {
+    recorded: true;
+  };
+};
+
+export type RecordStrategyIqxTemplateUsedResponse =
+  RecordStrategyIqxTemplateUsedResponses[keyof RecordStrategyIqxTemplateUsedResponses];
 
 export type ListStrategySavedListsData = {
   body?: never;
@@ -59386,6 +60976,11 @@ export type CreateStrategyResultSnapshotResponses = {
         statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
       };
       name: string;
+      origin?: {
+        id: string;
+        type: "iqx_filter";
+        version: number;
+      };
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
         id: string;
@@ -59662,6 +61257,11 @@ export type GetStrategyResultSnapshotResponses = {
         statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
       };
       name: string;
+      origin?: {
+        id: string;
+        type: "iqx_filter";
+        version: number;
+      };
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
         id: string;
@@ -62076,6 +63676,9 @@ export type StrategyConfigPatchSharedConfigData = {
             };
       };
     };
+    source?: {
+      backtest_run_id: string;
+    };
   };
   path?: never;
   query?: never;
@@ -62451,6 +64054,7 @@ export type StrategyConfigListRevisionsResponses = {
     outdated: boolean;
     revision: number;
     saved_at: string;
+    source_label: string | null;
     status: "pending" | "effective" | "calendar_unavailable";
   }>;
 };

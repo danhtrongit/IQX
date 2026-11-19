@@ -48,3 +48,11 @@ export function getTrades(id: string, page: number, signal?: AbortSignal): Promi
     { signal },
   )
 }
+
+/**
+ * "Lưu cho Bot" from a run of the Backtest bản nháp (tab IQX §3.3.6): every changed indicator in ONE new
+ * revision of the shared config, with the run as its source (history label).
+ */
+export function saveDraftForBot(body: ApiRequestFor<"PATCH /api/v2/strategy/shared-config">["body"]) {
+  return requestOperation("PATCH /api/v2/strategy/shared-config", { body })
+}

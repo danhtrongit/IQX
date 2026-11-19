@@ -262,6 +262,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
       status: this.status(row, now),
       legacy: isLegacyConfig(row.config, this.registry()),
       outdated: !isCurrentFormat(row.config, this.registry()),
+      source_label: row.source_label ?? null,
     }));
   }
 
@@ -330,6 +331,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
       }
 
       const hash = configHash(config);
+      const sourceLabel = await this.sourceLabel(store, userId, input.source?.backtest_run_id);
       const { saved_at: savedAt } = await store.insertRevision({
         user_id: userId,
         revision,
@@ -343,6 +345,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
         requested_at: requestedAt,
         actor_id: userId,
         idempotency_key: input.idempotency_key,
+        source_label: sourceLabel,
       });
       const effectiveSession = await this.effectiveSessionFor(store, savedAt);
       const status = effectiveStatus(effectiveSession, new Date());
@@ -435,6 +438,24 @@ export class SharedConfigService implements SharedConfigReaderPort {
         });
       }
     }
+  }
+
+  /** `Backtest · lần chạy {id} · từ Chiến lược IQX {tên}` of a "Lưu cho Bot" (tab IQX spec §3.3.6). */
+  private async sourceLabel(
+    store: SharedConfigStore,
+    userId: string,
+    runId: string | undefined,
+  ): Promise<string | null> {
+    if (!runId) return null;
+    const run = (await store.backtestRunSource?.(userId, runId)) ?? null;
+    if (!run)
+      throw new UnprocessableEntityException({
+        code: 'BACKTEST_RUN_NOT_FOUND',
+        message: 'Không tìm thấy lần chạy backtest làm nguồn của cấu hình.',
+        details: [{ field: 'source.backtest_run_id' }],
+      });
+    const label = `Backtest · lần chạy ${run.id.slice(0, 8)}`;
+    return run.origin_name ? `${label} · từ Chiến lược IQX ${run.origin_name}` : label;
   }
 
   private async effectiveSessionFor(store: SharedConfigStore, savedAt: Date) {

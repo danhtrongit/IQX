@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../platform/database/database.module.js';
 import { AcademyModule } from '../academy/academy.module.js';
 import { AuthModule } from '../auth/index.js';
+import { IqxTemplatesModule } from '../iqx-templates/iqx-templates.module.js';
 import { QuantModule } from '../quant/quant.module.js';
 import { StrategyConfigModule } from '../strategy-config/strategy-config.module.js';
 import { StrategyBacktestsEnabledGuard } from './strategy-backtests-enabled.guard.js';
@@ -15,7 +16,14 @@ import { StrategyBacktestsService } from './strategy-backtests.service.js';
 // Consumes SHARED_CONFIG_READER (StrategyConfigModule), ACADEMY_GRANTS (AcademyModule) and
 // QUANT_MARKET_DATA (QuantModule); never writes shared config.
 @Module({
-  imports: [DatabaseModule, AuthModule, AcademyModule, StrategyConfigModule, QuantModule],
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    AcademyModule,
+    StrategyConfigModule,
+    QuantModule,
+    IqxTemplatesModule,
+  ],
   controllers: [StrategyBacktestsController],
   providers: [
     StrategyBacktestRepository,

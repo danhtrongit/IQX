@@ -1024,6 +1024,119 @@ describe('StrategyBacktestsService', () => {
     ]);
   });
 
+  describe('Backtest bản nháp and Mua và giữ (spec Tab IQX §3.3, §3.5)', () => {
+    const draftMa = (): IndicatorConfig => {
+      const config = maConfig();
+      priceCross(config, 'sell').period = 20;
+      return indicator(config, 'ma');
+    };
+    const ORIGIN = { type: 'iqx_strategy', id: '00000000-0000-4000-8000-0000000000aa', version: 2 };
+
+    it('runs the draft merged over the saved revision, writes nothing and labels the source', async () => {
+      const run = await service().create(OWNER, body({ draft: { indicators: { ma: draftMa() } } }));
+      expect(run.status).toBe('succeeded');
+      const snapshot = run.snapshot!;
+      expect(snapshot.shared_revision).toBe(3);
+      expect(snapshot.source).toEqual({ kind: 'draft', label: 'Bản nháp', origin: null });
+      expect((snapshot.config.indicators as Record<string, IndicatorConfig>).ma).toEqual(draftMa());
+      const merged = { ...savedConfig, indicators: { ...savedConfig.indicators, ma: draftMa() } };
+      expect(snapshot.config_hash).toBe(configHash(merged));
+      expect(snapshot.config_hash).not.toBe(configHash(savedConfig));
+      expect([...reader.accessed]).toEqual(['getRevision']);
+      // Same symbol/range/options on the saved revision: the source is the saved config.
+      const saved = await service().create(OWNER, body({ idempotency_key: 'run-key-0002' }));
+      expect(saved.snapshot!.source).toEqual({
+        kind: 'saved',
+        label: 'Cấu hình đã lưu bản 3',
+        origin: null,
+      });
+    });
+
+    it('labels a draft started from a Chiến lược IQX with its name and version', async () => {
+      const versionName = vi.fn(() => Promise.resolve('Phá đỉnh'));
+      const withIqx = new StrategyBacktestsService(
+        store,
+        reader.reader,
+        { grantedCapabilities: () => Promise.resolve(grants) } satisfies AcademyGrantsPort,
+        new StrategyBacktestExecutor(),
+        configService({ STRATEGY_ADVANCED_CAPABILITIES: allowlist }),
+        market,
+        { versionName },
+      );
+      const run = await withIqx.create(
+        OWNER,
+        body({ draft: { indicators: { ma: draftMa() } }, origin: ORIGIN }),
+      );
+      expect(versionName).toHaveBeenCalledWith(ORIGIN.id, 2, 'strategy');
+      expect(run.snapshot!.source).toEqual({
+        kind: 'draft',
+        label: 'Bản nháp · từ Chiến lược IQX Phá đỉnh (v2)',
+        origin: { ...ORIGIN, name: 'Phá đỉnh' },
+      });
+      expect(() => body({ origin: ORIGIN })).toThrow();
+    });
+
+    it('a trial run of a draft (Mẫu IQX soạn thử) answers like a run but stores nothing', async () => {
+      const run = await service().create(
+        OWNER,
+        body({ draft: { indicators: { ma: draftMa() } }, trial: true }),
+      );
+      expect(run.status).toBe('succeeded');
+      expect(run.snapshot!.buy_and_hold).toBeTruthy();
+      expect(store.rows).toHaveLength(0);
+      expect(() => body({ trial: true })).toThrow();
+    });
+
+    it('an account that never saved runs a draft over the registry defaults (revision 0)', async () => {
+      const run = await service().create(
+        OWNER,
+        body({ shared_revision: 0, draft: { indicators: { ma: draftMa() } } }),
+      );
+      expect(run.status).toBe('succeeded');
+      expect(run.snapshot!.shared_revision).toBe(0);
+      expect(reader.getRevision).not.toHaveBeenCalled();
+      expect(() => body({ shared_revision: 0 })).toThrow();
+    });
+
+    it('refuses an invalid draft with 422 CONFIG_INVALID and stores nothing', async () => {
+      const bad = draftMa();
+      (bad.buy.rules[0] as Record<string, unknown>).period = 7;
+      const error = await rejection(
+        service().create(OWNER, body({ draft: { indicators: { ma: bad } } })),
+      );
+      expect(error.getStatus()).toBe(422);
+      expect(error.getResponse()).toMatchObject({ code: 'CONFIG_INVALID' });
+      expect(store.rows).toHaveLength(0);
+    });
+
+    it('stores Mua và giữ computed by hand: lot, buy fee, next-open fill, no sell fee', async () => {
+      const capital = 100_000_000;
+      for (const execution of ['next_open', 'same_close'] as const) {
+        const run = await service().create(
+          OWNER,
+          body({ idempotency_key: `bh-${execution}-0001`, assumptions: { capital, execution } }),
+        );
+        const range = synthetic.filter((bar) => bar.date >= START && bar.date <= END);
+        const fill = execution === 'next_open' ? range[1]! : range[0]!;
+        const price = execution === 'next_open' ? fill.open : fill.close;
+        const qty = Math.floor(capital / (price * 1.0015 * 100)) * 100;
+        const cash = capital - qty * price * 1.0015;
+        const last = range[range.length - 1]!;
+        const hold = run.snapshot!.buy_and_hold!;
+        expect(hold.entry_date).toBe(fill.date);
+        expect(hold.entry_price).toBe(price);
+        expect(hold.qty).toBe(qty);
+        expect(hold.cash_left).toBeCloseTo(cash, 6);
+        expect(hold.end_value).toBeCloseTo(cash + qty * last.close, 6);
+        expect(hold.return_pct).toBeCloseTo(((cash + qty * last.close) / capital - 1) * 100, 9);
+        expect(hold.curve.map((point) => point.date)).toEqual(
+          run.result!.curve.map((point) => point.date),
+        );
+        if (execution === 'next_open') expect(hold.curve[0]!.value).toBe(capital);
+      }
+    });
+  });
+
   it('isolates list and get by owner', async () => {
     const svc = service();
     const run = await svc.create(OWNER, body());

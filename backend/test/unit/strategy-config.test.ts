@@ -175,6 +175,7 @@ class MemorySharedConfig implements SharedConfigStoreProvider, SharedConfigStore
       saved_at: savedAt,
       actor_id: revision.actor_id,
       idempotency_key: revision.idempotency_key,
+      source_label: revision.source_label ?? null,
     });
     return { saved_at: savedAt };
   }
@@ -196,6 +197,14 @@ class MemorySharedConfig implements SharedConfigStoreProvider, SharedConfigStore
   async activeCalendar() {
     await Promise.resolve();
     return this.calendar;
+  }
+
+  /** Succeeded backtest runs by `${user}:${id}` with the Chiến lược IQX name of their draft. */
+  runs = new Map<string, string | null>();
+  async backtestRunSource(userId: string, runId: string) {
+    await Promise.resolve();
+    const key = `${userId}:${runId}`;
+    return this.runs.has(key) ? { id: runId, origin_name: this.runs.get(key) ?? null } : null;
   }
 }
 
@@ -554,6 +563,33 @@ describe('SharedConfigService', () => {
     const second = await service.save(USER, patch({ macd: on('macd') }, 1));
     expect(memory.revisions[1]!.before_hash).toBe(result.config_hash);
     expect(second.revision).toBe(2);
+  });
+
+  it('records "Lưu cho Bot" from a backtest run as the revision source (tab IQX §3.3.6)', async () => {
+    const RUN = '1a2b3c4d-0000-4000-8000-000000000001';
+    const PLAIN = '5e6f7a8b-0000-4000-8000-000000000002';
+    memory.runs.set(`${USER}:${RUN}`, 'Phá đỉnh');
+    memory.runs.set(`${USER}:${PLAIN}`, null);
+    await service.save(USER, { ...patch({ rsi: on('rsi') }, 0), source: { backtest_run_id: RUN } });
+    await service.save(USER, {
+      ...patch({ macd: on('macd') }, 1),
+      source: { backtest_run_id: PLAIN },
+    });
+    await service.save(USER, patch({ rsi: on('rsi') }, 2));
+    const listed = await service.revisions(USER, 10);
+    expect(listed.map((item) => item.source_label)).toEqual([
+      null,
+      'Backtest · lần chạy 5e6f7a8b',
+      'Backtest · lần chạy 1a2b3c4d · từ Chiến lược IQX Phá đỉnh',
+    ]);
+    const error = await rejection(
+      service.save(USER, {
+        ...patch({ macd: on('macd') }, 3),
+        source: { backtest_run_id: '00000000-0000-4000-8000-000000000009' },
+      }),
+    );
+    expect(error.getStatus()).toBe(422);
+    expect(memory.revisions).toHaveLength(3);
   });
 
   it('rejects a stale expected_revision with 409 and writes nothing', async () => {

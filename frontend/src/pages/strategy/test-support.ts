@@ -7,6 +7,7 @@ import type { ApiRequestFor, ApiResponseFor } from "@/lib/contract-types"
 
 import { createFakeApi as createBotApi, createWorld as createBotWorld, FakeApiError, registryFor, VN30, type World as BotWorld } from "../demo-trading/bot/test-support"
 import type { IndicatorConfig } from "../demo-trading/bot/config/types"
+import type { IqxFilterItem, IqxStrategyItem } from "./shared/iqx"
 
 export { FakeApiError }
 
@@ -146,7 +147,7 @@ export function tradeView(number: number, partial: Partial<TradeView> = {}): Tra
   }
 }
 
-export function runResponse(options: { start?: string; end?: string; capital?: number; trades?: number; open?: boolean; pending?: boolean; execution?: "next_open" | "same_close"; id?: string; symbol?: string; revision?: number; marketAvailable?: boolean } = {}): RunView {
+export function runResponse(options: { start?: string; end?: string; capital?: number; trades?: number; open?: boolean; pending?: boolean; execution?: "next_open" | "same_close"; id?: string; symbol?: string; revision?: number; marketAvailable?: boolean; buyHold?: boolean } = {}): RunView {
   const count = options.trades ?? 3
   const execution = options.execution ?? "next_open"
   const trades = Array.from({ length: count }, (_unused, index) => tradeView(index + 1))
@@ -179,6 +180,16 @@ export function runResponse(options: { start?: string; end?: string; capital?: n
     },
     versions: { schema_version: "3.0", calculation_version: "iqx-ta-2.0", rule_version: "iqx-rules-3.0", engine_version: "iqx-backtest-2.0", formula_version: "iqx-formula-2.0" },
     data_warnings: [], research: null, system: null,
+    // "Mua và giữ" stored with the run (tab IQX §3.5); a run stored before it has none.
+    ...(options.buyHold === false
+      ? {}
+      : {
+          buy_and_hold: {
+            basis: "iqx-buy-hold-1.0" as const, entry_date: "2024-01-03", entry_price: 95_000, qty: 1000, buy_fee: 142_500, cash_left: 4_857_500,
+            capital: options.capital ?? 100_000_000, end_value: 117_857_500, return_pct: 17.8575,
+            curve: [{ date: "2024-01-02", value: 100_000_000, return_pct: 0 }, { date: "2024-06-03", value: 104_000_000, return_pct: 4 }, { date: "2024-12-31", value: 106_000_000, return_pct: 6 }, { date: "2025-12-31", value: 117_857_500, return_pct: 17.8575 }],
+          },
+        }),
   }
   const counts = { buy_count: count + (open ? 1 : 0), closed_trade_count: count, open_position_count: open ? 1 : 0, pending_order_count: pending.length }
   return {
@@ -447,6 +458,24 @@ export type StrategyWorld = BotWorld & {
   /** Delay (ms) before a screener run answers, per call index, to reproduce out-of-order responses. */
   runDelay: (index: number) => number
   runCount: number
+  /** Shown Bộ lọc IQX / Chiến lược IQX (tab IQX), from the backend seed. */
+  iqx: { filter: IqxFilterItem[]; strategy: IqxStrategyItem[] }
+}
+
+/** The seed the migration inserts (`iqx-templates.seed.json`), as the user list serves it (all v1, shown). */
+const IQX_SEED = Object.values(
+  import.meta.glob("../../../../backend/src/modules/iqx-templates/iqx-templates.seed.json", { eager: true, import: "default" }),
+)[0] as { filter: Array<{ slug: string; content: IqxFilterItem["content"] }>; strategy: Array<{ slug: string; content: IqxStrategyItem["content"] }> }
+
+export const iqxId = (kind: "filter" | "strategy", index: number) => `${kind === "filter" ? "c" : "e"}0000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`
+
+export function iqxSeed(): StrategyWorld["iqx"] {
+  const strategy: IqxStrategyItem[] = IQX_SEED.strategy.map((item, index) => ({ id: iqxId("strategy", index), kind: "strategy", slug: item.slug, version: 1, content: structuredClone(item.content) }))
+  const filter: IqxFilterItem[] = IQX_SEED.filter.map((item, index) => {
+    const pair = strategy.find((entry) => entry.slug === item.content.pair_slug)
+    return { id: iqxId("filter", index), kind: "filter", slug: item.slug, version: 1, content: structuredClone(item.content), pair: pair ? { id: pair.id, slug: pair.slug, name: pair.content.name, version: pair.version } : null }
+  })
+  return { filter, strategy }
 }
 
 export function createStrategyWorld(partial: Partial<StrategyWorld> = {}): StrategyWorld {
@@ -458,9 +487,10 @@ export function createStrategyWorld(partial: Partial<StrategyWorld> = {}): Strat
     effectiveSession: "2026-10-09",
     status: "pending",
     alerts: [], events: [],
-    revisions: [3, 2, 1].map((revision) => ({ revision, saved_at: T0, config_hash: `h${revision}`, effective_session: "2026-10-09", status: "effective" as const, legacy: false, outdated: false })),
+    revisions: [3, 2, 1].map((revision) => ({ revision, saved_at: T0, config_hash: `h${revision}`, effective_session: "2026-10-09", status: "effective" as const, legacy: false, outdated: false, source_label: null })),
     runs: [], runResponses: new Map(), nextTrades: 3, nextOpen: false, nextPending: false, marketAvailable: true,
     metrics: metricsFixture(), screenerRuns: new Map(), filters: [], snapshots: [], extraCompanies: 0, marketDataUnavailable: false, truncated: false, basketsUnavailable: [], runDelay: () => 0, runCount: 0,
+    iqx: iqxSeed(),
     ...partial,
   }
 }
@@ -549,6 +579,12 @@ export function createStrategyApi(world: StrategyWorld) {
         world.runCount += 1
         const assumptions = (body?.assumptions ?? {}) as { execution?: "next_open" | "same_close"; capital?: number }
         const run = runResponse({ trades: world.nextTrades, open: world.nextOpen, pending: world.nextPending, execution: assumptions.execution, symbol: String(body?.symbol), start: String(body?.start), end: String(body?.end), capital: Number(assumptions.capital ?? 100_000_000), revision: Number(body?.shared_revision), marketAvailable: world.marketAvailable, id: `bbbbbbbb-bbbb-4bbb-8bbb-${String(world.runCount).padStart(12, "0")}` })
+        if (body?.draft) {
+          const origin = body.origin as { id: string } | undefined
+          const name = origin ? world.iqx.strategy.find((item) => item.id === origin.id)?.content.name : undefined
+          Object.assign(run.result!.snapshot, { source: { kind: "draft", label: name ? `Bản nháp · từ Chiến lược IQX ${name} (v1)` : "Bản nháp", origin: origin ? { ...origin, name } : null } })
+        }
+        if (body?.trial) return done(run)
         world.runResponses.set(run.run_id, run)
         world.runs.unshift(runSummary({ run_id: run.run_id, symbol: String(body?.symbol) }))
         return done(run)
@@ -635,10 +671,15 @@ export function createStrategyApi(world: StrategyWorld) {
         return done(created)
       }
       case "GET /strategy/result-snapshots": return done({ items: world.snapshots })
+      case "GET /strategy/iqx-templates": {
+        const kind = target.searchParams.get("kind")
+        return done({ items: kind === "strategy" ? world.iqx.strategy : kind === "filter" ? world.iqx.filter : [...world.iqx.filter, ...world.iqx.strategy] })
+      }
       default: break
     }
 
     // Parameterised routes.
+    if (segments[0] === "strategy" && segments[1] === "iqx-templates" && segments[3] === "used" && method === "POST") return done({ ok: true })
     if (segments[0] === "strategy" && segments[1] === "alerts" && segments.length === 3 && segments[2] !== "events") {
       const alert = world.alerts.find((item) => item.id === segments[2])
       if (!alert) throw notFound("ALERT_NOT_FOUND", "Không tìm thấy cảnh báo")

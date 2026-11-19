@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { RuleOp } from '../quant/v2/index.js';
+import { indicatorConfigSchema } from '../strategy-config/strategy-config.schemas.js';
 
 /** Longest requested range (inclusive days), same bound as the legacy backtest. */
 const MAX_RANGE_DAYS = 3653;
@@ -26,6 +27,12 @@ const paramPathSchema = z.strictObject({
     .optional(),
   key: z.string().min(1).max(64),
 });
+export const strategyOriginSchema = z.strictObject({
+  type: z.literal('iqx_strategy'),
+  id: z.uuid(),
+  version: z.number().int().min(1),
+});
+
 const gridValuesSchema = z.array(z.number().finite()).min(1).max(100);
 
 const researchSchema = z.discriminatedUnion('kind', [
@@ -106,7 +113,8 @@ export type BacktestSystemInput = z.infer<typeof systemSchema>;
 export const backtestRunBodySchema = z
   .strictObject({
     idempotency_key: z.string().min(8).max(128),
-    shared_revision: z.number().int().min(1),
+    /** 0 only with `draft`: an account that never saved runs the draft over the registry defaults. */
+    shared_revision: z.number().int().min(0),
     symbol,
     start: isoDate,
     end: isoDate,
@@ -119,8 +127,46 @@ export const backtestRunBodySchema = z
       .prefault({}),
     research: researchSchema.optional(),
     system: systemSchema.optional(),
+    /**
+     * Backtest bản nháp (spec Tab IQX §3.3): indicators replacing those of `shared_revision` for
+     * this run only. Validated like a saved PATCH; nothing is written to the shared config.
+     */
+    draft: z
+      .strictObject({
+        indicators: z
+          .record(z.string().regex(/^[a-z0-9_]{1,64}$/), indicatorConfigSchema)
+          .refine((value) => Object.keys(value).length > 0, {
+            message: 'Cần ít nhất một chỉ báo.',
+          }),
+      })
+      .optional(),
+    /** The Chiến lược IQX the draft started from (display and statistics only). */
+    origin: strategyOriginSchema.optional(),
+    /**
+     * Soạn thử Chiến lược IQX (Quản trị › Mẫu IQX §5.3): the draft runs and answers like any run but is
+     * NOT stored, so the admin's own run history never changes. Only with `draft`.
+     */
+    trial: z.boolean().optional(),
   })
   .superRefine((value, context) => {
+    if (value.origin && !value.draft)
+      context.addIssue({
+        code: 'custom',
+        path: ['origin'],
+        message: 'Nguồn Chiến lược IQX chỉ đi kèm bản nháp.',
+      });
+    if (value.trial && !value.draft)
+      context.addIssue({
+        code: 'custom',
+        path: ['trial'],
+        message: 'Chạy thử không lưu chỉ dùng cho bản nháp.',
+      });
+    if (value.shared_revision === 0 && !value.draft)
+      context.addIssue({
+        code: 'custom',
+        path: ['shared_revision'],
+        message: 'Chọn phiên bản cấu hình đã lưu (từ 1).',
+      });
     const start = Date.parse(value.start),
       end = Date.parse(value.end);
     if (start >= end)
@@ -369,6 +415,34 @@ export const dataWarningSchema = z.object({
   indicators: z.array(z.string()).optional(),
 });
 
+/** "Mua và giữ {mã}" of a run (spec Tab IQX §3.5); absent on runs stored before it. */
+export const buyAndHoldSchema = z.object({
+  basis: z.literal('iqx-buy-hold-1.0'),
+  entry_date: isoDate.nullable(),
+  entry_price: z.number().nullable(),
+  qty: z.number(),
+  buy_fee: z.number(),
+  cash_left: z.number(),
+  capital: z.number(),
+  end_value: z.number(),
+  return_pct: z.number(),
+  curve: z.array(z.object({ date: isoDate, value: z.number(), return_pct: z.number() })),
+});
+
+/** Nhãn nguồn of a run: the saved revision, or the draft (from a Chiến lược IQX or not). */
+export const runSourceSchema = z.object({
+  kind: z.enum(['saved', 'draft']),
+  label: z.string(),
+  origin: z
+    .object({
+      type: z.literal('iqx_strategy'),
+      id: z.uuid(),
+      version: z.number().int(),
+      name: z.string(),
+    })
+    .nullable(),
+});
+
 const runSnapshotSchema = z.object({
   config: configSchema,
   options: runOptionsSchema,
@@ -412,6 +486,10 @@ const runSnapshotSchema = z.object({
     formula_version: z.string(),
   }),
   data_warnings: z.array(dataWarningSchema),
+  /** Absent on runs stored before the tab IQX: shown as "—", never recomputed. */
+  buy_and_hold: buyAndHoldSchema.nullable().optional(),
+  /** Absent on runs stored before the draft backtest: a run of the saved revision. */
+  source: runSourceSchema.optional(),
   research: z.record(z.string(), z.unknown()).nullable(),
   system: z
     .object({

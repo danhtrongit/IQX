@@ -124,6 +124,8 @@ export function ResultsPanel({
   onCell,
   onTechnicalCell,
   onQuality,
+  readOnly = false,
+  backtestHref,
 }: {
   header: ResultHeader
   page: ResultPage | undefined
@@ -151,6 +153,10 @@ export function ResultsPanel({
   onCell: (row: ResultRow, metric: ScreenerMetric) => void
   onTechnicalCell: (row: ResultRow, column: TechnicalQuality) => void
   onQuality: () => void
+  /** Compose mode of Mẫu IQX: a trial run, nothing of it can be saved or applied. */
+  readOnly?: boolean
+  /** Target of a symbol (Backtest that symbol); the tab IQX adds the paired Chiến lược IQX. */
+  backtestHref?: (symbol: string) => string
 }) {
   const baseId = useId()
   const columns = columnsOf(header, metrics)
@@ -216,14 +222,16 @@ export function ResultsPanel({
             {header.counts.universe} doanh nghiệp trong phạm vi · {header.counts.passed} đạt · {header.counts.failed_threshold} không đạt ngưỡng · {header.counts.with_required_exceptions} có điều kiện không tính được
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" disabled={busy || noneToSave} onClick={onSaveList}>Lưu danh mục</Button>
-          <Button type="button" variant="outline" disabled={busy || noneToSave} onClick={onSaveResult}>Lưu kết quả</Button>
-          <Button type="button" disabled={busy || noneToSave} onClick={onApply}>Áp dụng cho Bot</Button>
-          {onPushBulletin && (
-            <Button type="button" variant="outline" disabled={busy} onClick={onPushBulletin} data-testid="push-bulletin">Đẩy vào bản tin</Button>
-          )}
-        </div>
+        {!readOnly && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" disabled={busy || noneToSave} onClick={onSaveList}>Lưu danh mục</Button>
+            <Button type="button" variant="outline" disabled={busy || noneToSave} onClick={onSaveResult}>Lưu kết quả</Button>
+            <Button type="button" disabled={busy || noneToSave} onClick={onApply}>Áp dụng cho Bot</Button>
+            {onPushBulletin && (
+              <Button type="button" variant="outline" disabled={busy} onClick={onPushBulletin} data-testid="push-bulletin">Đẩy vào bản tin</Button>
+            )}
+          </div>
+        )}
       </div>
 
       {header.universe_truncated && (
@@ -318,7 +326,7 @@ export function ResultsPanel({
                     </td>
                     <td className="px-3 py-2.5 font-bold">
                       <Link
-                        to={`/chien-luoc?tab=backtest&symbol=${encodeURIComponent(row.symbol)}`}
+                        to={backtestHref ? backtestHref(row.symbol) : `/chien-luoc?tab=backtest&symbol=${encodeURIComponent(row.symbol)}`}
                         className="text-primary hover:underline"
                         aria-label={`Backtest ${row.symbol}`}
                       >

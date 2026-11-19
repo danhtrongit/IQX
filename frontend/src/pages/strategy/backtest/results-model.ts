@@ -2,14 +2,26 @@ import type { SharedConfig, TechnicalIndicator } from "@/pages/demo-trading/bot/
 
 import { TRADES_PAGE_SIZE, type ClosedTrade, type ConditionEvidence, type RunResponse, type RunResult, type TradesPage } from "./api"
 
-export type ChartPoint = { date: string; strategy: number; buyHold: number; market: number | null }
+export type ChartPoint = { date: string; strategy: number; buyHold: number | null; market: number | null }
 
-/** The 0% starting point (before the first fee) followed by the complete curve, never down-sampled by KPIs. */
-export function chartPoints(result: Pick<RunResult, "initial" | "curve">): ChartPoint[] {
-  return [result.initial, ...result.curve].map((point) => ({
+/** "Mua và giữ {mã}" stored with the run (tab IQX §3.5); `null` for a run stored before it (never recomputed). */
+export type BuyAndHold = NonNullable<RunResult["snapshot"]["buy_and_hold"]>
+
+export function buyAndHoldOf(result: Pick<RunResult, "snapshot">): BuyAndHold | null {
+  return result.snapshot.buy_and_hold ?? null
+}
+
+/**
+ * The 0% starting point (before the first fee) followed by the complete curve, never down-sampled by KPIs.
+ * The "Mua và giữ" line is the stored one of the run, matched by session; an old run has none.
+ */
+export function chartPoints(result: Pick<RunResult, "initial" | "curve" | "snapshot">): ChartPoint[] {
+  const hold = buyAndHoldOf(result)
+  const byDate = new Map((hold?.curve ?? []).map((point) => [point.date, point.return_pct]))
+  return [result.initial, ...result.curve].map((point, index) => ({
     date: point.date,
     strategy: point.return_pct,
-    buyHold: point.buy_hold_pct,
+    buyHold: hold ? (index === 0 ? 0 : (byDate.get(point.date) ?? null)) : null,
     market: typeof point.market_pct === "number" && Number.isFinite(point.market_pct) ? point.market_pct : null,
   }))
 }

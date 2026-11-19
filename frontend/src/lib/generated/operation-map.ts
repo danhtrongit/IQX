@@ -4,6 +4,7 @@ import type * as T from "./backend-v2"
 export interface OperationMap {
   "DELETE /api/v2/admin/academy-configs/{id}": { request: T.AdminAcademyConfigDeleteData; response: T.AdminAcademyConfigDeleteResponses[keyof T.AdminAcademyConfigDeleteResponses] }
   "DELETE /api/v2/admin/alerts/signals/{key}": { request: T.AdminAlertsControllerRemove1Data; response: T.AdminAlertsControllerRemove1Responses[keyof T.AdminAlertsControllerRemove1Responses] }
+  "DELETE /api/v2/admin/iqx-templates/{id}": { request: T.DeleteAdminIqxTemplateData; response: T.DeleteAdminIqxTemplateResponses[keyof T.DeleteAdminIqxTemplateResponses] }
   "DELETE /api/v2/admin/lessons/courses/{courseId}": { request: T.AdminLearningControllerDeleteCourse1Data; response: T.AdminLearningControllerDeleteCourse1Responses[keyof T.AdminLearningControllerDeleteCourse1Responses] }
   "DELETE /api/v2/admin/lessons/episodes/{episodeId}": { request: T.AdminLearningControllerDeleteEpisode1Data; response: T.AdminLearningControllerDeleteEpisode1Responses[keyof T.AdminLearningControllerDeleteEpisode1Responses] }
   "DELETE /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerDeleteRule1Data; response: T.AlertsControllerDeleteRule1Responses[keyof T.AlertsControllerDeleteRule1Responses] }
@@ -51,6 +52,8 @@ export interface OperationMap {
   "GET /api/v2/admin/flashback/suspects": { request: T.FlashbackAdminSuspectsData; response: T.FlashbackAdminSuspectsResponses[keyof T.FlashbackAdminSuspectsResponses] }
   "GET /api/v2/admin/ipn": { request: T.AdminListIpnLogsGetApiV2AdminIpnData; response: T.AdminListIpnLogsGetApiV2AdminIpnResponses[keyof T.AdminListIpnLogsGetApiV2AdminIpnResponses] }
   "GET /api/v2/admin/ipn/{log_id}": { request: T.AdminGetIpnLogGetApiV2AdminIpnLogIdData; response: T.AdminGetIpnLogGetApiV2AdminIpnLogIdResponses[keyof T.AdminGetIpnLogGetApiV2AdminIpnLogIdResponses] }
+  "GET /api/v2/admin/iqx-templates": { request: T.ListAdminIqxTemplatesData; response: T.ListAdminIqxTemplatesResponses[keyof T.ListAdminIqxTemplatesResponses] }
+  "GET /api/v2/admin/iqx-templates/{id}": { request: T.GetAdminIqxTemplateData; response: T.GetAdminIqxTemplateResponses[keyof T.GetAdminIqxTemplateResponses] }
   "GET /api/v2/admin/lessons/courses": { request: T.AdminLearningControllerCourses1Data; response: T.AdminLearningControllerCourses1Responses[keyof T.AdminLearningControllerCourses1Responses] }
   "GET /api/v2/admin/lessons/courses/{courseId}": { request: T.AdminLearningControllerCourse1Data; response: T.AdminLearningControllerCourse1Responses[keyof T.AdminLearningControllerCourse1Responses] }
   "GET /api/v2/admin/market-bulletins": { request: T.ListAdminMarketBulletinsData; response: T.ListAdminMarketBulletinsResponses[keyof T.ListAdminMarketBulletinsResponses] }
@@ -285,6 +288,7 @@ export interface OperationMap {
   "GET /api/v2/strategy/backtests/{id}/trades": { request: T.StrategyBacktestsTradesData; response: T.StrategyBacktestsTradesResponses[keyof T.StrategyBacktestsTradesResponses] }
   "GET /api/v2/strategy/filters": { request: T.ListStrategySavedFiltersData; response: T.ListStrategySavedFiltersResponses[keyof T.ListStrategySavedFiltersResponses] }
   "GET /api/v2/strategy/filters/{filterId}": { request: T.GetStrategySavedFilterData; response: T.GetStrategySavedFilterResponses[keyof T.GetStrategySavedFilterResponses] }
+  "GET /api/v2/strategy/iqx-templates": { request: T.ListStrategyIqxTemplatesData; response: T.ListStrategyIqxTemplatesResponses[keyof T.ListStrategyIqxTemplatesResponses] }
   "GET /api/v2/strategy/lists": { request: T.ListStrategySavedListsData; response: T.ListStrategySavedListsResponses[keyof T.ListStrategySavedListsResponses] }
   "GET /api/v2/strategy/lists/{listId}": { request: T.GetStrategySavedListData; response: T.GetStrategySavedListResponses[keyof T.GetStrategySavedListResponses] }
   "GET /api/v2/strategy/registry/technical": { request: T.StrategyConfigTechnicalRegistryData; response: T.StrategyConfigTechnicalRegistryResponses[keyof T.StrategyConfigTechnicalRegistryResponses] }
@@ -372,6 +376,11 @@ export interface OperationMap {
   "POST /api/v2/admin/flashback/reward-holds/{id}/release": { request: T.FlashbackAdminReleaseRewardHoldData; response: T.FlashbackAdminReleaseRewardHoldResponses[keyof T.FlashbackAdminReleaseRewardHoldResponses] }
   "POST /api/v2/admin/flashback/reward-holds/{id}/void": { request: T.FlashbackAdminVoidRewardHoldData; response: T.FlashbackAdminVoidRewardHoldResponses[keyof T.FlashbackAdminVoidRewardHoldResponses] }
   "POST /api/v2/admin/ipn/{log_id}/retry": { request: T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryData; response: T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses[keyof T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses] }
+  "POST /api/v2/admin/iqx-templates": { request: T.CreateAdminIqxTemplateData; response: T.CreateAdminIqxTemplateResponses[keyof T.CreateAdminIqxTemplateResponses] }
+  "POST /api/v2/admin/iqx-templates/{id}/hide": { request: T.HideAdminIqxTemplateData; response: T.HideAdminIqxTemplateResponses[keyof T.HideAdminIqxTemplateResponses] }
+  "POST /api/v2/admin/iqx-templates/{id}/publish": { request: T.PublishAdminIqxTemplateData; response: T.PublishAdminIqxTemplateResponses[keyof T.PublishAdminIqxTemplateResponses] }
+  "POST /api/v2/admin/iqx-templates/{id}/restore": { request: T.RestoreAdminIqxTemplateData; response: T.RestoreAdminIqxTemplateResponses[keyof T.RestoreAdminIqxTemplateResponses] }
+  "POST /api/v2/admin/iqx-templates/{id}/show": { request: T.ShowAdminIqxTemplateData; response: T.ShowAdminIqxTemplateResponses[keyof T.ShowAdminIqxTemplateResponses] }
   "POST /api/v2/admin/journey/identity/qa-grants": { request: T.JourneyIdentityControllerGrantQa1Data; response: T.JourneyIdentityControllerGrantQa1Responses[keyof T.JourneyIdentityControllerGrantQa1Responses] }
   "POST /api/v2/admin/lessons/courses": { request: T.AdminLearningControllerCreateCourse1Data; response: T.AdminLearningControllerCreateCourse1Responses[keyof T.AdminLearningControllerCreateCourse1Responses] }
   "POST /api/v2/admin/lessons/courses/{courseId}/episodes": { request: T.AdminLearningControllerCreateEpisode1Data; response: T.AdminLearningControllerCreateEpisode1Responses[keyof T.AdminLearningControllerCreateEpisode1Responses] }
@@ -509,6 +518,7 @@ export interface OperationMap {
   "POST /api/v2/strategy/alerts/source-preview": { request: T.StrategyAlertsSourcePreviewData; response: T.StrategyAlertsSourcePreviewResponses[keyof T.StrategyAlertsSourcePreviewResponses] }
   "POST /api/v2/strategy/backtests": { request: T.StrategyBacktestsCreateData; response: T.StrategyBacktestsCreateResponses[keyof T.StrategyBacktestsCreateResponses] }
   "POST /api/v2/strategy/filters": { request: T.CreateStrategySavedFilterData; response: T.CreateStrategySavedFilterResponses[keyof T.CreateStrategySavedFilterResponses] }
+  "POST /api/v2/strategy/iqx-templates/{id}/used": { request: T.RecordStrategyIqxTemplateUsedData; response: T.RecordStrategyIqxTemplateUsedResponses[keyof T.RecordStrategyIqxTemplateUsedResponses] }
   "POST /api/v2/strategy/lists": { request: T.CreateStrategySavedListData; response: T.CreateStrategySavedListResponses[keyof T.CreateStrategySavedListResponses] }
   "POST /api/v2/strategy/lists/from-result": { request: T.CreateStrategySavedListFromResultData; response: T.CreateStrategySavedListFromResultResponses[keyof T.CreateStrategySavedListFromResultResponses] }
   "POST /api/v2/strategy/result-snapshots": { request: T.CreateStrategyResultSnapshotData; response: T.CreateStrategyResultSnapshotResponses[keyof T.CreateStrategyResultSnapshotResponses] }
@@ -561,6 +571,8 @@ export interface OperationMap {
   "PUT /api/v2/admin/alerts/signals/{key}": { request: T.AdminAlertsControllerUpdate1Data; response: T.AdminAlertsControllerUpdate1Responses[keyof T.AdminAlertsControllerUpdate1Responses] }
   "PUT /api/v2/admin/flashback/chat/banned-words": { request: T.FlashbackAdminChatBannedWordsReplaceData; response: T.FlashbackAdminChatBannedWordsReplaceResponses[keyof T.FlashbackAdminChatBannedWordsReplaceResponses] }
   "PUT /api/v2/admin/flashback/dataset/config": { request: T.FlashbackAdminDatasetConfigData; response: T.FlashbackAdminDatasetConfigResponses[keyof T.FlashbackAdminDatasetConfigResponses] }
+  "PUT /api/v2/admin/iqx-templates/{id}/draft": { request: T.SaveAdminIqxTemplateDraftData; response: T.SaveAdminIqxTemplateDraftResponses[keyof T.SaveAdminIqxTemplateDraftResponses] }
+  "PUT /api/v2/admin/iqx-templates/order": { request: T.ReorderAdminIqxTemplatesData; response: T.ReorderAdminIqxTemplatesResponses[keyof T.ReorderAdminIqxTemplatesResponses] }
   "PUT /api/v2/admin/market-bulletins/{date}/content": { request: T.SaveAdminMarketBulletinContentData; response: T.SaveAdminMarketBulletinContentResponses[keyof T.SaveAdminMarketBulletinContentResponses] }
   "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: T.AdminTeamLeadsControllerUpdatePolicy1Data; response: T.AdminTeamLeadsControllerUpdatePolicy1Responses[keyof T.AdminTeamLeadsControllerUpdatePolicy1Responses] }
   "PUT /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerUpdateRule1Data; response: T.AlertsControllerUpdateRule1Responses[keyof T.AlertsControllerUpdateRule1Responses] }
@@ -582,6 +594,7 @@ export interface OperationMap {
 export const operationMap: Record<keyof OperationMap, { request: string; response: string }> = {
   "DELETE /api/v2/admin/academy-configs/{id}": { request: "AdminAcademyConfigDeleteData", response: "AdminAcademyConfigDeleteResponses" },
   "DELETE /api/v2/admin/alerts/signals/{key}": { request: "AdminAlertsControllerRemove1Data", response: "AdminAlertsControllerRemove1Responses" },
+  "DELETE /api/v2/admin/iqx-templates/{id}": { request: "DeleteAdminIqxTemplateData", response: "DeleteAdminIqxTemplateResponses" },
   "DELETE /api/v2/admin/lessons/courses/{courseId}": { request: "AdminLearningControllerDeleteCourse1Data", response: "AdminLearningControllerDeleteCourse1Responses" },
   "DELETE /api/v2/admin/lessons/episodes/{episodeId}": { request: "AdminLearningControllerDeleteEpisode1Data", response: "AdminLearningControllerDeleteEpisode1Responses" },
   "DELETE /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerDeleteRule1Data", response: "AlertsControllerDeleteRule1Responses" },
@@ -629,6 +642,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/admin/flashback/suspects": { request: "FlashbackAdminSuspectsData", response: "FlashbackAdminSuspectsResponses" },
   "GET /api/v2/admin/ipn": { request: "AdminListIpnLogsGetApiV2AdminIpnData", response: "AdminListIpnLogsGetApiV2AdminIpnResponses" },
   "GET /api/v2/admin/ipn/{log_id}": { request: "AdminGetIpnLogGetApiV2AdminIpnLogIdData", response: "AdminGetIpnLogGetApiV2AdminIpnLogIdResponses" },
+  "GET /api/v2/admin/iqx-templates": { request: "ListAdminIqxTemplatesData", response: "ListAdminIqxTemplatesResponses" },
+  "GET /api/v2/admin/iqx-templates/{id}": { request: "GetAdminIqxTemplateData", response: "GetAdminIqxTemplateResponses" },
   "GET /api/v2/admin/lessons/courses": { request: "AdminLearningControllerCourses1Data", response: "AdminLearningControllerCourses1Responses" },
   "GET /api/v2/admin/lessons/courses/{courseId}": { request: "AdminLearningControllerCourse1Data", response: "AdminLearningControllerCourse1Responses" },
   "GET /api/v2/admin/market-bulletins": { request: "ListAdminMarketBulletinsData", response: "ListAdminMarketBulletinsResponses" },
@@ -863,6 +878,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/strategy/backtests/{id}/trades": { request: "StrategyBacktestsTradesData", response: "StrategyBacktestsTradesResponses" },
   "GET /api/v2/strategy/filters": { request: "ListStrategySavedFiltersData", response: "ListStrategySavedFiltersResponses" },
   "GET /api/v2/strategy/filters/{filterId}": { request: "GetStrategySavedFilterData", response: "GetStrategySavedFilterResponses" },
+  "GET /api/v2/strategy/iqx-templates": { request: "ListStrategyIqxTemplatesData", response: "ListStrategyIqxTemplatesResponses" },
   "GET /api/v2/strategy/lists": { request: "ListStrategySavedListsData", response: "ListStrategySavedListsResponses" },
   "GET /api/v2/strategy/lists/{listId}": { request: "GetStrategySavedListData", response: "GetStrategySavedListResponses" },
   "GET /api/v2/strategy/registry/technical": { request: "StrategyConfigTechnicalRegistryData", response: "StrategyConfigTechnicalRegistryResponses" },
@@ -950,6 +966,11 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/admin/flashback/reward-holds/{id}/release": { request: "FlashbackAdminReleaseRewardHoldData", response: "FlashbackAdminReleaseRewardHoldResponses" },
   "POST /api/v2/admin/flashback/reward-holds/{id}/void": { request: "FlashbackAdminVoidRewardHoldData", response: "FlashbackAdminVoidRewardHoldResponses" },
   "POST /api/v2/admin/ipn/{log_id}/retry": { request: "AdminRetryIpnPostApiV2AdminIpnLogIdRetryData", response: "AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses" },
+  "POST /api/v2/admin/iqx-templates": { request: "CreateAdminIqxTemplateData", response: "CreateAdminIqxTemplateResponses" },
+  "POST /api/v2/admin/iqx-templates/{id}/hide": { request: "HideAdminIqxTemplateData", response: "HideAdminIqxTemplateResponses" },
+  "POST /api/v2/admin/iqx-templates/{id}/publish": { request: "PublishAdminIqxTemplateData", response: "PublishAdminIqxTemplateResponses" },
+  "POST /api/v2/admin/iqx-templates/{id}/restore": { request: "RestoreAdminIqxTemplateData", response: "RestoreAdminIqxTemplateResponses" },
+  "POST /api/v2/admin/iqx-templates/{id}/show": { request: "ShowAdminIqxTemplateData", response: "ShowAdminIqxTemplateResponses" },
   "POST /api/v2/admin/journey/identity/qa-grants": { request: "JourneyIdentityControllerGrantQa1Data", response: "JourneyIdentityControllerGrantQa1Responses" },
   "POST /api/v2/admin/lessons/courses": { request: "AdminLearningControllerCreateCourse1Data", response: "AdminLearningControllerCreateCourse1Responses" },
   "POST /api/v2/admin/lessons/courses/{courseId}/episodes": { request: "AdminLearningControllerCreateEpisode1Data", response: "AdminLearningControllerCreateEpisode1Responses" },
@@ -1087,6 +1108,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/strategy/alerts/source-preview": { request: "StrategyAlertsSourcePreviewData", response: "StrategyAlertsSourcePreviewResponses" },
   "POST /api/v2/strategy/backtests": { request: "StrategyBacktestsCreateData", response: "StrategyBacktestsCreateResponses" },
   "POST /api/v2/strategy/filters": { request: "CreateStrategySavedFilterData", response: "CreateStrategySavedFilterResponses" },
+  "POST /api/v2/strategy/iqx-templates/{id}/used": { request: "RecordStrategyIqxTemplateUsedData", response: "RecordStrategyIqxTemplateUsedResponses" },
   "POST /api/v2/strategy/lists": { request: "CreateStrategySavedListData", response: "CreateStrategySavedListResponses" },
   "POST /api/v2/strategy/lists/from-result": { request: "CreateStrategySavedListFromResultData", response: "CreateStrategySavedListFromResultResponses" },
   "POST /api/v2/strategy/result-snapshots": { request: "CreateStrategyResultSnapshotData", response: "CreateStrategyResultSnapshotResponses" },
@@ -1139,6 +1161,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PUT /api/v2/admin/alerts/signals/{key}": { request: "AdminAlertsControllerUpdate1Data", response: "AdminAlertsControllerUpdate1Responses" },
   "PUT /api/v2/admin/flashback/chat/banned-words": { request: "FlashbackAdminChatBannedWordsReplaceData", response: "FlashbackAdminChatBannedWordsReplaceResponses" },
   "PUT /api/v2/admin/flashback/dataset/config": { request: "FlashbackAdminDatasetConfigData", response: "FlashbackAdminDatasetConfigResponses" },
+  "PUT /api/v2/admin/iqx-templates/{id}/draft": { request: "SaveAdminIqxTemplateDraftData", response: "SaveAdminIqxTemplateDraftResponses" },
+  "PUT /api/v2/admin/iqx-templates/order": { request: "ReorderAdminIqxTemplatesData", response: "ReorderAdminIqxTemplatesResponses" },
   "PUT /api/v2/admin/market-bulletins/{date}/content": { request: "SaveAdminMarketBulletinContentData", response: "SaveAdminMarketBulletinContentResponses" },
   "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: "AdminTeamLeadsControllerUpdatePolicy1Data", response: "AdminTeamLeadsControllerUpdatePolicy1Responses" },
   "PUT /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerUpdateRule1Data", response: "AlertsControllerUpdateRule1Responses" },

@@ -1423,6 +1423,136 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 30,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/iqx-templates",
+      "method": "GET",
+      "route": "/api/v2/admin/iqx-templates",
+      "matchedOperation": "GET /api/v2/admin/iqx-templates",
+      "matchedOperations": [
+        "GET /api/v2/admin/iqx-templates"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 34,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/iqx-templates/{id}",
+      "method": "GET",
+      "route": "/api/v2/admin/iqx-templates/{id}",
+      "matchedOperation": "GET /api/v2/admin/iqx-templates/{id}",
+      "matchedOperations": [
+        "GET /api/v2/admin/iqx-templates/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 38,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/iqx-templates",
+      "method": "POST",
+      "route": "/api/v2/admin/iqx-templates",
+      "matchedOperation": "POST /api/v2/admin/iqx-templates",
+      "matchedOperations": [
+        "POST /api/v2/admin/iqx-templates"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 42,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/admin/iqx-templates/{id}/draft",
+      "method": "PUT",
+      "route": "/api/v2/admin/iqx-templates/{id}/draft",
+      "matchedOperation": "PUT /api/v2/admin/iqx-templates/{id}/draft",
+      "matchedOperations": [
+        "PUT /api/v2/admin/iqx-templates/{id}/draft"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 49,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/iqx-templates/{id}/publish",
+      "method": "POST",
+      "route": "/api/v2/admin/iqx-templates/{id}/publish",
+      "matchedOperation": "POST /api/v2/admin/iqx-templates/{id}/publish",
+      "matchedOperations": [
+        "POST /api/v2/admin/iqx-templates/{id}/publish"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 53,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/iqx-templates/{id}/hide",
+      "method": "POST",
+      "route": "/api/v2/admin/iqx-templates/{id}/hide",
+      "matchedOperation": "POST /api/v2/admin/iqx-templates/{id}/hide",
+      "matchedOperations": [
+        "POST /api/v2/admin/iqx-templates/{id}/hide"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 57,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/iqx-templates/{id}/show",
+      "method": "POST",
+      "route": "/api/v2/admin/iqx-templates/{id}/show",
+      "matchedOperation": "POST /api/v2/admin/iqx-templates/{id}/show",
+      "matchedOperations": [
+        "POST /api/v2/admin/iqx-templates/{id}/show"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 61,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/admin/iqx-templates/order",
+      "method": "PUT",
+      "route": "/api/v2/admin/iqx-templates/order",
+      "matchedOperation": "PUT /api/v2/admin/iqx-templates/order",
+      "matchedOperations": [
+        "PUT /api/v2/admin/iqx-templates/order"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 65,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/admin/iqx-templates/{id}",
+      "method": "DELETE",
+      "route": "/api/v2/admin/iqx-templates/{id}",
+      "matchedOperation": "DELETE /api/v2/admin/iqx-templates/{id}",
+      "matchedOperations": [
+        "DELETE /api/v2/admin/iqx-templates/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/iqx-templates/api.ts",
+      "line": 69,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/iqx-templates/{id}/restore",
+      "method": "POST",
+      "route": "/api/v2/admin/iqx-templates/{id}/restore",
+      "matchedOperation": "POST /api/v2/admin/iqx-templates/{id}/restore",
+      "matchedOperations": [
+        "POST /api/v2/admin/iqx-templates/{id}/restore"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/admin/learning/api.ts",
       "line": 147,
       "callee": "apiUpload",
@@ -4537,8 +4667,21 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 57,
+      "callee": "requestOperation",
+      "raw": "PATCH /api/v2/strategy/shared-config",
+      "method": "PATCH",
+      "route": "/api/v2/strategy/shared-config",
+      "matchedOperation": "PATCH /api/v2/strategy/shared-config",
+      "matchedOperations": [
+        "PATCH /api/v2/strategy/shared-config"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 29,
+      "line": 31,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/screener/metrics",
       "method": "GET",
@@ -4551,7 +4694,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 33,
+      "line": 35,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/screener/run",
       "method": "POST",
@@ -4564,7 +4707,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 45,
+      "line": 47,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/screener/results/{resultId}",
       "method": "GET",
@@ -4577,7 +4720,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 76,
+      "line": 78,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/filters",
       "method": "GET",
@@ -4590,7 +4733,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 80,
+      "line": 82,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/filters/{filterId}",
       "method": "GET",
@@ -4603,7 +4746,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 84,
+      "line": 89,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/filters",
       "method": "POST",
@@ -4616,7 +4759,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 89,
+      "line": 94,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/strategy/filters/{filterId}",
       "method": "PUT",
@@ -4629,7 +4772,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 93,
+      "line": 98,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/filters/{filterId}",
       "method": "DELETE",
@@ -4642,7 +4785,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 100,
+      "line": 105,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/lists",
       "method": "GET",
@@ -4655,7 +4798,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 104,
+      "line": 109,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/lists/{listId}",
       "method": "GET",
@@ -4668,7 +4811,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 109,
+      "line": 114,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/lists/{listId}",
       "method": "DELETE",
@@ -4681,7 +4824,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 131,
+      "line": 136,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/lists/from-result",
       "method": "POST",
@@ -4694,7 +4837,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 137,
+      "line": 142,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/result-snapshots",
       "method": "GET",
@@ -4707,7 +4850,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 141,
+      "line": 146,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/result-snapshots/{snapshotId}",
       "method": "GET",
@@ -4720,7 +4863,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 152,
+      "line": 157,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/result-snapshots",
       "method": "POST",
@@ -4733,7 +4876,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 165,
+      "line": 170,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
       "method": "DELETE",
@@ -4782,6 +4925,45 @@
       "matchedOperation": "POST /api/v2/market/bulletins/{date}/slots/{slot}",
       "matchedOperations": [
         "POST /api/v2/market/bulletins/{date}/slots/{slot}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/shared/iqx.ts",
+      "line": 43,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/iqx-templates",
+      "method": "GET",
+      "route": "/api/v2/strategy/iqx-templates",
+      "matchedOperation": "GET /api/v2/strategy/iqx-templates",
+      "matchedOperations": [
+        "GET /api/v2/strategy/iqx-templates"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/shared/iqx.ts",
+      "line": 48,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/iqx-templates",
+      "method": "GET",
+      "route": "/api/v2/strategy/iqx-templates",
+      "matchedOperation": "GET /api/v2/strategy/iqx-templates",
+      "matchedOperations": [
+        "GET /api/v2/strategy/iqx-templates"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/shared/iqx.ts",
+      "line": 64,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/iqx-templates/{id}/used",
+      "method": "POST",
+      "route": "/api/v2/strategy/iqx-templates/{id}/used",
+      "matchedOperation": "POST /api/v2/strategy/iqx-templates/{id}/used",
+      "matchedOperations": [
+        "POST /api/v2/strategy/iqx-templates/{id}/used"
       ],
       "classification": "api-call"
     },

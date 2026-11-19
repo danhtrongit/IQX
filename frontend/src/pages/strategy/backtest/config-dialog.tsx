@@ -24,7 +24,7 @@ import {
   type IndicatorDraft,
 } from "@/pages/demo-trading/bot/config/draft"
 import { effectiveText } from "@/pages/demo-trading/bot/config/summary"
-import type { Side, TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
+import type { IndicatorConfig, Side, TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
 import type { BotConfigController } from "@/pages/demo-trading/bot/config/use-bot-config"
 import { cn } from "@/lib/utils"
 
@@ -50,6 +50,7 @@ export function ConfigDialog({
   initialSide,
   adding,
   onClose,
+  onDraftSave,
 }: {
   indicator: TechnicalIndicator
   controller: BotConfigController
@@ -57,6 +58,11 @@ export function ConfigDialog({
   /** Opened from the library: the chosen side joins the saved configuration only when saved. */
   adding: boolean
   onClose: () => void
+  /**
+   * Backtest bản nháp (tab IQX §3.3): "Lưu vào bản nháp" hands the indicator back instead of saving the
+   * shared config; `controller.state.config` is then the draft. Nothing reaches the Bot.
+   */
+  onDraftSave?: (indicatorId: string, config: IndicatorConfig) => void
 }) {
   const baseId = useId()
   const [base, setBase] = useState(() => ({
@@ -88,6 +94,12 @@ export function ConfigDialog({
     const next = buildIndicatorConfig(indicator, base.config, draft, adding)
     if (sameIndicatorConfig(base.config, next)) {
       toast.info("Không có thay đổi để lưu.")
+      onClose()
+      return
+    }
+    if (onDraftSave) {
+      onDraftSave(indicator.id, next)
+      toast.success(`Đã lưu ${indicator.name} vào bản nháp. Bot chưa thay đổi.`)
       onClose()
       return
     }
@@ -133,7 +145,7 @@ export function ConfigDialog({
   return (
     <DialogShell
       title={`Cấu hình chung · ${indicator.name}`}
-      description={`Dựa trên bản đã lưu ${base.revision > 0 ? `#${base.revision}` : "(chưa lưu lần nào)"}. Mua và Bán độc lập nhau.`}
+      description={onDraftSave ? "Bản nháp: chỉ dùng để chạy Backtest, Bot chưa thay đổi. Mua và Bán độc lập nhau." : `Dựa trên bản đã lưu ${base.revision > 0 ? `#${base.revision}` : "(chưa lưu lần nào)"}. Mua và Bán độc lập nhau.`}
       dirty={dirty && !busy}
       busy={busy}
       onClose={onClose}
@@ -141,16 +153,23 @@ export function ConfigDialog({
         <>
           <Button type="button" variant="outline" className="mr-auto" onClick={() => setDraft((previous) => resetDraftSide(previous, indicator, side))}>Đặt lại</Button>
           <Button type="button" variant="outline" onClick={requestClose} disabled={busy}>Hủy</Button>
-          <Button type="button" onClick={() => void submit()} disabled={!canSave}>{controller.saving ? "Đang lưu…" : "Lưu"}</Button>
+          <Button type="button" onClick={() => void submit()} disabled={!canSave}>{onDraftSave ? "Lưu vào bản nháp" : controller.saving ? "Đang lưu…" : "Lưu"}</Button>
         </>
       )}
     >
-      <p className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5" data-testid="shared-config-note">
-        <strong className="block text-foreground">Cấu hình này dùng chung với Bot.</strong>
-        <span className="text-muted-foreground">
-          Lưu ở đây đổi cấu hình mà Bot cũng dùng, từ phiên giao dịch hợp lệ kế tiếp; Bot không dùng bản mới trước phiên đó. Chạy hoặc xem kết quả backtest không ghi cấu hình.
-        </span>
-      </p>
+      {onDraftSave ? (
+        <p className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5" data-testid="draft-config-note">
+          <strong className="block text-foreground">Bản nháp của Backtest.</strong>
+          <span className="text-muted-foreground">Lưu vào bản nháp không đổi cấu hình Bot. Bot chỉ đổi khi bạn bấm Lưu cho Bot sau một lần chạy.</span>
+        </p>
+      ) : (
+        <p className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5" data-testid="shared-config-note">
+          <strong className="block text-foreground">Cấu hình này dùng chung với Bot.</strong>
+          <span className="text-muted-foreground">
+            Lưu ở đây đổi cấu hình mà Bot cũng dùng, từ phiên giao dịch hợp lệ kế tiếp; Bot không dùng bản mới trước phiên đó. Chạy hoặc xem kết quả backtest không ghi cấu hình.
+          </span>
+        </p>
+      )}
 
       {conflict && (
         <Alert variant="destructive">

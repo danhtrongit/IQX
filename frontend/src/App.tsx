@@ -59,6 +59,8 @@ const TeamLeadDetailPage = lazyPage(() => import("@/pages/admin/team-leads/team-
 const AcademyConfigsPage = lazyPage(() => import("@/pages/admin/academy/academy-configs-page").then(module => ({ default: module.AcademyConfigsPage })))
 const BulletinsPage = lazyPage(() => import("@/pages/admin/bulletins/bulletins-page").then(module => ({ default: module.BulletinsPage })))
 const BulletinEditorPage = lazyPage(() => import("@/pages/admin/bulletins/bulletin-editor-page").then(module => ({ default: module.BulletinEditorPage })))
+const IqxTemplatesPage = lazyPage(() => import("@/pages/admin/iqx-templates/iqx-templates-page").then(module => ({ default: module.IqxTemplatesPage })))
+const IqxComposePage = lazyPage(() => import("@/pages/admin/iqx-templates/iqx-compose-page").then(module => ({ default: module.IqxComposePage })))
 const SystemPage = lazyPage(() => import("@/pages/admin/core/system-page").then(module => ({ default: module.SystemPage })))
 const AuditPage = lazyPage(() => import("@/pages/admin/core/audit-page").then(module => ({ default: module.AuditPage })))
 const FlashbackPage = lazyPage(() => import("@/pages/admin/core/flashback-page").then(module => ({ default: module.FlashbackPage })))
@@ -156,6 +158,8 @@ export const routes: RouteObject[] = [
           { path: "academy", Component: AcademyConfigsPage },
           { path: "market-bulletins", Component: BulletinsPage },
           { path: "market-bulletins/:date", Component: BulletinEditorPage },
+          { path: "iqx-templates", Component: IqxTemplatesPage },
+          { path: "iqx-templates/:kind/:id", Component: IqxComposePage },
           { path: "plans", Component: PlansPage },
           { path: "subscriptions", Component: SubscriptionsPage },
           { path: "subscriptions/:subId", Component: SubscriptionDetailPage },

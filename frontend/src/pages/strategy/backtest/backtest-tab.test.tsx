@@ -122,16 +122,17 @@ describe("run", () => {
     expect(tiles).toHaveLength(6)
     expect(tiles.map((tile) => tile.querySelector("div")?.textContent)).toEqual([
       "Tổng lợi nhuận",
+      "Mua và giữ FPT",
       "Lợi nhuận năm hóa",
       "Sụt giảm lớn nhất",
       "Số giao dịch",
       "Tỷ lệ thắng",
-      "Lợi nhuận mua và giữ",
     ])
     expect(tiles[0]!.textContent).toContain("+74,2%")
-    expect(tiles[2]!.textContent).toContain("−10,6%")
-    expect(tiles[3]!.textContent).toContain("3")
-    expect(tiles[4]!.textContent).toContain("66,7%")
+    expect(tiles[1]!.textContent).toContain("+17,9%")
+    expect(tiles[3]!.textContent).toContain("−10,6%")
+    expect(tiles[4]!.textContent).toContain("3")
+    expect(tiles[5]!.textContent).toContain("66,7%")
     expect(within(results).getByRole("heading", { name: "Lợi nhuận danh mục (%)" })).toBeTruthy()
     const legend = within(results).getByRole("list", { name: "Chú giải biểu đồ" })
     expect(within(legend).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Danh mục chiến lược", "Mua và giữ FPT", "VN-Index"])
@@ -267,7 +268,7 @@ describe("trade history", () => {
     await renderTab()
     const results = await run(user)
     expect(within(results).getByText("Chưa có giao dịch đã đóng trong khoảng kiểm thử này.")).toBeTruthy()
-    const winRate = within(results).getAllByTestId("kpi")[4]!
+    const winRate = within(results).getAllByTestId("kpi")[5]!
     expect(winRate.textContent).toContain("—")
     expect(winRate.textContent).not.toContain("0%")
   })

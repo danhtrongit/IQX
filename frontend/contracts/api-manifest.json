@@ -12,6 +12,11 @@
       "requestType": "AdminAlertsControllerRemove1Data",
       "responseType": "AdminAlertsControllerRemove1Responses"
     },
+    "DELETE /api/v2/admin/iqx-templates/{id}": {
+      "operationId": "deleteAdminIqxTemplate",
+      "requestType": "DeleteAdminIqxTemplateData",
+      "responseType": "DeleteAdminIqxTemplateResponses"
+    },
     "DELETE /api/v2/admin/lessons/courses/{courseId}": {
       "operationId": "AdminLearningController_deleteCourse[1]",
       "requestType": "AdminLearningControllerDeleteCourse1Data",
@@ -246,6 +251,16 @@
       "operationId": "adminGetIpnLog_get_api_v2_admin_ipn_log_id",
       "requestType": "AdminGetIpnLogGetApiV2AdminIpnLogIdData",
       "responseType": "AdminGetIpnLogGetApiV2AdminIpnLogIdResponses"
+    },
+    "GET /api/v2/admin/iqx-templates": {
+      "operationId": "listAdminIqxTemplates",
+      "requestType": "ListAdminIqxTemplatesData",
+      "responseType": "ListAdminIqxTemplatesResponses"
+    },
+    "GET /api/v2/admin/iqx-templates/{id}": {
+      "operationId": "getAdminIqxTemplate",
+      "requestType": "GetAdminIqxTemplateData",
+      "responseType": "GetAdminIqxTemplateResponses"
     },
     "GET /api/v2/admin/lessons/courses": {
       "operationId": "AdminLearningController_courses[1]",
@@ -1417,6 +1432,11 @@
       "requestType": "GetStrategySavedFilterData",
       "responseType": "GetStrategySavedFilterResponses"
     },
+    "GET /api/v2/strategy/iqx-templates": {
+      "operationId": "listStrategyIqxTemplates",
+      "requestType": "ListStrategyIqxTemplatesData",
+      "responseType": "ListStrategyIqxTemplatesResponses"
+    },
     "GET /api/v2/strategy/lists": {
       "operationId": "listStrategySavedLists",
       "requestType": "ListStrategySavedListsData",
@@ -1851,6 +1871,31 @@
       "operationId": "adminRetryIpn_post_api_v2_admin_ipn_log_id_retry",
       "requestType": "AdminRetryIpnPostApiV2AdminIpnLogIdRetryData",
       "responseType": "AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses"
+    },
+    "POST /api/v2/admin/iqx-templates": {
+      "operationId": "createAdminIqxTemplate",
+      "requestType": "CreateAdminIqxTemplateData",
+      "responseType": "CreateAdminIqxTemplateResponses"
+    },
+    "POST /api/v2/admin/iqx-templates/{id}/hide": {
+      "operationId": "hideAdminIqxTemplate",
+      "requestType": "HideAdminIqxTemplateData",
+      "responseType": "HideAdminIqxTemplateResponses"
+    },
+    "POST /api/v2/admin/iqx-templates/{id}/publish": {
+      "operationId": "publishAdminIqxTemplate",
+      "requestType": "PublishAdminIqxTemplateData",
+      "responseType": "PublishAdminIqxTemplateResponses"
+    },
+    "POST /api/v2/admin/iqx-templates/{id}/restore": {
+      "operationId": "restoreAdminIqxTemplate",
+      "requestType": "RestoreAdminIqxTemplateData",
+      "responseType": "RestoreAdminIqxTemplateResponses"
+    },
+    "POST /api/v2/admin/iqx-templates/{id}/show": {
+      "operationId": "showAdminIqxTemplate",
+      "requestType": "ShowAdminIqxTemplateData",
+      "responseType": "ShowAdminIqxTemplateResponses"
     },
     "POST /api/v2/admin/journey/identity/qa-grants": {
       "operationId": "JourneyIdentityController_grantQa[1]",
@@ -2537,6 +2582,11 @@
       "requestType": "CreateStrategySavedFilterData",
       "responseType": "CreateStrategySavedFilterResponses"
     },
+    "POST /api/v2/strategy/iqx-templates/{id}/used": {
+      "operationId": "recordStrategyIqxTemplateUsed",
+      "requestType": "RecordStrategyIqxTemplateUsedData",
+      "responseType": "RecordStrategyIqxTemplateUsedResponses"
+    },
     "POST /api/v2/strategy/lists": {
       "operationId": "createStrategySavedList",
       "requestType": "CreateStrategySavedListData",
@@ -2796,6 +2846,16 @@
       "operationId": "flashbackAdminDatasetConfig",
       "requestType": "FlashbackAdminDatasetConfigData",
       "responseType": "FlashbackAdminDatasetConfigResponses"
+    },
+    "PUT /api/v2/admin/iqx-templates/{id}/draft": {
+      "operationId": "saveAdminIqxTemplateDraft",
+      "requestType": "SaveAdminIqxTemplateDraftData",
+      "responseType": "SaveAdminIqxTemplateDraftResponses"
+    },
+    "PUT /api/v2/admin/iqx-templates/order": {
+      "operationId": "reorderAdminIqxTemplates",
+      "requestType": "ReorderAdminIqxTemplatesData",
+      "responseType": "ReorderAdminIqxTemplatesResponses"
     },
     "PUT /api/v2/admin/market-bulletins/{date}/content": {
       "operationId": "saveAdminMarketBulletinContent",
