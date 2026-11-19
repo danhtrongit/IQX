@@ -105,7 +105,7 @@ export async function openMatch(page: Page, iqline = true) {
   await recordCanvasText(page)
   await seedMember(page)
   await mockFlashback(page)
-  await page.goto(`/demo-trading?view=flashback&iqline=${iqline ? "1" : "0"}`)
+  await page.goto(`/flashback?tool=flashback&iqline=${iqline ? "1" : "0"}`)
   await page.getByRole("button", { name: "Tạo phòng" }).first().click()
   await page.getByTestId("flashback-create-room").getByRole("button", { name: "Tạo phòng" }).click()
   await expect(page.getByTestId("flashback-room-id")).toBeVisible()

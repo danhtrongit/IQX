@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url"
 
 import type { Page, Route } from "@playwright/test"
 
-import { expect, test } from "./fixtures"
+import { closePanelLayer, expect, test } from "./fixtures"
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const pdf = (name: string) => readFileSync(path.join(here, "fixtures", "ban-tin", name))
@@ -80,7 +80,7 @@ async function mockBulletins(page: Page): Promise<Seen> {
   return seen
 }
 
-const OPEN = "/demo-trading?content=market&view=trading&symbol=FPT"
+const OPEN = "/luyen-tap?tool=giao-dich&content=market&symbol=FPT"
 
 async function shot(page: Page, name: string) {
   if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${name}.png`), fullPage: false })
@@ -108,7 +108,7 @@ test("máy tính: bản tin hiện bản máy tính với lớp chữ, lớp li�
   await expect(link).toHaveAttribute("target", "_blank")
   await expect(link).toHaveAttribute("rel", /noopener/)
   expect(seen.pdf).toEqual(["desktop"])
-  // Trang co theo khung nội dung (Demo Trading còn chừa cột công cụ bên phải), không gây cuộn ngang.
+  // Trang co theo khung nội dung (LUYỆN TẬP → Giao dịch còn chừa cột công cụ bên phải), không gây cuộn ngang.
   const fits = await page.evaluate(() => {
     const viewer = document.querySelector("[data-tour-id='tour-bantin-pdf']")
     for (let element = viewer?.parentElement ?? null; element; element = element.parentElement) {
@@ -194,6 +194,7 @@ test("Theo dõi trên điện thoại: mỗi mã một thẻ với dòng đề x
   await mockBulletins(page)
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto(`${OPEN}&bt=theo-doi`)
+  await closePanelLayer(page)
   await expect(page.locator("table")).toHaveCount(0)
   const card = page.locator("li", { hasText: "FPT" }).first()
   await expect(card).toContainText("Bộ lọc 1")

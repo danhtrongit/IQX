@@ -57,7 +57,7 @@ test("price board decimal points line up in a column", async ({ page }) => {
     },
   }))
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto("/demo-trading?content=board&view=trading")
+  await page.goto("/luyen-tap?tool=giao-dich&content=board")
   await expect(page.getByRole("link", { name: "CCC" })).toBeVisible()
 
   const positions = await page.getByRole("row").filter({ has: page.getByRole("link", { name: /^(AAA|BBB|CCC)$/ }) }).evaluateAll(async rows => {

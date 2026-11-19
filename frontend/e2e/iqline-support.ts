@@ -6,7 +6,7 @@
  */
 import path from "node:path"
 import type { Locator, Page, Route } from "@playwright/test"
-import { expect } from "./fixtures"
+import { closePanelLayer, expect } from "./fixtures"
 
 const DAY = 86_400
 const ICT = 7 * 3600
@@ -105,11 +105,12 @@ export async function useScheme(page: Page, scheme: "light" | "dark"): Promise<v
   await page.addInitScript((value) => localStorage.setItem("theme", value), scheme)
 }
 
-export const URL_CHART = "/demo-trading?content=chart&symbol=FPT&interval=D"
+export const URL_CHART = "/luyen-tap?tool=giao-dich&symbol=FPT&interval=D"
 
 export async function openChart(page: Page, url = URL_CHART): Promise<void> {
   await page.goto(url)
   await expect(host(page)).toBeVisible()
+  await closePanelLayer(page)
   await expect(page.getByRole("group", { name: "Chú giải biểu đồ" })).toBeVisible()
   await expect.poll(() => layerInk(page, "data"), { timeout: 10_000 }).toBeGreaterThan(200)
 }

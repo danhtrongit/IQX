@@ -10,7 +10,7 @@
  * Ảnh chụp chỉ ghi khi đặt IQLINE_SHOTS=<thư mục> (để xem bằng mắt, không ghi vào repo).
  */
 import type { Locator, Page } from "@playwright/test"
-import { expect, test } from "./fixtures"
+import { closePanelLayer, expect, test } from "./fixtures"
 import { at, barsFor, chartBox, click, layerHash, layerInk, mockMarket, openChart, park, savedDrawings, SETTLE_MS, shot, useScheme, type Box } from "./iqline-support"
 
 type ToolCase = {
@@ -453,6 +453,7 @@ for (const viewport of VIEWPORTS) {
     // Nhớ sau khi nạp lại (cùng tài khoản khách trên máy này).
     await page.reload()
     await expect(page.locator('[data-iqline-mode="market"]')).toBeVisible()
+    await closePanelLayer(page)
     await expect(rail.getByRole("group", { name: "Công cụ yêu thích" }).getByRole("button")).toHaveCount(8)
     await expectRailFits(page)
     await park(page)

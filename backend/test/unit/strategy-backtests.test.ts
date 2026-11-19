@@ -1076,6 +1076,48 @@ describe('StrategyBacktestsService', () => {
       expect(() => body({ origin: ORIGIN })).toThrow();
     });
 
+    it('a Chiến lược IQX draft and the same config set by hand give the same result and snapshot except the source (§7.2.11)', async () => {
+      const withIqx = new StrategyBacktestsService(
+        store,
+        reader.reader,
+        { grantedCapabilities: () => Promise.resolve(grants) } satisfies AcademyGrantsPort,
+        new StrategyBacktestExecutor(),
+        configService({ STRATEGY_ADVANCED_CAPABILITIES: allowlist }),
+        market,
+        { versionName: () => Promise.resolve('Phá đỉnh') },
+      );
+      const fromIqx = await withIqx.create(
+        OWNER,
+        body({
+          idempotency_key: 'iqx-same-0001',
+          draft: { indicators: { ma: draftMa() } },
+          origin: ORIGIN,
+        }),
+      );
+      const byHand = await withIqx.create(
+        OWNER,
+        body({ idempotency_key: 'iqx-same-0002', draft: { indicators: { ma: draftMa() } } }),
+      );
+      expect(fromIqx.status).toBe('succeeded');
+      // Only the source label / origin may differ, wherever it is carried (snapshot or result).
+      const sources: unknown[] = [];
+      const withoutSource = (value: unknown): unknown =>
+        JSON.parse(
+          JSON.stringify(value, (key, item: unknown) => {
+            if (key !== 'source') return item;
+            sources.push(item);
+            return undefined;
+          }),
+        ) as unknown;
+      expect(withoutSource(byHand.result)).toEqual(withoutSource(fromIqx.result));
+      const iqxSource = fromIqx.snapshot!.source;
+      const handSource = byHand.snapshot!.source;
+      expect(withoutSource(byHand.snapshot)).toEqual(withoutSource(fromIqx.snapshot));
+      expect(sources.length).toBeGreaterThan(0);
+      expect(iqxSource).not.toEqual(handSource);
+      expect(handSource).toEqual({ kind: 'draft', label: 'Bản nháp', origin: null });
+    });
+
     it('a trial run of a draft (Mẫu IQX soạn thử) answers like a run but stores nothing', async () => {
       const run = await service().create(
         OWNER,

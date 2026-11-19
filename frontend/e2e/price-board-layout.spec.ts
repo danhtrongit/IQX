@@ -1,9 +1,10 @@
-import { expect, test } from "./fixtures"
+import { closePanelLayer, expect, test } from "./fixtures"
 
 for (const width of [1440, 1024, 390]) {
   test(`price board keeps spacing between cards, filters and table at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
-    await page.goto("/demo-trading?content=board&view=trading")
+    await page.goto("/luyen-tap?tool=giao-dich&content=board")
+    await closePanelLayer(page)
     const strip = page.locator('[data-tour-id="tour-banggia-index-strip"]')
     await expect(strip).toBeVisible()
     const gaps = await strip.evaluate(element => {

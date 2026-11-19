@@ -113,7 +113,7 @@ for (const [size, viewport] of SIZES) for (const theme of ["dark", "light"] as c
     test("màn Dojo không tràn ngang, đủ đai, thẻ, luyện công, xem trước và các Dojo", async ({ page }) => {
       await seedMember(page)
       await mockDojo(page)
-      await page.goto("/demo-trading?view=candle-dojo")
+      await page.goto("/luyen-tap?tool=candle-dojo")
       await expect(page.getByTestId("dojo-home")).toBeVisible()
       await expect(page.getByTestId("dojo-belt-card")).toContainText("Đai trắng")
       await expect(page.getByTestId("dojo-cards-count")).toHaveText("3 / 47")
@@ -144,7 +144,7 @@ for (const [size, viewport] of SIZES) for (const theme of ["dark", "light"] as c
     test("thi đai: ẩn rail, tên thẻ xếp theo cỡ màn, không tràn ngang", async ({ page }) => {
       await seedMember(page)
       await mockDojo(page)
-      await page.goto("/demo-trading?view=candle-dojo")
+      await page.goto("/luyen-tap?tool=candle-dojo")
       await page.locator("[data-exam='1']").click()
       await expect(page.getByTestId("dojo-exam")).toBeVisible()
       await expect(page.getByRole("navigation", { name: "Công cụ theo trang" })).toHaveCount(0)

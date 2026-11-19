@@ -1,0 +1,38 @@
+Prod read-only smoke 2026-11-19T20:00:13.687Z against https://iqx.vn (anonymous, GET only)
+N01 header nav @1440: ["GIỚI THIỆU","LUYỆN TẬP","FLASHBACK","CHIẾN LƯỢC","KHU GIAO DỊCH"]
+N02 /luyen-tap url: https://iqx.vn/luyen-tap
+N02 rail: ["candle-dojo:Candle Dojo","hoc-vien:Học viện","bot:Bot","giao-dich:Giao dịch","phan-tich:Dashboard phân tích"]
+N10 /flashback url: https://iqx.vn/flashback
+N10 rail: ["flashback:Flashback","shop:Shop"] frame: {"open":"false","collapsed":"false","hidden":"true"}
+N19 /demo-trading -> /luyen-tap?tool=giao-dich&tab=dat-lenh status=200 match=true notFoundText=0
+N19 /demo-trading?view=portfolio -> /luyen-tap?tool=giao-dich&tab=danh-muc status=200 match=true notFoundText=0
+N19 /demo-trading?view=news -> /luyen-tap?tool=giao-dich&tab=tin-tuc status=200 match=true notFoundText=0
+N19 /demo-trading?view=insight&symbol=FPT -> /luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=FPT status=200 match=true notFoundText=0
+N19 /demo-trading?content=ai-analysis&analysis=market -> /luyen-tap?tool=giao-dich&tab=dat-lenh&content=market status=200 match=true notFoundText=0
+N19 /demo-trading?view=dashboard -> /luyen-tap?tool=phan-tich status=200 match=true notFoundText=0
+N19 /demo-trading?view=academy -> /luyen-tap?tool=hoc-vien status=200 match=true notFoundText=0
+N19 /demo-trading?view=bot -> /luyen-tap?tool=bot status=200 match=true notFoundText=0
+N19 /demo-trading?view=shop -> /flashback?tool=shop status=200 match=true notFoundText=0
+N19 /demo-trading?view=flashback&room=123456 -> /flashback?tool=flashback&room=123456 status=200 match=true notFoundText=0
+N19 /demo-trading?view=candle-dojo -> /luyen-tap?tool=candle-dojo status=200 match=true notFoundText=0
+N19 /hoc-vien -> /luyen-tap?tool=hoc-vien status=200 match=true notFoundText=0
+N19 /bang-gia -> /luyen-tap?tool=giao-dich&tab=dat-lenh&content=board status=200 match=true notFoundText=0
+N19 /thi-truong -> /luyen-tap?tool=giao-dich&tab=dat-lenh&content=market status=200 match=true notFoundText=0
+N21/N22 360px /luyen-tap?tool=giao-dich&tab=dat-lenh overflow=false scrollW=360 innerW=360 rail=column railLeft=306 railRight=360
+N21/N22 360px /flashback?tool=flashback overflow=false scrollW=360 innerW=360 rail=bar railLeft=0 railRight=360
+N21/N22 360px /flashback?tool=shop overflow=false scrollW=360 innerW=360 rail=bar railLeft=0 railRight=360
+N21/N22 390px /luyen-tap?tool=giao-dich&tab=dat-lenh overflow=false scrollW=390 innerW=390 rail=column railLeft=329 railRight=390
+N21/N22 390px /flashback?tool=flashback overflow=false scrollW=390 innerW=390 rail=bar railLeft=0 railRight=390
+N21/N22 390px /flashback?tool=shop overflow=false scrollW=390 innerW=390 rail=bar railLeft=0 railRight=390
+N21/N22 900px /luyen-tap?tool=giao-dich&tab=dat-lenh overflow=false scrollW=900 innerW=900 rail=column railLeft=839 railRight=900
+N21/N22 900px /flashback?tool=flashback overflow=false scrollW=900 innerW=900 rail=bar railLeft=0 railRight=900
+N21/N22 900px /flashback?tool=shop overflow=false scrollW=900 innerW=900 rail=bar railLeft=0 railRight=900
+N21/N22 1024px /luyen-tap?tool=giao-dich&tab=dat-lenh overflow=false scrollW=1024 innerW=1024 rail=column railLeft=960 railRight=1024
+N21/N22 1024px /flashback?tool=flashback overflow=false scrollW=1024 innerW=1024 rail=column railLeft=960 railRight=1024
+N21/N22 1024px /flashback?tool=shop overflow=false scrollW=1024 innerW=1024 rail=column railLeft=960 railRight=1024
+N21/N22 1440px /luyen-tap?tool=giao-dich&tab=dat-lenh overflow=false scrollW=1440 innerW=1440 rail=column railLeft=1362 railRight=1440
+N21/N22 1440px /flashback?tool=flashback overflow=false scrollW=1440 innerW=1440 rail=column railLeft=1362 railRight=1440
+N21/N22 1440px /flashback?tool=shop overflow=false scrollW=1440 innerW=1440 rail=column railLeft=1362 railRight=1440
+N21/N22 1920px /luyen-tap?tool=giao-dich&tab=dat-lenh overflow=false scrollW=1920 innerW=1920 rail=column railLeft=1834 railRight=1920
+N21/N22 1920px /flashback?tool=flashback overflow=false scrollW=1920 innerW=1920 rail=column railLeft=1834 railRight=1920
+N21/N22 1920px /flashback?tool=shop overflow=false scrollW=1920 innerW=1920 rail=column railLeft=1834 railRight=1920
