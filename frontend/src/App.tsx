@@ -4,10 +4,10 @@ import { createBrowserRouter, Navigate, RouterProvider, useLocation, useParams, 
 import { AdminLayout } from "@/components/layout/admin-layout"
 import { AdminScopeRoute } from "@/components/layout/admin-scope-route"
 import { AppShell } from "@/components/layout/app-shell"
-import { demoChrome, emptyChrome } from "@/config/chrome"
+import { emptyChrome, flashbackChrome, practiceChrome } from "@/config/chrome"
 import { demoRouteRedirect } from "@/lib/demo-route-redirect"
 import { AcademyMetricRedirect, AcademyRedirect } from "@/pages/demo-trading/academy-redirect"
-import { demoTradingLoader } from "@/pages/demo-trading/workspace-url"
+import { legacyWorkspaceLoader, workspaceLoader } from "@/pages/demo-trading/workspace-url"
 import { MaintenancePage, NotFoundPage } from "@/pages/system/route-states"
 
 
@@ -38,7 +38,8 @@ function lazyPage(load: () => Promise<{ default: ComponentType<any> }>): Preload
 const IntroductionPage = lazyPage(() => import("@/pages/introduction/introduction-page").then(module => ({ default: module.IntroductionPage })))
 const StockDirectoryPage = lazyPage(() => import("@/pages/securities/stock-directory/stock-directory-page").then(module => ({ default: module.StockDirectoryPage })))
 const StockDetailPage = lazyPage(() => import("@/pages/charts/stock-detail-page").then(module => ({ default: module.StockDetailPage })))
-const DemoTradingPage = lazyPage(() => import("@/pages/demo-trading/demo-trading-page").then(module => ({ default: module.DemoTradingPage })))
+const PracticePage = lazyPage(() => import("@/pages/demo-trading/demo-trading-page").then(module => ({ default: module.PracticePage })))
+const FlashbackSectionPage = lazyPage(() => import("@/pages/demo-trading/demo-trading-page").then(module => ({ default: module.FlashbackSectionPage })))
 const StrategyPage = lazyPage(() => import("@/pages/strategy/strategy-page").then(module => ({ default: module.StrategyPage })))
 const SettingsPage = lazyPage(() => import("@/pages/account/settings-page").then(module => ({ default: module.SettingsPage })))
 const PremiumPage = lazyPage(() => import("@/pages/account/premium-page").then(module => ({ default: module.PremiumPage })))
@@ -116,8 +117,11 @@ export const routes: RouteObject[] = [
       { path: "bang-gia", element: <DemoContentRedirect content="board" />, handle: { chrome: emptyChrome } },
       { path: "bieu-do", element: <DemoContentRedirect content="chart" />, handle: { chrome: emptyChrome } },
       { path: "dashboard", element: <DemoContentRedirect content="chart" />, handle: { chrome: emptyChrome } },
-      { path: "demo-trading", Component: DemoTradingPage, loader: demoTradingLoader, handle: { chrome: demoChrome } },
-      { path: "dau-truong", element: <RedirectWithSearch to="/demo-trading" />, handle: { chrome: emptyChrome } },
+      { path: "luyen-tap", Component: PracticePage, loader: workspaceLoader, handle: { chrome: practiceChrome } },
+      { path: "flashback", Component: FlashbackSectionPage, loader: workspaceLoader, handle: { chrome: flashbackChrome } },
+      // The retired DEMO TRADING / HỌC VIỆN workspace: every old link moves to LUYỆN TẬP or FLASHBACK (layout v1.3 §6).
+      { path: "demo-trading", loader: workspaceLoader, handle: { chrome: emptyChrome } },
+      { path: "dau-truong", loader: legacyWorkspaceLoader, handle: { chrome: emptyChrome } },
       { path: "chien-luoc", Component: StrategyPage, handle: { chrome: emptyChrome } },
       { path: "canh-bao", element: <RedirectWithSearch to="/chien-luoc" tab="canh-bao" />, handle: { chrome: emptyChrome } },
       { path: "backtest", element: <RedirectWithSearch to="/chien-luoc" tab="backtest" />, handle: { chrome: emptyChrome } },

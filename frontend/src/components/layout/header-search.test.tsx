@@ -15,8 +15,8 @@ const item = (symbol: string, name: string): SymbolSearchResult => ({ symbol, na
 
 function renderSearch() {
   const router = createMemoryRouter(
-    [{ path: "/demo-trading", element: <HeaderSearch /> }],
-    { initialEntries: ["/demo-trading?content=dashboard&symbol=FPT"] },
+    [{ path: "/luyen-tap", element: <HeaderSearch /> }],
+    { initialEntries: ["/luyen-tap?tool=phan-tich&symbol=FPT"] },
   )
   render(<RouterProvider router={router} />)
   return router
@@ -46,11 +46,11 @@ describe("HeaderSearch · Enter (DB-05b)", () => {
 
     await user.click(screen.getByRole("button", { name: "Tìm mã cổ phiếu" }))
     await user.type(screen.getByRole("combobox", { name: "Tìm mã hoặc tên công ty" }), "hoa phat{Enter}")
-    expect(router.state.location.search).toBe("?content=dashboard&symbol=FPT")
+    expect(router.state.location.search).toBe("?tool=phan-tich&symbol=FPT")
 
     await waitFor(() => expect(mocks.search).toHaveBeenCalledWith("hoa phat", expect.anything()))
     resolve([item("HPG", "Hòa Phát"), item("HPX", "Hải Phát")])
-    await waitFor(() => expect(router.state.location.search).toBe("?content=dashboard&symbol=HPG"))
+    await waitFor(() => expect(router.state.location.search).toBe("?tool=phan-tich&symbol=HPG"))
   })
 
   it("gõ đúng một mã có trong danh sách thì Enter chọn mã đó", async () => {
@@ -62,6 +62,6 @@ describe("HeaderSearch · Enter (DB-05b)", () => {
     await user.type(screen.getByRole("combobox", { name: "Tìm mã hoặc tên công ty" }), "vcb")
     await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(2))
     await user.keyboard("{Enter}")
-    await waitFor(() => expect(router.state.location.search).toBe("?content=dashboard&symbol=VCB"))
+    await waitFor(() => expect(router.state.location.search).toBe("?tool=phan-tich&symbol=VCB"))
   })
 })

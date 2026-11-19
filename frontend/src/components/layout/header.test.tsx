@@ -56,9 +56,9 @@ function LocationProbe() {
 
 const SHARED_NAV = [
   ["Giới thiệu", "/"],
-  ["Demo Trading", "/demo-trading?view=trading"],
+  ["Luyện tập", "/luyen-tap?tool=candle-dojo"],
+  ["Flashback", "/flashback?tool=flashback"],
   ["Chiến lược", "/chien-luoc"],
-  ["Học viện", "/demo-trading?view=academy"],
   ["Khu giao dịch", "/khu-giao-dich"],
 ] as const
 
@@ -74,7 +74,7 @@ describe("Header", () => {
     expect(within(homeLink).getByTestId("brain-wave-logo")).toBeTruthy()
     const nav = within(header).getByRole("navigation", { name: "Điều hướng chính" })
     expect(within(nav).getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual(SHARED_NAV)
-    expect(within(header).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/demo-trading?view=academy")
+    expect(within(header).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/luyen-tap?tool=hoc-vien")
 
     await user.click(within(header).getByRole("button", { name: "Chế độ sáng" }))
     expect(within(header).getByRole("button", { name: "Chế độ tối" })).toBeTruthy()
@@ -84,7 +84,7 @@ describe("Header", () => {
 
   it("keeps workspace navigation and account controls on the trading route", async () => {
     const user = userEvent.setup()
-    renderHeader("/demo-trading?view=trading&symbol=VIC&content=market")
+    renderHeader("/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=VIC&content=market")
 
     const header = screen.getByRole("banner")
     const nav = within(header).getByRole("navigation", { name: "Điều hướng chính" })
@@ -105,7 +105,7 @@ describe("Header", () => {
     let menu = screen.getByRole("dialog", { name: "Điều hướng IQX" })
     const nav = within(menu).getByRole("navigation", { name: "Điều hướng di động" })
     expect(within(nav).getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual(SHARED_NAV)
-    expect(within(menu).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/demo-trading?view=academy")
+    expect(within(menu).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/luyen-tap?tool=hoc-vien")
 
     await user.click(within(menu).getByRole("button", { name: "Đóng menu điều hướng" }))
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Điều hướng IQX" })).toBeNull())
@@ -128,14 +128,14 @@ describe("Header", () => {
 
     await user.click(trigger)
     const menu = screen.getByRole("dialog", { name: "Điều hướng IQX" })
-    await user.click(within(menu).getByRole("link", { name: "Demo Trading" }))
+    await user.click(within(menu).getByRole("link", { name: "Luyện tập" }))
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Điều hướng IQX" })).toBeNull())
-    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=trading")
+    expect(screen.getByTestId("location").textContent).toBe("/luyen-tap?tool=candle-dojo")
   })
 
   it("keeps workspace active navigation in the mobile menu and closes after a route change", async () => {
     const user = userEvent.setup()
-    renderHeader("/demo-trading?view=trading&symbol=VIC&content=market")
+    renderHeader("/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=VIC&content=market")
     await user.click(screen.getByRole("button", { name: "Mở menu điều hướng" }))
     const menu = screen.getByRole("dialog", { name: "Điều hướng IQX" })
     const nav = within(menu).getByRole("navigation", { name: "Điều hướng di động" })
@@ -147,69 +147,57 @@ describe("Header", () => {
   })
 
   it.each([
-    ["/demo-trading?view=trading", "Demo Trading"],
-    ["/demo-trading?view=portfolio&symbol=FPT", "Demo Trading"],
-    ["/demo-trading?view=hunt", "Demo Trading"],
-    ["/demo-trading?view=news&content=board", "Demo Trading"],
-    ["/demo-trading?view=academy", "Học viện"],
-    ["/demo-trading?view=academy&lesson=ch01-l01", "Học viện"],
-    ["/demo-trading?view=bot", "Học viện"],
-    ["/demo-trading?view=shop", "Học viện"],
-    ["/demo-trading", "Demo Trading"],
-    ["/demo-trading?view=journey", "Học viện"],
-  ])("marks only %s as the active workspace entry", (path, label) => {
+    ["/luyen-tap?tool=giao-dich&tab=dat-lenh", "Luyện tập"],
+    ["/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=FPT", "Luyện tập"],
+    ["/luyen-tap?tool=hoc-vien&lesson=ch01-l01", "Luyện tập"],
+    ["/luyen-tap?tool=bot", "Luyện tập"],
+    ["/luyen-tap", "Luyện tập"],
+    ["/flashback?tool=shop", "Flashback"],
+    ["/flashback", "Flashback"],
+    ["/chien-luoc?tab=bo-loc", "Chiến lược"],
+  ])("marks only %s as the active entry", (path, label) => {
     renderHeader(path)
     const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
     expect(within(nav).getAllByRole("link", { current: "page" }).map((link) => link.textContent)).toEqual([label])
   })
 
-  it("opens the workspace academy tool from the Học viện entry and keeps the symbol", async () => {
+  it("opens FLASHBACK on its default tool from LUYỆN TẬP and keeps the symbol", async () => {
     const user = userEvent.setup()
-    renderHeader("/demo-trading?view=hunt&symbol=FPT&content=board")
+    renderHeader("/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=FPT&content=board")
     const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
-    await user.click(within(nav).getByRole("link", { name: "Học viện" }))
-    const location = new URL(`http://x${screen.getByTestId("location").textContent}`)
-    expect(location.pathname).toBe("/demo-trading")
-    expect(location.searchParams.get("view")).toBe("academy")
-    expect(location.searchParams.get("symbol")).toBe("FPT")
-    expect(location.searchParams.has("content")).toBe(false)
+    await user.click(within(nav).getByRole("link", { name: "Flashback" }))
+    expect(screen.getByTestId("location").textContent).toBe("/flashback?tool=flashback&symbol=FPT")
   })
 
-  it("moves from the academy tool to the order tool through Demo Trading but keeps any other tool", async () => {
+  it("keeps the current tool when the open section's entry is clicked", async () => {
     const user = userEvent.setup()
-    const { unmount } = renderHeader("/demo-trading?view=academy")
-    let nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
-    await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
-    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=trading")
-    unmount()
-
-    renderHeader("/demo-trading?view=portfolio&symbol=VIC")
-    nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
-    await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
-    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=portfolio&symbol=VIC")
+    renderHeader("/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=VIC")
+    const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
+    await user.click(within(nav).getByRole("link", { name: "Luyện tập" }))
+    expect(screen.getByTestId("location").textContent).toBe("/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=VIC")
   })
 
-  it("returns to a section as it was left: Học viện remembers its tool, Demo Trading its tab", async () => {
+  it("returns to each section as it was left: tool, Giao dịch tab", async () => {
     const user = userEvent.setup()
-    workspaceMemory.remember("academy", "?view=bot")
-    workspaceMemory.remember("demo", "?view=portfolio&content=board")
-    renderHeader("/demo-trading?view=news&symbol=VIC")
+    workspaceMemory.remember("flashback", "?tool=shop")
+    workspaceMemory.remember("practice", "?tool=giao-dich&tab=tin-tuc&content=board")
+    renderHeader("/luyen-tap?tool=bot&symbol=VIC")
     const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
     // Same section: the current URL is kept.
-    await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
-    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=news&symbol=VIC")
+    await user.click(within(nav).getByRole("link", { name: "Luyện tập" }))
+    expect(screen.getByTestId("location").textContent).toBe("/luyen-tap?tool=bot&symbol=VIC")
     // Other section: its remembered tool on top of the shared symbol.
-    await user.click(within(nav).getByRole("link", { name: "Học viện" }))
-    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?symbol=VIC&view=bot")
-    await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
-    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?symbol=VIC&view=portfolio&content=board")
+    await user.click(within(nav).getByRole("link", { name: "Flashback" }))
+    expect(screen.getByTestId("location").textContent).toBe("/flashback?tool=shop&symbol=VIC")
+    await user.click(within(nav).getByRole("link", { name: "Luyện tập" }))
+    expect(screen.getByTestId("location").textContent).toBe("/luyen-tap?tool=giao-dich&tab=tin-tuc&content=board&symbol=VIC")
   })
 
   it("marks the workspace section switch in the navigation state", async () => {
     const user = userEvent.setup()
     renderHeader("/")
     const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
-    await user.click(within(nav).getByRole("link", { name: "Học viện" }))
+    await user.click(within(nav).getByRole("link", { name: "Flashback" }))
     expect(JSON.parse(screen.getByTestId("location").getAttribute("data-state")!)).toEqual({ workspaceSection: true })
   })
 

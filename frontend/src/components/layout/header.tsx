@@ -7,7 +7,7 @@ import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { HEADER_NAV } from "@/config/chrome"
+import { HEADER_NAV, sectionOfPath } from "@/config/chrome"
 import { useAuth } from "@/hooks/use-auth"
 import { useResolvedTheme } from "@/hooks/use-resolved-theme"
 import { headerDestination, isHeaderLinkActive } from "@/lib/header-navigation"
@@ -26,6 +26,9 @@ type HeaderNavItem = { readonly to: string; readonly label: string }
 
 const NAV_ITEMS: readonly HeaderNavItem[] = HEADER_NAV.filter(item => !item.hidden)
 
+/** "Bắt đầu ngay": LUYỆN TẬP → Học viện. */
+const START_URL = "/luyen-tap?tool=hoc-vien"
+
 /** Switching workspace sections starts the panel layer closed on phones (layout v1.2 §5.3). */
 const SECTION_SWITCH_STATE = { workspaceSection: true }
 
@@ -42,7 +45,7 @@ function HeaderLinks({ items, mobile = false, onNavigate }: {
 
   return items.map(item => (
     <Link key={item.to} to={headerDestination(item.to, location, memory)}
-      state={item.to.startsWith("/demo-trading") ? SECTION_SWITCH_STATE : undefined}
+      state={sectionOfPath(item.to) ? SECTION_SWITCH_STATE : undefined}
       aria-current={isHeaderLinkActive(item.to, location) ? "page" : undefined}
       className={linkClass(isHeaderLinkActive(item.to, location))} onClick={onNavigate}>
       {item.label}
@@ -89,7 +92,7 @@ function MobileHeaderMenu({ items, isIntroduction }: {
           <SheetFooter className="border-t border-border">
             <SheetClose asChild>
               <Button asChild className="min-h-11 w-full">
-                <Link to="/demo-trading?view=academy">Bắt đầu ngay</Link>
+                <Link to={START_URL}>Bắt đầu ngay</Link>
               </Button>
             </SheetClose>
           </SheetFooter>
@@ -148,7 +151,7 @@ export function Header() {
         </div>
         {isIntroduction && (
           <Button asChild className="hidden xl:inline-flex">
-            <Link to="/demo-trading?view=academy">Bắt đầu ngay</Link>
+            <Link to={START_URL}>Bắt đầu ngay</Link>
           </Button>
         )}
         <MobileHeaderMenu key={locationKey} items={NAV_ITEMS} isIntroduction={isIntroduction} />

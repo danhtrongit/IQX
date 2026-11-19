@@ -4,14 +4,16 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
+import { useSidebarPanelGroup } from "./sidebar-panel-group"
 import { useWorkspaceFrame } from "./workspace-frame-context"
 
 export function SidebarPanel({ title, description, actions, children, footer }: { title: string; description?: string; actions?: ReactNode; children: ReactNode; footer?: ReactNode }) {
   const frame = useWorkspaceFrame()
+  const group = useSidebarPanelGroup()
   return (
     <section className="flex h-full min-h-0 flex-col">
       <div className="flex h-(--panel-header-height) shrink-0 items-center justify-between gap-3 border-b border-border px-4">
-        <div className="min-w-0"><h2 className="truncate font-heading text-base font-bold">{title}</h2>{description && <p className="mt-0.5 truncate text-xs text-muted-foreground">{description}</p>}</div>
+        <div className="min-w-0"><h2 className="truncate font-heading text-base font-bold">{group?.title ?? title}</h2>{description && <p className="mt-0.5 truncate text-xs text-muted-foreground">{description}</p>}</div>
         <div className="flex shrink-0 items-center gap-1">
           {actions}
           {frame?.overlay && (
@@ -21,6 +23,7 @@ export function SidebarPanel({ title, description, actions, children, footer }: 
           )}
         </div>
       </div>
+      {group?.tabs}
       <ScrollArea className="h-0 min-h-0 flex-1"><div className="space-y-4 p-3">{children}</div></ScrollArea>
       {footer && <div className="shrink-0 border-t border-border p-3">{footer}</div>}
     </section>

@@ -2,12 +2,12 @@ import { useCallback, useEffect } from "react"
 import { useSearchParams } from "react-router"
 
 import { useAuth } from "@/hooks/use-auth"
-import { ACADEMY_VIEW, LESSON_PARAM, METRIC_PARAM, parseMetricParam, VIEW_PARAM } from "@/pages/demo-trading/workspace-url"
+import { ACADEMY_TOOL, LESSON_PARAM, METRIC_PARAM, parseMetricParam, TOOL_PARAM } from "@/pages/demo-trading/workspace-url"
 import { fetchLink } from "./api"
 import { parseLessonParam } from "./navigation"
 
 /**
- * Link into one lesson by metric name (spec v4 §6): `?view=academy&metric=<key or name>`, reached from
+ * Link into one lesson by metric name (spec v4 §6): `?tool=hoc-vien&metric=<key or name>`, reached from
  * `/hoc-vien/bai/<metric>`, `/hoc-vien?metric=<metric>` or the Dashboard's "Học" button.
  *
  * Once the account is known the server resolves the name (`GET /academy/link`: `metric_key`, else the exact
@@ -39,7 +39,8 @@ export function useAcademyDeepLink(): { pending: boolean } {
           next.delete(METRIC_PARAM)
           if (itemId) {
             next.delete("content")
-            next.set(VIEW_PARAM, ACADEMY_VIEW)
+            next.delete("tab")
+            next.set(TOOL_PARAM, ACADEMY_TOOL)
             next.set(LESSON_PARAM, itemId)
           }
           return next

@@ -67,7 +67,7 @@ function renderHunt() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={["/demo-trading?view=hunt"]}>
+      <MemoryRouter initialEntries={["/luyen-tap?tool=hunt"]}>
         <HuntMain symbol="VNM" onSymbolChange={onSymbolChange} onNavigate={onNavigate} />
       </MemoryRouter>
     </QueryClientProvider>,

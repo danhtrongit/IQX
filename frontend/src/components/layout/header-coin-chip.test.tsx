@@ -43,23 +43,26 @@ describe("header coin chip", () => {
     expect(mocks.api).not.toHaveBeenCalled()
   })
 
-  it("shows the server's balance and opens the Shop tool", async () => {
+  it("shows the server's balance and opens FLASHBACK → Shop", async () => {
     renderChip()
     const chip = await screen.findByRole("link", { name: "1.250 xu. Mở Shop" })
-    expect(chip.getAttribute("href")).toBe("/demo-trading?view=shop")
+    expect(chip.getAttribute("href")).toBe("/flashback?tool=shop")
     expect(chip.textContent).toContain("1.250")
     expect(chip.textContent).toContain("xu")
     expect(backend.callsTo("GET", "/shop")).toHaveLength(1)
   })
 
-  it("keeps the selected symbol on the workspace and shows the Shop main view", async () => {
-    renderChip("/demo-trading?view=hunt&symbol=FPT&content=chart")
+  it.each([
+    ["/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=FPT&content=board", "/flashback?tool=shop&symbol=FPT"],
+    ["/luyen-tap?tool=hoc-vien&lesson=ch01-l01", "/flashback?tool=shop"],
+    ["/flashback?tool=flashback&symbol=VIC", "/flashback?tool=shop&symbol=VIC"],
+    ["/flashback?tool=shop", "/flashback?tool=shop"],
+    ["/chien-luoc?tab=bo-loc&symbol=FPT", "/flashback?tool=shop"],
+    ["/khu-giao-dich", "/flashback?tool=shop"],
+  ])("from %s opens %s with the panel open", async (from, to) => {
+    renderChip(from)
     const chip = await screen.findByRole("link", { name: /Mở Shop/ })
-    const target = new URL(chip.getAttribute("href") ?? "", "http://x")
-    expect(target.pathname).toBe("/demo-trading")
-    expect(target.searchParams.get("view")).toBe("shop")
-    expect(target.searchParams.get("symbol")).toBe("FPT")
-    expect(target.searchParams.has("content")).toBe(false)
+    expect(chip.getAttribute("href")).toBe(to)
   })
 
   it("never shows 0 xu while loading or when the read fails", async () => {

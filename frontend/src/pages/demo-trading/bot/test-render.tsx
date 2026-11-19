@@ -16,7 +16,7 @@ export function stubBrowser() {
   HTMLElement.prototype.releasePointerCapture = vi.fn()
 }
 
-export function renderBot(ui: ReactElement, route = "/demo-trading?view=bot&symbol=FPT") {
+export function renderBot(ui: ReactElement, route = "/luyen-tap?tool=bot&symbol=FPT") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>

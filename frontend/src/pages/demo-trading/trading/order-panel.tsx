@@ -11,7 +11,7 @@
  * the form; the order is placed solely by the confirm button.
  */
 import { useState } from "react"
-import { ArrowRight, LoaderCircle, Star } from "lucide-react"
+import { LoaderCircle, Star } from "lucide-react"
 import { toast } from "sonner"
 
 import { SidebarPanel } from "@/components/layout/sidebar-panel"
@@ -37,22 +37,21 @@ import { useQuote } from "../market/use-quote"
 import { useAddToWatchlist, useRemoveFromWatchlist, useWatchlist } from "../portfolio/hooks"
 import { BOARD_LOT, FEE_RATE, QUICK_PERCENTS, checkOrderInput, quantityForPercent } from "./order-math"
 import { useActivateAccount, usePlaceOrder } from "./use-trading-orders"
+import { demoReturnPct } from "../portfolio/demo-return"
 
 export type OrderPanelProps = {
   symbol: string
   /** Switch the panel to another symbol (keeps the shell, unlike a route change). */
   onSymbolChange: (symbol: string) => void
-  /** Chuyển sang công cụ khác của cùng workspace (Học viện khi tài khoản Demo chưa có vốn). */
-  onNavigate?: (panel: string) => void
 }
 
-export function OrderPanel({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
+export function OrderPanel({ symbol, onSymbolChange }: OrderPanelProps) {
   // A symbol change starts a NEW order: remounting drops the typed quantity and
   // limit price so they cannot be sent for a different stock.
-  return <OrderTicket key={symbol} symbol={symbol} onSymbolChange={onSymbolChange} onNavigate={onNavigate} />
+  return <OrderTicket key={symbol} symbol={symbol} onSymbolChange={onSymbolChange} />
 }
 
-function OrderTicket({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
+function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
   const { isAuthenticated, isLoading: authLoading, openAuth } = useAuth()
   const { data: quote, isLoading: quoteLoading } = useQuote(symbol)
   const { data: account } = useTradingAccount()
@@ -76,11 +75,6 @@ function OrderTicket({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
     (row) => row.quantity_total > 0 && row.symbol !== code,
   )
   const watched = (watchlist.data ?? []).some((item) => item.symbol === code)
-  const noCapital =
-    account != null &&
-    account.cash_available_vnd === 0 &&
-    account.net_deposited_cash_vnd === 0 &&
-    !(portfolio?.positions ?? []).some((row) => row.quantity_total > 0)
 
   const toggleWatch = async () => {
     if (!isAuthenticated) {
@@ -245,8 +239,12 @@ function OrderTicket({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
                 disabled={activate.isPending}
                 onClick={() => {
                   activate.mutate(undefined, {
-                    onSuccess: () =>
-                      toast.success("Tài khoản Demo bắt đầu với 0đ. Đổi xu sang tiền để có vốn."),
+                    onSuccess: (created) =>
+                      toast.success(
+                        `Đã mở tài khoản Demo Trading — bạn nhận ${created.cash_available_vnd.toLocaleString(
+                          "vi-VN",
+                        )} VND ảo.`,
+                      ),
                     onError: (error) => toast.error(errorMessage(error)),
                   })
                 }}
@@ -261,18 +259,6 @@ function OrderTicket({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
                 <span className="text-[11px] text-muted-foreground">Tiền khả dụng</span>
                 <span className="text-sm font-bold tabular-nums">{formatMoney(account.cash_available_vnd)}</span>
               </div>
-              {/* FB-12: chỉ nhắc học khi thật sự chưa có vốn, không phải khi đã mua hết bằng tiền. */}
-              {noCapital && (
-                <div className="rounded-md border border-border bg-muted/40 p-2.5" data-testid="demo-no-capital">
-                  <p className="text-xs leading-5 text-foreground">Học bài để nhận vốn: 1 bài = 100 xu = 1.000.000đ</p>
-                  {onNavigate && (
-                    <Button type="button" size="sm" variant="outline" className="mt-2 w-full" onClick={() => onNavigate("academy")}>
-                      Vào Học viện
-                      <ArrowRight aria-hidden="true" />
-                    </Button>
-                  )}
-                </div>
-              )}
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-muted-foreground">CP có thể bán</span>
                 <span className="text-xs font-medium tabular-nums">{sellable.toLocaleString("vi-VN")} CP</span>
@@ -289,7 +275,7 @@ function OrderTicket({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
                 >
                   {portfolio?.total_unrealized_pnl_vnd == null
                     ? "—"
-                    : `${formatMoney(portfolio.total_unrealized_pnl_vnd)} (${portfolio.return_pct.toFixed(2)}%)`}
+                    : `${formatMoney(portfolio.total_unrealized_pnl_vnd)} (${demoReturnPct(portfolio.nav_vnd).toFixed(2)}%)`}
                 </span>
                 {position && (
                   <span className="tabular-nums text-muted-foreground">

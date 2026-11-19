@@ -25,14 +25,7 @@ export type AcademyCatalog = ApiResponseFor<"GET /api/v2/academy/catalog">
 /** Tiến hoá linh thú: lên cấp 2 rồi cấp 3, giá do server quyết định lại. */
 export type EvolveResult = ApiResponseFor<"POST /api/v2/shop/pets/{mascotId}/evolve">
 export type EvolveBody = ApiRequestFor<"POST /api/v2/shop/pets/{mascotId}/evolve">["body"]
-/** Premium mua bằng xu: 3.000 xu cho 30 ngày. */
-export type PremiumPurchaseResult = ApiResponseFor<"POST /api/v2/shop/premium-purchases">
-export type PremiumPurchaseBody = ApiRequestFor<"POST /api/v2/shop/premium-purchases">["body"]
-/** Đổi xu hai chiều với tiền Demo Trading: 1 xu = 10.000 đồng. */
-export type DemoExchangeResult = ApiResponseFor<"POST /api/v2/shop/demo-exchange">
-export type DemoExchangeBody = ApiRequestFor<"POST /api/v2/shop/demo-exchange">["body"]
 export type PetLevel = ShopState["pet_levels"][number]
-export type ExchangeDirection = DemoExchangeBody["direction"]
 
 export const LEDGER_PAGE_SIZE = 20
 /** A purchase that has not answered by now is "outcome unknown", never "failed". */
@@ -96,8 +89,7 @@ export function parseShopState(raw: unknown): ShopState {
   for (const level of raw.pet_levels) {
     if (!isRecord(level) || !isText(level.mascot_id) || !isInt(level.level) || level.level < 1 || level.level > 3) invalid("Shop")
   }
-  if (!isCount(raw.premium_price_xu) || !isCount(raw.premium_duration_days)) invalid("Shop")
-  if (!isRecord(raw.exchange) || !isCount(raw.exchange.cash_per_xu) || !isCount(raw.exchange.min_exchange_cash_vnd)) invalid("Shop")
+  // Premium for xu and the xu ↔ Demo cash exchange are gone (layout v1.3 §7, §8): their fields are not read.
   return { ...(raw as ShopState), wallet, owned, active }
 }
 
@@ -141,23 +133,6 @@ export function parseEvolveResult(raw: unknown): EvolveResult {
   if (!Array.isArray(raw.pet_levels)) invalid("tiến hoá linh thú")
   const wallet = parseWallet(raw.wallet, "tiến hoá linh thú")
   return { ...(raw as EvolveResult), wallet }
-}
-
-export function parsePremiumPurchaseResult(raw: unknown): PremiumPurchaseResult {
-  if (!isRecord(raw) || raw.status !== "purchased") invalid("mua Premium")
-  if (!isCount(raw.price_xu) || !isCount(raw.days_granted) || !isText(raw.starts_at) || !isText(raw.ends_at)) {
-    invalid("mua Premium")
-  }
-  const wallet = parseWallet(raw.wallet, "mua Premium")
-  return { ...(raw as PremiumPurchaseResult), wallet }
-}
-
-export function parseDemoExchangeResult(raw: unknown): DemoExchangeResult {
-  if (!isRecord(raw)) invalid("đổi xu")
-  if (raw.direction !== "xu_to_cash" && raw.direction !== "cash_to_xu") invalid("đổi xu")
-  if (!isInt(raw.amount) || !isInt(raw.xu_delta) || !isInt(raw.cash_delta_vnd)) invalid("đổi xu")
-  if (!isCount(raw.balance_xu) || !isCount(raw.cash_available_vnd) || !isCount(raw.cash_per_xu)) invalid("đổi xu")
-  return raw as DemoExchangeResult
 }
 
 export async function fetchShopState(signal?: AbortSignal): Promise<ShopState> {
@@ -235,20 +210,6 @@ export function postEvolve(mascotId: string, body: EvolveBody): Promise<EvolveRe
     parseEvolveResult(
       await requestOperation("POST /api/v2/shop/pets/{mascotId}/evolve", { path: { mascotId }, body }, { signal }),
     ),
-  )
-}
-
-/** Premium mua bằng xu: cộng 30 ngày vào thời hạn Premium hiện có. */
-export function postPremiumPurchase(body: PremiumPurchaseBody): Promise<PremiumPurchaseResult> {
-  return withDeadline(PURCHASE_TIMEOUT_MS, async (signal) =>
-    parsePremiumPurchaseResult(await requestOperation("POST /api/v2/shop/premium-purchases", { body }, { signal })),
-  )
-}
-
-/** Đổi xu hai chiều với tiền mặt của tài khoản Demo Trading. */
-export function postDemoExchange(body: DemoExchangeBody): Promise<DemoExchangeResult> {
-  return withDeadline(PURCHASE_TIMEOUT_MS, async (signal) =>
-    parseDemoExchangeResult(await requestOperation("POST /api/v2/shop/demo-exchange", { body }, { signal })),
   )
 }
 

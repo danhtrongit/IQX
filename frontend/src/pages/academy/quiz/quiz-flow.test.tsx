@@ -39,7 +39,7 @@ afterEach(() => vi.unstubAllGlobals())
 type User = ReturnType<typeof userEvent.setup>
 
 async function openItem(id: string, heading: string) {
-  const view = renderAcademy(`/demo-trading?view=academy&lesson=${id}`, { panel: false })
+  const view = renderAcademy(`/luyen-tap?tool=hoc-vien&lesson=${id}`, { panel: false })
   await screen.findByRole("heading", { level: 2, name: heading })
   return view
 }
@@ -170,7 +170,7 @@ describe("quiz: score-only result", () => {
     expect(fake.calls.filter((call) => call.startsWith("GET /academy/attempts/"))).toEqual([])
 
     await user.click(screen.getByRole("button", { name: /Bài tiếp theo/ }))
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-l02")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
   })
 
@@ -257,7 +257,7 @@ describe("quiz: score-only result", () => {
     expect(screen.getByText("Đã hoàn thành Chương 1")).toBeTruthy()
     expect(mocks.toast.success).not.toHaveBeenCalled()
     await user.click(screen.getByRole("button", { name: "Xem lại Chương 1" }))
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l01")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-l01")
   }, 20_000)
 
   it("the practice room quiz is labelled Bài kiểm tra, not the room name (spec §3.2-1)", async () => {

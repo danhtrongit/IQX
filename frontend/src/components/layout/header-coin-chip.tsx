@@ -1,18 +1,17 @@
 import { Coins } from "lucide-react"
 import { Link, useLocation } from "react-router"
 
+import { FLASHBACK_TOOL, SECTION_PATH, sectionOfPath } from "@/config/chrome"
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 import { formatXu } from "@/pages/demo-trading/shop/shop-model"
 import { useShopState } from "@/pages/demo-trading/shop/use-shop"
+import { sectionSearch, useWorkspaceMemory, type WorkspaceMemory } from "@/pages/demo-trading/workspace-sections"
 
-/** Opens HỌC VIỆN → Shop; on the workspace it keeps the shared params (selected symbol...). */
-function shopDestination(pathname: string, search: string): string {
-  if (pathname !== "/demo-trading") return "/demo-trading?view=shop"
-  const params = new URLSearchParams(search)
-  params.set("view", "shop")
-  for (const key of ["content", "analysis", "lesson", "practice"]) params.delete(key)
-  return `/demo-trading?${params}`
+/** Opens FLASHBACK → Shop from anywhere (layout v1.3 §1); on the workspace it keeps the shared params (symbol...). */
+function shopDestination(pathname: string, search: string, saved: WorkspaceMemory = {}): string {
+  const shared = sectionOfPath(pathname) ? search : ""
+  return `${SECTION_PATH.flashback}${sectionSearch("flashback", shared, saved, { id: FLASHBACK_TOOL.shop })}`
 }
 
 /** A direct link to a tool always opens its panel, even one the learner collapsed. */
@@ -20,6 +19,7 @@ const OPEN_PANEL_STATE = { openPanel: true }
 
 function CoinChip() {
   const location = useLocation()
+  const memory = useWorkspaceMemory()
   const shop = useShopState()
   const balance = shop.data?.wallet.balance
   const label = balance != null
@@ -27,7 +27,7 @@ function CoinChip() {
     : shop.isError ? "Chưa tải được số dư xu. Mở Shop" : "Đang tải số dư xu. Mở Shop"
   return (
     <Link
-      to={shopDestination(location.pathname, location.search)}
+      to={shopDestination(location.pathname, location.search, memory)}
       state={OPEN_PANEL_STATE}
       aria-label={label}
       data-testid="header-coin-chip"

@@ -1,5 +1,5 @@
 /**
- * Panel "Danh mục" của /demo-trading — ba tab Theo dõi / Nắm giữ / Lịch sử,
+ * Panel "Danh mục" của LUYỆN TẬP → Giao dịch — ba tab Theo dõi / Nắm giữ / Lịch sử,
  * port từ `features/watchlist` của dashboard cũ sang shadcn + IQX DESIGN.
  *
  * Hợp đồng với shell (`demo-trading-page`):
@@ -7,7 +7,7 @@
  *   báo lên; hàng nào trùng mã đang chọn thì được tô sáng.
  * - `onNavigate(panel, symbol?)` — chuyển panel khác trong rail; khi hành động
  *   vừa chọn mã vừa đổi panel thì truyền mã kèm theo MỘT lần gọi (shell ghi cả
- *   `?view=` lẫn `?symbol=` trong cùng một lần cập nhật search param).
+ *   `?tab=` lẫn `?symbol=` trong cùng một lần cập nhật search param).
  *
  * Tab đang mở nhớ qua localStorage; mọi dữ liệu khác đều là server state của
  * React Query nên tải lại trang là khôi phục đúng từ backend.

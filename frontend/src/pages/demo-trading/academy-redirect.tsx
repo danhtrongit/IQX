@@ -3,8 +3,8 @@ import { Navigate, useLocation, useParams } from "react-router"
 import { academyWorkspaceLocation } from "./workspace-url"
 
 /**
- * `/hoc-vien[/:lessonId]` (and its alias `/academy`) now lives in the workspace's Học viện tool
- * (`/demo-trading?view=academy&lesson=…`); a lesson id in the path is kept, and so is a
+ * `/hoc-vien[/:lessonId]` (and its alias `/academy`) now lives in LUYỆN TẬP → Học viện
+ * (`/luyen-tap?tool=hoc-vien&lesson=…`); a lesson id in the path is kept, and so is a
  * `?metric=<key>` query (spec v4 §6): the tool resolves it to the lesson of that metric.
  */
 export function AcademyRedirect() {

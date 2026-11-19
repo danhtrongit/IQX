@@ -43,7 +43,7 @@ async function ready() {
 describe("AcademyPanel structure", () => {
   it("shows Học viện, 116 bài học, the progress x / 116 and the twelve published chapters", async () => {
     install({ completed: ["concept:ch01_l01", "concept:ch01_l02"] })
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
 
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
@@ -80,7 +80,7 @@ describe("AcademyPanel structure", () => {
   it("learning is free: Xem lại for passed, Học bài for every other lesson, Làm bài for every exam, no lock anywhere", async () => {
     install({ completed: ["concept:ch01_l01"] })
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
 
     expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Xem lại")
@@ -103,7 +103,7 @@ describe("AcademyPanel structure", () => {
 
   it("an account in sequential mode (spec v4.1) still gets the lock with Chưa mở and no button on a later item", async () => {
     install({ mode: "sequential", completed: ["concept:ch01_l01"] })
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
 
     expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Xem lại")
@@ -116,7 +116,7 @@ describe("AcademyPanel structure", () => {
 
   it("shows the practice room with Tự chọn right after the chapter 3 exam, open at once", async () => {
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     await user.click(chapterButton(3))
     const practice = row("ch03-practice")
@@ -131,7 +131,7 @@ describe("AcademyPanel structure", () => {
   })
 
   it("labels a chapter exam Làm bài before any lesson of its chapter is passed", async () => {
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     expect(within(row("ch01-exam")).getByText("Bài thi Chương 1")).toBeTruthy()
     expect(within(row("ch01-exam")).getByRole("button").textContent).toBe("Làm bài")
@@ -142,7 +142,7 @@ describe("AcademyPanel structure", () => {
   it("keeps a lesson passed out of order reviewable while the lessons before it stay open", async () => {
     install({ completed: [keyOf("ch04-l06")] })
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     await user.click(chapterButton(4))
     expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Học bài")
@@ -155,7 +155,7 @@ describe("AcademyPanel structure", () => {
     install({ completed: ["concept:ch01_l01", "concept:ch01_l02"] })
     fake.fail("progress", new ApiError("Dịch vụ tạm thời không khả dụng", 503, "SERVICE_UNAVAILABLE"))
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await within(panel()).findByText("Chương 1 · Nền tảng")
     expect(within(panel()).queryByText("0 / 116")).toBeNull()
     expect(await within(panel()).findByText("Chưa tải được tiến độ.")).toBeTruthy()
@@ -175,7 +175,7 @@ describe("AcademyPanel structure", () => {
   it("shows an error with Thử lại when the catalog cannot be read", async () => {
     fake.fail("catalog", new ApiError("Dịch vụ tạm thời không khả dụng", 503, "SERVICE_UNAVAILABLE"))
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     expect(await within(panel()).findByText("Chưa tải được danh sách bài học")).toBeTruthy()
     expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(0)
     await user.click(within(panel()).getAllByRole("button", { name: "Thử lại" }).at(-1) as HTMLElement)
@@ -190,7 +190,7 @@ describe("AcademyPanel with a team lead's Academy config (spec v4.1)", () => {
 
   async function readyGroupA(options: Parameters<typeof createFakeAcademyApi>[0] = {}) {
     install({ chapters: GROUP_A, ...options })
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await within(panel()).findByText("Chương 1 · Nền tảng")
     await waitFor(() => expect(row("ch01-l01").getAttribute("data-state")).not.toBe("unknown"))
   }
@@ -225,7 +225,7 @@ describe("AcademyPanel with a team lead's Academy config (spec v4.1)", () => {
 
   it("keeps a chapter open by its id when the learner's numbers change under him", async () => {
     const user = userEvent.setup()
-    const first = renderAcademy("/demo-trading?view=academy", { main: false })
+    const first = renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     await user.click(chapterButton(3))
     expect(chapterButton(3).getAttribute("aria-expanded")).toBe("true")
@@ -233,7 +233,7 @@ describe("AcademyPanel with a team lead's Academy config (spec v4.1)", () => {
 
     // The next visit comes with another config: ch03 is chapter 2 now and is still the open one.
     install({ chapters: GROUP_A })
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await within(panel()).findByText("Chương 2 · Thương hiệu cá nhân")
     expect(chapter(2).getAttribute("data-chapter-id")).toBe("ch03")
     expect(chapterButton(2).getAttribute("aria-expanded")).toBe("true")
@@ -243,7 +243,7 @@ describe("AcademyPanel with a team lead's Academy config (spec v4.1)", () => {
   it("sequential mode locks only along the config's chapters: the first chapter after Nền tảng opens once Nền tảng is passed", async () => {
     const program = buildCatalog({ chapters: GROUP_A, mode: "sequential" })
     install({ mode: "sequential", chapters: GROUP_A, completed: keysBefore("ch03-l01", program) })
-    renderAcademy("/demo-trading?view=academy&lesson=ch03-l01", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien&lesson=ch03-l01", { main: false })
     await ready()
     // The chapter 2 of this learner (ch03) is next: it needs nothing from the removed chapter.
     expect(within(row("ch03-l01")).getByRole("button").textContent).toBe("Học bài")
@@ -253,7 +253,7 @@ describe("AcademyPanel with a team lead's Academy config (spec v4.1)", () => {
 
   it("a config of two chapters shows two groups and, in sequential mode, locks the second lesson of the first", async () => {
     install({ mode: "sequential", chapters: [1, 3], completed: [] })
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Học bài")
     expect(within(row("ch01-l02")).queryByRole("button")).toBeNull()
@@ -265,7 +265,7 @@ describe("AcademyPanel with a team lead's Academy config (spec v4.1)", () => {
 describe("AcademyPanel chapter open state", () => {
   it("opens the chapter of the current item on the first visit", async () => {
     install({ completed: keysBefore("ch02-l03") })
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     await waitFor(() => expect(chapterButton(2).getAttribute("aria-expanded")).toBe("true"))
     for (let no = 1; no <= 12; no += 1) {
@@ -278,7 +278,7 @@ describe("AcademyPanel chapter open state", () => {
 
   it("lets several chapters be open at once and all be closed, and a refresh never re-opens one", async () => {
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     expect(chapterButton(1).getAttribute("aria-expanded")).toBe("true")
     await user.click(chapterButton(3))
@@ -296,13 +296,13 @@ describe("AcademyPanel chapter open state", () => {
 
   it("remembers the open chapters for the session when the panel is remounted", async () => {
     const user = userEvent.setup()
-    const first = renderAcademy("/demo-trading?view=academy", { main: false })
+    const first = renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     await user.click(chapterButton(4))
     await user.click(chapterButton(1))
     first.unmount()
 
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     expect(chapterButton(4).getAttribute("aria-expanded")).toBe("true")
     expect(chapterButton(1).getAttribute("aria-expanded")).toBe("false")
@@ -312,7 +312,7 @@ describe("AcademyPanel chapter open state", () => {
 describe("AcademyPanel chapter shown first", () => {
   it("opens the chapter of the lesson opened last, not the first one still to pass (spec v4 §4.1)", async () => {
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy")
+    renderAcademy("/luyen-tap?tool=hoc-vien")
     await ready()
     await user.click(chapterButton(10))
     await user.click(within(row("ch10-l03")).getByRole("button", { name: "Học bài Bài học 10.3" }))
@@ -321,7 +321,7 @@ describe("AcademyPanel chapter shown first", () => {
     // A fresh visit of the tool (the session memory is gone) lands on that chapter.
     resetAcademyViewState()
     cleanup()
-    renderAcademy("/demo-trading?view=academy", { main: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false })
     await ready()
     await waitFor(() => expect(chapterButton(10).getAttribute("aria-expanded")).toBe("true"))
     expect(chapterButton(1).getAttribute("aria-expanded")).toBe("false")
@@ -331,7 +331,7 @@ describe("AcademyPanel chapter shown first", () => {
 describe("AcademyPanel opening items", () => {
   it("opens the item and its chapter from a deep link, marking the row as current", async () => {
     install({ completed: keysBefore("ch02-l02") })
-    renderAcademy("/demo-trading?view=academy&lesson=ch02-l01")
+    renderAcademy("/luyen-tap?tool=hoc-vien&lesson=ch02-l01")
     await ready()
     expect(chapterButton(2).getAttribute("aria-expanded")).toBe("true")
     expect(within(row("ch02-l01")).getByRole("button", { name: "Xem lại Bài học 2.1" }).getAttribute("aria-current")).toBe("true")
@@ -343,22 +343,22 @@ describe("AcademyPanel opening items", () => {
 
   it("Học bài opens the item on the left and keeps the other URL parameters", async () => {
     const user = userEvent.setup()
-    const { router } = renderAcademy("/demo-trading?view=academy&symbol=FPT&content=chart")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&symbol=FPT&content=chart")
     await ready()
     expect(screen.getByTestId("mascot-stage")).toBeTruthy()
     await user.click(within(row("ch01-l01")).getByRole("button", { name: "Học bài Bài học 1.1" }))
-    expect(router.state.location.search).toBe("?view=academy&symbol=FPT&lesson=ch01-l01")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&symbol=FPT&lesson=ch01-l01")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })).toBeTruthy()
 
     await user.click(screen.getByRole("button", { name: "Về linh thú" }))
-    expect(router.state.location.search).toBe("?view=academy&symbol=FPT")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&symbol=FPT")
     expect(screen.getByTestId("mascot-stage")).toBeTruthy()
   })
 
   it("does not complete or reward anything by opening, switching or leaving an item", async () => {
     install({ completed: ["concept:ch01_l01"] })
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy")
+    renderAcademy("/luyen-tap?tool=hoc-vien")
     await ready()
     await user.click(within(row("ch01-l01")).getByRole("button"))
     await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
@@ -371,14 +371,14 @@ describe("AcademyPanel opening items", () => {
   it("on a phone choosing an item closes the list layer; on a wide screen it does not", async () => {
     const user = userEvent.setup()
     const frame = overlayFrame()
-    const first = renderAcademy("/demo-trading?view=academy", { main: false, frame })
+    const first = renderAcademy("/luyen-tap?tool=hoc-vien", { main: false, frame })
     await ready()
     await user.click(within(row("ch01-l01")).getByRole("button"))
     expect(frame.setOpen).toHaveBeenCalledWith(false)
     first.unmount()
 
     const wide = overlayFrame({ overlay: false })
-    renderAcademy("/demo-trading?view=academy", { main: false, frame: wide })
+    renderAcademy("/luyen-tap?tool=hoc-vien", { main: false, frame: wide })
     await ready()
     await user.click(within(row("ch01-l01")).getByRole("button"))
     expect(wide.setOpen).not.toHaveBeenCalled()

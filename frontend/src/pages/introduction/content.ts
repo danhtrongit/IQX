@@ -46,8 +46,8 @@ import { LEVELS } from "@/pages/demo-trading/journey/journey-state"
  * are the only place the page hard-codes a path.
  */
 export const LINKS = {
-  demo: "/demo-trading",
-  market: "/demo-trading?content=ai-analysis",
+  demo: "/luyen-tap?tool=giao-dich&tab=dat-lenh",
+  market: "/luyen-tap?tool=giao-dich&tab=dat-lenh&content=market",
   lessons: "/bai-hoc",
   premium: "/nang-cap",
 } as const

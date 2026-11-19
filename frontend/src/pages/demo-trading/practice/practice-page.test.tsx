@@ -4,10 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { demoChrome } from "@/config/chrome"
+import { practiceChrome } from "@/config/chrome"
 import { RailProvider } from "@/context/rail"
-import { DemoTradingPage } from "../demo-trading-page"
-import { demoTradingLoader } from "../workspace-url"
+import { PracticePage } from "../demo-trading-page"
+import { workspaceLoader } from "../workspace-url"
 import { resetEnsuredWorkspaces } from "../workspace/workspace-api"
 import { createBackend, type FakeBackend } from "./practice.backend"
 
@@ -59,7 +59,7 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
 
 async function renderPage(initial: string) {
   const router = createMemoryRouter(
-    [{ path: "/demo-trading", loader: demoTradingLoader, handle: { chrome: demoChrome }, element: <RailProvider><DemoTradingPage /></RailProvider> }],
+    [{ path: "/luyen-tap", loader: workspaceLoader, handle: { chrome: practiceChrome }, element: <RailProvider><PracticePage /></RailProvider> }],
     { initialEntries: [initial] },
   )
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -84,10 +84,10 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
-describe("/demo-trading?view=bot&practice=<id>", () => {
+describe("/luyen-tap?tool=bot&practice=<id>", () => {
   it("renders the practice in the main area and the right panel, and Về Bot drops only the practice param", async () => {
     const user = userEvent.setup()
-    const router = await renderPage("/demo-trading?view=bot&practice=rsi&symbol=FPT")
+    const router = await renderPage("/luyen-tap?tool=bot&practice=rsi&symbol=FPT")
     const panel = within(screen.getByRole("complementary"))
     expect(await panel.findByRole("heading", { name: "Luyện tập RSI" })).toBeTruthy()
     expect(await screen.findByRole("heading", { level: 1, name: "Luyện tập RSI" })).toBeTruthy()
@@ -97,19 +97,19 @@ describe("/demo-trading?view=bot&practice=<id>", () => {
     expect(within(screen.getByRole("navigation", { name: "Công cụ theo trang" })).getByRole("button", { name: "Bot" }).getAttribute("aria-pressed")).toBe("true")
 
     await user.click(screen.getAllByRole("button", { name: "Về Bot" })[0])
-    await waitFor(() => expect(router.state.location.search).toBe("?view=bot&symbol=FPT"))
+    await waitFor(() => expect(router.state.location.search).toBe("?tool=bot&symbol=FPT"))
     await waitFor(() => expect(screen.queryByTestId("practice-main")).toBeNull())
     expect(screen.queryByRole("heading", { name: "Luyện tập RSI" })).toBeNull()
   })
 
   it("an unknown or malformed indicator never reaches the practice routes with a bad id", async () => {
-    await renderPage("/demo-trading?view=bot&practice=../../etc")
+    await renderPage("/luyen-tap?tool=bot&practice=../../etc")
     expect(screen.queryByTestId("practice-main")).toBeNull()
     expect(mocks.api.mock.calls.some(([path]) => String(path).startsWith("/practice/"))).toBe(false)
   })
 
   it("the practice param is ignored outside the Bot tool", async () => {
-    await renderPage("/demo-trading?view=trading&practice=rsi")
+    await renderPage("/luyen-tap?tool=giao-dich&tab=dat-lenh&practice=rsi")
     expect(screen.queryByTestId("practice-main")).toBeNull()
     expect(mocks.api.mock.calls.some(([path]) => String(path).startsWith("/practice/"))).toBe(false)
   })

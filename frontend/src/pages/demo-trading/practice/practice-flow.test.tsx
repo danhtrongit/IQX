@@ -55,7 +55,7 @@ function renderPractice(indicatorId = "rsi") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[`/demo-trading?view=bot&practice=${indicatorId}`]}>
+      <MemoryRouter initialEntries={[`/luyen-tap?tool=bot&practice=${indicatorId}`]}>
         <PracticeProvider indicatorId={indicatorId}>
           <aside data-testid="panel">
             <PracticePanel />
@@ -607,7 +607,7 @@ describe("start", () => {
     expect(notice.length).toBeGreaterThan(0)
     expect(document.body.textContent).not.toMatch(/mở khóa|Chương|Đạt bài kiểm tra/)
     const link = (await screen.findAllByRole("link", { name: /Học bài RSI/ }))[0]
-    expect(link.getAttribute("href")).toBe("/demo-trading?view=academy&lesson=ch04-l06")
+    expect(link.getAttribute("href")).toBe("/luyen-tap?tool=hoc-vien&lesson=ch04-l06")
     expect(screen.queryByRole("button", { name: "Bắt đầu" })).toBeNull()
   })
 })

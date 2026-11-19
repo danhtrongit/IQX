@@ -3,62 +3,55 @@ import { HEADER_NAV } from "@/config/chrome"
 import { workspaceMemory } from "@/pages/demo-trading/workspace-sections"
 import { headerDestination, isHeaderLinkActive } from "./header-navigation"
 
-const workspace = (search: string) => ({ pathname: "/demo-trading", search })
-const params = (url: string) => Object.fromEntries(new URLSearchParams(url.split("?")[1]))
+const practice = (search: string) => ({ pathname: "/luyen-tap", search })
+const flashback = (search: string) => ({ pathname: "/flashback", search })
 
 beforeEach(() => workspaceMemory.reset())
 
 describe("shared header routing", () => {
   it.each([
     ["/", "", "Giới thiệu"],
-    ["/demo-trading", "?view=trading", "Demo Trading"],
-    ["/demo-trading", "?view=bot&symbol=FPT", "Học viện"],
-    ["/demo-trading", "?view=shop", "Học viện"],
-    ["/demo-trading", "?view=academy", "Học viện"],
-    ["/demo-trading", "", "Demo Trading"],
-    ["/demo-trading", "?content=board", "Demo Trading"],
-    ["/demo-trading", "?view=hunt", "Demo Trading"],
-    ["/demo-trading", "?content=journey", "Demo Trading"],
-    ["/demo-trading", "?view=journey", "Học viện"],
+    ["/gioi-thieu", "", "Giới thiệu"],
+    ["/luyen-tap", "?tool=giao-dich&tab=dat-lenh", "Luyện tập"],
+    ["/luyen-tap", "?tool=bot&symbol=FPT", "Luyện tập"],
+    ["/luyen-tap", "", "Luyện tập"],
+    ["/flashback", "?tool=shop", "Flashback"],
+    ["/flashback", "", "Flashback"],
+    ["/chien-luoc", "?tab=backtest", "Chiến lược"],
+    ["/khu-giao-dich", "", "Khu giao dịch"],
     ["/bai-hoc/course/episode", "", "Bài học"],
   ])("highlights exactly one item for %s%s", (pathname, search, label) => {
     expect(HEADER_NAV.filter(item => isHeaderLinkActive(item.to, { pathname, search })).map(item => item.label)).toEqual([label])
   })
 
+  it("does not highlight Flashback on the admin Flashback page", () => {
+    expect(HEADER_NAV.filter(item => isHeaderLinkActive(item.to, { pathname: "/admin/flashback", search: "" }))).toEqual([])
+  })
+
   it("keeps the current URL when the link's section is already open", () => {
-    const location = workspace("?content=board&view=trading&symbol=VNM")
-    expect(headerDestination("/demo-trading?view=trading", location)).toBe("/demo-trading?content=board&view=trading&symbol=VNM")
-    expect(headerDestination("/demo-trading?view=academy", workspace("?view=bot&symbol=FPT"))).toBe("/demo-trading?view=bot&symbol=FPT")
-    expect(headerDestination("/co-phieu", location)).toBe("/co-phieu")
-    expect(headerDestination("/", location)).toBe("/")
+    expect(headerDestination("/luyen-tap", practice("?tool=giao-dich&tab=danh-muc&content=board&symbol=VNM"))).toBe("/luyen-tap?tool=giao-dich&tab=danh-muc&content=board&symbol=VNM")
+    expect(headerDestination("/flashback", flashback("?tool=shop&symbol=FPT"))).toBe("/flashback?tool=shop&symbol=FPT")
+    expect(headerDestination("/co-phieu", practice("?tool=bot"))).toBe("/co-phieu")
+    expect(headerDestination("/", practice(""))).toBe("/")
   })
 
-  it("normalises a retired current URL instead of copying it", () => {
-    expect(headerDestination("/demo-trading?view=academy", workspace("?view=journey&symbol=FPT"))).toBe("/demo-trading?view=academy&symbol=FPT")
-  })
-
-  it("opens the default tool of the other section and leaves shared params alone", () => {
-    const toAcademy = headerDestination("/demo-trading?view=academy", workspace("?view=hunt&symbol=FPT&content=board"))
-    expect(params(toAcademy)).toEqual({ view: "academy", symbol: "FPT" })
-    const toDemo = headerDestination("/demo-trading?view=trading", workspace("?view=academy&symbol=VIC&lesson=ch01-l01"))
-    expect(params(toDemo)).toEqual({ view: "trading", symbol: "VIC" })
+  it("opens the default tool of the other section and carries the shared params", () => {
+    expect(headerDestination("/flashback", practice("?tool=giao-dich&tab=danh-muc&symbol=FPT&content=board"))).toBe("/flashback?tool=flashback&symbol=FPT")
+    expect(headerDestination("/luyen-tap", flashback("?tool=shop&symbol=VIC"))).toBe("/luyen-tap?tool=candle-dojo&symbol=VIC")
   })
 
   it("opens a section's default tool when coming from another page", () => {
-    expect(headerDestination("/demo-trading?view=trading", { pathname: "/chien-luoc", search: "" })).toBe("/demo-trading?view=trading")
-    expect(headerDestination("/demo-trading?view=academy", { pathname: "/", search: "?symbol=X" })).toBe("/demo-trading?view=academy")
+    expect(headerDestination("/luyen-tap", { pathname: "/chien-luoc", search: "" })).toBe("/luyen-tap?tool=candle-dojo")
+    expect(headerDestination("/flashback", { pathname: "/", search: "?symbol=X" })).toBe("/flashback?tool=flashback")
   })
 
-  it("opens a section as it was left when memory has it", () => {
-    workspaceMemory.remember("academy", "?view=bot&lesson=ch01-l01")
-    workspaceMemory.remember("demo", "?view=portfolio&content=market")
-    expect(params(headerDestination("/demo-trading?view=academy", workspace("?view=trading&symbol=FPT"), workspaceMemory.get())))
-      .toEqual({ view: "bot", lesson: "ch01-l01", symbol: "FPT" })
-    expect(params(headerDestination("/demo-trading?view=trading", workspace("?view=shop&symbol=FPT"), workspaceMemory.get())))
-      .toEqual({ view: "portfolio", content: "market", symbol: "FPT" })
-    expect(params(headerDestination("/demo-trading?view=trading", { pathname: "/chien-luoc", search: "" }, workspaceMemory.get())))
-      .toEqual({ view: "portfolio", content: "market" })
+  it("opens each section as it was left (tool, Giao dịch tab)", () => {
+    workspaceMemory.remember("practice", "?tool=giao-dich&tab=tin-tuc&content=market")
+    workspaceMemory.remember("flashback", "?tool=shop")
+    expect(headerDestination("/luyen-tap", flashback("?tool=shop&symbol=FPT"), workspaceMemory.get())).toBe("/luyen-tap?tool=giao-dich&tab=tin-tuc&content=market&symbol=FPT")
+    expect(headerDestination("/flashback", practice("?tool=bot"), workspaceMemory.get())).toBe("/flashback?tool=shop")
+    expect(headerDestination("/luyen-tap", { pathname: "/chien-luoc", search: "" }, workspaceMemory.get())).toBe("/luyen-tap?tool=giao-dich&tab=tin-tuc&content=market")
     // Inside the section the memory does not override the current URL.
-    expect(headerDestination("/demo-trading?view=academy", workspace("?view=shop"))).toBe("/demo-trading?view=shop")
+    expect(headerDestination("/flashback", flashback("?tool=flashback"), workspaceMemory.get())).toBe("/flashback?tool=flashback")
   })
 })

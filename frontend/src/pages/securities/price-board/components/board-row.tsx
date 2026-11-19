@@ -151,7 +151,7 @@ export const BoardRow = memo(function BoardRow({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to={`/demo-trading?symbol=${row.symbol}&view=trading`}>
+              <Link to={`/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=${row.symbol}`}>
                 <Wallet />
                 Giao dịch demo
               </Link>

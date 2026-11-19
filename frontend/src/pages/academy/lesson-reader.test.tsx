@@ -32,7 +32,7 @@ afterEach(() => vi.unstubAllGlobals())
 const reader = () => screen.getByRole("article")
 const locator = () => reader().querySelector("[data-academy-locator]")?.textContent
 const open = (id: string, options: Parameters<typeof renderAcademy>[1] = { panel: false }) =>
-  renderAcademy(`/demo-trading?view=academy&lesson=${id}`, options)
+  renderAcademy(`/luyen-tap?tool=hoc-vien&lesson=${id}`, options)
 
 describe("LessonReader header and locator", () => {
   it("shows Về linh thú, the locator Chương c · Bài n / m, the title, the lead, the summary and Đã hoàn thành", async () => {
@@ -103,7 +103,7 @@ describe("LessonReader locked and missing items", () => {
     expect(within(reader()).queryByRole("heading", { level: 3, name: "Tóm tắt" })).toBeNull()
     expect(within(reader()).queryByRole("button", { name: "Làm bài kiểm tra" })).toBeNull()
     await user.click(await screen.findByRole("button", { name: "Học tiếp" }))
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-l02")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
   })
 
@@ -121,7 +121,7 @@ describe("LessonReader locked and missing items", () => {
     expect(await screen.findByText("Bài này không còn trong chương trình học của bạn")).toBeTruthy()
     expect(screen.queryByText("Không tìm thấy bài học")).toBeNull()
     await user.click(screen.getByRole("button", { name: "Học tiếp" }))
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-l02")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
   })
 
@@ -187,7 +187,7 @@ describe("ItemPager", () => {
     await waitFor(() => expect(next.hasAttribute("disabled")).toBe(false))
     expect(pager.querySelector("svg.lucide-lock")).toBeNull()
     await user.click(next)
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-l02")
   })
 
   it("disables a locked next item for an account in sequential mode (spec v4.1)", async () => {
@@ -204,7 +204,7 @@ describe("ItemPager", () => {
     const { router } = open("ch01-exam")
     await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 1" })
     await user.click(await screen.findByRole("button", { name: "Xem lại Chương 1" }))
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l01")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-l01")
     await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
   })
 
@@ -215,7 +215,7 @@ describe("ItemPager", () => {
     const pager = screen.getByRole("navigation", { name: "Bài trước và bài sau" })
     await waitFor(() => expect(within(pager).getByRole("button", { name: /Bài sau: Bài thi Chương 1/ }).hasAttribute("disabled")).toBe(false))
     await user.click(within(pager).getByRole("button", { name: /Bài sau: Bài thi Chương 1/ }))
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-exam")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-exam")
   })
 })
 

@@ -23,7 +23,7 @@ afterEach(() => vi.unstubAllGlobals())
 describe("Học viện for a guest", () => {
   it("asks to sign in instead of showing a list or a made-up count, and requests nothing", async () => {
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l01")
+    renderAcademy("/luyen-tap?tool=hoc-vien&lesson=ch01-l01")
     expect(screen.getByText("Đăng nhập để học")).toBeTruthy()
     // The number of lessons depends on the account's Academy config (spec v4.1 §2.4): a guest is told none.
     expect(screen.queryByText(/\d+ bài học/)).toBeNull()
