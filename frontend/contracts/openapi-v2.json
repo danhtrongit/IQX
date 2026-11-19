@@ -10400,7 +10400,7 @@
           },
           "policy_version": {
             "enum": [
-              "iqx-bot-v1.0"
+              "iqx-bot-v1.1"
             ],
             "type": "string"
           },
@@ -154835,6 +154835,12 @@
                           "type": "object"
                         },
                         "type": "object"
+                      },
+                      "max_holding": {
+                        "maximum": 250,
+                        "minimum": 3,
+                        "nullable": true,
+                        "type": "integer"
                       }
                     },
                     "required": [
@@ -155414,6 +155420,15 @@
                                 ],
                                 "type": "string"
                               },
+                              "concurrent_reasons": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "exit_reason": {
+                                "type": "string"
+                              },
                               "reason": {
                                 "enum": [
                                   "end_of_range"
@@ -155976,6 +155991,9 @@
                                 ],
                                 "type": "object"
                               },
+                              "exit_reason": {
+                                "type": "string"
+                              },
                               "note": {
                                 "type": "string"
                               },
@@ -156009,11 +156027,10 @@
                               "type": "integer"
                             },
                             "max_holding": {
-                              "enum": [
-                                null
-                              ],
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
                               "nullable": true,
-                              "type": "string"
+                              "type": "integer"
                             },
                             "min_held_bars": {
                               "maximum": 9007199254740991,
@@ -156196,6 +156213,12 @@
                                   "additionalProperties": {},
                                   "type": "object"
                                 },
+                                "max_holding": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "nullable": true,
+                                  "type": "integer"
+                                },
                                 "schema_version": {
                                   "type": "string"
                                 }
@@ -156360,11 +156383,10 @@
                                   "type": "integer"
                                 },
                                 "max_holding": {
-                                  "enum": [
-                                    null
-                                  ],
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
                                   "nullable": true,
-                                  "type": "string"
+                                  "type": "integer"
                                 },
                                 "min_held_bars": {
                                   "maximum": 9007199254740991,
@@ -156467,7 +156489,8 @@
                                 },
                                 "exits": {
                                   "enum": [
-                                    "none: no stop, take-profit, trailing or max holding"
+                                    "none: no stop, take-profit, trailing or max holding",
+                                    "max_holding_only: no stop, take-profit or trailing"
                                   ],
                                   "type": "string"
                                 },
@@ -156485,6 +156508,12 @@
                                     "not_modelled"
                                   ],
                                   "type": "string"
+                                },
+                                "max_holding": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "nullable": true,
+                                  "type": "integer"
                                 },
                                 "min_held_bars": {
                                   "maximum": 9007199254740991,
@@ -157276,6 +157305,12 @@
                               "additionalProperties": {},
                               "type": "object"
                             },
+                            "max_holding": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "nullable": true,
+                              "type": "integer"
+                            },
                             "schema_version": {
                               "type": "string"
                             }
@@ -157440,11 +157475,10 @@
                               "type": "integer"
                             },
                             "max_holding": {
-                              "enum": [
-                                null
-                              ],
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
                               "nullable": true,
-                              "type": "string"
+                              "type": "integer"
                             },
                             "min_held_bars": {
                               "maximum": 9007199254740991,
@@ -157547,7 +157581,8 @@
                             },
                             "exits": {
                               "enum": [
-                                "none: no stop, take-profit, trailing or max holding"
+                                "none: no stop, take-profit, trailing or max holding",
+                                "max_holding_only: no stop, take-profit or trailing"
                               ],
                               "type": "string"
                             },
@@ -157565,6 +157600,12 @@
                                 "not_modelled"
                               ],
                               "type": "string"
+                            },
+                            "max_holding": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "nullable": true,
+                              "type": "integer"
                             },
                             "min_held_bars": {
                               "maximum": 9007199254740991,
@@ -158345,6 +158386,15 @@
                                 ],
                                 "type": "string"
                               },
+                              "concurrent_reasons": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "exit_reason": {
+                                "type": "string"
+                              },
                               "reason": {
                                 "enum": [
                                   "end_of_range"
@@ -158907,6 +158957,9 @@
                                 ],
                                 "type": "object"
                               },
+                              "exit_reason": {
+                                "type": "string"
+                              },
                               "note": {
                                 "type": "string"
                               },
@@ -158940,11 +158993,10 @@
                               "type": "integer"
                             },
                             "max_holding": {
-                              "enum": [
-                                null
-                              ],
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
                               "nullable": true,
-                              "type": "string"
+                              "type": "integer"
                             },
                             "min_held_bars": {
                               "maximum": 9007199254740991,
@@ -159127,6 +159179,12 @@
                                   "additionalProperties": {},
                                   "type": "object"
                                 },
+                                "max_holding": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "nullable": true,
+                                  "type": "integer"
+                                },
                                 "schema_version": {
                                   "type": "string"
                                 }
@@ -159291,11 +159349,10 @@
                                   "type": "integer"
                                 },
                                 "max_holding": {
-                                  "enum": [
-                                    null
-                                  ],
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
                                   "nullable": true,
-                                  "type": "string"
+                                  "type": "integer"
                                 },
                                 "min_held_bars": {
                                   "maximum": 9007199254740991,
@@ -159398,7 +159455,8 @@
                                 },
                                 "exits": {
                                   "enum": [
-                                    "none: no stop, take-profit, trailing or max holding"
+                                    "none: no stop, take-profit, trailing or max holding",
+                                    "max_holding_only: no stop, take-profit or trailing"
                                   ],
                                   "type": "string"
                                 },
@@ -159416,6 +159474,12 @@
                                     "not_modelled"
                                   ],
                                   "type": "string"
+                                },
+                                "max_holding": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "nullable": true,
+                                  "type": "integer"
                                 },
                                 "min_held_bars": {
                                   "maximum": 9007199254740991,
@@ -160207,6 +160271,12 @@
                               "additionalProperties": {},
                               "type": "object"
                             },
+                            "max_holding": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "nullable": true,
+                              "type": "integer"
+                            },
                             "schema_version": {
                               "type": "string"
                             }
@@ -160371,11 +160441,10 @@
                               "type": "integer"
                             },
                             "max_holding": {
-                              "enum": [
-                                null
-                              ],
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
                               "nullable": true,
-                              "type": "string"
+                              "type": "integer"
                             },
                             "min_held_bars": {
                               "maximum": 9007199254740991,
@@ -160478,7 +160547,8 @@
                             },
                             "exits": {
                               "enum": [
-                                "none: no stop, take-profit, trailing or max holding"
+                                "none: no stop, take-profit, trailing or max holding",
+                                "max_holding_only: no stop, take-profit or trailing"
                               ],
                               "type": "string"
                             },
@@ -160496,6 +160566,12 @@
                                 "not_modelled"
                               ],
                               "type": "string"
+                            },
+                            "max_holding": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "nullable": true,
+                              "type": "integer"
                             },
                             "min_held_bars": {
                               "maximum": 9007199254740991,
@@ -161848,6 +161924,9 @@
                               "rules"
                             ],
                             "type": "object"
+                          },
+                          "exit_reason": {
+                            "type": "string"
                           },
                           "note": {
                             "type": "string"
@@ -175979,6 +176058,12 @@
                           },
                           "type": "object"
                         },
+                        "max_holding": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "nullable": true,
+                          "type": "integer"
+                        },
                         "revision": {
                           "maximum": 9007199254740991,
                           "minimum": 1,
@@ -177215,6 +177300,12 @@
                                 "type": "object"
                               },
                               "type": "object"
+                            },
+                            "max_holding": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "nullable": true,
+                              "type": "integer"
                             },
                             "revision": {
                               "maximum": 9007199254740991,
@@ -178789,6 +178880,12 @@
                     },
                     "type": "object"
                   },
+                  "max_holding": {
+                    "maximum": 250,
+                    "minimum": 3,
+                    "nullable": true,
+                    "type": "integer"
+                  },
                   "source": {
                     "additionalProperties": false,
                     "properties": {
@@ -180025,6 +180122,12 @@
                             "type": "object"
                           },
                           "type": "object"
+                        },
+                        "max_holding": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "nullable": true,
+                          "type": "integer"
                         },
                         "revision": {
                           "maximum": 9007199254740991,

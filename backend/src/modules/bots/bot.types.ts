@@ -154,6 +154,11 @@ export type BotSharedConfigSignals = {
   sell_block?: BotSideBlock | null;
   buy: Record<string, boolean | null>;
   sell: Record<string, boolean | null>;
+  /**
+   * Giữ tối đa (phiên) of the pinned config, frozen with the run (`iqx-bot-v1.1`); absent/null =
+   * no time exit (every snapshot before it).
+   */
+  max_holding?: number | null;
   /** Per-symbol evidence frozen with the source snapshot for deterministic retries. */
   conditions?: Record<string, BotConditionSnapshot>;
   data: {

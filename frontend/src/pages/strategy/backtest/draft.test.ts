@@ -18,6 +18,7 @@ import {
   changedIndicators,
   defaultIndicators,
   maxHoldingError,
+  maxHoldingValue,
   removeSide,
   sameConfig,
   strategyDefinitionOf,
@@ -111,6 +112,12 @@ describe("draft helpers", () => {
     expect(strategyErrors(noSell, "60")).toEqual(["Chưa bật chỉ báo Bán nào."])
     expect(strategyErrors(filled, "2")).toEqual(["Giữ tối đa phải từ 3 đến 250 phiên, số nguyên."])
     expect(maxHoldingError("250")).toBeNull()
+    // The Backtest draft may leave it empty (no time exit); a Chiến lược IQX may not.
+    expect(maxHoldingError("", { optional: true })).toBeNull()
+    expect(maxHoldingError("")).not.toBeNull()
+    expect(maxHoldingError("2", { optional: true })).not.toBeNull()
+    expect(maxHoldingValue("")).toBeNull()
+    expect(maxHoldingValue(" 30 ")).toBe(30)
     expect(maxHoldingError("10.5")).not.toBeNull()
     expect(strategyErrors(defaultIndicators(registry), "30")).toEqual(["Chưa bật chỉ báo Mua nào.", "Chưa bật chỉ báo Bán nào."])
   })

@@ -19,6 +19,7 @@ import {
   type RunResult,
   type SharedConfig,
   type Side,
+  configMaxHolding,
 } from './types.js';
 
 export const DEFAULT_RUN_OPTIONS = Object.freeze({
@@ -51,7 +52,26 @@ type Position = {
   signal_date: string;
 };
 
-type PendingOrder = { action: Side; signalIndex: number };
+/** Why a sell was created: the Sell conditions, Giữ tối đa, or both on the same bar. */
+type ExitSignal = { indicator: boolean; time: boolean };
+
+type PendingOrder = { action: Side; signalIndex: number; exit: ExitSignal | null };
+
+const SELL_CONSENSUS = 'sell_consensus';
+const MAX_HOLDING = 'max_holding';
+
+/** Primary reason (Sell conditions first, Bot spec P15) and, with a Giữ tối đa, every true reason. */
+function exitReasons(
+  exit: ExitSignal | null,
+  maxHolding: number | null,
+): { exit_reason: string; concurrent_reasons?: string[] } {
+  if (maxHolding === null || exit === null) return { exit_reason: SELL_CONSENSUS };
+  const concurrent = [
+    ...(exit.indicator ? [SELL_CONSENSUS] : []),
+    ...(exit.time ? [MAX_HOLDING] : []),
+  ];
+  return { exit_reason: exit.indicator ? SELL_CONSENSUS : MAX_HOLDING, concurrent_reasons: concurrent };
+}
 
 const jsonCopy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const sum = (values: readonly number[]): number => values.reduce((s, x) => s + x, 0);
@@ -92,9 +112,17 @@ function optionsAreValid(opt: RunOptions): boolean {
 /**
  * Single-symbol long-only backtest under the CLEAN_TECH_2.0 profile — a port
  * of the reference engine `run`. All-cash sizing rounded down to the lot, no
- * stop/take-profit/max-holding/trailing, sell only after `min_held_bars`, no
+ * stop/take-profit/trailing, sell only after `min_held_bars`, no
  * same-bar re-entry, no forced exit at the end (open position is reported),
  * pending next-open orders at the end are canceled. Full curve and trades.
+ *
+ * Giữ tối đa (`config.max_holding` = N, Bot spec §11.2 / P13–P16): at the close of the bar where
+ * the position would reach N held bars at the fill (`next_open`: the close before the N-th bar,
+ * fill at its open; `same_close`: the N-th bar's close), a sell is created even when the Sell
+ * conditions are off, not met or missing. Sell conditions met on the same bar make ONE sell with
+ * primary reason `sell_consensus` and both reasons in `concurrent_reasons` (one fee). A time exit
+ * due at the last bar stays a canceled pending order: nothing is forced. Null/absent N = no time
+ * exit, exactly the behaviour before it.
  *
  * @throws EngineRunError (CONFIG_INVALID | BUY_RULES_REQUIRED | INVALID_OPTIONS | INVALID_BARS | EMPTY_RANGE)
  */
@@ -116,6 +144,9 @@ export function runBacktest(
   if (!hasBuy) throw new EngineRunError('BUY_RULES_REQUIRED', 'Cần ít nhất một điều kiện Mua.');
 
   const opt = resolveOptions(bars, options);
+  const maxHolding = configMaxHolding(config);
+  // Bars between the entry fill and the fill of an order created at this close.
+  const fillOffset = opt.execution === 'next_open' ? 1 : 0;
   if (!optionsAreValid(opt)) throw new EngineRunError('INVALID_OPTIONS', 'Giả định không hợp lệ.');
   const barsAreValid =
     bars.length > 0 &&
@@ -158,7 +189,13 @@ export function runBacktest(
   const base = firstBar.close;
   const marketBase = firstBar.market;
 
-  const execute = (action: Side, i: number, price: number, signalIndex: number): boolean => {
+  const execute = (
+    action: Side,
+    i: number,
+    price: number,
+    signalIndex: number,
+    exit: ExitSignal | null,
+  ): boolean => {
     const pos = ledger.pos;
     if (action === 'buy' && !pos) {
       const qty = Math.floor(ledger.cash / (price * (1 + opt.fee_buy) * opt.lot)) * opt.lot;
@@ -191,7 +228,7 @@ export function runBacktest(
         hold: i - pos.index,
         pnl,
         pnl_pct: (pnl / pos.cost) * 100,
-        exit_reason: 'sell_consensus',
+        ...exitReasons(exit, maxHolding),
       });
       ledger.pos = null;
       return true;
@@ -203,21 +240,26 @@ export function runBacktest(
     const bar = barAt(i);
     let traded = false;
     if (pending) {
-      traded = execute(pending.action, i, bar.open, pending.signalIndex);
+      traded = execute(pending.action, i, bar.open, pending.signalIndex, pending.exit);
       pending = null;
     }
     if (!traded || signalAfterOpenFill) {
       const pos = ledger.pos;
-      const action: Side | null = pos
-        ? sell[i] === true && i - pos.index >= opt.min_held_bars
-          ? 'sell'
-          : null
-        : buy[i] === true
-          ? 'buy'
-          : null;
+      let action: Side | null = null;
+      let exit: ExitSignal | null = null;
+      if (pos) {
+        const indicator = sell[i] === true && i - pos.index >= opt.min_held_bars;
+        const time = maxHolding !== null && i + fillOffset - pos.index >= maxHolding;
+        if (indicator || time) {
+          action = 'sell';
+          exit = { indicator, time };
+        }
+      } else if (buy[i] === true) {
+        action = 'buy';
+      }
       if (action) {
-        if (opt.execution === 'same_close') execute(action, i, bar.close, i);
-        else pending = { action, signalIndex: i };
+        if (opt.execution === 'same_close') execute(action, i, bar.close, i, exit);
+        else pending = { action, signalIndex: i, exit };
       }
     }
     const value = ledger.cash + (ledger.pos ? ledger.pos.qty * bar.close : 0);
@@ -234,7 +276,14 @@ export function runBacktest(
           : null,
     });
   }
-  if (pending) canceled.push({ reason: 'end_of_range', ...pending });
+  if (pending) {
+    const { exit, ...order } = pending;
+    canceled.push({
+      reason: 'end_of_range',
+      ...order,
+      ...(order.action === 'sell' && maxHolding !== null ? exitReasons(exit, maxHolding) : {}),
+    });
+  }
 
   const terminal = curve[curve.length - 1];
   if (terminal === undefined)
@@ -248,7 +297,12 @@ export function runBacktest(
     calculation_version: CALCULATION_VERSION,
     rule_version: RULE_VERSION,
     formula_version: FORMULA_VERSION,
-    profile: { ...CLEAN_TECH_2_0, lot_size: opt.lot, min_held_bars: opt.min_held_bars },
+    profile: {
+      ...CLEAN_TECH_2_0,
+      lot_size: opt.lot,
+      min_held_bars: opt.min_held_bars,
+      max_holding: maxHolding,
+    },
     snapshot: {
       config: jsonCopy(config),
       options: jsonCopy(opt),

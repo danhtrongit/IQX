@@ -4,7 +4,7 @@ import { registryFor } from "../../demo-trading/bot/test-support"
 import { fmtDate, fmtPercent, fmtSignedPercent, fmtSignedVnd, todayInVietnam } from "../shared/format"
 import { matchesQuery } from "../shared/library-utils"
 import { runResponse } from "../test-support"
-import { chartPoints, conditionNames, configCaption, exitReasonLabel, snapshotParams, thinPoints, tradesPageFromRun } from "./results-model"
+import { chartPoints, conditionNames, configCaption, exitConditionText, exitReasonLabel, exitReasonText, snapshotParams, thinPoints, tradesPageFromRun } from "./results-model"
 
 describe("chart", () => {
   it("starts at the 0% point before the first fee and ends on the last curve point (the KPI)", () => {
@@ -49,6 +49,11 @@ describe("trades", () => {
     expect(conditionNames(trade.entry_conditions, registry)).toBe("MACD")
     expect(conditionNames(null, registry)).toBe("—")
     expect(exitReasonLabel("sell_consensus")).toBe("Điều kiện Bán đạt")
+    expect(exitReasonLabel("max_holding")).toBe("Hết thời gian giữ")
+    expect(exitReasonText({ exit_reason: "max_holding", concurrent_reasons: ["max_holding"] })).toBe("Hết thời gian giữ")
+    expect(exitReasonText({ exit_reason: "sell_consensus", concurrent_reasons: ["sell_consensus", "max_holding"] })).toBe("Điều kiện Bán đạt, cùng lúc hết thời gian giữ")
+    expect(exitReasonText({ exit_reason: "sell_consensus" })).toBe("Điều kiện Bán đạt")
+    expect(exitConditionText({ exit_reason: "max_holding", concurrent_reasons: ["max_holding"], exit_conditions: null }, [])).toBe("Hết thời gian giữ")
   })
 
   it("reads the params a run pinned, not the ones on the form", () => {

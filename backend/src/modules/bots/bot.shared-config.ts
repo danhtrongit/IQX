@@ -21,6 +21,8 @@ import {
   type BotPolicySnapshot,
 } from './bot.domain.js';
 import {
+  BOT_V1_0_POLICY_HASH,
+  BOT_V1_0_POLICY_VERSION,
   LEGACY_ACADEMY_POLICY_HASH,
   LEGACY_ACADEMY_POLICY_VERSION,
   LEGACY_BOT_V1_RULE_HASH,
@@ -42,7 +44,7 @@ export type BotSharedConfigPin = {
   effective_session: string;
 };
 
-/** Immutable receipt of an `iqx-bot-v1.0` run: policy + config pin + grants + universe pin. */
+/** Immutable receipt of an `iqx-bot-v1.x` run: policy + config pin + grants + universe pin. */
 export type BotRuleSnapshot = BotPolicySnapshot & {
   shared_config: BotSharedConfigPin | null;
   granted_capabilities: string[];
@@ -77,7 +79,22 @@ export type BotReceiptVerification = {
   universe: BotUniversePin | null;
 };
 
-export type BotExitReason = 'academy_sell';
+export type BotExitReason = 'academy_sell' | 'max_holding';
+
+/**
+ * Policies whose receipts have the `iqx-bot-v1.x` layout, with the hash of their policy part.
+ * A run frozen under any of them is executed by the current code: `iqx-bot-v1.0` snapshots carry
+ * no `max_holding`, so they trade exactly as under v1.0.
+ */
+const BOT_V1_POLICY_HASHES: ReadonlyMap<string, string> = new Map([
+  [BOT_POLICY_SNAPSHOT.policy_version, BOT_POLICY_HASH],
+  [BOT_V1_0_POLICY_VERSION, BOT_V1_0_POLICY_HASH],
+]);
+
+/** Policy versions whose frozen runs the current worker may (re)execute. */
+export const EXECUTABLE_BOT_POLICY_VERSIONS: ReadonlySet<string> = new Set(
+  BOT_V1_POLICY_HASHES.keys(),
+);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -156,7 +173,7 @@ function sortedCapabilities(value: unknown): string[] | null {
 }
 
 /**
- * Verify immutable receipts: the current `iqx-bot-v1.0` policy, the retired
+ * Verify immutable receipts: the current `iqx-bot-v1.1` policy and `iqx-bot-v1.0`, the retired
  * `iqx-bot-academy-activation-1` policy (read-only history) and the frozen V1 format.
  */
 export function verifyRuleReceipt(
@@ -165,7 +182,11 @@ export function verifyRuleReceipt(
 ): BotReceiptVerification {
   if (!isRecord(ruleSnapshot) || typeof ruleHash !== 'string') return invalidReceipt();
 
-  if (ruleSnapshot.policy_version === BOT_POLICY_SNAPSHOT.policy_version) {
+  const v1PolicyHash =
+    typeof ruleSnapshot.policy_version === 'string'
+      ? BOT_V1_POLICY_HASHES.get(ruleSnapshot.policy_version)
+      : undefined;
+  if (v1PolicyHash !== undefined) {
     const {
       shared_config: rawPin,
       granted_capabilities: rawCapabilities,
@@ -180,7 +201,7 @@ export function verifyRuleReceipt(
       (rawPin !== null && pin === null) ||
       (rawUniverse !== null && universe === null) ||
       capabilities === null ||
-      canonicalHash(policy) !== BOT_POLICY_HASH ||
+      canonicalHash(policy) !== v1PolicyHash ||
       canonicalHash(ruleSnapshot) !== ruleHash ||
       typeof dataHash !== 'string' ||
       !HASH.test(dataHash)
@@ -191,7 +212,7 @@ export function verifyRuleReceipt(
       valid: true,
       pin,
       kind: 'bot',
-      policyVersion: BOT_POLICY_SNAPSHOT.policy_version,
+      policyVersion: ruleSnapshot.policy_version as string,
       grantedCapabilities: capabilities,
       dataHash,
       universe,
@@ -455,11 +476,46 @@ export function sharedConfigBuyBlock(
   return signal === false ? 'academy_buy_not_met' : 'academy_condition_missing';
 }
 
-/** Sell-side verdict; stops no longer exist, only the effective Sell conditions can exit. */
+/** Sell-side verdict from the Sell conditions only (see `botExitDecision` for Giữ tối đa). */
 export function sharedConfigExitReason(
   signals: BotSharedConfigSignals | null,
   symbol: string,
 ): BotExitReason | null {
   if (!signals?.sell_active) return null;
   return signals.sell[symbol] === true ? 'academy_sell' : null;
+}
+
+/** Giữ tối đa frozen with the run's signals; null when absent (every run before it) or invalid. */
+export function frozenMaxHolding(signals: BotSharedConfigSignals | null): number | null {
+  const value = signals?.max_holding;
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 ? value : null;
+}
+
+export type BotExitDecision = {
+  /** Primary reason: the Sell conditions first (Bot spec P15), then Giữ tối đa. */
+  reason: BotExitReason;
+  indicator_met: boolean;
+  time_due: boolean;
+};
+
+/**
+ * Exit of one position held at session start, decided at this session's close (the Bot fills at
+ * the same close, `same_session_close`). `heldSessions` counts the trading sessions from the buy
+ * session (inclusive) to this one (exclusive), i.e. the holding the sell would record; Giữ tối đa
+ * N is due when it reaches N, whether the Sell conditions are off, missing or not met. Both true
+ * make ONE sell with primary reason `academy_sell` and both flags (no second fee). `null` = keep.
+ */
+export function botExitDecision(
+  signal: boolean | null,
+  maxHolding: number | null,
+  heldSessions: number | null,
+): BotExitDecision | null {
+  const indicatorMet = signal === true;
+  const timeDue = maxHolding !== null && heldSessions !== null && heldSessions >= maxHolding;
+  if (!indicatorMet && !timeDue) return null;
+  return {
+    reason: indicatorMet ? 'academy_sell' : 'max_holding',
+    indicator_met: indicatorMet,
+    time_due: timeDue,
+  };
 }

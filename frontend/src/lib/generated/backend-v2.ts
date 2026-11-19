@@ -2829,7 +2829,7 @@ export type BotConfig = {
   execution_model: "same_session_close";
   initial_cash_vnd: string;
   new_buys_enabled: boolean;
-  policy_version: "iqx-bot-v1.0";
+  policy_version: "iqx-bot-v1.1";
   strategy_id: "iqx_standard";
   strategy_version: 1;
 };
@@ -56886,6 +56886,7 @@ export type StrategyBacktestsCreateData = {
               };
         };
       };
+      max_holding?: number | null;
     };
     end: string;
     idempotency_key: string;
@@ -57041,6 +57042,8 @@ export type StrategyBacktestsCreateResponses = {
       calculation_version: string;
       canceled: Array<{
         action: "buy" | "sell";
+        concurrent_reasons?: Array<string>;
+        exit_reason?: string;
         reason: "end_of_range";
         signalIndex: number;
       }>;
@@ -57177,13 +57180,14 @@ export type StrategyBacktestsCreateResponses = {
             };
           }>;
         } | null;
+        exit_reason?: string;
         note: string;
         reason: "end_of_range";
         signal_date: string;
       }>;
       profile: {
         lot_size: number;
-        max_holding: null;
+        max_holding: number | null;
         min_held_bars: number;
         position_size: "all_cash";
         stop_loss: "none";
@@ -57223,6 +57227,7 @@ export type StrategyBacktestsCreateResponses = {
           indicators: {
             [key: string]: unknown;
           };
+          max_holding?: number | null;
           schema_version: string;
           [key: string]: unknown;
         };
@@ -57257,7 +57262,7 @@ export type StrategyBacktestsCreateResponses = {
         };
         profile: {
           lot_size: number;
-          max_holding: null;
+          max_holding: number | null;
           min_held_bars: number;
           position_size: "all_cash";
           stop_loss: "none";
@@ -57278,10 +57283,13 @@ export type StrategyBacktestsCreateResponses = {
           contract: "iqx-strategy-backtest-1.0";
           execution: "next_open" | "same_close";
           execution_label: string;
-          exits: "none: no stop, take-profit, trailing or max holding";
+          exits:
+            | "none: no stop, take-profit, trailing or max holding"
+            | "max_holding_only: no stop, take-profit or trailing";
           fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
           fill_price: string;
           liquidity: "not_modelled";
+          max_holding?: number | null;
           min_held_bars: number;
           min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
           position_policy: "single_symbol_long_only_one_position";
@@ -57459,6 +57467,7 @@ export type StrategyBacktestsCreateResponses = {
         indicators: {
           [key: string]: unknown;
         };
+        max_holding?: number | null;
         schema_version: string;
         [key: string]: unknown;
       };
@@ -57493,7 +57502,7 @@ export type StrategyBacktestsCreateResponses = {
       };
       profile: {
         lot_size: number;
-        max_holding: null;
+        max_holding: number | null;
         min_held_bars: number;
         position_size: "all_cash";
         stop_loss: "none";
@@ -57514,10 +57523,13 @@ export type StrategyBacktestsCreateResponses = {
         contract: "iqx-strategy-backtest-1.0";
         execution: "next_open" | "same_close";
         execution_label: string;
-        exits: "none: no stop, take-profit, trailing or max holding";
+        exits:
+          | "none: no stop, take-profit, trailing or max holding"
+          | "max_holding_only: no stop, take-profit or trailing";
         fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
         fill_price: string;
         liquidity: "not_modelled";
+        max_holding?: number | null;
         min_held_bars: number;
         min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
         position_policy: "single_symbol_long_only_one_position";
@@ -57701,6 +57713,8 @@ export type StrategyBacktestsGetResponses = {
       calculation_version: string;
       canceled: Array<{
         action: "buy" | "sell";
+        concurrent_reasons?: Array<string>;
+        exit_reason?: string;
         reason: "end_of_range";
         signalIndex: number;
       }>;
@@ -57837,13 +57851,14 @@ export type StrategyBacktestsGetResponses = {
             };
           }>;
         } | null;
+        exit_reason?: string;
         note: string;
         reason: "end_of_range";
         signal_date: string;
       }>;
       profile: {
         lot_size: number;
-        max_holding: null;
+        max_holding: number | null;
         min_held_bars: number;
         position_size: "all_cash";
         stop_loss: "none";
@@ -57883,6 +57898,7 @@ export type StrategyBacktestsGetResponses = {
           indicators: {
             [key: string]: unknown;
           };
+          max_holding?: number | null;
           schema_version: string;
           [key: string]: unknown;
         };
@@ -57917,7 +57933,7 @@ export type StrategyBacktestsGetResponses = {
         };
         profile: {
           lot_size: number;
-          max_holding: null;
+          max_holding: number | null;
           min_held_bars: number;
           position_size: "all_cash";
           stop_loss: "none";
@@ -57938,10 +57954,13 @@ export type StrategyBacktestsGetResponses = {
           contract: "iqx-strategy-backtest-1.0";
           execution: "next_open" | "same_close";
           execution_label: string;
-          exits: "none: no stop, take-profit, trailing or max holding";
+          exits:
+            | "none: no stop, take-profit, trailing or max holding"
+            | "max_holding_only: no stop, take-profit or trailing";
           fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
           fill_price: string;
           liquidity: "not_modelled";
+          max_holding?: number | null;
           min_held_bars: number;
           min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
           position_policy: "single_symbol_long_only_one_position";
@@ -58119,6 +58138,7 @@ export type StrategyBacktestsGetResponses = {
         indicators: {
           [key: string]: unknown;
         };
+        max_holding?: number | null;
         schema_version: string;
         [key: string]: unknown;
       };
@@ -58153,7 +58173,7 @@ export type StrategyBacktestsGetResponses = {
       };
       profile: {
         lot_size: number;
-        max_holding: null;
+        max_holding: number | null;
         min_held_bars: number;
         position_size: "all_cash";
         stop_loss: "none";
@@ -58174,10 +58194,13 @@ export type StrategyBacktestsGetResponses = {
         contract: "iqx-strategy-backtest-1.0";
         execution: "next_open" | "same_close";
         execution_label: string;
-        exits: "none: no stop, take-profit, trailing or max holding";
+        exits:
+          | "none: no stop, take-profit, trailing or max holding"
+          | "max_holding_only: no stop, take-profit or trailing";
         fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
         fill_price: string;
         liquidity: "not_modelled";
+        max_holding?: number | null;
         min_held_bars: number;
         min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
         position_policy: "single_symbol_long_only_one_position";
@@ -58512,6 +58535,7 @@ export type StrategyBacktestsTradesResponses = {
           };
         }>;
       } | null;
+      exit_reason?: string;
       note: string;
       reason: "end_of_range";
       signal_date: string;
@@ -63068,6 +63092,7 @@ export type StrategyConfigGetSharedConfigResponses = {
               };
         };
       };
+      max_holding?: number | null;
       revision: number;
       rule_version: "iqx-rules-4.0";
       schema_version: "3.0";
@@ -63350,6 +63375,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                 };
           };
         };
+        max_holding?: number | null;
         revision: number;
         rule_version: "iqx-rules-4.0";
         schema_version: "3.0";
@@ -63683,6 +63709,7 @@ export type StrategyConfigPatchSharedConfigData = {
             };
       };
     };
+    max_holding?: number | null;
     source?: {
       backtest_run_id: string;
     };
@@ -64000,6 +64027,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
               };
         };
       };
+      max_holding?: number | null;
       revision: number;
       rule_version: "iqx-rules-4.0";
       schema_version: "3.0";

@@ -56,6 +56,8 @@ export type PendingOrderView = {
   action: Side;
   signal_date: string;
   reason: 'end_of_range';
+  /** Sell of a run with a Giữ tối đa: `sell_consensus` or `max_holding`. */
+  exit_reason?: string;
   /** The order had no session left inside the requested range; it is neither filled nor counted. */
   note: string;
   evidence: ConditionEvidence | null;

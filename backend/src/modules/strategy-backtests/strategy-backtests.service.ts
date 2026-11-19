@@ -46,13 +46,17 @@ import {
   sha256Hex,
   type Bar,
   type EngineValidationError,
+  type ExecutionProfile,
   type RunOptions,
   type RunResult,
   type SharedConfig,
   validateConfig,
 } from '../quant/v2/index.js';
 import { IqxTemplatesService } from '../iqx-templates/iqx-templates.service.js';
-import { mergeIndicatorPatch } from '../strategy-config/strategy-config.service.js';
+import {
+  mergeIndicatorPatch,
+  withMaxHolding,
+} from '../strategy-config/strategy-config.service.js';
 import type { BuyAndHold } from './strategy-backtests.buy-hold.js';
 import { buildRunExtras, fillGapTrades } from './strategy-backtests.evidence.js';
 import {
@@ -135,7 +139,7 @@ export type RunSnapshot = RunResult['snapshot'] & {
   execution: RunOptions['execution'];
   capital: number;
   execution_profile: 'CLEAN_TECH_2.0';
-  profile: typeof CLEAN_TECH_2_0;
+  profile: ExecutionProfile;
   slippage: 'not_modelled';
   open_position_policy: 'mark_to_market_last_close';
   /** Strategy-spec execution profile; absent on runs stored before the Strategy contract. */
@@ -180,7 +184,12 @@ export type RunSimulation = {
   signal_after_open_fill: boolean;
   position_policy: 'single_symbol_long_only_one_position';
   sizing: 'all_available_cash_including_buy_fee_rounded_down_to_lot';
-  exits: 'none: no stop, take-profit, trailing or max holding';
+  /** `max_holding_only` when the run's config has a Giữ tối đa (runs before it: `none…`). */
+  exits:
+    | 'none: no stop, take-profit, trailing or max holding'
+    | 'max_holding_only: no stop, take-profit or trailing';
+  /** Giữ tối đa (phiên) applied by the run; null/absent = no time exit. */
+  max_holding?: number | null;
   min_held_bars: number;
   /**
    * The two-bar sell lock comes from the reference engine. The product owner has not decided
@@ -532,9 +541,9 @@ export class StrategyBacktestsService {
           message: `Chỉ báo không được hỗ trợ: ${id}.`,
         })),
       );
-    const config = mergeIndicatorPatch(
-      revision.config,
-      request.draft.indicators as SharedConfig['indicators'],
+    const config = withMaxHolding(
+      mergeIndicatorPatch(revision.config, request.draft.indicators as SharedConfig['indicators']),
+      request.draft.max_holding,
     );
     const errors = validateConfig(config, registry);
     if (errors.length) throw unprocessable('CONFIG_INVALID', 'Cấu hình không hợp lệ.', errors);
@@ -959,7 +968,7 @@ export class StrategyBacktestsService {
       execution: request.assumptions.execution,
       capital: result.snapshot.options.capital,
       execution_profile: 'CLEAN_TECH_2.0',
-      profile: CLEAN_TECH_2_0,
+      profile: result.profile,
       slippage: 'not_modelled',
       open_position_policy: 'mark_to_market_last_close',
       simulation: {
@@ -971,7 +980,11 @@ export class StrategyBacktestsService {
         signal_after_open_fill: prepared.job.engine?.signal_after_open_fill === true,
         position_policy: 'single_symbol_long_only_one_position',
         sizing: 'all_available_cash_including_buy_fee_rounded_down_to_lot',
-        exits: 'none: no stop, take-profit, trailing or max holding',
+        exits:
+          result.profile.max_holding === null
+            ? 'none: no stop, take-profit, trailing or max holding'
+            : 'max_holding_only: no stop, take-profit or trailing',
+        max_holding: result.profile.max_holding,
         min_held_bars: CLEAN_TECH_2_0.min_held_bars,
         min_held_bars_status: 'carried_over_from_reference_engine_pending_product_decision',
         fee_model: 'buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate',

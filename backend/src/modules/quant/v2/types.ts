@@ -244,13 +244,26 @@ export type SideConfig = RowSideConfig | ParamsSideConfig;
 
 export type IndicatorConfig = { master_enabled: boolean; buy: SideConfig; sell: SideConfig };
 
+/** Giữ tối đa (phiên) of a shared config: an integer in this range, or absent/null = no time exit. */
+export const MAX_HOLDING_LIMITS = Object.freeze({ min: 3, max: 250 } as const);
+
 /** Shared config document (schema 3.0, `iqx-rules-4.0`). */
 export type SharedConfig = {
   schema_version: typeof SCHEMA_VERSION;
   revision: number;
   rule_version: typeof RULE_VERSION;
   indicators: Record<string, IndicatorConfig>;
+  /**
+   * Giữ tối đa N phiên (Bot spec §11.2, P13–P16): a position held N sessions is sold even when no
+   * Sell condition is met. Absent or null = no time exit (every config saved before it); the key
+   * is omitted rather than stored as null so the hash of those configs never changes.
+   */
+  max_holding?: number | null;
 };
+
+/** Effective Giữ tối đa of a config: the integer, or null when the config has none. */
+export const configMaxHolding = (config: { max_holding?: number | null }): number | null =>
+  typeof config.max_holding === 'number' ? config.max_holding : null;
 
 export type RegistryField = {
   key: string;
@@ -382,7 +395,8 @@ export type Execution = 'same_close' | 'next_open';
 export type ExecutionProfile = {
   stop_loss: 'none';
   take_profit_pct: null;
-  max_holding: null;
+  /** Giữ tối đa of the run's config (`SharedConfig.max_holding`); null = no time exit. */
+  max_holding: number | null;
   trailing: 'none';
   position_size: 'all_cash';
   lot_size: number;
@@ -432,8 +446,13 @@ export type ClosedTrade = {
   hold: number;
   pnl: number;
   pnl_pct: number;
+  /** `sell_consensus` (Sell conditions) or `max_holding` (Giữ tối đa reached, conditions not met). */
   exit_reason: string;
-  /** Advanced exits only: all exit conditions true on the same bar. */
+  /**
+   * Every exit condition true on the signal bar. Advanced exits, and single-symbol runs with a
+   * Giữ tối đa (`['sell_consensus', 'max_holding']` when both coincide: one sell, primary reason
+   * the Sell conditions). Absent on runs without a time exit.
+   */
   concurrent_reasons?: string[];
 };
 
@@ -449,7 +468,14 @@ export type OpenPosition = {
   unrealized_pnl: number;
 };
 
-export type CanceledOrder = { reason: 'end_of_range'; action: Side; signalIndex: number };
+export type CanceledOrder = {
+  reason: 'end_of_range';
+  action: Side;
+  signalIndex: number;
+  /** Sell orders of a run with a Giữ tối đa: why the sell was created (same codes as a trade). */
+  exit_reason?: string;
+  concurrent_reasons?: string[];
+};
 
 export type Kpis = {
   net_return: number;

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   CONDITION_INDICATOR_IDS,
   CURRENT_INDICATOR_IDS,
+  MAX_HOLDING_LIMITS,
   RULE_VERSION,
   SCHEMA_VERSION,
 } from '../quant/v2/types.js';
@@ -118,6 +119,14 @@ const indicatorsRecordSchema = (key: z.ZodType<string>) =>
     }
   });
 
+/** Giữ tối đa (phiên): integer 3–250 (spec Tab IQX §5.4). */
+const MAX_HOLDING_MESSAGE = `Giữ tối đa phải từ ${MAX_HOLDING_LIMITS.min} đến ${MAX_HOLDING_LIMITS.max} phiên, số nguyên.`;
+export const maxHoldingSchema = z
+  .number()
+  .int(MAX_HOLDING_MESSAGE)
+  .min(MAX_HOLDING_LIMITS.min, MAX_HOLDING_MESSAGE)
+  .max(MAX_HOLDING_LIMITS.max, MAX_HOLDING_MESSAGE);
+
 const indicatorIdSchema = z.string().regex(/^[a-z0-9_]{1,64}$/);
 
 /** The current contract: `iqx-rules-4.0`, exactly the 16 indicators of the Bot registry. */
@@ -126,6 +135,8 @@ export const sharedConfigSchema = z.object({
   revision: z.number().int().min(1),
   rule_version: z.literal(RULE_VERSION),
   indicators: indicatorsRecordSchema(z.string()),
+  /** Giữ tối đa (phiên); absent/null = no time exit (every config saved before it). */
+  max_holding: z.number().int().nullable().optional(),
 });
 
 const legacySideReviewSchema = z.object({
@@ -151,17 +162,24 @@ export const legacyConfigReviewSchema = z.object({
   needs_review: z.boolean(),
 });
 
-/** Only the listed indicators are replaced; every other saved indicator is kept as is. */
-export const sharedConfigPatchSchema = z.strictObject({
-  expected_revision: z.number().int().min(0),
-  idempotency_key: z.string().min(8).max(128),
-  /** "Lưu cho Bot" from a backtest run: recorded as the revision's source (history label). */
-  source: z.strictObject({ backtest_run_id: z.uuid() }).optional(),
-  indicators: indicatorsRecordSchema(indicatorIdSchema).refine(
-    (indicators) => Object.keys(indicators).length > 0,
-    { message: 'Cần ít nhất một chỉ báo.' },
-  ),
-});
+/**
+ * Only the listed indicators are replaced; every other saved indicator is kept as is.
+ * `max_holding` (Giữ tối đa): a number sets it, null removes it, absent keeps the saved value.
+ * `indicators` may be empty only when `max_holding` is sent.
+ */
+export const sharedConfigPatchSchema = z
+  .strictObject({
+    expected_revision: z.number().int().min(0),
+    idempotency_key: z.string().min(8).max(128),
+    /** "Lưu cho Bot" from a backtest run: recorded as the revision's source (history label). */
+    source: z.strictObject({ backtest_run_id: z.uuid() }).optional(),
+    indicators: indicatorsRecordSchema(indicatorIdSchema),
+    max_holding: maxHoldingSchema.nullable().optional(),
+  })
+  .refine(
+    (value) => Object.keys(value.indicators).length > 0 || value.max_holding !== undefined,
+    { path: ['indicators'], message: 'Cần ít nhất một chỉ báo.' },
+  );
 export type SharedConfigPatchInput = z.infer<typeof sharedConfigPatchSchema>;
 
 export const revisionsQuerySchema = z.object({

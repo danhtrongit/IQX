@@ -89,8 +89,24 @@ export const OUTCOME_LABEL: Record<ClosedTrade["outcome"], string> = { win: "Lã
 const EXIT_REASONS: Record<string, string> = {
   sell_signal: "Điều kiện Bán đạt",
   sell_consensus: "Điều kiện Bán đạt",
+  max_holding: "Hết thời gian giữ",
 }
 
 export function exitReasonLabel(reason: string): string {
   return EXIT_REASONS[reason] ?? reason
+}
+
+type ExitFields = Pick<ClosedTrade, "exit_reason" | "concurrent_reasons">
+
+/** Primary reason, plus Giữ tối đa when it was due on the same bar (one sell, Bot spec P15). */
+export function exitReasonText(trade: ExitFields): string {
+  const label = exitReasonLabel(trade.exit_reason)
+  return trade.exit_reason !== "max_holding" && trade.concurrent_reasons?.includes("max_holding") ? `${label}, cùng lúc hết thời gian giữ` : label
+}
+
+/** "Điều kiện bán" cell: the Sell indicators met, or "Hết thời gian giữ" for a time exit. */
+export function exitConditionText(trade: ExitFields & Pick<ClosedTrade, "exit_conditions">, indicators: readonly TechnicalIndicator[]): string {
+  if (trade.exit_reason === "max_holding") return exitReasonLabel("max_holding")
+  const names = conditionNames(trade.exit_conditions, indicators)
+  return trade.concurrent_reasons?.includes("max_holding") ? `${names} · hết thời gian giữ` : names
 }

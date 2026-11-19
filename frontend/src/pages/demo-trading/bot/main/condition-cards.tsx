@@ -56,7 +56,10 @@ function SideCard({
   // An old-format effective revision is read back as the new defaults, so it can equal the pending
   // one; the card shows nothing of it though, so the pending conditions are compared to nothing.
   const shownItems = block?.reason === "config_outdated" ? [] : effectiveItems
-  const pendingDiffers = !!pending && JSON.stringify(pendingItems) !== JSON.stringify(shownItems)
+  // Giữ tối đa belongs to the Sell side: the Bot sells a position held N sessions even when Bán is not met.
+  const effectiveHold = side === "sell" && block?.reason !== "config_outdated" ? (effective?.config.max_holding ?? null) : null
+  const pendingHold = side === "sell" && pending ? (pending.config.max_holding ?? null) : null
+  const pendingDiffers = !!pending && (JSON.stringify(pendingItems) !== JSON.stringify(shownItems) || pendingHold !== effectiveHold)
   const title = SIDE_TITLE[side]
 
   return (
@@ -89,6 +92,12 @@ function SideCard({
         <p className="text-xs leading-5 text-muted-foreground">Chưa có điều kiện hiệu lực.</p>
       )}
 
+      {!block && effectiveHold !== null && (
+        <p className="mt-2 text-[11px] leading-4 text-muted-foreground" data-testid="max-holding-effective">
+          <span className="font-semibold text-foreground">Giữ tối đa {effectiveHold} phiên</span>: Bot bán khi đã giữ đủ {effectiveHold} phiên dù điều kiện Bán chưa đạt.
+        </p>
+      )}
+
       {pending && pendingDiffers && (
         <div className="mt-3 border-t border-border pt-2.5">
           <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-price-ref uppercase">
@@ -98,6 +107,11 @@ function SideCard({
             <ConditionList items={pendingItems} label={`${title} chờ hiệu lực`} />
           ) : (
             <p className="text-xs leading-5 text-muted-foreground">Không còn điều kiện nào được bật ở phía này.</p>
+          )}
+          {side === "sell" && pendingHold !== effectiveHold && (
+            <p className="mt-1.5 text-[11px] leading-4 text-muted-foreground" data-testid="max-holding-pending">
+              Giữ tối đa: {pendingHold === null ? "không giới hạn" : `${pendingHold} phiên`}
+            </p>
           )}
         </div>
       )}

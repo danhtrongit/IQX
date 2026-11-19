@@ -592,6 +592,53 @@ describe('SharedConfigService', () => {
     expect(memory.revisions).toHaveLength(3);
   });
 
+  it('stores Giữ tối đa: set, kept by a later PATCH without it, removed by null', async () => {
+    const body = (extra: Record<string, unknown>, expected: number) =>
+      sharedConfigPatchSchema.parse({
+        expected_revision: expected,
+        idempotency_key: `key-${Math.random().toString(36).slice(2)}`,
+        indicators: { rsi: on('rsi') },
+        ...extra,
+      });
+    const first = await service.save(USER, body({ max_holding: 30 }, 0));
+    expect(first.config.max_holding).toBe(30);
+    expect(first.config_hash).toBe(configHash(first.config));
+    expect((await service.current(USER)).config.max_holding).toBe(30);
+    const kept = await service.save(USER, body({}, 1));
+    expect(kept.config.max_holding).toBe(30);
+    // Giữ tối đa alone is a valid PATCH ("Lưu cho Bot" of a draft that only changed it).
+    const only = await service.save(
+      USER,
+      sharedConfigPatchSchema.parse({
+        expected_revision: 2,
+        idempotency_key: 'idem-hold-only',
+        indicators: {},
+        max_holding: 12,
+      }),
+    );
+    expect(only.config.max_holding).toBe(12);
+    const cleared = await service.save(USER, body({ max_holding: null }, 3));
+    expect('max_holding' in cleared.config).toBe(false);
+    // Without Giữ tối đa the document hashes exactly like before the field existed.
+    const plain = { ...cleared.config };
+    expect(cleared.config_hash).toBe(configHash(plain));
+    expect((await service.getRevision(USER, 2))?.config.max_holding).toBe(30);
+  });
+
+  it('a replay with a different Giữ tối đa is IDEMPOTENCY_KEY_REUSED', async () => {
+    const make = (maxHolding: number) =>
+      sharedConfigPatchSchema.parse({
+        expected_revision: 0,
+        idempotency_key: 'idem-hold-0001',
+        indicators: { rsi: on('rsi') },
+        max_holding: maxHolding,
+      });
+    const first = await service.save(USER, make(20));
+    expect(await service.save(USER, make(20))).toEqual(first);
+    const error = await rejection(service.save(USER, make(21)));
+    expect(error.getResponse()).toMatchObject({ code: 'IDEMPOTENCY_KEY_REUSED' });
+  });
+
   it('rejects a stale expected_revision with 409 and writes nothing', async () => {
     await service.save(USER, patch({ rsi: on('rsi') }, 0));
     const error = await rejection(service.save(USER, patch({ macd: on('macd') }, 0)));
@@ -1036,6 +1083,24 @@ describe('SharedConfigService', () => {
         indicators: {},
       }).success,
     ).toBe(false);
+    for (const max_holding of [2, 251, 10.5])
+      expect(
+        sharedConfigPatchSchema.safeParse({
+          expected_revision: 0,
+          idempotency_key: 'long-enough',
+          indicators: { rsi: on('rsi') },
+          max_holding,
+        }).success,
+      ).toBe(false);
+    for (const max_holding of [3, 250, null])
+      expect(
+        sharedConfigPatchSchema.safeParse({
+          expected_revision: 0,
+          idempotency_key: 'long-enough',
+          indicators: {},
+          max_holding,
+        }).success,
+      ).toBe(true);
   });
 
   it('accepts only the V3 shape: rows for the 15, params + rules for Volume', () => {

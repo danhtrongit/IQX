@@ -92,3 +92,46 @@ export const LEGACY_ACADEMY_POLICY = Object.freeze({
 } as const);
 
 export const LEGACY_ACADEMY_POLICY_HASH = canonicalHash(LEGACY_ACADEMY_POLICY);
+
+/**
+ * Frozen `iqx-bot-v1.0` policy snapshot: the current policy without the Giữ tối đa exit. Receipts
+ * written under it stay verifiable and a run frozen under it can still complete (its snapshot
+ * carries no `max_holding`, so it trades exactly as before); no new run is created with it.
+ */
+export const BOT_V1_0_POLICY_VERSION = 'iqx-bot-v1.0' as const;
+
+export const BOT_V1_0_POLICY = Object.freeze({
+  policy_version: BOT_V1_0_POLICY_VERSION,
+  execution_model: 'same_session_close',
+  initial_cash_vnd: 100_000_000,
+  require_active_buy_conditions: true,
+  empty_buy_gate: false,
+  empty_sell_gate: false,
+  require_five_ai_layers: false,
+  ai_support_threshold_enabled: false,
+  ai_news_insider_veto_enabled: false,
+  l1_required: false,
+  universe: Object.freeze({
+    default_source: 'vn30',
+    custom_source: 'user_applied_list_snapshot',
+    custom_replaces_default: true,
+    membership_source: 'index_membership_snapshots_per_session',
+    effective_rule: 'first_trading_session_after_server_save_date',
+    unavailable_behavior: 'no_new_buys_sells_continue',
+  } as const),
+  sell_scope: 'all_positions_held_at_session_start',
+  config_side_failure: 'block_side_with_reason',
+  candidate_order: 'gtgd20_desc_symbol_asc',
+  candidate_order_owner_confirmation: 'confirmed',
+  max_new_buys_per_session: 2,
+  buy_budget_nav_ratio: '0.12',
+  max_symbol_nav_ratio: '0.30',
+  allow_add_to_open_symbol: false,
+  allow_rebuy_same_session: false,
+  protective_stop_enabled: false,
+  fixed_take_profit_enabled: false,
+  implicit_max_holding_enabled: false,
+  implicit_trailing_enabled: false,
+} as const);
+
+export const BOT_V1_0_POLICY_HASH = canonicalHash(BOT_V1_0_POLICY);

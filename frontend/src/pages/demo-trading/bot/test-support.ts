@@ -113,6 +113,9 @@ export type World = {
   indicators: Record<string, IndicatorConfig>
   /** Config of the effective revision when it is an older one than the saved config; the saved config otherwise. */
   effectiveIndicators: Record<string, IndicatorConfig> | null
+  /** Giữ tối đa of the saved config (absent = none) and of an older effective revision (undefined = same as saved). */
+  maxHolding?: number | null
+  effectiveMaxHolding?: number | null
   /** Leave `effective` out of the shared-config response, as a backend from before it existed would. */
   omitEffective: boolean
   /** The latest saved revision is in a format before SPEC V3 (`outdated: true`). */
@@ -198,7 +201,7 @@ function overview(world: World): BotOverview {
     disclosure: "Mô phỏng theo giá đóng cửa, không phải khuyến nghị đầu tư.",
     bot: {
       activated_at: "2026-10-01T00:00:00Z", candidate_order: "gtgd20_desc_symbol_asc", candidate_order_owner_confirmation: "confirmed",
-      execution_model: "same_session_close", initial_cash_vnd: "100000000", policy_version: "iqx-bot-v1.0", strategy_id: "iqx_standard", strategy_version: 1,
+      execution_model: "same_session_close", initial_cash_vnd: "100000000", policy_version: "iqx-bot-v1.1", strategy_id: "iqx_standard", strategy_version: 1,
       ...(world.newBuysEnabled === null ? {} : { new_buys_enabled: world.newBuysEnabled }),
       // An older API without the flag is simulated by leaving it out.
     } as BotOverview["bot"],
@@ -209,8 +212,9 @@ function overview(world: World): BotOverview {
 }
 
 /** A hash that follows the content, like the server's: equal configs hash equal whatever their revision. */
-function contentHash(indicators: Record<string, IndicatorConfig>): string {
-  const text = JSON.stringify(indicators)
+function contentHash(indicators: Record<string, IndicatorConfig>, maxHolding: number | null = null): string {
+  // Like the server's config hash: Giữ tối đa is part of the document only when set.
+  const text = JSON.stringify(indicators) + (maxHolding === null ? "" : `#${maxHolding}`)
   let hash = 5381
   for (let index = 0; index < text.length; index += 1) hash = (hash * 33 + text.charCodeAt(index)) % 2147483647
   return `sha-${hash}`
@@ -223,8 +227,8 @@ function sharedConfig(world: World): SharedConfigState {
     effective_revision: inForce,
     effective_session: world.effectiveSession,
     status: world.status,
-    config: { schema_version: "3.0", revision: world.savedRevision, rule_version: "iqx-rules-4.0", indicators: world.indicators },
-    config_hash: contentHash(world.indicators),
+    config: { schema_version: "3.0", revision: world.savedRevision, rule_version: "iqx-rules-4.0", indicators: world.indicators, ...(world.maxHolding != null ? { max_holding: world.maxHolding } : {}) },
+    config_hash: contentHash(world.indicators, world.maxHolding ?? null),
     registry_version: "iqx-ta-2.0",
     granted_indicators: world.granted,
     outdated: world.outdated,
@@ -238,8 +242,13 @@ function sharedConfig(world: World): SharedConfigState {
       : {
           revision: inForce,
           effective_session: "2026-10-01",
-          config_hash: contentHash(world.effectiveIndicators ?? world.indicators),
-          config: { schema_version: "3.0", revision: inForce, rule_version: "iqx-rules-4.0", indicators: world.effectiveIndicators ?? world.indicators },
+          config_hash: contentHash(world.effectiveIndicators ?? world.indicators, (world.effectiveMaxHolding === undefined ? world.maxHolding : world.effectiveMaxHolding) ?? null),
+          config: {
+            schema_version: "3.0", revision: inForce, rule_version: "iqx-rules-4.0", indicators: world.effectiveIndicators ?? world.indicators,
+            ...((world.effectiveMaxHolding === undefined ? world.maxHolding : world.effectiveMaxHolding) != null
+              ? { max_holding: (world.effectiveMaxHolding === undefined ? world.maxHolding : world.effectiveMaxHolding)! }
+              : {}),
+          },
           outdated: false,
           legacy: null,
         },
@@ -374,7 +383,7 @@ export function tradeFixture(partial: Partial<BotTrade> & Pick<BotTrade, "id">):
 export function sessionFixture(partial: Partial<BotSession> & Pick<BotSession, "session">): BotSession {
   return {
     run_id: `run-${partial.session}`, run_status: "succeeded", started_at: `${partial.session}T10:00:00Z`, completed_at: `${partial.session}T10:05:00Z`,
-    policy_version: "iqx-bot-v1.0", universe: { kind: "vn30", name: "VN30", revision: 0 }, config_revision: 3,
+    policy_version: "iqx-bot-v1.1", universe: { kind: "vn30", name: "VN30", revision: 0 }, config_revision: 3,
     counts: { buy: 0, sell: 0, hold: 0, skip: 0, total: 0 }, reasons: [], nav_end_vnd: "100000000", cash_end_vnd: "100000000", valuation_complete: true, issues: [],
     ...partial,
   }
@@ -384,7 +393,7 @@ export function sessionFixture(partial: Partial<BotSession> & Pick<BotSession, "
 export function decisionFixture(partial: Partial<BotSessionDecision> & Pick<BotSessionDecision, "id" | "trading_date" | "action">): BotSessionDecision {
   return {
     run_id: `run-${partial.trading_date}`, reason_code: "buy_not_met", reason_label: "Điều kiện Mua chưa đạt", reason: "raw reason", execution: null, symbol: "HPG",
-    in_universe: true, universe_kind: "vn30", universe_revision: 0, policy_version: "iqx-bot-v1.0", decision_config_revision: 3, condition_snapshot: null,
+    in_universe: true, universe_kind: "vn30", universe_revision: 0, policy_version: "iqx-bot-v1.1", decision_config_revision: 3, condition_snapshot: null,
     rank_tuple: null, legacy_filter_ids: [], legacy_threshold_vnd: null, source_refs: {}, created_at: `${partial.trading_date}T10:00:00Z`,
     ...partial,
   }

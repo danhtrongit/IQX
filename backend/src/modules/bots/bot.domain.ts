@@ -3,13 +3,16 @@ import { createHash } from 'node:crypto';
 import type { BotMarketSnapshotInput, BotSnapshotSymbol } from './bot.types.js';
 
 /**
- * Policy `iqx-bot-v1.0`. Buys come only from the effective universe (VN30 by default, or a
+ * Policy `iqx-bot-v1.1`. Buys come only from the effective universe (VN30 by default, or a
  * fixed snapshot of a user-applied saved list); sells cover EVERY position held at session
- * start. There is no stop, L1/amplitude, target, trailing or max-holding rule in any new
- * decision. The previous `iqx-bot-academy-activation-1` snapshot lives in `bot.legacy.ts`
- * and is only used to verify historical receipts.
+ * start. There is no stop, L1/amplitude, target or trailing rule in any new decision. The only
+ * exits are the effective Sell conditions and the config's own Giữ tối đa (`max_holding` of the
+ * pinned shared config, null = none; Bot spec §11.2): a position held N sessions at this
+ * session's close is sold at that close even when the Sell conditions are off or not met.
+ * `iqx-bot-v1.0` (identical, without the time exit) and the earlier
+ * `iqx-bot-academy-activation-1` snapshots live in `bot.legacy.ts` to verify historical receipts.
  */
-export const BOT_POLICY_VERSION = 'iqx-bot-v1.0' as const;
+export const BOT_POLICY_VERSION = 'iqx-bot-v1.1' as const;
 
 const BOT_UNIVERSE_POLICY = Object.freeze({
   default_source: 'vn30',
@@ -44,7 +47,9 @@ export const BOT_POLICY = Object.freeze({
   allow_rebuy_same_session: false,
   protective_stop_enabled: false,
   fixed_take_profit_enabled: false,
-  implicit_max_holding_enabled: false,
+  // Giữ tối đa is never implicit: it comes only from the pinned shared config (null = none).
+  max_holding_source: 'shared_config_max_holding',
+  max_holding_exit: 'sell_all_at_close_of_session_held_n',
   implicit_trailing_enabled: false,
 } as const);
 
@@ -83,6 +88,7 @@ export const BOT_DECISION_REASON_CODES = [
   'config_outdated',
   'academy_buy',
   'academy_sell',
+  'max_holding',
   'academy_sell_not_met',
   'no_active_sell_conditions',
   'invalid_close',
@@ -120,6 +126,7 @@ export const BOT_REASON_LABELS: Readonly<Record<string, string>> = Object.freeze
   config_outdated: 'Cấu hình điều kiện kiểu cũ: cần lưu lại cấu hình mới',
   academy_buy: 'Mua theo điều kiện Mua',
   academy_sell: 'Bán theo điều kiện Bán',
+  max_holding: 'Bán do hết thời gian giữ tối đa',
   academy_sell_not_met: 'Điều kiện Bán chưa đạt: tiếp tục giữ',
   no_active_sell_conditions: 'Chưa bật điều kiện Bán: tiếp tục giữ',
   invalid_close: 'Thiếu giá đóng cửa chính thức',
