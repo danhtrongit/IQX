@@ -18,6 +18,8 @@ export type RevisionRow = {
   idempotency_key: string;
   effective_session: string | null;
   session_status: EffectiveStatus;
+  /** Where the revision came from (§3.3.6 of the tab IQX spec); null/absent when not recorded. */
+  source_label?: string | null;
 };
 
 export type NewRevision = {
@@ -33,6 +35,8 @@ export type NewRevision = {
   requested_at: Date;
   actor_id: string;
   idempotency_key: string;
+  /** "Backtest · lần chạy {id} · từ Chiến lược IQX {tên}" for a "Lưu cho Bot" from a run. */
+  source_label?: string | null;
 };
 
 export type NewEffectiveSession = {
@@ -62,6 +66,11 @@ export interface SharedConfigStore {
   resumeConfigPause(userId: string, revision: number): Promise<void>;
   /** Holidays of the active trading calendar row, or null when no row is active. */
   activeCalendar(): Promise<{ holidays: unknown } | null>;
+  /** Nhãn nguồn of one of the owner's succeeded backtest runs, or null when it is not theirs. */
+  backtestRunSource?(
+    userId: string,
+    runId: string,
+  ): Promise<{ id: string; origin_name: string | null } | null>;
 }
 
 export interface SharedConfigStoreProvider {
@@ -70,7 +79,7 @@ export interface SharedConfigStoreProvider {
 }
 
 const REVISION_SELECT = `select r.user_id, r.revision, r.config, r.config_hash, r.before_hash, r.patch,
-    r.requested_at, r.saved_at, r.actor_id, r.idempotency_key,
+    r.requested_at, r.saved_at, r.actor_id, r.idempotency_key, r.source_label,
     to_char(e.effective_session, 'YYYY-MM-DD') as effective_session,
     coalesce(e.status, 'calendar_unavailable') as session_status
   from shared_config_revisions r
@@ -141,8 +150,8 @@ export class SharedConfigSqlStore implements SharedConfigStore {
     const rows = await this.client.query<{ saved_at: Date | string }>(
       `insert into shared_config_revisions
          (user_id, revision, schema_version, rule_version, calculation_version, config, config_hash,
-          before_hash, patch, requested_at, saved_at, actor_id, idempotency_key)
-       values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9::jsonb, $10, now(), $11, $12)
+          before_hash, patch, requested_at, saved_at, actor_id, idempotency_key, source_label)
+       values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9::jsonb, $10, now(), $11, $12, $13)
        returning saved_at`,
       [
         revision.user_id,
@@ -157,9 +166,20 @@ export class SharedConfigSqlStore implements SharedConfigStore {
         revision.requested_at,
         revision.actor_id,
         revision.idempotency_key,
+        revision.source_label ?? null,
       ],
     );
     return { saved_at: new Date(rows[0]!.saved_at) };
+  }
+
+  async backtestRunSource(userId: string, runId: string) {
+    const [row] = await this.client.query<{ id: string; origin_name: string | null }>(
+      `select id, snapshot -> 'source' -> 'origin' ->> 'name' as origin_name
+         from backtest_runs
+        where id = $1 and user_id = $2 and status = 'succeeded'`,
+      [runId, userId],
+    );
+    return row ?? null;
   }
 
   async insertEffectiveSession(session: NewEffectiveSession) {

@@ -4,7 +4,9 @@
  * URL state (kept from the previous page, so every old link still opens the right place):
  * - `?tab=canh-bao` (default) | `?tab=backtest` | `?tab=bo-loc`. Changing tab writes with `replace`
  *   and keeps every other parameter.
- * - `?symbol=XXX`: the symbol the Backtest tab starts with (the target of `/backtest/:symbol`).
+ * - `?symbol=XXX`: the symbol the Backtest tab shows (the target of `/backtest/:symbol`); a new one changes the
+ *   symbol without dropping the Backtest draft. `?iqx=<id>` (a symbol of a Bộ lọc IQX) fills its paired
+ *   Chiến lược IQX into the draft.
  *
  * A tab is mounted the first time it is opened and then kept (hidden when not selected), so going
  * to another tab and back keeps the confirmed state, the draft and the result on screen; nothing
@@ -71,7 +73,7 @@ export function StrategyPage() {
             {visited.has("canh-bao") && <AlertsView />}
           </TabsContent>
           <TabsContent value="backtest" forceMount={keep("backtest")} hidden={tab !== "backtest"} className="flex min-h-0 flex-col overflow-hidden data-[state=inactive]:hidden">
-            {visited.has("backtest") && <BacktestTab key={symbol ?? "default"} initialSymbol={symbol} />}
+            {visited.has("backtest") && <BacktestTab initialSymbol={symbol} />}
           </TabsContent>
           <TabsContent value="bo-loc" forceMount={keep("bo-loc")} hidden={tab !== "bo-loc"} className="flex min-h-0 flex-col overflow-hidden data-[state=inactive]:hidden">
             {visited.has("bo-loc") && <FilterTab />}

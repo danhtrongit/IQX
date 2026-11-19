@@ -71,6 +71,11 @@ import type {
   SortState,
   TechnicalQuality,
 } from "./types"
+import { ConfirmDialog } from "../confirm-dialog"
+import { iqxTitle, recordIqxUsed, useIqxFilters, type FilterComposeBinding, type IqxFilterItem, type IqxFilterOrigin } from "../shared/iqx"
+import { IqxStrip } from "../shared/iqx-ui"
+import { filterDraftFromIqx, iqxSaveName, isFilterDraftEmpty, withOrigin } from "./iqx"
+import { IqxFilterLibrary } from "./iqx-library"
 
 type Dialog =
   | { kind: "saved-filters" | "saved-lists" | "saved-results" | "catalog" | "save-filter" | "quality" | "apply-result" | "push-bulletin" }
@@ -200,7 +205,7 @@ function DeepLinkedFilter({ onLoad }: { onLoad: (filter: Parameters<typeof draft
   return null
 }
 
-export function FilterTab() {
+export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const metricsQuery = useScreenerMetrics()
@@ -213,9 +218,16 @@ export function FilterTab() {
   const registryQuery = useTechnicalRegistry()
   const registry = registryQuery.data
 
-  const [rules, setRules] = useState<DraftRule[]>([])
-  const [market, setMarket] = useState<MarketDraft>(emptyMarketDraft)
-  const [technical, setTechnical] = useState<TechnicalDraft[]>([])
+  // Compose mode (Quản trị › Mẫu IQX §5.3): the form starts from the item being edited, never from the admin's own data.
+  const [composeStart] = useState(() => (compose?.initial ? filterDraftFromIqx(compose.initial) : null))
+  const [rules, setRules] = useState<DraftRule[]>(() => [...(composeStart?.rules ?? [])])
+  const [market, setMarket] = useState<MarketDraft>(() => composeStart?.market ?? emptyMarketDraft())
+  const [technical, setTechnical] = useState<TechnicalDraft[]>(() => [...(composeStart?.technical ?? [])])
+  /** The Bộ lọc IQX the form started from (strip, Đi cặp với) and the `origin` a save keeps. */
+  const [iqx, setIqx] = useState<IqxFilterItem | null>(null)
+  const [origin, setOrigin] = useState<IqxFilterOrigin | null>(null)
+  const [confirmIqx, setConfirmIqx] = useState<IqxFilterItem | null>(null)
+  const iqxFilters = useIqxFilters(!compose)
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [run, setRun] = useState<StoredRun | null>(null)
   const [runError, setRunError] = useState<string | null>(null)
@@ -247,10 +259,22 @@ export function FilterTab() {
 
   useEffect(() => () => abort.current?.abort(), [])
 
+
   const draft: FilterDraft = { rules, market, technical }
-  const built = buildDefinition(draft, loaded?.name ?? "", metrics, registry)
+  const built = buildDefinition(draft, compose ? (compose.initial?.name ?? "") : (loaded?.name ?? ""), metrics, registry)
   const currentSignature = built.ok ? criteriaSignature(built.definition) : null
   const stale = run !== null && (currentSignature === null || currentSignature !== criteriaSignature(run.header.definition))
+
+  const composeOnChange = compose?.onChange
+  const composeDefinition = built.ok ? JSON.stringify(built.definition) : null
+  const composeError = built.ok ? (conditionCount(rules, technical) === 0 ? "Bộ lọc cần ít nhất một điều kiện." : null) : built.error
+  useEffect(() => {
+    if (!composeOnChange || metricsQuery.isPending || !registry) return
+    composeOnChange({
+      definition: composeDefinition ? (JSON.parse(composeDefinition) as FilterDefinition) : null,
+      errors: composeError ? [composeError] : [],
+    })
+  }, [composeOnChange, composeDefinition, composeError, metricsQuery.isPending, registry])
 
   if (isFeatureDisabled(metricsQuery.error)) return <FeatureState {...FEATURE_DISABLED_COPY} />
   if (metricsQuery.isPending) {
@@ -333,8 +357,38 @@ export function FilterTab() {
     )
   }
 
+  /** "Dùng" of a Bộ lọc IQX (§2.3): replaces the whole form, makes it a new unsaved filter, never runs. */
+  function applyIqx(item: IqxFilterItem) {
+    const filled = filterDraftFromIqx(item.content.definition)
+    abort.current?.abort()
+    setRules([...filled.rules])
+    setMarket(filled.market)
+    setTechnical([...filled.technical])
+    setLoaded(null)
+    setRun(null)
+    setRunError(null)
+    setPage(0)
+    setSort(DEFAULT_SORT)
+    setShowAll(false)
+    setSelection(new Set())
+    setSavedList(null)
+    setIqx(item)
+    setOrigin({ type: "iqx_filter", id: item.id, version: item.version })
+    setConfirmIqx(null)
+    setLibraryOpen(false)
+    recordIqxUsed(item.id, item.version)
+    toast.success(`Đã điền sẵn ${iqxTitle("filter", item.content.name)}. Sửa từng điều kiện như tự thiết lập, rồi bấm Chạy bộ lọc.`)
+  }
+
+  function onUseIqx(item: IqxFilterItem) {
+    if (isFilterDraftEmpty(draft)) applyIqx(item)
+    else setConfirmIqx(item)
+  }
+
   function loadSavedFilter(filter: Parameters<typeof draftsFromFilter>[0]) {
     const stored = marketAndTechnicalFromFilter(filter)
+    setIqx(null)
+    setOrigin((filter.definition as { origin?: IqxFilterOrigin | null }).origin ?? null)
     setRules(draftsFromFilter(filter))
     setMarket(stored.market)
     setTechnical(stored.technical)
@@ -356,7 +410,7 @@ export function FilterTab() {
     }
     setDialogError(null)
     saveFilter.mutate(
-      { id: input.newVersionOf ?? undefined, name: input.name, definition: result.definition, idempotencyKey: keyFor(JSON.stringify(["filter", input.newVersionOf, input.name, result.definition])) },
+      { id: input.newVersionOf ?? undefined, name: input.name, definition: withOrigin(result.definition, origin), idempotencyKey: keyFor(JSON.stringify(["filter", input.newVersionOf, input.name, result.definition, origin])) },
       {
         onSuccess: (filter) => {
           setLoaded({ id: filter.id, name: filter.name, version: filter.current_version, signature: criteriaSignature(filter.definition) })
@@ -407,6 +461,12 @@ export function FilterTab() {
     })
   }
 
+  // The pair as it is NOW: a hidden Chiến lược IQX drops "Đi cặp với" and the symbol link keeps its usual target (§5.5).
+  const livePair = iqx ? (iqxFilters.data ? (iqxFilters.data.find((item) => item.id === iqx.id)?.pair ?? null) : iqx.pair) : null
+  const backtestHref = livePair
+    ? (symbol: string) => `/chien-luoc?tab=backtest&symbol=${encodeURIComponent(symbol)}&iqx=${encodeURIComponent(livePair.id)}`
+    : undefined
+
   const applied = (count: number, session: string) => {
     closeDialog()
     toast.success(`Đã nhận danh mục ${count} mã, chờ hiệu lực ${session}. Không có lệnh nào được tạo và cổ phiếu đang giữ không bị bán.`)
@@ -414,7 +474,7 @@ export function FilterTab() {
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
-      <DeepLinkedFilter onLoad={loadSavedFilter} />
+      {!compose && <DeepLinkedFilter onLoad={loadSavedFilter} />}
       <MetricLibrary
         metrics={metrics}
         addedIds={addedIds}
@@ -428,6 +488,7 @@ export function FilterTab() {
         onAdd={addMetric}
         onAddTechnical={addTechnical}
         onOpenCatalog={() => openDialog({ kind: "catalog" })}
+        iqx={compose ? undefined : <IqxFilterLibrary activeId={iqx?.id ?? null} onUse={onUseIqx} />}
       />
 
       <ScrollArea className="min-h-0 min-w-0 flex-1" viewportClassName="[&>div]:!block">
@@ -442,15 +503,37 @@ export function FilterTab() {
               <SlidersHorizontal aria-hidden="true" />
               Thư viện
             </Button>
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" onClick={() => openDialog({ kind: "saved-filters" })}><FolderOpen aria-hidden="true" />Bộ lọc đã lưu</Button>
-              <Button type="button" variant="outline" onClick={() => openDialog({ kind: "saved-lists" })}><List aria-hidden="true" />Danh mục đã lưu</Button>
-              <Button type="button" variant="outline" onClick={() => openDialog({ kind: "saved-results" })}><FileCheck aria-hidden="true" />Kết quả đã lưu</Button>
-              <Button type="button" onClick={() => openDialog({ kind: "save-filter" })}><Save aria-hidden="true" />Lưu bộ lọc</Button>
-            </div>
+            {!compose && (
+              <div className="ml-auto flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" onClick={() => openDialog({ kind: "saved-filters" })}><FolderOpen aria-hidden="true" />Bộ lọc đã lưu</Button>
+                <Button type="button" variant="outline" onClick={() => openDialog({ kind: "saved-lists" })}><List aria-hidden="true" />Danh mục đã lưu</Button>
+                <Button type="button" variant="outline" onClick={() => openDialog({ kind: "saved-results" })}><FileCheck aria-hidden="true" />Kết quả đã lưu</Button>
+                <Button type="button" onClick={() => openDialog({ kind: "save-filter" })}><Save aria-hidden="true" />Lưu bộ lọc</Button>
+              </div>
+            )}
           </div>
 
-          <BotSourceCard actions={actions} />
+          {!compose && <BotSourceCard actions={actions} />}
+
+          {iqx && !compose && (
+            <IqxStrip
+              key={iqx.id}
+              testId="iqx-filter-strip"
+              lead={<>Bắt đầu từ <b>{iqxTitle("filter", iqx.content.name)}</b>. {iqx.content.idea}</>}
+              origin={iqx.content.origin}
+              whenWrong={iqx.content.when_wrong}
+              extra={
+                livePair && (
+                  <>
+                    <dt className="font-semibold">Đi cặp với</dt>
+                    <dd className="text-muted-foreground">
+                      Chiến lược IQX · <b className="text-foreground">{livePair.name}</b>. Bấm một mã trong kết quả để Backtest mã đó với chiến lược này.
+                    </dd>
+                  </>
+                )
+              }
+            />
+          )}
 
           <BasicSection>
             <MarketSection market={market} onChange={setMarket} />
@@ -494,10 +577,12 @@ export function FilterTab() {
               onSort={changeSort}
               stale={stale}
               busy={createList.isPending || createSnapshot.isPending}
+              readOnly={!!compose}
+              backtestHref={backtestHref}
               onSaveList={() => openDialog({ kind: "save-result", save: "list" })}
               onSaveResult={() => openDialog({ kind: "save-result", save: "snapshot" })}
               onApply={() => openDialog({ kind: "apply-result" })}
-              onPushBulletin={user?.role === "admin" ? () => openDialog({ kind: "push-bulletin" }) : undefined}
+              onPushBulletin={user?.role === "admin" && !compose ? () => openDialog({ kind: "push-bulletin" }) : undefined}
               onCell={(row, metric) => openDialog({ kind: "cell", row, metric })}
               onTechnicalCell={(row, column) => openDialog({ kind: "technical-cell", row, column })}
               onQuality={() => openDialog({ kind: "quality" })}
@@ -527,7 +612,7 @@ export function FilterTab() {
       )}
       {dialog?.kind === "save-filter" && (
         <SaveFilterDialog
-          initialName={loaded?.name ?? ""}
+          initialName={loaded?.name ?? (iqx ? iqxSaveName(iqx.content.name) : "")}
           loaded={loaded}
           criteria={built.ok ? criteriaSummary(built.definition, metrics, registry) : built.error}
           blocked={built.ok ? null : built.error}
@@ -589,6 +674,16 @@ export function FilterTab() {
           onApplied={applied}
           onBack={() => openDialog({ kind: "saved-lists" })}
           onClose={closeDialog}
+        />
+      )}
+      {confirmIqx && (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => { if (!open) setConfirmIqx(null) }}
+          title="Thay bộ lọc đang soạn?"
+          description={<>Điều kiện hiện tại sẽ được thay bằng <b>{iqxTitle("filter", confirmIqx.content.name)}</b>. Bộ lọc đã lưu (nếu có) không bị ảnh hưởng.</>}
+          confirmLabel="Thay bằng bộ lọc IQX"
+          onConfirm={() => applyIqx(confirmIqx)}
         />
       )}
       {dialog?.kind === "alert-list" && (

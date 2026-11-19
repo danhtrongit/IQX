@@ -27,6 +27,7 @@ import {
   type RunResult,
   type SharedConfig,
 } from '../quant/v2/index.js';
+import { buyAndHold, type BuyAndHold } from './strategy-backtests.buy-hold.js';
 
 export type ResearchJob =
   | { kind: 'sensitivity'; path: ParamPath; values: number[] }
@@ -74,6 +75,8 @@ export type SystemRunSummary = Pick<
 export type BacktestJobOutput = {
   /** CLEAN_TECH_2.0 run of the saved config on the requested symbol and range. */
   result: RunResult;
+  /** "Mua và giữ" on the same bars and options as `result` (spec Tab IQX §3.5). */
+  buy_and_hold: BuyAndHold;
   research_result: ResearchResult | null;
   system_result: SystemRunSummary | null;
   system_profile: SystemProfile | null;
@@ -88,6 +91,7 @@ export type BacktestJobOutput = {
  */
 export function executeBacktestJob(job: BacktestJob): BacktestJobOutput {
   const result = runBacktest(job.config, job.bars, { ...job.options, ...(job.engine ?? {}) });
+  const buyHold = buyAndHold(job.bars, result.snapshot.options);
   let research: ResearchResult | null = null;
   if (job.research?.kind === 'sensitivity') {
     research = sensitivity(job.config, job.bars, job.options, {
@@ -103,7 +107,13 @@ export function executeBacktestJob(job: BacktestJob): BacktestJobOutput {
     research = walkForward(job.config, job.bars, job.options, spec);
   }
   if (!job.system) {
-    return { result, research_result: research, system_result: null, system_profile: null };
+    return {
+      result,
+      buy_and_hold: buyHold,
+      research_result: research,
+      system_result: null,
+      system_profile: null,
+    };
   }
   const system = runSystem({
     config: job.config,
@@ -114,6 +124,7 @@ export function executeBacktestJob(job: BacktestJob): BacktestJobOutput {
   });
   return {
     result,
+    buy_and_hold: buyHold,
     research_result: research,
     system_result: {
       curve: system.curve,

@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { Check, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { SharedConfig, Side, TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
 import { groupByType } from "@/pages/demo-trading/bot/panel/indicator-groups"
 
@@ -22,18 +23,22 @@ export function IndicatorLibrary({
   open,
   onOpenChange,
   onOpen,
+  iqx,
 }: {
   indicators: readonly TechnicalIndicator[]
   config: SharedConfig | undefined
   open: boolean
   onOpenChange: (open: boolean) => void
   onOpen: (indicator: TechnicalIndicator, side: Side) => void
+  /** Content of the tab IQX (Chiến lược IQX cards); absent in compose mode, where the tab is hidden. */
+  iqx?: ReactNode
 }) {
   const [query, setQuery] = useState("")
+  const [tab, setTab] = useState<"iqx" | "indicators">("indicators")
   const groups = useMemo(() => groupByType(indicators.filter((item) => matchesQuery(item.name, query))), [indicators, query])
 
-  return (
-    <LibraryShell label="Thư viện chỉ báo" open={open} onOpenChange={onOpenChange}>
+  const list = (
+    <>
       <LibraryHead title="Chỉ báo" count={indicators.length} searchLabel="Tìm chỉ báo" placeholder="Tìm chỉ báo…" query={query} onQuery={setQuery} />
       {indicators.length === 0 ? (
         <p className="text-xs leading-5 text-muted-foreground">Chưa có chỉ báo nào để dùng trong Backtest.</p>
@@ -71,6 +76,23 @@ export function IndicatorLibrary({
             </ul>
           </section>
         ))
+      )}
+    </>
+  )
+
+  return (
+    <LibraryShell label="Thư viện chỉ báo" open={open} onOpenChange={onOpenChange}>
+      {iqx === undefined ? (
+        list
+      ) : (
+        <Tabs value={tab} onValueChange={(value) => setTab(value as "iqx" | "indicators")} className="gap-3">
+          <TabsList aria-label="Nhóm thư viện" className="w-full">
+            <TabsTrigger value="iqx">IQX</TabsTrigger>
+            <TabsTrigger value="indicators">Chỉ báo {indicators.length}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="iqx" className="space-y-3">{iqx}</TabsContent>
+          <TabsContent value="indicators" className="flex flex-col gap-3">{list}</TabsContent>
+        </Tabs>
       )}
     </LibraryShell>
   )

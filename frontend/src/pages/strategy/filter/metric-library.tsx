@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { Check, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,7 @@ import { libraryBlocks, metricName } from "./metric-names"
 import { technicalLibrary } from "./technical"
 import type { MetricId, ScreenerMetric } from "./types"
 
-type LibraryTab = "basic" | "technical"
+type LibraryTab = "iqx" | "basic" | "technical"
 
 const NOTE = "text-[11px] leading-4 text-muted-foreground"
 
@@ -38,6 +38,7 @@ export function MetricLibrary({
   onAdd,
   onAddTechnical,
   onOpenCatalog,
+  iqx,
 }: {
   metrics: readonly ScreenerMetric[]
   addedIds: ReadonlySet<MetricId>
@@ -52,6 +53,8 @@ export function MetricLibrary({
   onAdd: (metric: ScreenerMetric) => void
   onAddTechnical: (indicatorId: string) => void
   onOpenCatalog: () => void
+  /** Content of the tab IQX (Bộ lọc IQX cards); absent in compose mode, where the tab is hidden. */
+  iqx?: ReactNode
 }) {
   const [tab, setTab] = useState<LibraryTab>("basic")
   const [query, setQuery] = useState("")
@@ -68,17 +71,26 @@ export function MetricLibrary({
     <LibraryShell label="Thư viện chỉ tiêu" open={open} onOpenChange={onOpenChange}>
       <Tabs value={tab} onValueChange={(value) => setTab(value as LibraryTab)} className="gap-3">
         <TabsList aria-label="Nhóm thư viện" className="w-full">
+          {iqx !== undefined && <TabsTrigger value="iqx">IQX</TabsTrigger>}
           <TabsTrigger value="basic">Cơ bản</TabsTrigger>
           <TabsTrigger value="technical">Kỹ thuật</TabsTrigger>
         </TabsList>
-        <LibraryHead
-          title={tab === "basic" ? "Chỉ tiêu" : "Chỉ báo kỹ thuật"}
-          count={tab === "basic" ? usableCount : technicalCount}
-          searchLabel="Tìm trong thư viện"
-          placeholder={tab === "basic" ? "Tìm chỉ tiêu…" : "Tìm chỉ báo…"}
-          query={query}
-          onQuery={setQuery}
-        />
+        {tab !== "iqx" && (
+          <LibraryHead
+            title={tab === "basic" ? "Chỉ tiêu" : "Chỉ báo kỹ thuật"}
+            count={tab === "basic" ? usableCount : technicalCount}
+            searchLabel="Tìm trong thư viện"
+            placeholder={tab === "basic" ? "Tìm chỉ tiêu…" : "Tìm chỉ báo…"}
+            query={query}
+            onQuery={setQuery}
+          />
+        )}
+
+        {iqx !== undefined && (
+          <TabsContent value="iqx" className="space-y-3">
+            {iqx}
+          </TabsContent>
+        )}
 
         <TabsContent value="basic" className="space-y-4">
           {learned.length === 0 ? (

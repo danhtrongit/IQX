@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import {
   ConflictException,
   ForbiddenException,
@@ -37,6 +39,8 @@ import {
   RULE_VERSION,
   SCHEMA_VERSION,
   canonicalJson,
+  configHash,
+  defaultConfig,
   indicatorCapability,
   loadTechnicalRegistry,
   sha256Hex,
@@ -45,7 +49,11 @@ import {
   type RunOptions,
   type RunResult,
   type SharedConfig,
+  validateConfig,
 } from '../quant/v2/index.js';
+import { IqxTemplatesService } from '../iqx-templates/iqx-templates.service.js';
+import { mergeIndicatorPatch } from '../strategy-config/strategy-config.service.js';
+import type { BuyAndHold } from './strategy-backtests.buy-hold.js';
 import { buildRunExtras, fillGapTrades } from './strategy-backtests.evidence.js';
 import {
   ANNUALIZATION_SESSIONS,
@@ -74,6 +82,7 @@ import type {
 import {
   StrategyBacktestRepository,
   type BacktestRunKind,
+  type BacktestRunRecord,
   type BacktestRunRow,
   type StoredRunError,
   type StrategyBacktestStore,
@@ -139,6 +148,10 @@ export type RunSnapshot = RunResult['snapshot'] & {
     formula_version: string;
   };
   data_warnings: DataWarning[];
+  /** "Mua và giữ" (spec Tab IQX §3.5); absent on runs stored before it. */
+  buy_and_hold?: BuyAndHold | null;
+  /** Nhãn nguồn; absent on runs stored before the draft backtest (= the saved revision). */
+  source?: RunSource;
   research: Record<string, unknown> | null;
   system: {
     options: SystemOptions;
@@ -150,6 +163,12 @@ export type RunSnapshot = RunResult['snapshot'] & {
     data_hash: string;
     profile: SystemProfile;
   } | null;
+};
+
+export type RunSource = {
+  kind: 'saved' | 'draft';
+  label: string;
+  origin: { type: 'iqx_strategy'; id: string; version: number; name: string } | null;
 };
 
 export type RunSimulation = {
@@ -302,12 +321,17 @@ export class StrategyBacktestsService {
     @Optional()
     @Inject(QUANT_MARKET_DATA)
     private readonly market?: QuantMarketDataProvider,
+    @Optional()
+    @Inject(IqxTemplatesService)
+    private readonly iqxTemplates?: Pick<IqxTemplatesService, 'versionName'>,
   ) {}
 
   async create(userId: string, body: BacktestRunBody): Promise<BacktestRunView> {
     const { idempotency_key: idempotencyKey, ...request } = body;
     const requestHash = sha256Hex(canonicalJson(request));
-    const existing = await this.store.findByIdempotencyKey(userId, idempotencyKey);
+    const existing = body.trial
+      ? null
+      : await this.store.findByIdempotencyKey(userId, idempotencyKey);
     if (existing) return this.replay(existing, requestHash);
 
     if (request.research && request.system)
@@ -333,7 +357,10 @@ export class StrategyBacktestsService {
     // The reader refuses an outdated revision with 422 CONFIG_FORMAT_OUTDATED (thrown here, before
     // anything is stored: the client saves the config in the new format and retries). The check
     // below keeps a reader that hands one back from running a backtest on its reset document.
-    const revision = await this.reader.getRevision(userId, request.shared_revision);
+    const revision: SavedRevision | null =
+      request.shared_revision === 0 && request.draft
+        ? this.defaultRevision()
+        : await this.reader.getRevision(userId, request.shared_revision);
     if (!revision)
       throw new NotFoundException({
         code: 'REVISION_NOT_FOUND',
@@ -341,11 +368,12 @@ export class StrategyBacktestsService {
       });
     if (revision.outdated === true) throw configFormatOutdated(revision.revision);
 
+    const { config, hash, source } = await this.runConfig(request, revision);
     const grants = this.grantsLoader(userId);
     await this.assertCapabilities(this.requestedCapabilities(request, null), grants);
     // Grants are re-checked now, not when the revision was saved: a revoked or never-held
     // `indicator:<id>` stops the run (the saved revision itself is left untouched).
-    await this.assertIndicatorGrants(revision.config, grants);
+    await this.assertIndicatorGrants(config, grants);
 
     const kind: BacktestRunKind = request.research
       ? request.research.kind
@@ -358,7 +386,7 @@ export class StrategyBacktestsService {
       shared_revision: revision.revision,
       request,
       request_hash: requestHash,
-      config_hash: revision.config_hash,
+      config_hash: hash,
       engine_version: ENGINE_VERSION,
       calculation_version: CALCULATION_VERSION,
       rule_version: RULE_VERSION,
@@ -367,12 +395,12 @@ export class StrategyBacktestsService {
     let prepared: PreparedRun;
     let output: BacktestJobOutput;
     try {
-      prepared = await this.prepare(request, revision.config, grants);
+      prepared = await this.prepare(request, config, grants);
       output = await this.execute(prepared.job);
     } catch (error) {
       const failure = persistableFailure(error);
       // Best effort: a storage outage must not mask the run's own error.
-      if (failure)
+      if (failure && !request.trial)
         await this.store
           .insert({
             ...row,
@@ -387,16 +415,15 @@ export class StrategyBacktestsService {
           .catch(() => null);
       throw error;
     }
-    const extras = buildRunExtras(revision.config, prepared.job.bars, output.result);
+    const extras = buildRunExtras(config, prepared.job.bars, output.result);
     this.fillGapWarnings(prepared, output.result);
-    const snapshot = this.snapshot(
-      request,
-      revision,
-      prepared,
-      output.result,
-      output.system_profile,
-    );
-    const stored = await this.store.insert({
+    const snapshot: RunSnapshot = {
+      ...this.snapshot(request, revision, prepared, output.result, output.system_profile),
+      config_hash: hash,
+      buy_and_hold: output.buy_and_hold,
+      source,
+    };
+    const record: BacktestRunRecord = {
       ...row,
       snapshot,
       result: { ...output.result, snapshot, strategy_extras: extras },
@@ -405,7 +432,9 @@ export class StrategyBacktestsService {
       data_hash: prepared.system?.dataHash ?? prepared.mainHash,
       status: 'succeeded',
       error: null,
-    });
+    };
+    if (request.trial) return toView({ ...record, id: randomUUID(), created_at: new Date() });
+    const stored = await this.store.insert(record);
     if (stored) return toView(stored);
     // A concurrent request with the same key stored first; answer with its run.
     const winner = await this.store.findByIdempotencyKey(userId, idempotencyKey);
@@ -464,6 +493,77 @@ export class StrategyBacktestsService {
   }
 
   // ---------------------------------------------------------------------------
+
+  /** "Bản 0" of an account that never saved: the registry defaults (every indicator off). */
+  private defaultRevision(): SavedRevision {
+    const config = defaultConfig(loadTechnicalRegistry());
+    return {
+      revision: 0,
+      config,
+      config_hash: configHash(config),
+      saved_at: new Date().toISOString(),
+    } as SavedRevision;
+  }
+
+  /**
+   * The config a run uses: the saved revision, or (Backtest bản nháp) the draft's indicators merged
+   * over it exactly like a saved PATCH and checked by the same validator. Nothing is written.
+   */
+  private async runConfig(
+    request: RunRequest,
+    revision: SavedRevision,
+  ): Promise<{ config: SharedConfig; hash: string; source: RunSource }> {
+    if (!request.draft)
+      return {
+        config: revision.config,
+        hash: revision.config_hash,
+        source: { kind: 'saved', label: `Cấu hình đã lưu bản ${revision.revision}`, origin: null },
+      };
+    const registry = loadTechnicalRegistry();
+    const unknown = Object.keys(request.draft.indicators).filter(
+      (id) => !registry.some((entry) => entry.id === id),
+    );
+    if (unknown.length)
+      throw unprocessable(
+        'CONFIG_INVALID',
+        'Cấu hình không hợp lệ.',
+        unknown.map((id) => ({
+          path: `draft.indicators.${id}`,
+          message: `Chỉ báo không được hỗ trợ: ${id}.`,
+        })),
+      );
+    const config = mergeIndicatorPatch(
+      revision.config,
+      request.draft.indicators as SharedConfig['indicators'],
+    );
+    const errors = validateConfig(config, registry);
+    if (errors.length) throw unprocessable('CONFIG_INVALID', 'Cấu hình không hợp lệ.', errors);
+    let origin: RunSource['origin'] = null;
+    if (request.origin) {
+      const name = await this.iqxTemplates?.versionName(
+        request.origin.id,
+        request.origin.version,
+        'strategy',
+      );
+      if (!name)
+        throw unprocessable(
+          'IQX_TEMPLATE_NOT_FOUND',
+          'Không tìm thấy Chiến lược IQX của bản nháp.',
+        );
+      origin = { ...request.origin, name };
+    }
+    return {
+      config,
+      hash: configHash(config),
+      source: {
+        kind: 'draft',
+        label: origin
+          ? `Bản nháp · từ Chiến lược IQX ${origin.name} (v${origin.version})`
+          : 'Bản nháp',
+        origin,
+      },
+    };
+  }
 
   /** Every indicator the run would evaluate (master ON with a side ON) needs `indicator:<id>` now. */
   private async assertIndicatorGrants(

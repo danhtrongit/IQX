@@ -84,11 +84,11 @@ async function addRsiAbove60(user: User) {
 }
 
 describe("library", () => {
-  it("has two tabs, Cơ bản first, and lists the metrics the account can use in the blocks, groups and names of the Dashboard", async () => {
+  it("has the tabs IQX · Cơ bản · Kỹ thuật, Cơ bản open, and lists the metrics the account can use in the blocks, groups and names of the Dashboard", async () => {
     await renderTab()
     const tabs = within(library()).getAllByRole("tab")
-    expect(tabs.map((tab) => tab.textContent)).toEqual(["Cơ bản", "Kỹ thuật"])
-    expect(tabs[0]!.getAttribute("aria-selected")).toBe("true")
+    expect(tabs.map((tab) => tab.textContent)).toEqual(["IQX", "Cơ bản", "Kỹ thuật"])
+    expect(tabs[1]!.getAttribute("aria-selected")).toBe("true")
     // First level groups per Học viện v4.1 §6.2; second level groups and order per the Dashboard.
     expect(within(library()).getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent)).toEqual(["Chỉ tiêu chung", "Chỉ tiêu doanh nghiệp sản xuất"])
     expect(within(library()).getAllByRole("heading", { level: 4 }).map((heading) => heading.textContent)).toEqual(["Tăng trưởng", "Hiệu quả", "Hiệu quả và biên lợi nhuận"])

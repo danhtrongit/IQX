@@ -22,6 +22,7 @@ import { fmtDate, fmtInt, fmtNumber, fmtPercent, fmtSignedPercent, fmtSignedVnd,
 import { TRADES_PAGE_SIZE, type ClosedTrade, type OpenPosition, type PendingOrder, type RunResponse, type RunResult } from "./api"
 import { useTradesPage } from "./hooks"
 import {
+  buyAndHoldOf,
   chartPoints,
   conditionNames,
   configCaption,
@@ -44,13 +45,22 @@ function Kpi({ label, value, caption, tone }: { label: string; value: string; ca
   )
 }
 
-/** Exactly the six KPIs of the Strategy spec; nothing else is a KPI here. */
+/**
+ * Six KPIs. "Mua và giữ {mã}" sits next to the strategy profit (tab IQX §3.5): the stored buy-once-and-hold of
+ * the same symbol, range, capital, fill mode, lot and buy fee; "—" for a run stored before it.
+ */
 export function KpiStrip({ result }: { result: RunResult }) {
   const { kpis, supplementary } = result
   const wins = supplementary.winning_trade_count
+  const hold = buyAndHoldOf(result)
   return (
     <div className="grid grid-cols-2 divide-x divide-y divide-border border-y border-border sm:grid-cols-3 xl:grid-cols-6 xl:divide-y-0" role="group" aria-label="Sáu chỉ số kết quả">
       <Kpi label="Tổng lợi nhuận" value={fmtSignedPercent(kpis.total_return_pct, 1)} caption="Gồm tiền mặt và vị thế cuối kỳ" tone={toneClass(kpis.total_return_pct)} />
+      <Kpi
+        label={`Mua và giữ ${result.snapshot.symbol}`}
+        value={hold ? fmtSignedPercent(hold.return_pct, 1) : "—"}
+        caption={hold ? "Mua một lần đầu kỳ, cùng vốn, lô và phí mua; chưa trừ phí bán" : "Lần chạy cũ chưa có số liệu này"}
+      />
       <Kpi label="Lợi nhuận năm hóa" value={fmtSignedPercent(kpis.annualized_return_pct, 1)} caption="CAGR, quy ước 252 phiên/năm" tone={toneClass(kpis.annualized_return_pct)} />
       <Kpi label="Sụt giảm lớn nhất" value={fmtSignedPercent(kpis.max_drawdown_pct, 1)} caption="Từ đỉnh trước đó" tone={toneClass(kpis.max_drawdown_pct)} />
       <Kpi label="Số giao dịch" value={fmtInt(kpis.closed_trade_count)} caption="Vòng mua và bán đã đóng" />
@@ -59,14 +69,13 @@ export function KpiStrip({ result }: { result: RunResult }) {
         value={fmtPercent(kpis.win_rate_pct, 1)}
         caption={kpis.closed_trade_count > 0 ? `${wins} / ${kpis.closed_trade_count} giao dịch` : "Chưa có giao dịch đã đóng"}
       />
-      <Kpi label="Lợi nhuận mua và giữ" value={fmtSignedPercent(kpis.buy_hold_return_pct, 1)} caption="Đầu kỳ → cuối kỳ, chưa phí/cổ tức" tone={toneClass(kpis.buy_hold_return_pct)} />
     </div>
   )
 }
 
 const CHART_CONFIG = {
   strategy: { label: "Danh mục chiến lược", color: "var(--primary)" },
-  buyHold: { label: "Mua và giữ", color: "var(--muted-foreground)" },
+  buyHold: { label: "Mua và giữ", color: "var(--chart-7)" },
   market: { label: "VN-Index", color: "var(--price-ref)" },
 } satisfies ChartConfig
 
@@ -76,13 +85,14 @@ export function ReturnChart({ result, symbol }: { result: RunResult; symbol: str
   const points = thinPoints(chartPoints(result))
   const market = result.chart.series.find((series) => series.id === "market")
   const showMarket = !!market?.available && points.some((point) => point.market !== null)
+  const showHold = buyAndHoldOf(result) !== null
   if (points.length < 2) {
     return <div className="flex h-[200px] items-center justify-center p-4 text-xs text-muted-foreground italic">Không có dữ liệu giá trong khoảng thời gian đã chọn.</div>
   }
   const names = { strategy: "Danh mục chiến lược", buyHold: `Mua và giữ ${symbol}`, market: "VN-Index" } as const
   const legend: { key: keyof typeof names; dash: string; color: string }[] = [
     { key: "strategy", dash: "", color: "var(--primary)" },
-    { key: "buyHold", dash: "6 4", color: "var(--muted-foreground)" },
+    ...(showHold ? [{ key: "buyHold" as const, dash: "6 4", color: "var(--chart-7)" }] : []),
     ...(showMarket ? [{ key: "market" as const, dash: "2 3", color: "var(--price-ref)" }] : []),
   ]
   return (
@@ -121,7 +131,7 @@ export function ReturnChart({ result, symbol }: { result: RunResult; symbol: str
             }
           />
           <Line type="linear" dataKey="strategy" stroke="var(--color-strategy)" strokeWidth={2.2} dot={false} isAnimationActive={false} />
-          <Line type="linear" dataKey="buyHold" stroke="var(--color-buyHold)" strokeWidth={1.5} strokeDasharray="6 4" dot={false} isAnimationActive={false} />
+          {showHold && <Line type="linear" dataKey="buyHold" stroke="var(--color-buyHold)" strokeWidth={1.8} strokeDasharray="6 4" dot={false} connectNulls isAnimationActive={false} />}
           {showMarket && <Line type="linear" dataKey="market" stroke="var(--color-market)" strokeWidth={1.5} strokeDasharray="2 3" dot={false} connectNulls={false} isAnimationActive={false} />}
         </LineChart>
       </ChartContainer>
@@ -150,7 +160,7 @@ function Assumptions({ run, result }: { run: RunResponse; result: RunResult }) {
         </p>
         {simulation && (
           <p>
-            Khóa bán tối thiểu {fmtInt(simulation.min_held_bars)} phiên giữ là quy ước kế thừa từ engine tham chiếu, đang chờ chủ sản phẩm chốt. Thanh toán, thanh khoản và trượt giá chưa được mô phỏng. Mua và giữ là tỷ số giá đóng cửa, chưa tính phí hoặc cổ tức; năm hóa theo {simulation.annualization_sessions} phiên/năm.
+            Khóa bán tối thiểu {fmtInt(simulation.min_held_bars)} phiên giữ là quy ước kế thừa từ engine tham chiếu, đang chờ chủ sản phẩm chốt. Thanh toán, thanh khoản và trượt giá chưa được mô phỏng. {snapshot.buy_and_hold ? "Mua và giữ: mua một lần ở phiên khớp đầu tiên, cùng vốn, phí mua, lô và chế độ khớp; không trừ phí bán, chưa tính cổ tức." : "Lần chạy cũ chưa lưu Mua và giữ."} Năm hóa theo {simulation.annualization_sessions} phiên/năm.
           </p>
         )}
         <p>
@@ -345,7 +355,7 @@ export function BacktestResults({
         <div className="min-w-0">
           <h2 className="font-heading text-sm font-bold tracking-wide uppercase">Kết quả backtest</h2>
           <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
-            {snapshot.symbol} · {fmtDate(snapshot.actual_start)} đến {fmtDate(snapshot.actual_end)} · {fmtInt(snapshot.bar_count)} phiên · cấu hình bản {snapshot.shared_revision} · {result.snapshot.simulation?.execution_label ?? (snapshot.execution === "same_close" ? "Đóng cửa cùng phiên" : "Mở cửa phiên kế tiếp")}
+            {snapshot.symbol} · {fmtDate(snapshot.actual_start)} đến {fmtDate(snapshot.actual_end)} · {fmtInt(snapshot.bar_count)} phiên · <span data-testid="run-source">{snapshot.source?.label ?? `cấu hình bản ${snapshot.shared_revision}`}</span> · {result.snapshot.simulation?.execution_label ?? (snapshot.execution === "same_close" ? "Đóng cửa cùng phiên" : "Mở cửa phiên kế tiếp")}
             <br />
             {configCaption(snapshot.config as Record<string, unknown>, indicators)}
           </p>

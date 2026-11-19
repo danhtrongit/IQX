@@ -24,8 +24,9 @@ import {
   listSnapshots,
   RESULT_PAGE_SIZE,
   updateFilter,
+  type SavedDefinition,
 } from "./api"
-import type { FilterDefinition, Selection, SortState } from "./types"
+import type { Selection, SortState } from "./types"
 
 export const filterKeys = {
   all: ["strategy", "filter"] as const,
@@ -121,7 +122,7 @@ export function useSnapshots(enabled: boolean) {
 export function useSaveFilter() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: { id?: string; name: string; definition: FilterDefinition; idempotencyKey?: string }) =>
+    mutationFn: (input: { id?: string; name: string; definition: SavedDefinition; idempotencyKey?: string }) =>
       input.id
         ? updateFilter(input.id, { name: input.name, definition: input.definition })
         : createFilter({ name: input.name, definition: input.definition, ...(input.idempotencyKey ? { idempotency_key: input.idempotencyKey } : {}) }),

@@ -80,6 +80,13 @@ export function loadFilterJsonSchema(): FilterJsonSchemaShape {
   return cachedJsonSchema;
 }
 
+/** A saved filter that began from a Bộ lọc IQX keeps which one and which version. */
+export const filterOriginSchema = z.strictObject({
+  type: z.literal('iqx_filter'),
+  id: z.uuid(),
+  version: z.number().int().min(1),
+});
+
 function asEnum(values: string[]): [string, ...string[]] {
   return values as [string, ...string[]];
 }
@@ -113,6 +120,11 @@ function buildFilterDefinitionSchema(json: FilterJsonSchemaShape) {
       rules: z.array(rule),
       technical: z.array(technicalItemSchema).max(properties.technical.maxItems).default([]),
       columns: z.array(column).max(properties.columns.maxItems).optional(),
+      /**
+       * Where the filter started (spec Tab IQX §2.3.5, §4.3): display and statistics only. Part of
+       * `definition_hash` like every other field, never of `criteriaHash` / criteriaSignature.
+       */
+      origin: filterOriginSchema.optional(),
     })
     .strict()
     .superRefine((definition, context) => {

@@ -92,6 +92,8 @@ describe("team lead route guard", () => {
     "/admin/alerts",
     "/admin/lessons",
     "/admin/academy",
+    "/admin/iqx-templates",
+    "/admin/iqx-templates/filter/new",
     "/admin/users/7f1c/extra",
     "/admin/saco/posts",
     "/admin/saco/posts/new",
@@ -105,7 +107,7 @@ describe("SACO route guard", () => {
     expect(isSacoAdminPath(path)).toBe(true)
   })
 
-  it.each(["/admin", "/admin/saco", "/admin/users", "/admin/plans", "/admin/saco/posts/7f1c/extra"])("sends a SACO away from %s", (path) => {
+  it.each(["/admin", "/admin/saco", "/admin/users", "/admin/plans", "/admin/iqx-templates", "/admin/saco/posts/7f1c/extra"])("sends a SACO away from %s", (path) => {
     expect(isSacoAdminPath(path)).toBe(false)
   })
 })

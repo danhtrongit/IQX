@@ -155,6 +155,8 @@ export const legacyConfigReviewSchema = z.object({
 export const sharedConfigPatchSchema = z.strictObject({
   expected_revision: z.number().int().min(0),
   idempotency_key: z.string().min(8).max(128),
+  /** "Lưu cho Bot" from a backtest run: recorded as the revision's source (history label). */
+  source: z.strictObject({ backtest_run_id: z.uuid() }).optional(),
   indicators: indicatorsRecordSchema(indicatorIdSchema).refine(
     (indicators) => Object.keys(indicators).length > 0,
     { message: 'Cần ít nhất một chỉ báo.' },
@@ -230,6 +232,8 @@ export const sharedConfigRevisionSchema = z.object({
   legacy: z.boolean(),
   /** true for an outdated revision (`iqx-rules-3.0`, `iqx-rules-2.0`); still listed. */
   outdated: z.boolean(),
+  /** Nguồn, e.g. `Backtest · lần chạy 1a2b3c4d · từ Chiến lược IQX Phá đỉnh`; null when not recorded. */
+  source_label: z.string().nullable(),
 });
 export const sharedConfigRevisionListSchema = z.array(sharedConfigRevisionSchema);
 export type SharedConfigRevisionSummary = z.infer<typeof sharedConfigRevisionSchema>;

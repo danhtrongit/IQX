@@ -11,7 +11,12 @@ describe("chart", () => {
     const result = runResponse().result!
     const points = chartPoints(result)
     expect(points[0]).toMatchObject({ date: "2024-01-02", strategy: 0, buyHold: 0 })
-    expect(points.at(-1)).toMatchObject({ strategy: result.kpis.total_return_pct, buyHold: result.kpis.buy_hold_return_pct })
+    expect(points.at(-1)).toMatchObject({ strategy: result.kpis.total_return_pct, buyHold: result.snapshot.buy_and_hold!.return_pct })
+  })
+
+  it("draws no Mua và giữ line for a run stored before it (never recomputed)", () => {
+    const points = chartPoints(runResponse({ buyHold: false }).result!)
+    expect(points.every((point) => point.buyHold === null)).toBe(true)
   })
 
   it("keeps a missing benchmark as null, never as 0%", () => {
