@@ -548,7 +548,7 @@ describe("Bot source block", () => {
     await within(source).findByRole("heading", { name: /VN30/ })
     expect(within(source).getByRole("heading").textContent).toContain("30 mã")
     expect(source.textContent).toMatch(/Chờ hiệu lực: Danh mục chờ · 4 mã · từ phiên 09\/10\/2026/)
-    expect(within(source).getByRole("link", { name: "Xem Bot" }).getAttribute("href")).toBe("/demo-trading?view=bot")
+    expect(within(source).getByRole("link", { name: "Xem Bot" }).getAttribute("href")).toBe("/luyen-tap?tool=bot")
   })
 
   it("goes back to VN30 only after a confirmation that says nothing is sold", async () => {

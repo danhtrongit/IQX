@@ -131,7 +131,9 @@ export function WorkspaceFrame({
 
   const focusClose = useCallback(() => {
     window.requestAnimationFrame(() => {
-      panelElement?.querySelector<HTMLElement>("[data-panel-close]")?.focus()
+      // A grouped panel (Giao dịch) keeps its other tabs mounted but hidden: focus the visible close button.
+      const buttons = panelElement?.querySelectorAll<HTMLElement>("[data-panel-close]") ?? []
+      Array.from(buttons).find((button) => !button.closest("[hidden]"))?.focus()
     })
   }, [panelElement])
 

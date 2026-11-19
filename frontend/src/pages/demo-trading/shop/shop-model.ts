@@ -41,10 +41,6 @@ export const SHOP_COPY = {
   insufficient: "Chưa đủ xu",
   evolve: "Tiến hoá",
   evolveTitle: "Tiến hoá linh thú",
-  premium: "Premium",
-  premiumBuy: "Mua Premium",
-  exchange: "Đổi xu",
-  exchangeTitle: "Đổi xu với tiền Demo",
 } as const
 
 /**

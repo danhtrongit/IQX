@@ -21,7 +21,7 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
-const open = (id: string) => renderAcademy(`/demo-trading?view=academy&lesson=${id}`, { panel: false })
+const open = (id: string) => renderAcademy(`/luyen-tap?tool=hoc-vien&lesson=${id}`, { panel: false })
 const header = () => within(screen.getByRole("article")).getByRole("banner")
 
 describe("Thử trên biểu đồ trong bài học", () => {

@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { useNavigate, useSearchParams } from "react-router"
 
-import { ACADEMY_VIEW, LESSON_PARAM, VIEW_PARAM } from "@/pages/demo-trading/workspace-url"
+import { ACADEMY_TOOL, LESSON_PARAM, TOOL_PARAM } from "@/pages/demo-trading/workspace-url"
 
 /** Item ids are `chNN-lMM`, `chNN-exam` or `chNN-practice`; anything else in the URL is ignored. */
 const LESSON_ID = /^ch\d{2}-(?:l\d{2}|exam|practice)$/
@@ -11,7 +11,7 @@ export function parseLessonParam(value: string | null): string | null {
 }
 
 /**
- * The open lesson lives in the URL (`?view=academy&lesson=ch01-l01`): a reload or a direct link
+ * The open lesson lives in the URL (`?tool=hoc-vien&lesson=ch01-l01`): a reload or a direct link
  * (for example the Dashboard's "Học" button) restores it, and the panel and the reader read the
  * same value. Navigation only rewrites the parameters of this tool and keeps the rest (symbol...).
  */
@@ -24,7 +24,8 @@ export function useAcademyNavigation() {
     (id: string) => {
       const next = new URLSearchParams(params)
       next.delete("content")
-      next.set(VIEW_PARAM, ACADEMY_VIEW)
+      next.delete("tab")
+      next.set(TOOL_PARAM, ACADEMY_TOOL)
       next.set(LESSON_PARAM, id)
       setParams(next, { replace: true })
     },
@@ -41,7 +42,7 @@ export function useAcademyNavigation() {
   /** "Về Bot": the Bot tool of the same workspace (only the tool changes). */
   const openBot = useCallback(() => {
     const next = new URLSearchParams(params)
-    next.set(VIEW_PARAM, "bot")
+    next.set(TOOL_PARAM, "bot")
     setParams(next, { replace: true })
   }, [params, setParams])
 

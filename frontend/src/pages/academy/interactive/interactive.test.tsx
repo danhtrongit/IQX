@@ -138,7 +138,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 async function openItem(id: string, heading: string) {
-  const view = renderAcademy(`/demo-trading?view=academy&lesson=${id}`, { panel: false })
+  const view = renderAcademy(`/luyen-tap?tool=hoc-vien&lesson=${id}`, { panel: false })
   await screen.findByRole("heading", { level: 2, name: heading })
   return view
 }

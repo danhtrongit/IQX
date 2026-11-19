@@ -344,7 +344,7 @@ export function BacktestTab({ initialSymbol }: { initialSymbol?: string }) {
           onClose={() => setModal(null)}
           footer={
             <>
-              <Button asChild variant="outline"><Link to="/demo-trading?view=bot">Xem Bot</Link></Button>
+              <Button asChild variant="outline"><Link to="/luyen-tap?tool=bot">Xem Bot</Link></Button>
               <Button type="button" onClick={() => setModal(null)}>Đóng</Button>
             </>
           }

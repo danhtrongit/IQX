@@ -4,11 +4,36 @@ import { useState } from "react"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { demoChrome } from "@/config/chrome"
+import { BookOpen, Bot, ChartCandlestick, History, LayoutDashboard, Newspaper, ScanSearch, ShoppingCart, Store, Swords, TrendingUp, Wallet } from "lucide-react"
+
+import type { RailItem, RouteChrome } from "@/config/chrome"
 import { RailProvider } from "@/context/rail"
 
 import { SidebarPanel } from "./sidebar-panel"
 import { WorkspaceFrame, WorkspacePanelToggle } from "./workspace-frame"
+
+/** A route chrome with panel tools, main-area tools and hidden tools (the frame is generic over it). */
+const academyItems: RailItem[] = [
+  { id: "academy", label: "Học viện", icon: BookOpen, affects: "sidebar" },
+  { id: "candle-dojo", label: "Candle Dojo", icon: Swords, affects: "sidebar" },
+  { id: "bot", label: "Bot", icon: Bot, affects: "sidebar" },
+  { id: "shop", label: "Shop", icon: Store, affects: "sidebar" },
+  { id: "flashback", label: "Flashback", icon: History, affects: "sidebar" },
+]
+const demoChrome: RouteChrome = {
+  param: "view",
+  defaultId: "trading",
+  items: [
+    { id: "trading", label: "Đặt lệnh", icon: ShoppingCart, affects: "sidebar" },
+    { id: "portfolio", label: "Danh mục", icon: Wallet, affects: "sidebar" },
+    { id: "news", label: "Tin tức", icon: Newspaper, affects: "sidebar" },
+    { id: "insight", label: "Insight", icon: TrendingUp, affects: "left" },
+    { id: "dashboard", label: "Dashboard phân tích", icon: LayoutDashboard, affects: "left" },
+    { id: "hunt", label: "Săn mã", icon: ScanSearch, affects: "sidebar", hidden: true },
+    { id: "patterns", label: "Mẫu nến", icon: ChartCandlestick, affects: "sidebar", hidden: true },
+    ...academyItems,
+  ],
+}
 
 const media = { matches: false, listeners: new Set<() => void>() }
 
@@ -205,7 +230,7 @@ describe("WorkspaceFrame on wide screens", () => {
 
   it("uses the `rail` prop instead of the route chrome when given", async () => {
     const onSelectTool = vi.fn()
-    const items = demoChrome.items.filter((item) => item.section === "academy")
+    const items = academyItems
     const router = createMemoryRouter(
       [{
         path: "/demo-trading",

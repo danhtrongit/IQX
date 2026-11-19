@@ -23,7 +23,7 @@ import { LEGAL_LINE_VI } from "../about/about-content"
 import { INTRODUCTION_SEO } from "./introduction-seo"
 import "./landing.css"
 
-const JOURNEY_URL = "/demo-trading?view=academy"
+const JOURNEY_URL = "/luyen-tap?tool=hoc-vien"
 const MASCOT_ROOT = "/assets/mascots-2d/v2/thanh-long"
 const SEO = INTRODUCTION_SEO
 const VALUES = [
@@ -63,19 +63,19 @@ const CAPABILITIES = [
     icon: Search,
     title: "Tìm cơ hội",
     detail: "Theo dõi những mã phù hợp với cách bạn đọc thị trường.",
-    to: "/demo-trading?view=hunt",
+    to: "/luyen-tap?tool=giao-dich&tab=dat-lenh",
   },
   {
     icon: Gamepad2,
     title: "Giao dịch mô phỏng",
     detail: "Quan sát Bot thực hành với vốn ảo và nguyên tắc rõ ràng.",
-    to: "/demo-trading?view=bot",
+    to: "/luyen-tap?tool=bot",
   },
   {
     icon: BarChart3,
     title: "Theo dõi kết quả",
     detail: "Nhìn lại quyết định, danh mục và tiến bộ của bạn.",
-    to: "/demo-trading?view=portfolio",
+    to: "/luyen-tap?tool=giao-dich&tab=danh-muc",
   },
   {
     icon: BookOpen,

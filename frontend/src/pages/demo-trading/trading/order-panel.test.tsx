@@ -56,9 +56,9 @@ function portfolioWith(sellable: number) {
   }
 }
 
-function renderPanel(onNavigate?: (panel: string) => void) {
+function renderPanel() {
   const onSymbolChange = vi.fn()
-  render(<OrderPanel symbol="VNM" onSymbolChange={onSymbolChange} onNavigate={onNavigate} />)
+  render(<OrderPanel symbol="VNM" onSymbolChange={onSymbolChange} />)
   return { onSymbolChange, user: userEvent.setup() }
 }
 
@@ -158,39 +158,28 @@ describe("OrderPanel (plain manual order form)", () => {
     expect(mocks.activate).toHaveBeenCalledTimes(1)
   })
 
-  it("shows the learning shortcut when the Demo account has no capital, and never a NaN return", async () => {
-    const onNavigate = vi.fn()
+  it("never shows a learning-for-capital notice, and never a NaN return, even with 0đ", () => {
     mocks.account = { ...account, cash_available_vnd: 0, total_cash_vnd: 0, net_deposited_cash_vnd: 0 }
     mocks.portfolio = { ...portfolioWith(0), account: mocks.account, nav_vnd: 0 }
-    const { user } = renderPanel(onNavigate)
-    expect(screen.getByText("Học bài để nhận vốn: 1 bài = 100 xu = 1.000.000đ")).toBeTruthy()
-    expect(document.body.textContent).not.toMatch(/NaN|∞/)
-    expect(screen.getByText(/0\.00%/)).toBeTruthy()
-    await user.click(screen.getByRole("button", { name: "Vào Học viện" }))
-    expect(onNavigate).toHaveBeenCalledWith("academy")
-  })
-
-  it("FB-12: hết tiền vì đã mua cổ phiếu thì không nhắc học để nhận vốn", () => {
-    mocks.account = { ...account, cash_available_vnd: 0, total_cash_vnd: 0 }
-    mocks.portfolio = { ...portfolioWith(100), account: mocks.account }
-    renderPanel(vi.fn())
+    renderPanel()
     expect(screen.queryByTestId("demo-no-capital")).toBeNull()
+    expect(document.body.textContent).not.toMatch(/Học bài để nhận vốn|Vào Học viện|NaN|∞/)
   })
 
-  it("FB-12: tiền mặt 0 nhưng đã từng nạp vốn thì không nhắc học để nhận vốn", () => {
-    mocks.account = { ...account, cash_available_vnd: 0, total_cash_vnd: 0, net_deposited_cash_vnd: 5_000_000 }
-    mocks.portfolio = { ...portfolioWith(0), account: mocks.account }
-    renderPanel(vi.fn())
-    expect(screen.queryByTestId("demo-no-capital")).toBeNull()
+  it("shows the Demo return against the fixed 100.000.000đ capital, not the net amount exchanged in", () => {
+    mocks.account = { ...account, net_deposited_cash_vnd: 5_000_000 }
+    mocks.portfolio = { ...portfolioWith(0), account: mocks.account, nav_vnd: 110_000_000, return_pct: 2100 }
+    renderPanel()
+    expect(screen.getByText(/\(10\.00%\)/)).toBeTruthy()
   })
 
-  it("FB-12: mở tài khoản báo bắt đầu với 0đ, không hứa VND ảo", async () => {
+  it("opening the account announces the granted virtual cash (Demo back to 100.000.000đ)", async () => {
     mocks.account = null
     mocks.activate.mockImplementation((_: unknown, options: { onSuccess: (created: unknown) => void }) =>
-      options.onSuccess({ ...account, cash_available_vnd: 0 }),
+      options.onSuccess({ ...account, cash_available_vnd: 100_000_000 }),
     )
     const { user } = renderPanel()
     await user.click(screen.getByRole("button", { name: "Mở tài khoản Demo Trading" }))
-    expect(mocks.toast.success).toHaveBeenCalledWith("Tài khoản Demo bắt đầu với 0đ. Đổi xu sang tiền để có vốn.")
+    expect(mocks.toast.success).toHaveBeenCalledWith("Đã mở tài khoản Demo Trading — bạn nhận 100.000.000 VND ảo.")
   })
 })

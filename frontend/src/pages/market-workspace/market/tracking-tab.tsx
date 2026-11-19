@@ -55,7 +55,7 @@ function toneOf(value: number | null): string {
 }
 
 function demoHref(symbol: string): string {
-  return `/demo-trading?view=trading&symbol=${encodeURIComponent(symbol)}`
+  return `/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=${encodeURIComponent(symbol)}`
 }
 
 function SlotLabel({ slot }: { slot: number }) {

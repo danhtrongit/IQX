@@ -82,7 +82,7 @@ export function BotSourceCard({ actions }: { actions: UniverseActions }) {
         {effective && (
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => setDialog("symbols")}>Xem danh sách</Button>
-            <Button asChild variant="outline" size="sm"><Link to="/demo-trading?view=bot">Xem Bot</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link to="/luyen-tap?tool=bot">Xem Bot</Link></Button>
             {latestKind === "custom" && <Button type="button" variant="ghost" size="sm" onClick={() => { setError(null); setDialog("vn30") }}>Về VN30</Button>}
           </div>
         )}

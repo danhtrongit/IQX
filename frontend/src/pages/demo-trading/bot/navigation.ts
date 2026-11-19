@@ -1,18 +1,20 @@
 import { useCallback } from "react"
 import { useSearchParams } from "react-router"
 
-/** `?view=bot&practice=<indicator>`; every other parameter is kept. */
+import { PRACTICE_TOOL, TOOL_PARAM } from "@/config/chrome"
+
+/** `?tool=bot&practice=<indicator>`; every other parameter is kept. */
 export function practiceParams(current: URLSearchParams, indicatorId: string): URLSearchParams {
   const next = new URLSearchParams(current)
-  next.set("view", "bot")
+  next.set(TOOL_PARAM, PRACTICE_TOOL.bot)
   next.set("practice", indicatorId)
   return next
 }
 
-/** `?view=academy&lesson=<lesson>`: the Học viện tool on that lesson; other parameters are kept. */
+/** `?tool=hoc-vien&lesson=<lesson>`: the Học viện tool on that lesson; other parameters are kept. */
 export function lessonParams(current: URLSearchParams, lessonId: string): URLSearchParams {
   const next = new URLSearchParams(current)
-  next.set("view", "academy")
+  next.set(TOOL_PARAM, PRACTICE_TOOL.academy)
   next.set("lesson", lessonId)
   next.delete("practice")
   return next

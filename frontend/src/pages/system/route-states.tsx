@@ -8,7 +8,7 @@ export function NotFoundPage() {
     <div className="mx-auto flex max-w-xl flex-col items-center gap-4 border-y border-border py-16 text-center">
       <CircleAlert className="size-10 text-muted-foreground" aria-hidden="true" />
       <p className="text-sm leading-6 text-muted-foreground">Kiểm tra lại địa chỉ hoặc trở về khu vực thị trường để tiếp tục theo dõi và phân tích cổ phiếu.</p>
-      <Button asChild><Link to="/demo-trading"><House />Về Demo Trading</Link></Button>
+      <Button asChild><Link to="/luyen-tap"><House />Về Luyện tập</Link></Button>
     </div>
   </WorkspacePage>
 }

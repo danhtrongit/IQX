@@ -1,7 +1,7 @@
 /**
  * Symbol picker for the demo shell — a compact combobox that swaps the symbol
  * the whole terminal is looking at (quote, order form, news, …)
- * WITHOUT leaving `/demo-trading`.
+ * WITHOUT leaving the workspace.
  *
  * Search is server-side (`/instruments?q=...`) and debounced;
  * results are restricted to tradable stocks (HOSE/HNX/UPCOM) so a guest cannot

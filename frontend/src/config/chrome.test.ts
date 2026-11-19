@@ -1,82 +1,58 @@
 import { describe, expect, it } from "vitest"
 
-import { HEADER_NAV, SECTION_DEFAULT_TOOL, demoChrome, sectionOfTool } from "./chrome"
+import { HEADER_NAV, INSIGHT_ENABLED, flashbackChrome, practiceChrome, sectionOfPath, sectionOfTool } from "./chrome"
 
-const visible = demoChrome.items.filter((item) => !item.hidden)
+const visible = (items: typeof practiceChrome.items) => items.filter((item) => !item.hidden).map((item) => [item.id, item.label])
 
-const inSection = (section: "demo" | "academy") => visible.filter((item) => item.section === section)
-
-describe("demo workspace chrome", () => {
-  it("lists the DEMO TRADING rail tools in order: Đặt lệnh, Danh mục, Tin tức, Insight, Dashboard phân tích", () => {
-    expect(inSection("demo").map((item) => [item.id, item.label])).toEqual([
-      ["trading", "Đặt lệnh"],
-      ["portfolio", "Danh mục"],
-      ["news", "Tin tức"],
-      ["insight", "Insight"],
-      ["dashboard", "Dashboard phân tích"],
-    ])
-  })
-
-  it("lists the HỌC VIỆN rail tools in order: Học viện, Candle Dojo, Bot, Shop, Flashback", () => {
-    expect(inSection("academy").map((item) => [item.id, item.label])).toEqual([
-      ["academy", "Học viện"],
+describe("workspace chrome (layout v1.3)", () => {
+  it("lists the LUYỆN TẬP rail in order: Candle Dojo, Học viện, Bot, Giao dịch, Dashboard phân tích", () => {
+    expect(visible(practiceChrome.items)).toEqual([
       ["candle-dojo", "Candle Dojo"],
+      ["hoc-vien", "Học viện"],
       ["bot", "Bot"],
-      ["shop", "Shop"],
+      ["giao-dich", "Giao dịch"],
+      ["phan-tich", "Dashboard phân tích"],
+    ])
+    expect(practiceChrome.param).toBe("tool")
+    expect(practiceChrome.defaultId).toBe("candle-dojo")
+  })
+
+  it("lists the FLASHBACK rail in order: Flashback, Shop", () => {
+    expect(visible(flashbackChrome.items)).toEqual([
       ["flashback", "Flashback"],
+      ["shop", "Shop"],
     ])
-    expect(visible).toHaveLength(10)
+    expect(flashbackChrome.defaultId).toBe("flashback")
   })
 
-  it("hides Săn mã and Mẫu nến from the rail", () => {
-    const hidden = demoChrome.items.filter((item) => item.hidden).map((item) => item.id)
-    expect(hidden).toEqual(["hunt", "patterns"])
-  })
-
-  it("opens on Đặt lệnh (DEMO TRADING)", () => {
-    expect(demoChrome.defaultId).toBe("trading")
-    expect(demoChrome.items.find((item) => item.id === demoChrome.defaultId)?.affects).toBe("sidebar")
-    expect(SECTION_DEFAULT_TOOL).toEqual({ demo: "trading", academy: "academy" })
-  })
-
-  it("Insight and Dashboard phân tích replace the main area; every other tool fills the panel", () => {
-    for (const item of demoChrome.items) {
-      const mainArea = item.id === "insight" || item.id === "dashboard"
-      expect(item.affects).toBe(mainArea ? "left" : "sidebar")
+  it("keeps Insight, Săn mã and Mẫu nến in the code but hidden from every rail", () => {
+    expect(practiceChrome.items.filter((item) => item.hidden).map((item) => item.id)).toEqual(["insight", "hunt", "patterns"])
+    expect(flashbackChrome.items.some((item) => item.hidden)).toBe(false)
+    expect(INSIGHT_ENABLED).toBe(false)
+    for (const chrome of [practiceChrome, flashbackChrome]) {
+      expect(chrome.items.filter((item) => !item.hidden).map((item) => item.label)).not.toContain("Insight")
     }
   })
 
-  it("maps tools to sections, with anything unknown falling in DEMO TRADING", () => {
-    for (const id of ["academy", "candle-dojo", "bot", "shop", "flashback"]) expect(sectionOfTool(id)).toBe("academy")
-    for (const id of ["trading", "portfolio", "news", "insight", "dashboard", "hunt", "patterns", "unknown", "journey", null]) {
-      expect(sectionOfTool(id)).toBe("demo")
-    }
+  it("maps tools and paths to sections", () => {
+    for (const id of ["candle-dojo", "hoc-vien", "bot", "giao-dich", "phan-tich", "insight", "hunt"]) expect(sectionOfTool(id)).toBe("practice")
+    for (const id of ["flashback", "shop"]) expect(sectionOfTool(id)).toBe("flashback")
+    for (const id of ["trading", "academy", "unknown", null]) expect(sectionOfTool(id)).toBeNull()
+    expect(sectionOfPath("/luyen-tap")).toBe("practice")
+    expect(sectionOfPath("/flashback")).toBe("flashback")
+    expect(sectionOfPath("/demo-trading")).toBeNull()
+    expect(sectionOfPath("/admin/flashback")).toBeNull()
   })
 
-  it("no longer has the journey, identity or level-analysis tools", () => {
-    const ids = demoChrome.items.map((item) => item.id)
-    for (const retired of ["journey", "identity", "analysis"]) expect(ids).not.toContain(retired)
-    expect(demoChrome.items.some((item) => /hành trình/i.test(item.label))).toBe(false)
-  })
-
-  it("no longer has the AI Phân Tích tool", () => {
-    expect(demoChrome.items.some((item) => item.id === "ai-analysis")).toBe(false)
-  })
-
-  it("has Demo Trading and Học viện entries in the header that open workspace tools", () => {
-    const entries = Object.fromEntries(HEADER_NAV.map((item) => [item.label, item.to]))
-    expect(entries["Demo Trading"]).toBe("/demo-trading?view=trading")
-    expect(entries["Học viện"]).toBe("/demo-trading?view=academy")
-  })
-
-  it("keeps Bài học routable but hidden from the header by default", () => {
+  it("has GIỚI THIỆU · LUYỆN TẬP · FLASHBACK · CHIẾN LƯỢC in the header, then Khu giao dịch; Bài học hidden", () => {
     expect(HEADER_NAV.find((item) => item.label === "Bài học")).toMatchObject({ to: "/bai-hoc", hidden: true })
-    expect(HEADER_NAV.filter((item) => !item.hidden).map((item) => item.label)).toEqual([
-      "Giới thiệu",
-      "Demo Trading",
-      "Chiến lược",
-      "Học viện",
-      "Khu giao dịch",
+    expect(HEADER_NAV.filter((item) => !item.hidden).map((item) => [item.label, item.to])).toEqual([
+      ["Giới thiệu", "/"],
+      ["Luyện tập", "/luyen-tap"],
+      ["Flashback", "/flashback"],
+      ["Chiến lược", "/chien-luoc"],
+      ["Khu giao dịch", "/khu-giao-dich"],
     ])
+    expect(HEADER_NAV.some((item) => /Demo Trading|Học viện/.test(item.label))).toBe(false)
   })
 })

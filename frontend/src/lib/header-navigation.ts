@@ -1,32 +1,25 @@
-import { sectionOfTool } from "@/config/chrome"
-import { VIEW_PARAM, normalizeWorkspaceSearch } from "@/pages/demo-trading/workspace-url"
-import { sectionOfSearch, sectionSearch, type WorkspaceMemory } from "@/pages/demo-trading/workspace-sections"
+import { SECTION_PATH, sectionOfPath } from "@/config/chrome"
+import { sectionSearch, type WorkspaceMemory } from "@/pages/demo-trading/workspace-sections"
 
 type NavigationLocation = { pathname: string; search: string }
 
-const WORKSPACE = "/demo-trading"
-
 /**
- * "Demo Trading" and "Học viện" open their workspace section as it was left in this session
- * (tool, tab, lesson...); inside the section they keep the current URL, so the mounted tool and
- * the selected symbol never reset.
+ * "Luyện tập" and "Flashback" open their workspace section as it was left in this session (tool,
+ * Giao dịch tab, lesson...); inside the section they keep the current URL, so the mounted tool and the
+ * selected symbol never reset. Moving between the two sections carries the shared params (symbol...).
  */
 export function headerDestination(to: string, location: NavigationLocation, saved: WorkspaceMemory = {}): string {
-  const [pathname, search = ""] = to.split("?")
-  if (pathname !== WORKSPACE) return to
-  const section = sectionOfTool(new URLSearchParams(search).get(VIEW_PARAM))
-  const current = location.pathname === WORKSPACE ? normalizeWorkspaceSearch(location.search).search : ""
-  if (location.pathname === WORKSPACE && sectionOfSearch(location.search) === section) return `${WORKSPACE}${current}`
-  return `${WORKSPACE}${sectionSearch(section, current, saved)}`
+  const section = sectionOfPath(to)
+  if (!section) return to
+  const current = sectionOfPath(location.pathname)
+  if (current === section) return `${location.pathname}${location.search}`
+  return `${SECTION_PATH[section]}${sectionSearch(section, current ? location.search : "", saved)}`
 }
 
-/** React Router's pathname-only matching cannot tell the two workspace sections apart. */
 export function isHeaderLinkActive(to: string, location: NavigationLocation): boolean {
   const pathname = location.pathname === "/gioi-thieu" ? "/"
     : location.pathname === "/kien-thuc" ? "/bai-hoc" : location.pathname
-  const [target, search = ""] = to.split("?")
+  const [target] = to.split("?")
   if (target === "/") return pathname === "/"
-  if (pathname !== target && !pathname.startsWith(`${target}/`)) return false
-  if (target !== WORKSPACE) return true
-  return sectionOfTool(new URLSearchParams(search).get(VIEW_PARAM)) === sectionOfSearch(location.search)
+  return pathname === target || pathname.startsWith(`${target}/`)
 }

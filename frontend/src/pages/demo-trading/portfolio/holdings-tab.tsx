@@ -24,6 +24,7 @@ import { errorMessage } from "@/lib/api"
 import { formatMoney, formatNumber, formatPercent } from "@/lib/format"
 import type { TradingPosition } from "@/pages/demo-trading/types"
 import { PortfolioAnalysisButton } from "./analysis-report"
+import { demoReturnPct } from "./demo-return"
 
 export type HoldingsFilter = "all" | "profit" | "loss"
 
@@ -161,8 +162,8 @@ export function HoldingsTab({
         />
         <SummaryCard
           label="Hiệu suất"
-          value={formatPercent(portfolio.return_pct)}
-          tone={toneClass(portfolio.return_pct)}
+          value={formatPercent(demoReturnPct(portfolio.nav_vnd))}
+          tone={toneClass(demoReturnPct(portfolio.nav_vnd))}
         />
       </div>
 

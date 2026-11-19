@@ -2,20 +2,22 @@ import { describe, expect, it } from "vitest"
 import { demoRouteRedirect } from "./demo-route-redirect"
 
 describe("legacy demo content redirects", () => {
-  it("moves market view to analysis without colliding with sidebar state", () => {
-    const result = demoRouteRedirect("ai-analysis", "?view=stock&symbol=VNM&tour=phantich", "#section")
-    expect(result.pathname).toBe("/demo-trading")
-    expect(result.hash).toBe("#section")
-    const params = new URLSearchParams(result.search)
-    expect(params.get("content")).toBe("ai-analysis")
-    expect(params.get("analysis")).toBe("stock")
-    expect(params.has("view")).toBe(false)
-    expect(params.get("symbol")).toBe("VNM")
-    expect(params.get("tour")).toBe("phantich")
+  it("opens Giao dịch → Thị trường for the market view and keeps the other params", () => {
+    const result = demoRouteRedirect("ai-analysis", "?view=market&symbol=VNM&tour=bantin", "#section")
+    expect(result).toEqual({ pathname: "/luyen-tap", search: "?tool=giao-dich&tab=dat-lenh&symbol=VNM&tour=bantin&content=market", hash: "#section" })
   })
-  it.each(["chart", "board"] as const)("preserves filters and sidebar for %s", content => {
-    const result = demoRouteRedirect(content, "?view=trading&symbol=VCB&interval=W&tool=news")
-    const params = new URLSearchParams(result.search)
-    expect(Object.fromEntries(params)).toEqual({ view: "trading", symbol: "VCB", interval: "W", tool: "news", content })
+
+  it("sends the hidden stock view (Insight) to Giao dịch → Đặt lệnh with the symbol", () => {
+    const result = demoRouteRedirect("ai-analysis", "?view=stock&symbol=VNM&tour=phantich")
+    expect(result.pathname).toBe("/luyen-tap")
+    expect(Object.fromEntries(new URLSearchParams(result.search))).toEqual({ tool: "giao-dich", tab: "dat-lenh", symbol: "VNM", tour: "phantich" })
+  })
+
+  it.each([
+    ["chart", "?interval=W&symbol=VCB", "?tool=giao-dich&tab=dat-lenh&interval=W&symbol=VCB"],
+    ["board", "?symbol=VCB", "?tool=giao-dich&tab=dat-lenh&symbol=VCB&content=board"],
+    ["board", "?view=portfolio&symbol=VCB", "?tool=giao-dich&tab=danh-muc&symbol=VCB&content=board"],
+  ] as const)("opens %s on Giao dịch keeping filters (%s)", (content, search, expected) => {
+    expect(demoRouteRedirect(content, search)).toEqual({ pathname: "/luyen-tap", search: expected, hash: "" })
   })
 })

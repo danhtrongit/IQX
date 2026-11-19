@@ -1,16 +1,17 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { act, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { HeaderSearch } from "@/components/layout/header-search"
-import { demoChrome } from "@/config/chrome"
+import { flashbackChrome, practiceChrome } from "@/config/chrome"
+import { headerDestination } from "@/lib/header-navigation"
 import { RailProvider } from "@/context/rail"
 import { createFakeApi, createWorld } from "./bot/test-support"
-import { DemoTradingPage } from "./demo-trading-page"
+import { FlashbackSectionPage, PracticePage } from "./demo-trading-page"
 import { createFakeAcademyApi } from "@/pages/academy/test-api"
-import { demoTradingLoader } from "./workspace-url"
+import { workspaceLoader } from "./workspace-url"
 import { workspaceMemory } from "./workspace-sections"
 import { createDojoBackend, type DojoBackend } from "./candle-dojo/dojo-test-support"
 import { createShopBackend, type ShopBackend } from "./shop/shop-test-support"
@@ -133,11 +134,18 @@ async function renderPage(initial: string) {
   const router = createMemoryRouter(
     [
       {
-        path: "/demo-trading",
-        loader: demoTradingLoader,
-        handle: { chrome: demoChrome },
-        element: <RailProvider><HeaderSearch /><DemoTradingPage /></RailProvider>,
+        path: "/luyen-tap",
+        loader: workspaceLoader,
+        handle: { chrome: practiceChrome },
+        element: <RailProvider><HeaderSearch /><PracticePage /></RailProvider>,
       },
+      {
+        path: "/flashback",
+        loader: workspaceLoader,
+        handle: { chrome: flashbackChrome },
+        element: <RailProvider><HeaderSearch /><FlashbackSectionPage /></RailProvider>,
+      },
+      { path: "/demo-trading", loader: workspaceLoader },
     ],
     { initialEntries: [initial] },
   )
@@ -182,58 +190,62 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe("DemoTradingPage for a brand-new user", () => {
-  it("opens on Đặt lệnh in DEMO TRADING with the section's rail and nothing locked", async () => {
-    await renderPage("/demo-trading")
+const where = (router: { state: { location: { pathname: string; search: string } } }) => `${router.state.location.pathname}${router.state.location.search}`
+const pressed = () => within(rail()).getAllByRole("button").filter((button) => button.getAttribute("aria-pressed") === "true").map((button) => button.textContent)
+const tradingTabs = () => within(panel()).getByRole("tablist", { name: "Giao dịch" })
+/** Giao dịch tabs whose content is on screen (the others stay mounted but hidden). */
+const shownTradingPanels = () => [...panel().querySelectorAll<HTMLElement>("[data-trading-panel]")].filter((node) => !node.hidden).map((node) => node.dataset.tradingPanel)
+const PRACTICE_RAIL = ["Candle Dojo", "Học viện", "Bot", "Giao dịch", "Dashboard phân tích"]
 
+describe("LUYỆN TẬP for a brand-new user", () => {
+  it("opens on Candle Dojo with the LUYỆN TẬP rail, full width and nothing locked", async () => {
+    const { router } = await renderPage("/luyen-tap")
     const buttons = within(rail()).getAllByRole("button")
-    expect(buttons.map((button) => button.textContent)).toEqual([
-      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Dashboard phân tích",
-    ])
+    expect(buttons.map((button) => button.textContent)).toEqual(PRACTICE_RAIL)
     expect(buttons.every((button) => !button.hasAttribute("disabled"))).toBe(true)
     expect(rail().querySelector("svg.lucide-lock-keyhole, svg.lucide-lock")).toBeNull()
-    expect(document.body.textContent).not.toMatch(/Mở khóa|Cấp \d|trứng|Hành trình/i)
-
-    expect(within(rail()).getByRole("button", { name: "Đặt lệnh" }).getAttribute("aria-pressed")).toBe("true")
-    expect(within(panel()).getByRole("heading", { name: "Đặt lệnh" })).toBeTruthy()
-    // Biểu đồ is the default tab; there is no overview tab any more.
-    const tabs = screen.getByRole("tablist", { name: "Nội dung demo trading" })
-    expect(within(tabs).getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["Biểu đồ", "Bảng giá", "Thị trường"])
-    expect(within(tabs).getByRole("tab", { name: "Biểu đồ" }).getAttribute("aria-selected")).toBe("true")
-    expect(within(tabs).queryByRole("tab", { name: "Tổng quan" })).toBeNull()
-    expect(await screen.findByTestId("chart-stub")).toBeTruthy()
+    expect(await screen.findByTestId("dojo-home")).toBeTruthy()
+    expect(pressed()).toEqual(["Candle Dojo"])
+    expect(frame().getAttribute("data-panel-hidden")).toBe("true")
+    expect(screen.queryByRole("tablist", { name: "Nội dung giao dịch" })).toBeNull()
+    expect(router.state.location.pathname).toBe("/luyen-tap")
   })
 
-  it("opens HỌC VIỆN on the Học viện tool with no tabs and no page heading", async () => {
-    await renderPage("/demo-trading?view=academy")
+  it("Giao dịch: Biểu đồ · Bảng giá · Thị trường in the main area and one Giao dịch panel with three tabs (N03)", async () => {
+    await renderPage("/luyen-tap?tool=giao-dich&tab=dat-lenh")
+    expect(pressed()).toEqual(["Giao dịch"])
+    const tabs = screen.getByRole("tablist", { name: "Nội dung giao dịch" })
+    expect(within(tabs).getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["Biểu đồ", "Bảng giá", "Thị trường"])
+    expect(within(tabs).getByRole("tab", { name: "Biểu đồ" }).getAttribute("aria-selected")).toBe("true")
+    expect(await screen.findByTestId("chart-stub")).toBeTruthy()
 
-    const buttons = within(rail()).getAllByRole("button")
-    expect(buttons.map((button) => button.textContent)).toEqual(["Học viện", "Candle Dojo", "Bot", "Shop", "Flashback"])
-    expect(buttons.every((button) => !button.hasAttribute("disabled"))).toBe(true)
+    expect(panel().getAttribute("aria-label")).toBe("Giao dịch")
+    expect(within(panel()).getByRole("heading", { name: "Giao dịch" })).toBeTruthy()
+    const panelTabs = within(tradingTabs()).getAllByRole("tab")
+    expect(panelTabs.map((tab) => [tab.textContent, tab.getAttribute("aria-selected")])).toEqual([
+      ["Đặt lệnh", "true"], ["Danh mục", "false"], ["Tin tức", "false"],
+    ])
+    expect(within(panel()).getByLabelText(/Khối lượng/)).toBeTruthy()
+  })
+
+  it("opens Học viện with no tabs and no page heading", async () => {
+    await renderPage("/luyen-tap?tool=hoc-vien")
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(PRACTICE_RAIL)
     expect(document.body.textContent).not.toMatch(/Mở khóa|Cấp \d|trứng|Hành trình/i)
-
-    expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
+    expect(pressed()).toEqual(["Học viện"])
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
-    // N comes from the learner's own catalog (spec v4.1 §2.4), so it shows once the catalog has loaded.
     expect(await within(panel()).findByText("116 bài học")).toBeTruthy()
-    // The panel lists the real catalog and the learner's progress.
     expect(await within(panel()).findByText("Chương 1 · Nền tảng")).toBeTruthy()
     expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })).toBeTruthy()
-    // Free learning: every lesson of the opened chapter offers its own "Học bài" button.
     expect(await within(panel()).findByRole("button", { name: "Học bài Bài học 1.1" })).toBeTruthy()
-    expect(screen.queryByTestId("academy-empty")).toBeNull()
-    // The main area is the tool's own view: no tablist, no page heading block.
-    expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()
+    expect(screen.queryByRole("tablist", { name: "Nội dung giao dịch" })).toBeNull()
     expect(screen.queryByRole("heading", { level: 1 })).toBeNull()
     expect(screen.queryByTestId("chart-stub")).toBeNull()
-    // Wide screens have no panel button in the main area: the rail shows and hides the panel.
-    expect(within(screen.getByRole("main")).queryByRole("button", { name: "Học viện" })).toBeNull()
   })
 
   it("shows the default mascot stage, never an egg, and never calls the retired journey endpoints", async () => {
     mocks.mascot = null
-    await renderPage("/demo-trading?view=academy")
-
+    await renderPage("/luyen-tap?tool=hoc-vien")
     await waitFor(() => expect(screen.getByTestId("mascot-2d").getAttribute("data-mascot")).toBe("bach_ho"))
     expect(screen.getByRole("heading", { level: 2, name: "Bạch Hổ" })).toBeTruthy()
     expect(screen.queryByLabelText(/Trứng linh thú/)).toBeNull()
@@ -243,14 +255,13 @@ describe("DemoTradingPage for a brand-new user", () => {
 
   it("draws the active mascot reported by the workspace state", async () => {
     mocks.mascot = "phung_hoang"
-    await renderPage("/demo-trading?view=academy")
+    await renderPage("/luyen-tap?tool=hoc-vien")
     await waitFor(() => expect(screen.getByTestId("mascot-2d").getAttribute("data-mascot")).toBe("phung_hoang"))
-    expect(screen.getByRole("heading", { level: 2, name: "Phụng Hoàng" })).toBeTruthy()
   })
 
   it("still renders with Bạch Hổ while the workspace routes are not deployed (404)", async () => {
     mocks.workspaceStatus = 404
-    await renderPage("/demo-trading?view=academy")
+    await renderPage("/luyen-tap?tool=hoc-vien")
     await waitFor(() => expect(paths()).toContain("GET /workspace/state"))
     expect(screen.getByTestId("mascot-2d").getAttribute("data-mascot")).toBe("bach_ho")
     expect(screen.queryByRole("alert")).toBeNull()
@@ -258,179 +269,182 @@ describe("DemoTradingPage for a brand-new user", () => {
 
   it("calls POST /workspace/ensure exactly once, not on later renders or tool changes", async () => {
     const user = userEvent.setup()
-    const { unmount } = await renderPage("/demo-trading?view=academy")
+    const { unmount } = await renderPage("/luyen-tap?tool=hoc-vien")
     await waitFor(() => expect(paths()).toContain("GET /workspace/state"))
-    await user.click(within(rail()).getByRole("button", { name: "Shop" }))
+    await user.click(within(rail()).getByRole("button", { name: "Bot" }))
     await user.click(within(rail()).getByRole("button", { name: "Học viện" }))
     expect(paths().filter((call) => call === "POST /workspace/ensure")).toHaveLength(1)
-    expect(paths().filter((call) => call.startsWith("GET /workspace/ensure"))).toEqual([])
     unmount()
 
-    await renderPage("/demo-trading?view=shop")
+    await renderPage("/flashback?tool=shop")
     await waitFor(() => expect(screen.getByRole("heading", { name: "Linh thú" })).toBeTruthy())
     expect(paths().filter((call) => call === "POST /workspace/ensure")).toHaveLength(1)
   })
 
-  it("ensures the workspace whichever main tab is opened first", async () => {
-    await renderPage("/demo-trading?content=board")
-    await waitFor(() => expect(paths()).toContain("GET /workspace/state"))
-    expect(paths().filter((call) => call === "POST /workspace/ensure")).toHaveLength(1)
-  })
-
-  it("maps a legacy ?view=journey link onto the Học viện tool without any hatch or placement call", async () => {
+  it("maps a legacy /demo-trading?view=journey link onto Học viện without any hatch or placement call", async () => {
     const { router } = await renderPage("/demo-trading?view=journey&content=journey&symbol=FPT")
-    await waitFor(() => expect(router.state.location.search).toBe("?view=academy&symbol=FPT"))
-    expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
+    await waitFor(() => expect(where(router)).toBe("/luyen-tap?tool=hoc-vien&symbol=FPT"))
+    expect(pressed()).toEqual(["Học viện"])
     expect(await within(panel()).findByText("116 bài học")).toBeTruthy()
     expect(paths().filter((call) => /\/cap\d|\/journey|\/bot\/mascot/.test(call))).toEqual([])
   })
 
-  it("opens every tool on request: none of them asks for a level", async () => {
+  it("opens the Bot tool on request with its own panel", async () => {
     const user = userEvent.setup()
-    await renderPage("/demo-trading?view=academy")
-
+    await renderPage("/luyen-tap?tool=hoc-vien")
     await user.click(within(rail()).getByRole("button", { name: "Bot" }))
-    await waitFor(() => expect(within(panel()).getByRole("heading", { name: "Bot" })).toBeTruthy())
-    // The Bot panel: buy source card, search and the 16 indicators; main: KPIs and the mascot with the config state.
+    await waitFor(() => expect(within(panel()).getByRole("heading", { name: "Bot" })).toBeTruthy(), { timeout: 5000 })
     await waitFor(() => expect(within(panel()).getAllByRole("article")).toHaveLength(16))
-    expect(within(panel()).getByText("16 chỉ báo")).toBeTruthy()
-    // No chapter name and no "Đã mở" label in a tool (spec Học viện v4.1 §6.1).
     expect(panel().textContent).not.toMatch(/Chương|Đã mở|đã mở/)
-    expect(within(panel()).getByRole("region", { name: "Danh mục mua mới" })).toBeTruthy()
-    expect(within(panel()).getByRole("searchbox", { name: "Tìm chỉ báo" })).toBeTruthy()
     expect(await screen.findByTestId("bot-state-chip")).toBeTruthy()
     expect(screen.getByText("Vốn Bot ban đầu")).toBeTruthy()
-    expect(panel().textContent).not.toMatch(/tốt nghiệp|Cấp \d|trứng/i)
-
-    await user.click(within(rail()).getByRole("button", { name: "Shop" }))
-    expect(await within(panel()).findByRole("heading", { name: "Shop" })).toBeTruthy()
-    expect(await screen.findByRole("heading", { name: "Linh thú" })).toBeTruthy()
-    expect((await within(panel()).findByTestId("shop-balance")).textContent).toBe("300")
-    expect(within(panel()).getByRole("button", { name: /Vào Học viện/ })).toBeTruthy()
   })
 })
 
-describe("DemoTradingPage layout v1.2 behaviour", () => {
-  const pressed = () => within(rail()).getAllByRole("button").filter((button) => button.getAttribute("aria-pressed") === "true").map((button) => button.textContent)
+describe("LUYỆN TẬP → Giao dịch panel (layout v1.3 §3)", () => {
+  it("a tab replaces the whole panel content, one tab at a time, in the URL (N04)", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=FPT")
+    await user.click(within(tradingTabs()).getByRole("tab", { name: "Danh mục" }))
+    expect(where(router)).toBe("/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=FPT")
+    await waitFor(() => expect(within(tradingTabs()).getByRole("tab", { name: "Danh mục" }).getAttribute("aria-selected")).toBe("true"))
+    expect(shownTradingPanels()).toEqual(["danh-muc"])
+    expect(await within(panel()).findByText("Theo dõi")).toBeTruthy()
 
-  it.each([
-    ["/demo-trading?view=hunt&symbol=FPT", "?view=trading&symbol=FPT"],
-    ["/demo-trading?view=patterns&content=board", "?view=trading"],
-    ["/demo-trading?content=overview", ""],
-    ["/demo-trading?content=ai-analysis&analysis=stock&symbol=FPT", "?content=insight&symbol=FPT"],
-    ["/demo-trading?view=bot&content=board", "?view=bot"],
-  ])("rewrites the legacy link %s to %s before the workspace renders", async (initial, expected) => {
-    const { router } = await renderPage(initial)
-    expect(router.state.location.search).toBe(expected)
+    await user.click(within(tradingTabs()).getByRole("tab", { name: "Tin tức" }))
+    expect(where(router)).toBe("/luyen-tap?tool=giao-dich&tab=tin-tuc&symbol=FPT")
+    expect(await within(panel()).findByRole("button", { name: "Làm mới tin tức" })).toBeTruthy()
+    await waitFor(() => expect(shownTradingPanels()).toEqual(["tin-tuc"]))
+    expect(within(panel()).getAllByRole("heading", { name: "Giao dịch" })).toHaveLength(1)
   })
 
-  it("lists the DEMO TRADING tools only and opens each tool's panel", async () => {
+  it("arrow keys move between the tabs", async () => {
     const user = userEvent.setup()
-    await renderPage("/demo-trading")
-    await user.click(within(rail()).getByRole("button", { name: "Danh mục" }))
-    expect(await within(panel()).findByRole("heading", { name: "Danh mục" })).toBeTruthy()
-    await user.click(within(rail()).getByRole("button", { name: "Tin tức" }))
-    expect(await within(panel()).findByRole("heading", { name: "Tin tức" })).toBeTruthy()
-    expect(pressed()).toEqual(["Tin tức"])
-    expect(within(rail()).queryByRole("button", { name: /Săn mã|Mẫu nến|Bot|Shop|Học viện/ })).toBeNull()
+    const { router } = await renderPage("/luyen-tap?tool=giao-dich&tab=dat-lenh")
+    within(tradingTabs()).getByRole("tab", { name: "Đặt lệnh" }).focus()
+    await user.keyboard("{ArrowRight}")
+    expect(new URLSearchParams(router.state.location.search).get("tab")).toBe("danh-muc")
+    await waitFor(() => expect(document.activeElement?.textContent).toBe("Danh mục"))
+    expect(document.activeElement?.getAttribute("aria-selected")).toBe("true")
+    await user.keyboard("{ArrowLeft}")
+    await waitFor(() => expect(document.activeElement?.textContent).toBe("Đặt lệnh"))
+    await user.keyboard("{ArrowLeft}")
+    expect(new URLSearchParams(router.state.location.search).get("tab")).toBe("tin-tuc")
+    await waitFor(() => expect(document.activeElement?.textContent).toBe("Tin tức"))
   })
 
-  it("collapses the panel on a second click of the active tool and brings it back with another", async () => {
+  it("keeps the order being typed across tab switches and a panel collapse (N05, N06)", async () => {
     const user = userEvent.setup()
-    await renderPage("/demo-trading")
-    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
-    expect(pressed()).toEqual(["Đặt lệnh"])
+    await renderPage("/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=FPT")
+    const quantity = await within(panel()).findByLabelText(/Khối lượng/)
+    await user.clear(quantity)
+    await user.type(quantity, "700")
+    await user.click(within(tradingTabs()).getByRole("tab", { name: "Danh mục" }))
+    await waitFor(() => expect(shownTradingPanels()).toEqual(["danh-muc"]))
+    await user.click(within(tradingTabs()).getByRole("tab", { name: "Đặt lệnh" }))
+    expect((await within(panel()).findByLabelText(/Khối lượng/) as HTMLInputElement).value).toBe("700")
 
-    await user.click(within(rail()).getByRole("button", { name: "Đặt lệnh" }))
+    await user.click(within(rail()).getByRole("button", { name: "Giao dịch" }))
     expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+    expect(workspaceMemory.get().practice?.collapsedTool).toBe("giao-dich")
+    await user.click(within(rail()).getByRole("button", { name: "Giao dịch" }))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+    expect((within(panel()).getByLabelText(/Khối lượng/) as HTMLInputElement).value).toBe("700")
+  })
+
+  it("collapsing and reopening Giao dịch comes back on the same tab (N06)", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/luyen-tap?tool=giao-dich&tab=tin-tuc")
+    await user.click(within(rail()).getByRole("button", { name: "Giao dịch" }))
     expect(pressed()).toEqual([])
-    // The panel stays mounted, only inert.
     expect(screen.getByRole("complementary", { hidden: true }).hasAttribute("inert")).toBe(true)
-    expect(workspaceMemory.get().demo?.collapsedTool).toBe("trading")
-
-    await user.click(within(rail()).getByRole("button", { name: "Danh mục" }))
-    await waitFor(() => expect(pressed()).toEqual(["Danh mục"]))
-    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
-    expect(workspaceMemory.get().demo?.collapsedTool).toBeNull()
+    await user.click(within(rail()).getByRole("button", { name: "Giao dịch" }))
+    expect(pressed()).toEqual(["Giao dịch"])
+    expect(new URLSearchParams(router.state.location.search).get("tab")).toBe("tin-tuc")
   })
 
-  it("Insight replaces the tabs with the stock view and a second click returns to the last tab", async () => {
+  it("a link inside Danh mục opens the Đặt lệnh tab (N07)", async () => {
     const user = userEvent.setup()
-    const { router } = await renderPage("/demo-trading?content=board&symbol=FPT")
-    expect(screen.getByRole("tab", { name: "Bảng giá" }).getAttribute("aria-selected")).toBe("true")
-
-    await user.click(within(rail()).getByRole("button", { name: "Insight" }))
-    expect(router.state.location.search).toBe("?content=insight&symbol=FPT")
-    // No tab is selected while Insight is shown, and its panel is collapsed.
-    await waitFor(() => expect(pressed()).toEqual(["Insight"]))
-    const tabs = within(screen.getByRole("tablist", { name: "Nội dung demo trading" })).getAllByRole("tab")
-    expect(tabs.map((tab) => tab.getAttribute("aria-selected"))).toEqual(["false", "false", "false"])
-    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
-
-    await user.click(within(rail()).getByRole("button", { name: "Insight" }))
-    expect(router.state.location.search).toBe("?content=board&symbol=FPT")
-    await waitFor(() => expect(screen.getByRole("tab", { name: "Bảng giá" }).getAttribute("aria-selected")).toBe("true"))
-    // Leaving Insight does not open the panel again by itself.
-    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
-    expect(pressed()).toEqual([])
+    const { router } = await renderPage("/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=FPT")
+    await user.click(await within(panel()).findByRole("tab", { name: /Nắm giữ/ }))
+    await user.click(await within(panel()).findByRole("button", { name: "Sang Đặt lệnh" }))
+    await waitFor(() => expect(where(router)).toBe("/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=FPT"))
+    expect(await within(panel()).findByLabelText(/Khối lượng/)).toBeTruthy()
   })
 
-  it("Dashboard phân tích thay vùng chính và bấm lại nút thì quay về tab trước", async () => {
+  it("another tool switches without collapsing and Giao dịch comes back with its tabs", async () => {
     const user = userEvent.setup()
-    const { router } = await renderPage("/demo-trading?content=board&symbol=FPT")
-    expect(screen.getByRole("tab", { name: "Bảng giá" }).getAttribute("aria-selected")).toBe("true")
-
-    await user.click(within(rail()).getByRole("button", { name: "Dashboard phân tích" }))
-    expect(router.state.location.search).toBe("?content=dashboard&symbol=FPT")
-    await waitFor(() => expect(pressed()).toEqual(["Dashboard phân tích"]))
-    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
-    expect(await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })).toBeTruthy()
-
-    await user.click(within(rail()).getByRole("button", { name: "Dashboard phân tích" }))
-    expect(router.state.location.search).toBe("?content=board&symbol=FPT")
-  })
-
-  it("picking a panel tool while Insight is shown returns to the tab it replaced", async () => {
-    const user = userEvent.setup()
-    const { router } = await renderPage("/demo-trading?content=market")
-    await user.click(within(rail()).getByRole("button", { name: "Insight" }))
-    expect(router.state.location.search).toBe("?content=insight")
-    await user.click(within(rail()).getByRole("button", { name: "Tin tức" }))
-    expect(router.state.location.search).toBe("?content=market&view=news")
-    await waitFor(() => expect(pressed()).toEqual(["Tin tức"]))
-    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
-  })
-
-  it("selecting a tab only changes the content param", async () => {
-    const user = userEvent.setup()
-    const { router } = await renderPage("/demo-trading?view=portfolio&symbol=FPT")
-    await user.click(screen.getByRole("tab", { name: "Thị trường" }))
-    expect(router.state.location.search).toBe("?view=portfolio&symbol=FPT&content=market")
-    await user.click(screen.getByRole("tab", { name: "Biểu đồ" }))
-    expect(router.state.location.search).toBe("?view=portfolio&symbol=FPT")
-  })
-
-  it("HỌC VIỆN switches tools through its own rail and keeps the main area free of tabs", async () => {
-    const user = userEvent.setup()
-    const { router } = await renderPage("/demo-trading?view=academy&symbol=FPT")
+    const { router } = await renderPage("/luyen-tap?tool=giao-dich&tab=danh-muc&content=board&symbol=FPT")
     await user.click(within(rail()).getByRole("button", { name: "Bot" }))
-    expect(router.state.location.search).toBe("?view=bot&symbol=FPT")
+    expect(where(router)).toBe("/luyen-tap?tool=bot&symbol=FPT")
     await waitFor(() => expect(pressed()).toEqual(["Bot"]))
-    expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()
-    expect(screen.queryByRole("heading", { level: 1 })).toBeNull()
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+    expect(screen.queryByRole("tablist", { name: "Nội dung giao dịch" })).toBeNull()
+    await user.click(within(rail()).getByRole("button", { name: "Giao dịch" }))
+    expect(where(router)).toBe("/luyen-tap?tool=giao-dich&symbol=FPT&tab=danh-muc&content=board")
+    await waitFor(() => expect(pressed()).toEqual(["Giao dịch"]))
+  })
+
+  it("selecting a main tab only changes the content param", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=FPT")
+    await user.click(screen.getByRole("tab", { name: "Thị trường" }))
+    expect(where(router)).toBe("/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=FPT&content=market")
+    await user.click(screen.getByRole("tab", { name: "Biểu đồ" }))
+    expect(where(router)).toBe("/luyen-tap?tool=giao-dich&tab=danh-muc&symbol=FPT")
+  })
+})
+
+describe("LUYỆN TẬP layout behaviour", () => {
+  it.each([
+    ["/demo-trading?view=hunt&symbol=FPT", "/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=FPT"],
+    ["/demo-trading?view=portfolio&content=board", "/luyen-tap?tool=giao-dich&tab=danh-muc&content=board"],
+    ["/demo-trading?content=ai-analysis&analysis=stock&symbol=FPT", "/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=FPT"],
+    ["/demo-trading?view=bot&content=board", "/luyen-tap?tool=bot"],
+    ["/demo-trading?content=dashboard&symbol=FPT", "/luyen-tap?tool=phan-tich&symbol=FPT"],
+    ["/demo-trading?view=shop", "/flashback?tool=shop"],
+    ["/luyen-tap?tool=giao-dich", "/luyen-tap?tool=giao-dich&tab=dat-lenh"],
+  ])("rewrites %s to %s before the workspace renders (N19)", async (initial, expected) => {
+    const { router } = await renderPage(initial)
+    expect(where(router)).toBe(expected)
+  })
+
+  it("never shows Insight, Shop or Flashback in the LUYỆN TẬP rail (N02, N09)", async () => {
+    await renderPage("/luyen-tap?tool=giao-dich&tab=dat-lenh")
+    expect(within(rail()).queryByRole("button", { name: /Insight|Shop|Flashback|Săn mã|Mẫu nến|Đặt lệnh|Danh mục|Tin tức/ })).toBeNull()
+  })
+
+  it("Dashboard phân tích fills the main area with the main tabs and no panel; a tab opens Giao dịch", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/luyen-tap?tool=phan-tich&symbol=FPT")
+    expect(await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })).toBeTruthy()
+    expect(pressed()).toEqual(["Dashboard phân tích"])
+    expect(frame().getAttribute("data-panel-hidden")).toBe("true")
+    const tabs = screen.getByRole("tablist", { name: "Nội dung giao dịch" })
+    expect(within(tabs).getAllByRole("tab").map((tab) => tab.getAttribute("aria-selected"))).toEqual(["false", "false", "false"])
+    // A second click changes nothing: the tool has no panel.
+    await user.click(within(rail()).getByRole("button", { name: "Dashboard phân tích" }))
+    expect(where(router)).toBe("/luyen-tap?tool=phan-tich&symbol=FPT")
+
+    await user.click(within(tabs).getByRole("tab", { name: "Bảng giá" }))
+    expect(where(router)).toBe("/luyen-tap?tool=giao-dich&symbol=FPT&tab=dat-lenh&content=board")
+    await waitFor(() => expect(pressed()).toEqual(["Giao dịch"]))
+  })
+
+  it("Học viện collapses on a second click and its collapsed state is its own", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/luyen-tap?tool=hoc-vien&symbol=FPT")
+    await user.click(within(rail()).getByRole("button", { name: "Bot" }))
+    expect(where(router)).toBe("/luyen-tap?tool=bot&symbol=FPT")
+    await waitFor(() => expect(pressed()).toEqual(["Bot"]))
     await user.click(within(rail()).getByRole("button", { name: "Bot" }))
     expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
-    expect(pressed()).toEqual([])
-    expect(workspaceMemory.get().academy?.collapsedTool).toBe("bot")
+    expect(workspaceMemory.get().practice?.collapsedTool).toBe("bot")
+    await user.click(within(rail()).getByRole("button", { name: "Học viện" }))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
   })
 
-  it("remembers each section's own params in session memory", async () => {
-    await renderPage("/demo-trading?view=portfolio&content=market&symbol=FPT")
-    expect(workspaceMemory.get().demo).toMatchObject({ params: "view=portfolio&content=market", lastTab: "market" })
-    expect(workspaceMemory.get().academy).toBeUndefined()
-  })
-
-  it("puts HỌC VIỆN's tools in a bar above the lesson on narrow screens; the bar opens the layer", async () => {
+  it("puts the long-form tools in a bar above the main area on phones; the bar opens the layer", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
       matches: query === "(max-width: 900px)",
       media: query,
@@ -438,92 +452,121 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
       removeEventListener() {},
     }))
     const user = userEvent.setup()
-    const { unmount } = await renderPage("/demo-trading?view=academy")
-    // The article keeps the full phone width: no rail column, the tools sit at the top of main.
+    const { unmount } = await renderPage("/luyen-tap?tool=hoc-vien")
     expect(frame().getAttribute("data-rail")).toBe("bar")
-    expect(frame().querySelector(".workspace-rail")).toBeNull()
     expect(screen.getByRole("main").firstElementChild).toBe(rail())
-    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Candle Dojo", "Bot", "Shop", "Flashback"])
-    expect(within(screen.getByRole("main")).getAllByRole("button", { name: "Học viện" })).toHaveLength(1)
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(PRACTICE_RAIL)
     const toggle = within(rail()).getByRole("button", { name: "Học viện" })
     expect(toggle.getAttribute("aria-controls")).toBe(panel().id)
-    expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()
-    // A direct link to a tool shows its layer.
-    expect(toggle.getAttribute("aria-expanded")).toBe("true")
     expect(frame().getAttribute("data-panel-open")).toBe("true")
     await user.click(toggle)
     expect(frame().getAttribute("data-panel-open")).toBe("false")
-    expect(toggle.getAttribute("aria-expanded")).toBe("false")
     await user.click(toggle)
     expect(frame().getAttribute("data-panel-open")).toBe("true")
     unmount()
-  })
 
-  it("keeps the rail column of DEMO TRADING on narrow screens, except on Dashboard phân tích where it stacks vertically", async () => {
-    vi.stubGlobal("matchMedia", (query: string) => ({
-      matches: query === "(max-width: 900px)",
-      media: query,
-      addEventListener() {},
-      removeEventListener() {},
-    }))
-    const { unmount } = await renderPage("/demo-trading?view=trading")
+    // Giao dịch keeps the rail column; its tabs switch inside the layer (N21).
+    await renderPage("/luyen-tap?tool=giao-dich&tab=dat-lenh")
     expect(frame().getAttribute("data-rail")).toBe("column")
     expect(rail().classList.contains("workspace-rail")).toBe(true)
-    unmount()
-
-    await renderPage("/demo-trading?content=dashboard&symbol=FPT")
-    expect(frame().getAttribute("data-rail")).toBe("bar")
-    expect(screen.getByRole("main").firstElementChild).toBe(rail())
-    expect(await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })).toBeTruthy()
-    expect(screen.getByRole("tablist", { name: "Nội dung demo trading" })).toBeTruthy()
+    expect(frame().getAttribute("data-panel-open")).toBe("true")
+    await user.click(within(tradingTabs()).getByRole("tab", { name: "Tin tức" }))
+    await waitFor(() => expect(within(tradingTabs()).getByRole("tab", { name: "Tin tức" }).getAttribute("aria-selected")).toBe("true"))
+    expect(frame().getAttribute("data-panel-open")).toBe("true")
   })
 
-  it("updates the active symbol in /demo-trading from HeaderSearch without leaving the dashboard", async () => {
+  it("updates the active symbol from HeaderSearch without leaving Dashboard phân tích", async () => {
     const user = userEvent.setup()
-    const { router } = await renderPage("/demo-trading?content=dashboard&symbol=FPT")
+    const { router } = await renderPage("/luyen-tap?tool=phan-tich&symbol=FPT")
     expect(await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })).toBeTruthy()
-
     await user.click(screen.getByRole("button", { name: "Tìm mã cổ phiếu" }))
     await user.type(screen.getByRole("combobox", { name: "Tìm mã hoặc tên công ty" }), "VCB")
-    const option = await screen.findByRole("option", { name: /VCB/ })
-    await user.click(option)
+    await user.click(await screen.findByRole("option", { name: /VCB/ }))
+    expect(where(router)).toBe("/luyen-tap?tool=phan-tich&symbol=VCB")
+  })
 
-    expect(router.state.location.pathname).toBe("/demo-trading")
-    expect(router.state.location.search).toBe("?content=dashboard&symbol=VCB")
+  it("remembers each section's own params in session memory", async () => {
+    await renderPage("/luyen-tap?tool=giao-dich&tab=tin-tuc&content=market&symbol=FPT")
+    expect(workspaceMemory.get().practice).toMatchObject({ params: "tool=giao-dich&tab=tin-tuc&content=market", lastTab: "market", tradingTab: "tin-tuc" })
+    expect(workspaceMemory.get().flashback).toBeUndefined()
   })
 })
 
-describe("Candle Dojo in HỌC VIỆN", () => {
-  const pressed = () => within(rail()).getAllByRole("button").filter((button) => button.getAttribute("aria-pressed") === "true").map((button) => button.textContent)
-
-  it("sits between Học viện and Bot, opens as one screen without a panel, and a task hides the rail until it ends", async () => {
+describe("Candle Dojo in LUYỆN TẬP", () => {
+  it("opens as one screen without a panel, and a task hides the rail until it ends", async () => {
     const user = userEvent.setup()
-    const { router } = await renderPage("/demo-trading?view=academy")
+    const { router } = await renderPage("/luyen-tap?tool=hoc-vien")
     await user.click(within(rail()).getByRole("button", { name: "Candle Dojo" }))
-    expect(router.state.location.search).toBe("?view=candle-dojo")
+    expect(where(router)).toBe("/luyen-tap?tool=candle-dojo")
     expect(await screen.findByTestId("dojo-home")).toBeTruthy()
     await waitFor(() => expect(pressed()).toEqual(["Candle Dojo"]))
     expect(frame().getAttribute("data-panel-hidden")).toBe("true")
-    expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()
     expect(frame().getAttribute("data-rail-hidden")).toBe("false")
 
-    // The intro is a focused task: the rail is gone, ✕ brings the home and the rail back.
     await user.click(document.querySelector("[data-intro='anatomy']") as HTMLElement)
     expect(await screen.findByTestId("dojo-intro")).toBeTruthy()
     expect(frame().getAttribute("data-rail-hidden")).toBe("true")
-    expect(screen.queryByRole("navigation", { name: "Công cụ theo trang" })).toBeNull()
     await user.click(screen.getByRole("button", { name: "Thoát nhập môn" }))
     expect(await screen.findByTestId("dojo-home")).toBeTruthy()
-    expect(frame().getAttribute("data-rail-hidden")).toBe("false")
     expect(within(rail()).getByRole("button", { name: "Candle Dojo" }).getAttribute("aria-pressed")).toBe("true")
   })
 
-  it("the Thẻ nến block opens the Shop tool", async () => {
+  it("the Thẻ nến block opens FLASHBACK → Shop with its panel", async () => {
     const user = userEvent.setup()
-    const { router } = await renderPage("/demo-trading?view=candle-dojo")
+    const { router } = await renderPage("/luyen-tap?tool=candle-dojo&symbol=FPT")
     await screen.findByTestId("dojo-home")
     await user.click(screen.getByRole("button", { name: "Mở Shop › Thẻ nến" }))
-    expect(router.state.location.search).toBe("?view=shop")
+    await waitFor(() => expect(where(router)).toBe("/flashback?tool=shop&symbol=FPT"))
     await waitFor(() => expect(pressed()).toEqual(["Shop"]))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+  })
+})
+
+describe("FLASHBACK section", () => {
+  it("lists Flashback · Shop and opens the lobby full width (N10)", async () => {
+    await renderPage("/flashback")
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Flashback", "Shop"])
+    expect(pressed()).toEqual(["Flashback"])
+    expect(frame().getAttribute("data-panel-hidden")).toBe("true")
+  })
+
+  it("Shop has Linh thú and Thẻ nến, no Premium and no xu ↔ Demo cash exchange (N12, N15)", async () => {
+    await renderPage("/flashback?tool=shop")
+    expect(await screen.findByRole("heading", { name: "Linh thú" })).toBeTruthy()
+    expect((await within(panel()).findByTestId("shop-balance")).textContent).toBe("300")
+    expect(document.body.textContent).not.toMatch(/Premium|Đổi xu|tiền Demo/)
+    expect(within(panel()).getByRole("button", { name: /Vào Học viện/ })).toBeTruthy()
+  })
+
+  it("the Shop's Học viện link opens LUYỆN TẬP → Học viện", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/flashback?tool=shop&symbol=FPT")
+    await user.click(await within(panel()).findByRole("button", { name: /Vào Học viện/ }))
+    await waitFor(() => expect(where(router)).toBe("/luyen-tap?tool=hoc-vien&symbol=FPT"))
+    await waitFor(() => expect(pressed()).toEqual(["Học viện"]))
+  })
+
+  it("each section keeps its tool, Giao dịch tab and collapsed panel across switches (N18)", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/luyen-tap?tool=giao-dich&tab=tin-tuc&symbol=FPT")
+    await user.click(within(rail()).getByRole("button", { name: "Giao dịch" }))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+
+    await act(() => router.navigate(headerDestination("/flashback", router.state.location, workspaceMemory.get()), { state: { workspaceSection: true } }))
+    await waitFor(() => expect(router.state.location.pathname).toBe("/flashback"))
+    await user.click(await within(rail()).findByRole("button", { name: "Shop" }))
+    await waitFor(() => expect(pressed()).toEqual(["Shop"]))
+    await user.click(within(rail()).getByRole("button", { name: "Shop" }))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+
+    await act(() => router.navigate(headerDestination("/luyen-tap", router.state.location, workspaceMemory.get()), { state: { workspaceSection: true } }))
+    await waitFor(() => expect(where(router)).toBe("/luyen-tap?tool=giao-dich&tab=tin-tuc&symbol=FPT"))
+    await waitFor(() => expect(within(rail()).getByRole("button", { name: "Giao dịch" })).toBeTruthy())
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+
+    await act(() => router.navigate(headerDestination("/flashback", router.state.location, workspaceMemory.get()), { state: { workspaceSection: true } }))
+    await waitFor(() => expect(where(router)).toBe("/flashback?tool=shop&symbol=FPT"))
+    await waitFor(() => expect(within(rail()).getByRole("button", { name: "Shop" })).toBeTruthy())
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
   })
 })

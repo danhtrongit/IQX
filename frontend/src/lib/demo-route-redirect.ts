@@ -1,4 +1,9 @@
-/** Keep saved URLs useful without retaining separate workspace pages. */
+import { LEGACY_WORKSPACE_PATH, resolveWorkspaceLocation } from "@/pages/demo-trading/workspace-url"
+
+/**
+ * Keep saved URLs of the retired workspace pages useful (`/bieu-do`, `/bang-gia`, `/dashboard`,
+ * `/thi-truong`): they open LUYỆN TẬP → Giao dịch on the matching main-area tab.
+ */
 export function demoRouteRedirect(content: "chart" | "board" | "ai-analysis", search: string, hash = "") {
   const params = new URLSearchParams(search)
   if (content === "ai-analysis") {
@@ -9,5 +14,6 @@ export function demoRouteRedirect(content: "chart" | "board" | "ai-analysis", se
     }
   }
   params.set("content", content)
-  return { pathname: "/demo-trading", search: `?${params}`, hash }
+  const resolved = resolveWorkspaceLocation(LEGACY_WORKSPACE_PATH, `?${params}`)
+  return { pathname: resolved.pathname, search: resolved.search, hash }
 }

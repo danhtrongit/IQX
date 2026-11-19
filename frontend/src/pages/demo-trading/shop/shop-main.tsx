@@ -18,11 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { MASCOT_MANIFEST } from "../journey/config"
 import { CandleCardsSection } from "./candle-cards-section"
-import { DemoExchangeDialog } from "./demo-exchange-dialog"
 import { EvolveDialog } from "./evolve-dialog"
 import { HistoryDialog } from "./history-dialog"
 import { MascotArt } from "./mascot-art"
-import { PremiumPurchaseDialog } from "./premium-dialog"
 import { PurchaseDialog } from "./purchase-dialog"
 import type { CatalogEntry, ShopState } from "./shop-api"
 import {
@@ -167,8 +165,6 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
   const [view, setView] = useState<View>("store")
   const [buying, setBuying] = useState<string | null>(null)
   const [evolving, setEvolving] = useState<string | null>(null)
-  const [premiumOpen, setPremiumOpen] = useState(false)
-  const [exchangeOpen, setExchangeOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const state = shop.data
 
@@ -200,12 +196,6 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
             <span className="text-xs text-muted-foreground" data-testid="shop-owned-count">{state.owned_count} / {state.total_count} đã sở hữu</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => setPremiumOpen(true)}>
-              {`${SHOP_COPY.premiumBuy} · ${formatXu(state.premium_price_xu)} xu`}
-            </Button>
-            <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => setExchangeOpen(true)}>
-              {SHOP_COPY.exchange}
-            </Button>
             <TabsList aria-label="Bộ sưu tập linh thú" className="h-9">
               <TabsTrigger value="store" className="px-3 text-xs">{SHOP_COPY.tabStore}</TabsTrigger>
               <TabsTrigger value="owned" className="px-3 text-xs">{SHOP_COPY.tabOwned}</TabsTrigger>
@@ -247,18 +237,6 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
           key={evolving}
           mascotId={evolving}
           onClose={() => setEvolving(null)}
-          onEnterAcademy={() => onNavigate("academy")}
-        />
-      )}
-      {premiumOpen && (
-        <PremiumPurchaseDialog
-          onClose={() => setPremiumOpen(false)}
-          onEnterAcademy={() => onNavigate("academy")}
-        />
-      )}
-      {exchangeOpen && (
-        <DemoExchangeDialog
-          onClose={() => setExchangeOpen(false)}
           onEnterAcademy={() => onNavigate("academy")}
         />
       )}

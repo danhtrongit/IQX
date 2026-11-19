@@ -68,7 +68,7 @@ describe("Bot panel", () => {
 
   it("renders locked indicators with only 'Xem bài' to the right lesson: no practice, config or switch", async () => {
     world.granted = ["rsi"]
-    await renderPanel("/demo-trading?view=bot&symbol=FPT&content=overview")
+    await renderPanel("/luyen-tap?tool=bot&symbol=FPT&content=overview")
     const ema = within(row("EMA"))
     expect(ema.queryByText("Chưa mở")).toBeNull()
     expect(ema.getByText("Chưa phát hành")).toBeTruthy()
@@ -77,17 +77,17 @@ describe("Bot panel", () => {
     expect(ema.queryByRole("switch")).toBeNull()
     const link = within(row("MACD")).getByRole("link", { name: "Xem bài MACD" })
     const href = new URL(link.getAttribute("href") ?? "", "http://x")
-    expect(href.searchParams.get("view")).toBe("academy")
+    expect(href.searchParams.get("tool")).toBe("hoc-vien")
     expect(href.searchParams.get("lesson")).toBe("ch04-l07")
     expect(href.searchParams.get("symbol")).toBe("FPT")
   })
 
-  it("sends Luyện tập to view=bot&practice=<indicator> and keeps the other params", async () => {
+  it("sends Luyện tập to tool=bot&practice=<indicator> and keeps the other params", async () => {
     const user = userEvent.setup()
     await renderPanel()
     await user.click(within(row("MACD")).getByRole("button", { name: /Luyện tập/ }))
     const search = new URLSearchParams(location().split("?")[1])
-    expect(search.get("view")).toBe("bot")
+    expect(search.get("tool")).toBe("bot")
     expect(search.get("practice")).toBe("macd")
     expect(search.get("symbol")).toBe("FPT")
   })

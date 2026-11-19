@@ -3,7 +3,7 @@
  *
  * Mount points:
  * - `<OrderPanel symbol={…} onSymbolChange={…} />` — the "Đặt lệnh" panel
- *   (`?view=trading`): a plain manual order form.
+ *   (LUYỆN TẬP → Giao dịch, `?tab=dat-lenh`): a plain manual order form.
  * - `<TradingRuntime />` — mount ONCE, globally, next to the panels: it owns the
  *   engine heartbeat that fills pending orders and settles T+. No props.
  */

@@ -139,7 +139,7 @@ export function newIdempotencyKey(): string {
   return `practice-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
 }
 
-/** Academy lesson (`view=academy&lesson=<id>`) that grants each practice indicator. */
+/** Academy lesson (`tool=hoc-vien&lesson=<id>`) that grants each practice indicator. */
 export const PRACTICE_INDICATORS: Readonly<Record<string, { name: string; lessonId: string | null }>> = {
   rsi: { name: "RSI", lessonId: "ch04-l06" },
   macd: { name: "MACD", lessonId: "ch04-l07" },
@@ -161,7 +161,7 @@ export const PRACTICE_INDICATORS: Readonly<Record<string, { name: string; lesson
 
 export function lessonLink(indicatorId: string): string | null {
   const lesson = PRACTICE_INDICATORS[indicatorId]?.lessonId
-  return lesson ? `/demo-trading?view=academy&lesson=${encodeURIComponent(lesson)}` : null
+  return lesson ? `/luyen-tap?tool=hoc-vien&lesson=${encodeURIComponent(lesson)}` : null
 }
 
 /** `?practice=` value when it looks like an indicator id, else null. */

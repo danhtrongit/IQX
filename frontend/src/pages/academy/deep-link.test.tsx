@@ -41,9 +41,9 @@ const linkRequests = () => mocks.api.mock.calls.map(([path]) => String(path)).fi
 
 describe("deep link by metric (spec v4 §6)", () => {
   it("opens the lesson of a metric_key and replaces the metric parameter with the lesson", async () => {
-    const { router } = renderAcademy("/demo-trading?view=academy&symbol=FPT&metric=nim")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&symbol=FPT&metric=nim")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })).toBeTruthy()
-    expect(router.state.location.search).toBe("?view=academy&symbol=FPT&lesson=ch10-l01")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&symbol=FPT&lesson=ch10-l01")
     expect(linkRequests()).toEqual(["/academy/link?metric=nim"])
     // The panel shows the chapter of that lesson and marks its row as the open one.
     const panel = screen.getByRole("complementary", { name: "Học viện" })
@@ -52,24 +52,24 @@ describe("deep link by metric (spec v4 §6)", () => {
   })
 
   it("matches a metric_key without regard to case and surrounding spaces, and a lesson name too", async () => {
-    const first = renderAcademy("/demo-trading?view=academy&metric=%20Provision_To_Loans%20")
+    const first = renderAcademy("/luyen-tap?tool=hoc-vien&metric=%20Provision_To_Loans%20")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.7" })).toBeTruthy()
-    expect(first.router.state.location.search).toBe("?view=academy&lesson=ch10-l07")
+    expect(first.router.state.location.search).toBe("?tool=hoc-vien&lesson=ch10-l07")
     first.unmount()
 
     // The fake catalog names lessons "Bài học c.n": an exact name resolves like a title match does on the server.
-    const byName = renderAcademy("/demo-trading?view=academy&metric=B%C3%A0i%20h%E1%BB%8Dc%2012.3")
+    const byName = renderAcademy("/luyen-tap?tool=hoc-vien&metric=B%C3%A0i%20h%E1%BB%8Dc%2012.3")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 12.3" })).toBeTruthy()
-    expect(byName.router.state.location.search).toBe("?view=academy&lesson=ch12-l03")
+    expect(byName.router.state.location.search).toBe("?tool=hoc-vien&lesson=ch12-l03")
   })
 
   it("opens a metric whose lesson is not its turn yet as the lock frame with Học tiếp, never the content (spec v4.1 §4)", async () => {
     install({ mode: "sequential", completed: ["concept:ch01_l01"] })
     const user = userEvent.setup()
-    const { router } = renderAcademy("/demo-trading?view=academy&symbol=FPT&metric=nim")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&symbol=FPT&metric=nim")
     // The Dashboard's "Học" button of a chỉ tiêu: the link says locked, the reader asks and gets the 403.
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })).toBeTruthy()
-    expect(router.state.location.search).toBe("?view=academy&symbol=FPT&lesson=ch10-l01")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&symbol=FPT&lesson=ch10-l01")
     expect(screen.getByText("Học lần lượt để mở bài này.")).toBeTruthy()
     expect(screen.queryByRole("heading", { level: 3, name: "Tóm tắt" })).toBeNull()
     // The sidebar highlights the lesson that was asked for, as a locked row.
@@ -78,15 +78,15 @@ describe("deep link by metric (spec v4 §6)", () => {
     expect(lockedRow.getAttribute("data-state")).toBe("locked")
     expect(lockedRow.className).toContain("bg-primary/10")
     await user.click(screen.getByRole("button", { name: "Học tiếp" }))
-    expect(router.state.location.search).toBe("?view=academy&symbol=FPT&lesson=ch01-l02")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&symbol=FPT&lesson=ch01-l02")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
   })
 
   it("opens the lesson of a metric under the chapter number this learner sees (a config without chapter 2: Chương 9 · Phân tích ngân hàng)", async () => {
     install({ chapters: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] })
-    const { router } = renderAcademy("/demo-trading?view=academy&metric=nim")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&metric=nim")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })).toBeTruthy()
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch10-l01")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch10-l01")
     const panel = screen.getByRole("complementary", { name: "Học viện" })
     expect(within(panel).getByRole("button", { name: /^Chương 9 · Phân tích ngân hàng/ }).getAttribute("aria-expanded")).toBe("true")
     expect(within(panel).queryByRole("button", { name: /^Chương 10 · Phân tích ngân hàng/ })).toBeNull()
@@ -97,47 +97,47 @@ describe("deep link by metric (spec v4 §6)", () => {
   it("treats a name taught only by a chapter outside the config as unknown: the lesson being learned opens", async () => {
     install({ chapters: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], completed: ["concept:ch01_l01"] })
     // "Bài học 2.1" is a lesson of the removed Kỹ năng Sale SACO chapter: this account has no such lesson.
-    const { router } = renderAcademy("/demo-trading?view=academy&metric=B%C3%A0i%20h%E1%BB%8Dc%202.1")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&metric=B%C3%A0i%20h%E1%BB%8Dc%202.1")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-l02")
     expect(screen.queryByRole("alert")).toBeNull()
   })
 
   it("never shows an error for a name no lesson teaches: it opens the lesson being learned", async () => {
     install({ completed: ["concept:ch01_l01"] })
-    const { router } = renderAcademy("/demo-trading?view=academy&metric=khong-co-chi-tieu-nay")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&metric=khong-co-chi-tieu-nay")
     // Nothing was opened before and one lesson is passed: the first lesson still to pass is the current one.
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch01-l02")
     expect(screen.queryByRole("alert")).toBeNull()
   })
 
   it("opens the lesson opened last when the name does not match", async () => {
     install()
-    const { router } = renderAcademy("/demo-trading?view=academy&lesson=ch07-l03")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&lesson=ch07-l03")
     await screen.findByRole("heading", { level: 2, name: "Bài học 7.3" })
     await act(async () => {
-      await router.navigate("/demo-trading?view=academy&lesson=ch01-l01&metric=nope")
+      await router.navigate("/luyen-tap?tool=hoc-vien&lesson=ch01-l01&metric=nope")
     })
     // The server remembers ch07-l03 as the lesson opened last, so a miss leads back to it.
-    await waitFor(() => expect(router.state.location.search).toBe("?view=academy&lesson=ch07-l03"))
+    await waitFor(() => expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch07-l03"))
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 7.3" })).toBeTruthy()
   })
 
   it("switches at once when the link changes while the tool is open", async () => {
-    const { router } = renderAcademy("/demo-trading?view=academy&metric=nim")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&metric=nim")
     await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })
     await act(async () => {
-      await router.navigate("/demo-trading?view=academy&lesson=ch10-l01&metric=ldr")
+      await router.navigate("/luyen-tap?tool=hoc-vien&lesson=ch10-l01&metric=ldr")
     })
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.9" })).toBeTruthy()
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch10-l09")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch10-l09")
     expect(linkRequests()).toEqual(["/academy/link?metric=nim", "/academy/link?metric=ldr"])
   })
 
   it("shows a placeholder, not the mascot, while the link is being resolved", async () => {
     const release = fake.hold("/academy/link")
-    renderAcademy("/demo-trading?view=academy&metric=nim", { panel: false })
+    renderAcademy("/luyen-tap?tool=hoc-vien&metric=nim", { panel: false })
     expect(await screen.findByRole("status", { name: "Đang mở bài học" })).toBeTruthy()
     expect(screen.queryByTestId("mascot-stage")).toBeNull()
     release()
@@ -147,34 +147,34 @@ describe("deep link by metric (spec v4 §6)", () => {
 
   it("drops the parameter without an error when the request fails", async () => {
     fake.fail("link", new ApiError("Dịch vụ tạm thời không khả dụng", 503, "SERVICE_UNAVAILABLE"))
-    const { router } = renderAcademy("/demo-trading?view=academy&metric=nim")
-    await waitFor(() => expect(router.state.location.search).toBe("?view=academy"))
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&metric=nim")
+    await waitFor(() => expect(router.state.location.search).toBe("?tool=hoc-vien"))
     expect(await screen.findByTestId("mascot-stage")).toBeTruthy()
     expect(screen.queryByRole("alert")).toBeNull()
   })
 
   it("drops an empty or oversized value without asking the server", async () => {
-    const empty = renderAcademy("/demo-trading?view=academy&metric=%20%20")
-    await waitFor(() => expect(empty.router.state.location.search).toBe("?view=academy"))
+    const empty = renderAcademy("/luyen-tap?tool=hoc-vien&metric=%20%20")
+    await waitFor(() => expect(empty.router.state.location.search).toBe("?tool=hoc-vien"))
     empty.unmount()
-    const oversized = renderAcademy(`/demo-trading?view=academy&metric=${"x".repeat(121)}`)
-    await waitFor(() => expect(oversized.router.state.location.search).toBe("?view=academy"))
+    const oversized = renderAcademy(`/luyen-tap?tool=hoc-vien&metric=${"x".repeat(121)}`)
+    await waitFor(() => expect(oversized.router.state.location.search).toBe("?tool=hoc-vien"))
     expect(linkCalls()).toEqual([])
   })
 
   it("keeps the parameter for a guest, asks nothing, and resolves it after sign-in", async () => {
     mocks.auth.authenticated = false
-    const { router } = renderAcademy("/demo-trading?view=academy&metric=nim")
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&metric=nim")
     expect(screen.getByText("Đăng nhập để học")).toBeTruthy()
     expect(screen.getByTestId("mascot-stage")).toBeTruthy()
-    expect(router.state.location.search).toBe("?view=academy&metric=nim")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&metric=nim")
     expect(mocks.api).not.toHaveBeenCalled()
 
     mocks.auth.authenticated = true
     await act(async () => {
-      await router.navigate("/demo-trading?view=academy&metric=nim&symbol=FPT")
+      await router.navigate("/luyen-tap?tool=hoc-vien&metric=nim&symbol=FPT")
     })
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })).toBeTruthy()
-    expect(router.state.location.search).toBe("?view=academy&symbol=FPT&lesson=ch10-l01")
+    expect(router.state.location.search).toBe("?tool=hoc-vien&symbol=FPT&lesson=ch10-l01")
   })
 })

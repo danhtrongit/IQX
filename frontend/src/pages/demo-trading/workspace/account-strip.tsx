@@ -1,17 +1,19 @@
 import { useTradingPortfolio } from "@/hooks/use-trading"
 import { formatMoney, formatPercent } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { demoReturnPct } from "../portfolio/demo-return"
 
 /** The four headline figures of the self-trading demo account. Unknown stays "—", never 0. */
 export function AccountStrip({ className }: { className?: string }) {
   const { data: portfolio } = useTradingPortfolio()
   const account = portfolio?.account ?? null
-  const pnlTone = portfolio == null || portfolio.return_pct === 0 ? undefined : portfolio.return_pct > 0 ? "text-price-up" : "text-price-down"
+  const returnPct = portfolio == null ? null : demoReturnPct(portfolio.nav_vnd)
+  const pnlTone = returnPct == null || returnPct === 0 ? undefined : returnPct > 0 ? "text-price-up" : "text-price-down"
   const stats: { label: string; value: string; tone?: string }[] = [
     { label: "Vốn ban đầu", value: formatMoney(account?.initial_cash_vnd) },
     { label: "Tiền mặt", value: formatMoney(account?.cash_available_vnd) },
     { label: "Giá trị danh mục", value: formatMoney(portfolio?.nav_vnd) },
-    { label: "Tổng lợi nhuận", value: formatPercent(portfolio?.return_pct), tone: pnlTone },
+    { label: "Tổng lợi nhuận", value: formatPercent(returnPct), tone: pnlTone },
   ]
   return (
     <dl

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react"
 import { Check, CircleAlert, LoaderCircle, Search } from "lucide-react"
 import { useLocation, useNavigate } from "react-router"
 
+import { sectionOfPath } from "@/config/chrome"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -85,7 +86,8 @@ export function HeaderSearch() {
     setOpen(false)
     setTerm("")
     const normalized = symbol.trim().toUpperCase()
-    if (location.pathname.startsWith("/demo-trading")) {
+    // Inside a workspace section the search only changes the selected symbol.
+    if (sectionOfPath(location.pathname)) {
       const next = new URLSearchParams(location.search)
       next.set("symbol", normalized)
       navigate({ pathname: location.pathname, search: `?${next.toString()}` })
