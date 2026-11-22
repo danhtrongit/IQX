@@ -85,6 +85,9 @@
 
 ### Metric-key contract (shared with Dashboard v3)
 
+> **RESOLVED by main agent (2026-11-22):** the authoritative key list is `PLAN-dashboard-v3.md` §6.3 (e.g. `buyer_prepay_to_revenue`, `buyer_prepay_growth`, `unearned_to_equity`, `prepay_receivables_to_equity`, `st_debt_share`, `cash_to_st_debt`, `fin_income_to_pbt`, `core_margin`, `st_debt_to_inventory`, `revenue_to_fixed_assets`, `non_interest_fin_cost_to_pbt`, `dividend_payout`). The table below is superseded wherever names differ. Formula variants (`roe_fin`, `net_margin_bh`, `gross_margin_q`) keep lesson keys `roe`, `net_margin`, `gross_margin`.
+> **Học button URL:** Dashboard emits `/academy?metric=<metric_key>&nganh=<nganh>`. Học viện must honour `nganh` on `/academy`, `/hoc-vien/bai/:metric?nganh=` and through `academy-redirect.tsx`, `workspace-url.ts`, `deep-link.ts`.
+
 Redo lessons reuse the v4 keys: `revenue_yoy, revenue_growth_stability, net_margin_stability, roe, roa, net_margin, pe, pb, gross_margin, roic, ccc, debt_equity, interest_coverage, net_debt_ebitda, cfo_profit, fcf_margin, ev_ebitda`. 28 new keys (41 "Mới" lessons; a key may serve several industries):
 
 | key | Dashboard name | nganh |

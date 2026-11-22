@@ -199,7 +199,7 @@ Khấu hao thiếu (D6) ⇒ trống: `depreciation_to_revenue`, `capex_to_deprec
 
 ## 10. Phân việc (tập file KHÔNG giao nhau)
 
-### T1 · Backend nền: ngành 9, danh mục 260 cặp, settings, migration — kind `architecture`→ giao `backend`, priority 3
+### T1 · Backend nền: ngành 9, danh mục 260 cặp, settings, migration — kind `backend`, priority 3
 
 - **Files:** `backend/src/modules/dashboard/dashboard.nganh.ts` (mới) · `dashboard.icb.ts` (mới, `IcbDirectory` cache) · `dashboard.catalog.ts` · `dashboard.schemas.ts` · `dashboard.repository.ts` · `dashboard.service.ts` · `dashboard.controller.ts` · `dashboard.module.ts` · `index.ts` · `backend/src/modules/market-data/providers/vci.provider.ts` (thêm `fetchIcbDirectory()`, `fetchCompanyIcb(symbol)`) · `backend/migrations/0065_dashboard_settings_nganh_v3.sql` · `backend/contracts/**` (regen) · `backend/test/unit/dashboard.test.ts` · `dashboard-public-routes.test.ts` · `backend/test/unit/dashboard-nganh.test.ts` (mới).
 - **Steps:**
@@ -216,12 +216,13 @@ Khấu hao thiếu (D6) ⇒ trống: `depreciation_to_revenue`, `capex_to_deprec
 
 ### T2 · Backend công thức: khoản mục, 28 chỉ tiêu, 3 biến thể, phương pháp trực tiếp — kind `backend`, priority 3 (sau T1)
 
-- **Files:** `backend/src/modules/dashboard/dashboard.mapping.ts` · `dashboard.native.ts` · `dashboard.series.ts` · `backend/test/unit/dashboard-industry-metrics.test.ts` · `dashboard-eps-valuation.test.ts` · `backend/test/unit/dashboard-v3-metrics.test.ts` (mới) · `backend/test/fixtures/dashboard/*` (fixture mới, rút gọn từ VCI thật: HPG, VHM, GAS, MWG, REE, ANV; + REE tổng hợp có 4 quý 2025 trực tiếp).
+- **Files:** `backend/src/modules/dashboard/dashboard.mapping.ts` · `dashboard.native.ts` · `dashboard.series.ts` · (tuần tự sau T1: đoạn `PENDING_V3_METRIC_IDS` của `dashboard.catalog.ts`, nhánh pending của `dashboard.service.ts`) · `backend/test/unit/dashboard-industry-metrics.test.ts` · `dashboard-eps-valuation.test.ts` · `backend/test/unit/dashboard-v3-metrics.test.ts` (mới) · `backend/test/fixtures/dashboard/*` (fixture mới, rút gọn từ VCI thật: HPG, VHM, GAS, MWG, REE, ANV; + REE tổng hợp có 4 quý 2025 trực tiếp).
 - **Steps:**
   1. Mapping: thêm `ENTERPRISE_CONCEPTS` (`dn_*`, §5) vào mẫu `thuong`; `industryFieldMap(template, nganh)` ghi đè `lt_debt` = `['bsa71','bsa173']` khi nganh ∈ 5 ngành mới (D5); `normalizeIndustryStatements(sections, asOf, template, nganh)` + bước `applyDirectMethod()` đọc dòng `cash_flow.quarters` thô (D6).
   2. Native: 28 công thức §6.3 + `roe_fin`, `net_margin_bh`, `gross_margin_q` (§6.2) theo khung `NativeMetric` sẵn có; tên đường/cột lấy đúng MAU.
   3. Series: dispatch theo `metric_id`; `REVENUE_LABELS` dùng `template`; khuôn A cho `buyer_prepay_growth`; `decimals` theo D11; `ref` từ catalog; `annualStatements` nhận khoản mục `dn_*` theo kind.
   4. Valuation: EV/EBITDA, P/E, P/B dùng statements đã qua D5/D6 (không đổi registry Bộ lọc).
+  5. Gỡ `pending`: chuyển 31 id từ `PENDING_V3_METRIC_IDS` vào `NATIVE_METRIC_IDS` (chỉ sửa đoạn đó của `dashboard.catalog.ts`, sau khi T1 đã merge — tuần tự, không ghi đồng thời) và xoá nhánh `definition_pending` tạm trong service.
 - **Acceptance (S §12):** 6 (dk/vl biên gộp quý, tên "Biên gộp quý"; bl/dien/bds 4 quý), 7 (ROE nh/ck/bh 2 đường + cột "Tổng tài sản BQ / VCSH BQ" đơn vị lần), 9 (fixture REE trực tiếp 2025: Khấu hao/DT, Capex/KH, Biên EBITDA, ND/EBITDA trống ở Q1/25…Q2/26 và năm 2025; EV/EBITDA trống ở ngày dùng các kỳ đó), 10 (mọi chart của 9 ngành trả `q` và `y` hoặc dạng năm cố định, không ném lỗi), §10 (mẫu số ≤ 0 → null; Tiền ròng/VCSH và ND/EBITDA được âm; tăng trưởng trả trước gốc 0 → null); 1 test số liệu tay cho mỗi chỉ tiêu mới (tính bằng tay từ fixture). Bộ lọc không đổi: `test/unit/screener-statements.test.ts` xanh nguyên trạng.
 - **Verify:** `cd backend && npm run typecheck && npm run lint && npx vitest run test/unit/dashboard*.test.ts test/unit/screener-statements.test.ts && npm test`; smoke sống (API local `:3011`): `for s in FPT CTD VCB MBB SSI VND BVH PVI VHM NLG KBC GAS PVS PLX MWG PNJ VNM POW REE HPG DPM ANV; do curl -s localhost:3011/api/v2/fundamental/$s | jq -r '[.nganh, ([.charts[]|select(.status!="ok")|.name]|join(","))]|@tsv'; done` — ghi lại chỉ tiêu trống và lý do.
 
