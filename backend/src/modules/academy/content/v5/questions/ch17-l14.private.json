@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l14",
+  "questions": [
+    {
+      "correct_option_id": "e9efd38f80",
+      "id": "ch17-l14-q01",
+      "options": [
+        {
+          "id": "e9efd38f80",
+          "text": "Vốn chủ ổn định trong khi lợi nhuận rất thấp"
+        },
+        {
+          "id": "d636b96d51",
+          "text": "Vì P/B luôn bằng 1"
+        },
+        {
+          "id": "c39b42fc34",
+          "text": "Vì không cần giá cổ phiếu"
+        }
+      ],
+      "prompt": "Vì sao P/B hữu ích ở đáy chu kỳ vật liệu?"
+    },
+    {
+      "correct_option_id": "589abf49a6",
+      "id": "ch17-l14-q02",
+      "options": [
+        {
+          "id": "589abf49a6",
+          "text": "Đáy chu kỳ"
+        },
+        {
+          "id": "4c381b2c99",
+          "text": "Đỉnh chu kỳ"
+        },
+        {
+          "id": "689c1f1c77",
+          "text": "Năm trả cổ tức"
+        }
+      ],
+      "prompt": "P/B gần cận dưới dải lịch sử thường trùng với giai đoạn nào?"
+    },
+    {
+      "correct_option_id": "4a04f86a51",
+      "id": "ch17-l14-q03",
+      "options": [
+        {
+          "id": "4a04f86a51",
+          "text": "ROE bình quân qua chu kỳ cao"
+        },
+        {
+          "id": "0c8a6bd946",
+          "text": "Nợ vay rất lớn"
+        },
+        {
+          "id": "7e8379cff3",
+          "text": "Tồn kho tăng"
+        }
+      ],
+      "prompt": "P/B cao hợp lý khi nào?"
+    },
+    {
+      "correct_option_id": "cc4951ba4a",
+      "id": "ch17-l14-q04",
+      "options": [
+        {
+          "id": "cc4951ba4a",
+          "text": "Không"
+        },
+        {
+          "id": "9df203c313",
+          "text": "Có"
+        },
+        {
+          "id": "6e50f43816",
+          "text": "Chỉ ở quý 4"
+        }
+      ],
+      "prompt": "P/B dưới 1 có luôn là rẻ không?"
+    },
+    {
+      "chart_id": "c17l14-rep",
+      "correct_option_id": "d23e097144",
+      "id": "ch17-l14-q05",
+      "options": [
+        {
+          "id": "d23e097144",
+          "text": "Dải lịch sử của chính công ty"
+        },
+        {
+          "id": "f5d02f5982",
+          "text": "P/B ngân hàng"
+        },
+        {
+          "id": "e8cc7af507",
+          "text": "Lãi suất tiền gửi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, nên so P/B hiện tại với gì?"
+    }
+  ],
+  "salt": "e5e83fbbacd87a9e681d21ec876b68033d2f6e9d13894ff03a1df67e7e0e82c4"
+}

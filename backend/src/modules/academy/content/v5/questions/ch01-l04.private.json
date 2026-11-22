@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l04",
+  "questions": [
+    {
+      "correct_option_id": "68e519d5fd",
+      "id": "ch01-l04-q01",
+      "options": [
+        {
+          "id": "68e519d5fd",
+          "text": "Chiều ngày T+2 (T+2.5)"
+        },
+        {
+          "id": "985e3c3afa",
+          "text": "Ngay trong ngày T"
+        },
+        {
+          "id": "92c4433129",
+          "text": "Sau một tuần"
+        }
+      ],
+      "prompt": "Cổ phiếu mua vào ngày T về tài khoản khi nào?"
+    },
+    {
+      "correct_option_id": "6eb1fb23bb",
+      "id": "ch01-l04-q02",
+      "options": [
+        {
+          "id": "6eb1fb23bb",
+          "text": "0,1% giá trị bán"
+        },
+        {
+          "id": "339bd6fbe5",
+          "text": "1% giá trị bán"
+        },
+        {
+          "id": "7285cb42f0",
+          "text": "10% lợi nhuận"
+        }
+      ],
+      "prompt": "Thuế thu nhập cá nhân khi bán chứng khoán là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "e5993cd1b1",
+      "id": "ch01-l04-q03",
+      "options": [
+        {
+          "id": "e5993cd1b1",
+          "text": "Vay tiền công ty chứng khoán để mua thêm cổ phiếu"
+        },
+        {
+          "id": "374461fb87",
+          "text": "Gửi tiết kiệm tại công ty chứng khoán"
+        },
+        {
+          "id": "2bba398e23",
+          "text": "Phí giao dịch khi mua cổ phiếu"
+        }
+      ],
+      "prompt": "Giao dịch ký quỹ (margin) là gì?"
+    }
+  ],
+  "salt": "0c41f239d963dfe6aaee9762f6f07c715868fcc343e9845ebce55e24ff8ded3e"
+}

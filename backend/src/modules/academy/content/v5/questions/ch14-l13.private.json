@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l13",
+  "questions": [
+    {
+      "correct_option_id": "15056d05cb",
+      "id": "ch14-l13-q01",
+      "options": [
+        {
+          "id": "15056d05cb",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        },
+        {
+          "id": "08db84f6fe",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "33258e0cd3",
+          "text": "Báo cáo kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Cổ tức đã trả lấy từ báo cáo nào?"
+    },
+    {
+      "correct_option_id": "8e8a832bea",
+      "id": "ch14-l13-q02",
+      "options": [
+        {
+          "id": "8e8a832bea",
+          "text": "Cổ tức thường trả từ lợi nhuận năm trước"
+        },
+        {
+          "id": "66cc17b957",
+          "text": "LNST năm nay luôn chưa được kiểm toán"
+        },
+        {
+          "id": "c728693176",
+          "text": "Luật yêu cầu dùng lợi nhuận năm trước"
+        }
+      ],
+      "prompt": "Vì sao chia cho LNST năm trước?"
+    },
+    {
+      "correct_option_id": "ce57816175",
+      "id": "ch14-l13-q03",
+      "options": [
+        {
+          "id": "ce57816175",
+          "text": "Không, vì không đi qua lưu chuyển tiền tệ"
+        },
+        {
+          "id": "2cd4d572ff",
+          "text": "Có, vì cũng là phần chia cho cổ đông"
+        },
+        {
+          "id": "46e479825b",
+          "text": "Có, nhưng chỉ tính ở quý cuối năm"
+        }
+      ],
+      "prompt": "Cổ tức bằng cổ phiếu có được tính không?"
+    },
+    {
+      "correct_option_id": "1f0b25837a",
+      "id": "ch14-l13-q04",
+      "options": [
+        {
+          "id": "1f0b25837a",
+          "text": "Doanh nghiệp dùng tiền tích luỹ hoặc vay để trả"
+        },
+        {
+          "id": "c9e7b36557",
+          "text": "Doanh nghiệp giữ lại toàn bộ lợi nhuận"
+        },
+        {
+          "id": "67b78baea8",
+          "text": "Doanh nghiệp đang lỗ nặng"
+        }
+      ],
+      "prompt": "Tỷ lệ trên 100% nhiều năm cho thấy gì?"
+    },
+    {
+      "chart_id": "c14l13-rep",
+      "correct_option_id": "939d16d356",
+      "id": "ch14-l13-q05",
+      "options": [
+        {
+          "id": "939d16d356",
+          "text": "Cổ tức trả theo đợt còn lợi nhuận đổi mỗi quý"
+        },
+        {
+          "id": "9d94f77000",
+          "text": "Cổ tức được trả đều vào mỗi ngày giao dịch"
+        },
+        {
+          "id": "83d722ec10",
+          "text": "Lợi nhuận sau thuế không đổi giữa các quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, vì sao tỷ lệ theo quý dao động?"
+    }
+  ],
+  "salt": "df9f9373384df6bf3c53bcaf62c1eee0ce2b49342e38f683ad45d8d3bfb69280"
+}

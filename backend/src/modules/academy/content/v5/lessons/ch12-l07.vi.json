@@ -1,0 +1,616 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l7-g1": {
+      "alt": "Tổng lợi nhuận hai mảng 4 quý là 1.281 tỷ: bảo hiểm 152 tỷ (11,9%) và đầu tư 1.129 tỷ (88,1%). Tỷ trọng lợi nhuận đầu tư bằng 1.129 chia 1.281, khoảng 88,1%",
+      "kind": "segment_bar",
+      "max": 100,
+      "rows": [
+        {
+          "label": "Tổng lợi nhuận hai mảng 4 quý · 1.281 tỷ",
+          "segments": [
+            {
+              "label": "Bảo hiểm · 152 tỷ",
+              "sub": "11,9%",
+              "tone": "p1",
+              "value": 11.9
+            },
+            {
+              "label": "Đầu tư · 1.129 tỷ",
+              "sub": "88,1%",
+              "tone": "pos",
+              "value": 88.1
+            }
+          ],
+          "total": {
+            "text": "Tỷ trọng lợi nhuận đầu tư = 1.129 ÷ 1.281 ≈ 88,1%"
+          }
+        }
+      ],
+      "unit": "%"
+    },
+    "c12l7-g2": {
+      "alt": "Từ phí thuần 8.119 tỷ đồng, trừ bồi thường thuần 4.614 và chi phí kinh doanh, quản lý 3.354, còn lợi nhuận bảo hiểm 152 tỷ; cộng lợi nhuận đầu tư 1.129 tỷ được tổng lợi nhuận hai mảng 1.281 tỷ đồng (4 quý đến Q2/26)",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "Phí thuần",
+              "v": 0
+            },
+            {
+              "label": "Bồi thường thuần",
+              "v": 1
+            },
+            {
+              "label": "Chi phí KD và quản lý",
+              "v": 2
+            },
+            {
+              "label": "Lợi nhuận bảo hiểm",
+              "v": 3
+            },
+            {
+              "label": "Lợi nhuận đầu tư",
+              "v": 4
+            },
+            {
+              "label": "Tổng hai mảng",
+              "v": 5
+            }
+          ]
+        },
+        "y": {
+          "ticks": [],
+          "title": "Tỷ đồng · 4 quý đến Q2/26"
+        }
+      },
+      "domain": {
+        "x": [
+          -0.5,
+          5.5
+        ],
+        "y": [
+          -649.52,
+          9255.66
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "base": 0,
+          "h": [
+            8119
+          ],
+          "t": "bars",
+          "tones": [
+            "p1"
+          ],
+          "x": [
+            0
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            0,
+            8119
+          ],
+          "t": "text",
+          "text": "8.119",
+          "tone": "price"
+        },
+        {
+          "base": 8119,
+          "h": [
+            -4614
+          ],
+          "t": "bars",
+          "tones": [
+            "p5"
+          ],
+          "x": [
+            1
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            1,
+            8119
+          ],
+          "t": "text",
+          "text": "−4.614",
+          "tone": "price"
+        },
+        {
+          "base": 3505,
+          "h": [
+            -3354
+          ],
+          "t": "bars",
+          "tones": [
+            "p4"
+          ],
+          "x": [
+            2
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            2,
+            3505
+          ],
+          "t": "text",
+          "text": "−3.354",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            152
+          ],
+          "t": "bars",
+          "tones": [
+            "p1"
+          ],
+          "x": [
+            3
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            3,
+            152
+          ],
+          "t": "text",
+          "text": "152",
+          "tone": "price"
+        },
+        {
+          "base": 152,
+          "h": [
+            1129
+          ],
+          "t": "bars",
+          "tones": [
+            "pos"
+          ],
+          "x": [
+            4
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            4,
+            1281
+          ],
+          "t": "text",
+          "text": "+1.129",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            1281
+          ],
+          "t": "bars",
+          "tones": [
+            "warn"
+          ],
+          "x": [
+            5
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            5,
+            1281
+          ],
+          "t": "text",
+          "text": "1.281",
+          "tone": "warn"
+        }
+      ]
+    },
+    "c12l7-g3": {
+      "items": [
+        {
+          "model": {
+            "caption_tone": "pos",
+            "caption_value": "Cả hai mảng cùng đóng góp",
+            "kind": "category",
+            "labels": [
+              "Bảo hiểm",
+              "Đầu tư"
+            ],
+            "mode": "grouped",
+            "orientation": "h",
+            "series": [
+              {
+                "name": "Lợi nhuận hai mảng",
+                "per_bar_tones": [
+                  "p1",
+                  "pos"
+                ],
+                "tone": "p1",
+                "values": [
+                  400,
+                  600
+                ]
+              }
+            ],
+            "unit": "tỷ",
+            "value_format": {
+              "suffix": " tỷ"
+            },
+            "value_labels": "all"
+          },
+          "title": "Công ty A · tỷ trọng đầu tư 60%",
+          "tone": "pos"
+        },
+        {
+          "model": {
+            "caption_tone": "neg",
+            "caption_value": "Bảo hiểm lỗ, đầu tư gánh toàn bộ",
+            "kind": "category",
+            "labels": [
+              "Bảo hiểm",
+              "Đầu tư"
+            ],
+            "mode": "grouped",
+            "orientation": "h",
+            "series": [
+              {
+                "name": "Lợi nhuận hai mảng",
+                "per_bar_tones": [
+                  "neg",
+                  "pos"
+                ],
+                "tone": "neg",
+                "values": [
+                  -200,
+                  1000
+                ]
+              }
+            ],
+            "unit": "tỷ",
+            "value_format": {
+              "suffix": " tỷ"
+            },
+            "value_labels": "all"
+          },
+          "title": "Công ty B · tỷ trọng đầu tư 125%",
+          "tone": "neg"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c12l7-rep": {
+      "alt": "Cơ cấu lợi nhuận: 88,1%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tỷ trọng lợi nhuận đầu tư",
+            "v": [
+              85.317,
+              80.856,
+              75.645,
+              71.953,
+              75.281,
+              83.154,
+              89.473,
+              88.137
+            ]
+          }
+        ],
+        "name": "Cơ cấu lợi nhuận",
+        "sub": {
+          "series": [
+            {
+              "name": "Lợi nhuận bảo hiểm 4 quý",
+              "v": [
+                175.699,
+                251.41,
+                337.872,
+                430.906,
+                353.405,
+                216.425,
+                130.963,
+                151.961
+              ]
+            },
+            {
+              "name": "Lợi nhuận đầu tư 4 quý",
+              "v": [
+                1020.882,
+                1061.858,
+                1049.412,
+                1105.478,
+                1076.299,
+                1068.33,
+                1113.155,
+                1129.008
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Lợi nhuận của công ty bảo hiểm đến từ hai nguồn: bán bảo hiểm và đầu tư. Cơ cấu lợi nhuận cho biết mỗi nguồn đóng góp bao nhiêu, từ đó thấy lợi nhuận bền đến đâu.",
+  "lesson_key": "fundamental:profit_mix",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l7-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Cơ cấu lợi nhuận</b> so sánh <b>lợi nhuận từ nghiệp vụ bảo hiểm</b> với <b>lợi nhuận đầu tư</b>. Chỉ tiêu chính là <b>tỷ trọng lợi nhuận đầu tư</b>, bằng lợi nhuận đầu tư chia tổng lợi nhuận của hai mảng.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ trọng 88,1% nghĩa là gần 9 phần 10 lợi nhuận đến từ đầu tư, mảng bảo hiểm chỉ góp phần nhỏ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Cơ cấu lợi nhuận là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lợi nhuận bảo hiểm là phần còn lại của phí thuần sau bồi thường và chi phí. Lợi nhuận đầu tư lấy từ <b>hoạt động tài chính</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l7-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phí thuần − bồi thường thuần − chi phí kinh doanh và quản lý.",
+              "title": "Lợi nhuận bảo hiểm"
+            },
+            {
+              "text": "Kết quả hoạt động tài chính: lãi tiền gửi, trái phiếu, cổ tức.",
+              "title": "Lợi nhuận đầu tư"
+            },
+            {
+              "text": "Lợi nhuận đầu tư ÷ tổng lợi nhuận hai mảng.",
+              "title": "Tỷ trọng đầu tư"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Tách hai nguồn trên báo cáo kết quả kinh doanh"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l7-rep",
+          "title": "Cơ cấu lợi nhuận",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ trọng lợi nhuận đầu tư trong tổng lợi nhuận hai mảng, tính theo 4 quý.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột: lợi nhuận bảo hiểm 4 quý và lợi nhuận đầu tư 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột bảo hiểm thấp đi làm đường tỷ trọng đầu tư đi lên.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Mảng bảo hiểm có lãi và đóng góp rõ rệt. Lợi nhuận không phụ thuộc hết vào lãi suất hay thị trường chứng khoán.",
+              "title": "Cơ cấu cân đối",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ trọng đầu tư trên 100% vì mảng bảo hiểm lỗ. Lãi suất giảm sẽ kéo lợi nhuận đi xuống mạnh.",
+              "title": "Cơ cấu lệch",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Ở Việt Nam, công ty phi nhân thọ thường có tỷ trọng đầu tư 60-90% vì lãi nghiệp vụ mỏng. Mức này là tham khảo, quan trọng là xu hướng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l7-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận dựa nhiều vào đầu tư sẽ nhạy với lãi suất và thị trường.",
+              "title": "Đánh giá độ bền"
+            },
+            {
+              "text": "Tỷ trọng tăng do đầu tư tốt lên khác với tỷ trọng tăng do bảo hiểm xấu đi.",
+              "title": "Tìm nguyên nhân"
+            },
+            {
+              "text": "Combined ratio tăng thường đi cùng tỷ trọng đầu tư tăng.",
+              "title": "Ghép với combined ratio"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Chỉ tiêu 4 quý"
+            },
+            {
+              "label": "Q2/25"
+            },
+            {
+              "label": "Q2/26"
+            },
+            {
+              "label": "Ghi chú"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Lợi nhuận bảo hiểm",
+                "431",
+                "152",
+                {
+                  "rating": "mid",
+                  "text": "Giảm mạnh"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Lợi nhuận đầu tư",
+                "1.105",
+                "1.129",
+                {
+                  "rating": "good",
+                  "text": "Tăng nhẹ"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Tổng hai mảng",
+                "1.536",
+                "1.281",
+                "Giảm 17%"
+              ]
+            },
+            {
+              "cells": [
+                "Tỷ trọng đầu tư",
+                "72,0%",
+                "88,1%",
+                {
+                  "rating": "bad",
+                  "text": "Phụ thuộc đầu tư hơn"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ trọng đầu tư tăng không phải vì đầu tư tốt lên nhiều, mà vì lợi nhuận bảo hiểm giảm khi tỷ lệ bồi thường tăng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tổng lợi nhuận ổn định có thể che đi mảng bảo hiểm đang yếu đi.",
+              "title": "Chỉ nhìn tổng lợi nhuận"
+            },
+            {
+              "text": "Tỷ trọng đầu tư tăng thường là dấu hiệu mảng bảo hiểm giảm lãi.",
+              "title": "Hiểu sai tỷ trọng tăng"
+            },
+            {
+              "text": "Lãi suất tiền gửi giảm sẽ làm phần lợi nhuận đầu tư co lại.",
+              "title": "Bỏ qua lãi suất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Lợi nhuận đến từ <b>nghiệp vụ bảo hiểm</b> và <b>hoạt động đầu tư</b>.",
+    "Tỷ trọng đầu tư = <b>lợi nhuận đầu tư ÷ tổng lợi nhuận hai mảng</b>.",
+    "Tỷ trọng đầu tư <b>trên 100%</b> nghĩa là mảng bảo hiểm đang lỗ.",
+    "Mảng bảo hiểm có lãi giúp lợi nhuận <b>bền hơn</b> trước biến động lãi suất."
+  ],
+  "title": "Cơ cấu lợi nhuận · bảo hiểm và đầu tư đóng góp bao nhiêu"
+}

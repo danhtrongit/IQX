@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l11",
+  "questions": [
+    {
+      "correct_option_id": "59b541184c",
+      "id": "ch13-l11-q01",
+      "options": [
+        {
+          "id": "59b541184c",
+          "text": "Trả trước cho người bán và phải thu khác"
+        },
+        {
+          "id": "ca308fb531",
+          "text": "Phải thu khách hàng và tồn kho"
+        },
+        {
+          "id": "3ca789f1e6",
+          "text": "Tiền và đầu tư ngắn hạn"
+        }
+      ],
+      "prompt": "Chỉ tiêu gồm những dòng nào?"
+    },
+    {
+      "correct_option_id": "edc2f9a47a",
+      "id": "ch13-l11-q02",
+      "options": [
+        {
+          "id": "edc2f9a47a",
+          "text": "Trả trước hoặc phải thu khác, có thể ở phần dài hạn"
+        },
+        {
+          "id": "c240c11eeb",
+          "text": "Doanh thu chưa thực hiện ngắn hạn và dài hạn"
+        },
+        {
+          "id": "d65e31a1cb",
+          "text": "Người mua trả tiền trước ngắn hạn và dài hạn"
+        }
+      ],
+      "prompt": "Tiền đặt cọc để nhận chuyển nhượng dự án thường nằm ở đâu?"
+    },
+    {
+      "correct_option_id": "e2d95812c3",
+      "id": "ch13-l11-q03",
+      "options": [
+        {
+          "id": "e2d95812c3",
+          "text": "Vốn chủ sở hữu"
+        },
+        {
+          "id": "debcb0ad65",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "8d54ec5536",
+          "text": "Hàng tồn kho"
+        }
+      ],
+      "prompt": "Mẫu số của chỉ tiêu là gì?"
+    },
+    {
+      "correct_option_id": "e86207b637",
+      "id": "ch13-l11-q04",
+      "options": [
+        {
+          "id": "e86207b637",
+          "text": "Vì không làm giảm lợi nhuận trên kết quả kinh doanh"
+        },
+        {
+          "id": "995debf402",
+          "text": "Vì không có trên bảng cân đối"
+        },
+        {
+          "id": "e4d60baebf",
+          "text": "Vì luôn bằng không"
+        }
+      ],
+      "prompt": "Vì sao khoản này dễ bị bỏ sót khi đọc báo cáo?"
+    },
+    {
+      "chart_id": "c13l11-rep",
+      "correct_option_id": "06dc27993f",
+      "id": "ch13-l11-q05",
+      "options": [
+        {
+          "id": "06dc27993f",
+          "text": "Ngày càng nhiều tiền nằm ở bên khác"
+        },
+        {
+          "id": "0cf5443c07",
+          "text": "Công ty đang trả bớt nợ"
+        },
+        {
+          "id": "a2a3bb01af",
+          "text": "Doanh thu tăng mạnh"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột tăng nhanh hơn vốn chủ cho thấy gì?"
+    }
+  ],
+  "salt": "b216796de5cb617f56d308452d923023d673344685e84c136283f6bf79fa078a"
+}

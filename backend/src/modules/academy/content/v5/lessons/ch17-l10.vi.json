@@ -1,0 +1,368 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l10-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "EBIT × (1 − 20%)"
+          ],
+          "t": "NOPAT 4 quý",
+          "tone": "pos",
+          "v": "6.972 tỷ"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Vốn đầu tư bình quân",
+          "tone": "p1",
+          "v": "VCSH + nợ vay − tiền"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "ROIC",
+          "tone": "warn",
+          "v": "6,5%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l10-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Đỉnh chu kỳ, không xây mới",
+          "tone": "pos",
+          "value": 20
+        },
+        {
+          "label": "Giữa chu kỳ",
+          "tone": "p1",
+          "value": 12
+        },
+        {
+          "label": "Đáy chu kỳ, đang xây nhà máy lớn",
+          "tone": "neg",
+          "value": 5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 330,
+      "title": "ROIC qua chu kỳ và đầu tư · số minh họa",
+      "unit": "%"
+    },
+    "c17l10-rep": {
+      "alt": "ROIC: 6,5%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "ROIC (4 quý)",
+            "v": [
+              14.882,
+              12.408,
+              10.219,
+              9.198,
+              7.725,
+              6.556,
+              6.503,
+              6.514
+            ]
+          }
+        ],
+        "name": "ROIC",
+        "sub": {
+          "series": [
+            {
+              "name": "NOPAT 4 quý",
+              "v": [
+                11329.597,
+                10036.502,
+                8729.534,
+                8374.33,
+                7312.315,
+                6456.05,
+                6664.519,
+                6971.804
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Với ngành cần nhiều vốn như thép, xi măng, ROIC cho biết đồng vốn bỏ vào nhà máy sinh lời đến đâu. ROIC đi theo chu kỳ giá và bị kéo xuống trong giai đoạn xây nhà máy mới.",
+  "lesson_key": "fundamental:roic-vl",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l10-g1",
+          "type": "chart"
+        },
+        {
+          "text": "ROIC bằng <b>NOPAT</b> chia <b>vốn đầu tư bình quân</b> (vốn chủ cộng nợ vay trừ tiền). Cách tính giống bài ROIC ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l10-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chu kỳ giá yếu làm NOPAT giảm, dự án lớn làm vốn đầu tư tăng.",
+              "title": "Hai lực kéo xuống"
+            },
+            {
+              "text": "Vốn đã bỏ vào nhưng lợi nhuận chỉ đến khi nhà máy vận hành.",
+              "title": "Dự án chưa sinh lời"
+            },
+            {
+              "text": "ROIC bình quân 5 đến 10 năm mới phản ánh hiệu quả thật.",
+              "title": "Đọc qua chu kỳ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l10-rep",
+          "title": "ROIC",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "NOPAT 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "NOPAT giảm trong khi vốn đầu tư tăng: ROIC giảm nhanh.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "ROIC bình quân nhiều năm trên khoảng 12%. Mức tham khảo.",
+              "title": "Tạo giá trị qua chu kỳ",
+              "tone": "pos"
+            },
+            {
+              "text": "ROIC dưới chi phí vốn, khoảng 8% đến 10%, trong nhiều năm.",
+              "title": "Hiệu quả thấp",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "ROIC thấp trong giai đoạn xây là bình thường. Cần xem ROIC có hồi lại sau khi dự án vận hành không.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bỏ ảnh hưởng đỉnh đáy.",
+              "title": "Dùng bình quân nhiều năm"
+            },
+            {
+              "text": "Biết phần vốn chưa sinh lời.",
+              "title": "Đọc cùng Xây dựng dở dang"
+            },
+            {
+              "text": "Thép so với thép.",
+              "title": "So cùng mảng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "NOPAT"
+            },
+            {
+              "label": "ROIC"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "11.330",
+                "14,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "8.374",
+                "9,2%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "6.456",
+                "6,6%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "6.972",
+                "6,5%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "ROIC giảm từ 14,9% xuống 6,5%. NOPAT giảm theo chu kỳ, cùng lúc vốn đầu tư tăng vì dự án mới chưa vận hành.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự án mới có thể kéo ROIC lên khi vận hành.",
+              "title": "Đọc ROIC đáy là kết luận"
+            },
+            {
+              "text": "Làm ROIC thấp giả.",
+              "title": "Không trừ tiền"
+            },
+            {
+              "text": "Bán lẻ có ROIC cao hơn nhiều.",
+              "title": "So với ngành ít vốn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC dao động mạnh theo giá thép.",
+              "title": "Thép"
+            },
+            {
+              "text": "ROIC ổn định hơn.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "ROIC theo chênh lệch giá khí và phân bón.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>ROIC</b> = NOPAT 4 quý ÷ vốn đầu tư bình quân.",
+    "Bị kéo xuống bởi <b>chu kỳ yếu</b> và <b>dự án đang xây</b>.",
+    "Đọc <b>bình quân nhiều năm</b>.",
+    "Xem ROIC có <b>hồi lại sau khi dự án vận hành</b>."
+  ],
+  "title": "ROIC · ở vật liệu cơ bản"
+}

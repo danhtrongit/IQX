@@ -1,0 +1,33 @@
+{
+  "_source": "backend/docs/update-22-11/PLAN-dashboard-v3.md §6.3 (28 new metric keys, contract with Học viện v5 §5.1)",
+  "keys": {
+    "non_core_profit_to_pbt": ["bds"],
+    "buyer_prepay_to_revenue": ["bds", "dk"],
+    "buyer_prepay_growth": ["bds"],
+    "unearned_to_equity": ["bds"],
+    "inventory_to_assets": ["bds"],
+    "inventory_years": ["bds"],
+    "investment_property_share": ["bds"],
+    "prepay_receivables_to_equity": ["bds"],
+    "st_debt_share": ["bds"],
+    "cash_to_st_debt": ["bds"],
+    "interest_paid_to_expense": ["bds"],
+    "inventory_days": ["dk", "bl", "vl"],
+    "depreciation_to_revenue": ["dk", "dien"],
+    "capex_to_depreciation": ["dk", "dien", "vl"],
+    "net_cash_to_equity": ["dk"],
+    "fin_income_to_pbt": ["dk"],
+    "dividend_payout": ["dk", "bl", "dien"],
+    "sga_to_revenue": ["bl"],
+    "core_margin": ["bl"],
+    "inventory_provision_ratio": ["bl", "vl"],
+    "payables_to_inventory": ["bl"],
+    "st_debt_to_inventory": ["bl", "vl"],
+    "revenue_to_fixed_assets": ["bl"],
+    "ebitda_margin": ["dien", "vl"],
+    "fixed_assets_to_assets": ["dien"],
+    "cip_to_fixed_assets": ["dien", "vl"],
+    "receivable_days": ["dien"],
+    "non_interest_fin_cost_to_pbt": ["dien", "vl"]
+  }
+}

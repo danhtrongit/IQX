@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l18",
+  "questions": [
+    {
+      "correct_option_id": "5eb96e7010",
+      "id": "ch13-l18-q01",
+      "options": [
+        {
+          "id": "5eb96e7010",
+          "text": "Lợi nhuận dồn theo đợt bàn giao"
+        },
+        {
+          "id": "389d2522b9",
+          "text": "Giá cổ phiếu bất động sản không thay đổi"
+        },
+        {
+          "id": "53456466a5",
+          "text": "Công ty bất động sản không có EPS"
+        }
+      ],
+      "prompt": "Vì sao P/E của công ty bất động sản dễ cho tín hiệu sai?"
+    },
+    {
+      "correct_option_id": "907e417507",
+      "id": "ch13-l18-q02",
+      "options": [
+        {
+          "id": "907e417507",
+          "text": "Thấp hơn bình thường"
+        },
+        {
+          "id": "5f76a0e256",
+          "text": "Cao hơn bình thường"
+        },
+        {
+          "id": "e01ad5b13b",
+          "text": "Không tính được"
+        }
+      ],
+      "prompt": "Năm có đợt bàn giao lớn, P/E thường thế nào?"
+    },
+    {
+      "correct_option_id": "567245c8df",
+      "id": "ch13-l18-q03",
+      "options": [
+        {
+          "id": "567245c8df",
+          "text": "Làm P/E thấp giả"
+        },
+        {
+          "id": "94b3e892d3",
+          "text": "Làm P/E cao giả"
+        },
+        {
+          "id": "937f8e855d",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Lãi bán dự án ảnh hưởng thế nào đến P/E?"
+    },
+    {
+      "correct_option_id": "e4c112229d",
+      "id": "ch13-l18-q04",
+      "options": [
+        {
+          "id": "e4c112229d",
+          "text": "P/B"
+        },
+        {
+          "id": "be2f99e6d1",
+          "text": "PEG"
+        },
+        {
+          "id": "7eeed6698c",
+          "text": "FCF Yield"
+        }
+      ],
+      "prompt": "Nên kết hợp P/E với chỉ tiêu định giá nào cho bất động sản?"
+    },
+    {
+      "chart_id": "c13l18-rep",
+      "correct_option_id": "f2b33d68a8",
+      "id": "ch13-l18-q05",
+      "options": [
+        {
+          "id": "f2b33d68a8",
+          "text": "Ngày công bố báo cáo quý có bàn giao lớn"
+        },
+        {
+          "id": "d7fc4c79f0",
+          "text": "Ngày công ty chốt quyền trả cổ tức"
+        },
+        {
+          "id": "170c1768f3",
+          "text": "Ngày công ty họp đại hội cổ đông"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, P/E nhảy bậc ở một số ngày thường do đâu?"
+    }
+  ],
+  "salt": "e2e72b2fc703fcb057000755a1e5621ffdacd27d5b10ce41ba2786ad593a2ab0"
+}

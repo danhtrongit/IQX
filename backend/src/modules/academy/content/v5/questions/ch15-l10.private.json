@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l10",
+  "questions": [
+    {
+      "correct_option_id": "c0973bf1eb",
+      "id": "ch15-l10-q01",
+      "options": [
+        {
+          "id": "c0973bf1eb",
+          "text": "Tài sản cố định bình quân"
+        },
+        {
+          "id": "04596a9085",
+          "text": "Tổng tài sản"
+        },
+        {
+          "id": "25901ceda2",
+          "text": "Hàng tồn kho"
+        }
+      ],
+      "prompt": "Mẫu số của chỉ tiêu là gì?"
+    },
+    {
+      "correct_option_id": "178eae70d8",
+      "id": "ch15-l10-q02",
+      "options": [
+        {
+          "id": "178eae70d8",
+          "text": "Không"
+        },
+        {
+          "id": "1559311159",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "25c1156e87",
+          "text": "Có, ở kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Doanh thu mỗi cửa hàng có trên 3 báo cáo tài chính không?"
+    },
+    {
+      "correct_option_id": "863c0a2e5e",
+      "id": "ch15-l10-q03",
+      "options": [
+        {
+          "id": "863c0a2e5e",
+          "text": "Cửa hàng mới chưa đạt doanh thu ổn định"
+        },
+        {
+          "id": "44b1e1c9ef",
+          "text": "Vì cửa hàng mới không có tài sản"
+        },
+        {
+          "id": "9ec0723c34",
+          "text": "Vì doanh thu giảm về 0"
+        }
+      ],
+      "prompt": "Vì sao mở nhiều cửa hàng mới có thể làm tỷ lệ giảm tạm thời?"
+    },
+    {
+      "correct_option_id": "bb6cdccef4",
+      "id": "ch15-l10-q04",
+      "options": [
+        {
+          "id": "bb6cdccef4",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "c16fc6cc8e",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "c2a77b8aa9",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "Chuỗi thuê mặt bằng so với chuỗi tự xây thường có tỷ lệ thế nào?"
+    },
+    {
+      "chart_id": "c15l10-rep",
+      "correct_option_id": "4159bc247c",
+      "id": "ch15-l10-q05",
+      "options": [
+        {
+          "id": "4159bc247c",
+          "text": "Mạng lưới hiện có bán được nhiều hơn"
+        },
+        {
+          "id": "722aa9bb6a",
+          "text": "Chuỗi đang đóng cửa hàng"
+        },
+        {
+          "id": "6cc87b5bfa",
+          "text": "Chuỗi đang lỗ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, doanh thu tăng trong khi TSCĐ đi ngang cho thấy gì?"
+    }
+  ],
+  "salt": "2c46b4ec0d777fa7c2d7433ebe9ba4456a91e8b2c2d2c0704b70d5fe334b2fa4"
+}

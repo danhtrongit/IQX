@@ -1,0 +1,393 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l1-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Q2/26"
+          ],
+          "t": "Doanh thu thuần quý này",
+          "tone": "p1",
+          "v": "3.714 tỷ"
+        },
+        {
+          "notes": [
+            "Q2/25"
+          ],
+          "t": "Doanh thu thuần cùng kỳ",
+          "tone": "warn",
+          "v": "3.550 tỷ"
+        },
+        {
+          "notes": [
+            "So với cùng kỳ"
+          ],
+          "t": "Tăng trưởng",
+          "tone": "pos",
+          "v": "4,6%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "so với",
+        "="
+      ]
+    },
+    "c16l1-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Năm nhiều mưa",
+          "tone": "pos",
+          "value": 125
+        },
+        {
+          "label": "Năm bình thường",
+          "tone": "p1",
+          "value": 100
+        },
+        {
+          "label": "Năm khô hạn",
+          "tone": "neg",
+          "value": 70
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "note": "Cùng một nhà máy, doanh thu đổi theo lượng nước về hồ.",
+      "title": "Doanh thu thủy điện theo năm thủy văn · số minh họa",
+      "unit": " tỷ"
+    },
+    "c16l1-rep": {
+      "alt": "Tăng trưởng doanh thu: 4,6%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              12.574,
+              8.457,
+              16.515,
+              19.148,
+              8.761,
+              17.559,
+              10.777,
+              4.621
+            ]
+          }
+        ],
+        "name": "Tăng trưởng doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Quý này",
+              "v": [
+                3084.943,
+                2276.382,
+                2493.382,
+                3549.553,
+                3355.213,
+                2676.096,
+                2762.081,
+                3713.583
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                2740.367,
+                2098.873,
+                2139.966,
+                2979.104,
+                3084.943,
+                2276.382,
+                2493.382,
+                3549.553
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Nhà máy điện bán điện theo hợp đồng với giá khá ổn định. Doanh thu thay đổi chủ yếu theo lượng điện phát ra, mà lượng này phụ thuộc lượng mưa, nhu cầu điện và việc được huy động phát. Bài này giúp đọc tăng trưởng doanh thu theo các yếu tố đó.",
+  "lesson_key": "fundamental:revenue_yoy-dien",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l1-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Tăng trưởng doanh thu so <b>doanh thu thuần</b> quý này với <b>cùng quý năm trước</b>. Cách tính giống bài Tăng trưởng doanh thu ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh thu bằng sản lượng điện nhân giá bán. Giá bán theo hợp đồng ít thay đổi, nên sản lượng quyết định phần lớn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c16l1-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Năm nhiều mưa thì thủy điện phát nhiều, nhiệt điện bị huy động ít đi và ngược lại.",
+              "title": "Thủy văn"
+            },
+            {
+              "text": "Mùa mưa và mùa nóng, nhu cầu điện tăng, doanh thu quý 2 và quý 3 thường cao hơn.",
+              "title": "Mùa vụ"
+            },
+            {
+              "text": "Đưa nhà máy mới vào vận hành làm doanh thu tăng theo bậc.",
+              "title": "Nhà máy mới"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở điện khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l1-rep",
+          "title": "Tăng trưởng doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng doanh thu thuần so với cùng kỳ, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu quý này và cùng kỳ năm trước, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột quý 2 và quý 3 cao hơn quý 4 và quý 1 theo mùa.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh thu tăng nhờ công suất mới hoặc nhu cầu điện tăng, không chỉ do một năm thủy văn thuận lợi.",
+              "title": "Tăng trưởng bền",
+              "tone": "pos"
+            },
+            {
+              "text": "Doanh thu tăng mạnh trong năm nhiều mưa. Năm sau thủy văn bình thường thì doanh thu giảm lại.",
+              "title": "Tăng trưởng tạm thời",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Sản lượng điện và lượng mưa không có trên báo cáo tài chính. Đọc tăng trưởng doanh thu <b>cùng Capex / Khấu hao</b> để biết có công suất mới hay không.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bỏ ảnh hưởng mùa mưa, mùa nóng.",
+              "title": "So với cùng kỳ"
+            },
+            {
+              "text": "Có nhà máy mới vận hành không? Xem tài sản cố định tăng.",
+              "title": "Tìm nguồn tăng"
+            },
+            {
+              "text": "Bỏ bớt dao động quý.",
+              "title": "Đọc theo năm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu, doanh thu thuần từng quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Cùng kỳ"
+            },
+            {
+              "label": "Tăng trưởng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "3.085",
+                "2.740",
+                "12,6%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "3.550",
+                "2.979",
+                "19,1%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "2.676",
+                "2.276",
+                "17,6%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "3.714",
+                "3.550",
+                "4,6%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Doanh thu quý 2 và quý 3 luôn cao hơn quý 4 và quý 1. Tăng trưởng chậm lại còn 4,6% ở Q2/26, khi chưa có nhà máy mới đi vào vận hành.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mùa vụ làm quý 3 luôn cao hơn quý 4.",
+              "title": "So quý liền kề"
+            },
+            {
+              "text": "Thủy văn thay đổi theo năm.",
+              "title": "Coi năm nhiều mưa là xu hướng"
+            },
+            {
+              "text": "Nhà máy mới làm doanh thu tăng theo bậc, không phải tăng đều.",
+              "title": "Bỏ qua công suất mới"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu đi theo lượng mưa, dao động mạnh giữa các năm.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Doanh thu đi theo mức được huy động và giá nhiên liệu chuyển sang giá bán.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Gió, mặt trời theo thời tiết. Nước sạch ổn định, tăng theo dân số và giá nước.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "<b>Tăng trưởng doanh thu</b> = doanh thu thuần kỳ này so với cùng kỳ.",
+    "Doanh thu điện đi theo <b>sản lượng</b>: thủy văn, nhu cầu, huy động.",
+    "Có <b>mùa vụ</b>: quý 2, quý 3 thường cao.",
+    "Đọc cùng <b>Capex / Khấu hao</b> để biết có công suất mới."
+  ],
+  "title": "Tăng trưởng doanh thu · ở điện"
+}

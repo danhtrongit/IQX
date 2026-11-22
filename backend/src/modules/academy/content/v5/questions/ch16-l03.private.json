@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l03",
+  "questions": [
+    {
+      "correct_option_id": "cdb9f35b96",
+      "id": "ch16-l03-q01",
+      "options": [
+        {
+          "id": "cdb9f35b96",
+          "text": "Thủy điện"
+        },
+        {
+          "id": "ce78b9f542",
+          "text": "Nước sạch"
+        },
+        {
+          "id": "c2b3f1b13a",
+          "text": "Điện tái tạo giá cố định"
+        }
+      ],
+      "prompt": "Loại nào thường có biên ròng dao động mạnh nhất?"
+    },
+    {
+      "correct_option_id": "7598085330",
+      "id": "ch16-l03-q02",
+      "options": [
+        {
+          "id": "7598085330",
+          "text": "Hai loại bù cho nhau theo thủy văn"
+        },
+        {
+          "id": "cc81003588",
+          "text": "Vì không có nợ vay"
+        },
+        {
+          "id": "0c102e739b",
+          "text": "Vì không có khấu hao"
+        }
+      ],
+      "prompt": "Vì sao công ty có cả thủy điện và nhiệt điện thường ổn định hơn?"
+    },
+    {
+      "correct_option_id": "1b3b9c9400",
+      "id": "ch16-l03-q03",
+      "options": [
+        {
+          "id": "1b3b9c9400",
+          "text": "Tỷ giá với nợ vay ngoại tệ"
+        },
+        {
+          "id": "56aa5b32a2",
+          "text": "Số cửa hàng"
+        },
+        {
+          "id": "39176173bd",
+          "text": "Tiền khách trả trước"
+        }
+      ],
+      "prompt": "Yếu tố tài chính nào làm biên ròng công ty điện dao động?"
+    },
+    {
+      "correct_option_id": "3c290cebdb",
+      "id": "ch16-l03-q04",
+      "options": [
+        {
+          "id": "3c290cebdb",
+          "text": "Giúp dự báo cổ tức"
+        },
+        {
+          "id": "69e69ac12c",
+          "text": "Giúp tăng giá điện"
+        },
+        {
+          "id": "9601eae190",
+          "text": "Giúp giảm thuế"
+        }
+      ],
+      "prompt": "Vì sao nhà đầu tư quan tâm biên ổn định ở công ty điện?"
+    },
+    {
+      "chart_id": "c16l3-rep",
+      "correct_option_id": "75c9c0e06e",
+      "id": "ch16-l03-q05",
+      "options": [
+        {
+          "id": "75c9c0e06e",
+          "text": "Năm thủy văn đặc biệt tốt hoặc xấu"
+        },
+        {
+          "id": "04f0e73b02",
+          "text": "Năm đổi kiểm toán"
+        },
+        {
+          "id": "82976766f5",
+          "text": "Năm phát hành cổ phiếu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, năm vượt khỏi dải thường là năm gì?"
+    }
+  ],
+  "salt": "6eab636ee1650d39ab77aaf3a7a276827810c0536be33eff0c33a9daebfff9eb"
+}

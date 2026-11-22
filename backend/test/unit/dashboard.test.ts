@@ -8,10 +8,16 @@ import {
   DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY,
   DASHBOARD_INDUSTRY_CHAPTERS,
   DASHBOARD_INDUSTRY_CHARTS,
+  DASHBOARD_INDUSTRY_COUNTS,
   NATIVE_METRIC_IDS,
-  chartInIndustry,
-  dashboardChart,
+  PENDING_V3_METRIC_IDS,
+  V3_NEW_METRIC_IDS,
+  V3_VARIANT_METRIC_KEYS,
+  chartFor,
+  dashboardDecimals,
+  isDashboardChartName,
 } from '../../src/modules/dashboard/dashboard.catalog.js';
+import { NGANH, type Nganh } from '../../src/modules/dashboard/dashboard.nganh.js';
 import { DashboardService } from '../../src/modules/dashboard/dashboard.service.js';
 import type {
   DashboardSettingsStore,
@@ -25,7 +31,6 @@ import {
   pegValue,
   type DashboardChartPayload,
 } from '../../src/modules/dashboard/dashboard.series.js';
-import { INDUSTRIES, type Industry } from '../../src/modules/financials/financials.industry.js';
 import type { VciMarketProvider } from '../../src/modules/market-data/index.js';
 import type { MarketDataService } from '../../src/modules/market-data/market-data.service.js';
 
@@ -37,9 +42,9 @@ const USER = '00000000-0000-4000-8000-000000000001';
 class InMemorySettingsStore implements DashboardSettingsStore {
   readonly rows = new Map<string, StoredDashboardSettings>();
 
-  async findAll(userId: string): Promise<Partial<Record<Industry, StoredDashboardSettings>>> {
-    const result: Partial<Record<Industry, StoredDashboardSettings>> = {};
-    for (const industry of INDUSTRIES) {
+  async findAll(userId: string): Promise<Partial<Record<Nganh, StoredDashboardSettings>>> {
+    const result: Partial<Record<Nganh, StoredDashboardSettings>> = {};
+    for (const industry of NGANH) {
       const row = this.rows.get(`${userId}:${industry}`);
       if (row) result[industry] = row;
     }
@@ -48,7 +53,7 @@ class InMemorySettingsStore implements DashboardSettingsStore {
 
   async save(
     userId: string,
-    industry: Industry,
+    industry: Nganh,
     settings: DashboardSettings,
   ): Promise<StoredDashboardSettings> {
     const key = `${userId}:${industry}`;
@@ -134,6 +139,12 @@ function fakeVci(bank: boolean) {
       data: [{ number_of_shares_mkt_cap: 1000 }],
       rawEndpoint: 'fake',
     }),
+    // VCI ICB codes (spec v3 §1.3): FPT is a technology company, so it stays `thuong`.
+    fetchIcbDirectory: async () => ({
+      data: [{ symbol: 'FPT', lv2: '9500', lv4: '9537' }],
+      rawEndpoint: 'fake',
+    }),
+    fetchCompanyIcb: async () => ({ data: { lv2: null, lv4: null }, rawEndpoint: 'fake' }),
   } as unknown as VciMarketProvider;
 }
 
@@ -170,137 +181,257 @@ function service(bank = false, store = new InMemorySettingsStore()) {
   };
 }
 
-describe('dashboard catalog (62 chỉ tiêu theo ngành)', () => {
-  it('has 62 charts: 17 common + 16 manufacturing + 11 bank + 10 securities + 8 insurance', () => {
-    expect(DASHBOARD_CHARTS).toHaveLength(62);
-    expect(DASHBOARD_CHART_NAMES).toHaveLength(62);
-    expect(new Set(DASHBOARD_CHART_NAMES).size).toBe(62);
-    const byScope = (scope: string) =>
-      DASHBOARD_CHARTS.filter((chart) => chart.scope === scope).length;
-    expect([
-      byScope('chung'),
-      byScope('thuong'),
-      byScope('nh'),
-      byScope('ck'),
-      byScope('bh'),
-    ]).toEqual([17, 16, 11, 10, 8]);
-  });
+describe('dashboard catalog v3 (9 ngành, 90 tên, 260 cặp)', () => {
+  /** Spec v3 §3.2: chỉ tiêu chung còn lại · chỉ tiêu ngành · N. */
+  const COUNTS: Record<Nganh, [number, number, number]> = {
+    thuong: [17, 16, 33],
+    nh: [13, 15, 28],
+    ck: [13, 14, 27],
+    bh: [14, 11, 25],
+    bds: [13, 19, 32],
+    dk: [14, 15, 29],
+    bl: [15, 13, 28],
+    dien: [15, 15, 30],
+    vl: [14, 14, 28],
+  };
+  const count = (chapter: { groups: readonly { items: readonly unknown[] }[] }) =>
+    chapter.groups.reduce((sum, group) => sum + group.items.length, 0);
 
-  it('gives each industry its common chapter plus its own: 33, 28, 27 and 25 charts', () => {
-    expect(INDUSTRIES.map((industry) => DASHBOARD_INDUSTRY_CHARTS[industry].length)).toEqual([
-      33, 28, 27, 25,
-    ]);
-    for (const industry of INDUSTRIES) {
-      const chapters = DASHBOARD_INDUSTRY_CHAPTERS[industry];
-      expect(chapters.map((chapter) => chapter.scope)).toEqual(['chung', industry]);
+  it('§12.1: every industry has the counts of §3.2; 90 names and 260 pairs overall', () => {
+    expect(DASHBOARD_CHARTS).toHaveLength(260);
+    expect(DASHBOARD_CHART_NAMES).toHaveLength(90);
+    expect(new Set(DASHBOARD_CHART_NAMES).size).toBe(90);
+    for (const nganh of NGANH) {
+      const [common, own, total] = COUNTS[nganh];
+      const chapters = DASHBOARD_INDUSTRY_CHAPTERS[nganh];
+      expect(chapters.map(count), nganh).toEqual([common, own]);
+      expect(DASHBOARD_INDUSTRY_CHARTS[nganh], nganh).toHaveLength(total);
+      expect(DASHBOARD_INDUSTRY_COUNTS[nganh]).toBe(total);
+      expect(chapters.map((chapter) => chapter.scope)).toEqual(['chung', nganh]);
       expect(chapters[0]!.title).toBe('Chỉ tiêu chung');
-      expect(chapters.flatMap((chapter) => chapter.groups.flatMap((group) => group.items))).toEqual(
-        DASHBOARD_INDUSTRY_CHARTS[industry],
-      );
+      // A name shows once per industry.
+      const names = DASHBOARD_INDUSTRY_CHARTS[nganh].map((chart) => chart.name);
+      expect(new Set(names).size, nganh).toBe(names.length);
     }
-    expect(DASHBOARD_INDUSTRY_CHAPTERS.nh.map((chapter) => chapter.academy_chapter)).toEqual([
-      8, 10,
-    ]);
-    expect(DASHBOARD_INDUSTRY_CHAPTERS.bh.map((chapter) => chapter.title)).toEqual([
-      'Chỉ tiêu chung',
-      'Chỉ tiêu bảo hiểm',
-    ]);
   });
 
-  it('keeps the 33 ids of v1 and gives every chart a stable metric key equal to its id', () => {
-    const keys = DASHBOARD_CHARTS.map((chart) => chart.metric_key);
-    expect(new Set(keys).size).toBe(62);
-    for (const chart of DASHBOARD_CHARTS) expect(chart.metric_key).toBe(chart.metric_id);
-    expect(DASHBOARD_CHARTS.filter((chart) => chart.registry_id !== null)).toHaveLength(33);
-    expect(DASHBOARD_CHARTS.filter((chart) => chart.registry_id === null)).toHaveLength(29);
-    expect(
-      DASHBOARD_CHARTS.filter((chart) => chart.registry_id === null).map((chart) => chart.metric_id),
-    ).toEqual([...NATIVE_METRIC_IDS]);
-    for (const chart of DASHBOARD_CHARTS.filter((item) => item.registry_id !== null))
-      expect(chart.registry_id).toBe(chart.metric_id);
+  it('§12.2: a re-taught chart shows only once, in the industry chapter', () => {
+    const commonOf = (nganh: Nganh) =>
+      DASHBOARD_INDUSTRY_CHAPTERS[nganh][0]!.groups.flatMap((group) =>
+        group.items.map((item) => item.name),
+      );
+    const ownOf = (nganh: Nganh) =>
+      DASHBOARD_INDUSTRY_CHAPTERS[nganh][1]!.groups.flatMap((group) =>
+        group.items.map((item) => item.name),
+      );
+    const RETAUGHT: Record<Exclude<Nganh, 'thuong'>, string[]> = {
+      nh: ['Tăng trưởng doanh thu', 'ROE', 'ROA', 'P/B'],
+      ck: ['Tăng trưởng doanh thu', 'Margin Stability', 'ROE', 'P/B'],
+      bh: ['Biên lợi nhuận ròng', 'ROE', 'P/B'],
+      bds: ['Tăng trưởng doanh thu', 'Revenue Growth Stability', 'P/E', 'P/B'],
+      dk: ['Tăng trưởng doanh thu', 'Margin Stability', 'P/E'],
+      bl: ['Tăng trưởng doanh thu', 'P/E'],
+      dien: ['Tăng trưởng doanh thu', 'Margin Stability'],
+      vl: ['Tăng trưởng doanh thu', 'Margin Stability', 'P/B'],
+    };
+    for (const [nganh, names] of Object.entries(RETAUGHT) as [Nganh, string[]][]) {
+      for (const name of names) {
+        expect(commonOf(nganh), `${nganh}: ${name}`).not.toContain(name);
+        expect(ownOf(nganh), `${nganh}: ${name}`).toContain(name);
+      }
+    }
+    // Example of §3.2: ROE of a bank sits in "Chỉ tiêu ngân hàng › Thu nhập và hiệu quả".
+    expect(chartFor('nh', 'ROE')).toMatchObject({
+      chapter: 'nh',
+      chapter_title: 'Chỉ tiêu ngân hàng',
+      group: 'Thu nhập và hiệu quả',
+      academy_chapter: 10,
+    });
+    expect(chartFor('thuong', 'ROE')).toMatchObject({ chapter: 'chung', academy_chapter: 8 });
+  });
+
+  it('§12.3: the five new industries carry no manufacturing chart that is not re-taught', () => {
+    expect(chartFor('bds', 'Asset Turnover')).toBeNull();
+    expect(chartFor('bds', 'Cash Conversion Cycle')).toBeNull();
+    const manufacturing = DASHBOARD_INDUSTRY_CHAPTERS.thuong[1]!.groups.flatMap((group) =>
+      group.items.map((item) => item.name),
+    );
+    for (const nganh of ['bds', 'dk', 'bl', 'dien', 'vl'] as const) {
+      const own = new Set(
+        DASHBOARD_INDUSTRY_CHAPTERS[nganh][1]!.groups.flatMap((group) =>
+          group.items.map((item) => item.name),
+        ),
+      );
+      const common = DASHBOARD_INDUSTRY_CHAPTERS[nganh][0]!.groups.flatMap((group) =>
+        group.items.map((item) => item.name),
+      );
+      for (const name of manufacturing) expect(common, `${nganh}: ${name}`).not.toContain(name);
+      // Every manufacturing chart an industry offers is a re-taught one of its own chapter.
+      for (const chart of DASHBOARD_INDUSTRY_CHARTS[nganh].filter((item) =>
+        manufacturing.includes(item.name),
+      ))
+        expect(own.has(chart.name), `${nganh}: ${chart.name}`).toBe(true);
+    }
+    expect(DASHBOARD_INDUSTRY_CHARTS.bl.map((chart) => chart.name)).toContain(
+      'Cash Conversion Cycle',
+    );
+  });
+
+  it('§12.8: the reference line 1 sits on exactly four kind-B charts; PEG and combined ratio keep theirs', () => {
+    const withRefOne = [
+      ...new Set(
+        DASHBOARD_CHARTS.filter((chart) => chart.kind === 'B' && chart.ref === 1).map(
+          (chart) => chart.name,
+        ),
+      ),
+    ].sort();
+    expect(withRefOne).toEqual(
+      [
+        'Capex / Khấu hao',
+        'Lãi vay đã trả / Chi phí lãi vay',
+        'Phải trả người bán / Tồn kho',
+        'Tiền / Nợ vay ngắn hạn',
+      ].sort(),
+    );
+    for (const chart of DASHBOARD_CHARTS.filter((item) => item.kind === 'B' && item.ref === 1))
+      expect(chart.unit).toBe('lần');
+    expect(chartFor('bh', 'Combined ratio')?.ref).toBe(100);
+    expect(chartFor('bds', 'PEG')?.ref).toBe(1);
+  });
+
+  it('declares the 28 new metric keys and the 3 variants as pending, keyed for the Academy', () => {
+    expect(V3_NEW_METRIC_IDS).toHaveLength(28);
+    expect(PENDING_V3_METRIC_IDS).toHaveLength(31);
+    const pending = DASHBOARD_CHARTS.filter((chart) => chart.pending);
+    expect(new Set(pending.map((chart) => chart.metric_id))).toEqual(
+      new Set(PENDING_V3_METRIC_IDS),
+    );
+    // Every new key is used by at least one pair; none collides with an existing id.
+    for (const id of V3_NEW_METRIC_IDS) {
+      expect(DASHBOARD_CHARTS.some((chart) => chart.metric_key === id), id).toBe(true);
+      expect((NATIVE_METRIC_IDS as readonly string[]).includes(id), id).toBe(false);
+    }
+    expect(V3_NEW_METRIC_IDS).not.toContain('payout_ratio');
+    // Variants: their own formula id, the lesson key of the chart they re-teach (D7).
+    expect(chartFor('nh', 'ROE')).toMatchObject({ metric_id: 'roe_fin', metric_key: 'roe' });
+    expect(chartFor('ck', 'ROE')).toMatchObject({ metric_id: 'roe_fin', metric_key: 'roe' });
+    expect(chartFor('bh', 'ROE')).toMatchObject({ metric_id: 'roe_fin', metric_key: 'roe' });
+    expect(chartFor('nh', 'ROE')).toMatchObject({ sub_unit: 'lần', sub_type: 'grouped' });
+    expect(chartFor('bh', 'Biên lợi nhuận ròng')).toMatchObject({
+      metric_id: 'net_margin_bh',
+      metric_key: 'net_margin',
+    });
+    for (const nganh of ['dk', 'vl'] as const)
+      expect(chartFor(nganh, 'Biên lợi nhuận gộp')).toMatchObject({
+        metric_id: 'gross_margin_q',
+        metric_key: 'gross_margin',
+      });
+    for (const nganh of ['thuong', 'bds', 'bl', 'dien'] as const)
+      expect(chartFor(nganh, 'Biên lợi nhuận gộp')).toMatchObject({
+        metric_id: 'gross_margin',
+        pending: false,
+      });
+    expect(chartFor('thuong', 'ROE')).toMatchObject({ metric_id: 'roe', pending: false });
+    // Outside the variants, the lesson key equals the formula id.
+    for (const chart of DASHBOARD_CHARTS)
+      if (!(chart.metric_id in V3_VARIANT_METRIC_KEYS)) expect(chart.metric_key).toBe(chart.metric_id);
+  });
+
+  it('keeps the v2 names of the 4 old industries (no settings migration, D9)', () => {
+    const V2: Record<'thuong' | 'nh' | 'ck' | 'bh', number> = { thuong: 33, nh: 28, ck: 27, bh: 25 };
+    for (const nganh of Object.keys(V2) as (keyof typeof V2)[])
+      expect(DASHBOARD_INDUSTRY_CHARTS[nganh]).toHaveLength(V2[nganh]);
+    // ck/bh renamed groups.
+    expect(chartFor('ck', 'Nợ vay / VCSH')?.group).toBe('Chi phí, đòn bẩy và hiệu quả');
+    expect(chartFor('ck', 'Chi phí hoạt động / Doanh thu hoạt động')?.group).toBe(
+      'Chi phí, đòn bẩy và hiệu quả',
+    );
+    expect(chartFor('bh', 'Lợi suất đầu tư')?.group).toBe('Đầu tư và lợi nhuận');
   });
 
   it('has a valid default set of 6 charts for each industry (spec §6.3)', () => {
-    for (const industry of INDUSTRIES) {
-      const defaults = DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[industry];
+    for (const nganh of NGANH) {
+      const defaults = DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[nganh];
       expect(defaults).toHaveLength(6);
       expect(new Set(defaults).size).toBe(6);
-      for (const name of defaults) {
-        const chart = dashboardChart(name);
-        expect(chart, name).not.toBeNull();
-        expect(chartInIndustry(chart!, industry), `${industry}: ${name}`).toBe(true);
-      }
+      for (const name of defaults) expect(chartFor(nganh, name), `${nganh}: ${name}`).not.toBeNull();
     }
     expect(DASHBOARD_DEFAULT_CHARTS).toEqual(DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.thuong);
-    expect(DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.nh).toEqual([
+    expect(DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.bds).toEqual([
+      'Người mua trả tiền trước / Doanh thu',
       'Tăng trưởng LNST',
-      'NIM',
-      'CIR',
-      'Chi phí tín dụng',
-      'ROE',
+      'Số năm bán hết tồn kho',
+      'D/E',
+      'Lãi vay đã trả / Chi phí lãi vay',
       'P/B',
     ]);
   });
 
-  it('exposes the catalogue per industry with chapters, groups, counts and the lesson key', () => {
+  it('exposes the catalogue of 9 industries with chapters, Academy chapters 8–17 and lesson keys', () => {
     const catalog = service().service.catalog();
-    expect(catalog.industries.map((industry) => [industry.nganh, industry.total])).toEqual([
-      ['thuong', 33],
-      ['nh', 28],
-      ['ck', 27],
-      ['bh', 25],
+    expect(catalog.industries.map((industry) => [industry.nganh, industry.total])).toEqual(
+      NGANH.map((nganh) => [nganh, COUNTS[nganh][2]]),
+    );
+    expect(
+      catalog.industries.map((industry) => industry.chapters.map((c) => c.academy_chapter)),
+    ).toEqual([
+      [8, 9],
+      [8, 10],
+      [8, 11],
+      [8, 12],
+      [8, 13],
+      [8, 14],
+      [8, 15],
+      [8, 16],
+      [8, 17],
     ]);
-    const bank = catalog.industries.find((industry) => industry.nganh === 'nh')!;
-    expect(bank.label).toBe('Ngân hàng');
-    expect(bank.default_charts).toEqual([...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.nh]);
-    expect(bank.chapters.map((chapter) => [chapter.chapter, chapter.academy_chapter])).toEqual([
-      ['Chỉ tiêu chung', 8],
-      ['Chỉ tiêu ngân hàng', 10],
+    const bds = catalog.industries.find((industry) => industry.nganh === 'bds')!;
+    expect(bds.label).toBe('Bất động sản');
+    expect(bds.chapters.map((chapter) => chapter.chapter)).toEqual([
+      'Chỉ tiêu chung',
+      'Chỉ tiêu bất động sản',
     ]);
-    const groups = bank.chapters.flatMap((chapter) => chapter.groups);
-    expect(groups.map((group) => group.group)).toEqual([
-      'Tăng trưởng',
-      'Ổn định',
-      'Hiệu quả',
-      'Định giá',
-      'Thu nhập và hiệu quả',
-      'Rủi ro tín dụng',
-      'Quy mô và vốn',
-    ]);
-    const items = groups.flatMap((group) => group.items);
-    expect(items).toHaveLength(28);
-    expect(items.find((item) => item.name === 'NIM')).toEqual({
-      name: 'NIM',
-      metric_key: 'nim',
+    expect(bds.default_charts).toEqual([...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.bds]);
+    const items = bds.chapters.flatMap((chapter) => chapter.groups.flatMap((group) => group.items));
+    expect(items).toHaveLength(32);
+    expect(items.find((item) => item.name === 'Số năm bán hết tồn kho')).toEqual({
+      name: 'Số năm bán hết tồn kho',
+      metric_key: 'inventory_years',
       kind: 'B',
     });
-    expect(items.find((item) => item.name === 'ROE')).toEqual({
+    const bank = catalog.industries.find((industry) => industry.nganh === 'nh')!;
+    const bankItems = bank.chapters.flatMap((chapter) =>
+      chapter.groups.flatMap((group) => group.items),
+    );
+    expect(bankItems.find((item) => item.name === 'ROE')).toEqual({
       name: 'ROE',
       metric_key: 'roe',
       kind: 'B',
     });
-    // Nothing of a manufacturer is offered to a bank: no gross margin, D/E, CCC, cash flow...
-    const names = items.map((item) => item.name);
     for (const name of ['Biên lợi nhuận gộp', 'D/E', 'Cash Conversion Cycle', 'CFO Margin'])
-      expect(names).not.toContain(name);
+      expect(bankItems.map((item) => item.name)).not.toContain(name);
   });
 
-  it('uses the chart shapes of the spec', () => {
+  it('uses the chart shapes of the spec and the decimals of §10 (năm = 1 except E2)', () => {
     const kinds = new Set(DASHBOARD_CHARTS.map((chart) => chart.kind));
     expect([...kinds].sort()).toEqual(['A', 'B', 'C', 'D', 'E1', 'E2', 'F', 'F2']);
-    expect(dashboardChart('Combined ratio')?.ref).toBe(100);
-    expect(dashboardChart('PEG')?.ref).toBe(1);
+    expect(chartFor('bds', 'Số năm bán hết tồn kho')?.unit).toBe('năm');
+    expect(dashboardDecimals('năm', 'B')).toBe(1);
+    expect(dashboardDecimals('năm', 'E2')).toBe(0);
+    expect(dashboardDecimals('lần', 'B')).toBe(2);
+    expect(dashboardDecimals('%', 'B')).toBe(1);
+    expect(dashboardDecimals('ngày', 'B')).toBe(0);
   });
 });
 
-describe('dashboard settings (theo tài khoản và theo ngành, trên server)', () => {
+describe('dashboard settings (theo tài khoản và 9 ngành, trên server)', () => {
   it('returns the default dashboard of every industry when the account never saved anything', async () => {
     const { service: dashboard } = service();
     const settings = await dashboard.settings(USER);
-    expect(Object.keys(settings)).toEqual(['thuong', 'nh', 'ck', 'bh']);
-    for (const industry of INDUSTRIES)
-      expect(settings[industry]).toEqual({
-        charts: [...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[industry]],
+    expect(Object.keys(settings)).toEqual([...NGANH]);
+    for (const nganh of NGANH)
+      expect(settings[nganh]).toEqual({
+        charts: [...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[nganh]],
         per: 'q',
         nks: {},
       });
@@ -331,6 +462,31 @@ describe('dashboard settings (theo tài khoản và theo ngành, trên server)',
     await dashboard.saveSettings(USER, 'nh', input);
     expect(store.rows.get(`${USER}:nh`)?.revision).toBe(2);
     expect(store.rows.has(`${USER}:thuong`)).toBe(false);
+  });
+
+  it('saves a new industry (bds) and rejects a chart outside it with 400 CHART_NOT_IN_INDUSTRY', async () => {
+    const { service: dashboard } = service();
+    const input = dashboardSettingsInputSchema.parse({
+      charts: ['Số năm bán hết tồn kho', 'D/E', 'Tiền / Nợ vay ngắn hạn'],
+      per: 'q',
+      nks: { 'D/E': { q: 8 } },
+    });
+    await expect(dashboard.saveSettings(USER, 'bds', input)).resolves.toMatchObject({
+      nganh: 'bds',
+      charts: ['Số năm bán hết tồn kho', 'D/E', 'Tiền / Nợ vay ngắn hạn'],
+    });
+    expect((await dashboard.settings(USER)).bds.charts).toEqual([
+      'Số năm bán hết tồn kho',
+      'D/E',
+      'Tiền / Nợ vay ngắn hạn',
+    ]);
+    await expect(
+      dashboard.saveSettings(
+        USER,
+        'bds',
+        dashboardSettingsInputSchema.parse({ charts: ['Asset Turnover'], per: 'q', nks: {} }),
+      ),
+    ).rejects.toMatchObject({ status: 400, response: { code: 'CHART_NOT_IN_INDUSTRY' } });
   });
 
   it('rejects a chart that is not in the industry (400) and keeps the other settings', async () => {
@@ -523,11 +679,13 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
       symbol: 'FPT',
       nganh: 'thuong',
       label: 'Doanh nghiệp sản xuất',
+      template: 'thuong',
     });
     expect(await service(true).service.industry('vcb')).toEqual({
       symbol: 'VCB',
       nganh: 'nh',
       label: 'Ngân hàng',
+      template: 'nh',
     });
   });
 
@@ -584,9 +742,12 @@ describe('PEG rule (spec §10)', () => {
 });
 
 describe('dashboard catalogue helpers', () => {
-  it('finds a chart by its display name', () => {
-    expect(dashboardChart('ROE')?.metric_id).toBe('roe');
-    expect(dashboardChart('NIM')?.metric_id).toBe('nim');
-    expect(dashboardChart('RSI')).toBeNull();
+  it('finds a chart by its (industry, name) pair', () => {
+    expect(chartFor('thuong', 'ROE')?.metric_id).toBe('roe');
+    expect(chartFor('nh', 'NIM')?.metric_id).toBe('nim');
+    expect(chartFor('thuong', 'NIM')).toBeNull();
+    expect(chartFor('thuong', 'RSI')).toBeNull();
+    expect(isDashboardChartName('NIM')).toBe(true);
+    expect(isDashboardChartName('RSI')).toBe(false);
   });
 });

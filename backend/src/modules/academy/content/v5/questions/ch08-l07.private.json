@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l07",
+  "questions": [
+    {
+      "correct_option_id": "7f95cb0274",
+      "id": "ch08-l07-q01",
+      "options": [
+        {
+          "id": "7f95cb0274",
+          "text": "Số năm LNST dương liên tiếp tính đến năm gần nhất"
+        },
+        {
+          "id": "b8d7626ddf",
+          "text": "Tổng số năm có lãi trong toàn bộ 7 năm"
+        },
+        {
+          "id": "b6e777e1a7",
+          "text": "Số năm doanh thu tăng liên tiếp"
+        }
+      ],
+      "prompt": "Profit Positive Streak đếm điều gì?"
+    },
+    {
+      "correct_option_id": "4f311961a6",
+      "id": "ch08-l07-q02",
+      "options": [
+        {
+          "id": "4f311961a6",
+          "text": "Dừng đếm, các năm trước đó không được tính"
+        },
+        {
+          "id": "7fd37ef86f",
+          "text": "Bỏ qua năm lỗ rồi đếm tiếp"
+        },
+        {
+          "id": "9810426e40",
+          "text": "Trừ đi một năm rồi đếm tiếp"
+        }
+      ],
+      "prompt": "Khi đếm chuỗi năm lãi, gặp năm lỗ thì làm gì?"
+    },
+    {
+      "correct_option_id": "d4ed55f577",
+      "id": "ch08-l07-q03",
+      "options": [
+        {
+          "id": "d4ed55f577",
+          "text": "0 năm"
+        },
+        {
+          "id": "f9dffc391c",
+          "text": "Bằng số năm lãi trước đó"
+        },
+        {
+          "id": "ac12615f8b",
+          "text": "Bằng 1 năm"
+        }
+      ],
+      "prompt": "Năm gần nhất doanh nghiệp bị lỗ thì chuỗi năm lãi bằng bao nhiêu?"
+    },
+    {
+      "chart_id": "c8l7-rep",
+      "correct_option_id": "0cae2b2262",
+      "id": "ch08-l07-q04",
+      "options": [
+        {
+          "id": "0cae2b2262",
+          "text": "Năm doanh nghiệp bị lỗ"
+        },
+        {
+          "id": "34fbd620a3",
+          "text": "Năm doanh thu giảm"
+        },
+        {
+          "id": "17025a9719",
+          "text": "Năm doanh nghiệp trả cổ tức"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột đỏ nằm dưới mốc 0 thể hiện gì?"
+    },
+    {
+      "correct_option_id": "40c21005bb",
+      "id": "ch08-l07-q05",
+      "options": [
+        {
+          "id": "40c21005bb",
+          "text": "Quy mô và xu hướng của LNST"
+        },
+        {
+          "id": "f403449513",
+          "text": "Số cổ đông của doanh nghiệp"
+        },
+        {
+          "id": "56f11ed8ce",
+          "text": "Giá cổ phiếu năm gần nhất"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng có chuỗi 7 năm. Cần xem thêm gì để so sánh?"
+    }
+  ],
+  "salt": "6439bef0f583310f545b5be8ca633f2728b6b8391a78bbccc6ea07a570e48794"
+}

@@ -1,0 +1,557 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l14-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "Vốn hoá",
+          "tone": "p1",
+          "v": "Giá × số CP"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "warn",
+          "v": "72.308 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "P/B",
+          "tone": "pos",
+          "v": "1,34 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l14-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Đỉnh chu kỳ",
+          "tone": "warn",
+          "value": 2.2
+        },
+        {
+          "label": "Giữa chu kỳ",
+          "tone": "p1",
+          "value": 1.4
+        },
+        {
+          "label": "Đáy chu kỳ",
+          "tone": "pos",
+          "value": 0.9
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "P/B một công ty thép qua chu kỳ · số minh họa",
+      "unit": " lần"
+    },
+    "c17l14-rep": {
+      "alt": "P/B: 1,34 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "P/B",
+            "v": [
+              1.503,
+              1.49,
+              1.426,
+              1.418,
+              1.362,
+              1.397,
+              1.449,
+              1.472,
+              1.53,
+              1.531,
+              1.492,
+              1.421,
+              1.402,
+              1.433,
+              1.501,
+              1.486,
+              1.464,
+              1.482,
+              1.475,
+              1.518,
+              1.476,
+              1.487,
+              1.465,
+              1.432,
+              1.417,
+              1.424,
+              1.344,
+              1.391,
+              1.351,
+              1.37,
+              1.369,
+              1.361,
+              1.363,
+              1.361,
+              1.424,
+              1.483,
+              1.538,
+              1.55,
+              1.499,
+              1.492,
+              1.48,
+              1.443,
+              1.432,
+              1.411,
+              1.419,
+              1.352,
+              1.346,
+              1.39,
+              1.344,
+              1.379,
+              1.404,
+              1.397,
+              1.374,
+              1.37,
+              1.39,
+              1.386,
+              1.351,
+              1.372,
+              1.33,
+              1.331,
+              1.337,
+              1.373,
+              1.378,
+              1.394,
+              1.38,
+              1.364,
+              1.377,
+              1.338,
+              1.344,
+              1.284,
+              1.282,
+              1.271,
+              1.303,
+              1.32,
+              1.284,
+              1.287,
+              1.318,
+              1.32,
+              1.313,
+              1.328,
+              1.296,
+              1.292,
+              1.295,
+              1.302,
+              1.295,
+              1.282,
+              1.288,
+              1.273,
+              1.29,
+              1.259,
+              1.215,
+              1.232,
+              1.215,
+              1.191,
+              1.2,
+              1.245,
+              1.21,
+              1.207,
+              1.171,
+              1.152,
+              1.112,
+              1.123,
+              1.117,
+              1.091,
+              1.135,
+              1.158,
+              1.165,
+              1.157,
+              1.169,
+              1.177,
+              1.201,
+              1.239,
+              1.226,
+              1.24,
+              1.241,
+              1.232,
+              1.233,
+              1.217,
+              1.201,
+              1.283,
+              1.296,
+              1.358,
+              1.398,
+              1.341,
+              1.36,
+              1.342
+            ]
+          }
+        ],
+        "name": "P/B",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l14",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ở đáy chu kỳ, lợi nhuận công ty vật liệu rất thấp nên P/E và EV / EBITDA khó dùng. Vốn chủ sở hữu ổn định hơn nhiều. Vì vậy P/B thường được dùng để định giá công ty vật liệu qua chu kỳ.",
+  "lesson_key": "fundamental:pb-vl",
+  "order": 14,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l14-g1",
+          "type": "chart"
+        },
+        {
+          "text": "P/B bằng <b>vốn hoá</b> chia <b>vốn chủ sở hữu</b> của quý gần nhất đã công bố. Cách tính giống bài P/B ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l14-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vốn chủ thay đổi chậm, không dao động mạnh như lợi nhuận.",
+              "title": "Vốn chủ ổn định"
+            },
+            {
+              "text": "Khi lợi nhuận gần 0, P/E rất cao, còn P/B vẫn có ý nghĩa.",
+              "title": "Dùng được ở đáy"
+            },
+            {
+              "text": "P/B cao chỉ hợp lý khi ROE bình quân qua chu kỳ cao.",
+              "title": "Đọc cùng ROE"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l14-rep",
+          "title": "P/B",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/B theo giá đóng cửa và vốn chủ quý đã công bố.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "P/B gần cận dưới của dải thường trùng với đáy chu kỳ.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "P/B gần cận dưới của dải lịch sử, hoặc gần 1 lần với công ty có ROE bình quân tốt. Mức tham khảo.",
+              "title": "Vùng thấp",
+              "tone": "pos"
+            },
+            {
+              "text": "P/B gần cận trên của dải, thường khi lợi nhuận ở đỉnh chu kỳ.",
+              "title": "Vùng cao",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "P/B dưới 1 lần chưa chắc rẻ nếu nhà máy cũ, công nghệ lạc hậu hoặc ROE thấp kéo dài.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng dải trên Dashboard.",
+              "title": "So với lịch sử"
+            },
+            {
+              "text": "ROE bình quân qua chu kỳ quyết định mức P/B hợp lý.",
+              "title": "Đọc cùng ROE"
+            },
+            {
+              "text": "Khi lợi nhuận quá thấp, dùng P/B.",
+              "title": "Thay P/E ở đáy"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu, P/B 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "P/B cuối Q2/26",
+              "text": "1,34 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "1,35 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "1,09 lần và 1,55 lần."
+            },
+            {
+              "term": "Nhận xét",
+              "text": "P/B quanh trung vị trong khi ROIC đang ở vùng thấp. Thị trường đang chờ nhà máy mới vận hành."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nhà máy cũ, ROE thấp kéo dài thì P/B thấp là hợp lý.",
+              "title": "Coi P/B dưới 1 luôn rẻ"
+            },
+            {
+              "text": "P/E rất cao vì lợi nhuận gần 0.",
+              "title": "Dùng P/E ở đáy"
+            },
+            {
+              "text": "Thép, xi măng có mức P/B khác nhau.",
+              "title": "So khác mảng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/B dao động mạnh theo chu kỳ.",
+              "title": "Thép"
+            },
+            {
+              "text": "P/B ổn định hơn.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "P/B theo chu kỳ giá phân bón.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>P/B</b> = vốn hoá ÷ vốn chủ sở hữu.",
+    "Vốn chủ <b>ổn định hơn lợi nhuận</b>, dùng được ở đáy chu kỳ.",
+    "So <b>với lịch sử</b> và đọc cùng <b>ROE bình quân</b>.",
+    "P/B dưới 1 <b>chưa chắc rẻ</b>."
+  ],
+  "title": "P/B · ở vật liệu cơ bản"
+}

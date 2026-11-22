@@ -1,0 +1,439 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l1-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Báo cáo kết quả kinh doanh",
+            "Q2/26"
+          ],
+          "t": "Doanh thu thuần quý này",
+          "tone": "p1",
+          "v": "2.372 tỷ"
+        },
+        {
+          "notes": [
+            "Cùng quý năm trước",
+            "Q2/25"
+          ],
+          "t": "Doanh thu thuần cùng kỳ",
+          "tone": "warn",
+          "v": "3.599 tỷ"
+        },
+        {
+          "notes": [
+            "So với cùng kỳ"
+          ],
+          "t": "Tăng trưởng",
+          "tone": "neg",
+          "v": "−34,1%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "so với",
+        "="
+      ]
+    },
+    "c13l1-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Năm 1 · mở bán",
+          "tone": "p1",
+          "value": 0
+        },
+        {
+          "label": "Năm 2 · đang xây",
+          "tone": "p1",
+          "value": 0
+        },
+        {
+          "label": "Năm 3 · bàn giao",
+          "tone": "pos",
+          "value": 1000
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "note": "Tiền khách trả rải đều 3 năm, nhưng doanh thu dồn vào năm bàn giao.",
+      "title": "Doanh thu ghi nhận của một dự án bán 1.000 tỷ đồng · số minh họa",
+      "unit": " tỷ"
+    },
+    "c13l1-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Quý 1",
+          "tone": "pos",
+          "value": 79
+        },
+        {
+          "label": "Quý 2",
+          "tone": "neg",
+          "value": -34
+        },
+        {
+          "label": "Quý 3",
+          "tone": "pos",
+          "value": 4
+        },
+        {
+          "label": "Quý 4",
+          "tone": "neg",
+          "value": -15
+        },
+        {
+          "label": "Cả năm",
+          "tone": "p1",
+          "value": 2
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "note": "Từng quý lên xuống rất mạnh, nhưng cả năm gần như đi ngang.",
+      "title": "Tăng trưởng từng quý của một công ty bất động sản · số minh họa",
+      "unit": "%"
+    },
+    "c13l1-rep": {
+      "alt": "Tăng trưởng doanh thu: −34,1%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              3.921,
+              5.966,
+              79.114,
+              18.838,
+              3.627,
+              -14.853,
+              3.309,
+              -34.091
+            ]
+          }
+        ],
+        "name": "Tăng trưởng doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Quý này",
+              "v": [
+                3135.696,
+                13009.223,
+                3588.733,
+                3598.692,
+                3249.436,
+                11076.941,
+                3707.502,
+                2371.858
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                3017.387,
+                12276.749,
+                2003.599,
+                3028.224,
+                3135.696,
+                13009.223,
+                3588.733,
+                3598.692
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh thu của công ty bất động sản lên xuống mạnh theo từng đợt bàn giao. Một quý tăng gấp đôi rồi quý sau giảm một nửa là chuyện bình thường. Bài này giúp đọc tăng trưởng doanh thu mà không bị những cú nhảy đó đánh lừa.",
+  "lesson_key": "fundamental:revenue_yoy-bds",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l1-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Tăng trưởng doanh thu so sánh <b>doanh thu thuần</b> quý này với <b>cùng quý năm trước</b>. Cách tính giống bài Tăng trưởng doanh thu ở phần chỉ tiêu chung. Điểm khác nằm ở cách đọc.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản chỉ ghi nhận doanh thu khi <b>bàn giao</b> căn hộ, nền đất cho khách. Tiền bán hàng thu trước đó chưa phải doanh thu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l1-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự án bán hôm nay thường 1 đến 3 năm sau mới bàn giao và lên doanh thu.",
+              "title": "Doanh thu đi sau bán hàng"
+            },
+            {
+              "text": "Bàn giao tập trung khi dự án hoàn thành, thường vào quý 4. Các quý còn lại doanh thu thấp.",
+              "title": "Dồn vào vài quý"
+            },
+            {
+              "text": "Cùng kỳ có đợt bàn giao lớn thì quý này giảm mạnh, dù việc kinh doanh không xấu đi.",
+              "title": "Kỳ gốc thay đổi"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bất động sản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l1-rep",
+          "title": "Tăng trưởng doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng doanh thu thuần so với cùng kỳ, đơn vị %. Đường dao động rất mạnh.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu quý này và cùng kỳ năm trước, đơn vị tỷ đồng. Quý 4 cao vọt vì bàn giao.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Nhìn cặp cột quý 4 hai năm liền để thấy quy mô bàn giao lớn lên hay nhỏ đi.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh thu 4 quý hoặc doanh thu năm tăng đều qua nhiều năm, và người mua trả tiền trước cũng tăng. Mức tham khảo: tăng trên 10% mỗi năm trong 3 năm.",
+              "title": "Tăng trưởng đáng tin",
+              "tone": "pos"
+            },
+            {
+              "text": "Một quý tăng rất cao do bàn giao dồn, trong khi tiền người mua trả trước đang giảm. Doanh thu các năm sau có thể thấp đi.",
+              "title": "Tăng trưởng cần xem lại",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với bất động sản, nên đọc tăng trưởng theo <b>năm</b> hoặc theo <b>4 quý cộng dồn</b>. Tăng trưởng từng quý chỉ cho biết đợt bàn giao rơi vào quý nào.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l1-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bấm Năm trên Dashboard để bỏ bớt nhiễu do lịch bàn giao.",
+              "title": "Chuyển sang chế độ Năm"
+            },
+            {
+              "text": "Tiền khách trả trước tăng nghĩa là doanh thu những năm tới có nguồn để ghi nhận.",
+              "title": "Đọc cùng người mua trả tiền trước"
+            },
+            {
+              "text": "Quý 4 thường là quý bàn giao lớn nhất. So hai quý 4 liền nhau cho biết quy mô bàn giao.",
+              "title": "So quý 4 với quý 4"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu có doanh thu thuần từng quý như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Cùng kỳ"
+            },
+            {
+              "label": "Tăng trưởng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q4/24",
+                "13.009",
+                "12.277",
+                "6,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q1/25",
+                "3.589",
+                "2.004",
+                "79,1%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "3.599",
+                "3.028",
+                "18,8%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "11.077",
+                "13.009",
+                "−14,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "2.372",
+                "3.599",
+                "−34,1%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Quý Q2/26 giảm 34,1% vì cùng kỳ có đợt bàn giao lớn hơn. Tính cả năm 2025, doanh thu vẫn tăng 1,6% so với 2024.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Một quý giảm 34% chưa nói được gì nếu năm đó vẫn bàn giao đủ kế hoạch.",
+              "title": "Kết luận từ một quý"
+            },
+            {
+              "text": "Doanh số bán hàng công ty công bố không phải doanh thu trên báo cáo kết quả kinh doanh.",
+              "title": "Coi bán hàng là doanh thu"
+            },
+            {
+              "text": "Doanh thu tăng mạnh khi một dự án lớn bàn giao. Năm sau không có dự án tương tự thì doanh thu giảm lại.",
+              "title": "Quên lịch bàn giao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh thu lên xuống theo đợt bàn giao căn hộ, nhà phố. Năm có dự án lớn hoàn thành thì tăng vọt.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Doanh thu cho thuê đất thường ghi nhận một lần khi giao đất, nên cũng dồn vào vài quý. Phần còn lại phân bổ dần qua doanh thu chưa thực hiện.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "<b>Tăng trưởng doanh thu</b> = doanh thu thuần kỳ này so với <b>cùng kỳ năm trước</b>.",
+    "Doanh thu bất động sản chỉ ghi nhận khi <b>bàn giao</b>, nên dồn vào vài quý.",
+    "Đọc theo <b>năm</b> hoặc <b>4 quý</b> để bớt nhiễu.",
+    "Đọc cùng <b>người mua trả tiền trước</b> để biết doanh thu tương lai."
+  ],
+  "title": "Tăng trưởng doanh thu · ở bất động sản"
+}

@@ -1,0 +1,364 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l6-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 149"
+          ],
+          "t": "Dự phòng giảm giá",
+          "tone": "neg",
+          "v": "130 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 141"
+          ],
+          "t": "Hàng tồn kho gốc",
+          "tone": "warn",
+          "v": "8.663 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "p1",
+          "v": "1,50%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l6-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Mã 141",
+          "line": "Hàng tồn kho (giá gốc)",
+          "report": "Hàng tồn kho",
+          "tone": "warn"
+        },
+        {
+          "code": "Mã 149",
+          "line": "Dự phòng giảm giá hàng tồn kho",
+          "report": "Hàng tồn kho",
+          "tone": "neg"
+        },
+        {
+          "code": "Mã 140",
+          "line": "Hàng tồn kho thuần",
+          "report": "Kết quả",
+          "tone": "p1"
+        }
+      ],
+      "title": "Bảng cân đối kế toán (mẫu B01-DN)"
+    },
+    "c15l6-rep": {
+      "alt": "Dự phòng giảm giá tồn kho / Tồn kho: 1,5%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Dự phòng / Tồn kho gốc",
+            "v": [
+              1.514,
+              1.262,
+              1.356,
+              1.396,
+              1.461,
+              1.468,
+              1.47,
+              1.498
+            ]
+          }
+        ],
+        "name": "Dự phòng giảm giá tồn kho / Tồn kho",
+        "sub": {
+          "series": [
+            {
+              "name": "Dự phòng giảm giá tồn kho",
+              "v": [
+                126.442,
+                103.81,
+                113.928,
+                119.887,
+                124.165,
+                130.256,
+                129.161,
+                129.779
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Khi hàng tồn có khả năng phải bán thấp hơn giá nhập, công ty lập dự phòng giảm giá tồn kho. Khoản dự phòng này nằm ngay trên bảng cân đối và cho thấy bao nhiêu phần hàng tồn đang mất giá.",
+  "lesson_key": "fundamental:inventory_provision_ratio-bl",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l6-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>dự phòng giảm giá hàng tồn kho</b> (mã 149, ghi số âm trên báo cáo, lấy giá trị tuyệt đối) chia <b>hàng tồn kho</b> chưa trừ dự phòng (mã 141). Số cuối kỳ trên bảng cân đối kế toán.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Dự phòng giảm giá tồn kho / Tồn kho là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l6-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Hàng lỗi mốt, sắp hết hạn, giá thị trường giảm thấp hơn giá nhập.",
+              "title": "Lập khi hàng mất giá"
+            },
+            {
+              "text": "Tăng dự phòng làm giá vốn tăng, lợi nhuận giảm ngay trong kỳ.",
+              "title": "Đi vào giá vốn"
+            },
+            {
+              "text": "Khi bán được hàng hoặc giá hồi lại, dự phòng được hoàn nhập, lợi nhuận tăng.",
+              "title": "Có thể hoàn nhập"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lấy ở dòng nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l6-rep",
+          "title": "Dự phòng giảm giá tồn kho / Tồn kho",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự phòng chia tồn kho gốc, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Dự phòng giảm giá tồn kho cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột dự phòng tăng nhanh hơn tồn kho làm đường đi lên.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 1% đến 2% và ổn định. Mức tham khảo với chuỗi bán lẻ.",
+              "title": "Hàng tồn lành mạnh",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ tăng nhanh, nhất là khi số ngày tồn kho cũng tăng. Lợi nhuận đang bị trừ dần.",
+              "title": "Hàng tồn mất giá",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tỷ lệ thấp chưa chắc là tốt. Công ty có thể lập dự phòng chậm. Đọc cùng số ngày tồn kho để kiểm tra.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự phòng tăng thường đi trước đợt giảm giá xả hàng.",
+              "title": "Cảnh báo sớm"
+            },
+            {
+              "text": "Biên gộp giảm có thể do tăng dự phòng.",
+              "title": "Giải thích biên gộp"
+            },
+            {
+              "text": "Dự phòng giảm mạnh làm lợi nhuận tăng một lần.",
+              "title": "Theo dõi hoàn nhập"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Dự phòng"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "126",
+                "1,51%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/24",
+                "104",
+                "1,26%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "120",
+                "1,40%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "130",
+                "1,50%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ giữ trong khoảng 1,3% đến 1,5%. Cùng lúc, số ngày tồn kho giảm. Hàng tồn của chuỗi không có dấu hiệu mất giá.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mẫu số là tồn kho gốc, trước khi trừ dự phòng.",
+              "title": "Dùng tồn kho thuần làm mẫu số"
+            },
+            {
+              "text": "Dự phòng ghi số âm trên báo cáo. Lấy giá trị tuyệt đối.",
+              "title": "Quên dấu âm"
+            },
+            {
+              "text": "Công ty có thể lập dự phòng chậm.",
+              "title": "Coi tỷ lệ thấp luôn tốt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Điện thoại, điện máy mất giá nhanh, dự phòng quan trọng.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "Nguyên liệu như sữa bột, đường có thể phải lập dự phòng khi giá giảm.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>dự phòng giảm giá tồn kho</b> (mã 149) ÷ <b>tồn kho gốc</b> (mã 141).",
+    "Tăng dự phòng làm <b>giá vốn tăng</b>, lợi nhuận giảm.",
+    "Mức tham khảo bán lẻ: <b>dưới khoảng 1% đến 2%</b>.",
+    "Đọc cùng <b>số ngày tồn kho</b>."
+  ],
+  "title": "Dự phòng giảm giá tồn kho / Tồn kho · hàng đang mất giá"
+}

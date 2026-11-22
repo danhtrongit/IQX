@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-exam",
+  "questions": [
+    {
+      "correct_option_id": "38f254efdd",
+      "id": "ch16-exam-q01",
+      "options": [
+        {
+          "id": "38f254efdd",
+          "text": "Sản lượng điện phát ra"
+        },
+        {
+          "id": "19df75e1b7",
+          "text": "Số cổ đông"
+        },
+        {
+          "id": "615261850f",
+          "text": "Lãi tiền gửi"
+        }
+      ],
+      "prompt": "Yếu tố nào quyết định phần lớn doanh thu nhà máy điện?"
+    },
+    {
+      "correct_option_id": "57ccae3355",
+      "id": "ch16-exam-q02",
+      "options": [
+        {
+          "id": "57ccae3355",
+          "text": "Mùa mưa và mùa nóng"
+        },
+        {
+          "id": "39cd44e604",
+          "text": "Công ty vay thêm"
+        },
+        {
+          "id": "7c39de6928",
+          "text": "Đổi kiểm toán"
+        }
+      ],
+      "prompt": "Vì sao doanh thu điện quý 2, quý 3 thường cao hơn?"
+    },
+    {
+      "correct_option_id": "80d0f1cae7",
+      "id": "ch16-exam-q03",
+      "options": [
+        {
+          "id": "80d0f1cae7",
+          "text": "Khấu hao, thuế phí tài nguyên, vận hành"
+        },
+        {
+          "id": "76921e2021",
+          "text": "Nhiên liệu than và khí đốt"
+        },
+        {
+          "id": "ec2f565476",
+          "text": "Chi phí bán hàng và quảng cáo"
+        }
+      ],
+      "prompt": "Giá vốn thủy điện chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "53925d7f97",
+      "id": "ch16-exam-q04",
+      "options": [
+        {
+          "id": "53925d7f97",
+          "text": "Nhiên liệu than, khí"
+        },
+        {
+          "id": "660e9af9d6",
+          "text": "Thuế tài nguyên nước"
+        },
+        {
+          "id": "aa013af7b5",
+          "text": "Tiền thuê đất"
+        }
+      ],
+      "prompt": "Giá vốn nhiệt điện chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "20558bd7da",
+      "id": "ch16-exam-q05",
+      "options": [
+        {
+          "id": "20558bd7da",
+          "text": "Thủy điện"
+        },
+        {
+          "id": "86284c037f",
+          "text": "Nước sạch"
+        },
+        {
+          "id": "a090a39e3b",
+          "text": "Điện tái tạo giá cố định"
+        }
+      ],
+      "prompt": "Loại nguồn nào thường có biên ròng dao động mạnh nhất qua các năm?"
+    },
+    {
+      "correct_option_id": "96e87b4f23",
+      "id": "ch16-exam-q06",
+      "options": [
+        {
+          "id": "96e87b4f23",
+          "text": "(LN kinh doanh chính + khấu hao) ÷ doanh thu"
+        },
+        {
+          "id": "3bde6d30e3",
+          "text": "LNST ÷ doanh thu thuần cộng 4 quý"
+        },
+        {
+          "id": "5053dc31c0",
+          "text": "Khấu hao ÷ tổng tài sản bình quân"
+        }
+      ],
+      "prompt": "Biên EBITDA trong chương điện tính thế nào?"
+    },
+    {
+      "correct_option_id": "725a966a43",
+      "id": "ch16-exam-q07",
+      "options": [
+        {
+          "id": "725a966a43",
+          "text": "Để trống"
+        },
+        {
+          "id": "9629fae14e",
+          "text": "Lấy từ thuyết minh"
+        },
+        {
+          "id": "ecb1bd90c8",
+          "text": "Ghi 0"
+        }
+      ],
+      "prompt": "Kỳ không có dòng khấu hao trên lưu chuyển tiền tệ thì Dashboard xử lý thế nào?"
+    },
+    {
+      "correct_option_id": "f274010943",
+      "id": "ch16-exam-q08",
+      "options": [
+        {
+          "id": "f274010943",
+          "text": "Tăng"
+        },
+        {
+          "id": "116c94cece",
+          "text": "Giảm"
+        },
+        {
+          "id": "632b9d1b28",
+          "text": "Bằng 0"
+        }
+      ],
+      "prompt": "Nhà máy khấu hao xong phần lớn thì lợi nhuận kế toán thường thế nào?"
+    },
+    {
+      "correct_option_id": "43d50cf8d8",
+      "id": "ch16-exam-q09",
+      "options": [
+        {
+          "id": "43d50cf8d8",
+          "text": "Mã 02 trên lưu chuyển tiền tệ gián tiếp"
+        },
+        {
+          "id": "f41919db00",
+          "text": "Mã 220 bảng cân đối"
+        },
+        {
+          "id": "73e6524114",
+          "text": "Mã 11 kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Khấu hao lấy ở đâu?"
+    },
+    {
+      "correct_option_id": "ffc28a213e",
+      "id": "ch16-exam-q10",
+      "options": [
+        {
+          "id": "ffc28a213e",
+          "text": "Công ty nắm cổ phần nhiều hơn vận hành trực tiếp"
+        },
+        {
+          "id": "deea857c8e",
+          "text": "Công ty đã bán toàn bộ nhà máy đang vận hành"
+        },
+        {
+          "id": "08ba2236fc",
+          "text": "Công ty đang lỗ nặng nhiều năm liền"
+        }
+      ],
+      "prompt": "Tài sản cố định / Tổng tài sản thấp ở công ty điện thường cho thấy gì?"
+    },
+    {
+      "correct_option_id": "985ced429e",
+      "id": "ch16-exam-q11",
+      "options": [
+        {
+          "id": "985ced429e",
+          "text": "Xây dựng cơ bản dở dang, mã 242"
+        },
+        {
+          "id": "4944e3903c",
+          "text": "Tài sản cố định, mã 220"
+        },
+        {
+          "id": "c714a68257",
+          "text": "Hàng tồn kho"
+        }
+      ],
+      "prompt": "Nhà máy đang xây nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "1aca95122c",
+      "id": "ch16-exam-q12",
+      "options": [
+        {
+          "id": "1aca95122c",
+          "text": "Nhà máy mới đi vào vận hành"
+        },
+        {
+          "id": "b9a2d19e0d",
+          "text": "Dự án bị huỷ"
+        },
+        {
+          "id": "dd40da5fde",
+          "text": "Bán nhà máy"
+        }
+      ],
+      "prompt": "Tỷ lệ xây dựng dở dang giảm đột ngột và TSCĐ tăng cho thấy gì?"
+    },
+    {
+      "correct_option_id": "0ca95bbeda",
+      "id": "ch16-exam-q13",
+      "options": [
+        {
+          "id": "0ca95bbeda",
+          "text": "Khi đưa vào sử dụng"
+        },
+        {
+          "id": "36fff89da9",
+          "text": "Khi bắt đầu xây"
+        },
+        {
+          "id": "37996ac930",
+          "text": "Khi ký hợp đồng vay"
+        }
+      ],
+      "prompt": "Khấu hao của nhà máy mới bắt đầu khi nào?"
+    },
+    {
+      "correct_option_id": "ff1584e83d",
+      "id": "ch16-exam-q14",
+      "options": [
+        {
+          "id": "ff1584e83d",
+          "text": "Đang xây nhà máy mới"
+        },
+        {
+          "id": "b3ed59f018",
+          "text": "Đang thu tiền"
+        },
+        {
+          "id": "8b44018581",
+          "text": "Giải thể"
+        }
+      ],
+      "prompt": "Capex / Khấu hao trên 2 lần thường là giai đoạn nào?"
+    },
+    {
+      "correct_option_id": "d58b17739a",
+      "id": "ch16-exam-q15",
+      "options": [
+        {
+          "id": "d58b17739a",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "9925fa3434",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "3c17690c13",
+          "text": "Luôn 100% lợi nhuận"
+        }
+      ],
+      "prompt": "Trong giai đoạn xây, cổ tức thường thế nào?"
+    },
+    {
+      "correct_option_id": "3729376014",
+      "id": "ch16-exam-q16",
+      "options": [
+        {
+          "id": "3729376014",
+          "text": "Phụ thuộc một bên mua chính"
+        },
+        {
+          "id": "9886974cad",
+          "text": "Không có hợp đồng"
+        },
+        {
+          "id": "138ee2da9f",
+          "text": "Không có doanh thu"
+        }
+      ],
+      "prompt": "Vì sao công ty điện khó đòi tiền điện gấp?"
+    },
+    {
+      "correct_option_id": "d757804c53",
+      "id": "ch16-exam-q17",
+      "options": [
+        {
+          "id": "d757804c53",
+          "text": "Làm CFO thấp hơn lợi nhuận"
+        },
+        {
+          "id": "12f2943df3",
+          "text": "Làm CFO tăng"
+        },
+        {
+          "id": "7d2e453b3b",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Số ngày thu tiền tăng ảnh hưởng thế nào đến CFO?"
+    },
+    {
+      "correct_option_id": "75703a0a78",
+      "id": "ch16-exam-q18",
+      "options": [
+        {
+          "id": "75703a0a78",
+          "text": "Mã 131"
+        },
+        {
+          "id": "3e83a14e82",
+          "text": "Mã 136"
+        },
+        {
+          "id": "614733fb1e",
+          "text": "Mã 311"
+        }
+      ],
+      "prompt": "Phải thu khách hàng lấy ở mã dòng nào?"
+    },
+    {
+      "correct_option_id": "df4e706428",
+      "id": "ch16-exam-q19",
+      "options": [
+        {
+          "id": "df4e706428",
+          "text": "Nhà máy xây chủ yếu bằng vốn vay dài hạn"
+        },
+        {
+          "id": "ae670a54c9",
+          "text": "Công ty điện không có vốn chủ sở hữu"
+        },
+        {
+          "id": "c8a4ebbeb9",
+          "text": "Giá bán điện thay đổi mỗi ngày"
+        }
+      ],
+      "prompt": "Vì sao D/E công ty điện thường cao hơn nhiều ngành?"
+    },
+    {
+      "correct_option_id": "103cf8a3a9",
+      "id": "ch16-exam-q20",
+      "options": [
+        {
+          "id": "103cf8a3a9",
+          "text": "Giảm dần"
+        },
+        {
+          "id": "0bd57ed379",
+          "text": "Tăng mạnh"
+        },
+        {
+          "id": "6264e6af48",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Khi nhà máy chạy ổn định, D/E thường thế nào?"
+    },
+    {
+      "correct_option_id": "f14f350021",
+      "id": "ch16-exam-q21",
+      "options": [
+        {
+          "id": "f14f350021",
+          "text": "Dưới khoảng 3,5 lần"
+        },
+        {
+          "id": "974ff323a8",
+          "text": "Dưới 0,1 lần"
+        },
+        {
+          "id": "0ff380e186",
+          "text": "Trên 10 lần"
+        }
+      ],
+      "prompt": "Mức Net Debt / EBITDA tham khảo an toàn với công ty điện là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "d71da6a5fb",
+      "id": "ch16-exam-q22",
+      "options": [
+        {
+          "id": "d71da6a5fb",
+          "text": "Tăng vì EBITDA giảm"
+        },
+        {
+          "id": "0d537e049b",
+          "text": "Giảm vì nợ giảm"
+        },
+        {
+          "id": "66b02b3f55",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Năm khô hạn ảnh hưởng thế nào đến Net Debt / EBITDA của thủy điện?"
+    },
+    {
+      "correct_option_id": "781ebd42a1",
+      "id": "ch16-exam-q23",
+      "options": [
+        {
+          "id": "781ebd42a1",
+          "text": "Dùng nhiều nợ"
+        },
+        {
+          "id": "4af32c42d7",
+          "text": "Không có lợi nhuận"
+        },
+        {
+          "id": "aff070c953",
+          "text": "Không có lãi vay"
+        }
+      ],
+      "prompt": "Vì sao Interest Coverage công ty điện thường thấp hơn ngành khác?"
+    },
+    {
+      "correct_option_id": "963793837a",
+      "id": "ch16-exam-q24",
+      "options": [
+        {
+          "id": "963793837a",
+          "text": "Tăng vì không còn vốn hoá"
+        },
+        {
+          "id": "9dbf6524e2",
+          "text": "Giảm mạnh vì nợ vay được trả hết"
+        },
+        {
+          "id": "7eb679063a",
+          "text": "Bằng 0 vì lãi đã vốn hoá hết"
+        }
+      ],
+      "prompt": "Khi nhà máy mới vận hành, chi phí lãi vay thường thế nào?"
+    },
+    {
+      "correct_option_id": "116114ff24",
+      "id": "ch16-exam-q25",
+      "options": [
+        {
+          "id": "116114ff24",
+          "text": "Chi phí tài chính trừ chi phí lãi vay"
+        },
+        {
+          "id": "451a7f253d",
+          "text": "Chi phí bán hàng trừ chi phí quản lý"
+        },
+        {
+          "id": "76fcde9a2a",
+          "text": "Doanh thu tài chính trừ lãi vay"
+        }
+      ],
+      "prompt": "Chi phí tài chính ngoài lãi vay bằng gì?"
+    },
+    {
+      "correct_option_id": "0cf0bd14e0",
+      "id": "ch16-exam-q26",
+      "options": [
+        {
+          "id": "0cf0bd14e0",
+          "text": "Lỗ chênh lệch tỷ giá"
+        },
+        {
+          "id": "9629557b45",
+          "text": "Tiền thuê đất"
+        },
+        {
+          "id": "30ef7c2197",
+          "text": "Lương"
+        }
+      ],
+      "prompt": "Phần chi phí tài chính ngoài lãi vay chủ yếu là gì với công ty có nợ ngoại tệ?"
+    },
+    {
+      "correct_option_id": "1a5bea5b96",
+      "id": "ch16-exam-q27",
+      "options": [
+        {
+          "id": "1a5bea5b96",
+          "text": "Doanh thu hoạt động tài chính"
+        },
+        {
+          "id": "56477258de",
+          "text": "Chi phí tài chính"
+        },
+        {
+          "id": "fe87fa9a09",
+          "text": "Giá vốn"
+        }
+      ],
+      "prompt": "Lãi tỷ giá nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "b2134e4811",
+      "id": "ch16-exam-q28",
+      "options": [
+        {
+          "id": "b2134e4811",
+          "text": "Capex / Khấu hao"
+        },
+        {
+          "id": "e33adf8bfd",
+          "text": "P/S"
+        },
+        {
+          "id": "1bb5b6a7d2",
+          "text": "Số ngày tồn kho"
+        }
+      ],
+      "prompt": "Nên đọc tỷ lệ chi trả cổ tức công ty điện cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "8c51c65dfb",
+      "id": "ch16-exam-q29",
+      "options": [
+        {
+          "id": "8c51c65dfb",
+          "text": "Tính cả nợ và bỏ khác biệt khấu hao"
+        },
+        {
+          "id": "ca5727a29f",
+          "text": "Không cần báo cáo"
+        },
+        {
+          "id": "fccf61e3c2",
+          "text": "Không bị ảnh hưởng bởi giá"
+        }
+      ],
+      "prompt": "Vì sao EV / EBITDA phù hợp hơn P/E để định giá công ty điện?"
+    },
+    {
+      "correct_option_id": "61fd9967eb",
+      "id": "ch16-exam-q30",
+      "options": [
+        {
+          "id": "61fd9967eb",
+          "text": "Lớn hơn nhiều vì nợ lớn"
+        },
+        {
+          "id": "25e216e486",
+          "text": "Nhỏ hơn nhiều"
+        },
+        {
+          "id": "1e49f36c0a",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "EV của công ty điện so với vốn hoá thường thế nào?"
+    }
+  ],
+  "salt": "56d43bbbc45344edb25cced4ed503f709758a1089ec74d2ebdc69498bf268ae7"
+}

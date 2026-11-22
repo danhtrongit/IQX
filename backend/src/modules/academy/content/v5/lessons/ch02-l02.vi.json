@@ -1,0 +1,207 @@
+{
+  "chapter": 2,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Mỗi người đến với chứng khoán vì một lý do khác nhau và mang theo một nỗi lo khác nhau. Hiểu khách đang ở đâu giúp bạn nói đúng điều họ cần nghe.",
+  "lesson_key": "concept:hieu_khach_hang",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Chưa từng mua cổ phiếu, nghe nhiều nhưng chưa hiểu. Thường sợ bị lừa, sợ mất tiền, ngại hỏi vì sợ bị coi là không biết gì.",
+              "title": "Người mới hoàn toàn",
+              "title_tone": "pos"
+            },
+            {
+              "text": "Có một khoản tiền gửi ngân hàng, thấy lãi suất thấp nên muốn tiền sinh lời tốt hơn. Lo nhất là mất vốn.",
+              "title": "Người có tiền tiết kiệm",
+              "title_tone": "info"
+            },
+            {
+              "text": "Đã có tài khoản, có thể từng lỗ vì mua theo tin đồn. Cần một người đồng hành đáng tin hơn trước.",
+              "title": "Người từng đầu tư",
+              "title_tone": "warn"
+            },
+            {
+              "text": "Theo dõi thị trường mỗi ngày. Cần thông tin nhanh, công cụ tốt và được hỗ trợ ngay khi có vấn đề.",
+              "title": "Người giao dịch thường xuyên",
+              "title_tone": "violet"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Bốn nhóm khách thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Nhóm khách"
+            },
+            {
+              "label": "Điều họ lo"
+            },
+            {
+              "label": "Điều họ cần từ bạn"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                {
+                  "text": "Người mới",
+                  "tone": "pos"
+                },
+                "Không hiểu, sợ bị lừa",
+                "Giải thích thật đơn giản, hướng dẫn từng bước, kiên nhẫn"
+              ]
+            },
+            {
+              "cells": [
+                {
+                  "text": "Có tiền tiết kiệm",
+                  "tone": "info"
+                },
+                "Mất vốn",
+                "Nói rõ rủi ro, gợi ý bắt đầu với số tiền nhỏ, cách đầu tư an toàn hơn"
+              ]
+            },
+            {
+              "cells": [
+                {
+                  "text": "Từng đầu tư",
+                  "tone": "warn"
+                },
+                "Lặp lại sai lầm cũ",
+                "Kỷ luật, thông tin chọn lọc, người nhắc nguyên tắc"
+              ]
+            },
+            {
+              "cells": [
+                {
+                  "text": "Giao dịch thường xuyên",
+                  "tone": "violet"
+                },
+                "Chậm, thiếu thông tin",
+                "Bản tin nhanh, hỗ trợ kịp thời, công cụ tốt"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s2",
+      "title": "Họ lo gì, cần gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Chứng khoán liên quan đến tiền bạc, nên trước khi mở tài khoản, khách luôn tự hỏi ba câu trong đầu. Việc của bạn là trả lời được cả ba.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Bạn là ai?",
+              "text": "Bạn làm việc với công ty chứng khoán nào, có rõ ràng, minh bạch không."
+            },
+            {
+              "term": "Bạn có hiểu tôi không?",
+              "text": "Bạn có lắng nghe hoàn cảnh của tôi, hay chỉ muốn tôi mở tài khoản."
+            },
+            {
+              "term": "Bạn có ở lại không?",
+              "text": "Sau khi tôi mở tài khoản, bạn có còn hỗ trợ tôi, hay biến mất."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s3",
+      "title": "Khách mua niềm tin trước khi mua sản phẩm"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khi được hỏi “khách cần gì từ người môi giới”, câu trả lời không phải là mã cổ phiếu. Khách cần bốn điều:",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khách mua sự tin tưởng trước, sản phẩm sau.",
+              "title": "Niềm tin",
+              "title_tone": "info"
+            },
+            {
+              "text": "Một người giúp khách hiểu thị trường đang ra sao.",
+              "title": "Góc nhìn",
+              "title_tone": "pos"
+            },
+            {
+              "text": "Biết rủi ro ở đâu và mình đang được bảo vệ thế nào.",
+              "title": "Cảm giác an toàn",
+              "title_tone": "warn"
+            },
+            {
+              "text": "Có người để hỏi, đặc biệt vào lúc khó khăn.",
+              "title": "Người đồng hành",
+              "title_tone": "violet"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Niềm tin được xây từ <b>20% am hiểu kiến thức</b> và <b>80% am hiểu nghiệp vụ, sản phẩm</b>: biết hướng dẫn mở tài khoản, nạp tiền, xử lý lỗi, giải thích phí. Người mới không cần giỏi phân tích mới tạo được niềm tin.",
+          "type": "paragraph"
+        },
+        {
+          "best_option": 2,
+          "debrief": "<b>Cách tốt nhất: hỏi nhu cầu rồi gợi ý bắt đầu nhỏ.</b> Chị Mai thuộc nhóm “có tiền tiết kiệm”, nỗi lo lớn nhất là mất vốn. Chuyển hết sang cổ phiếu là đi ngược nỗi lo đó, và nếu thị trường giảm, chị sẽ mất niềm tin vĩnh viễn. Từ chối thẳng thì bạn mất cơ hội giúp chị. Giữ phần lớn ở ngân hàng, thử một phần nhỏ là cách vừa an toàn vừa giúp chị học dần.",
+          "options": [
+            "Khuyên chị chuyển hết 200 triệu sang cổ phiếu vì lãi cao hơn ngân hàng",
+            "Nói chị cứ gửi ngân hàng cho chắc, chứng khoán không hợp với chị",
+            "Hỏi chị dự định dùng khoản tiền này khi nào, rồi gợi ý chỉ bắt đầu với một phần nhỏ và nói rõ rủi ro"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Chị Mai, 45 tuổi, bán tạp hóa, có 200 triệu gửi tiết kiệm sắp đáo hạn. Chị hỏi: “Em ơi, chị nên gửi tiếp hay bỏ vô chứng khoán?”"
+          ],
+          "title": "Khoản tiết kiệm sắp đáo hạn",
+          "type": "scenario"
+        },
+        {
+          "id": "l2",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Chọn 3 người trong danh sách của bạn. Với mỗi người, ghi: họ thuộc nhóm khách nào, nỗi lo lớn nhất của họ là gì, câu đầu tiên bạn sẽ nói với họ."
+          ],
+          "title": "Bài tự làm: phân loại 3 người thật",
+          "type": "workpad"
+        }
+      ],
+      "id": "s4",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Có bốn nhóm khách: <b>người mới, có tiền tiết kiệm, từng đầu tư, giao dịch thường xuyên</b>.",
+    "Mỗi nhóm có <b>nỗi lo riêng</b>, nên cần cách nói chuyện riêng.",
+    "Khách chọn bạn vì <b>niềm tin</b>: bạn là ai, bạn có hiểu họ, bạn có ở lại."
+  ],
+  "title": "Hiểu khách hàng"
+}

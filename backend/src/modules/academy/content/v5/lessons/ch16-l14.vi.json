@@ -1,0 +1,380 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l14-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 36"
+          ],
+          "t": "Cổ tức đã trả năm 2025",
+          "tone": "pos",
+          "v": "481 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "LNST năm 2024",
+          "tone": "p1",
+          "v": "1.334 tỷ"
+        },
+        {
+          "notes": [
+            "Năm 2025"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "36,0%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l14-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Đang thu tiền, ít nợ",
+          "tone": "pos",
+          "value": 70
+        },
+        {
+          "label": "Vận hành, đang trả nợ",
+          "tone": "p1",
+          "value": 40
+        },
+        {
+          "label": "Đang xây nhà máy mới",
+          "tone": "warn",
+          "value": 15
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Tỷ lệ chi trả tham khảo · số minh họa",
+      "unit": "%"
+    },
+    "c16l14-rep": {
+      "alt": "Tỷ lệ chi trả cổ tức: 40,0%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Cổ tức đã trả 4 quý / LNST 4 quý trước đó",
+            "v": [
+              33.248,
+              37.38,
+              38.485,
+              41.185,
+              37.925,
+              36.05,
+              38.676,
+              40.031
+            ]
+          }
+        ],
+        "name": "Tỷ lệ chi trả cổ tức",
+        "sub": {
+          "series": [
+            {
+              "name": "Cổ tức đã trả 4 quý",
+              "v": [
+                592.581,
+                707.876,
+                707.876,
+                707.876,
+                571.771,
+                481.035,
+                481.035,
+                481.035
+              ]
+            },
+            {
+              "name": "LNST 4 quý trước đó",
+              "v": [
+                1782.328,
+                1893.715,
+                1839.335,
+                1718.77,
+                1507.626,
+                1334.358,
+                1243.745,
+                1201.664
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l14",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Cổ phiếu điện thường được mua vì cổ tức tiền mặt đều. Nhưng cổ tức phụ thuộc giai đoạn của công ty: đang xây nhà máy hay đang thu tiền. Bài này giúp đọc tỷ lệ chi trả trong bối cảnh đó.",
+  "lesson_key": "fundamental:dividend_payout-dien",
+  "order": 14,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l14-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>cổ tức, lợi nhuận đã trả cho chủ sở hữu</b> (mã 36 trên lưu chuyển tiền tệ) trong năm, chia <b>LNST năm trước</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ lệ chi trả cổ tức là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l14-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dòng tiền dư nhiều, cổ tức cao và đều.",
+              "title": "Đang thu tiền"
+            },
+            {
+              "text": "Tiền dành cho dự án và trả nợ. Cổ tức có thể giảm.",
+              "title": "Đang xây"
+            },
+            {
+              "text": "Năm khô hạn, lợi nhuận giảm, cổ tức năm sau có thể giảm.",
+              "title": "Thủy văn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Cổ tức theo giai đoạn"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l14-rep",
+          "title": "Tỷ lệ chi trả cổ tức",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cổ tức đã trả 4 quý chia LNST 4 quý trước đó, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cổ tức đã trả 4 quý và LNST 4 quý trước đó, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cổ tức giảm cùng lúc capex tăng: tiền đang dành cho nhà máy mới.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 30% đến 70%, dòng tiền tự do đủ trả. Mức tham khảo.",
+              "title": "Chi trả bền vững",
+              "tone": "pos"
+            },
+            {
+              "text": "Trả cao trong khi đang xây nhà máy và nợ vay tăng nhanh.",
+              "title": "Chi trả khó bền",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc tỷ lệ chi trả cùng <b>Capex / Khấu hao</b>: giai đoạn xây thường đi kèm cổ tức thấp hơn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Xem giai đoạn đầu tư và lợi nhuận năm trước.",
+              "title": "Dự báo cổ tức"
+            },
+            {
+              "text": "Cổ tức nên nhỏ hơn dòng tiền tự do bình quân.",
+              "title": "Kiểm tra bằng FCF"
+            },
+            {
+              "text": "Công ty đang xây và đang thu tiền không so trực tiếp.",
+              "title": "So cùng giai đoạn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu, theo năm (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "Cổ tức đã trả"
+            },
+            {
+              "label": "LNST năm trước"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "2023",
+                "420",
+                "1.102",
+                "38,1%"
+              ]
+            },
+            {
+              "cells": [
+                "2024",
+                "708",
+                "1.894",
+                "37,4%"
+              ]
+            },
+            {
+              "cells": [
+                "2025",
+                "481",
+                "1.334",
+                "36,0%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ giữ quanh 35% đến 40%. Số tiền cổ tức năm 2025 giảm vì lợi nhuận năm 2024 thấp hơn, trong khi công ty bắt đầu xây nhà máy mới.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giai đoạn xây làm cổ tức giảm.",
+              "title": "Kỳ vọng cổ tức đều mãi"
+            },
+            {
+              "text": "Cổ tức trả từ lợi nhuận năm trước.",
+              "title": "Chia cho LNST cùng năm"
+            },
+            {
+              "text": "Chỉ tính tiền mặt.",
+              "title": "Tính cổ tức cổ phiếu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cổ tức đi theo lợi nhuận năm thủy văn trước.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Cổ tức phụ thuộc hợp đồng và giá nhiên liệu.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Nước sạch trả cổ tức đều. Dự án gió, mặt trời mới thường trả ít.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>cổ tức đã trả</b> (B03 mã 36) ÷ <b>LNST năm trước</b>.",
+    "Cổ tức phụ thuộc <b>giai đoạn xây hay thu tiền</b>.",
+    "Đọc cùng <b>Capex / Khấu hao</b>.",
+    "Mức tham khảo: <b>khoảng 30% đến 70%</b>."
+  ],
+  "title": "Tỷ lệ chi trả cổ tức · ở điện"
+}

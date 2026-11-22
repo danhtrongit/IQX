@@ -1,0 +1,393 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l13-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 22 − mã 23",
+            "4 quý"
+          ],
+          "t": "Chi phí tài chính − lãi vay",
+          "tone": "neg",
+          "v": "98 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 50"
+          ],
+          "t": "LNTT 4 quý",
+          "tone": "p1",
+          "v": "2.430 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "4,0%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l13-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Mã 22",
+          "line": "Tổng chi phí tài chính",
+          "report": "Chi phí tài chính",
+          "tone": "neg"
+        },
+        {
+          "code": "Mã 23",
+          "line": "Chi phí lãi vay",
+          "report": "Trong đó",
+          "tone": "warn"
+        },
+        {
+          "code": "Mã 50",
+          "line": "Tổng lợi nhuận kế toán trước thuế",
+          "report": "Mẫu số",
+          "tone": "p1"
+        }
+      ],
+      "title": "Báo cáo kết quả kinh doanh (mẫu B02-DN)"
+    },
+    "c16l13-rep": {
+      "alt": "Chi phí tài chính ngoài lãi vay / LNTT: 4,0%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Chi phí tài chính ngoài lãi vay / LNTT (4 quý)",
+            "v": [
+              5.524,
+              6.581,
+              5.772,
+              6.645,
+              5.146,
+              7.097,
+              5.519,
+              4.038
+            ]
+          }
+        ],
+        "name": "Chi phí tài chính ngoài lãi vay / LNTT",
+        "sub": {
+          "series": [
+            {
+              "name": "Chi phí tài chính ngoài lãi vay 4 quý",
+              "v": [
+                104.096,
+                109.77,
+                89.743,
+                99.807,
+                82.057,
+                125.988,
+                113.924,
+                98.127
+              ]
+            },
+            {
+              "name": "LNTT 4 quý",
+              "v": [
+                1884.532,
+                1667.947,
+                1554.681,
+                1502.08,
+                1594.702,
+                1775.338,
+                2064.363,
+                2430.207
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l13",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ngoài lãi vay, chi phí tài chính còn gồm lỗ chênh lệch tỷ giá, nhất là với công ty có nợ vay ngoại tệ. Chỉ tiêu này tách phần đó ra và so với lợi nhuận, để thấy tỷ giá đang ăn bao nhiêu phần lợi nhuận.",
+  "lesson_key": "fundamental:non_interest_fin_cost_to_pbt-dien",
+  "order": 13,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l13-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>chi phí tài chính</b> (mã 22) trừ <b>chi phí lãi vay</b> (mã 23), chia <b>lợi nhuận trước thuế</b>, cộng 4 quý. Tất cả trên báo cáo kết quả kinh doanh.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Phần còn lại sau khi trừ lãi vay chủ yếu là lỗ tỷ giá, phí vay và dự phòng đầu tư. Báo cáo không tách chi tiết, chi tiết nằm ở thuyết minh.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Chi phí tài chính ngoài lãi vay / LNTT là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l13-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ giá tăng làm khoản nợ USD, EUR quy ra đồng lớn hơn, ghi lỗ tỷ giá.",
+              "title": "Nợ ngoại tệ"
+            },
+            {
+              "text": "Lỗ tỷ giá chưa thực hiện ghi khi đánh giá lại nợ cuối kỳ, chưa phải trả tiền ngay.",
+              "title": "Có thể đánh giá lại cuối kỳ"
+            },
+            {
+              "text": "Tỷ giá giảm thì có lãi, nằm ở doanh thu tài chính, không ở đây.",
+              "title": "Có năm lãi tỷ giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lấy ở dòng nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l13-rep",
+          "title": "Chi phí tài chính ngoài lãi vay / LNTT",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí tài chính ngoài lãi vay chia LNTT 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Chi phí tài chính ngoài lãi vay và LNTT 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột chi phí nhỏ so với LNTT: tỷ giá ảnh hưởng ít.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 5% LNTT. Mức tham khảo.",
+              "title": "Ảnh hưởng nhỏ",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 20% LNTT, nhất là năm tỷ giá tăng mạnh. Lợi nhuận nhạy với tỷ giá.",
+              "title": "Ảnh hưởng lớn",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Lỗ tỷ giá thường lặp lại khi công ty còn nợ ngoại tệ lớn. Đọc chỉ tiêu qua nhiều năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ cao và dao động là công ty có nhiều nợ ngoại tệ.",
+              "title": "Đánh giá rủi ro tỷ giá"
+            },
+            {
+              "text": "Lợi nhuận giảm dù EBITDA tăng có thể do tỷ giá.",
+              "title": "Giải thích lợi nhuận giảm"
+            },
+            {
+              "text": "Năm tỷ giá ổn định và năm tỷ giá biến động.",
+              "title": "So nhiều năm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Chi phí tài chính ngoài lãi vay"
+            },
+            {
+              "label": "LNTT"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "104",
+                "1.885",
+                "5,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "100",
+                "1.502",
+                "6,6%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "126",
+                "1.775",
+                "7,1%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "98",
+                "2.430",
+                "4,0%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ dao động 4% đến 7%. Công ty có một phần nợ ngoại tệ nhưng ảnh hưởng tỷ giá không lớn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phải trừ chi phí lãi vay để tách phần tỷ giá.",
+              "title": "Dùng cả lãi vay"
+            },
+            {
+              "text": "Phần đánh giá lại cuối kỳ chưa phải trả tiền.",
+              "title": "Coi lỗ tỷ giá là tiền đã mất"
+            },
+            {
+              "text": "Lãi tỷ giá nằm ở doanh thu tài chính.",
+              "title": "Bỏ qua lãi tỷ giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự án cũ có thể còn nợ ngoại tệ.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Nợ ngoại tệ lớn, chỉ tiêu quan trọng nhất.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Dự án gió, mặt trời thường vay nước ngoài.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>(chi phí tài chính − lãi vay)</b> ÷ <b>LNTT</b>, 4 quý.",
+    "Phần này chủ yếu là <b>lỗ tỷ giá</b> và phí vay.",
+    "Mức tham khảo: <b>dưới khoảng 5%</b> là ảnh hưởng nhỏ.",
+    "Chi tiết <b>nằm ở thuyết minh</b>, chỉ tiêu chỉ cho thấy quy mô."
+  ],
+  "title": "Chi phí tài chính ngoài lãi vay / LNTT · ảnh hưởng của tỷ giá"
+}

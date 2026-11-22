@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l06",
+  "questions": [
+    {
+      "correct_option_id": "6a98661985",
+      "id": "ch16-l06-q01",
+      "options": [
+        {
+          "id": "6a98661985",
+          "text": "Giá trị còn lại, mã 220"
+        },
+        {
+          "id": "37807f2eaa",
+          "text": "Nguyên giá"
+        },
+        {
+          "id": "85f9ece7aa",
+          "text": "Giá thị trường"
+        }
+      ],
+      "prompt": "Tài sản cố định lấy theo giá trị nào?"
+    },
+    {
+      "correct_option_id": "2c16da88f7",
+      "id": "ch16-l06-q02",
+      "options": [
+        {
+          "id": "2c16da88f7",
+          "text": "Công ty nắm cổ phần nhiều hơn vận hành trực tiếp"
+        },
+        {
+          "id": "177834ccd5",
+          "text": "Công ty không có nhà máy nào"
+        },
+        {
+          "id": "b4f1b85a43",
+          "text": "Công ty đang lỗ"
+        }
+      ],
+      "prompt": "Tỷ trọng thấp ở công ty điện thường cho thấy gì?"
+    },
+    {
+      "correct_option_id": "a396f1addd",
+      "id": "ch16-l06-q03",
+      "options": [
+        {
+          "id": "a396f1addd",
+          "text": "Xây dựng cơ bản dở dang"
+        },
+        {
+          "id": "36aa53bbad",
+          "text": "Tài sản cố định"
+        },
+        {
+          "id": "f09327071e",
+          "text": "Hàng tồn kho"
+        }
+      ],
+      "prompt": "Nhà máy đang xây nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "e05ae9cb05",
+      "id": "ch16-l06-q04",
+      "options": [
+        {
+          "id": "e05ae9cb05",
+          "text": "Lãi lỗ công ty liên doanh, liên kết"
+        },
+        {
+          "id": "9cc5d6ccaf",
+          "text": "Chi phí bán hàng"
+        },
+        {
+          "id": "786373ab60",
+          "text": "Dự phòng giảm giá tồn kho"
+        }
+      ],
+      "prompt": "Với công ty đầu tư cổ phần, nên đọc thêm khoản nào?"
+    },
+    {
+      "chart_id": "c16l6-rep",
+      "correct_option_id": "16f866e9a2",
+      "id": "ch16-l06-q05",
+      "options": [
+        {
+          "id": "16f866e9a2",
+          "text": "Tài sản cố định và tổng tài sản"
+        },
+        {
+          "id": "657b674c0c",
+          "text": "Doanh thu và giá vốn"
+        },
+        {
+          "id": "1df6aeee58",
+          "text": "Khấu hao và capex"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm gì?"
+    }
+  ],
+  "salt": "0b36fa20159251cdbdb7b4f7990d6092a3dcbee54e97d1ea0f00da5a7b65d92c"
+}

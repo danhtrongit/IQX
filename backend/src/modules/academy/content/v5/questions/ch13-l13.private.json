@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l13",
+  "questions": [
+    {
+      "correct_option_id": "becafb3ca8",
+      "id": "ch13-l13-q01",
+      "options": [
+        {
+          "id": "becafb3ca8",
+          "text": "Khoản vay ngắn hạn và phần nợ dài hạn đến hạn trong 12 tháng"
+        },
+        {
+          "id": "7a7767ce4a",
+          "text": "Chỉ khoản vay ngân hàng dưới 3 tháng"
+        },
+        {
+          "id": "74ee3534bc",
+          "text": "Toàn bộ trái phiếu đã phát hành"
+        }
+      ],
+      "prompt": "Vay ngắn hạn trên bảng cân đối gồm gì?"
+    },
+    {
+      "correct_option_id": "e4704089cf",
+      "id": "ch13-l13-q02",
+      "options": [
+        {
+          "id": "e4704089cf",
+          "text": "Công ty phải liên tục vay mới để trả nợ cũ"
+        },
+        {
+          "id": "3a7d1bbc08",
+          "text": "Nợ ngắn hạn không phải trả lãi"
+        },
+        {
+          "id": "58754d05e0",
+          "text": "Nợ ngắn hạn làm doanh thu giảm"
+        }
+      ],
+      "prompt": "Vì sao dùng nợ ngắn hạn để làm dự án dài là rủi ro?"
+    },
+    {
+      "correct_option_id": "ebbd34b7ce",
+      "id": "ch13-l13-q03",
+      "options": [
+        {
+          "id": "ebbd34b7ce",
+          "text": "Một khoản nợ dài hạn lớn bước vào năm đến hạn"
+        },
+        {
+          "id": "afddf8deb0",
+          "text": "Công ty bán được nhiều nhà"
+        },
+        {
+          "id": "61e9d2c73f",
+          "text": "Tiền khách trả trước tăng"
+        }
+      ],
+      "prompt": "Tỷ trọng tăng đột ngột dù không vay thêm thường do đâu?"
+    },
+    {
+      "correct_option_id": "fbb41ce35f",
+      "id": "ch13-l13-q04",
+      "options": [
+        {
+          "id": "fbb41ce35f",
+          "text": "Tiền / Nợ vay ngắn hạn"
+        },
+        {
+          "id": "0f1aaf373f",
+          "text": "Biên lợi nhuận gộp"
+        },
+        {
+          "id": "82c830a7d7",
+          "text": "Tăng trưởng EPS"
+        }
+      ],
+      "prompt": "Nên đọc chỉ tiêu này cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c13l13-rep",
+      "correct_option_id": "377aee7a4c",
+      "id": "ch13-l13-q05",
+      "options": [
+        {
+          "id": "377aee7a4c",
+          "text": "Áp lực đáo hạn tăng"
+        },
+        {
+          "id": "646a576210",
+          "text": "Nợ vay giảm"
+        },
+        {
+          "id": "3f438cc5ac",
+          "text": "Vốn chủ tăng"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, phần ngắn hạn chiếm ngày càng nhiều trong cột chồng nghĩa là gì?"
+    }
+  ],
+  "salt": "81c5bf6f3db0324a019e8286c83924d52601b135847f8d3af8bc366c5b17f723"
+}

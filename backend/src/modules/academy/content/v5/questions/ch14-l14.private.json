@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l14",
+  "questions": [
+    {
+      "correct_option_id": "32b7f2eec9",
+      "id": "ch14-l14-q01",
+      "options": [
+        {
+          "id": "32b7f2eec9",
+          "text": "Thấp vì lợi nhuận cao"
+        },
+        {
+          "id": "6aafdd1de9",
+          "text": "Cao vì lợi nhuận cao"
+        },
+        {
+          "id": "d5c60af67a",
+          "text": "Không tính được"
+        }
+      ],
+      "prompt": "Ở đỉnh chu kỳ giá dầu, P/E thường thế nào?"
+    },
+    {
+      "correct_option_id": "5e865fb935",
+      "id": "ch14-l14-q02",
+      "options": [
+        {
+          "id": "5e865fb935",
+          "text": "Lợi nhuận có thể sắp giảm"
+        },
+        {
+          "id": "b142b65a53",
+          "text": "Giá cổ phiếu luôn tăng"
+        },
+        {
+          "id": "28e076f256",
+          "text": "EPS không đổi"
+        }
+      ],
+      "prompt": "Vì sao P/E thấp ở đỉnh chu kỳ có thể là bẫy?"
+    },
+    {
+      "correct_option_id": "56178a448d",
+      "id": "ch14-l14-q03",
+      "options": [
+        {
+          "id": "56178a448d",
+          "text": "Dùng EPS bình quân qua chu kỳ"
+        },
+        {
+          "id": "5519c8a7ee",
+          "text": "Dùng EPS một quý"
+        },
+        {
+          "id": "495992e511",
+          "text": "Dùng doanh thu thay EPS"
+        }
+      ],
+      "prompt": "Cách nào giúp P/E dầu khí ổn định hơn?"
+    },
+    {
+      "correct_option_id": "33ddc3dddb",
+      "id": "ch14-l14-q04",
+      "options": [
+        {
+          "id": "33ddc3dddb",
+          "text": "EV / EBITDA"
+        },
+        {
+          "id": "b13993e87a",
+          "text": "P/S"
+        },
+        {
+          "id": "a3f4cb7354",
+          "text": "PEG"
+        }
+      ],
+      "prompt": "Nên kết hợp P/E với chỉ tiêu định giá nào cho dầu khí?"
+    },
+    {
+      "chart_id": "c14l14-rep",
+      "correct_option_id": "b02bdd9299",
+      "id": "ch14-l14-q05",
+      "options": [
+        {
+          "id": "b02bdd9299",
+          "text": "Lợi nhuận 4 quý giảm"
+        },
+        {
+          "id": "78b7b97f8f",
+          "text": "Số cổ phiếu giảm"
+        },
+        {
+          "id": "75d220c083",
+          "text": "Cổ tức tăng"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, P/E tăng khi giá không tăng thường do đâu?"
+    }
+  ],
+  "salt": "197e41684410bf70862f17326892e305743cef33f512664b229774ae5dd79ee5"
+}

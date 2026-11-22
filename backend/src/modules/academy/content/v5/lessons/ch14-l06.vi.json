@@ -1,0 +1,383 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l6-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Lưu chuyển tiền tệ",
+            "Mã 21"
+          ],
+          "t": "Capex 4 quý",
+          "tone": "p1",
+          "v": "2.430 tỷ"
+        },
+        {
+          "notes": [
+            "Lưu chuyển tiền tệ",
+            "Mã 02"
+          ],
+          "t": "Khấu hao 4 quý",
+          "tone": "warn",
+          "v": "2.019 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "pos",
+          "v": "1,20 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l6-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Mở rộng mạnh",
+          "tone": "p1",
+          "value": 3
+        },
+        {
+          "label": "Duy trì",
+          "tone": "pos",
+          "value": 1
+        },
+        {
+          "label": "Không bù hao mòn",
+          "tone": "neg",
+          "value": 0.5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Capex so với khấu hao · số minh họa",
+      "unit": " lần"
+    },
+    "c14l6-rep": {
+      "alt": "Capex / Khấu hao: 1,20 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Capex / Khấu hao (4 quý)",
+            "v": [
+              1.018,
+              0.936,
+              0.969,
+              1.008,
+              1.058,
+              1.111,
+              1.157,
+              1.203
+            ]
+          }
+        ],
+        "name": "Capex / Khấu hao",
+        "ref": 1,
+        "sub": {
+          "series": [
+            {
+              "name": "Capex 4 quý",
+              "v": [
+                2043.557,
+                1880.737,
+                1944.079,
+                2021.047,
+                2121.089,
+                2229.861,
+                2329.256,
+                2429.751
+              ]
+            },
+            {
+              "name": "Khấu hao 4 quý",
+              "v": [
+                2008.134,
+                2008.886,
+                2006.166,
+                2004.848,
+                2005.192,
+                2007.652,
+                2012.368,
+                2019.095
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Khấu hao là phần tài sản hao mòn mỗi năm. Capex là tiền chi mua sắm, xây dựng tài sản mới. So hai con số cho biết doanh nghiệp đang đầu tư mở rộng hay chỉ khai thác tài sản cũ.",
+  "lesson_key": "fundamental:capex_to_depreciation-dk",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l6-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>tiền chi mua sắm, xây dựng TSCĐ và tài sản dài hạn khác</b> (mã 21) chia <b>khấu hao</b> (mã 02), cả hai trên báo cáo lưu chuyển tiền tệ, cộng 4 quý. Đơn vị lần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Capex / Khấu hao là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l6-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi đầu tư nhiều hơn phần hao mòn. Tài sản lớn lên, thường để mở rộng công suất.",
+              "title": "Trên 1 lần"
+            },
+            {
+              "text": "Đầu tư vừa đủ thay thế tài sản cũ. Quy mô giữ nguyên.",
+              "title": "Quanh 1 lần"
+            },
+            {
+              "text": "Tài sản già đi. Ngắn hạn tiết kiệm tiền, dài hạn cần đầu tư bù.",
+              "title": "Dưới 1 lần"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Đọc mốc 1 lần"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l6-rep",
+          "title": "Capex / Khấu hao",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Capex 4 quý chia khấu hao 4 quý, đơn vị lần. Đường nét đứt là mốc 1 lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Capex và khấu hao 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột capex vượt cột khấu hao: doanh nghiệp đang đầu tư nhiều hơn phần hao mòn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 1 đến 2 lần qua nhiều năm. Mức tham khảo, tài sản được thay mới và mở rộng vừa phải.",
+              "title": "Đầu tư bền vững",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 0,7 lần nhiều năm liền: tài sản già đi. Hoặc trên 3 lần kéo dài: dự án lớn cần nhiều vốn, dòng tiền tự do thấp.",
+              "title": "Cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Chu kỳ đầu tư của dầu khí kéo dài. Một dự án lớn làm tỷ lệ cao vài năm, sau đó giảm khi dự án đi vào hoạt động.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ cao làm FCF thấp trong giai đoạn đầu tư.",
+              "title": "Dự báo dòng tiền tự do"
+            },
+            {
+              "text": "Đầu tư mở rộng hôm nay là nền cho sản lượng các năm sau.",
+              "title": "Dự báo tăng trưởng"
+            },
+            {
+              "text": "Đầu tư lớn mà tiền ròng giảm nhanh là áp lực tài chính.",
+              "title": "Đọc cùng tiền ròng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Capex"
+            },
+            {
+              "label": "Khấu hao"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "2.044",
+                "2.008",
+                "1,02 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "2.021",
+                "2.005",
+                "1,01 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "2.430",
+                "2.019",
+                "1,20 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ tăng từ 0,94 lần lên 1,20 lần. Doanh nghiệp bắt đầu đầu tư nhiều hơn phần hao mòn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Capex lấy từ lưu chuyển tiền tệ, mã 21.",
+              "title": "Dùng capex trên bảng cân đối"
+            },
+            {
+              "text": "Đầu tư sai thời điểm chu kỳ có thể làm giảm hiệu quả vốn.",
+              "title": "Coi capex cao luôn là tốt"
+            },
+            {
+              "text": "Dự án dầu khí kéo dài nhiều năm. Xem xu hướng.",
+              "title": "Đọc một năm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đầu tư giàn khoan, tàu theo chu kỳ giá dầu. Tỷ lệ dao động mạnh.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Đầu tư đường ống, kho cảng theo dự án lớn, kéo dài nhiều năm.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Nhà máy lọc dầu đầu tư lớn một lần, sau đó tỷ lệ thấp.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>capex</b> (B03 mã 21) ÷ <b>khấu hao</b> (B03 mã 02), 4 quý.",
+    "Mốc <b>1 lần</b>: trên là mở rộng, dưới là tài sản già đi.",
+    "Chu kỳ đầu tư dầu khí <b>kéo dài nhiều năm</b>.",
+    "Tỷ lệ cao làm <b>dòng tiền tự do thấp</b> trong giai đoạn đầu tư."
+  ],
+  "title": "Capex / Khấu hao · đầu tư mới hay chỉ dùng tài sản cũ"
+}

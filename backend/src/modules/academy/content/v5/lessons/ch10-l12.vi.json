@@ -1,0 +1,373 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l12-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Q2/26"
+          ],
+          "t": "TOI quý này",
+          "tone": "p1",
+          "v": "34.329 tỷ"
+        },
+        {
+          "notes": [
+            "Q2/25"
+          ],
+          "t": "TOI cùng kỳ",
+          "tone": "warn",
+          "v": "25.310 tỷ"
+        },
+        {
+          "notes": [
+            "So với cùng kỳ"
+          ],
+          "t": "Tăng trưởng",
+          "tone": "pos",
+          "v": "35,6%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "so với",
+        "="
+      ]
+    },
+    "c10l12-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Phần lớn TOI",
+          "line": "Thu nhập lãi thuần",
+          "report": "Từ cho vay",
+          "tone": "p1"
+        },
+        {
+          "code": "Ổn định",
+          "line": "Lãi thuần từ dịch vụ, ngoại hối",
+          "report": "Ngoài lãi",
+          "tone": "pos"
+        },
+        {
+          "code": "Dao động",
+          "line": "Lãi thuần chứng khoán kinh doanh, đầu tư",
+          "report": "Ngoài lãi",
+          "tone": "p5"
+        },
+        {
+          "code": "Dao động",
+          "line": "Lãi thuần hoạt động khác, góp vốn",
+          "report": "Ngoài lãi",
+          "tone": "warn"
+        }
+      ],
+      "title": "Báo cáo kết quả kinh doanh của tổ chức tín dụng"
+    },
+    "c10l12-rep": {
+      "alt": "Tăng trưởng doanh thu: 35,6%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              12.381,
+              15.319,
+              11.468,
+              10.524,
+              18.22,
+              21.033,
+              15.852,
+              35.634
+            ]
+          }
+        ],
+        "name": "Tăng trưởng doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "TOI quý này",
+              "v": [
+                23600,
+                27100,
+                24300,
+                25310,
+                27900,
+                32800,
+                28152,
+                34329
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                21000,
+                23500,
+                21800,
+                22900,
+                23600,
+                27100,
+                24300,
+                25310
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l12",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ngân hàng không có dòng doanh thu trên báo cáo kết quả kinh doanh. Thay vào đó, tổng thu nhập hoạt động là thước đo quy mô thu nhập. Bài này nói cách tính tăng trưởng \"doanh thu\" của ngân hàng và đọc nó theo hai nguồn thu.",
+  "lesson_key": "fundamental:revenue_yoy-nh",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l12-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Tăng trưởng doanh thu so \"doanh thu\" quý này với cùng quý năm trước. Cách tính giống bài Tăng trưởng doanh thu ở phần chỉ tiêu chung, nhưng ở ngân hàng \"doanh thu\" là <b>tổng thu nhập hoạt động (TOI)</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "TOI là tổng các khoản lãi thuần trên báo cáo kết quả kinh doanh của tổ chức tín dụng, trước chi phí hoạt động và chi phí dự phòng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l12-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thu nhập lãi gộp tăng khi lãi suất tăng, dù chênh lệch lãi không đổi. TOI dùng lãi thuần nên phản ánh đúng hơn.",
+              "title": "Không dùng thu nhập lãi gộp"
+            },
+            {
+              "text": "Tăng trưởng TOI đến từ thu nhập lãi thuần hoặc thu nhập ngoài lãi. Chất lượng khác nhau.",
+              "title": "Hai nguồn tăng"
+            },
+            {
+              "text": "Quý 4 thường có thu nhập dịch vụ, thu hồi nợ cao hơn.",
+              "title": "Mùa vụ cuối năm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở ngân hàng khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l12-rep",
+          "title": "Tăng trưởng doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng TOI so với cùng kỳ, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "TOI quý này và cùng kỳ năm trước, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột quý 4 cao hơn các quý khác theo mùa. So với cùng kỳ để bỏ ảnh hưởng này.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "TOI tăng đều, chủ yếu nhờ thu nhập lãi thuần và dịch vụ. Mức tham khảo: trên 12% mỗi năm với ngân hàng đang mở rộng.",
+              "title": "Tăng trưởng chất lượng",
+              "tone": "pos"
+            },
+            {
+              "text": "Một quý tăng vọt nhờ lãi chứng khoán hoặc thu hồi nợ. Khó lặp lại.",
+              "title": "Tăng trưởng cần xem lại",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc tăng trưởng TOI cùng <b>Tỷ trọng thu nhập ngoài lãi</b> để biết phần tăng đến từ đâu.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mọi chỉ tiêu có \"doanh thu\" ở ngân hàng đều dùng TOI.",
+              "title": "Dùng TOI làm doanh thu"
+            },
+            {
+              "text": "Xem thu nhập lãi thuần và ngoài lãi tăng bao nhiêu.",
+              "title": "Tách nguồn tăng"
+            },
+            {
+              "text": "TOI tăng nhanh hơn chi phí làm CIR giảm.",
+              "title": "Đọc cùng CIR"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ngân hàng mẫu, TOI từng quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "TOI"
+            },
+            {
+              "label": "Cùng kỳ"
+            },
+            {
+              "label": "Tăng trưởng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "23.600",
+                "21.000",
+                "12,4%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "25.310",
+                "22.900",
+                "10,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "32.800",
+                "27.100",
+                "21,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "34.329",
+                "25.310",
+                "35,6%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "TOI 4 quý đến Q2/26 là 123.181 tỷ đồng, tăng 22,8% so với cùng kỳ. Riêng Q2/26 tăng vọt 35,6%, cần xem nguồn tăng có lặp lại được không.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thu nhập lãi gộp chưa trừ chi phí lãi, không phản ánh chênh lệch lãi.",
+              "title": "Dùng thu nhập lãi gộp"
+            },
+            {
+              "text": "Quý 4 luôn cao hơn.",
+              "title": "So quý liền kề"
+            },
+            {
+              "text": "Lãi chứng khoán khó lặp lại hơn lãi từ cho vay.",
+              "title": "Coi mọi tăng trưởng như nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Ở ngân hàng, \"doanh thu\" là <b>tổng thu nhập hoạt động (TOI)</b>.",
+    "TOI = <b>thu nhập lãi thuần + thu nhập ngoài lãi</b>.",
+    "So với <b>cùng kỳ</b> để bỏ mùa vụ cuối năm.",
+    "Đọc cùng <b>Tỷ trọng thu nhập ngoài lãi</b>."
+  ],
+  "title": "Tăng trưởng doanh thu · ở ngân hàng"
+}

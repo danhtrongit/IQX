@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l09",
+  "questions": [
+    {
+      "correct_option_id": "b558666224",
+      "id": "ch13-l09-q01",
+      "options": [
+        {
+          "id": "b558666224",
+          "text": "Giá vốn hàng bán 4 quý"
+        },
+        {
+          "id": "2054a124db",
+          "text": "Doanh thu thuần 4 quý"
+        },
+        {
+          "id": "94cf668902",
+          "text": "Lợi nhuận sau thuế 4 quý"
+        }
+      ],
+      "prompt": "Số năm bán hết tồn kho bằng tồn kho chia cho gì?"
+    },
+    {
+      "correct_option_id": "c06bd641ff",
+      "id": "ch13-l09-q02",
+      "options": [
+        {
+          "id": "c06bd641ff",
+          "text": "Doanh thu có phần lãi nên làm số năm thấp hơn thực tế"
+        },
+        {
+          "id": "f72c265bfc",
+          "text": "Doanh thu không có trên báo cáo tài chính"
+        },
+        {
+          "id": "4a560fe24e",
+          "text": "Doanh thu luôn bằng giá vốn"
+        }
+      ],
+      "prompt": "Vì sao không chia tồn kho cho doanh thu?"
+    },
+    {
+      "correct_option_id": "993236fac3",
+      "id": "ch13-l09-q03",
+      "options": [
+        {
+          "id": "993236fac3",
+          "text": "Hàng bàn giao chậm, vốn có thể bị kẹt"
+        },
+        {
+          "id": "3f9af07666",
+          "text": "Công ty bán hàng rất tốt"
+        },
+        {
+          "id": "68d2d3bab7",
+          "text": "Công ty vừa trả hết nợ"
+        }
+      ],
+      "prompt": "Số năm tăng nhanh trong khi doanh thu giảm cho thấy gì?"
+    },
+    {
+      "correct_option_id": "3c1e67de93",
+      "id": "ch13-l09-q04",
+      "options": [
+        {
+          "id": "3c1e67de93",
+          "text": "Quỹ đất lớn và cho thuê dần trong nhiều năm"
+        },
+        {
+          "id": "4c3657d8e1",
+          "text": "Giá vốn cho thuê đất luôn bằng không"
+        },
+        {
+          "id": "06bc49e536",
+          "text": "Tồn kho khu công nghiệp không bao giờ giảm"
+        }
+      ],
+      "prompt": "Vì sao công ty khu công nghiệp thường có số năm cao?"
+    },
+    {
+      "chart_id": "c13l9-rep",
+      "correct_option_id": "053ccd7e31",
+      "id": "ch13-l09-q05",
+      "options": [
+        {
+          "id": "053ccd7e31",
+          "text": "Số năm tăng nhanh"
+        },
+        {
+          "id": "1bfdabd0ea",
+          "text": "Số năm giảm nhanh"
+        },
+        {
+          "id": "dcb5d04314",
+          "text": "Số năm không đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, tồn kho tăng trong khi giá vốn giảm làm đường thay đổi thế nào?"
+    }
+  ],
+  "salt": "901c74684b45688a2a3899aced831e8948852abb2e42ae1a1dab19eff820c619"
+}

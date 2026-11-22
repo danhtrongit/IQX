@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l12",
+  "questions": [
+    {
+      "correct_option_id": "e2e1a91f74",
+      "id": "ch11-l12-q01",
+      "options": [
+        {
+          "id": "e2e1a91f74",
+          "text": "Doanh thu hoạt động"
+        },
+        {
+          "id": "9793ec1aa7",
+          "text": "Tổng tài sản"
+        },
+        {
+          "id": "c289806ea3",
+          "text": "Vốn chủ"
+        }
+      ],
+      "prompt": "Biên ròng công ty chứng khoán tính trên gì?"
+    },
+    {
+      "correct_option_id": "e3605ed61b",
+      "id": "ch11-l12-q02",
+      "options": [
+        {
+          "id": "e3605ed61b",
+          "text": "Tự doanh"
+        },
+        {
+          "id": "25694d0e0b",
+          "text": "Lưu ký"
+        },
+        {
+          "id": "5a2eba1daa",
+          "text": "Môi giới"
+        }
+      ],
+      "prompt": "Mảng nào làm biên ròng dao động mạnh nhất?"
+    },
+    {
+      "correct_option_id": "0a06ad2fbe",
+      "id": "ch11-l12-q03",
+      "options": [
+        {
+          "id": "0a06ad2fbe",
+          "text": "Ổn định hơn"
+        },
+        {
+          "id": "b282bddfe8",
+          "text": "Dao động mạnh hơn"
+        },
+        {
+          "id": "73c73df9d4",
+          "text": "Luôn âm"
+        }
+      ],
+      "prompt": "Công ty thiên về margin và môi giới thường có biên thế nào?"
+    },
+    {
+      "correct_option_id": "8689075136",
+      "id": "ch11-l12-q04",
+      "options": [
+        {
+          "id": "8689075136",
+          "text": "Cơ cấu doanh thu hoạt động"
+        },
+        {
+          "id": "cb359ea253",
+          "text": "Tỷ trọng tài sản tự doanh"
+        },
+        {
+          "id": "b2fc0ed398",
+          "text": "Lợi suất cho vay margin"
+        }
+      ],
+      "prompt": "Nên đọc Margin Stability cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c11l12-rep",
+      "correct_option_id": "d1f909f530",
+      "id": "ch11-l12-q05",
+      "options": [
+        {
+          "id": "d1f909f530",
+          "text": "Năm thị trường giảm mạnh"
+        },
+        {
+          "id": "fb0823c847",
+          "text": "Năm tăng vốn"
+        },
+        {
+          "id": "dbaf84e451",
+          "text": "Năm đổi kiểm toán"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, năm dưới dải thường là năm gì?"
+    }
+  ],
+  "salt": "49588d4b26a4bbbd50697288590f8670c7e68bbcebb4108dd3fdfc3822945793"
+}

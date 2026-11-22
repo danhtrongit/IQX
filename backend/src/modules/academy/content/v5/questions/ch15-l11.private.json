@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l11",
+  "questions": [
+    {
+      "correct_option_id": "323e2294c4",
+      "id": "ch15-l11-q01",
+      "options": [
+        {
+          "id": "323e2294c4",
+          "text": "Thuê mặt bằng và được nhà cung cấp tài trợ hàng"
+        },
+        {
+          "id": "72d7f91ab9",
+          "text": "Không phải nộp thuế thu nhập doanh nghiệp"
+        },
+        {
+          "id": "75b4d6fce8",
+          "text": "Không phải chi tiền thuê mặt bằng"
+        }
+      ],
+      "prompt": "Vì sao chuỗi bán lẻ tốt có ROIC cao?"
+    },
+    {
+      "correct_option_id": "1fb61e5108",
+      "id": "ch15-l11-q02",
+      "options": [
+        {
+          "id": "1fb61e5108",
+          "text": "Không"
+        },
+        {
+          "id": "ba04912572",
+          "text": "Có"
+        },
+        {
+          "id": "7a613ca6db",
+          "text": "Chỉ phần dài hạn"
+        }
+      ],
+      "prompt": "Phải trả nhà cung cấp có nằm trong vốn đầu tư không?"
+    },
+    {
+      "correct_option_id": "e8b03760d3",
+      "id": "ch15-l11-q03",
+      "options": [
+        {
+          "id": "e8b03760d3",
+          "text": "Cửa hàng mới chưa có lãi"
+        },
+        {
+          "id": "aa954fd10f",
+          "text": "Giá vốn bằng 0"
+        },
+        {
+          "id": "2f2dbc66f3",
+          "text": "Doanh thu tài chính tăng"
+        }
+      ],
+      "prompt": "ROIC giảm nhiều năm ở chuỗi đang mở rộng thường do đâu?"
+    },
+    {
+      "correct_option_id": "0674f1e4f6",
+      "id": "ch15-l11-q04",
+      "options": [
+        {
+          "id": "0674f1e4f6",
+          "text": "Phải trả người bán / Tồn kho"
+        },
+        {
+          "id": "680bfcde00",
+          "text": "P/E"
+        },
+        {
+          "id": "c41d6d8be8",
+          "text": "Tăng trưởng EPS"
+        }
+      ],
+      "prompt": "ROIC tăng quá nhanh cần kiểm tra chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c15l11-rep",
+      "correct_option_id": "ab36c1d45a",
+      "id": "ch15-l11-q05",
+      "options": [
+        {
+          "id": "ab36c1d45a",
+          "text": "NOPAT 4 quý"
+        },
+        {
+          "id": "aeca96428c",
+          "text": "Doanh thu 4 quý"
+        },
+        {
+          "id": "7cd50c0551",
+          "text": "Vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới là gì?"
+    }
+  ],
+  "salt": "4423de892cca945700fa750df67056c5bfb56ce9e7ce48c3f6bbce327ecc6390"
+}

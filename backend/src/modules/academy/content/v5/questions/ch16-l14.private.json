@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l14",
+  "questions": [
+    {
+      "correct_option_id": "e22336f291",
+      "id": "ch16-l14-q01",
+      "options": [
+        {
+          "id": "e22336f291",
+          "text": "Đang thu tiền, ít nợ"
+        },
+        {
+          "id": "52a9d06821",
+          "text": "Đang xây nhà máy mới"
+        },
+        {
+          "id": "a5dc4ad3c4",
+          "text": "Mới hoàn thành dự án lớn"
+        }
+      ],
+      "prompt": "Giai đoạn nào công ty điện thường trả cổ tức cao nhất?"
+    },
+    {
+      "correct_option_id": "7c17691b19",
+      "id": "ch16-l14-q02",
+      "options": [
+        {
+          "id": "7c17691b19",
+          "text": "Capex / Khấu hao"
+        },
+        {
+          "id": "2d6e6651db",
+          "text": "P/S"
+        },
+        {
+          "id": "e2bc0b0546",
+          "text": "Số ngày tồn kho"
+        }
+      ],
+      "prompt": "Nên đọc tỷ lệ chi trả cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "8dfef29c7d",
+      "id": "ch16-l14-q03",
+      "options": [
+        {
+          "id": "8dfef29c7d",
+          "text": "Có thể giảm"
+        },
+        {
+          "id": "ee81c8b614",
+          "text": "Chắc chắn tăng"
+        },
+        {
+          "id": "197802304c",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Năm khô hạn ảnh hưởng thế nào đến cổ tức thủy điện năm sau?"
+    },
+    {
+      "correct_option_id": "13970db85e",
+      "id": "ch16-l14-q04",
+      "options": [
+        {
+          "id": "13970db85e",
+          "text": "Mã 36 trên lưu chuyển tiền tệ"
+        },
+        {
+          "id": "d2dcdf2093",
+          "text": "Mã 23 trên kết quả kinh doanh"
+        },
+        {
+          "id": "7c41e65198",
+          "text": "Mã 242 trên bảng cân đối"
+        }
+      ],
+      "prompt": "Cổ tức đã trả lấy ở dòng nào?"
+    },
+    {
+      "chart_id": "c16l14-rep",
+      "correct_option_id": "367ed98591",
+      "id": "ch16-l14-q05",
+      "options": [
+        {
+          "id": "367ed98591",
+          "text": "Tiền đang dành cho nhà máy mới"
+        },
+        {
+          "id": "c878dd23d4",
+          "text": "Công ty đang lỗ nặng"
+        },
+        {
+          "id": "2cc1cad950",
+          "text": "Công ty trả hết nợ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cổ tức giảm cùng lúc capex tăng cho thấy gì?"
+    }
+  ],
+  "salt": "7b7e6b03095a3f64ef931ade10772d69392a96bf5aa715add1388cd65293f5a9"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l14",
+  "questions": [
+    {
+      "correct_option_id": "34162ed17e",
+      "id": "ch10-l14-q01",
+      "options": [
+        {
+          "id": "34162ed17e",
+          "text": "Từ khoảng 1,5% trở lên"
+        },
+        {
+          "id": "e870668ef2",
+          "text": "Từ khoảng 15% trở lên"
+        },
+        {
+          "id": "f45596f872",
+          "text": "Dưới 0,1%"
+        }
+      ],
+      "prompt": "Mức ROA tham khảo tốt với ngân hàng Việt Nam là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "7f2d5d11a5",
+      "id": "ch10-l14-q02",
+      "options": [
+        {
+          "id": "7f2d5d11a5",
+          "text": "Chênh lệch lãi mỏng trên lượng tài sản rất lớn"
+        },
+        {
+          "id": "2a62576a60",
+          "text": "Ngân hàng không có lợi nhuận"
+        },
+        {
+          "id": "526dd6275c",
+          "text": "Ngân hàng không có tài sản"
+        }
+      ],
+      "prompt": "Vì sao ROA ngân hàng thấp hơn doanh nghiệp sản xuất?"
+    },
+    {
+      "correct_option_id": "d023239204",
+      "id": "ch10-l14-q03",
+      "options": [
+        {
+          "id": "d023239204",
+          "text": "ROA không bị ảnh hưởng bởi đòn bẩy"
+        },
+        {
+          "id": "4a320fe07d",
+          "text": "ROA luôn lớn hơn ROE"
+        },
+        {
+          "id": "5588db6890",
+          "text": "ROA không cần lợi nhuận"
+        }
+      ],
+      "prompt": "Vì sao so ngân hàng bằng ROA công bằng hơn ROE?"
+    },
+    {
+      "correct_option_id": "36f9d8eb7b",
+      "id": "ch10-l14-q04",
+      "options": [
+        {
+          "id": "36f9d8eb7b",
+          "text": "Đòn bẩy tài sản trên vốn chủ"
+        },
+        {
+          "id": "cbdcf007f4",
+          "text": "Biên lãi thuần của ngân hàng"
+        },
+        {
+          "id": "1ba17767bc",
+          "text": "Tỷ lệ chi phí trên thu nhập"
+        }
+      ],
+      "prompt": "ROE chia ROA xấp xỉ bằng gì?"
+    },
+    {
+      "chart_id": "c10l14-rep",
+      "correct_option_id": "8f0929ea24",
+      "id": "ch10-l14-q05",
+      "options": [
+        {
+          "id": "8f0929ea24",
+          "text": "Tổng tài sản bình quân"
+        },
+        {
+          "id": "bfd15843fe",
+          "text": "LNST 4 quý"
+        },
+        {
+          "id": "5dd31a0150",
+          "text": "Tiền gửi khách hàng"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới là gì?"
+    }
+  ],
+  "salt": "fadd21f2b5eb6c58fac2542557d6c49460d2ea40406fe8f7011ce81511a0982c"
+}

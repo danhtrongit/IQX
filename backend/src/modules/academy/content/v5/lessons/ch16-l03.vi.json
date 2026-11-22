@@ -1,0 +1,341 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l3-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "LNST ÷ doanh thu thuần"
+          ],
+          "t": "Biên ròng năm",
+          "tone": "p1",
+          "v": "5 năm"
+        },
+        {
+          "notes": [
+            "Mức phân tán"
+          ],
+          "t": "Độ lệch chuẩn",
+          "tone": "warn",
+          "v": "σ"
+        },
+        {
+          "notes": [
+            "Càng thấp càng ổn định"
+          ],
+          "t": "Margin Stability",
+          "tone": "pos",
+          "v": "2,76 điểm %"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "arrow",
+        "="
+      ]
+    },
+    "c16l3-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Nước sạch",
+          "tone": "pos",
+          "value": 1
+        },
+        {
+          "label": "Điện tái tạo có giá cố định",
+          "tone": "pos",
+          "value": 2
+        },
+        {
+          "label": "Nhiệt điện",
+          "tone": "p1",
+          "value": 3
+        },
+        {
+          "label": "Thủy điện",
+          "tone": "warn",
+          "value": 6
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Độ lệch chuẩn biên ròng 5 năm · số minh họa",
+      "unit": " điểm %"
+    },
+    "c16l3-rep": {
+      "alt": "Margin Stability: 2,8 điểm %",
+      "chart": {
+        "hero": 2.759,
+        "kind": "E1",
+        "labels": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "Biên ròng năm",
+            "v": [
+              13.496,
+              10.128,
+              18.328,
+              12.732,
+              11.763
+            ]
+          }
+        ],
+        "mainUnit": "%",
+        "name": "Margin Stability",
+        "unit": "điểm %"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ngành điện thường được xem là ổn định, nhưng biên lợi nhuận của từng công ty vẫn dao động theo thủy văn, giá nhiên liệu và tỷ giá. Margin Stability giúp biết công ty điện nào thật sự ổn định.",
+  "lesson_key": "fundamental:net_margin_stability-dien",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l3-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ số bằng <b>độ lệch chuẩn</b> của biên lợi nhuận ròng năm trong 5 năm, đơn vị điểm %. Cách tính giống bài Margin Stability ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l3-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thủy điện có năm biên ròng rất cao, có năm thấp hẳn.",
+              "title": "Thủy văn"
+            },
+            {
+              "text": "Nợ vay ngoại tệ làm lợi nhuận dao động khi tỷ giá thay đổi.",
+              "title": "Tỷ giá"
+            },
+            {
+              "text": "Công ty có cả thủy điện và nhiệt điện thường ổn định hơn, vì hai loại bù cho nhau.",
+              "title": "Kết hợp nhiều nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở điện khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l3-rep",
+          "title": "Margin Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên lợi nhuận ròng từng năm, đơn vị %.",
+              "title": "Đường giá trị"
+            },
+            {
+              "text": "Bình quân 5 năm và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "Năm vượt khỏi dải thường là năm thủy văn đặc biệt tốt hoặc xấu.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Độ lệch chuẩn dưới khoảng 1/5 mức biên bình quân. Mức tham khảo.",
+              "title": "Ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Độ lệch chuẩn lớn, biên có năm giảm một nửa so với năm trước.",
+              "title": "Dao động",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Ổn định giúp dự báo cổ tức tốt hơn. Công ty điện thường được mua vì cổ tức đều.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên ổn định thì cổ tức dễ dự báo.",
+              "title": "Chọn công ty cổ tức đều"
+            },
+            {
+              "text": "Thủy điện so với thủy điện.",
+              "title": "So cùng loại nguồn"
+            },
+            {
+              "text": "Thủy văn, tỷ giá hay giá nhiên liệu.",
+              "title": "Tìm nguyên nhân năm bất thường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu, biên ròng từng năm.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Biên ròng",
+                "13,5%",
+                "10,1%",
+                "18,3%",
+                "12,7%",
+                "11,8%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Năm 2023 biên ròng lên 18,3% nhờ thủy văn thuận lợi, các năm khác 10% đến 14%. Độ lệch chuẩn 2,76 điểm %.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thủy điện dao động mạnh theo năm.",
+              "title": "Coi mọi công ty điện đều ổn định"
+            },
+            {
+              "text": "Nước sạch và thủy điện không so được.",
+              "title": "So khác loại nguồn"
+            },
+            {
+              "text": "Lỗ tỷ giá làm biên ròng giảm dù kinh doanh không đổi.",
+              "title": "Bỏ qua tỷ giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dao động mạnh theo năm thủy văn.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Phụ thuộc giá nhiên liệu và cơ chế chuyển giá.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Nước sạch rất ổn định. Gió, mặt trời ổn định khi có giá bán cố định.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "<b>Margin Stability</b> = độ lệch chuẩn biên ròng 5 năm.",
+    "Ngành điện <b>không đồng đều</b>: thủy điện dao động mạnh.",
+    "Công ty <b>nhiều loại nguồn</b> thường ổn định hơn.",
+    "Biên ổn định giúp <b>dự báo cổ tức</b>."
+  ],
+  "title": "Margin Stability · ở điện"
+}

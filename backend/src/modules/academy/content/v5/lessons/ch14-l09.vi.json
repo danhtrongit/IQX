@@ -1,0 +1,393 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l9-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Tiền + đầu tư ngắn hạn − nợ vay"
+          ],
+          "t": "Tiền ròng",
+          "tone": "pos",
+          "v": "13.149 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 410"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "p1",
+          "v": "41.277 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "31,9%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l9-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Doanh nghiệp rất dư tiền",
+          "tone": "pos",
+          "value": 60
+        },
+        {
+          "label": "Dư tiền vừa phải",
+          "tone": "p1",
+          "value": 25
+        },
+        {
+          "label": "Nợ vay bằng tiền",
+          "tone": "warn",
+          "value": 0
+        },
+        {
+          "label": "Dùng nhiều nợ vay",
+          "tone": "neg",
+          "value": -50
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Tiền ròng / VCSH · số minh họa",
+      "unit": "%"
+    },
+    "c14l9-rep": {
+      "alt": "Tiền ròng / VCSH: 31,9%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tiền ròng / VCSH",
+            "v": [
+              30.255,
+              31.115,
+              32.66,
+              31.962,
+              29.778,
+              27.775,
+              31.673,
+              31.855
+            ]
+          }
+        ],
+        "name": "Tiền ròng / VCSH",
+        "sub": {
+          "series": [
+            {
+              "name": "Tiền và đầu tư ngắn hạn",
+              "v": [
+                17729.87,
+                18172.145,
+                19284.571,
+                19659.281,
+                18966.892,
+                18088.212,
+                19782.348,
+                20357.326
+              ]
+            },
+            {
+              "name": "Nợ vay",
+              "v": [
+                6640.688,
+                6597.439,
+                6696.024,
+                6937.948,
+                7164.157,
+                7134.484,
+                7098.677,
+                7208.257
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Nhiều doanh nghiệp dầu khí giữ lượng tiền rất lớn, nhiều hơn cả nợ vay. Chỉ tiêu này cho biết sau khi trả hết nợ vay, doanh nghiệp còn bao nhiêu tiền so với vốn chủ.",
+  "lesson_key": "fundamental:net_cash_to_equity-dk",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l9-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>tiền và tương đương tiền</b> cộng <b>đầu tư tài chính ngắn hạn</b>, trừ <b>nợ vay</b> ngắn và dài hạn, rồi chia <b>vốn chủ sở hữu</b>. Tất cả trên bảng cân đối kế toán, số cuối kỳ.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Số dương là tiền nhiều hơn nợ vay. Số âm là nợ vay nhiều hơn tiền.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tiền ròng / VCSH là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Đây là chiều ngược của nợ ròng. Tiền ròng 30% vốn chủ nghĩa là nợ ròng âm 30% vốn chủ.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c14l9-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chống chịu tốt khi giá dầu giảm sâu. Có sẵn vốn cho dự án mới.",
+              "title": "Dư tiền"
+            },
+            {
+              "text": "Tiền lớn tạo doanh thu tài chính đều đặn. Xem bài Thu nhập tài chính / LNTT.",
+              "title": "Lãi tiền gửi"
+            },
+            {
+              "text": "Tiền nằm yên quá lâu làm ROE thấp hơn. Cổ đông có thể muốn được chia nhiều hơn.",
+              "title": "Hiệu quả vốn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Tiền ròng và nợ ròng"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l9-rep",
+          "title": "Tiền ròng / VCSH",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền ròng chia vốn chủ sở hữu, đơn vị %. Có mốc 0.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Tiền và đầu tư ngắn hạn, nợ vay cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tiền cao hơn hẳn cột nợ vay: doanh nghiệp dư tiền.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 20% trở lên. Mức tham khảo, đủ chống chịu một chu kỳ giá xấu.",
+              "title": "Bộ đệm tài chính tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Âm sâu, dưới khoảng −50%, nhất là khi đang có dự án lớn. Rủi ro khi giá dầu giảm kéo dài.",
+              "title": "Phụ thuộc nợ vay",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tiền ròng cao không phải lúc nào cũng tốt. Cần xem doanh nghiệp có kế hoạch dùng tiền hiệu quả không.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền ròng dương lớn giúp vượt qua giai đoạn giá dầu thấp.",
+              "title": "Đánh giá sức chống chịu"
+            },
+            {
+              "text": "Dư tiền và FCF dương là nền cho cổ tức tiền mặt.",
+              "title": "Ước lượng cổ tức"
+            },
+            {
+              "text": "EV trừ tiền ròng. Doanh nghiệp dư tiền có EV / EBITDA thấp hơn P/E gợi ý.",
+              "title": "Định giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Tiền và ĐTNH"
+            },
+            {
+              "label": "Nợ vay"
+            },
+            {
+              "label": "Tiền ròng / VCSH"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "17.730",
+                "6.641",
+                "30,3%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "19.659",
+                "6.938",
+                "32,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "20.357",
+                "7.208",
+                "31,9%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tiền luôn nhiều hơn gần 3 lần nợ vay. Tiền ròng giữ quanh 32% vốn chủ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền gửi kỳ hạn trên 3 tháng nằm ở đầu tư ngắn hạn.",
+              "title": "Quên đầu tư ngắn hạn"
+            },
+            {
+              "text": "Người mua trả tiền trước không phải nợ vay, không trừ ở đây.",
+              "title": "Cộng cả tiền khách trả trước"
+            },
+            {
+              "text": "Tiền nằm yên làm hiệu quả vốn thấp.",
+              "title": "Coi dư tiền luôn là tốt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dịch vụ dầu khí thường giữ nhiều tiền để chống chịu chu kỳ.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Doanh nghiệp khí lớn thường dư tiền nhờ dòng tiền ổn định.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Lọc dầu thường dùng nhiều nợ vay ngắn hạn cho vốn lưu động.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>(tiền + đầu tư ngắn hạn − nợ vay)</b> ÷ <b>vốn chủ</b>.",
+    "Dương là <b>dư tiền</b>, âm là <b>nợ ròng</b>.",
+    "Mức tham khảo: <b>từ khoảng 20%</b> là bộ đệm tốt.",
+    "Dư tiền quá lâu làm <b>hiệu quả vốn thấp</b>."
+  ],
+  "title": "Tiền ròng / VCSH · lượng tiền dư sau khi trừ nợ vay"
+}

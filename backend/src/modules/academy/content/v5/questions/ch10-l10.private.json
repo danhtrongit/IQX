@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l10",
+  "questions": [
+    {
+      "correct_option_id": "d02d4a28b9",
+      "id": "ch10-l10-q01",
+      "options": [
+        {
+          "id": "d02d4a28b9",
+          "text": "Lãi đã ghi vào thu nhập nhưng chưa thu được tiền"
+        },
+        {
+          "id": "b07c7bcb46",
+          "text": "Lãi ngân hàng phải trả cho người gửi tiền vào cuối kỳ"
+        },
+        {
+          "id": "6e93497fdf",
+          "text": "Lãi dự kiến thu được trong năm sau"
+        }
+      ],
+      "prompt": "Lãi dự thu là gì?"
+    },
+    {
+      "correct_option_id": "1cfe3c6df7",
+      "id": "ch10-l10-q02",
+      "options": [
+        {
+          "id": "1cfe3c6df7",
+          "text": "Các khoản lãi, phí phải thu trên bảng cân đối"
+        },
+        {
+          "id": "34de20343c",
+          "text": "Thu nhập lãi trên kết quả kinh doanh"
+        },
+        {
+          "id": "93a0f0420e",
+          "text": "Tiền lãi thực thu trên lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Tử số của tỷ lệ lãi dự thu trên dư nợ lấy từ dòng nào?"
+    },
+    {
+      "correct_option_id": "e2621e0b93",
+      "id": "ch10-l10-q03",
+      "options": [
+        {
+          "id": "e2621e0b93",
+          "text": "Cần chú ý về chất lượng thu nhập"
+        },
+        {
+          "id": "37a4562c66",
+          "text": "Ngân hàng đang thu tiền lãi nhanh hơn"
+        },
+        {
+          "id": "dcae11efc7",
+          "text": "Biên lãi thuần chắc chắn đang tăng"
+        }
+      ],
+      "prompt": "Tỷ lệ lãi dự thu trên dư nợ tăng nhanh là dấu hiệu gì?"
+    },
+    {
+      "correct_option_id": "cda6007e15",
+      "id": "ch10-l10-q04",
+      "options": [
+        {
+          "id": "cda6007e15",
+          "text": "So tốc độ tăng lãi phải thu với tốc độ tăng cho vay"
+        },
+        {
+          "id": "ed11ca3321",
+          "text": "So lãi phải thu với vốn chủ sở hữu của ngân hàng cuối kỳ"
+        },
+        {
+          "id": "765ad339d2",
+          "text": "So lãi phải thu với chi phí hoạt động"
+        }
+      ],
+      "prompt": "Cách so sánh nào hữu ích khi đọc chỉ tiêu này?"
+    },
+    {
+      "chart_id": "c10l10-rep",
+      "correct_option_id": "6a0733998b",
+      "id": "ch10-l10-q05",
+      "options": [
+        {
+          "id": "6a0733998b",
+          "text": "Lãi phải thu đang tăng nhanh hơn cho vay"
+        },
+        {
+          "id": "35d941f441",
+          "text": "Cho vay đang tăng nhanh hơn lãi phải thu"
+        },
+        {
+          "id": "94d4fe2bc1",
+          "text": "Ngân hàng đã thu hết lãi phải thu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường phía trên đi lên đều đặn có nghĩa là gì?"
+    }
+  ],
+  "salt": "8bd984059ae482923f28571f240ea58f18521d02bb93a35c18f192fd31fdd5fd"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l02",
+  "questions": [
+    {
+      "correct_option_id": "d5087d99ad",
+      "id": "ch13-l02-q01",
+      "options": [
+        {
+          "id": "d5087d99ad",
+          "text": "Mức dao động của tăng trưởng doanh thu qua 5 năm"
+        },
+        {
+          "id": "7d68244e7b",
+          "text": "Mức tăng doanh thu của năm gần nhất"
+        },
+        {
+          "id": "1f9d71919f",
+          "text": "Tỷ trọng doanh thu từ cho thuê"
+        }
+      ],
+      "prompt": "Revenue Growth Stability đo điều gì?"
+    },
+    {
+      "correct_option_id": "c42826b561",
+      "id": "ch13-l02-q02",
+      "options": [
+        {
+          "id": "c42826b561",
+          "text": "Doanh thu phụ thuộc vào lịch bàn giao dự án"
+        },
+        {
+          "id": "0723158beb",
+          "text": "Công ty bất động sản không công bố doanh thu năm"
+        },
+        {
+          "id": "acbb97f037",
+          "text": "Giá nhà luôn giảm mạnh mỗi năm"
+        }
+      ],
+      "prompt": "Vì sao chỉ số này ở công ty bất động sản thường cao?"
+    },
+    {
+      "correct_option_id": "e92c7faed6",
+      "id": "ch13-l02-q03",
+      "options": [
+        {
+          "id": "e92c7faed6",
+          "text": "Các công ty bất động sản khác"
+        },
+        {
+          "id": "22cef0dc8f",
+          "text": "Các ngân hàng"
+        },
+        {
+          "id": "6f2fbfc64d",
+          "text": "Các công ty bán lẻ"
+        }
+      ],
+      "prompt": "Nên so Revenue Growth Stability của công ty bất động sản với ai?"
+    },
+    {
+      "correct_option_id": "0062a0b619",
+      "id": "ch13-l02-q04",
+      "options": [
+        {
+          "id": "0062a0b619",
+          "text": "Thấp hơn công ty chỉ có một, hai dự án lớn"
+        },
+        {
+          "id": "d105eef4ea",
+          "text": "Cao hơn công ty chỉ có một dự án"
+        },
+        {
+          "id": "b012499693",
+          "text": "Luôn bằng không"
+        }
+      ],
+      "prompt": "Công ty có nhiều dự án gối đầu thường có chỉ số này thế nào?"
+    },
+    {
+      "chart_id": "c13l2-rep",
+      "correct_option_id": "c000339ecf",
+      "id": "ch13-l02-q05",
+      "options": [
+        {
+          "id": "c000339ecf",
+          "text": "Năm đó có hoặc không có dự án lớn bàn giao"
+        },
+        {
+          "id": "916fe63b09",
+          "text": "Năm đó công ty đổi kiểm toán"
+        },
+        {
+          "id": "b5ebfa6b30",
+          "text": "Năm đó công ty không có lợi nhuận"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, năm nằm ngoài dải nét đứt thường cho biết gì?"
+    }
+  ],
+  "salt": "0d1d0508623d2a1623fdd3607e7e70f4fa4a2490787d84653f9704e3fae53087"
+}

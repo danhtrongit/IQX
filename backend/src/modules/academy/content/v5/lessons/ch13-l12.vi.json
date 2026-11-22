@@ -1,0 +1,415 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l12-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Vay ngân hàng + trái phiếu"
+          ],
+          "t": "Nợ vay",
+          "tone": "neg",
+          "v": "31.398 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 410"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "p1",
+          "v": "51.074 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "D/E",
+          "tone": "warn",
+          "v": "0,61 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l12-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Mã 320",
+          "line": "Vay và nợ thuê tài chính ngắn hạn",
+          "report": "Nợ ngắn hạn",
+          "tone": "neg"
+        },
+        {
+          "code": "Mã 338",
+          "line": "Vay và nợ thuê tài chính dài hạn",
+          "report": "Nợ dài hạn",
+          "tone": "neg"
+        },
+        {
+          "code": "Mã 339",
+          "line": "Trái phiếu chuyển đổi",
+          "report": "Nợ dài hạn",
+          "tone": "p5"
+        },
+        {
+          "code": "Mã 312, 332",
+          "line": "Người mua trả tiền trước",
+          "report": "Không cộng",
+          "tone": "pos"
+        }
+      ],
+      "title": "Nợ vay trên bảng cân đối kế toán (mẫu B01-DN)"
+    },
+    "c13l12-g3": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Bán lẻ, tiêu dùng",
+          "tone": "pos",
+          "value": 0.3
+        },
+        {
+          "label": "Bất động sản thận trọng",
+          "tone": "p1",
+          "value": 0.6
+        },
+        {
+          "label": "Bất động sản đòn bẩy cao",
+          "tone": "neg",
+          "value": 1.8
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "D/E tham khảo · số minh họa",
+      "unit": " lần"
+    },
+    "c13l12-rep": {
+      "alt": "D/E: 0,61 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Nợ vay / VCSH",
+            "v": [
+              0.516,
+              0.497,
+              0.54,
+              0.555,
+              0.573,
+              0.558,
+              0.597,
+              0.615
+            ]
+          }
+        ],
+        "name": "D/E",
+        "sub": {
+          "series": [
+            {
+              "name": "Nợ vay",
+              "v": [
+                21762.046,
+                22544.031,
+                24876.706,
+                25928.603,
+                26979.48,
+                27852.7,
+                30246.912,
+                31398.266
+              ]
+            },
+            {
+              "name": "Vốn chủ sở hữu",
+              "v": [
+                42159.113,
+                45317.105,
+                46041.445,
+                46728.362,
+                47081.966,
+                49929.742,
+                50642.364,
+                51073.979
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l12",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Bất động sản là ngành dùng nhiều nợ vay. Ngoài vay ngân hàng, công ty còn phát hành trái phiếu. Bài này nói cách tính D/E cho đủ các khoản nợ và cách đọc nó cùng tiền khách trả trước.",
+  "lesson_key": "fundamental:debt_equity-bds",
+  "order": 12,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l12-g1",
+          "type": "chart"
+        },
+        {
+          "text": "D/E bằng <b>nợ vay</b> chia <b>vốn chủ sở hữu</b>, số cuối kỳ trên bảng cân đối. Cách tính giống bài D/E ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Trái phiếu doanh nghiệp là nguồn vốn lớn của nhiều công ty bất động sản. Phải cộng đủ các dòng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l12-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Trái phiếu thường nằm trong dòng vay và nợ thuê tài chính. Trái phiếu chuyển đổi có dòng riêng.",
+              "title": "Trái phiếu"
+            },
+            {
+              "text": "Người mua trả tiền trước là nợ phải trả nhưng không chịu lãi và sẽ thành doanh thu.",
+              "title": "Không tính tiền khách trả trước"
+            },
+            {
+              "text": "D/E từ 0,5 đến 1 lần là phổ biến với bất động sản, cao hơn nhiều ngành khác.",
+              "title": "Mức nền cao hơn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bất động sản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l12-rep",
+          "title": "D/E",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ vay chia vốn chủ sở hữu, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Nợ vay và vốn chủ sở hữu cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột nợ vay tăng nhanh hơn cột vốn chủ: đòn bẩy đang tăng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 0,7 lần và ổn định. Mức tham khảo với công ty bất động sản.",
+              "title": "Đòn bẩy kiểm soát được",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 1,5 lần, hoặc tăng nhanh trong khi tiền khách trả trước giảm. Rủi ro khi thị trường khó và phải đáo hạn nợ.",
+              "title": "Đòn bẩy cao",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "D/E cùng mức nhưng công ty có nhiều tiền khách trả trước thì an toàn hơn, vì dự án đã có nguồn tiền để hoàn thành.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l12-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Kiểm tra cả dòng trái phiếu chuyển đổi nếu có.",
+              "title": "Cộng đủ trái phiếu"
+            },
+            {
+              "text": "Cùng D/E nhưng nợ ngắn hạn nhiều thì áp lực trả nợ lớn hơn.",
+              "title": "Đọc cùng tỷ trọng vay ngắn hạn"
+            },
+            {
+              "text": "Tiền khách trả trước nhiều giúp giảm nhu cầu vay để làm dự án.",
+              "title": "Đọc cùng tiền khách trả trước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Nợ vay"
+            },
+            {
+              "label": "Vốn chủ"
+            },
+            {
+              "label": "D/E"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "21.762",
+                "42.159",
+                "0,52 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "25.929",
+                "46.728",
+                "0,56 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "31.398",
+                "51.074",
+                "0,61 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "D/E tăng từ 0,52 lần lên 0,61 lần. Vẫn trong mức kiểm soát được nhưng nợ vay tăng nhanh hơn vốn chủ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dòng mã 339 cũng là nợ vay.",
+              "title": "Bỏ sót trái phiếu chuyển đổi"
+            },
+            {
+              "text": "Khoản này không chịu lãi, không phải nợ vay.",
+              "title": "Cộng tiền khách trả trước vào nợ vay"
+            },
+            {
+              "text": "D/E 0,6 lần là thấp với bất động sản nhưng cao với bán lẻ.",
+              "title": "So với ngành ít dùng nợ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Nợ vay dùng để mua đất và xây dự án. D/E tăng khi triển khai nhiều dự án cùng lúc.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Nợ vay dùng làm hạ tầng. Tiền thuê trả trước một lần giúp giảm nhu cầu vay.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "<b>D/E</b> = nợ vay ÷ vốn chủ sở hữu.",
+    "Nợ vay gồm <b>vay ngắn hạn, dài hạn và trái phiếu chuyển đổi</b> (mã 320, 338, 339).",
+    "<b>Không cộng</b> người mua trả tiền trước.",
+    "Mức tham khảo bất động sản: <b>dưới khoảng 0,7 lần</b> là kiểm soát được."
+  ],
+  "title": "D/E · ở bất động sản"
+}

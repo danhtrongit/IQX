@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l08",
+  "questions": [
+    {
+      "correct_option_id": "62977342ca",
+      "id": "ch11-l08-q01",
+      "options": [
+        {
+          "id": "62977342ca",
+          "text": "Lãi tự doanh thuần 4 quý ÷ tài sản tự doanh bình quân"
+        },
+        {
+          "id": "2df86fcced",
+          "text": "Lãi tự doanh thuần 4 quý ÷ tổng doanh thu hoạt động"
+        },
+        {
+          "id": "57cba97bc8",
+          "text": "Tài sản tự doanh ÷ tổng tài sản cuối kỳ"
+        }
+      ],
+      "prompt": "Hiệu suất tự doanh được tính thế nào?"
+    },
+    {
+      "correct_option_id": "d8c9c7fb77",
+      "id": "ch11-l08-q02",
+      "options": [
+        {
+          "id": "d8c9c7fb77",
+          "text": "Lãi từ FVTPL, HTM, AFS trừ đi phần lỗ"
+        },
+        {
+          "id": "dce700c1e6",
+          "text": "Chỉ gồm cổ tức nhận được trong kỳ"
+        },
+        {
+          "id": "319441915f",
+          "text": "Lãi từ cho vay margin trừ lãi vay"
+        }
+      ],
+      "prompt": "Lãi tự doanh thuần được hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "3adfc01a2d",
+      "id": "ch11-l08-q03",
+      "options": [
+        {
+          "id": "3adfc01a2d",
+          "text": "Lãi tiền gửi"
+        },
+        {
+          "id": "9fb48e3479",
+          "text": "Biên lợi nhuận môi giới"
+        },
+        {
+          "id": "7f94cb1453",
+          "text": "Tỷ lệ nợ vay trên vốn chủ"
+        }
+      ],
+      "prompt": "Mốc so sánh đơn giản cho hiệu suất tự doanh là gì?"
+    },
+    {
+      "correct_option_id": "cc7c9d8c59",
+      "id": "ch11-l08-q04",
+      "options": [
+        {
+          "id": "cc7c9d8c59",
+          "text": "Kéo hiệu quả sinh lời của cả công ty đi xuống"
+        },
+        {
+          "id": "db188cb587",
+          "text": "Làm dư nợ cho vay tăng nhanh"
+        },
+        {
+          "id": "411fcc2d7d",
+          "text": "Làm biên môi giới tăng mạnh"
+        }
+      ],
+      "prompt": "Tỷ trọng tự doanh cao nhưng hiệu suất thấp gây ảnh hưởng gì?"
+    },
+    {
+      "chart_id": "c11l8-rep",
+      "correct_option_id": "feee6529c5",
+      "id": "ch11-l08-q05",
+      "options": [
+        {
+          "id": "feee6529c5",
+          "text": "Lãi tự doanh thuần cộng 4 quý"
+        },
+        {
+          "id": "9fd7dc32a9",
+          "text": "Tài sản tự doanh cuối mỗi quý"
+        },
+        {
+          "id": "eb97002ee6",
+          "text": "Doanh thu môi giới cộng 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "689a5649d73f1b472dbc78810a53dead1b787fb1b97ee474fa86b288987b4b8c"
+}

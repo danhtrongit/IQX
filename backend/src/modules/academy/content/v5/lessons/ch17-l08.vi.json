@@ -1,0 +1,380 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l8-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 21"
+          ],
+          "t": "Capex 4 quý",
+          "tone": "p1",
+          "v": "32.265 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 02"
+          ],
+          "t": "Khấu hao 4 quý",
+          "tone": "warn",
+          "v": "5.097 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "pos",
+          "v": "6,33 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l8-g2": {
+      "fig": "formula",
+      "height": 180,
+      "items": [
+        {
+          "notes": [
+            "Nhà máy xong khi giá hồi"
+          ],
+          "t": "Đầu tư ở đáy chu kỳ",
+          "tone": "pos",
+          "v": "Chi phí xây rẻ"
+        },
+        {
+          "notes": [
+            "Nhà máy xong khi giá xuống"
+          ],
+          "t": "Đầu tư ở đỉnh chu kỳ",
+          "tone": "neg",
+          "v": "Chi phí xây đắt"
+        }
+      ],
+      "kind": "figure",
+      "ops": []
+    },
+    "c17l8-rep": {
+      "alt": "Capex / Khấu hao: 6,33 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Capex / Khấu hao (4 quý)",
+            "v": [
+              6.167,
+              6.105,
+              6.101,
+              6.137,
+              6.205,
+              6.273,
+              6.305,
+              6.331
+            ]
+          }
+        ],
+        "name": "Capex / Khấu hao",
+        "ref": 1,
+        "sub": {
+          "series": [
+            {
+              "name": "Capex 4 quý",
+              "v": [
+                22516.109,
+                23454.577,
+                24611.818,
+                25961.825,
+                27514.214,
+                29147.323,
+                30692.508,
+                32265.344
+              ]
+            },
+            {
+              "name": "Khấu hao 4 quý",
+              "v": [
+                3650.813,
+                3841.814,
+                4034.117,
+                4230.721,
+                4433.991,
+                4646.144,
+                4867.628,
+                5096.58
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l08",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty vật liệu thường đầu tư nhà máy lớn theo từng đợt, mỗi đợt kéo dài vài năm. Capex / Khấu hao cho biết công ty đang trong đợt đầu tư lớn hay chỉ duy trì nhà máy hiện có.",
+  "lesson_key": "fundamental:capex_to_depreciation-vl",
+  "order": 8,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l8-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>tiền chi mua sắm, xây dựng TSCĐ</b> (mã 21) chia <b>khấu hao</b> (mã 02), cả hai trên lưu chuyển tiền tệ, cộng 4 quý.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Capex / Khấu hao là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l8-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đang xây nhà máy lớn. Dòng tiền tự do âm, nợ vay tăng.",
+              "title": "Tỷ lệ cao kéo dài"
+            },
+            {
+              "text": "Nhà máy xong đúng lúc giá hồi thì hiệu quả cao.",
+              "title": "Thời điểm quan trọng"
+            },
+            {
+              "text": "Tỷ lệ giảm về quanh 1, dòng tiền dư để trả nợ.",
+              "title": "Sau đợt đầu tư"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Đầu tư ngược chu kỳ"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l8-rep",
+          "title": "Capex / Khấu hao",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Capex chia khấu hao 4 quý, đơn vị lần. Đường nét đứt là mốc 1 lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Capex và khấu hao 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột capex gấp nhiều lần khấu hao: đang trong đợt đầu tư lớn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Quanh 1 lần. Công ty chỉ thay thế tài sản hao mòn.",
+              "title": "Duy trì",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 3 lần. Công suất sẽ tăng mạnh vài năm sau, nhưng nợ vay tăng trước.",
+              "title": "Đợt đầu tư lớn",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc chỉ tiêu cùng <b>Net Debt / EBITDA</b>. Đầu tư lớn đúng lúc biên EBITDA giảm làm áp lực nợ tăng nhanh.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đầu tư lớn hôm nay là sản lượng vài năm sau.",
+              "title": "Dự báo công suất"
+            },
+            {
+              "text": "Đầu tư lớn khi chu kỳ yếu làm nợ tăng nhanh.",
+              "title": "Đánh giá rủi ro"
+            },
+            {
+              "text": "Biết dự án còn bao lâu.",
+              "title": "Đọc cùng Xây dựng dở dang"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Capex"
+            },
+            {
+              "label": "Khấu hao"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "22.516",
+                "3.651",
+                "6,17 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "25.962",
+                "4.231",
+                "6,14 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "32.265",
+                "5.097",
+                "6,33 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Capex gấp hơn 6 lần khấu hao suốt hai năm. Công ty đang trong đợt đầu tư nhà máy lớn, cùng lúc nợ ròng tăng từ 19.523 lên 37.067 tỷ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đó là đầu tư cho công suất mới.",
+              "title": "Coi capex cao là xấu"
+            },
+            {
+              "text": "Đầu tư sai thời điểm làm hiệu quả thấp.",
+              "title": "Bỏ qua thời điểm chu kỳ"
+            },
+            {
+              "text": "Capex lấy từ lưu chuyển tiền tệ.",
+              "title": "Lấy capex từ bảng cân đối"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đầu tư lò cao, nhà máy cán theo đợt lớn.",
+              "title": "Thép"
+            },
+            {
+              "text": "Đầu tư lò nung, nghiền theo đợt.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Đầu tư nhà máy theo nguồn khí, nguyên liệu.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>capex</b> (B03 mã 21) ÷ <b>khấu hao</b> (B03 mã 02).",
+    "Trên <b>3 lần</b> là đợt đầu tư lớn.",
+    "<b>Thời điểm chu kỳ</b> quyết định hiệu quả đầu tư.",
+    "Đọc cùng <b>Net Debt / EBITDA</b>."
+  ],
+  "title": "Capex / Khấu hao · ở vật liệu cơ bản"
+}

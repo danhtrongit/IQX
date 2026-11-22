@@ -1,0 +1,432 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l1-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Q2/26"
+          ],
+          "t": "Doanh thu thuần quý này",
+          "tone": "p1",
+          "v": "19.215 tỷ"
+        },
+        {
+          "notes": [
+            "Q2/25"
+          ],
+          "t": "Doanh thu thuần cùng kỳ",
+          "tone": "warn",
+          "v": "16.485 tỷ"
+        },
+        {
+          "notes": [
+            "So với cùng kỳ"
+          ],
+          "t": "Tăng trưởng",
+          "tone": "pos",
+          "v": "16,6%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "so với",
+        "="
+      ]
+    },
+    "c14l1-g2": {
+      "fig": "formula",
+      "height": 180,
+      "items": [
+        {
+          "notes": [
+            "Lượng bán ra"
+          ],
+          "t": "Sản lượng",
+          "tone": "p1",
+          "v": "+3%"
+        },
+        {
+          "notes": [
+            "Theo giá dầu thế giới"
+          ],
+          "t": "Giá bán",
+          "tone": "warn",
+          "v": "+15%"
+        },
+        {
+          "notes": [
+            "Phần lớn do giá"
+          ],
+          "t": "Doanh thu",
+          "tone": "pos",
+          "v": "+18%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "×",
+        "="
+      ]
+    },
+    "c14l1-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Phân phối xăng dầu",
+          "tone": "p1",
+          "value": 20
+        },
+        {
+          "label": "Vận chuyển khí qua đường ống",
+          "tone": "pos",
+          "value": 4
+        },
+        {
+          "label": "Dịch vụ khoan theo hợp đồng dài",
+          "tone": "pos",
+          "value": 6
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "note": "Mảng bán hàng hoá chịu ảnh hưởng giá mạnh nhất.",
+      "title": "Doanh thu tăng khi giá dầu tăng 20% · số minh họa",
+      "unit": "%"
+    },
+    "c14l1-rep": {
+      "alt": "Tăng trưởng doanh thu: 16,6%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              10.913,
+              13.015,
+              19.488,
+              18.707,
+              27.477,
+              17.922,
+              10.014,
+              16.558
+            ]
+          }
+        ],
+        "name": "Tăng trưởng doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Quý này",
+              "v": [
+                14166.255,
+                14905.316,
+                15829.617,
+                16485.175,
+                18058.685,
+                17576.696,
+                17414.853,
+                19214.719
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                12772.377,
+                13188.848,
+                13247.912,
+                13887.316,
+                14166.255,
+                14905.316,
+                15829.617,
+                16485.175
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh thu doanh nghiệp dầu khí đi theo giá dầu và giá khí nhiều hơn theo sức bán hàng. Giá dầu tăng 30% thì doanh thu có thể tăng gần 30% dù sản lượng không đổi. Bài này giúp tách phần tăng do giá với phần tăng thật.",
+  "lesson_key": "fundamental:revenue_yoy-dk",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l1-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Tăng trưởng doanh thu so <b>doanh thu thuần</b> quý này với <b>cùng quý năm trước</b>. Cách tính giống bài Tăng trưởng doanh thu ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh thu bằng sản lượng nhân giá bán. Với hàng hoá như xăng dầu, khí, giá bán đi theo giá thế giới.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c14l1-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giá dầu tăng làm doanh thu tăng, nhưng giá vốn cũng tăng theo. Lợi nhuận chưa chắc tăng.",
+              "title": "Tăng do giá"
+            },
+            {
+              "text": "Bán được nhiều hơn là tăng trưởng bền hơn, ít phụ thuộc vào giá thế giới.",
+              "title": "Tăng do sản lượng"
+            },
+            {
+              "text": "Sản lượng và giá bán nằm ở thuyết minh hoặc tài liệu công ty, không có trên 3 báo cáo.",
+              "title": "Báo cáo không tách được"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở dầu khí khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l1-rep",
+          "title": "Tăng trưởng doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng doanh thu thuần so với cùng kỳ, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu quý này và cùng kỳ năm trước, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Doanh thu tăng đều nhiều quý thường trùng với giai đoạn giá dầu đi lên.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh thu tăng và biên gộp giữ được hoặc tăng. Phần tăng có đóng góp từ sản lượng, không chỉ từ giá.",
+              "title": "Tăng trưởng chất lượng",
+              "tone": "pos"
+            },
+            {
+              "text": "Doanh thu tăng mạnh nhưng biên gộp giảm. Giá bán tăng nhưng chi phí đầu vào tăng nhanh hơn.",
+              "title": "Tăng trưởng do giá",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với doanh nghiệp dầu khí, luôn đọc tăng trưởng doanh thu <b>cùng biên gộp</b>. Doanh thu tăng mà lợi nhuận gộp không tăng thì không có nhiều ý nghĩa.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c14l1-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu và biên gộp cùng tăng là tín hiệu tốt nhất.",
+              "title": "Đọc cùng biên gộp"
+            },
+            {
+              "text": "Tự đối chiếu với diễn biến giá dầu cùng kỳ để biết phần tăng do giá.",
+              "title": "So với giá dầu"
+            },
+            {
+              "text": "Chế độ Năm cho thấy chu kỳ giá rõ hơn.",
+              "title": "Xem theo năm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu, doanh thu thuần từng quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Cùng kỳ"
+            },
+            {
+              "label": "Tăng trưởng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "14.166",
+                "12.772",
+                "10,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "16.485",
+                "13.887",
+                "18,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q3/25",
+                "18.059",
+                "14.166",
+                "27,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "19.215",
+                "16.485",
+                "16,6%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Doanh thu tăng 10% đến 27% mỗi quý. Cùng giai đoạn, biên gộp quý giảm từ 15,5% ở Q4/24 xuống 8,5% ở Q4/25, cho thấy phần lớn tăng trưởng đến từ giá bán.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Có thể chỉ do giá dầu tăng.",
+              "title": "Coi doanh thu tăng là kinh doanh tốt lên"
+            },
+            {
+              "text": "Giá đầu vào tăng cùng lúc làm lợi nhuận không đổi.",
+              "title": "Bỏ qua giá vốn"
+            },
+            {
+              "text": "Doanh thu dầu khí dao động mạnh hơn nhiều ngành khác.",
+              "title": "So với ngành ít biến động giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khai thác dầu: doanh thu đi sát giá dầu. Dịch vụ: đi theo khối lượng hợp đồng.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Vận chuyển, phân phối khí: doanh thu theo sản lượng và giá khí, thường ổn định hơn.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Lọc dầu, phân phối xăng dầu: doanh thu rất lớn và đi theo giá xăng dầu.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>Tăng trưởng doanh thu</b> = doanh thu thuần kỳ này so với cùng kỳ.",
+    "Doanh thu dầu khí đi theo <b>giá dầu, giá khí</b> nhiều hơn theo bán hàng.",
+    "Luôn đọc <b>cùng biên gộp</b>.",
+    "Sản lượng và giá bán <b>không có trên 3 báo cáo</b>."
+  ],
+  "title": "Tăng trưởng doanh thu · ở dầu khí"
+}

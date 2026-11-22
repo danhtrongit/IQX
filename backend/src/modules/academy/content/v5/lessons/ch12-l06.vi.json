@@ -1,0 +1,423 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l6-g1": {
+      "alt": "Lợi suất đầu tư bằng doanh thu tài chính cộng dồn 4 quý 1.129 tỷ chia đầu tư bình quân 19.970 tỷ, bằng 5,65% mỗi năm",
+      "edges": [
+        {
+          "from": "doanh-thu-tai-chinh",
+          "label": "÷",
+          "to": "dau-tu-binh-quan"
+        },
+        {
+          "from": "dau-tu-binh-quan",
+          "label": "=",
+          "to": "loi-suat-dau-tu"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "doanh-thu-tai-chinh",
+          "sub": "Cộng dồn 4 quý · Kết quả kinh doanh",
+          "title": "Doanh thu tài chính",
+          "tone": "pos",
+          "value": "1.129 tỷ"
+        },
+        {
+          "id": "dau-tu-binh-quan",
+          "sub": "Ngắn hạn + dài hạn · Bảng cân đối",
+          "title": "Đầu tư bình quân",
+          "tone": "p1",
+          "value": "19.970 tỷ"
+        },
+        {
+          "id": "loi-suat-dau-tu",
+          "sub": "Mỗi năm",
+          "title": "Lợi suất đầu tư",
+          "tone": "warn",
+          "value": "5,65%"
+        }
+      ]
+    },
+    "c12l6-g2": {
+      "kind": "category",
+      "labels": [
+        "Nguồn tiền",
+        "Danh mục đầu tư cuối kỳ"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Vốn chủ sở hữu · 9.892 tỷ",
+          "tone": "p1",
+          "values": [
+            9892,
+            null
+          ]
+        },
+        {
+          "name": "Dự phòng nghiệp vụ · 15.881 tỷ",
+          "tone": "p5",
+          "values": [
+            15881,
+            null
+          ]
+        },
+        {
+          "name": "Tiền gửi · 13.000",
+          "tone": "p1",
+          "values": [
+            null,
+            13000
+          ]
+        },
+        {
+          "name": "Trái phiếu · 4.300",
+          "tone": "pos",
+          "values": [
+            null,
+            4300
+          ]
+        },
+        {
+          "name": "Cổ phiếu, khác · 3.240",
+          "tone": "p5",
+          "values": [
+            null,
+            3240
+          ]
+        }
+      ],
+      "title": "Đem đi đầu tư: nguồn tiền thành danh mục đầu tư cuối kỳ",
+      "unit": "tỷ đồng",
+      "value_format": {
+        "suffix": " tỷ"
+      },
+      "value_labels": "all"
+    },
+    "c12l6-g3": {
+      "kind": "category",
+      "labels": [
+        "Năm 1",
+        "Năm 2",
+        "Năm 3",
+        "Năm 4",
+        "Năm 5",
+        "Năm 6"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Công ty A · chủ yếu tiền gửi",
+          "tone": "p1",
+          "values": [
+            5.8,
+            5.6,
+            6,
+            5.7,
+            5.9,
+            5.6
+          ]
+        },
+        {
+          "name": "Công ty B · nhiều cổ phiếu",
+          "tone": "p5",
+          "values": [
+            9.5,
+            3,
+            11.2,
+            2.5,
+            8,
+            4.1
+          ]
+        }
+      ],
+      "threshold": {
+        "label": "Lãi tiền gửi 5%",
+        "value": 5
+      },
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c12l6-rep": {
+      "alt": "Lợi suất đầu tư: 5,7%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Lợi suất đầu tư (4 quý)",
+            "v": [
+              5.791,
+              5.917,
+              5.744,
+              5.944,
+              5.685,
+              5.543,
+              5.673,
+              5.653
+            ]
+          }
+        ],
+        "name": "Lợi suất đầu tư",
+        "sub": {
+          "series": [
+            {
+              "name": "Doanh thu hoạt động tài chính 4 quý",
+              "v": [
+                1020.882,
+                1061.858,
+                1049.412,
+                1105.478,
+                1076.299,
+                1068.33,
+                1113.155,
+                1129.008
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty bảo hiểm thu phí trước, trả bồi thường sau. Trong khoảng thời gian đó, tiền được đem đi đầu tư. Lợi suất đầu tư cho biết khoản tiền này sinh lời bao nhiêu mỗi năm.",
+  "lesson_key": "fundamental:investment_yield",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l6-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Lợi suất đầu tư</b> (investment yield) bằng <b>doanh thu hoạt động tài chính 4 quý</b> trên báo cáo kết quả kinh doanh, chia cho <b>đầu tư tài chính bình quân</b> trên bảng cân đối kế toán.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Đầu tư tài chính gồm khoản đầu tư <b>ngắn hạn và dài hạn</b>, kể cả <b>tiền gửi có kỳ hạn</b>. Bình quân là trung bình số dư đầu kỳ và cuối kỳ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Lợi suất đầu tư là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Phí thu trước tạo ra một khoản tiền tạm giữ, nằm trong <b>dự phòng nghiệp vụ</b>. Cộng với vốn chủ, công ty có một danh mục đầu tư lớn hơn nhiều so với vốn của mình.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l6-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phần lớn danh mục của công ty bảo hiểm Việt Nam, an toàn và dễ dự báo.",
+              "title": "Tiền gửi ngân hàng"
+            },
+            {
+              "text": "Kỳ hạn dài, lãi cố định, phù hợp với nghĩa vụ dài hạn.",
+              "title": "Trái phiếu"
+            },
+            {
+              "text": "Tỷ trọng nhỏ, lợi suất cao hơn nhưng biến động mạnh.",
+              "title": "Cổ phiếu và khác"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Tiền đầu tư đến từ đâu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l6-rep",
+          "title": "Lợi suất đầu tư",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi suất đầu tư tính theo 4 quý gần nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu hoạt động tài chính cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tăng mà đường đi ngang nghĩa là thu nhập tăng nhờ danh mục lớn lên, không phải nhờ lợi suất cao hơn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Ổn định và cao hơn lãi suất tiền gửi kỳ hạn 12 tháng, không phụ thuộc vào lãi bán cổ phiếu.",
+              "title": "Lợi suất tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Giảm liên tục theo lãi suất, hoặc rất cao nhờ khoản đầu tư rủi ro khó lặp lại.",
+              "title": "Lợi suất đáng lo",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức tham khảo ở Việt Nam thường 5-7% mỗi năm, đi theo lãi suất tiền gửi. Lợi suất cao bất thường cần xem danh mục có nhiều cổ phiếu hay không.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l6-g3",
+          "legend": [
+            {
+              "label": "Công ty A · chủ yếu tiền gửi",
+              "tone": "p1"
+            },
+            {
+              "label": "Công ty B · nhiều cổ phiếu",
+              "tone": "p5"
+            },
+            {
+              "label": "Lãi tiền gửi 12 tháng 5% (minh họa) · lợi suất % mỗi năm",
+              "tone": "warn"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Danh mục nhiều tiền gửi nên lợi suất đi theo lãi suất ngân hàng.",
+              "title": "Theo dõi lãi suất"
+            },
+            {
+              "text": "Combined ratio cao cần lợi suất đầu tư đủ lớn để bù.",
+              "title": "Ghép với combined ratio"
+            },
+            {
+              "text": "Lợi suất đều qua nhiều quý đáng tin hơn một quý tăng vọt.",
+              "title": "Xem độ ổn định"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu, số liệu từ Q3/25 đến Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Doanh thu hoạt động tài chính 4 quý",
+              "text": "1.129 tỷ đồng."
+            },
+            {
+              "term": "Đầu tư tài chính bình quân",
+              "text": "Đầu kỳ 19.400, cuối kỳ 20.540. Bình quân (19.400 + 20.540) ÷ 2 = 19.970."
+            },
+            {
+              "term": "Lợi suất đầu tư",
+              "text": "1.129 ÷ 19.970 ≈ 5,65%."
+            },
+            {
+              "term": "Xu hướng",
+              "text": "Dao động trong khoảng 5,5-5,9% suốt 8 quý, giảm nhẹ theo mặt bằng lãi suất."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền gửi có kỳ hạn là phần lớn danh mục, phải tính vào mẫu số.",
+              "title": "Bỏ sót tiền gửi"
+            },
+            {
+              "text": "Danh mục thay đổi trong năm, nên dùng số bình quân.",
+              "title": "Dùng số cuối kỳ"
+            },
+            {
+              "text": "Lãi bán cổ phiếu một lần làm lợi suất tăng nhưng khó lặp lại.",
+              "title": "Tin lợi suất đột biến"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Lợi suất đầu tư = <b>doanh thu tài chính 4 quý ÷ đầu tư tài chính bình quân</b>.",
+    "Đầu tư tài chính gồm ngắn hạn, dài hạn và <b>tiền gửi có kỳ hạn</b>.",
+    "Mức tham khảo <b>5-7% mỗi năm</b>, đi theo lãi suất tiền gửi.",
+    "Lợi suất <b>ổn định</b> đáng tin hơn lợi suất cao nhưng biến động."
+  ],
+  "title": "Lợi suất đầu tư · hiệu quả của danh mục đầu tư"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l06",
+  "questions": [
+    {
+      "correct_option_id": "47c12a42f5",
+      "id": "ch14-l06-q01",
+      "options": [
+        {
+          "id": "47c12a42f5",
+          "text": "Tiền chi mua sắm, xây dựng TSCĐ trên lưu chuyển tiền tệ"
+        },
+        {
+          "id": "0428b42270",
+          "text": "Tài sản cố định trên bảng cân đối"
+        },
+        {
+          "id": "0ea252f8b4",
+          "text": "Giá vốn hàng bán"
+        }
+      ],
+      "prompt": "Capex lấy từ đâu?"
+    },
+    {
+      "correct_option_id": "34b154dc12",
+      "id": "ch14-l06-q02",
+      "options": [
+        {
+          "id": "34b154dc12",
+          "text": "Tài sản đang già đi"
+        },
+        {
+          "id": "e21b4acd00",
+          "text": "Doanh nghiệp mở rộng mạnh"
+        },
+        {
+          "id": "c362443367",
+          "text": "Doanh nghiệp không có khấu hao"
+        }
+      ],
+      "prompt": "Tỷ lệ dưới 1 lần nhiều năm liền cho thấy gì?"
+    },
+    {
+      "correct_option_id": "2f7b24ff3f",
+      "id": "ch14-l06-q03",
+      "options": [
+        {
+          "id": "2f7b24ff3f",
+          "text": "Làm dòng tiền tự do thấp"
+        },
+        {
+          "id": "464373e14d",
+          "text": "Làm dòng tiền tự do tăng"
+        },
+        {
+          "id": "9390d8911b",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Tỷ lệ cao kéo dài ảnh hưởng thế nào đến dòng tiền tự do?"
+    },
+    {
+      "correct_option_id": "777339cb5e",
+      "id": "ch14-l06-q04",
+      "options": [
+        {
+          "id": "777339cb5e",
+          "text": "1 lần"
+        },
+        {
+          "id": "7a45450377",
+          "text": "0 lần"
+        },
+        {
+          "id": "75d8b1e6c8",
+          "text": "10 lần"
+        }
+      ],
+      "prompt": "Mốc tham chiếu của chỉ tiêu là bao nhiêu?"
+    },
+    {
+      "chart_id": "c14l6-rep",
+      "correct_option_id": "81ba18918f",
+      "id": "ch14-l06-q05",
+      "options": [
+        {
+          "id": "81ba18918f",
+          "text": "Đầu tư nhiều hơn phần hao mòn"
+        },
+        {
+          "id": "d9868736c8",
+          "text": "Doanh nghiệp đang bán tài sản"
+        },
+        {
+          "id": "675950b127",
+          "text": "Doanh nghiệp đang lỗ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột capex vượt cột khấu hao nghĩa là gì?"
+    }
+  ],
+  "salt": "ab2b420bdc65164e482b488db10cebd1053da2bf066af98edafce9f868dc3d6a"
+}

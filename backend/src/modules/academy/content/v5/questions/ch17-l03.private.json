@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l03",
+  "questions": [
+    {
+      "correct_option_id": "789ef1313f",
+      "id": "ch17-l03-q01",
+      "options": [
+        {
+          "id": "789ef1313f",
+          "text": "Năm đáy chu kỳ"
+        },
+        {
+          "id": "09f61b815d",
+          "text": "Năm đỉnh chu kỳ"
+        },
+        {
+          "id": "10c9f9c460",
+          "text": "Năm có cổ tức cao nhất"
+        }
+      ],
+      "prompt": "Với vật liệu cơ bản, biên năm nào cho biết sức chống chịu?"
+    },
+    {
+      "correct_option_id": "acd2312df8",
+      "id": "ch17-l03-q02",
+      "options": [
+        {
+          "id": "acd2312df8",
+          "text": "Chi phí sản xuất thấp và sản phẩm đa dạng"
+        },
+        {
+          "id": "52be9231f9",
+          "text": "Nhiều nợ vay ngắn hạn bằng ngoại tệ"
+        },
+        {
+          "id": "0b6111d5e3",
+          "text": "Ít tiền mặt và tồn kho thấp"
+        }
+      ],
+      "prompt": "Yếu tố nào giúp công ty thép giữ biên ổn định hơn?"
+    },
+    {
+      "correct_option_id": "681fd09f6e",
+      "id": "ch17-l03-q03",
+      "options": [
+        {
+          "id": "681fd09f6e",
+          "text": "Xi măng"
+        },
+        {
+          "id": "0134f5f2b9",
+          "text": "Phân bón xuất khẩu"
+        },
+        {
+          "id": "538a351e87",
+          "text": "Không có mảng nào"
+        }
+      ],
+      "prompt": "Mảng nào thường có biên ổn định hơn thép?"
+    },
+    {
+      "correct_option_id": "4498f4fec7",
+      "id": "ch17-l03-q04",
+      "options": [
+        {
+          "id": "4498f4fec7",
+          "text": "Phổ biến"
+        },
+        {
+          "id": "6f07e195cb",
+          "text": "Rất bất thường"
+        },
+        {
+          "id": "609ddfa006",
+          "text": "Không thể xảy ra"
+        }
+      ],
+      "prompt": "Độ lệch chuẩn 4 điểm % với công ty thép là thế nào?"
+    },
+    {
+      "chart_id": "c17l3-rep",
+      "correct_option_id": "49008a035f",
+      "id": "ch17-l03-q05",
+      "options": [
+        {
+          "id": "49008a035f",
+          "text": "Đỉnh hoặc đáy chu kỳ giá"
+        },
+        {
+          "id": "86adce7ac4",
+          "text": "Năm đổi kiểm toán"
+        },
+        {
+          "id": "04cb3f84b1",
+          "text": "Năm phát hành cổ phiếu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, năm vượt khỏi dải thường là năm gì?"
+    }
+  ],
+  "salt": "a9d8e20c4ee508944884ef1cb905cd3b5a46d94f739981f3643a9611d6a8a5b3"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l04",
+  "questions": [
+    {
+      "correct_option_id": "19cd25c0d7",
+      "id": "ch11-l04-q01",
+      "options": [
+        {
+          "id": "19cd25c0d7",
+          "text": "Mức dùng vốn chủ cho hoạt động cho vay margin"
+        },
+        {
+          "id": "835ca767ef",
+          "text": "Mức sinh lời của danh mục tự doanh"
+        },
+        {
+          "id": "3467accc2b",
+          "text": "Phần trăm doanh thu đến từ môi giới"
+        }
+      ],
+      "prompt": "Dư nợ cho vay / VCSH đo điều gì?"
+    },
+    {
+      "correct_option_id": "b6dbd24a54",
+      "id": "ch11-l04-q02",
+      "options": [
+        {
+          "id": "b6dbd24a54",
+          "text": "Vốn chủ sở hữu"
+        },
+        {
+          "id": "338bebcc93",
+          "text": "Vốn cho vay sở hữu"
+        },
+        {
+          "id": "5cc1fff5bf",
+          "text": "Vay chứng khoán sở hữu"
+        }
+      ],
+      "prompt": "VCSH là viết tắt của gì?"
+    },
+    {
+      "correct_option_id": "e28b3bb0f3",
+      "id": "ch11-l04-q03",
+      "options": [
+        {
+          "id": "e28b3bb0f3",
+          "text": "Vì pháp luật giới hạn dư nợ margin theo bội số vốn chủ"
+        },
+        {
+          "id": "b9a1e15603",
+          "text": "Vì nhà đầu tư không được vay quá một lần"
+        },
+        {
+          "id": "d7e897367d",
+          "text": "Vì lãi suất cho vay bị cố định theo vốn chủ"
+        }
+      ],
+      "prompt": "Vì sao tỷ lệ dư nợ / VCSH cao làm giảm dư địa cho vay?"
+    },
+    {
+      "correct_option_id": "ccb8a979d7",
+      "id": "ch11-l04-q04",
+      "options": [
+        {
+          "id": "ccb8a979d7",
+          "text": "Dư nợ giảm, vốn chủ tăng hoặc cả hai"
+        },
+        {
+          "id": "e2d4fd63ea",
+          "text": "Chỉ có thể do dư nợ cho vay giảm"
+        },
+        {
+          "id": "f8763ca8c2",
+          "text": "Chỉ có thể do công ty trả bớt nợ vay"
+        }
+      ],
+      "prompt": "Tỷ lệ dư nợ / VCSH giảm có thể do đâu?"
+    },
+    {
+      "chart_id": "c11l4-rep",
+      "correct_option_id": "84121a47b9",
+      "id": "ch11-l04-q05",
+      "options": [
+        {
+          "id": "84121a47b9",
+          "text": "Dư nợ cho vay và vốn chủ sở hữu"
+        },
+        {
+          "id": "22d015fb4d",
+          "text": "Doanh thu và chi phí hoạt động"
+        },
+        {
+          "id": "75cd5c2f61",
+          "text": "Nợ vay và tổng tài sản"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, hai cột mỗi quý là gì?"
+    }
+  ],
+  "salt": "681d1737ee8931c471b8b14ff537988493e08f5aad40e73172def0ef88e488bd"
+}

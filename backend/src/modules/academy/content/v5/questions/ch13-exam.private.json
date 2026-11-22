@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-exam",
+  "questions": [
+    {
+      "correct_option_id": "1e68c159a6",
+      "id": "ch13-exam-q01",
+      "options": [
+        {
+          "id": "1e68c159a6",
+          "text": "Khi bàn giao cho khách"
+        },
+        {
+          "id": "022b5006fb",
+          "text": "Khi ký hợp đồng"
+        },
+        {
+          "id": "7b4aba9f19",
+          "text": "Khi nhận tiền đặt cọc"
+        }
+      ],
+      "prompt": "Công ty bất động sản ghi nhận doanh thu bán nhà khi nào?"
+    },
+    {
+      "correct_option_id": "dc283a760b",
+      "id": "ch13-exam-q02",
+      "options": [
+        {
+          "id": "dc283a760b",
+          "text": "Theo năm hoặc 4 quý cộng dồn"
+        },
+        {
+          "id": "a6a27e567c",
+          "text": "Theo quý có doanh thu cao nhất"
+        },
+        {
+          "id": "f383bee10a",
+          "text": "Theo tháng"
+        }
+      ],
+      "prompt": "Nên đọc tăng trưởng doanh thu bất động sản theo cách nào để bớt nhiễu?"
+    },
+    {
+      "correct_option_id": "8a6328eb2d",
+      "id": "ch13-exam-q03",
+      "options": [
+        {
+          "id": "8a6328eb2d",
+          "text": "Công ty bất động sản khác"
+        },
+        {
+          "id": "327841e415",
+          "text": "Ngân hàng"
+        },
+        {
+          "id": "45fb79f866",
+          "text": "Doanh nghiệp bán lẻ"
+        }
+      ],
+      "prompt": "Revenue Growth Stability của công ty bất động sản nên so với ai?"
+    },
+    {
+      "correct_option_id": "aea99beb1e",
+      "id": "ch13-exam-q04",
+      "options": [
+        {
+          "id": "aea99beb1e",
+          "text": "Giá vốn hàng bán"
+        },
+        {
+          "id": "eee75497cb",
+          "text": "Chi phí quản lý"
+        },
+        {
+          "id": "2ba9e381f9",
+          "text": "Doanh thu tài chính"
+        }
+      ],
+      "prompt": "Lãi vay vốn hoá vào dự án đi vào khoản nào khi bàn giao?"
+    },
+    {
+      "correct_option_id": "2fb60bf83e",
+      "id": "ch13-exam-q05",
+      "options": [
+        {
+          "id": "2fb60bf83e",
+          "text": "Doanh thu hoạt động tài chính"
+        },
+        {
+          "id": "72a1a4a141",
+          "text": "Doanh thu bán hàng"
+        },
+        {
+          "id": "510057ed1a",
+          "text": "Người mua trả tiền trước"
+        }
+      ],
+      "prompt": "Lãi bán một công ty con sở hữu dự án thường ghi ở đâu?"
+    },
+    {
+      "correct_option_id": "5a8c152471",
+      "id": "ch13-exam-q06",
+      "options": [
+        {
+          "id": "5a8c152471",
+          "text": "Khoản lãi có lặp lại được không"
+        },
+        {
+          "id": "86bfd8f5af",
+          "text": "Công ty có bao nhiêu chi nhánh"
+        },
+        {
+          "id": "57e50bbf0b",
+          "text": "Công ty dùng phần mềm kế toán nào"
+        }
+      ],
+      "prompt": "Tỷ trọng lợi nhuận ngoài kinh doanh tăng vọt cần hỏi gì?"
+    },
+    {
+      "correct_option_id": "106b757862",
+      "id": "ch13-exam-q07",
+      "options": [
+        {
+          "id": "106b757862",
+          "text": "Mã 312 và 332"
+        },
+        {
+          "id": "80808810c9",
+          "text": "Mã 318 và 336"
+        },
+        {
+          "id": "84249ec0cb",
+          "text": "Mã 320 và 338"
+        }
+      ],
+      "prompt": "Người mua trả tiền trước gồm những mã dòng nào trên bảng cân đối?"
+    },
+    {
+      "correct_option_id": "69df61e833",
+      "id": "ch13-exam-q08",
+      "options": [
+        {
+          "id": "69df61e833",
+          "text": "Tiền khách trả trước bằng khoảng 1,4 năm doanh thu"
+        },
+        {
+          "id": "5ba71dd915",
+          "text": "Doanh thu tăng 1,4% so với cùng kỳ"
+        },
+        {
+          "id": "4514f0199a",
+          "text": "Nợ vay bằng 1,4 lần vốn chủ"
+        }
+      ],
+      "prompt": "Người mua trả tiền trước / Doanh thu bằng 1,4 lần nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "8195e31486",
+      "id": "ch13-exam-q09",
+      "options": [
+        {
+          "id": "8195e31486",
+          "text": "Vì thường đổi hướng sớm hơn doanh thu"
+        },
+        {
+          "id": "6aea6f8341",
+          "text": "Vì công bố trước báo cáo"
+        },
+        {
+          "id": "7aa8e7287b",
+          "text": "Vì luôn tăng trước giá cổ phiếu"
+        }
+      ],
+      "prompt": "Vì sao gọi tăng trưởng người mua trả tiền trước là chỉ tiêu dẫn trước?"
+    },
+    {
+      "correct_option_id": "83ab66f542",
+      "id": "ch13-exam-q10",
+      "options": [
+        {
+          "id": "83ab66f542",
+          "text": "Phần bàn giao nhiều hơn tiền khách mới trả"
+        },
+        {
+          "id": "06130bde72",
+          "text": "Công ty mở bán dự án mới"
+        },
+        {
+          "id": "95e5ff4d90",
+          "text": "Công ty phát hành trái phiếu"
+        }
+      ],
+      "prompt": "Số dư người mua trả tiền trước giảm khi nào?"
+    },
+    {
+      "correct_option_id": "9e378929ee",
+      "id": "ch13-exam-q11",
+      "options": [
+        {
+          "id": "9e378929ee",
+          "text": "Tiền thuê đất trả trước"
+        },
+        {
+          "id": "76d0c6a513",
+          "text": "Tiền mua nhà trả theo tiến độ"
+        },
+        {
+          "id": "858d168780",
+          "text": "Lãi tiền gửi"
+        }
+      ],
+      "prompt": "Doanh thu chưa thực hiện ở công ty khu công nghiệp chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "7256316884",
+      "id": "ch13-exam-q12",
+      "options": [
+        {
+          "id": "7256316884",
+          "text": "Không, đây là hai khoản khác nhau"
+        },
+        {
+          "id": "73c8eee8e5",
+          "text": "Có, luôn phải cộng"
+        },
+        {
+          "id": "8fb7fd0622",
+          "text": "Chỉ cộng vào quý 4"
+        }
+      ],
+      "prompt": "Có nên cộng doanh thu chưa thực hiện vào người mua trả tiền trước không?"
+    },
+    {
+      "correct_option_id": "0712621896",
+      "id": "ch13-exam-q13",
+      "options": [
+        {
+          "id": "0712621896",
+          "text": "Quỹ đất, dự án đang xây, nhà chưa bàn giao"
+        },
+        {
+          "id": "6588a3c192",
+          "text": "Chủ yếu vật liệu xây dựng và thiết bị"
+        },
+        {
+          "id": "83b186cfbf",
+          "text": "Chứng khoán kinh doanh và tiền gửi kỳ hạn"
+        }
+      ],
+      "prompt": "Hàng tồn kho của công ty bất động sản gồm những gì?"
+    },
+    {
+      "correct_option_id": "ef6a8fa1c1",
+      "id": "ch13-exam-q14",
+      "options": [
+        {
+          "id": "ef6a8fa1c1",
+          "text": "Nhiều hàng chưa bán được"
+        },
+        {
+          "id": "16b79e4fe9",
+          "text": "Hàng đã bán hết"
+        },
+        {
+          "id": "57bcb5b7bc",
+          "text": "Công ty không có nợ vay"
+        }
+      ],
+      "prompt": "Tồn kho lớn nhưng người mua trả tiền trước nhỏ thường cho thấy gì?"
+    },
+    {
+      "correct_option_id": "487e3b473c",
+      "id": "ch13-exam-q15",
+      "options": [
+        {
+          "id": "487e3b473c",
+          "text": "Giá vốn 4 quý"
+        },
+        {
+          "id": "22c0e13c11",
+          "text": "Doanh thu 4 quý"
+        },
+        {
+          "id": "35ae7099af",
+          "text": "LNST 4 quý"
+        }
+      ],
+      "prompt": "Số năm bán hết tồn kho bằng tồn kho chia cho gì?"
+    },
+    {
+      "correct_option_id": "ebafa46552",
+      "id": "ch13-exam-q16",
+      "options": [
+        {
+          "id": "ebafa46552",
+          "text": "Vốn có thể bị kẹt trong dự án"
+        },
+        {
+          "id": "f445fa1d86",
+          "text": "Công ty bán hàng rất tốt"
+        },
+        {
+          "id": "298006ecab",
+          "text": "Công ty sắp trả cổ tức lớn"
+        }
+      ],
+      "prompt": "Số năm bán hết tồn kho tăng nhanh trong khi doanh thu giảm là dấu hiệu gì?"
+    },
+    {
+      "correct_option_id": "5a38617a35",
+      "id": "ch13-exam-q17",
+      "options": [
+        {
+          "id": "5a38617a35",
+          "text": "Bất động sản đầu tư"
+        },
+        {
+          "id": "69722a47c0",
+          "text": "Hàng tồn kho"
+        },
+        {
+          "id": "89b79b1796",
+          "text": "Phải thu khác"
+        }
+      ],
+      "prompt": "Tài sản giữ lại để cho thuê nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "6796e35d5f",
+      "id": "ch13-exam-q18",
+      "options": [
+        {
+          "id": "6796e35d5f",
+          "text": "Đều hơn nhờ tiền thuê"
+        },
+        {
+          "id": "3c9793816b",
+          "text": "Dồn hết vào quý 4"
+        },
+        {
+          "id": "6ad103b5be",
+          "text": "Luôn giảm"
+        }
+      ],
+      "prompt": "Công ty có tỷ trọng bất động sản đầu tư cao thường có doanh thu thế nào?"
+    },
+    {
+      "correct_option_id": "97c43404a0",
+      "id": "ch13-exam-q19",
+      "options": [
+        {
+          "id": "97c43404a0",
+          "text": "Trả trước hoặc phải thu khác"
+        },
+        {
+          "id": "aa3f106ea1",
+          "text": "Doanh thu chưa thực hiện"
+        },
+        {
+          "id": "7bb5ed2347",
+          "text": "Vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Tiền đặt cọc nhận chuyển nhượng dự án thường nằm ở đâu?"
+    },
+    {
+      "correct_option_id": "d76f5eafc3",
+      "id": "ch13-exam-q20",
+      "options": [
+        {
+          "id": "d76f5eafc3",
+          "text": "Cờ đỏ cần theo dõi"
+        },
+        {
+          "id": "08157c1828",
+          "text": "Mức rất an toàn"
+        },
+        {
+          "id": "737e881c18",
+          "text": "Mức bắt buộc theo luật"
+        }
+      ],
+      "prompt": "Phải thu và trả trước trên khoảng 50% vốn chủ được xem là gì?"
+    },
+    {
+      "correct_option_id": "e2b5f1b2d7",
+      "id": "ch13-exam-q21",
+      "options": [
+        {
+          "id": "e2b5f1b2d7",
+          "text": "Trái phiếu chuyển đổi"
+        },
+        {
+          "id": "8a9ba0e9e5",
+          "text": "Người mua trả tiền trước"
+        },
+        {
+          "id": "0ddc6dfb9a",
+          "text": "Doanh thu chưa thực hiện"
+        }
+      ],
+      "prompt": "Khi tính D/E cho bất động sản, dòng nào được cộng vào nợ vay?"
+    },
+    {
+      "correct_option_id": "80007a971d",
+      "id": "ch13-exam-q22",
+      "options": [
+        {
+          "id": "80007a971d",
+          "text": "Nợ dài hạn đến hạn trả trong 12 tháng"
+        },
+        {
+          "id": "f6ad96cfe8",
+          "text": "Toàn bộ trái phiếu đã phát hành"
+        },
+        {
+          "id": "1fd3dc4977",
+          "text": "Tiền khách mua nhà trả theo tiến độ"
+        }
+      ],
+      "prompt": "Vay ngắn hạn trên bảng cân đối gồm cả khoản nào?"
+    },
+    {
+      "correct_option_id": "28c6ff1588",
+      "id": "ch13-exam-q23",
+      "options": [
+        {
+          "id": "28c6ff1588",
+          "text": "Khoản nợ dài hạn lớn sắp đến hạn"
+        },
+        {
+          "id": "e8248aeab7",
+          "text": "Doanh thu tăng mạnh"
+        },
+        {
+          "id": "90c664f46f",
+          "text": "Tồn kho giảm"
+        }
+      ],
+      "prompt": "Tỷ trọng nợ vay ngắn hạn tăng đột ngột dù không vay thêm thường do đâu?"
+    },
+    {
+      "correct_option_id": "18213d3496",
+      "id": "ch13-exam-q24",
+      "options": [
+        {
+          "id": "18213d3496",
+          "text": "Tiền hiện có không đủ trả toàn bộ nợ vay đến hạn"
+        },
+        {
+          "id": "6ffb294cdf",
+          "text": "Công ty không có khoản vay nào đến hạn"
+        },
+        {
+          "id": "451b3dcc56",
+          "text": "Tiền hiện có gấp đôi số nợ vay đến hạn"
+        }
+      ],
+      "prompt": "Tiền / Nợ vay ngắn hạn dưới 1 lần nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "da7131bce6",
+      "id": "ch13-exam-q25",
+      "options": [
+        {
+          "id": "da7131bce6",
+          "text": "Current Ratio tính cả tồn kho khó bán nhanh"
+        },
+        {
+          "id": "3f344d55d0",
+          "text": "Current Ratio luôn bằng 0"
+        },
+        {
+          "id": "13481276fd",
+          "text": "Current Ratio không có mẫu số"
+        }
+      ],
+      "prompt": "Vì sao ở bất động sản Tiền / Nợ vay ngắn hạn đáng tin hơn Current Ratio?"
+    },
+    {
+      "correct_option_id": "933f7de761",
+      "id": "ch13-exam-q26",
+      "options": [
+        {
+          "id": "933f7de761",
+          "text": "Lãi vay đang được vốn hoá nhiều vào dự án"
+        },
+        {
+          "id": "085900733d",
+          "text": "Công ty đang trả lãi chậm hơn hạn hợp đồng"
+        },
+        {
+          "id": "4553f7c765",
+          "text": "Công ty đã trả trước lãi vay của năm sau"
+        }
+      ],
+      "prompt": "Lãi vay đã trả / Chi phí lãi vay lớn hơn 1 nhiều cho thấy gì?"
+    },
+    {
+      "correct_option_id": "c02084244a",
+      "id": "ch13-exam-q27",
+      "options": [
+        {
+          "id": "c02084244a",
+          "text": "Dùng tiền lãi vay đã trả làm mẫu số"
+        },
+        {
+          "id": "0769a0faed",
+          "text": "Dùng doanh thu làm tử số"
+        },
+        {
+          "id": "97f8f16275",
+          "text": "Dùng vốn chủ làm mẫu số"
+        }
+      ],
+      "prompt": "Nên tính lại Interest Coverage của công ty bất động sản bằng cách nào?"
+    },
+    {
+      "correct_option_id": "b91e13706f",
+      "id": "ch13-exam-q28",
+      "options": [
+        {
+          "id": "b91e13706f",
+          "text": "Tiền chi vào tồn kho dự án nằm ở dòng tiền kinh doanh"
+        },
+        {
+          "id": "06914c210d",
+          "text": "Công ty không thu được tiền khách"
+        },
+        {
+          "id": "d9e6a54b9f",
+          "text": "Công ty trả cổ tức quá lớn"
+        }
+      ],
+      "prompt": "Vì sao CFO của công ty bất động sản đang xây dự án thường âm?"
+    },
+    {
+      "correct_option_id": "85326205ce",
+      "id": "ch13-exam-q29",
+      "options": [
+        {
+          "id": "85326205ce",
+          "text": "Lợi nhuận dồn theo đợt bàn giao và có lãi một lần"
+        },
+        {
+          "id": "47415a135f",
+          "text": "Giá cổ phiếu bất động sản không thay đổi theo ngày"
+        },
+        {
+          "id": "c6f2c96e60",
+          "text": "Công ty bất động sản không công bố lợi nhuận quý"
+        }
+      ],
+      "prompt": "Vì sao P/E của công ty bất động sản dễ cho tín hiệu sai?"
+    },
+    {
+      "correct_option_id": "6603e9cdb3",
+      "id": "ch13-exam-q30",
+      "options": [
+        {
+          "id": "6603e9cdb3",
+          "text": "Lịch sử P/B của chính công ty"
+        },
+        {
+          "id": "c9f7c5bd8f",
+          "text": "P/B của ngân hàng"
+        },
+        {
+          "id": "a9f4d0cd1b",
+          "text": "P/E của chính công ty"
+        }
+      ],
+      "prompt": "Với bất động sản, P/B hữu ích nhất khi so với gì?"
+    }
+  ],
+  "salt": "e090ac31aab1b9e5e0e30b3ee5d941fd1563f44121d075baf4e8175af4eef83d"
+}

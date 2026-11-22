@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l07",
+  "questions": [
+    {
+      "correct_option_id": "1132f262e9",
+      "id": "ch15-l07-q01",
+      "options": [
+        {
+          "id": "1132f262e9",
+          "text": "Mã 311 trên bảng cân đối"
+        },
+        {
+          "id": "0dbc3262f2",
+          "text": "Mã 141 trên bảng cân đối"
+        },
+        {
+          "id": "b5c0481111",
+          "text": "Mã 25 trên kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Phải trả người bán lấy ở mã dòng nào?"
+    },
+    {
+      "correct_option_id": "5c689a047b",
+      "id": "ch15-l07-q02",
+      "options": [
+        {
+          "id": "5c689a047b",
+          "text": "Nhà cung cấp tài trợ toàn bộ hàng tồn kho"
+        },
+        {
+          "id": "bd4d9b9f83",
+          "text": "Chuỗi phải vay để mua toàn bộ hàng"
+        },
+        {
+          "id": "3a0771b017",
+          "text": "Chuỗi không có hàng tồn"
+        }
+      ],
+      "prompt": "Tỷ lệ trên 1 lần nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "e653f66e1c",
+      "id": "ch15-l07-q03",
+      "options": [
+        {
+          "id": "e653f66e1c",
+          "text": "Nhà cung cấp rút ngắn thời hạn trả chậm"
+        },
+        {
+          "id": "36498d2fe9",
+          "text": "Chuỗi bán hàng nhanh hơn"
+        },
+        {
+          "id": "63af429aea",
+          "text": "Chuỗi trả cổ tức"
+        }
+      ],
+      "prompt": "Tỷ lệ giảm nhanh có thể cho thấy gì?"
+    },
+    {
+      "correct_option_id": "69fe44d254",
+      "id": "ch15-l07-q04",
+      "options": [
+        {
+          "id": "69fe44d254",
+          "text": "Làm CFO cao hơn"
+        },
+        {
+          "id": "7d35cbb518",
+          "text": "Làm CFO thấp hơn"
+        },
+        {
+          "id": "364797dc78",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Phải trả tăng ảnh hưởng thế nào đến CFO?"
+    },
+    {
+      "chart_id": "c15l7-rep",
+      "correct_option_id": "c1bccd8f89",
+      "id": "ch15-l07-q05",
+      "options": [
+        {
+          "id": "c1bccd8f89",
+          "text": "Mốc 1 lần"
+        },
+        {
+          "id": "8a148e86b1",
+          "text": "Trung vị 5 năm"
+        },
+        {
+          "id": "c909b7fa8f",
+          "text": "Đường CAGR"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường nét đứt là gì?"
+    }
+  ],
+  "salt": "43828f6b5d1873089b143abca8649aa3ed0b0a726e1c5b7118691ffed53d26de"
+}

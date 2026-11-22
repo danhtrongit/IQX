@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l01",
+  "questions": [
+    {
+      "correct_option_id": "077b43f2e3",
+      "id": "ch13-l01-q01",
+      "options": [
+        {
+          "id": "077b43f2e3",
+          "text": "Khi bàn giao sản phẩm cho khách"
+        },
+        {
+          "id": "98c8c8faed",
+          "text": "Khi khách ký hợp đồng mua"
+        },
+        {
+          "id": "51da5b5f2e",
+          "text": "Khi khách đặt cọc giữ chỗ"
+        }
+      ],
+      "prompt": "Công ty bất động sản ghi nhận doanh thu khi nào?"
+    },
+    {
+      "correct_option_id": "d649712e78",
+      "id": "ch13-l01-q02",
+      "options": [
+        {
+          "id": "d649712e78",
+          "text": "Vì bàn giao dồn vào một số quý"
+        },
+        {
+          "id": "7e2463febc",
+          "text": "Vì giá nhà thay đổi mỗi quý"
+        },
+        {
+          "id": "bf84d07208",
+          "text": "Vì công ty đổi cách lập báo cáo mỗi quý"
+        }
+      ],
+      "prompt": "Vì sao tăng trưởng doanh thu từng quý của công ty bất động sản dao động rất mạnh?"
+    },
+    {
+      "correct_option_id": "0e91e164dd",
+      "id": "ch13-l01-q03",
+      "options": [
+        {
+          "id": "0e91e164dd",
+          "text": "Theo năm hoặc 4 quý cộng dồn"
+        },
+        {
+          "id": "ab6cf81333",
+          "text": "Chỉ theo quý gần nhất"
+        },
+        {
+          "id": "55e0858135",
+          "text": "Chỉ theo quý có doanh thu cao nhất"
+        }
+      ],
+      "prompt": "Nên đọc tăng trưởng doanh thu bất động sản theo cách nào?"
+    },
+    {
+      "correct_option_id": "81ebf58e31",
+      "id": "ch13-l01-q04",
+      "options": [
+        {
+          "id": "81ebf58e31",
+          "text": "Người mua trả tiền trước"
+        },
+        {
+          "id": "5d5c90a16a",
+          "text": "Chi phí bán hàng"
+        },
+        {
+          "id": "096495c314",
+          "text": "Tài sản cố định"
+        }
+      ],
+      "prompt": "Chỉ tiêu nào giúp biết doanh thu những năm tới có nguồn để ghi nhận?"
+    },
+    {
+      "chart_id": "c13l1-rep",
+      "correct_option_id": "dae56d3f74",
+      "id": "ch13-l01-q05",
+      "options": [
+        {
+          "id": "dae56d3f74",
+          "text": "Quý đó có đợt bàn giao lớn"
+        },
+        {
+          "id": "c698042f1f",
+          "text": "Quý đó công ty vay thêm nhiều"
+        },
+        {
+          "id": "a55d7e09d5",
+          "text": "Quý đó giá cổ phiếu tăng mạnh"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cặp cột quý 4 cao vọt thường cho thấy điều gì?"
+    }
+  ],
+  "salt": "c39f73fcfc584fb10b547222a57ae0538fed1d8b627180db4a681925ba506741"
+}

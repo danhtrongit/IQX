@@ -1,0 +1,371 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l11-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "EBIT × (1 − 20%)"
+          ],
+          "t": "NOPAT 4 quý",
+          "tone": "pos",
+          "v": "3.001 tỷ"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Vốn đầu tư bình quân",
+          "tone": "p1",
+          "v": "VCSH + nợ vay − tiền"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "ROIC",
+          "tone": "warn",
+          "v": "36,9%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l11-g2": {
+      "fig": "formula",
+      "height": 180,
+      "items": [
+        {
+          "notes": [
+            "Cần tài trợ"
+          ],
+          "t": "Hàng tồn kho",
+          "tone": "warn",
+          "v": "100"
+        },
+        {
+          "notes": [
+            "Không tính vào vốn đầu tư"
+          ],
+          "t": "Nhà cung cấp tài trợ",
+          "tone": "pos",
+          "v": "70"
+        },
+        {
+          "notes": [
+            "Nhỏ, nên ROIC cao"
+          ],
+          "t": "Vốn đầu tư bỏ ra",
+          "tone": "p1",
+          "v": "30"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "−",
+        "="
+      ]
+    },
+    "c15l11-rep": {
+      "alt": "ROIC: 36,9%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "ROIC (4 quý)",
+            "v": [
+              22.591,
+              26.026,
+              25.837,
+              26.526,
+              29.441,
+              30.43,
+              33.406,
+              36.938
+            ]
+          }
+        ],
+        "name": "ROIC",
+        "sub": {
+          "series": [
+            {
+              "name": "NOPAT 4 quý",
+              "v": [
+                1980.482,
+                2202.22,
+                2263.633,
+                2337.025,
+                2497.518,
+                2522.147,
+                2751.773,
+                3000.565
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l11",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Chuỗi bán lẻ tốt có ROIC rất cao vì nhà cung cấp tài trợ phần lớn hàng hoá và cửa hàng chủ yếu đi thuê. Bài này giải thích vì sao và khi nào ROIC cao là thật.",
+  "lesson_key": "fundamental:roic-bl",
+  "order": 11,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l11-g1",
+          "type": "chart"
+        },
+        {
+          "text": "ROIC bằng <b>NOPAT</b> chia <b>vốn đầu tư bình quân</b> (vốn chủ cộng nợ vay trừ tiền). Cách tính giống bài ROIC ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Vốn đầu tư chỉ tính vốn chủ và nợ vay. Phải trả nhà cung cấp không nằm trong vốn đầu tư, dù nó tài trợ phần lớn hàng hoá.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c15l11-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cửa hàng thuê, hàng hoá do nhà cung cấp tài trợ. Vốn đầu tư nhỏ so với lợi nhuận.",
+              "title": "Vốn bỏ ra ít"
+            },
+            {
+              "text": "ROIC 25% đến 40% có thể gặp ở chuỗi tốt.",
+              "title": "ROIC cao là bình thường"
+            },
+            {
+              "text": "ROIC cao cho phép chuỗi mở rộng mà ít cần vốn mới.",
+              "title": "Mở rộng nhanh"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bán lẻ khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l11-rep",
+          "title": "ROIC",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "NOPAT 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "NOPAT tăng trong khi vốn đầu tư đi ngang làm ROIC tăng nhanh.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "ROIC trên khoảng 20% và ổn định. Mức tham khảo với chuỗi bán lẻ.",
+              "title": "Tạo giá trị cao",
+              "tone": "pos"
+            },
+            {
+              "text": "ROIC giảm nhiều năm, thường do mở mới nhiều mà cửa hàng mới chưa có lãi.",
+              "title": "Hiệu quả vốn giảm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "ROIC tăng quá nhanh có thể do nợ nhà cung cấp tăng bất thường. Đọc cùng Phải trả người bán / Tồn kho.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC cao và ổn định là dấu hiệu mô hình tốt.",
+              "title": "So các chuỗi"
+            },
+            {
+              "text": "ROIC giữ được khi mở mới là mô hình nhân bản tốt.",
+              "title": "Đánh giá mở rộng"
+            },
+            {
+              "text": "CCC ngắn giúp vốn đầu tư nhỏ, ROIC cao.",
+              "title": "Đọc cùng CCC"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "NOPAT"
+            },
+            {
+              "label": "ROIC"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "1.980",
+                "22,6%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "2.337",
+                "26,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "3.001",
+                "36,9%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "ROIC tăng từ 22,6% lên 36,9%. NOPAT tăng 52% trong khi CCC ngắn lại, chuỗi cần ít vốn hơn cho hàng hoá.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nhà sản xuất cần nhà máy, ROIC thường thấp hơn.",
+              "title": "So với nhà sản xuất"
+            },
+            {
+              "text": "Có thể do nợ nhà cung cấp tăng tạm thời.",
+              "title": "Coi ROIC cao luôn bền"
+            },
+            {
+              "text": "Trừ tiền khỏi vốn đầu tư để đo đúng.",
+              "title": "Quên tiền mặt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "ROIC cao nhờ thuê mặt bằng và nhà cung cấp tài trợ hàng.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "ROIC phụ thuộc biên lợi nhuận và mức dùng nhà máy.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "<b>ROIC</b> = NOPAT 4 quý ÷ vốn đầu tư bình quân.",
+    "Bán lẻ tốt có <b>ROIC cao</b> vì bỏ ra ít vốn.",
+    "Phải trả nhà cung cấp <b>không tính vào vốn đầu tư</b>.",
+    "Đọc cùng <b>CCC</b> và <b>Phải trả người bán / Tồn kho</b>."
+  ],
+  "title": "ROIC · ở bán lẻ và tiêu dùng"
+}

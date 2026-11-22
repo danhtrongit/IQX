@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l04",
+  "questions": [
+    {
+      "correct_option_id": "a0ef0ede54",
+      "id": "ch14-l04-q01",
+      "options": [
+        {
+          "id": "a0ef0ede54",
+          "text": "Giá vốn hàng bán 4 quý"
+        },
+        {
+          "id": "6adfb68659",
+          "text": "Doanh thu thuần 4 quý"
+        },
+        {
+          "id": "515f820f72",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Số ngày tồn kho bằng tồn kho bình quân chia cho gì, nhân 365?"
+    },
+    {
+      "correct_option_id": "1546cd9033",
+      "id": "ch14-l04-q02",
+      "options": [
+        {
+          "id": "1546cd9033",
+          "text": "Kho lớn thì lãi lỗ khi giá dầu đổi chiều lớn"
+        },
+        {
+          "id": "8a2fbd1028",
+          "text": "Vì tồn kho không có giá trị"
+        },
+        {
+          "id": "c961f86d01",
+          "text": "Vì tồn kho quyết định cổ tức"
+        }
+      ],
+      "prompt": "Vì sao số ngày tồn kho quan trọng với doanh nghiệp phân phối xăng dầu?"
+    },
+    {
+      "correct_option_id": "c5e751ef42",
+      "id": "ch14-l04-q03",
+      "options": [
+        {
+          "id": "c5e751ef42",
+          "text": "Dịch vụ dầu khí với tồn kho là vật tư"
+        },
+        {
+          "id": "8e63fb95b9",
+          "text": "Lọc dầu với tồn kho dầu thô"
+        },
+        {
+          "id": "dc84050e4a",
+          "text": "Phân phối xăng dầu bán lẻ"
+        }
+      ],
+      "prompt": "Mảng nào có tồn kho ít chịu rủi ro giá dầu nhất?"
+    },
+    {
+      "correct_option_id": "b96096c901",
+      "id": "ch14-l04-q04",
+      "options": [
+        {
+          "id": "b96096c901",
+          "text": "Để tránh lệch do một ngày chốt sổ"
+        },
+        {
+          "id": "8d91ed79ff",
+          "text": "Vì tồn kho cuối kỳ không có trên báo cáo"
+        },
+        {
+          "id": "f5a1c14c89",
+          "text": "Vì bình quân luôn lớn hơn"
+        }
+      ],
+      "prompt": "Vì sao dùng tồn kho bình quân thay vì cuối kỳ?"
+    },
+    {
+      "chart_id": "c14l4-rep",
+      "correct_option_id": "dcfc08b4df",
+      "id": "ch14-l04-q05",
+      "options": [
+        {
+          "id": "dcfc08b4df",
+          "text": "Đi ngang"
+        },
+        {
+          "id": "5dd8fb4ece",
+          "text": "Tăng vọt"
+        },
+        {
+          "id": "a802bb0483",
+          "text": "Giảm mạnh"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, tồn kho tăng cùng nhịp giá vốn thì đường thế nào?"
+    }
+  ],
+  "salt": "046a1f337d8ef1fbbb554b48f67daa66fad5496b16cb6b9150ccbb02462c4454"
+}

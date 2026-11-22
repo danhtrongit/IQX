@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l12",
+  "questions": [
+    {
+      "correct_option_id": "6c1d0b694e",
+      "id": "ch10-l12-q01",
+      "options": [
+        {
+          "id": "6c1d0b694e",
+          "text": "Tổng thu nhập hoạt động"
+        },
+        {
+          "id": "a9d7ce1419",
+          "text": "Thu nhập lãi và các khoản tương tự"
+        },
+        {
+          "id": "ce06a91197",
+          "text": "Lợi nhuận sau thuế"
+        }
+      ],
+      "prompt": "Ở ngân hàng, \"doanh thu\" trong bài Tăng trưởng doanh thu là gì?"
+    },
+    {
+      "correct_option_id": "a1dac430e9",
+      "id": "ch10-l12-q02",
+      "options": [
+        {
+          "id": "a1dac430e9",
+          "text": "Thu nhập lãi thuần và các khoản lãi thuần ngoài lãi"
+        },
+        {
+          "id": "e7c238a7c9",
+          "text": "Chỉ thu nhập lãi gộp"
+        },
+        {
+          "id": "992e765354",
+          "text": "Thu nhập lãi trừ chi phí dự phòng"
+        }
+      ],
+      "prompt": "TOI gồm những gì?"
+    },
+    {
+      "correct_option_id": "4d0d2f46d2",
+      "id": "ch10-l12-q03",
+      "options": [
+        {
+          "id": "4d0d2f46d2",
+          "text": "Vì tăng khi lãi suất tăng dù chênh lệch lãi không đổi"
+        },
+        {
+          "id": "0a2ee8b399",
+          "text": "Vì thu nhập lãi gộp đã trừ chi phí dự phòng rủi ro"
+        },
+        {
+          "id": "b7b3f1259b",
+          "text": "Vì thu nhập lãi gộp chỉ công bố mỗi năm một lần"
+        }
+      ],
+      "prompt": "Vì sao không dùng thu nhập lãi gộp làm doanh thu?"
+    },
+    {
+      "correct_option_id": "4c703b2ec1",
+      "id": "ch10-l12-q04",
+      "options": [
+        {
+          "id": "4c703b2ec1",
+          "text": "Khó lặp lại đều đặn"
+        },
+        {
+          "id": "a73a159922",
+          "text": "Chắc chắn tiếp tục tăng"
+        },
+        {
+          "id": "e9953dc7f7",
+          "text": "Không ảnh hưởng lợi nhuận"
+        }
+      ],
+      "prompt": "TOI tăng vọt một quý nhờ lãi chứng khoán nên hiểu thế nào?"
+    },
+    {
+      "chart_id": "c10l12-rep",
+      "correct_option_id": "e0aa805a4d",
+      "id": "ch10-l12-q05",
+      "options": [
+        {
+          "id": "e0aa805a4d",
+          "text": "TOI quý này và cùng kỳ năm trước"
+        },
+        {
+          "id": "b055f0b2dd",
+          "text": "Thu nhập lãi và chi phí lãi"
+        },
+        {
+          "id": "a4e721f26a",
+          "text": "Cho vay và tiền gửi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "69c51868a6f8d76c1632020369b28b5381891ea5bacc7285469d6d0a3e7e7002"
+}

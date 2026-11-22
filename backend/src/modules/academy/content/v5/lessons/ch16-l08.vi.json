@@ -1,0 +1,382 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l8-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 21"
+          ],
+          "t": "Capex 4 quý",
+          "tone": "p1",
+          "v": "2.975 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 02"
+          ],
+          "t": "Khấu hao 4 quý",
+          "tone": "warn",
+          "v": "850 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "pos",
+          "v": "3,50 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l8-g2": {
+      "fig": "formula",
+      "height": 190,
+      "items": [
+        {
+          "notes": [
+            "FCF âm, nợ vay tăng",
+            "Cổ tức thấp"
+          ],
+          "t": "Giai đoạn xây",
+          "tone": "p5",
+          "v": "3 đến 5 lần"
+        },
+        {
+          "notes": [
+            "FCF dương, trả nợ",
+            "Cổ tức cao"
+          ],
+          "t": "Giai đoạn thu",
+          "tone": "pos",
+          "v": "dưới 1 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": []
+    },
+    "c16l8-rep": {
+      "alt": "Capex / Khấu hao: 3,50 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Capex / Khấu hao (4 quý)",
+            "v": [
+              2.419,
+              3.139,
+              3.319,
+              3.364,
+              3.402,
+              3.45,
+              3.489,
+              3.501
+            ]
+          }
+        ],
+        "name": "Capex / Khấu hao",
+        "ref": 1,
+        "sub": {
+          "series": [
+            {
+              "name": "Capex 4 quý",
+              "v": [
+                1745.643,
+                2301.704,
+                2493.37,
+                2588.905,
+                2682.339,
+                2788.025,
+                2891.106,
+                2975.41
+              ]
+            },
+            {
+              "name": "Khấu hao 4 quý",
+              "v": [
+                721.641,
+                733.369,
+                751.31,
+                769.503,
+                788.458,
+                808.108,
+                828.604,
+                849.871
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l08",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty điện đang xây nhà máy mới có capex gấp nhiều lần khấu hao. Công ty chỉ vận hành nhà máy cũ có capex thấp hơn khấu hao. Chỉ tiêu này cho biết công ty đang ở giai đoạn nào.",
+  "lesson_key": "fundamental:capex_to_depreciation-dien",
+  "order": 8,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l8-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>tiền chi mua sắm, xây dựng TSCĐ</b> (mã 21) chia <b>khấu hao</b> (mã 02), cả hai trên lưu chuyển tiền tệ, cộng 4 quý. Đơn vị lần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Capex / Khấu hao là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l8-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Capex lớn, cần vay nhiều. Lợi nhuận chưa tăng.",
+              "title": "Xây nhà máy"
+            },
+            {
+              "text": "Nhà máy chạy ổn định, capex chỉ để bảo dưỡng. Dòng tiền dư để trả nợ, chia cổ tức.",
+              "title": "Thu tiền"
+            },
+            {
+              "text": "Mỗi giai đoạn có thể kéo dài nhiều năm.",
+              "title": "Chu kỳ dài"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Hai giai đoạn của công ty điện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l8-rep",
+          "title": "Capex / Khấu hao",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Capex chia khấu hao 4 quý, đơn vị lần. Đường nét đứt là mốc 1 lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Capex và khấu hao 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột capex vượt xa cột khấu hao: công ty đang trong giai đoạn xây.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Quanh hoặc dưới 1 lần. Mức tham khảo, phù hợp nhà đầu tư cần cổ tức đều.",
+              "title": "Giai đoạn thu tiền",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 2 lần. Dòng tiền tự do thấp, nợ vay tăng. Lợi nhuận tăng sau khi nhà máy vận hành.",
+              "title": "Giai đoạn xây",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Không tốt xấu tuyệt đối. Chỉ tiêu cho biết nên kỳ vọng tăng trưởng hay cổ tức.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giai đoạn xây thường cổ tức thấp hơn.",
+              "title": "Dự báo cổ tức"
+            },
+            {
+              "text": "Capex lớn đi kèm nợ vay tăng.",
+              "title": "Dự báo nợ vay"
+            },
+            {
+              "text": "Hai chỉ tiêu cùng cho thấy dự án mới.",
+              "title": "Đọc cùng Xây dựng dở dang"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Capex"
+            },
+            {
+              "label": "Khấu hao"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "1.746",
+                "722",
+                "2,42 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "2.589",
+                "770",
+                "3,36 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "2.975",
+                "850",
+                "3,50 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ tăng từ 2,42 lần lên 3,50 lần. Công ty bước vào giai đoạn xây nhà máy mới. Cùng lúc D/E tăng từ 0,72 lần lên 0,82 lần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đó là đầu tư cho công suất mới.",
+              "title": "Coi capex cao là xấu"
+            },
+            {
+              "text": "Tiền dùng cho dự án và trả nợ.",
+              "title": "Kỳ vọng cổ tức tăng khi đang xây"
+            },
+            {
+              "text": "Capex lấy từ lưu chuyển tiền tệ, mã 21.",
+              "title": "Lấy capex từ bảng cân đối"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đập và hồ chứa cần vốn rất lớn, xây lâu.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Nhà máy lớn, capex tập trung vài năm.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Gió, mặt trời capex lớn nhưng xây nhanh.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>capex</b> (B03 mã 21) ÷ <b>khấu hao</b> (B03 mã 02).",
+    "Trên <b>2 lần</b> là giai đoạn xây, dưới 1 là giai đoạn thu tiền.",
+    "Giai đoạn xây: <b>nợ vay tăng, cổ tức thấp</b>.",
+    "Đọc cùng <b>Xây dựng dở dang</b> và <b>D/E</b>."
+  ],
+  "title": "Capex / Khấu hao · ở điện"
+}

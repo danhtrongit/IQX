@@ -1,0 +1,370 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l9-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 320"
+          ],
+          "t": "Vay ngắn hạn",
+          "tone": "neg",
+          "v": "9.646 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 140"
+          ],
+          "t": "Hàng tồn kho",
+          "tone": "warn",
+          "v": "8.533 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "p1",
+          "v": "1,13 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l9-g2": {
+      "decimals": 0,
+      "fig": "stack",
+      "kind": "figure",
+      "parts": [
+        {
+          "label": "Nhà cung cấp trả chậm",
+          "tone": "pos",
+          "value": 65
+        },
+        {
+          "label": "Vay ngắn hạn",
+          "tone": "neg",
+          "value": 35
+        }
+      ],
+      "title": "Nguồn tài trợ 100 đồng hàng tồn kho · số minh họa",
+      "unit": " đồng"
+    },
+    "c15l9-rep": {
+      "alt": "Vay ngắn hạn / Tồn kho: 1,13 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Vay ngắn hạn / Tồn kho",
+            "v": [
+              0.866,
+              0.91,
+              0.938,
+              0.961,
+              1.012,
+              1.004,
+              1.052,
+              1.131
+            ]
+          }
+        ],
+        "name": "Vay ngắn hạn / Tồn kho",
+        "sub": {
+          "series": [
+            {
+              "name": "Vay ngắn hạn",
+              "v": [
+                7125.12,
+                7388.145,
+                7769.721,
+                8141.375,
+                8477.157,
+                8774.299,
+                9108.18,
+                9646.301
+              ]
+            },
+            {
+              "name": "Hàng tồn kho",
+              "v": [
+                8225.198,
+                8123.273,
+                8285.516,
+                8467.96,
+                8377.231,
+                8741.198,
+                8655.992,
+                8532.734
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Chuỗi bán lẻ và nhà sản xuất thường vay ngắn hạn ngân hàng để nhập hàng. Chỉ tiêu này so khoản vay ngắn hạn với giá trị hàng tồn kho, để biết hàng tồn đang được tài trợ bằng nợ vay đến đâu.",
+  "lesson_key": "fundamental:st_debt_to_inventory-bl",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l9-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>vay và nợ thuê tài chính ngắn hạn</b> (mã 320) chia <b>hàng tồn kho</b> (mã 140). Cả hai trên bảng cân đối, số cuối kỳ. Đơn vị lần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Vay ngắn hạn / Tồn kho là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l9-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phải trả người bán và vay ngắn hạn. Cộng hai tỷ lệ cho biết hàng tồn được tài trợ đủ chưa.",
+              "title": "Hai nguồn chính"
+            },
+            {
+              "text": "Vay ngắn hạn nhiều hơn tồn kho. Một phần vay đang dùng cho việc khác như mở cửa hàng, trả cổ tức.",
+              "title": "Trên 1 lần"
+            },
+            {
+              "text": "Hàng bán chậm mà nợ ngắn hạn đến hạn thì phải giảm giá xả hàng để trả nợ.",
+              "title": "Rủi ro"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Hàng tồn kho được tài trợ bằng gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l9-rep",
+          "title": "Vay ngắn hạn / Tồn kho",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vay ngắn hạn chia tồn kho, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Vay ngắn hạn và hàng tồn kho, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột vay tăng trong khi tồn kho đi ngang: vay ngắn hạn đang dùng cho việc khác ngoài hàng hoá.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 0,7 lần, và cộng với Phải trả người bán / Tồn kho quanh 1 đến 1,5 lần. Mức tham khảo.",
+              "title": "Tài trợ hợp lý",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 1 lần và tăng. Vay ngắn hạn có thể đang tài trợ cửa hàng mới hoặc tài sản dài hạn.",
+              "title": "Dùng vay ngắn hạn cho việc dài hạn",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc chỉ tiêu này <b>cùng Phải trả người bán / Tồn kho</b>. Tổng hai tỷ lệ cho biết hàng tồn kho được tài trợ bởi bên ngoài đến đâu.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vay vượt tồn kho thì xem tiền dùng vào đâu.",
+              "title": "Kiểm tra cách dùng vay"
+            },
+            {
+              "text": "Hai nguồn tài trợ chính cho hàng tồn.",
+              "title": "Đọc cùng phải trả người bán"
+            },
+            {
+              "text": "Tỷ lệ cao mà hàng bán chậm là áp lực trả nợ.",
+              "title": "Đánh giá rủi ro thanh khoản"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Vay ngắn hạn"
+            },
+            {
+              "label": "Tồn kho"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "7.125",
+                "8.225",
+                "0,87 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "8.141",
+                "8.468",
+                "0,96 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "9.646",
+                "8.533",
+                "1,13 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ tăng từ 0,87 lần lên 1,13 lần. Cộng với phải trả người bán (0,75 lần), nguồn bên ngoài đã gần gấp đôi hàng tồn. Một phần vay ngắn hạn đang dùng cho việc khác.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phải trả là nguồn tài trợ không lãi, cần cộng vào xem tổng.",
+              "title": "Bỏ qua phải trả người bán"
+            },
+            {
+              "text": "Chỉ so vay ngắn hạn với tồn kho.",
+              "title": "Cộng nợ dài hạn"
+            },
+            {
+              "text": "Vay ngắn hạn để nhập hàng mùa cao điểm là bình thường.",
+              "title": "Coi vay là xấu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Vay ngắn hạn để nhập hàng mùa Tết, cuối năm.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "Vay ngắn hạn để mua nguyên liệu, thường theo mùa vụ nguyên liệu.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>vay ngắn hạn</b> (mã 320) ÷ <b>hàng tồn kho</b> (mã 140).",
+    "Đọc cùng <b>Phải trả người bán / Tồn kho</b>.",
+    "Trên <b>1 lần</b> là vay ngắn hạn đang dùng cho việc khác.",
+    "Hàng bán chậm thì <b>áp lực trả nợ</b> tăng."
+  ],
+  "title": "Vay ngắn hạn / Tồn kho · hàng hoá được tài trợ bằng nợ"
+}

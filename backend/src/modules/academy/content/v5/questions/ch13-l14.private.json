@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l14",
+  "questions": [
+    {
+      "correct_option_id": "bd4a06dfb2",
+      "id": "ch13-l14-q01",
+      "options": [
+        {
+          "id": "bd4a06dfb2",
+          "text": "Tiền và đầu tư tài chính ngắn hạn"
+        },
+        {
+          "id": "2d2835fbf5",
+          "text": "Tiền và hàng tồn kho"
+        },
+        {
+          "id": "1cb5a60224",
+          "text": "Tiền và phải thu khách hàng"
+        }
+      ],
+      "prompt": "Tử số của chỉ tiêu gồm những gì?"
+    },
+    {
+      "correct_option_id": "3ac19650ee",
+      "id": "ch13-l14-q02",
+      "options": [
+        {
+          "id": "3ac19650ee",
+          "text": "Tiền hiện có không đủ trả toàn bộ nợ vay đến hạn"
+        },
+        {
+          "id": "87e87d2af1",
+          "text": "Công ty không có khoản vay nào đến hạn trong năm"
+        },
+        {
+          "id": "f4fad14519",
+          "text": "Tiền hiện có gấp đôi số nợ vay đến hạn"
+        }
+      ],
+      "prompt": "Tỷ lệ dưới 1 lần nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "0cca06ca57",
+      "id": "ch13-l14-q03",
+      "options": [
+        {
+          "id": "0cca06ca57",
+          "text": "Current Ratio tính cả tồn kho khó bán nhanh"
+        },
+        {
+          "id": "431d9fdfb2",
+          "text": "Current Ratio không có trên báo cáo"
+        },
+        {
+          "id": "c317a1868d",
+          "text": "Current Ratio chỉ dùng cho ngân hàng"
+        }
+      ],
+      "prompt": "Vì sao ở bất động sản chỉ tiêu này đáng tin hơn Current Ratio?"
+    },
+    {
+      "correct_option_id": "0e2feff682",
+      "id": "ch13-l14-q04",
+      "options": [
+        {
+          "id": "0e2feff682",
+          "text": "Đầu tư tài chính ngắn hạn"
+        },
+        {
+          "id": "d34ab63820",
+          "text": "Phải thu khác"
+        },
+        {
+          "id": "24a45c27f8",
+          "text": "Hàng tồn kho"
+        }
+      ],
+      "prompt": "Tiền gửi kỳ hạn trên 3 tháng nằm ở đâu?"
+    },
+    {
+      "chart_id": "c13l14-rep",
+      "correct_option_id": "1445dbad52",
+      "id": "ch13-l14-q05",
+      "options": [
+        {
+          "id": "1445dbad52",
+          "text": "Mốc 1 lần"
+        },
+        {
+          "id": "3c4af28408",
+          "text": "Trung vị 5 năm"
+        },
+        {
+          "id": "bf85807978",
+          "text": "Đường tăng trưởng đều"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường nét đứt là gì?"
+    }
+  ],
+  "salt": "e39d81328d1bc032db899de5958aaa7d6c6268cf4f1cb1f3be18e4c77b7794de"
+}

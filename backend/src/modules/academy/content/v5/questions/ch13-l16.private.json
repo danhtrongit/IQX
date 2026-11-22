@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l16",
+  "questions": [
+    {
+      "correct_option_id": "d7e4d7098e",
+      "id": "ch13-l16-q01",
+      "options": [
+        {
+          "id": "d7e4d7098e",
+          "text": "EBIT"
+        },
+        {
+          "id": "4fc0fcd4cd",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "20c9aa1b8a",
+          "text": "Lợi nhuận gộp"
+        }
+      ],
+      "prompt": "Interest Coverage bằng gì chia chi phí lãi vay?"
+    },
+    {
+      "correct_option_id": "ffb71e1930",
+      "id": "ch13-l16-q02",
+      "options": [
+        {
+          "id": "ffb71e1930",
+          "text": "Một phần lãi vay được vốn hoá, không nằm ở chi phí"
+        },
+        {
+          "id": "3d6e09e1f1",
+          "text": "Công ty bất động sản không phải trả lãi"
+        },
+        {
+          "id": "974ee9ba7c",
+          "text": "EBIT của bất động sản tính khác các ngành"
+        }
+      ],
+      "prompt": "Vì sao Interest Coverage của công ty bất động sản thường cao hơn thực tế?"
+    },
+    {
+      "correct_option_id": "6538e46f31",
+      "id": "ch13-l16-q03",
+      "options": [
+        {
+          "id": "6538e46f31",
+          "text": "Tiền lãi vay đã trả trên lưu chuyển tiền tệ"
+        },
+        {
+          "id": "59b0b98f8f",
+          "text": "Người mua trả tiền trước"
+        },
+        {
+          "id": "3504456071",
+          "text": "Doanh thu chưa thực hiện"
+        }
+      ],
+      "prompt": "Nên thay mẫu số bằng gì để thấy khả năng trả lãi thật?"
+    },
+    {
+      "correct_option_id": "ef69032905",
+      "id": "ch13-l16-q04",
+      "options": [
+        {
+          "id": "ef69032905",
+          "text": "EBIT dồn vào quý bàn giao"
+        },
+        {
+          "id": "2c81b484ac",
+          "text": "Chi phí lãi vay chỉ có ở quý 4"
+        },
+        {
+          "id": "6637dac2d0",
+          "text": "Báo cáo quý không có EBIT"
+        }
+      ],
+      "prompt": "Vì sao không nên đọc chỉ tiêu này theo từng quý ở bất động sản?"
+    },
+    {
+      "chart_id": "c13l16-rep",
+      "correct_option_id": "2c6bf9d077",
+      "id": "ch13-l16-q05",
+      "options": [
+        {
+          "id": "2c6bf9d077",
+          "text": "Quý đó có đợt bàn giao lớn"
+        },
+        {
+          "id": "937a10ff1d",
+          "text": "Quý đó công ty vay thêm"
+        },
+        {
+          "id": "8a4c8bb6b2",
+          "text": "Quý đó lãi suất giảm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột EBIT cao vọt ở một số quý cho thấy gì?"
+    }
+  ],
+  "salt": "b0fcb83afb2f329ce1bbe06f006c2f5d0efefce215a5057af767f912edbe2014"
+}

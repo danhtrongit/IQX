@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l08",
+  "questions": [
+    {
+      "correct_option_id": "1c59052a71",
+      "id": "ch14-l08-q01",
+      "options": [
+        {
+          "id": "1c59052a71",
+          "text": "CFO trừ capex"
+        },
+        {
+          "id": "0452258d7b",
+          "text": "LNST trừ cổ tức"
+        },
+        {
+          "id": "b42ab993de",
+          "text": "Doanh thu trừ giá vốn"
+        }
+      ],
+      "prompt": "Dòng tiền tự do bằng gì?"
+    },
+    {
+      "correct_option_id": "172f8eb323",
+      "id": "ch14-l08-q02",
+      "options": [
+        {
+          "id": "172f8eb323",
+          "text": "Tồn kho và phải thu tăng giá trị, hút tiền vào vốn lưu động"
+        },
+        {
+          "id": "4ec0571901",
+          "text": "Khấu hao giàn khoan tăng gấp đôi ngay trong năm"
+        },
+        {
+          "id": "0d4346f905",
+          "text": "Doanh thu giảm vì khách hàng mua ít hơn hẳn"
+        }
+      ],
+      "prompt": "Vì sao giá dầu tăng có thể làm FCF giảm?"
+    },
+    {
+      "correct_option_id": "187653420c",
+      "id": "ch14-l08-q03",
+      "options": [
+        {
+          "id": "187653420c",
+          "text": "Cổ tức khó bền"
+        },
+        {
+          "id": "5c8d8f15f7",
+          "text": "Doanh nghiệp rất dư tiền"
+        },
+        {
+          "id": "ef68454465",
+          "text": "Doanh nghiệp không có capex"
+        }
+      ],
+      "prompt": "FCF thấp kéo dài trong khi cổ tức cao cho thấy gì?"
+    },
+    {
+      "correct_option_id": "519bdda2cb",
+      "id": "ch14-l08-q04",
+      "options": [
+        {
+          "id": "519bdda2cb",
+          "text": "Bình quân nhiều năm qua chu kỳ"
+        },
+        {
+          "id": "4c8f499cef",
+          "text": "Một quý gần nhất"
+        },
+        {
+          "id": "7dc6500315",
+          "text": "Chỉ năm giá dầu cao nhất"
+        }
+      ],
+      "prompt": "Nên đọc FCF Margin dầu khí theo cách nào?"
+    },
+    {
+      "chart_id": "c14l8-rep",
+      "correct_option_id": "32a79e5d71",
+      "id": "ch14-l08-q05",
+      "options": [
+        {
+          "id": "32a79e5d71",
+          "text": "CFO, capex và FCF 4 quý"
+        },
+        {
+          "id": "025fbbd99e",
+          "text": "Doanh thu, giá vốn và lợi nhuận gộp"
+        },
+        {
+          "id": "ec801ef839",
+          "text": "Tiền, nợ vay và vốn chủ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, ba cột phía dưới là gì?"
+    }
+  ],
+  "salt": "6acc22ed51ded62c65bf6b4a9409e0c55b8b9036c3326d67cd9d1b77bf285f7e"
+}

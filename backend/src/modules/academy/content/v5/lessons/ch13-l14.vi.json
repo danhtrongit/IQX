@@ -1,0 +1,381 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l14-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 110 + mã 120"
+          ],
+          "t": "Tiền và đầu tư ngắn hạn",
+          "tone": "pos",
+          "v": "8.591 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 320"
+          ],
+          "t": "Vay ngắn hạn",
+          "tone": "neg",
+          "v": "11.931 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "0,72 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l14-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Đủ tiền trả nợ đến hạn",
+          "tone": "pos",
+          "value": 1.5
+        },
+        {
+          "label": "Vừa đủ",
+          "tone": "warn",
+          "value": 1
+        },
+        {
+          "label": "Phải dựa vào vay lại hoặc bán hàng",
+          "tone": "neg",
+          "value": 0.6
+        }
+      ],
+      "kind": "figure",
+      "label_width": 300,
+      "title": "Tiền so với nợ đến hạn · số minh họa",
+      "unit": " lần"
+    },
+    "c13l14-rep": {
+      "alt": "Tiền / Nợ vay ngắn hạn: 0,72 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "(Tiền + Đầu tư ngắn hạn) / Vay ngắn hạn",
+            "v": [
+              1.082,
+              1.031,
+              0.979,
+              0.927,
+              0.875,
+              0.824,
+              0.772,
+              0.72
+            ]
+          }
+        ],
+        "name": "Tiền / Nợ vay ngắn hạn",
+        "ref": 1,
+        "sub": {
+          "series": [
+            {
+              "name": "Tiền và đầu tư ngắn hạn",
+              "v": [
+                7301.807,
+                7434.756,
+                8035.469,
+                8172.696,
+                8265.243,
+                8257.506,
+                8637.095,
+                8590.566
+              ]
+            },
+            {
+              "name": "Vay ngắn hạn",
+              "v": [
+                6746.234,
+                7214.09,
+                8209.313,
+                8815.725,
+                9442.818,
+                10026.972,
+                11191.357,
+                11931.341
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l14",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biết nợ đến hạn bao nhiêu là chưa đủ. Câu hỏi tiếp theo là công ty có sẵn tiền để trả không. Chỉ tiêu này so lượng tiền và khoản đầu tư ngắn hạn với nợ vay phải trả trong 12 tháng.",
+  "lesson_key": "fundamental:cash_to_st_debt-bds",
+  "order": 14,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l14-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>tiền và các khoản tương đương tiền</b> cộng <b>đầu tư tài chính ngắn hạn</b>, chia <b>vay và nợ thuê tài chính ngắn hạn</b>. Tất cả trên bảng cân đối kế toán, số cuối kỳ. Đơn vị lần.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 0,72 lần nghĩa là tiền hiện có chỉ trả được khoảng 72% số nợ vay đến hạn trong 12 tháng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tiền / Nợ vay ngắn hạn là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l14-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền đủ trả toàn bộ nợ ngắn hạn. Áp lực đáo hạn thấp.",
+              "title": "Trên 1 lần"
+            },
+            {
+              "text": "Phải dựa vào tiền bán hàng, tiền khách trả trước hoặc vay lại.",
+              "title": "Dưới 1 lần"
+            },
+            {
+              "text": "Công ty còn tiền khách trả theo tiến độ, nhưng khoản này khó dự báo.",
+              "title": "Không phải toàn bộ khả năng trả nợ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Đọc mốc 1 lần"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l14-rep",
+          "title": "Tiền / Nợ vay ngắn hạn",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền và đầu tư ngắn hạn chia vay ngắn hạn, đơn vị lần. Đường nét đứt là mốc 1 lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Tiền và đầu tư ngắn hạn, vay ngắn hạn cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tiền đi ngang trong khi cột vay ngắn hạn tăng kéo đường xuống dưới mốc 1.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 1 lần trở lên. Mức tham khảo, tiền đủ trả nợ đến hạn mà không cần vay lại.",
+              "title": "Thanh khoản tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 0,5 lần, hoặc giảm liên tục. Công ty phụ thuộc vào vay lại và tiến độ bán hàng.",
+              "title": "Thanh khoản căng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Ở bất động sản, chỉ tiêu này quan trọng hơn Current Ratio. Current Ratio thường cao vì tồn kho lớn, nhưng tồn kho không trả nợ ngay được.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ dưới 1 khi sắp có đợt trái phiếu đáo hạn là tín hiệu cần chú ý.",
+              "title": "Kiểm tra trước mùa đáo hạn"
+            },
+            {
+              "text": "Bỏ tồn kho ra khỏi phép so để thấy khả năng trả nợ thật.",
+              "title": "Thay cho Current Ratio"
+            },
+            {
+              "text": "Giảm đều nhiều quý cho thấy tiền đang bị dồn vào dự án.",
+              "title": "Theo dõi xu hướng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Tiền và đầu tư ngắn hạn"
+            },
+            {
+              "label": "Vay ngắn hạn"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "7.302",
+                "6.746",
+                "1,08 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "8.173",
+                "8.816",
+                "0,93 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "8.591",
+                "11.931",
+                "0,72 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ giảm từ 1,08 lần xuống 0,72 lần, xuống dưới mốc 1 từ Q1/25. Tiền đi ngang trong khi nợ ngắn hạn tăng, công ty phải dựa nhiều hơn vào vay lại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Current Ratio tính cả tồn kho, làm khả năng trả nợ trông tốt hơn thực tế.",
+              "title": "Dùng Current Ratio"
+            },
+            {
+              "text": "Tiền gửi có kỳ hạn trên 3 tháng nằm ở đầu tư ngắn hạn, cũng dùng trả nợ được.",
+              "title": "Quên đầu tư ngắn hạn"
+            },
+            {
+              "text": "Nhiều công ty vẫn vay lại bình thường. Đây là mức áp lực, không phải kết luận.",
+              "title": "Coi dưới 1 là sắp vỡ nợ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Chỉ tiêu cảnh báo quan trọng trong giai đoạn thị trường khó, tín dụng siết.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Công ty khu công nghiệp thường có tiền thuê trả trước nên tỷ lệ cao hơn.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>(tiền + đầu tư ngắn hạn)</b> ÷ <b>vay ngắn hạn</b>.",
+    "Mốc <b>1 lần</b>: trên mốc là đủ tiền trả nợ đến hạn.",
+    "Ở bất động sản <b>đáng tin hơn Current Ratio</b> vì bỏ tồn kho ra.",
+    "Đọc cùng <b>Tỷ trọng nợ vay ngắn hạn</b>."
+  ],
+  "title": "Tiền / Nợ vay ngắn hạn · có đủ tiền trả nợ sắp đến hạn"
+}

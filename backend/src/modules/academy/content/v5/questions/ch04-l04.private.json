@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l04",
+  "questions": [
+    {
+      "correct_option_id": "21539d6a02",
+      "id": "ch04-l04-q01",
+      "options": [
+        {
+          "id": "21539d6a02",
+          "text": "Số cổ phiếu được khớp lệnh trong một phiên"
+        },
+        {
+          "id": "f64e843773",
+          "text": "Số lệnh mua đang chờ khớp"
+        },
+        {
+          "id": "4d9f4a5cae",
+          "text": "Số nhà đầu tư đang nắm giữ cổ phiếu"
+        }
+      ],
+      "prompt": "Khối lượng giao dịch là gì?"
+    },
+    {
+      "correct_option_id": "8fb6bd135c",
+      "id": "ch04-l04-q02",
+      "options": [
+        {
+          "id": "8fb6bd135c",
+          "text": "Lực mua mạnh, xu hướng tăng được xác nhận"
+        },
+        {
+          "id": "fd26ea3bb1",
+          "text": "Xu hướng tăng sắp kết thúc"
+        },
+        {
+          "id": "8d20640ca6",
+          "text": "Thị trường đang thiếu người mua"
+        }
+      ],
+      "prompt": "Giá tăng kèm khối lượng tăng cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "d990c33f7a",
+      "id": "ch04-l04-q03",
+      "options": [
+        {
+          "id": "d990c33f7a",
+          "text": "Lực mua đang yếu dần"
+        },
+        {
+          "id": "89dc0e6ae6",
+          "text": "Lực mua đang mạnh lên"
+        },
+        {
+          "id": "64a0a0144c",
+          "text": "Cổ phiếu chắc chắn tăng tiếp"
+        }
+      ],
+      "prompt": "Giá tăng nhưng khối lượng giảm dần cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "95756dfb39",
+      "id": "ch04-l04-q04",
+      "options": [
+        {
+          "id": "95756dfb39",
+          "text": "Khối lượng đột biến"
+        },
+        {
+          "id": "ad9ed5f579",
+          "text": "Khối lượng trung bình"
+        },
+        {
+          "id": "26a05510f5",
+          "text": "Khối lượng tối thiểu"
+        }
+      ],
+      "prompt": "Phiên có khối lượng gấp nhiều lần mức trung bình gọi là gì?"
+    },
+    {
+      "correct_option_id": "907cd6fa2f",
+      "id": "ch04-l04-q05",
+      "options": [
+        {
+          "id": "907cd6fa2f",
+          "text": "Khó mua bán số lượng lớn, giá dễ biến động mạnh"
+        },
+        {
+          "id": "9a29dbe643",
+          "text": "Luôn tăng giá ổn định"
+        },
+        {
+          "id": "edd1612e62",
+          "text": "Dễ bán ngay khi cần"
+        }
+      ],
+      "prompt": "Cổ phiếu có thanh khoản thấp có đặc điểm gì?"
+    }
+  ],
+  "salt": "eed49f282b13c4ff1b30caadddf471ed1c4bd4ffd8ea5afb3e0c65e8a7206c5b"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l12",
+  "questions": [
+    {
+      "correct_option_id": "383845119e",
+      "id": "ch13-l12-q01",
+      "options": [
+        {
+          "id": "383845119e",
+          "text": "Trái phiếu chuyển đổi"
+        },
+        {
+          "id": "5d6f6e2a7b",
+          "text": "Người mua trả tiền trước"
+        },
+        {
+          "id": "e6d75a4bf0",
+          "text": "Phải trả người bán"
+        }
+      ],
+      "prompt": "Dòng nào được cộng vào nợ vay khi tính D/E?"
+    },
+    {
+      "correct_option_id": "8eaacf1266",
+      "id": "ch13-l12-q02",
+      "options": [
+        {
+          "id": "8eaacf1266",
+          "text": "Vì khoản này không chịu lãi và sẽ thành doanh thu"
+        },
+        {
+          "id": "e542e2ecaf",
+          "text": "Vì khoản này nằm ở vốn chủ"
+        },
+        {
+          "id": "2ca965deae",
+          "text": "Vì khoản này luôn bằng không"
+        }
+      ],
+      "prompt": "Vì sao không cộng người mua trả tiền trước vào nợ vay?"
+    },
+    {
+      "correct_option_id": "9b925f43c2",
+      "id": "ch13-l12-q03",
+      "options": [
+        {
+          "id": "9b925f43c2",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "7eb4c4c006",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "ea10ca0bd7",
+          "text": "Luôn bằng nhau"
+        }
+      ],
+      "prompt": "D/E của công ty bất động sản so với bán lẻ thường thế nào?"
+    },
+    {
+      "correct_option_id": "3c72203c53",
+      "id": "ch13-l12-q04",
+      "options": [
+        {
+          "id": "3c72203c53",
+          "text": "Công ty có nhiều tiền khách trả trước"
+        },
+        {
+          "id": "8a6b391a3c",
+          "text": "Công ty không có tiền khách trả trước"
+        },
+        {
+          "id": "9095440065",
+          "text": "Công ty có nhiều nợ ngắn hạn hơn"
+        }
+      ],
+      "prompt": "Cùng D/E, công ty nào an toàn hơn?"
+    },
+    {
+      "chart_id": "c13l12-rep",
+      "correct_option_id": "076dec02d1",
+      "id": "ch13-l12-q05",
+      "options": [
+        {
+          "id": "076dec02d1",
+          "text": "Đòn bẩy đang tăng"
+        },
+        {
+          "id": "f1e869a90e",
+          "text": "Đòn bẩy đang giảm"
+        },
+        {
+          "id": "92bffebc3f",
+          "text": "Công ty đang lỗ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột nợ vay tăng nhanh hơn cột vốn chủ cho thấy gì?"
+    }
+  ],
+  "salt": "e7a9a1f3a69a1aa45041fc78d46fddd13064df82f90580be5dec57a77c903df9"
+}

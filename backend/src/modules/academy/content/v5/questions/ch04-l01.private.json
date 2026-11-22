@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l01",
+  "questions": [
+    {
+      "correct_option_id": "bb07689cad",
+      "id": "ch04-l01-q01",
+      "options": [
+        {
+          "id": "bb07689cad",
+          "text": "Giá mở cửa, cao nhất, thấp nhất, đóng cửa"
+        },
+        {
+          "id": "f18f10f693",
+          "text": "Giá trần, giá sàn, giá tham chiếu"
+        },
+        {
+          "id": "9d885dae47",
+          "text": "Giá mua và giá bán"
+        }
+      ],
+      "prompt": "Một cây nến thể hiện những mức giá nào?"
+    },
+    {
+      "correct_option_id": "debf9e5af0",
+      "id": "ch04-l01-q02",
+      "options": [
+        {
+          "id": "fb5faf6660",
+          "text": "Giá đóng cửa thấp hơn giá mở cửa"
+        },
+        {
+          "id": "debf9e5af0",
+          "text": "Giá đóng cửa cao hơn giá mở cửa"
+        },
+        {
+          "id": "adf69c8938",
+          "text": "Giá đóng cửa bằng giá mở cửa"
+        }
+      ],
+      "prompt": "Nến tăng (màu xanh) có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "3b2e942be6",
+      "id": "ch04-l01-q03",
+      "options": [
+        {
+          "id": "18cc8f1a75",
+          "text": "Giá cao nhất và giá thấp nhất"
+        },
+        {
+          "id": "b7148274cb",
+          "text": "Giá trần và giá sàn"
+        },
+        {
+          "id": "3b2e942be6",
+          "text": "Giá mở cửa và giá đóng cửa"
+        }
+      ],
+      "prompt": "Thân nến nằm giữa hai mức giá nào?"
+    },
+    {
+      "correct_option_id": "71f7252ebe",
+      "id": "ch04-l01-q04",
+      "options": [
+        {
+          "id": "71f7252ebe",
+          "text": "Lực mua đẩy giá lên từ vùng giá thấp"
+        },
+        {
+          "id": "412e2e9651",
+          "text": "Giá tăng mạnh suốt cả phiên"
+        },
+        {
+          "id": "dd178813e8",
+          "text": "Phiên không có giao dịch"
+        }
+      ],
+      "prompt": "Bóng dưới dài cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "4126300345",
+      "id": "ch04-l01-q05",
+      "options": [
+        {
+          "id": "ec52d1f79c",
+          "text": "Thân nến rất dài"
+        },
+        {
+          "id": "4126300345",
+          "text": "Giá mở cửa và đóng cửa gần bằng nhau"
+        },
+        {
+          "id": "b5d06de880",
+          "text": "Không có bóng nến"
+        }
+      ],
+      "prompt": "Nến Doji có đặc điểm gì?"
+    }
+  ],
+  "salt": "50dfae8b5f9116cb95131dbc807455f7ece876f0afbe6bcbe418f9f0b57b5191"
+}

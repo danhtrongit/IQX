@@ -1,0 +1,402 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l1-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Q2/26"
+          ],
+          "t": "Doanh thu thuần quý này",
+          "tone": "p1",
+          "v": "33.498 tỷ"
+        },
+        {
+          "notes": [
+            "Q2/25"
+          ],
+          "t": "Doanh thu thuần cùng kỳ",
+          "tone": "warn",
+          "v": "29.139 tỷ"
+        },
+        {
+          "notes": [
+            "So với cùng kỳ"
+          ],
+          "t": "Tăng trưởng",
+          "tone": "pos",
+          "v": "15,0%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "so với",
+        "="
+      ]
+    },
+    "c17l1-g2": {
+      "fig": "formula",
+      "height": 180,
+      "items": [
+        {
+          "notes": [
+            "Nhà máy mới chạy"
+          ],
+          "t": "Sản lượng",
+          "tone": "p1",
+          "v": "+12%"
+        },
+        {
+          "notes": [
+            "Giá thép phục hồi nhẹ"
+          ],
+          "t": "Giá bán",
+          "tone": "warn",
+          "v": "+3%"
+        },
+        {
+          "notes": [
+            "Phần lớn từ sản lượng"
+          ],
+          "t": "Doanh thu",
+          "tone": "pos",
+          "v": "+15%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "×",
+        "="
+      ]
+    },
+    "c17l1-rep": {
+      "alt": "Tăng trưởng doanh thu: 15,0%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              10.876,
+              11.401,
+              22.49,
+              18.48,
+              23.685,
+              13.597,
+              9.283,
+              14.959
+            ]
+          }
+        ],
+        "name": "Tăng trưởng doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Quý này",
+              "v": [
+                24028.335,
+                25639.996,
+                26752.116,
+                29138.609,
+                29719.33,
+                29126.311,
+                29235.64,
+                33497.537
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                21671.336,
+                23015.933,
+                21840.305,
+                24593.615,
+                24028.335,
+                25639.996,
+                26752.116,
+                29138.609
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Thép, xi măng, phân bón là hàng hoá có giá lên xuống theo chu kỳ. Doanh thu của công ty vật liệu có thể tăng 30% một năm rồi giảm 20% năm sau mà sản lượng không đổi nhiều. Bài này giúp đọc tăng trưởng doanh thu theo chu kỳ giá.",
+  "lesson_key": "fundamental:revenue_yoy-vl",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l1-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Tăng trưởng doanh thu so <b>doanh thu thuần</b> quý này với <b>cùng quý năm trước</b>. Cách tính giống bài Tăng trưởng doanh thu ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh thu bằng sản lượng nhân giá bán. Giá thép, phân bón đi theo giá thế giới và nhu cầu xây dựng, nông nghiệp.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c17l1-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nhà máy mới chạy, bán được nhiều hơn. Tăng trưởng bền hơn.",
+              "title": "Tăng nhờ sản lượng"
+            },
+            {
+              "text": "Giá thép, phân bón tăng. Có thể đảo chiều nhanh khi chu kỳ đổi.",
+              "title": "Tăng nhờ giá"
+            },
+            {
+              "text": "Sản lượng và giá bán nằm ở tài liệu công ty, không có trên 3 báo cáo.",
+              "title": "Báo cáo không tách"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l1-rep",
+          "title": "Tăng trưởng doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng doanh thu thuần so với cùng kỳ, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu quý này và cùng kỳ năm trước, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Doanh thu tăng đều nhiều quý trong khi biên gộp không tăng: tăng chủ yếu nhờ sản lượng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh thu tăng và biên gộp giữ được. Có công suất mới đóng góp.",
+              "title": "Tăng trưởng chất lượng",
+              "tone": "pos"
+            },
+            {
+              "text": "Doanh thu tăng mạnh nhờ giá hàng hoá ở vùng đỉnh. Dễ đảo chiều.",
+              "title": "Tăng theo đỉnh giá",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc tăng trưởng doanh thu <b>cùng biên gộp quý</b> để biết giá bán đang lên hay xuống so với giá vốn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thấy rõ chu kỳ giá.",
+              "title": "Đọc theo năm"
+            },
+            {
+              "text": "Doanh thu tăng mà biên giảm là giá đầu vào tăng nhanh hơn.",
+              "title": "Đọc cùng biên gộp"
+            },
+            {
+              "text": "Biết có công suất mới không.",
+              "title": "Đọc cùng Capex / Khấu hao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu, doanh thu thuần từng quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Cùng kỳ"
+            },
+            {
+              "label": "Tăng trưởng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "24.028",
+                "21.671",
+                "10,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q1/25",
+                "26.752",
+                "21.840",
+                "22,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q3/25",
+                "29.719",
+                "24.028",
+                "23,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "33.498",
+                "29.139",
+                "15,0%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Doanh thu tăng 9% đến 24% mỗi quý nhờ sản lượng tăng. Nhưng biên gộp quý giảm từ 14,0% xuống 7,8% rồi hồi lên 11,6%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giá hàng hoá có chu kỳ.",
+              "title": "Coi tăng trưởng do giá là bền"
+            },
+            {
+              "text": "Doanh thu tăng mà lợi nhuận gộp không tăng.",
+              "title": "Bỏ qua biên gộp"
+            },
+            {
+              "text": "Doanh thu vật liệu dao động hơn hẳn bán lẻ.",
+              "title": "So với ngành ổn định"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu đi theo giá thép thế giới và nhu cầu xây dựng.",
+              "title": "Thép"
+            },
+            {
+              "text": "Doanh thu đi theo nhu cầu xây dựng trong nước, giá ít biến động hơn thép.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Doanh thu đi theo giá phân bón, khí, nông sản thế giới.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>Tăng trưởng doanh thu</b> = doanh thu thuần kỳ này so với cùng kỳ.",
+    "Doanh thu vật liệu đi theo <b>chu kỳ giá hàng hoá</b>.",
+    "Đọc cùng <b>biên gộp quý</b>.",
+    "Sản lượng và giá bán <b>không có trên 3 báo cáo</b>."
+  ],
+  "title": "Tăng trưởng doanh thu · ở vật liệu cơ bản"
+}

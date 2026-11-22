@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l07",
+  "questions": [
+    {
+      "correct_option_id": "45f0a326f4",
+      "id": "ch14-l07-q01",
+      "options": [
+        {
+          "id": "45f0a326f4",
+          "text": "Vốn chủ cộng nợ vay trừ tiền"
+        },
+        {
+          "id": "0b8089d91f",
+          "text": "Tổng tài sản"
+        },
+        {
+          "id": "d4ffe4e902",
+          "text": "Doanh thu thuần"
+        }
+      ],
+      "prompt": "Vốn đầu tư trong ROIC gồm những gì?"
+    },
+    {
+      "correct_option_id": "531062793f",
+      "id": "ch14-l07-q02",
+      "options": [
+        {
+          "id": "531062793f",
+          "text": "ROIC đi theo chu kỳ giá dầu"
+        },
+        {
+          "id": "80b6227173",
+          "text": "ROIC dầu khí không đổi"
+        },
+        {
+          "id": "e3b2d33ef7",
+          "text": "ROIC chỉ công bố mỗi 5 năm"
+        }
+      ],
+      "prompt": "Vì sao nên đọc ROIC dầu khí theo bình quân nhiều năm?"
+    },
+    {
+      "correct_option_id": "7fd4e71c11",
+      "id": "ch14-l07-q03",
+      "options": [
+        {
+          "id": "7fd4e71c11",
+          "text": "Giảm tạm thời"
+        },
+        {
+          "id": "ee54804f95",
+          "text": "Tăng ngay"
+        },
+        {
+          "id": "c1a70721b8",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Dự án lớn đang xây làm ROIC thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "c1ebc49a72",
+      "id": "ch14-l07-q04",
+      "options": [
+        {
+          "id": "c1ebc49a72",
+          "text": "Thấp giả"
+        },
+        {
+          "id": "22e042923d",
+          "text": "Cao giả"
+        },
+        {
+          "id": "85107366a1",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Không trừ tiền mặt khỏi vốn đầu tư làm ROIC thế nào?"
+    },
+    {
+      "chart_id": "c14l7-rep",
+      "correct_option_id": "ca9bb07da3",
+      "id": "ch14-l07-q05",
+      "options": [
+        {
+          "id": "ca9bb07da3",
+          "text": "NOPAT 4 quý"
+        },
+        {
+          "id": "b225b97a6c",
+          "text": "Vốn chủ sở hữu"
+        },
+        {
+          "id": "88224fd3b1",
+          "text": "Khấu hao 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới là gì?"
+    }
+  ],
+  "salt": "ac7fe4ea8621243c8cf218dd829c91d3e859c89932fb01c0b049c86cf3ddcb2c"
+}

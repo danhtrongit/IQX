@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l08",
+  "questions": [
+    {
+      "correct_option_id": "f193b8e435",
+      "id": "ch10-l08-q01",
+      "options": [
+        {
+          "id": "f193b8e435",
+          "text": "Cho vay khách hàng"
+        },
+        {
+          "id": "bd63cab9bd",
+          "text": "Tiền gửi khách hàng"
+        },
+        {
+          "id": "0724b8f325",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Tăng trưởng tín dụng đo mức tăng của dòng nào?"
+    },
+    {
+      "correct_option_id": "5c6f433652",
+      "id": "ch10-l08-q02",
+      "options": [
+        {
+          "id": "5c6f433652",
+          "text": "Tiền gửi của khách hàng"
+        },
+        {
+          "id": "5ae17a7d04",
+          "text": "Phát hành giấy tờ có giá"
+        },
+        {
+          "id": "d0ad8bd135",
+          "text": "Vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Tăng trưởng huy động đo mức tăng của dòng nào?"
+    },
+    {
+      "correct_option_id": "800b40f24d",
+      "id": "ch10-l08-q03",
+      "options": [
+        {
+          "id": "800b40f24d",
+          "text": "Phải dùng nguồn vốn khác, chi phí vốn dễ tăng"
+        },
+        {
+          "id": "6319b6a0fe",
+          "text": "Ngân hàng thừa vốn và phải gửi lại các ngân hàng khác"
+        },
+        {
+          "id": "76c06ec938",
+          "text": "Tỷ lệ dự phòng trên dư nợ tự động tăng"
+        }
+      ],
+      "prompt": "Tín dụng tăng nhanh hơn huy động nhiều quý liền thường dẫn đến điều gì?"
+    },
+    {
+      "correct_option_id": "4ffc52c3eb",
+      "id": "ch10-l08-q04",
+      "options": [
+        {
+          "id": "4ffc52c3eb",
+          "text": "Tiền gửi biến động mạnh theo thời điểm cuối quý"
+        },
+        {
+          "id": "621a3fb590",
+          "text": "Báo cáo quý trước thường chưa được công bố"
+        },
+        {
+          "id": "4e0e04b99a",
+          "text": "Cùng kỳ năm trước luôn có số liệu thấp hơn"
+        }
+      ],
+      "prompt": "Vì sao nên so với cùng kỳ năm trước?"
+    },
+    {
+      "chart_id": "c10l8-rep",
+      "correct_option_id": "d0f840c3b8",
+      "id": "ch10-l08-q05",
+      "options": [
+        {
+          "id": "d0f840c3b8",
+          "text": "Cho vay khách hàng và tiền gửi khách hàng"
+        },
+        {
+          "id": "e374de26fb",
+          "text": "Thu nhập lãi và chi phí lãi"
+        },
+        {
+          "id": "d0c1e5cd30",
+          "text": "Tăng trưởng tín dụng và tăng trưởng huy động"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, hai cột mỗi quý thể hiện gì?"
+    }
+  ],
+  "salt": "fa2f5b47752319be6b4323f514549528a47697ed0027f8a5c97383b8bbe16a97"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l03",
+  "questions": [
+    {
+      "correct_option_id": "f0095b58b4",
+      "id": "ch13-l03-q01",
+      "options": [
+        {
+          "id": "f0095b58b4",
+          "text": "Lợi nhuận gộp"
+        },
+        {
+          "id": "ad331383ac",
+          "text": "Lợi nhuận sau thuế"
+        },
+        {
+          "id": "b457370752",
+          "text": "Lợi nhuận trước thuế"
+        }
+      ],
+      "prompt": "Biên gộp bằng gì chia doanh thu thuần?"
+    },
+    {
+      "correct_option_id": "c02301922b",
+      "id": "ch13-l03-q02",
+      "options": [
+        {
+          "id": "c02301922b",
+          "text": "Giá đất lúc mua so với giá bán lúc bàn giao"
+        },
+        {
+          "id": "8dc98e8d66",
+          "text": "Số lượng nhân viên văn phòng"
+        },
+        {
+          "id": "97e44f3dcb",
+          "text": "Lãi tiền gửi ngân hàng"
+        }
+      ],
+      "prompt": "Điều gì quyết định nhiều nhất đến biên gộp của một dự án nhà ở?"
+    },
+    {
+      "correct_option_id": "e67c01f02d",
+      "id": "ch13-l03-q03",
+      "options": [
+        {
+          "id": "e67c01f02d",
+          "text": "Giá vốn hàng bán"
+        },
+        {
+          "id": "1a4d4b990f",
+          "text": "Chi phí bán hàng"
+        },
+        {
+          "id": "50bf91b36c",
+          "text": "Doanh thu tài chính"
+        }
+      ],
+      "prompt": "Lãi vay vốn hoá vào dự án đi vào đâu khi bàn giao?"
+    },
+    {
+      "correct_option_id": "fd19440fe1",
+      "id": "ch13-l03-q04",
+      "options": [
+        {
+          "id": "fd19440fe1",
+          "text": "Vì biên đổi theo dự án bàn giao trong quý"
+        },
+        {
+          "id": "ee5d0d3a25",
+          "text": "Vì công ty bất động sản không có giá vốn"
+        },
+        {
+          "id": "d07f516120",
+          "text": "Vì biên gộp quý luôn bằng biên năm"
+        }
+      ],
+      "prompt": "Vì sao không nên đọc biên gộp bất động sản theo một quý?"
+    },
+    {
+      "chart_id": "c13l3-rep",
+      "correct_option_id": "fc9904fd94",
+      "id": "ch13-l03-q05",
+      "options": [
+        {
+          "id": "fc9904fd94",
+          "text": "Cột chồng giá vốn và lợi nhuận gộp 4 quý"
+        },
+        {
+          "id": "083885cf6e",
+          "text": "Tồn kho và tổng tài sản"
+        },
+        {
+          "id": "996e501700",
+          "text": "Nợ vay ngắn hạn và dài hạn"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "aa958e4e4a9f1b6029b562165fa37b12c9e4cd9437fead9bddcf877fed4dee1e"
+}

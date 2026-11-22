@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l15",
+  "questions": [
+    {
+      "correct_option_id": "d695b010cb",
+      "id": "ch10-l15-q01",
+      "options": [
+        {
+          "id": "d695b010cb",
+          "text": "Vốn chủ sổ sách khá sát giá trị thật"
+        },
+        {
+          "id": "317eb504f3",
+          "text": "Ngân hàng không có lợi nhuận"
+        },
+        {
+          "id": "004ca61e7f",
+          "text": "Ngân hàng không có EPS"
+        }
+      ],
+      "prompt": "Vì sao P/B là thước đo định giá được dùng nhiều nhất cho ngân hàng?"
+    },
+    {
+      "correct_option_id": "b86f403405",
+      "id": "ch10-l15-q02",
+      "options": [
+        {
+          "id": "b86f403405",
+          "text": "ROE"
+        },
+        {
+          "id": "ac2b1ffa86",
+          "text": "Biên gộp"
+        },
+        {
+          "id": "833dceb85a",
+          "text": "Số ngày tồn kho"
+        }
+      ],
+      "prompt": "P/B hợp lý của ngân hàng đi cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "2403e64002",
+      "id": "ch10-l15-q03",
+      "options": [
+        {
+          "id": "2403e64002",
+          "text": "Vốn chủ thật thấp hơn sổ sách, P/B thật cao hơn"
+        },
+        {
+          "id": "b34fa0e67f",
+          "text": "Vốn chủ thật cao hơn sổ sách, P/B thật thấp hơn"
+        },
+        {
+          "id": "19d7927026",
+          "text": "Vốn chủ không đổi, chỉ lợi nhuận năm sau thay đổi"
+        }
+      ],
+      "prompt": "Dự phòng chưa đủ ảnh hưởng thế nào đến P/B?"
+    },
+    {
+      "correct_option_id": "4f17d7a96f",
+      "id": "ch10-l15-q04",
+      "options": [
+        {
+          "id": "4f17d7a96f",
+          "text": "Khoảng 2 lần"
+        },
+        {
+          "id": "1a74ec27b2",
+          "text": "Khoảng 0,2 lần"
+        },
+        {
+          "id": "8a0e0a135f",
+          "text": "Khoảng 20 lần"
+        }
+      ],
+      "prompt": "Theo cách ước lượng thô, ngân hàng ROE 20% có P/B khoảng bao nhiêu?"
+    },
+    {
+      "chart_id": "c10l15-rep",
+      "correct_option_id": "217048f353",
+      "id": "ch10-l15-q05",
+      "options": [
+        {
+          "id": "217048f353",
+          "text": "Thị trường định giá thấp hơn thường lệ của ngân hàng"
+        },
+        {
+          "id": "b61df96832",
+          "text": "Ngân hàng vừa tăng vốn nên P/B giảm tạm thời"
+        },
+        {
+          "id": "c92c81b83a",
+          "text": "Ngân hàng có lợi nhuận quý gần nhất bị lỗ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, P/B dưới dải cho thấy gì?"
+    }
+  ],
+  "salt": "f411236579bd078782de28be96fb443b717af9276ff0f203cdbaa51358fae0e1"
+}

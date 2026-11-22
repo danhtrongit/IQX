@@ -1,0 +1,379 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l13-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Lưu chuyển tiền tệ",
+            "Mã 36"
+          ],
+          "t": "Cổ tức đã trả năm 2025",
+          "tone": "pos",
+          "v": "2.038 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "LNST năm 2024",
+          "tone": "p1",
+          "v": "3.597 tỷ"
+        },
+        {
+          "notes": [
+            "Năm 2025"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "56,6%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l13-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Mã 36",
+          "line": "Cổ tức, lợi nhuận đã trả cho chủ sở hữu",
+          "report": "Hoạt động tài chính",
+          "tone": "pos"
+        },
+        {
+          "code": "Mã 60",
+          "line": "Lợi nhuận sau thuế năm trước (kết quả kinh doanh)",
+          "report": "Mẫu số",
+          "tone": "p1"
+        }
+      ],
+      "title": "Báo cáo lưu chuyển tiền tệ (mẫu B03-DN)"
+    },
+    "c14l13-rep": {
+      "alt": "Tỷ lệ chi trả cổ tức: 41,4%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Cổ tức đã trả 4 quý / LNST 4 quý trước đó",
+            "v": [
+              50.083,
+              58.74,
+              67.97,
+              75.411,
+              72.491,
+              56.65,
+              46.203,
+              41.444
+            ]
+          }
+        ],
+        "name": "Tỷ lệ chi trả cổ tức",
+        "sub": {
+          "series": [
+            {
+              "name": "Cổ tức đã trả 4 quý",
+              "v": [
+                1894.869,
+                2008.139,
+                2008.139,
+                2008.139,
+                2025.764,
+                2037.514,
+                2037.514,
+                2037.514
+              ]
+            },
+            {
+              "name": "LNST 4 quý trước đó",
+              "v": [
+                3783.485,
+                3418.667,
+                2954.461,
+                2662.914,
+                2794.487,
+                3596.678,
+                4409.959,
+                4916.303
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l13",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh nghiệp dầu khí dư tiền thường trả cổ tức tiền mặt cao. Chỉ tiêu này cho biết bao nhiêu phần lợi nhuận năm trước được trả cho cổ đông bằng tiền trong năm nay.",
+  "lesson_key": "fundamental:dividend_payout-dk",
+  "order": 13,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l13-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>cổ tức, lợi nhuận đã trả cho chủ sở hữu</b> (mã 36 trên lưu chuyển tiền tệ) trong năm, chia <b>LNST năm trước</b>. Dùng năm trước vì cổ tức thường trả từ lợi nhuận của năm trước.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Ở chế độ Quý: cổ tức đã trả 4 quý gần nhất chia LNST của 4 quý trước đó.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ lệ chi trả cổ tức là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l13-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cổ tức bằng cổ phiếu không đi qua lưu chuyển tiền tệ nên không tính.",
+              "title": "Chỉ tiền mặt"
+            },
+            {
+              "text": "Báo cáo hợp nhất có thể gồm cổ tức công ty con trả cho cổ đông khác.",
+              "title": "Có thể gồm cổ đông thiểu số"
+            },
+            {
+              "text": "Cổ tức có thể trả nhiều đợt. Tính theo năm cho ổn định.",
+              "title": "Thời điểm trả"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lấy ở dòng nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l13-rep",
+          "title": "Tỷ lệ chi trả cổ tức",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cổ tức đã trả 4 quý chia LNST 4 quý trước đó, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cổ tức đã trả 4 quý và LNST 4 quý trước đó, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cổ tức giữ đều trong khi lợi nhuận năm trước thay đổi làm tỷ lệ dao động.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 30% đến 70% và có dòng tiền tự do đủ trả. Mức tham khảo.",
+              "title": "Chi trả bền vững",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 100% nhiều năm, hoặc FCF không đủ trả cổ tức. Doanh nghiệp đang dùng tiền tích luỹ hoặc vay để trả.",
+              "title": "Chi trả khó bền",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Theo quý, tỷ lệ dao động vì cổ tức trả theo đợt còn lợi nhuận thay đổi mỗi quý. Nên đọc theo năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp trả tỷ lệ cao và đều có thể phù hợp với người cần dòng tiền.",
+              "title": "Ước lượng tỷ suất cổ tức"
+            },
+            {
+              "text": "Cổ tức nên nhỏ hơn FCF bình quân nhiều năm.",
+              "title": "Kiểm tra bằng FCF"
+            },
+            {
+              "text": "Dư tiền lớn cho phép trả cao trong năm khó khăn.",
+              "title": "Đọc cùng Tiền ròng / VCSH"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu, theo năm (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "Cổ tức đã trả"
+            },
+            {
+              "label": "LNST năm trước"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "2023",
+                "1.725",
+                "2.882",
+                "59,9%"
+              ]
+            },
+            {
+              "cells": [
+                "2024",
+                "2.008",
+                "3.419",
+                "58,7%"
+              ]
+            },
+            {
+              "cells": [
+                "2025",
+                "2.038",
+                "3.597",
+                "56,6%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Doanh nghiệp trả đều khoảng một nửa lợi nhuận năm trước bằng tiền mặt, phù hợp với lượng tiền ròng lớn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chỉ tính cổ tức tiền mặt trên lưu chuyển tiền tệ.",
+              "title": "Tính cổ tức cổ phiếu"
+            },
+            {
+              "text": "Cổ tức năm nay thường trả từ lợi nhuận năm trước.",
+              "title": "Chia cho LNST cùng năm"
+            },
+            {
+              "text": "Cổ tức trả theo đợt nên tỷ lệ quý dao động.",
+              "title": "Đọc theo quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Trả cổ tức phụ thuộc chu kỳ giá dầu.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Doanh nghiệp khí lớn thường trả đều, tỷ lệ cao.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Phụ thuộc lợi nhuận lọc dầu và nhu cầu vốn lưu động.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>cổ tức đã trả</b> (B03 mã 36) ÷ <b>LNST năm trước</b>.",
+    "Chỉ tính <b>cổ tức tiền mặt</b>.",
+    "Mức tham khảo: <b>khoảng 30% đến 70%</b> và FCF đủ trả.",
+    "Nên đọc <b>theo năm</b>."
+  ],
+  "title": "Tỷ lệ chi trả cổ tức · phần lợi nhuận trả lại cổ đông"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l12",
+  "questions": [
+    {
+      "correct_option_id": "8356fa4107",
+      "id": "ch14-l12-q01",
+      "options": [
+        {
+          "id": "8356fa4107",
+          "text": "Tạm ứng khi ký hợp đồng chế tạo, lắp đặt"
+        },
+        {
+          "id": "f5fdc4f407",
+          "text": "Tiền mua xăng dầu trả sau"
+        },
+        {
+          "id": "83874bb27f",
+          "text": "Lãi tiền gửi"
+        }
+      ],
+      "prompt": "Ở doanh nghiệp dịch vụ dầu khí, người mua trả tiền trước chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "f22227ae20",
+      "id": "ch14-l12-q02",
+      "options": [
+        {
+          "id": "f22227ae20",
+          "text": "Không, nằm ở tài liệu công ty"
+        },
+        {
+          "id": "4825e4d849",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "360d55f3cf",
+          "text": "Có, ở kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Giá trị hợp đồng đã ký có trên 3 báo cáo tài chính không?"
+    },
+    {
+      "correct_option_id": "ea477da1dc",
+      "id": "ch14-l12-q03",
+      "options": [
+        {
+          "id": "ea477da1dc",
+          "text": "Dịch vụ kỹ thuật, chế tạo công trình"
+        },
+        {
+          "id": "e55c9a4ee5",
+          "text": "Phân phối xăng dầu qua cửa hàng"
+        },
+        {
+          "id": "b01b7696f0",
+          "text": "Vận chuyển khí qua đường ống"
+        }
+      ],
+      "prompt": "Mảng nào chỉ tiêu này có ý nghĩa nhất?"
+    },
+    {
+      "correct_option_id": "2e8d8d74d5",
+      "id": "ch14-l12-q04",
+      "options": [
+        {
+          "id": "2e8d8d74d5",
+          "text": "Hợp đồng cũ sắp xong, chưa có hợp đồng mới"
+        },
+        {
+          "id": "b4e03fb73d",
+          "text": "Có rất nhiều hợp đồng mới"
+        },
+        {
+          "id": "bfb45778c2",
+          "text": "Doanh nghiệp đang dư tiền"
+        }
+      ],
+      "prompt": "Tỷ lệ giảm liên tục về gần 0 cho thấy gì?"
+    },
+    {
+      "chart_id": "c14l12-rep",
+      "correct_option_id": "4a63d3657f",
+      "id": "ch14-l12-q05",
+      "options": [
+        {
+          "id": "4a63d3657f",
+          "text": "Giảm dần"
+        },
+        {
+          "id": "bdfd86004d",
+          "text": "Tăng dần"
+        },
+        {
+          "id": "250436ccdb",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, số dư đi ngang trong khi doanh thu tăng làm đường thế nào?"
+    }
+  ],
+  "salt": "1da08f420e6cfe477d69e4523882b9c62e11b29fb6e5a3dc0c03f239f3846297"
+}

@@ -1,0 +1,389 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l9-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 242"
+          ],
+          "t": "XDCB dở dang",
+          "tone": "p5",
+          "v": "33.348 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 220"
+          ],
+          "t": "Tài sản cố định",
+          "tone": "warn",
+          "v": "81.337 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "pos",
+          "v": "41,0%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l9-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Năm 1",
+          "tone": "p5",
+          "value": 15
+        },
+        {
+          "label": "Năm 2",
+          "tone": "p5",
+          "value": 35
+        },
+        {
+          "label": "Năm 3",
+          "tone": "p5",
+          "value": 50
+        },
+        {
+          "label": "Nhà máy vận hành",
+          "tone": "pos",
+          "value": 5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Tỷ lệ qua một đợt đầu tư · số minh họa",
+      "unit": "%"
+    },
+    "c17l9-rep": {
+      "alt": "Xây dựng dở dang / Tài sản cố định: 41,0%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "XDCB dở dang / TSCĐ",
+            "v": [
+              20,
+              23,
+              26,
+              29,
+              32,
+              35,
+              38,
+              41
+            ]
+          }
+        ],
+        "name": "Xây dựng dở dang / Tài sản cố định",
+        "sub": {
+          "series": [
+            {
+              "name": "Xây dựng cơ bản dở dang",
+              "v": [
+                11796.382,
+                14212.578,
+                16835.777,
+                19674.23,
+                22753.58,
+                26057.519,
+                29577.67,
+                33348.169
+              ]
+            },
+            {
+              "name": "Tài sản cố định",
+              "v": [
+                58981.911,
+                61793.817,
+                64752.988,
+                67842.173,
+                71104.937,
+                74450.055,
+                77835.975,
+                81336.998
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Nhà máy thép, xi măng mới có thể mất 2 đến 4 năm để xây. Trong thời gian đó, vốn nằm ở xây dựng dở dang, chưa tạo ra sản phẩm. Chỉ tiêu này cho biết quy mô dự án đang xây so với nhà máy đang chạy.",
+  "lesson_key": "fundamental:cip_to_fixed_assets-vl",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l9-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>chi phí xây dựng cơ bản dở dang</b> (mã 242) chia <b>tài sản cố định</b> (mã 220), số cuối kỳ trên bảng cân đối.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 41,0% nghĩa là công trình đang xây bằng khoảng 41% tài sản đang vận hành.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Xây dựng dở dang / Tài sản cố định là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l9-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vốn nằm ở công trình, chưa có doanh thu.",
+              "title": "Chưa tạo sản phẩm"
+            },
+            {
+              "text": "Lãi vay của khoản vay dự án được cộng vào giá trị đang xây.",
+              "title": "Lãi vay vốn hoá"
+            },
+            {
+              "text": "Khi vận hành, tỷ lệ giảm mạnh, khấu hao tăng, sản lượng tăng.",
+              "title": "Chuyển sang TSCĐ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Khi nào thành công suất"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l9-rep",
+          "title": "Xây dựng dở dang / Tài sản cố định",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "XDCB dở dang chia TSCĐ, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "XDCB dở dang và tài sản cố định, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột dở dang tăng đều mỗi quý: dự án đang được rót vốn liên tục.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ lệ tăng theo kế hoạch rồi giảm khi dự án xong. Doanh thu tăng sau đó.",
+              "title": "Dự án trong tầm kiểm soát",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ trên khoảng 50% kéo dài. Vốn bị giữ lâu, rủi ro chậm tiến độ và vượt chi phí.",
+              "title": "Dự án quá lớn hoặc chậm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Dự án càng lớn so với nhà máy hiện có, rủi ro tài chính trong thời gian xây càng cao.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dở dang lớn là công suất lớn sắp vào.",
+              "title": "Ước lượng công suất mới"
+            },
+            {
+              "text": "Dở dang tăng nhiều năm không chuyển sang TSCĐ là chậm tiến độ.",
+              "title": "Theo dõi tiến độ"
+            },
+            {
+              "text": "Dự án lớn thường tài trợ bằng nợ.",
+              "title": "Đọc cùng nợ vay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "XDCB dở dang"
+            },
+            {
+              "label": "TSCĐ"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "11.796",
+                "58.982",
+                "20,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "19.674",
+                "67.842",
+                "29,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "33.348",
+                "81.337",
+                "41,0%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Xây dựng dở dang gần gấp ba trong hai năm, lên 33.348 tỷ, bằng 41% tài sản đang vận hành. Đây là dự án rất lớn so với quy mô hiện tại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công trình chưa vận hành.",
+              "title": "Coi là tài sản đang tạo doanh thu"
+            },
+            {
+              "text": "Dự án bằng 40% nhà máy hiện có là rủi ro lớn.",
+              "title": "Bỏ qua quy mô"
+            },
+            {
+              "text": "Lãi vay làm dở dang tăng thêm.",
+              "title": "Quên lãi vay vốn hoá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự án lò cao, khu liên hợp rất lớn, xây nhiều năm.",
+              "title": "Thép"
+            },
+            {
+              "text": "Dây chuyền mới xây 2 đến 3 năm.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Nhà máy theo nguồn nguyên liệu, xây theo đợt.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>XDCB dở dang</b> (mã 242) ÷ <b>tài sản cố định</b> (mã 220).",
+    "Cho biết <b>quy mô dự án đang xây</b>.",
+    "Chưa tạo sản phẩm, <b>lãi vay có thể vốn hoá</b>.",
+    "Trên <b>50%</b> kéo dài là rủi ro tài chính cao."
+  ],
+  "title": "Xây dựng dở dang / Tài sản cố định · ở vật liệu cơ bản"
+}

@@ -1,0 +1,413 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l9-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Bảng cân đối",
+            "Cuối Q2/26"
+          ],
+          "t": "Hàng tồn kho",
+          "tone": "warn",
+          "v": "78.223 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Giá vốn 4 quý",
+          "tone": "p1",
+          "v": "12.586 tỷ"
+        },
+        {
+          "notes": [
+            "Với tốc độ bàn giao hiện tại"
+          ],
+          "t": "Số năm",
+          "tone": "pos",
+          "v": "6,2 năm"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l9-g2": {
+      "fig": "formula",
+      "height": 170,
+      "items": [
+        {
+          "notes": [
+            "Hai vế khác thước đo"
+          ],
+          "t": "Chia doanh thu",
+          "tone": "neg",
+          "v": "3,8 năm"
+        },
+        {
+          "notes": [
+            "Hai vế cùng giá gốc"
+          ],
+          "t": "Chia giá vốn",
+          "tone": "pos",
+          "v": "6,2 năm"
+        }
+      ],
+      "kind": "figure",
+      "ops": []
+    },
+    "c13l9-g3": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Công ty bàn giao đều",
+          "tone": "pos",
+          "value": 2.5
+        },
+        {
+          "label": "Công ty đang tích quỹ đất",
+          "tone": "warn",
+          "value": 5
+        },
+        {
+          "label": "Công ty kẹt dự án",
+          "tone": "neg",
+          "value": 8
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Số năm tham khảo · số minh họa",
+      "unit": " năm"
+    },
+    "c13l9-rep": {
+      "alt": "Số năm bán hết tồn kho: 6,2 năm",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tồn kho / Giá vốn 4 quý",
+            "v": [
+              4.59,
+              4.856,
+              4.784,
+              4.856,
+              4.982,
+              5.562,
+              5.763,
+              6.215
+            ]
+          }
+        ],
+        "name": "Số năm bán hết tồn kho",
+        "sub": {
+          "series": [
+            {
+              "name": "Hàng tồn kho",
+              "v": [
+                57093.735,
+                62513.558,
+                66715.351,
+                69872.476,
+                72083.335,
+                74362.237,
+                76994.911,
+                78223.294
+              ]
+            },
+            {
+              "name": "Giá vốn 4 quý",
+              "v": [
+                12439.705,
+                12874.76,
+                13944.196,
+                14389.573,
+                14469.411,
+                13369.704,
+                13360.438,
+                12585.931
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "năm"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ngày tồn kho tính theo ngày phù hợp với hàng hoá bán nhanh. Bất động sản cần vài năm mới bán hết một dự án, nên đo bằng năm dễ hiểu hơn. Chỉ tiêu này cho biết tồn kho hiện có bằng bao nhiêu năm giá vốn.",
+  "lesson_key": "fundamental:inventory_years-bds",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l9-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>hàng tồn kho</b> cuối kỳ chia <b>giá vốn hàng bán 4 quý</b>. Đơn vị là năm.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Số 6,2 năm nghĩa là với tốc độ bàn giao 4 quý qua, công ty cần khoảng 6,2 năm để chuyển hết tồn kho thành giá vốn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Số năm bán hết tồn kho là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tồn kho ghi theo giá gốc. Chia cho giá vốn, cũng là giá gốc, thì hai vế cùng thước đo. Chia cho doanh thu sẽ làm số năm thấp hơn thực tế vì doanh thu có cả phần lãi.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l9-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cho biết tốc độ bàn giao gần nhất. Bàn giao nhiều thì giá vốn lớn.",
+              "title": "Giá vốn 4 quý"
+            },
+            {
+              "text": "Toàn bộ quỹ đất, dự án đang xây, nhà chưa giao.",
+              "title": "Tồn kho cuối kỳ"
+            },
+            {
+              "text": "Quỹ đất lớn chưa triển khai làm số năm cao, dù dự án đang bán vẫn tốt.",
+              "title": "Kết quả là ước lượng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao dùng giá vốn"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l9-rep",
+          "title": "Số năm bán hết tồn kho",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tồn kho chia giá vốn 4 quý, đơn vị năm.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hàng tồn kho cuối quý và giá vốn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Tồn kho tăng trong khi giá vốn giảm làm số năm tăng nhanh.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 2 đến 4 năm với công ty nhà ở. Mức tham khảo, tồn kho đủ cho vài năm bàn giao mà không bị kẹt vốn quá lâu.",
+              "title": "Vòng quay hợp lý",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 6 năm và tăng liên tục. Hàng bàn giao chậm hoặc quỹ đất quá lớn so với sức triển khai.",
+              "title": "Vòng quay chậm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Số năm cao có thể đến từ quỹ đất lớn mua để phát triển lâu dài. Điều đáng lo là số năm <b>tăng nhanh</b> trong khi doanh thu đi xuống.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l9-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số năm tăng nghĩa là tồn kho tăng nhanh hơn tốc độ bàn giao.",
+              "title": "Theo dõi tốc độ bàn giao"
+            },
+            {
+              "text": "Công ty đất nền và công ty căn hộ có vòng quay khác nhau.",
+              "title": "So công ty cùng phân khúc"
+            },
+            {
+              "text": "Tồn kho chậm quay và nợ vay tăng là cặp tín hiệu rủi ro.",
+              "title": "Đọc cùng nợ vay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Tồn kho"
+            },
+            {
+              "label": "Giá vốn 4 quý"
+            },
+            {
+              "label": "Số năm"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "57.094",
+                "12.440",
+                "4,59"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "69.872",
+                "14.390",
+                "4,86"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "78.223",
+                "12.586",
+                "6,21"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Số năm tăng từ 4,9 lên 6,2 năm vì tồn kho tăng trong khi bàn giao giảm. Đây là điểm cần theo dõi.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu có phần lãi. Chia doanh thu làm số năm thấp hơn thực tế.",
+              "title": "Chia cho doanh thu"
+            },
+            {
+              "text": "Giá vốn từng quý lên xuống theo bàn giao. Dùng tổng 4 quý.",
+              "title": "Dùng giá vốn một quý"
+            },
+            {
+              "text": "Đây chỉ là ước lượng theo tốc độ bàn giao gần nhất.",
+              "title": "Coi là thời gian chắc chắn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thường 2 đến 5 năm. Đất nền quay nhanh hơn dự án căn hộ lớn.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Thường cao, vì quỹ đất khu công nghiệp lớn và cho thuê dần trong nhiều năm.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Số năm = <b>hàng tồn kho</b> ÷ <b>giá vốn 4 quý</b>.",
+    "Dùng <b>giá vốn</b>, không dùng doanh thu, để hai vế cùng thước đo.",
+    "Mức tham khảo nhà ở: <b>khoảng 2 đến 4 năm</b>.",
+    "Đáng lo khi số năm <b>tăng nhanh</b> mà doanh thu giảm."
+  ],
+  "title": "Số năm bán hết tồn kho · tồn kho bằng bao nhiêu năm giá vốn"
+}

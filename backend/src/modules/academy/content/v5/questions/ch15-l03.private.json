@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l03",
+  "questions": [
+    {
+      "correct_option_id": "014001f288",
+      "id": "ch15-l03-q01",
+      "options": [
+        {
+          "id": "014001f288",
+          "text": "Chi phí bán hàng và chi phí quản lý doanh nghiệp"
+        },
+        {
+          "id": "31a15f3f4a",
+          "text": "Giá vốn và chi phí tài chính"
+        },
+        {
+          "id": "8c4d734cd5",
+          "text": "Khấu hao và lãi vay"
+        }
+      ],
+      "prompt": "Chỉ tiêu gồm những chi phí nào?"
+    },
+    {
+      "correct_option_id": "9be1389eca",
+      "id": "ch15-l03-q02",
+      "options": [
+        {
+          "id": "9be1389eca",
+          "text": "Phần lớn chi phí là cố định"
+        },
+        {
+          "id": "f981205585",
+          "text": "Chi phí tự động tăng"
+        },
+        {
+          "id": "9c9bba5dc8",
+          "text": "Doanh thu không ảnh hưởng chi phí"
+        }
+      ],
+      "prompt": "Vì sao doanh thu giảm làm tỷ lệ tăng nhanh?"
+    },
+    {
+      "correct_option_id": "123e18b82a",
+      "id": "ch15-l03-q03",
+      "options": [
+        {
+          "id": "123e18b82a",
+          "text": "Chuỗi đang hưởng lợi từ quy mô"
+        },
+        {
+          "id": "8ba401b9f6",
+          "text": "Chuỗi đang mở mới quá nhanh"
+        },
+        {
+          "id": "f96516c3dd",
+          "text": "Biên gộp giảm"
+        }
+      ],
+      "prompt": "Doanh thu tăng mà tỷ lệ giảm cho thấy gì?"
+    },
+    {
+      "correct_option_id": "3b07858090",
+      "id": "ch15-l03-q04",
+      "options": [
+        {
+          "id": "3b07858090",
+          "text": "Biên lợi nhuận kinh doanh chính"
+        },
+        {
+          "id": "5cefca07ff",
+          "text": "ROE"
+        },
+        {
+          "id": "a3df013d48",
+          "text": "Tỷ lệ chi trả cổ tức"
+        }
+      ],
+      "prompt": "Biên gộp trừ tỷ lệ này gần bằng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c15l3-rep",
+      "correct_option_id": "8112976501",
+      "id": "ch15-l03-q05",
+      "options": [
+        {
+          "id": "8112976501",
+          "text": "Cột chồng chi phí bán hàng và chi phí quản lý"
+        },
+        {
+          "id": "e07ec20347",
+          "text": "Cột chồng doanh thu thuần và giá vốn hàng bán"
+        },
+        {
+          "id": "5b07fa2621",
+          "text": "Cột chồng hàng tồn kho và phải trả người bán"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới là gì?"
+    }
+  ],
+  "salt": "7026861618357c9481efb93648b1d36a2ae5e5c26302f4e736e95c84c8aacaa4"
+}

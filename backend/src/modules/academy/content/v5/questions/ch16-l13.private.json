@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l13",
+  "questions": [
+    {
+      "correct_option_id": "88144e0e71",
+      "id": "ch16-l13-q01",
+      "options": [
+        {
+          "id": "88144e0e71",
+          "text": "Chi phí lãi vay"
+        },
+        {
+          "id": "0fe6fdb973",
+          "text": "Chi phí bán hàng"
+        },
+        {
+          "id": "09040f44f4",
+          "text": "Khấu hao"
+        }
+      ],
+      "prompt": "Chỉ tiêu tách phần nào ra khỏi chi phí tài chính?"
+    },
+    {
+      "correct_option_id": "ee344df248",
+      "id": "ch16-l13-q02",
+      "options": [
+        {
+          "id": "ee344df248",
+          "text": "Lỗ chênh lệch tỷ giá"
+        },
+        {
+          "id": "3436154725",
+          "text": "Tiền thuê đất"
+        },
+        {
+          "id": "cbec955a36",
+          "text": "Lương nhân viên"
+        }
+      ],
+      "prompt": "Phần còn lại chủ yếu là gì với công ty có nợ ngoại tệ?"
+    },
+    {
+      "correct_option_id": "5bb9121901",
+      "id": "ch16-l13-q03",
+      "options": [
+        {
+          "id": "5bb9121901",
+          "text": "Doanh thu hoạt động tài chính"
+        },
+        {
+          "id": "2b22154586",
+          "text": "Chi phí tài chính"
+        },
+        {
+          "id": "edbffd9917",
+          "text": "Giá vốn"
+        }
+      ],
+      "prompt": "Lãi tỷ giá nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "a17c96552f",
+      "id": "ch16-l13-q04",
+      "options": [
+        {
+          "id": "a17c96552f",
+          "text": "Không"
+        },
+        {
+          "id": "a2afbbc021",
+          "text": "Có"
+        },
+        {
+          "id": "ada187ee19",
+          "text": "Chỉ khi trả cổ tức"
+        }
+      ],
+      "prompt": "Lỗ tỷ giá do đánh giá lại nợ cuối kỳ có phải tiền đã trả ngay không?"
+    },
+    {
+      "chart_id": "c16l13-rep",
+      "correct_option_id": "cbb532c0ac",
+      "id": "ch16-l13-q05",
+      "options": [
+        {
+          "id": "cbb532c0ac",
+          "text": "Tỷ giá ảnh hưởng ít"
+        },
+        {
+          "id": "f8ade87dc3",
+          "text": "Công ty lỗ nặng"
+        },
+        {
+          "id": "1854c8c1d1",
+          "text": "Công ty không có nợ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột chi phí nhỏ so với LNTT cho thấy gì?"
+    }
+  ],
+  "salt": "fb58aedc0aebc30f310f1d6d953230e7a721b4444999f7959afdd49978435a4f"
+}

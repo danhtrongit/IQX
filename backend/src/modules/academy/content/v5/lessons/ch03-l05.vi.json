@@ -1,0 +1,286 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Facebook cá nhân là “ngôi nhà” của thương hiệu. Người quen, đồng nghiệp cũ, người vừa gặp ở câu lạc bộ đều sẽ vào đây xem bạn là ai trước khi quyết định có tin bạn hay không.",
+  "lesson_key": "concept:thuong_hieu_facebook",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Ảnh đại diện",
+              "text": "Rõ mặt, cười, trang phục gọn, nền sáng. Dùng chung với Zalo và TikTok."
+            },
+            {
+              "term": "Ảnh bìa",
+              "text": "Một câu định vị, ví dụ “Giúp người mới đầu tư an toàn từ vốn nhỏ”, hoặc ảnh buổi chia sẻ của bạn."
+            },
+            {
+              "term": "Phần giới thiệu",
+              "text": "3 dòng: SACO tại Chứng khoán DNSE · Giúp ai, giúp gì · Cách liên hệ Zalo."
+            },
+            {
+              "term": "Mục “Đáng chú ý”",
+              "text": "Ghim 3 thứ: bài giới thiệu bản thân, bài hướng dẫn người mới, album ảnh buổi chia sẻ. Người lạ vào trang sẽ thấy ngay."
+            },
+            {
+              "term": "Quyền riêng tư",
+              "text": "Bài về nghề để công khai. Bài gia đình, đời tư có thể để bạn bè hoặc chỉ mình tôi."
+            },
+            {
+              "term": "Dọn trang",
+              "text": "Ẩn bài cũ không phù hợp: chia sẻ bói toán, than thở, tranh cãi, khoe lãi."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s1",
+      "title": "Dựng ngôi nhà trong 1 buổi tối"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Dạng bài"
+            },
+            {
+              "label": "Mục đích"
+            },
+            {
+              "label": "Ví dụ tiêu đề"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Câu chuyện",
+                "Người đọc hiểu và tin bạn",
+                "“3 tháng trước mình không biết cổ phiếu là gì”"
+              ]
+            },
+            {
+              "cells": [
+                "Kiến thức",
+                "Cho người đọc điều có ích",
+                "“Cổ tức là gì? Giải thích bằng quán cà phê”"
+              ]
+            },
+            {
+              "cells": [
+                "Bản tin ngắn",
+                "Cho thấy bạn theo dõi thị trường",
+                "“3 điều đáng chú ý tuần này”"
+              ]
+            },
+            {
+              "cells": [
+                "Hậu trường",
+                "Cho thấy bạn làm nghề thật",
+                "“Tối qua 8 anh chị ngồi cùng nhau 1 tiếng…”"
+              ]
+            },
+            {
+              "cells": [
+                "Hỏi đáp",
+                "Kéo tương tác, lấy ý tưởng bài sau",
+                "“Bạn đang để tiền nhàn rỗi ở đâu?”"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "text": "Xoay vòng 5 dạng bài này. Đừng để 3 bài liên tiếp cùng một dạng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Năm dạng bài hiệu quả"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "label": "Dòng đầu",
+              "text": "Facebook chỉ hiện vài dòng đầu, câu này quyết định người ta có bấm “Xem thêm” không.",
+              "title": "Câu mở"
+            },
+            {
+              "label": "Thân bài",
+              "text": "Câu ngắn, xuống dòng nhiều, mỗi đoạn 1-2 câu.",
+              "title": "Một ý chính"
+            },
+            {
+              "label": "Giá trị",
+              "text": "3 gạch đầu dòng hoặc một ví dụ dễ nhớ.",
+              "title": "Điều mang về"
+            },
+            {
+              "label": "Kết",
+              "text": "Mời người đọc bình luận, không mời mở tài khoản.",
+              "title": "Một câu hỏi"
+            }
+          ],
+          "type": "steps"
+        }
+      ],
+      "id": "s3",
+      "title": "Công thức viết một bài"
+    },
+    {
+      "blocks": [
+        {
+          "audience": "Công khai",
+          "author": "Lan Nguyễn · SACO tại DNSE",
+          "body": "3 tháng trước, mình còn không biết cổ phiếu là gì.\n\nHôm đó một người bạn hỏi: “Có 20 triệu thì nên gửi tiết kiệm hay đầu tư?”. Mình không trả lời được.\n\nTừ đó mình bắt đầu học, rồi chọn làm SACO tại Chứng khoán DNSE để học kỹ hơn và giúp những người giống mình lúc đầu.\n\n3 điều mình học được:\n1. Chỉ đầu tư bằng tiền nhàn rỗi\n2. Biết mình sẽ bán khi nào trước khi mua\n3. Đừng bao giờ mua theo tin đồn\n\nBạn đang để tiền nhàn rỗi ở đâu? Comment cho mình biết nhé, bài sau mình sẽ viết theo câu hỏi của các bạn.",
+          "kicker": "Bài mẫu · Câu chuyện",
+          "type": "sample_post",
+          "why": "<b>Vì sao hiệu quả:</b> dòng đầu gợi tò mò và rất thật. Người đọc biết bạn làm gì mà không thấy bị mời chào. Ba bài học là giá trị mang về. Câu hỏi cuối kéo bình luận và cho bạn ý tưởng bài tiếp theo."
+        },
+        {
+          "audience": "Công khai",
+          "author": "Lan Nguyễn · SACO tại DNSE",
+          "body": "Cổ tức là gì? Giải thích cho người chưa biết gì về chứng khoán.\n\nBạn góp vốn mở quán cà phê với 4 người bạn. Cuối năm quán có lãi, cả nhóm chia cho mỗi người một phần. Phần đó chính là cổ tức.\n\nKhi mua cổ phiếu, bạn cũng là người góp vốn vào doanh nghiệp. Doanh nghiệp có lãi và quyết định chia, bạn nhận cổ tức bằng tiền hoặc bằng cổ phiếu.\n\nLưu ý:\n• Không phải doanh nghiệp nào cũng chia cổ tức\n• Năm nay chia không có nghĩa năm sau cũng chia\n\nLưu bài lại để đọc khi cần nhé. Bạn muốn mình giải thích thuật ngữ nào tiếp theo?",
+          "kicker": "Bài mẫu · Kiến thức",
+          "type": "sample_post",
+          "why": "<b>Vì sao hiệu quả:</b> ví dụ đời thường giúp người mới hiểu ngay. Có phần lưu ý cho thấy bạn trung thực. Lời mời “lưu bài” giúp bài được giữ lại, người lưu thường là người thật sự quan tâm."
+        },
+        {
+          "audience": "Công khai · kèm 3 ảnh buổi chia sẻ",
+          "author": "Lan Nguyễn · SACO tại DNSE",
+          "body": "Tối qua 8 anh chị ngồi cùng nhau 1 tiếng ở quán cà phê chỉ để hỏi một câu: bắt đầu đầu tư từ đâu cho an toàn?\n\nCâu được hỏi nhiều nhất: “Có 10 triệu có đầu tư được không?”\n\nCâu trả lời ngắn: được. Nhưng trước khi mua, hãy chắc chắn đó là tiền nhàn rỗi và bạn đã biết mình sẽ bán khi nào nếu giá giảm.\n\nCảm ơn anh chị đã dành buổi tối thứ Năm cho buổi chia sẻ. Tháng sau mình làm buổi tiếp theo, ai muốn tham gia comment “tham gia” nhé.",
+          "kicker": "Bài mẫu · Hậu trường",
+          "type": "sample_post",
+          "why": "<b>Vì sao hiệu quả:</b> ảnh thật chứng minh bạn làm nghề thật. Bài kể lại một câu hỏi phổ biến nên người chưa đến cũng thấy có ích. Lời mời ở cuối nhẹ nhàng và có thời gian cụ thể."
+        }
+      ],
+      "id": "s4",
+      "title": "Ba bài mẫu viết sẵn"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Giờ đăng",
+              "text": "Thường hiệu quả vào buổi trưa (11:30-13:00) và buổi tối (20:00-22:00). Thử cả hai khung giờ, rồi xem lại bài nào được tương tác nhiều để chọn giờ hợp với bạn bè của mình."
+            },
+            {
+              "term": "1 giờ đầu sau khi đăng",
+              "text": "Trả lời mọi bình luận bằng một câu có nội dung, không chỉ thả tim."
+            },
+            {
+              "term": "15 phút mỗi ngày",
+              "text": "Bình luận có ý nghĩa vào bài của bạn bè, đồng nghiệp cũ. Người ta nhớ người quan tâm đến mình."
+            },
+            {
+              "term": "5 kết bạn mỗi ngày",
+              "text": "Chọn lọc người có bạn chung, người vừa gặp ở câu lạc bộ, hội thảo. Kèm lời nhắn ngắn giới thiệu."
+            }
+          ],
+          "type": "definitions"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tag 50 người vào bài quảng cáo khiến bạn bè khó chịu và chặn bạn.",
+              "title": "Không gắn thẻ hàng loạt"
+            },
+            {
+              "text": "Dễ bị khóa tài khoản và mất uy tín.",
+              "title": "Không dùng công cụ kết bạn tự động"
+            },
+            {
+              "text": "Hãy viết lại bằng lời của bạn và nói vì sao tin đó quan trọng.",
+              "title": "Không đăng lại tin tức nguyên văn"
+            },
+            {
+              "text": "Đó là spam, không phải xây thương hiệu.",
+              "title": "Không để link mở tài khoản dưới bài người khác"
+            }
+          ],
+          "style": "mistake",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Thói quen tương tác mỗi ngày"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: giữ bài kiến thức, thêm hình ảnh con người.</b> 4 lượt lưu và 1 tin nhắn là tín hiệu có giá trị hơn 200 lượt thích, vì đó là người đang thật sự quan tâm. Ảnh selfie được thích vì bạn bè quý bạn, không phải vì họ cần bạn tư vấn. Kết hợp ảnh thật của bạn với nội dung có ích là cách lấy được cả hai.",
+          "options": [
+            "Chuyển sang chỉ đăng ảnh selfie cho nhiều like",
+            "Tiếp tục bài kiến thức, thêm ảnh thật của mình vào bài để vừa gần gũi vừa có ích",
+            "Bỏ Facebook vì không hiệu quả"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Bài selfie đi cà phê của Hằng được 200 lượt thích. Bài kiến thức về cổ tức chỉ được 15 lượt thích, nhưng có 4 người lưu bài và 1 người nhắn hỏi cách bắt đầu."
+          ],
+          "title": "Bài selfie nhiều like hơn bài kiến thức",
+          "type": "scenario"
+        },
+        {
+          "id": "fb1",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Theo công thức: câu mở ở dòng đầu, một ý chính, 3 điều mang về, kết bằng một câu hỏi. Viết về lý do bạn chọn làm nghề này. Không mời mở tài khoản."
+          ],
+          "title": "Bài tự làm: viết bài câu chuyện đầu tiên",
+          "type": "workpad"
+        },
+        {
+          "id": "fb1a",
+          "items": [
+            {
+              "id": "0",
+              "text": "Đổi ảnh, ảnh bìa, viết phần giới thiệu 3 dòng"
+            },
+            {
+              "id": "1",
+              "text": "Ghim 3 mục trong phần “Đáng chú ý”"
+            },
+            {
+              "id": "2",
+              "text": "Ẩn các bài cũ không phù hợp"
+            },
+            {
+              "id": "3",
+              "text": "Đăng bài câu chuyện đầu tiên"
+            },
+            {
+              "id": "4",
+              "text": "Duy trì 15 phút tương tác và 5 lời mời kết bạn mỗi ngày trong 7 ngày"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s6",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Dựng nhà trước: <b>ảnh, ảnh bìa, giới thiệu, mục Đáng chú ý</b>, dọn bài cũ.",
+    "Xoay vòng <b>5 dạng bài</b>: câu chuyện, kiến thức, bản tin, hậu trường, hỏi đáp.",
+    "Công thức: <b>câu mở, một ý, điều mang về, câu hỏi</b>.",
+    "Đo bằng <b>lưu bài, bình luận, tin nhắn</b>, không chỉ lượt thích."
+  ],
+  "title": "Thương hiệu trên Facebook cá nhân"
+}

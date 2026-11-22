@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l08",
+  "questions": [
+    {
+      "correct_option_id": "2ec7a35239",
+      "id": "ch17-l08-q01",
+      "options": [
+        {
+          "id": "2ec7a35239",
+          "text": "Công ty chỉ duy trì tài sản"
+        },
+        {
+          "id": "70a607a5f3",
+          "text": "Đang đầu tư lớn"
+        },
+        {
+          "id": "b50cb25b87",
+          "text": "Đang bán tài sản"
+        }
+      ],
+      "prompt": "Capex / Khấu hao quanh 1 lần cho thấy gì?"
+    },
+    {
+      "correct_option_id": "44dbbdbf31",
+      "id": "ch17-l08-q02",
+      "options": [
+        {
+          "id": "44dbbdbf31",
+          "text": "Đáy chu kỳ, nhà máy xong khi giá hồi"
+        },
+        {
+          "id": "2c629de0d0",
+          "text": "Đỉnh chu kỳ, khi lợi nhuận cao nhất"
+        },
+        {
+          "id": "1b957cd7d8",
+          "text": "Bất kỳ lúc nào, thời điểm không quan trọng"
+        }
+      ],
+      "prompt": "Đầu tư ở thời điểm nào thường hiệu quả hơn?"
+    },
+    {
+      "correct_option_id": "534cc82adb",
+      "id": "ch17-l08-q03",
+      "options": [
+        {
+          "id": "534cc82adb",
+          "text": "Nợ vay tăng, dòng tiền tự do âm"
+        },
+        {
+          "id": "b6d8853818",
+          "text": "Cổ tức tăng mạnh"
+        },
+        {
+          "id": "06cb28aa6d",
+          "text": "Khấu hao giảm"
+        }
+      ],
+      "prompt": "Đợt đầu tư lớn thường đi kèm điều gì?"
+    },
+    {
+      "correct_option_id": "02fc8a167c",
+      "id": "ch17-l08-q04",
+      "options": [
+        {
+          "id": "02fc8a167c",
+          "text": "Net Debt / EBITDA"
+        },
+        {
+          "id": "0fe3f1e0aa",
+          "text": "P/S"
+        },
+        {
+          "id": "cc3e50e2b7",
+          "text": "Số ngày thu tiền"
+        }
+      ],
+      "prompt": "Nên đọc Capex / Khấu hao cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c17l8-rep",
+      "correct_option_id": "e5842cfda4",
+      "id": "ch17-l08-q05",
+      "options": [
+        {
+          "id": "e5842cfda4",
+          "text": "Đang trong đợt đầu tư lớn"
+        },
+        {
+          "id": "2fd40d6dab",
+          "text": "Đang thanh lý"
+        },
+        {
+          "id": "1a15258b2d",
+          "text": "Đang lỗ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột capex gấp nhiều lần khấu hao nghĩa là gì?"
+    }
+  ],
+  "salt": "58d24224a40cd2cd073edce04fad889113d2cd52b3b14af79645c6eac544f8a8"
+}

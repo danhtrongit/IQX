@@ -1,0 +1,342 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l10-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "LNST 4 quý",
+          "tone": "pos",
+          "v": "985 tỷ"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "VCSH bình quân",
+          "tone": "p1",
+          "v": "9.646 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "ROE",
+          "tone": "warn",
+          "v": "10,2%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c12l10-g2": {
+      "fig": "formula",
+      "height": 180,
+      "items": [
+        {
+          "notes": [
+            "Lãi trên mỗi đồng tài sản"
+          ],
+          "t": "ROA",
+          "tone": "pos",
+          "v": "3,45%"
+        },
+        {
+          "notes": [
+            "Chủ yếu từ dự phòng"
+          ],
+          "t": "Đòn bẩy",
+          "tone": "warn",
+          "v": "3,0 lần"
+        },
+        {
+          "notes": [
+            "≈ ROA × đòn bẩy"
+          ],
+          "t": "ROE",
+          "tone": "p1",
+          "v": "10,2%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "×",
+        "="
+      ]
+    },
+    "c12l10-rep": {
+      "alt": "ROE: 10,2%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "ROE (4 quý)",
+            "v": [
+              12.4,
+              12.7,
+              12.9,
+              13,
+              12.3,
+              11.4,
+              10.8,
+              10.2
+            ]
+          },
+          {
+            "name": "ROA (4 quý)",
+            "v": [
+              4.25,
+              4.33,
+              4.38,
+              4.4,
+              4.15,
+              3.85,
+              3.62,
+              3.45
+            ]
+          }
+        ],
+        "name": "ROE",
+        "sub": {
+          "series": [
+            {
+              "name": "Tổng tài sản BQ / VCSH BQ",
+              "v": [
+                2.918,
+                2.933,
+                2.945,
+                2.955,
+                2.964,
+                2.961,
+                2.983,
+                2.957
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "lần"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "ROE công ty bảo hiểm thường thấp hơn ngân hàng nhưng ổn định hơn công ty chứng khoán. Đòn bẩy của công ty bảo hiểm không đến từ nợ vay mà từ dự phòng nghiệp vụ, tức tiền phí khách đã đóng. Bài này giúp đọc ROE theo cấu trúc đó.",
+  "lesson_key": "fundamental:roe-bh",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l10-g1",
+          "type": "chart"
+        },
+        {
+          "text": "ROE bằng <b>LNST 4 quý</b> chia <b>vốn chủ sở hữu bình quân</b>. Cách tính giống bài ROE ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tài sản công ty bảo hiểm được tài trợ chủ yếu bằng vốn chủ và dự phòng nghiệp vụ. Dự phòng là tiền phí đã thu, phải giữ để bồi thường sau này.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l10-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự phòng nghiệp vụ không phải nợ vay, không trả lãi, nhưng phải dùng để bồi thường.",
+              "title": "Đòn bẩy từ dự phòng"
+            },
+            {
+              "text": "Dự phòng toán học của nhân thọ rất lớn so với vốn chủ.",
+              "title": "Nhân thọ đòn bẩy cao hơn"
+            },
+            {
+              "text": "Công ty phải giữ vốn đủ lớn theo quy định về khả năng thanh toán.",
+              "title": "Vốn chủ để đáp ứng quy định"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bảo hiểm khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l10-rep",
+          "title": "ROE",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE và ROA tính theo 4 quý, đơn vị %.",
+              "title": "Hai đường phía trên"
+            },
+            {
+              "text": "Tổng tài sản bình quân chia vốn chủ bình quân, đơn vị lần.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "ROE và ROA cùng giảm trong khi đòn bẩy đi ngang: lợi nhuận giảm, không phải do cơ cấu vốn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Trên khoảng 12% với phi nhân thọ, ổn định qua nhiều năm. Mức tham khảo.",
+              "title": "ROE tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 8%, thường do combined ratio cao và lợi suất đầu tư thấp.",
+              "title": "ROE yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "ROE công ty bảo hiểm nên đọc cùng <b>Combined ratio</b> và <b>Lợi suất đầu tư</b>, hai yếu tố tạo ra lợi nhuận.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE giảm vì ROA hay vì đòn bẩy?",
+              "title": "Tách hai phần"
+            },
+            {
+              "text": "Nhân thọ và phi nhân thọ có đòn bẩy khác nhau.",
+              "title": "So cùng loại hình"
+            },
+            {
+              "text": "ROE bền vững quyết định mức P/B hợp lý.",
+              "title": "Đọc cùng P/B"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu, 4 quý đến Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "LNST 4 quý",
+              "text": "985 tỷ đồng."
+            },
+            {
+              "term": "VCSH bình quân",
+              "text": "(9.400 + 9.892) ÷ 2 ≈ 9.646 tỷ đồng."
+            },
+            {
+              "term": "ROE",
+              "text": "985 ÷ 9.646 ≈ 10,2%."
+            },
+            {
+              "term": "Tách thành hai phần",
+              "text": "ROA 3,45% × đòn bẩy 3,0 lần. ROE giảm từ 13,0% ở Q2/25 vì lợi nhuận bảo hiểm giảm."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đòn bẩy và nguồn lợi nhuận khác hẳn.",
+              "title": "So với ngân hàng"
+            },
+            {
+              "text": "Dự phòng không trả lãi, nhưng là nghĩa vụ bồi thường.",
+              "title": "Coi dự phòng là nợ vay"
+            },
+            {
+              "text": "Lãi suất giảm làm ROE giảm.",
+              "title": "Bỏ qua lợi suất đầu tư"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>ROE</b> = LNST 4 quý ÷ VCSH bình quân.",
+    "Đòn bẩy bảo hiểm đến từ <b>dự phòng nghiệp vụ</b>, không phải nợ vay.",
+    "ROE phụ thuộc <b>combined ratio</b> và <b>lợi suất đầu tư</b>.",
+    "So <b>cùng loại hình</b> nhân thọ hoặc phi nhân thọ."
+  ],
+  "title": "ROE · ở công ty bảo hiểm"
+}

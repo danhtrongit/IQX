@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l01",
+  "questions": [
+    {
+      "correct_option_id": "d71f651a64",
+      "id": "ch16-l01-q01",
+      "options": [
+        {
+          "id": "d71f651a64",
+          "text": "Sản lượng điện phát ra"
+        },
+        {
+          "id": "71def1804f",
+          "text": "Số lượng cổ đông"
+        },
+        {
+          "id": "3dd92fe316",
+          "text": "Lãi tiền gửi"
+        }
+      ],
+      "prompt": "Yếu tố nào quyết định phần lớn doanh thu nhà máy điện?"
+    },
+    {
+      "correct_option_id": "e3e17c5378",
+      "id": "ch16-l01-q02",
+      "options": [
+        {
+          "id": "e3e17c5378",
+          "text": "Phát nhiều điện hơn, doanh thu tăng"
+        },
+        {
+          "id": "ce6c86ed03",
+          "text": "Phát ít điện hơn, doanh thu giảm"
+        },
+        {
+          "id": "6652f9674d",
+          "text": "Giá bán điện giảm, doanh thu giảm"
+        }
+      ],
+      "prompt": "Năm nhiều mưa ảnh hưởng thế nào đến thủy điện?"
+    },
+    {
+      "correct_option_id": "688e95ab95",
+      "id": "ch16-l01-q03",
+      "options": [
+        {
+          "id": "688e95ab95",
+          "text": "Không"
+        },
+        {
+          "id": "a814f73a39",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "b9c402e235",
+          "text": "Có, ở lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Sản lượng điện có trên 3 báo cáo tài chính không?"
+    },
+    {
+      "correct_option_id": "dc15b69f46",
+      "id": "ch16-l01-q04",
+      "options": [
+        {
+          "id": "dc15b69f46",
+          "text": "Capex / Khấu hao"
+        },
+        {
+          "id": "7c74fcdd4b",
+          "text": "P/E"
+        },
+        {
+          "id": "78d6fb33c0",
+          "text": "Tỷ lệ chi trả cổ tức"
+        }
+      ],
+      "prompt": "Chỉ tiêu nào giúp biết có công suất mới hay không?"
+    },
+    {
+      "chart_id": "c16l1-rep",
+      "correct_option_id": "981b268228",
+      "id": "ch16-l01-q05",
+      "options": [
+        {
+          "id": "981b268228",
+          "text": "Mùa mưa và mùa nóng"
+        },
+        {
+          "id": "6b01bf50b1",
+          "text": "Công ty vay thêm"
+        },
+        {
+          "id": "9a6dde1523",
+          "text": "Giá cổ phiếu tăng"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, vì sao cột quý 2 và quý 3 cao hơn?"
+    }
+  ],
+  "salt": "ca214901da4efc23064d6ec030c7c2526cf2071688565e4c569f9d77e96b8a4e"
+}

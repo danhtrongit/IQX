@@ -1,0 +1,400 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l5-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Lưu chuyển tiền tệ",
+            "Mã 02"
+          ],
+          "t": "Khấu hao 4 quý",
+          "tone": "warn",
+          "v": "2.019 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "72.265 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "pos",
+          "v": "2,8%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l5-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Mã 02",
+          "line": "Khấu hao TSCĐ và BĐS đầu tư",
+          "report": "Điều chỉnh cho các khoản",
+          "tone": "warn"
+        },
+        {
+          "code": "Mã 10",
+          "line": "Doanh thu thuần (báo cáo kết quả kinh doanh)",
+          "report": "Mẫu số",
+          "tone": "p1"
+        }
+      ],
+      "title": "Báo cáo lưu chuyển tiền tệ, phương pháp gián tiếp (mẫu B03-DN)"
+    },
+    "c14l5-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Phân phối xăng dầu",
+          "tone": "pos",
+          "value": 1
+        },
+        {
+          "label": "Lọc dầu",
+          "tone": "p1",
+          "value": 3
+        },
+        {
+          "label": "Vận chuyển khí",
+          "tone": "warn",
+          "value": 8
+        },
+        {
+          "label": "Khoan, vận tải biển",
+          "tone": "neg",
+          "value": 18
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Khấu hao / Doanh thu tham khảo · số minh họa",
+      "unit": "%"
+    },
+    "c14l5-rep": {
+      "alt": "Khấu hao / Doanh thu: 2,8%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Khấu hao / Doanh thu (4 quý)",
+            "v": [
+              3.685,
+              3.574,
+              3.413,
+              3.266,
+              3.072,
+              2.955,
+              2.894,
+              2.794
+            ]
+          }
+        ],
+        "name": "Khấu hao / Doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Khấu hao 4 quý",
+              "v": [
+                2008.134,
+                2008.886,
+                2006.166,
+                2004.848,
+                2005.192,
+                2007.652,
+                2012.368,
+                2019.095
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Giàn khoan, tàu chở dầu, đường ống, nhà máy là tài sản rất lớn. Mỗi năm chúng hao mòn một phần, ghi vào khấu hao. Chỉ tiêu này cho biết bao nhiêu phần doanh thu dùng để bù hao mòn tài sản.",
+  "lesson_key": "fundamental:depreciation_to_revenue-dk",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l5-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>khấu hao tài sản cố định và bất động sản đầu tư</b> trên báo cáo lưu chuyển tiền tệ chia <b>doanh thu thuần</b>, cộng 4 quý. Đơn vị %.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Dòng khấu hao chỉ có khi báo cáo lưu chuyển tiền tệ lập theo <b>phương pháp gián tiếp</b>. Doanh nghiệp lập theo phương pháp trực tiếp thì kỳ đó để trống.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Khấu hao / Doanh thu là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l5-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền đã chi khi mua tài sản. Khấu hao chỉ chia chi phí đó ra nhiều năm.",
+              "title": "Khấu hao không tốn tiền năm nay"
+            },
+            {
+              "text": "Khấu hao giàn khoan, tàu, nhà máy phần lớn nằm trong giá vốn hàng bán.",
+              "title": "Nằm trong giá vốn"
+            },
+            {
+              "text": "Không có dòng khấu hao. Dashboard để trống kỳ đó, không lấy số từ thuyết minh.",
+              "title": "Phương pháp trực tiếp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lấy ở dòng nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l5-rep",
+          "title": "Khấu hao / Doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khấu hao 4 quý chia doanh thu 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Khấu hao 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Khấu hao đi ngang trong khi tỷ lệ giảm: doanh thu tăng nhanh hơn, thường do giá bán.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 2%. Mức tham khảo với phân phối xăng dầu, doanh thu lớn so với tài sản.",
+              "title": "Tài sản nhẹ",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 10%. Mức thường gặp ở khoan, vận tải biển, khai thác. Lợi nhuận nhạy với mức sử dụng tài sản.",
+              "title": "Tài sản nặng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Doanh nghiệp tài sản nặng có chi phí cố định lớn. Doanh thu giảm 10% có thể làm lợi nhuận giảm nhiều hơn 10%.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c14l5-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ cao nghĩa là chi phí cố định lớn, lợi nhuận biến động mạnh theo doanh thu.",
+              "title": "Hiểu cơ cấu chi phí"
+            },
+            {
+              "text": "Cộng khấu hao vào lợi nhuận để so doanh nghiệp có tài sản cũ mới khác nhau.",
+              "title": "Tính EBITDA"
+            },
+            {
+              "text": "Biết doanh nghiệp có đang đầu tư bù hao mòn không.",
+              "title": "Đọc cùng Capex / Khấu hao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Khấu hao"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "2.008",
+                "54.490",
+                "3,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "2.005",
+                "61.386",
+                "3,3%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "2.019",
+                "72.265",
+                "2,8%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Khấu hao gần như không đổi quanh 2.019 tỷ. Tỷ lệ giảm từ 3,7% xuống 2,8% vì doanh thu tăng theo giá bán.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Kỳ không có dòng khấu hao trên lưu chuyển tiền tệ thì để trống.",
+              "title": "Lấy số từ thuyết minh"
+            },
+            {
+              "text": "Có thể chỉ do giá bán tăng làm doanh thu tăng.",
+              "title": "Coi tỷ lệ giảm là hiệu quả hơn"
+            },
+            {
+              "text": "Phân phối và khoan có mức khấu hao khác hẳn.",
+              "title": "So mảng khác nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tài sản nặng: giàn khoan, tàu. Tỷ lệ cao.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Đường ống, kho chứa: tỷ lệ trung bình, ổn định.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Doanh thu rất lớn nên tỷ lệ thấp dù nhà máy lớn.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>khấu hao</b> (B03 mã 02) ÷ <b>doanh thu thuần</b>, 4 quý.",
+    "Chỉ có khi lưu chuyển tiền tệ lập theo <b>phương pháp gián tiếp</b>.",
+    "Tỷ lệ cao là <b>tài sản nặng</b>, chi phí cố định lớn.",
+    "Đọc cùng <b>Capex / Khấu hao</b>."
+  ],
+  "title": "Khấu hao / Doanh thu · mức nặng tài sản"
+}

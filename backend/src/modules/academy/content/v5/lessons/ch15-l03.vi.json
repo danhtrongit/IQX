@@ -1,0 +1,380 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l3-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 25 + mã 26"
+          ],
+          "t": "CPBH + CPQL 4 quý",
+          "tone": "neg",
+          "v": "9.302 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 10"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "58.913 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "15,8%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l3-g2": {
+      "decimals": 0,
+      "fig": "stack",
+      "kind": "figure",
+      "parts": [
+        {
+          "label": "Giá vốn",
+          "tone": "p1",
+          "value": 79
+        },
+        {
+          "label": "Chi phí bán hàng",
+          "tone": "p5",
+          "value": 13
+        },
+        {
+          "label": "Chi phí quản lý",
+          "tone": "warn",
+          "value": 3
+        },
+        {
+          "label": "Lãi kinh doanh chính",
+          "tone": "pos",
+          "value": 5
+        }
+      ],
+      "title": "100 đồng doanh thu của chuỗi bán lẻ · số minh họa",
+      "unit": " đồng"
+    },
+    "c15l3-rep": {
+      "alt": "Chi phí bán hàng và quản lý / Doanh thu: 15,8%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "(CPBH + CPQL) / Doanh thu (4 quý)",
+            "v": [
+              15.932,
+              15.806,
+              16.022,
+              16.096,
+              15.992,
+              16.139,
+              15.928,
+              15.79
+            ]
+          }
+        ],
+        "name": "Chi phí bán hàng và quản lý / Doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Chi phí bán hàng 4 quý",
+              "v": [
+                5968.687,
+                6229.865,
+                6669.937,
+                6985.487,
+                7178.898,
+                7464.212,
+                7588.753,
+                7668.776
+              ]
+            },
+            {
+              "name": "Chi phí quản lý 4 quý",
+              "v": [
+                1304.987,
+                1331.812,
+                1410.264,
+                1474.142,
+                1518.899,
+                1581.349,
+                1604.366,
+                1633.551
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tiền thuê mặt bằng, lương nhân viên cửa hàng, điện, vận chuyển là chi phí lớn nhất của chuỗi bán lẻ sau giá vốn. Chỉ tiêu này cho biết mỗi 100 đồng doanh thu phải bỏ bao nhiêu đồng cho chi phí vận hành.",
+  "lesson_key": "fundamental:sga_to_revenue-bl",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l3-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>chi phí bán hàng</b> cộng <b>chi phí quản lý doanh nghiệp</b>, chia <b>doanh thu thuần</b>, cộng 4 quý. Tất cả trên báo cáo kết quả kinh doanh.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Chi phí bán hàng và quản lý / Doanh thu là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l3-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thuê cửa hàng, lương nhân viên bán hàng, điện, quảng cáo, vận chuyển.",
+              "title": "Chi phí bán hàng"
+            },
+            {
+              "text": "Văn phòng, bộ máy quản lý, công nghệ.",
+              "title": "Chi phí quản lý"
+            },
+            {
+              "text": "Tiền thuê và lương không giảm khi doanh thu giảm. Doanh thu giảm thì tỷ lệ tăng nhanh.",
+              "title": "Phần lớn là cố định"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Chi phí gồm gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l3-rep",
+          "title": "Chi phí bán hàng và quản lý / Doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí bán hàng và quản lý chia doanh thu 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng chi phí bán hàng và chi phí quản lý 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột chi phí tăng cùng nhịp doanh thu thì đường đi ngang.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ lệ đi ngang hoặc giảm dần khi doanh thu tăng. Mức nền tham khảo chuỗi bán lẻ: 12% đến 18%.",
+              "title": "Vận hành hiệu quả",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ tăng nhiều quý liền. Thường do doanh thu cửa hàng giảm hoặc mở mới quá nhanh.",
+              "title": "Chi phí phình ra",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Chỉ tiêu này đi cùng biên gộp: <b>biên gộp trừ tỷ lệ này</b> gần bằng biên lợi nhuận kinh doanh chính.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu tăng mà tỷ lệ giảm là chuỗi đang hưởng lợi từ quy mô.",
+              "title": "Đo lợi thế quy mô"
+            },
+            {
+              "text": "Tỷ lệ tăng khi doanh thu chững lại cho thấy nhiều cửa hàng bán chậm.",
+              "title": "Phát hiện cửa hàng kém"
+            },
+            {
+              "text": "Biên gộp trừ tỷ lệ này.",
+              "title": "Tính biên kinh doanh chính"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Chi phí bán hàng"
+            },
+            {
+              "label": "Chi phí quản lý"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "5.969",
+                "1.305",
+                "15,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "6.985",
+                "1.474",
+                "16,1%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "7.669",
+                "1.634",
+                "15,8%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ giữ quanh 16%. Biên gộp 21,2% trừ 15,8% còn khoảng 5,4%, gần bằng biên kinh doanh chính.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí quản lý cũng là chi phí vận hành chuỗi.",
+              "title": "Chỉ lấy chi phí bán hàng"
+            },
+            {
+              "text": "Nhà sản xuất hàng tiêu dùng chi nhiều cho quảng cáo, tỷ lệ có thể cao hơn bán lẻ.",
+              "title": "So với nhà sản xuất"
+            },
+            {
+              "text": "Doanh thu giảm 10% có thể làm tỷ lệ tăng gần 10%.",
+              "title": "Bỏ qua tính cố định"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thuê mặt bằng và lương nhân viên là chi phí lớn nhất.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "Quảng cáo, khuyến mãi và phân phối là chi phí lớn nhất. Tỷ lệ thường 20% đến 25%.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>(chi phí bán hàng + chi phí quản lý)</b> ÷ <b>doanh thu thuần</b>, 4 quý.",
+    "Phần lớn là <b>chi phí cố định</b>: thuê, lương.",
+    "Doanh thu tăng mà tỷ lệ giảm là <b>lợi thế quy mô</b>.",
+    "<b>Biên gộp trừ tỷ lệ này</b> gần bằng biên kinh doanh chính."
+  ],
+  "title": "Chi phí bán hàng và quản lý / Doanh thu · chi phí vận hành chuỗi"
+}

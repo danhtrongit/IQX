@@ -1,0 +1,399 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l4-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Bảng cân đối",
+            "Đầu và cuối kỳ"
+          ],
+          "t": "Tồn kho bình quân",
+          "tone": "warn",
+          "v": "5.316 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Giá vốn 4 quý",
+          "tone": "p1",
+          "v": "64.851 tỷ"
+        },
+        {
+          "notes": [
+            "Nhân 365"
+          ],
+          "t": "Số ngày",
+          "tone": "pos",
+          "v": "30 ngày"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l4-g2": {
+      "fig": "formula",
+      "height": 180,
+      "items": [
+        {
+          "notes": [
+            "Bằng 8% giá vốn năm"
+          ],
+          "t": "Tồn kho",
+          "tone": "warn",
+          "v": "30 ngày"
+        },
+        {
+          "notes": [
+            "Trong thời gian giữ hàng"
+          ],
+          "t": "Giá dầu",
+          "tone": "neg",
+          "v": "−20%"
+        },
+        {
+          "notes": [
+            "Ước lượng"
+          ],
+          "t": "Biên gộp năm",
+          "tone": "neg",
+          "v": "≈ −1,6 điểm"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "×",
+        "="
+      ]
+    },
+    "c14l4-rep": {
+      "alt": "Số ngày tồn kho: 30 ngày",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Số ngày tồn kho (4 quý)",
+            "v": [
+              30.003,
+              31.184,
+              30.666,
+              30.636,
+              30.316,
+              30.038,
+              28.668,
+              29.92
+            ]
+          }
+        ],
+        "name": "Số ngày tồn kho",
+        "sub": {
+          "series": [
+            {
+              "name": "Tồn kho bình quân",
+              "v": [
+                4005.357,
+                4218.948,
+                4269.929,
+                4424.71,
+                4679.845,
+                4924.044,
+                4890.334,
+                5316.066
+              ]
+            },
+            {
+              "name": "Giá vốn 4 quý",
+              "v": [
+                48726.662,
+                49380.964,
+                50822.043,
+                52716.653,
+                56343.865,
+                59833.086,
+                62263.593,
+                64851.033
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "ngày"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh nghiệp lọc dầu, phân phối xăng dầu luôn giữ một lượng dầu và xăng trong kho. Kho càng lớn thì lãi lỗ khi giá dầu đổi chiều càng lớn. Số ngày tồn kho cho biết lượng hàng đó bằng bao nhiêu ngày bán.",
+  "lesson_key": "fundamental:inventory_days-dk",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l4-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>hàng tồn kho bình quân</b> (cuối quý này và cuối cùng quý năm trước) chia <b>giá vốn hàng bán 4 quý</b>, nhân 365. Đơn vị ngày.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Số 30 ngày nghĩa là hàng trong kho đủ bán trong khoảng một tháng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Số ngày tồn kho là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lãi lỗ do giá trị tồn kho tỷ lệ với lượng hàng trong kho và mức thay đổi giá.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c14l4-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giữ nhiều ngày hàng thì lãi lỗ khi giá dầu đổi chiều càng lớn.",
+              "title": "Kho lớn, rủi ro lớn"
+            },
+            {
+              "text": "Doanh nghiệp phân phối phải giữ mức dự trữ tối thiểu để không thiếu hàng.",
+              "title": "Đảm bảo nguồn cung"
+            },
+            {
+              "text": "Báo cáo chỉ có tổng tồn kho, không tách dầu thô, xăng, vật tư.",
+              "title": "Không tách được loại hàng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao quan trọng ở dầu khí"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l4-rep",
+          "title": "Số ngày tồn kho",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số ngày tồn kho 4 quý, đơn vị ngày.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Tồn kho bình quân và giá vốn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Tồn kho tăng cùng nhịp giá vốn thì số ngày đi ngang.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 20 đến 40 ngày với lọc dầu, phân phối. Mức tham khảo, đủ dự trữ mà không ôm quá nhiều rủi ro giá.",
+              "title": "Mức hợp lý",
+              "tone": "pos"
+            },
+            {
+              "text": "Số ngày tăng nhanh khi giá dầu đang ở vùng cao. Nếu giá giảm, lỗ do tồn kho sẽ lớn.",
+              "title": "Cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với dịch vụ dầu khí, tồn kho chủ yếu là vật tư, ít chịu rủi ro giá dầu hơn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số ngày tồn kho nhân mức giảm giá dầu cho biết lỗ tồn kho có thể lớn đến đâu.",
+              "title": "Ước lượng rủi ro giá"
+            },
+            {
+              "text": "Quý biên gộp đột biến thường trùng với tồn kho lớn và giá dầu đổi chiều.",
+              "title": "Đọc cùng biên gộp quý"
+            },
+            {
+              "text": "Lọc dầu, phân phối, dịch vụ có mức tồn kho rất khác nhau.",
+              "title": "So cùng mảng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Tồn kho bình quân"
+            },
+            {
+              "label": "Giá vốn 4 quý"
+            },
+            {
+              "label": "Số ngày"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "4.005",
+                "48.727",
+                "30"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "4.425",
+                "52.717",
+                "31"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "5.316",
+                "64.851",
+                "30"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Số ngày giữ quanh 30 ngày. Tồn kho tăng cùng nhịp với giá vốn, doanh nghiệp không tăng dự trữ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng bình quân đầu và cuối kỳ để tránh lệch do một ngày chốt sổ.",
+              "title": "Dùng tồn kho cuối kỳ"
+            },
+            {
+              "text": "Tồn kho ghi theo giá gốc, nên chia giá vốn.",
+              "title": "Chia cho doanh thu"
+            },
+            {
+              "text": "Dịch vụ, phân phối, lọc dầu có mức tồn kho khác nhau.",
+              "title": "So mảng khác nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tồn kho chủ yếu là vật tư, thiết bị. Ít chịu rủi ro giá dầu.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Tồn kho nhỏ, khí được vận chuyển liên tục.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Tồn kho dầu thô và xăng dầu lớn, rủi ro giá cao nhất.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Số ngày = <b>tồn kho bình quân</b> ÷ <b>giá vốn 4 quý</b> × 365.",
+    "Kho càng lớn thì <b>lãi lỗ khi giá dầu đổi chiều</b> càng lớn.",
+    "Mức tham khảo lọc dầu, phân phối: <b>khoảng 20 đến 40 ngày</b>.",
+    "Đọc cùng <b>biên gộp quý</b>."
+  ],
+  "title": "Số ngày tồn kho · thời gian hàng nằm trong kho"
+}

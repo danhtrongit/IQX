@@ -80,6 +80,46 @@ export class VciMarketProvider {
       rawEndpoint: endpoint,
     };
   }
+  /**
+   * Phân ngành ICB cấp 2 và cấp 4 của mọi mã trong MỘT lần gọi (`v2/company/search-bar`, ~2.100
+   * mã). Dashboard v3 dùng để chia mẫu doanh nghiệp thành ngành (spec v3 §1.3). Mã thiếu ICB vẫn
+   * có dòng với `lv2`/`lv4` null.
+   */
+  async fetchIcbDirectory(): Promise<
+    ProviderResult<{ symbol: string; lv2: string | null; lv4: string | null }[]>
+  > {
+    const endpoint = `${IQ}/v2/company/search-bar`;
+    const raw = await this.get(this.query(endpoint, { language: 1 }), 3_600_000);
+    const rows = isObject(raw) ? asObjects(raw.data) : asObjects(raw);
+    const code = (level: unknown): string | null =>
+      isObject(level) && typeof level.code === 'string' && level.code.length > 0
+        ? level.code
+        : null;
+    return {
+      data: rows
+        .filter((item) => typeof item.code === 'string' && item.code.length > 0)
+        .map((item) => ({
+          symbol: String(item.code).toUpperCase(),
+          lv2: code(item.icbLv2),
+          lv4: code(item.icbLv4),
+        })),
+      rawEndpoint: endpoint,
+    };
+  }
+  /** ICB cấp 2 và cấp 4 của một mã (`v1/company/{sym}`): dự phòng khi mã thiếu ở search-bar. */
+  async fetchCompanyIcb(
+    symbol: string,
+  ): Promise<ProviderResult<{ lv2: string | null; lv4: string | null }>> {
+    const endpoint = `${IQ}/v1/company/${symbol}`;
+    const raw = await this.get(endpoint, 3_600_000);
+    const data = isObject(raw) && isObject(raw.data) ? raw.data : {};
+    const code = (value: unknown): string | null =>
+      typeof value === 'string' && value.length > 0 ? value : null;
+    return {
+      data: { lv2: code(data.icbCodeLv2), lv4: code(data.icbCodeLv4) },
+      rawEndpoint: endpoint,
+    };
+  }
   async fetchGroupSymbols(group: string): Promise<ProviderResult<JsonObject[]>> {
     const url = new URL(`${TRADING}/price/symbols/getByGroup`);
     url.searchParams.set('group', group);

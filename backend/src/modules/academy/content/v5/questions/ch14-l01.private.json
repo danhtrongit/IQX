@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l01",
+  "questions": [
+    {
+      "correct_option_id": "fdac50f2df",
+      "id": "ch14-l01-q01",
+      "options": [
+        {
+          "id": "fdac50f2df",
+          "text": "Vì giá dầu, giá khí tăng"
+        },
+        {
+          "id": "5b6523c298",
+          "text": "Vì công ty đổi cách ghi nhận"
+        },
+        {
+          "id": "eefbf163a5",
+          "text": "Vì chi phí bán hàng giảm"
+        }
+      ],
+      "prompt": "Vì sao doanh thu doanh nghiệp dầu khí có thể tăng mạnh dù sản lượng không đổi?"
+    },
+    {
+      "correct_option_id": "5c3fa168cc",
+      "id": "ch14-l01-q02",
+      "options": [
+        {
+          "id": "5c3fa168cc",
+          "text": "Biên lợi nhuận gộp"
+        },
+        {
+          "id": "222ff019ef",
+          "text": "Số ngày thu tiền"
+        },
+        {
+          "id": "5f1499704d",
+          "text": "P/B"
+        }
+      ],
+      "prompt": "Nên đọc tăng trưởng doanh thu dầu khí cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "ac1e040e83",
+      "id": "ch14-l01-q03",
+      "options": [
+        {
+          "id": "ac1e040e83",
+          "text": "Chi phí đầu vào tăng nhanh hơn giá bán"
+        },
+        {
+          "id": "c1e7ef4c7e",
+          "text": "Sản lượng tăng rất mạnh"
+        },
+        {
+          "id": "cb13df5d89",
+          "text": "Công ty giảm nợ vay"
+        }
+      ],
+      "prompt": "Doanh thu tăng mạnh nhưng biên gộp giảm thường cho thấy gì?"
+    },
+    {
+      "correct_option_id": "84f8763ff6",
+      "id": "ch14-l01-q04",
+      "options": [
+        {
+          "id": "84f8763ff6",
+          "text": "Không, nằm ở thuyết minh hoặc tài liệu công ty"
+        },
+        {
+          "id": "5c7bc0b5e5",
+          "text": "Có, ở thuyết minh bảng cân đối"
+        },
+        {
+          "id": "fac4190fbd",
+          "text": "Có, ở báo cáo lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Sản lượng bán ra có trên 3 báo cáo tài chính không?"
+    },
+    {
+      "chart_id": "c14l1-rep",
+      "correct_option_id": "01f20e13ec",
+      "id": "ch14-l01-q05",
+      "options": [
+        {
+          "id": "01f20e13ec",
+          "text": "Doanh thu quý này và cùng kỳ năm trước"
+        },
+        {
+          "id": "cd93a8c252",
+          "text": "Giá vốn và lợi nhuận gộp"
+        },
+        {
+          "id": "28077d665e",
+          "text": "Khấu hao và capex"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "95b298c65f4c1cc1ba9f4e4117b9579c90c51b6f65da1a5fa51a398c55a3a187"
+}

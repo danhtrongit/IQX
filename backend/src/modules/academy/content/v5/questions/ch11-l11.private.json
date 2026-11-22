@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l11",
+  "questions": [
+    {
+      "correct_option_id": "1f9a3e0a79",
+      "id": "ch11-l11-q01",
+      "options": [
+        {
+          "id": "1f9a3e0a79",
+          "text": "Doanh thu hoạt động"
+        },
+        {
+          "id": "9b5fdbfb0c",
+          "text": "Lợi nhuận sau thuế"
+        },
+        {
+          "id": "794191910e",
+          "text": "Thu nhập lãi thuần"
+        }
+      ],
+      "prompt": "Ở công ty chứng khoán, \"doanh thu\" trong bài Tăng trưởng doanh thu là gì?"
+    },
+    {
+      "correct_option_id": "e45e3fe060",
+      "id": "ch11-l11-q02",
+      "options": [
+        {
+          "id": "e45e3fe060",
+          "text": "Tự doanh"
+        },
+        {
+          "id": "a9e7edacac",
+          "text": "Lưu ký"
+        },
+        {
+          "id": "9bd44dc922",
+          "text": "Tư vấn"
+        }
+      ],
+      "prompt": "Mảng nào làm doanh thu công ty chứng khoán dao động mạnh nhất?"
+    },
+    {
+      "correct_option_id": "6dd6f9ce8f",
+      "id": "ch11-l11-q03",
+      "options": [
+        {
+          "id": "6dd6f9ce8f",
+          "text": "Thanh khoản thị trường"
+        },
+        {
+          "id": "7ed5110277",
+          "text": "Lãi suất tiền gửi"
+        },
+        {
+          "id": "7c49a9d98a",
+          "text": "Giá dầu"
+        }
+      ],
+      "prompt": "Doanh thu môi giới và margin đi theo yếu tố nào?"
+    },
+    {
+      "correct_option_id": "c94970e5d5",
+      "id": "ch11-l11-q04",
+      "options": [
+        {
+          "id": "c94970e5d5",
+          "text": "Cơ cấu doanh thu hoạt động"
+        },
+        {
+          "id": "a3021de6c4",
+          "text": "P/B"
+        },
+        {
+          "id": "1b1a40de50",
+          "text": "Nợ vay / VCSH"
+        }
+      ],
+      "prompt": "Nên đọc tăng trưởng doanh thu cùng chỉ tiêu nào để biết mảng nào kéo lên?"
+    },
+    {
+      "chart_id": "c11l11-rep",
+      "correct_option_id": "e3e61d1ab1",
+      "id": "ch11-l11-q05",
+      "options": [
+        {
+          "id": "e3e61d1ab1",
+          "text": "Thị trường đang trầm lắng"
+        },
+        {
+          "id": "a07022aefe",
+          "text": "Công ty đang tăng trưởng mạnh"
+        },
+        {
+          "id": "e53fadddd8",
+          "text": "Công ty vừa tăng vốn"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường xuống dưới 0 nhiều quý liền cho thấy gì?"
+    }
+  ],
+  "salt": "66f4915cf9795386f5f9675166bb7ec044ee6e10fccf75b344ac584f75b45a2d"
+}

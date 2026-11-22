@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l12",
+  "questions": [
+    {
+      "correct_option_id": "214d9ed3a5",
+      "id": "ch15-l12-q01",
+      "options": [
+        {
+          "id": "214d9ed3a5",
+          "text": "Thấp, giữ lại để mở cửa hàng"
+        },
+        {
+          "id": "0899ad2213",
+          "text": "Rất cao"
+        },
+        {
+          "id": "ea6e16af41",
+          "text": "Luôn trên 100%"
+        }
+      ],
+      "prompt": "Chuỗi bán lẻ đang mở rộng thường có tỷ lệ chi trả thế nào?"
+    },
+    {
+      "correct_option_id": "acfea420bf",
+      "id": "ch15-l12-q02",
+      "options": [
+        {
+          "id": "acfea420bf",
+          "text": "ROIC cao thì giữ lại để đầu tư có lợi hơn"
+        },
+        {
+          "id": "7d79cd41a5",
+          "text": "Vì ROIC bằng tỷ lệ chi trả"
+        },
+        {
+          "id": "6f088a91ec",
+          "text": "Vì ROIC quyết định giá cổ phiếu"
+        }
+      ],
+      "prompt": "Vì sao nên đọc tỷ lệ chi trả cùng ROIC?"
+    },
+    {
+      "correct_option_id": "aae6372f32",
+      "id": "ch15-l12-q03",
+      "options": [
+        {
+          "id": "aae6372f32",
+          "text": "Mã 36 trên lưu chuyển tiền tệ"
+        },
+        {
+          "id": "ecb4e2d9ad",
+          "text": "Mã 421 trên bảng cân đối"
+        },
+        {
+          "id": "874ea1b889",
+          "text": "Mã 60 trên kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Cổ tức đã trả lấy ở dòng nào?"
+    },
+    {
+      "correct_option_id": "3a6d3e12b8",
+      "id": "ch15-l12-q04",
+      "options": [
+        {
+          "id": "3a6d3e12b8",
+          "text": "Chi trả có thể khó bền"
+        },
+        {
+          "id": "f77dcfa6d1",
+          "text": "Công ty rất dư tiền"
+        },
+        {
+          "id": "fd20c3176e",
+          "text": "Công ty không có nợ"
+        }
+      ],
+      "prompt": "Trả cổ tức cao trong khi vay ngắn hạn tăng nhanh cho thấy gì?"
+    },
+    {
+      "chart_id": "c15l12-rep",
+      "correct_option_id": "3d1dc00ba1",
+      "id": "ch15-l12-q05",
+      "options": [
+        {
+          "id": "3d1dc00ba1",
+          "text": "Cổ tức trả theo đợt hằng năm"
+        },
+        {
+          "id": "e3cd208a3b",
+          "text": "Cổ tức trả mỗi ngày"
+        },
+        {
+          "id": "d25d626b3e",
+          "text": "Cổ tức không đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cổ tức tăng theo bậc mỗi năm vì sao?"
+    }
+  ],
+  "salt": "d64a99fcb1a84d7a729f60b3d09ae47827fb844164d2a8c55f7795e0b112a4cb"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l01",
+  "questions": [
+    {
+      "correct_option_id": "11f523baa0",
+      "id": "ch15-l01-q01",
+      "options": [
+        {
+          "id": "11f523baa0",
+          "text": "Để bỏ ảnh hưởng mùa vụ"
+        },
+        {
+          "id": "f8ffe077ef",
+          "text": "Vì quý trước không có số liệu"
+        },
+        {
+          "id": "d4135caca4",
+          "text": "Vì luật quy định"
+        }
+      ],
+      "prompt": "Vì sao nên so doanh thu bán lẻ với cùng kỳ năm trước?"
+    },
+    {
+      "correct_option_id": "489266a45b",
+      "id": "ch15-l01-q02",
+      "options": [
+        {
+          "id": "489266a45b",
+          "text": "Cửa hàng cũ bán được nhiều hơn"
+        },
+        {
+          "id": "10aee65e5a",
+          "text": "Mở thêm cửa hàng mới"
+        },
+        {
+          "id": "e5334950f8",
+          "text": "Mua lại chuỗi khác"
+        }
+      ],
+      "prompt": "Nguồn tăng trưởng nào thường tốn ít vốn hơn?"
+    },
+    {
+      "correct_option_id": "74d8c96195",
+      "id": "ch15-l01-q03",
+      "options": [
+        {
+          "id": "74d8c96195",
+          "text": "Không, nằm ở tài liệu công ty"
+        },
+        {
+          "id": "87677670fb",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "d989339ca7",
+          "text": "Có, ở lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Số cửa hàng có trên 3 báo cáo tài chính không?"
+    },
+    {
+      "correct_option_id": "bc5a2cf977",
+      "id": "ch15-l01-q04",
+      "options": [
+        {
+          "id": "bc5a2cf977",
+          "text": "Tăng trưởng đang tốn kém"
+        },
+        {
+          "id": "4732587d89",
+          "text": "Tăng trưởng chất lượng cao"
+        },
+        {
+          "id": "37a0cac32d",
+          "text": "Công ty giảm nợ vay"
+        }
+      ],
+      "prompt": "Doanh thu tăng nhưng chi phí bán hàng tăng nhanh hơn cho thấy gì?"
+    },
+    {
+      "chart_id": "c15l1-rep",
+      "correct_option_id": "1a99ed0d2c",
+      "id": "ch15-l01-q05",
+      "options": [
+        {
+          "id": "1a99ed0d2c",
+          "text": "Mùa mua sắm cuối năm và Tết"
+        },
+        {
+          "id": "24a0672f05",
+          "text": "Công ty vay thêm"
+        },
+        {
+          "id": "aafe72bc72",
+          "text": "Giá vốn giảm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột cao ở quý 4 và quý 1 thường do đâu?"
+    }
+  ],
+  "salt": "288e7223ea0170b0c1e678e71d1d8f59d51fbc1d506c46473b880118ace9e320"
+}

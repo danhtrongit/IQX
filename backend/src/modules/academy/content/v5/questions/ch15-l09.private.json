@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l09",
+  "questions": [
+    {
+      "correct_option_id": "8f5b966f35",
+      "id": "ch15-l09-q01",
+      "options": [
+        {
+          "id": "8f5b966f35",
+          "text": "Mã 320"
+        },
+        {
+          "id": "c578613c02",
+          "text": "Mã 311"
+        },
+        {
+          "id": "45648067ad",
+          "text": "Mã 141"
+        }
+      ],
+      "prompt": "Vay ngắn hạn lấy ở mã dòng nào?"
+    },
+    {
+      "correct_option_id": "5f0d46b7c9",
+      "id": "ch15-l09-q02",
+      "options": [
+        {
+          "id": "5f0d46b7c9",
+          "text": "Một phần vay ngắn hạn đang dùng cho việc khác ngoài hàng tồn"
+        },
+        {
+          "id": "e1b0d76c80",
+          "text": "Chuỗi không có nợ"
+        },
+        {
+          "id": "430baa9cfe",
+          "text": "Hàng tồn được tài trợ hoàn toàn bằng vốn chủ"
+        }
+      ],
+      "prompt": "Tỷ lệ trên 1 lần cho thấy gì?"
+    },
+    {
+      "correct_option_id": "a764f035ed",
+      "id": "ch15-l09-q03",
+      "options": [
+        {
+          "id": "a764f035ed",
+          "text": "Phải trả người bán / Tồn kho"
+        },
+        {
+          "id": "e059cc583c",
+          "text": "Doanh thu / Tài sản cố định"
+        },
+        {
+          "id": "ec50c66942",
+          "text": "Tỷ lệ chi trả cổ tức"
+        }
+      ],
+      "prompt": "Nên đọc chỉ tiêu này cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "f9d1d5a001",
+      "id": "ch15-l09-q04",
+      "options": [
+        {
+          "id": "f9d1d5a001",
+          "text": "Nợ ngắn hạn đến hạn trong khi hàng chưa bán được"
+        },
+        {
+          "id": "7796f2b3b0",
+          "text": "Vì hàng tồn tự tăng giá trị theo thời gian"
+        },
+        {
+          "id": "eff0a07a15",
+          "text": "Vì lãi vay ngắn hạn tự động được miễn"
+        }
+      ],
+      "prompt": "Vì sao hàng bán chậm làm rủi ro tăng?"
+    },
+    {
+      "chart_id": "c15l9-rep",
+      "correct_option_id": "74131ac329",
+      "id": "ch15-l09-q05",
+      "options": [
+        {
+          "id": "74131ac329",
+          "text": "Vay ngắn hạn đang dùng cho việc khác"
+        },
+        {
+          "id": "ba65d6c36a",
+          "text": "Hàng tồn tăng mạnh"
+        },
+        {
+          "id": "f379d8767a",
+          "text": "Chuỗi đang trả bớt nợ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột vay tăng trong khi tồn kho đi ngang cho thấy gì?"
+    }
+  ],
+  "salt": "fc62f27554483777aec9eab7f42278e251df8452d7006f01ea7ca5c83d10dcca"
+}
