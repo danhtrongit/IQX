@@ -111,7 +111,7 @@ describe("FigureChart (spec Học viện v5 §2.5)", () => {
   })
 
   it("a figure without entries is never a blank frame", () => {
-    const { container } = draw({ kind: "figure", fig: "hbar", items: [] } as FigureChartModel, 358)
+    const { container } = draw({ kind: "figure", fig: "hbar", items: [] } as unknown as FigureChartModel, 358)
     expect(container.querySelector("svg")).toBeNull()
     expect(container.textContent).toBe("Hình này chưa có dữ liệu.")
   })

@@ -128,6 +128,7 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
         chapter_display_no: hit.item.chapter_display_no,
         title: hit.item.name,
         matched_by: hit.by as LinkResponse["matched_by"],
+        nganh: hit.item.nganh ?? null,
         url: `/hoc-vien/${hit.item.id}`,
       }
     const current = buildProgress(completed, catalog, mode, openedId).current_item_id
@@ -142,6 +143,7 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
       chapter_display_no: null,
       title: null,
       matched_by: null as unknown as LinkResponse["matched_by"],
+      nganh: null,
       url: current ? `/hoc-vien/${current}` : "/hoc-vien",
     }
   }

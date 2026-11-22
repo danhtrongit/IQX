@@ -98,6 +98,7 @@ function catalogItem(chapter: number, displayNo: number, order: number, kind: It
     lesson_key: lessonKey,
     chapter_id: `ch${pad2(chapter)}`,
     chapter_display_no: displayNo,
+    nganh: null,
     order,
     position,
     name: kind === "chapter_exam" ? `Bài thi Chương ${displayNo}` : kind === "practice" ? "Phòng tập thực chiến" : `Bài học ${chapter}.${order}`,

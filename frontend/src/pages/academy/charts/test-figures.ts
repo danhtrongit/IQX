@@ -25,7 +25,7 @@ export const FIGURE_LINES: FigureChartModel = {
     { report: "Từ cho vay", line: "Thu nhập lãi thuần", code: "Phần lớn TOI", tone: "p1" },
     { report: "Ngoài lãi", line: "Lãi thuần từ dịch vụ, ngoại hối", code: "Ổn định", tone: "pos" },
     { report: "Ngoài lãi", line: "Lãi thuần chứng khoán kinh doanh, đầu tư", code: "Dao động", tone: "p5" },
-    { report: "Ngoài lãi", line: "Lãi thuần hoạt động khác, góp vốn", code: null, tone: "warn" },
+    { report: "Ngoài lãi", line: "Lãi thuần hoạt động khác, góp vốn", tone: "warn" },
   ],
 }
 
@@ -57,7 +57,6 @@ export const FIGURE_STACK: FigureChartModel = {
   ],
   decimals: 0,
   unit: " tỷ",
-  note: null,
 }
 
 export const FIGURE_WF: FigureChartModel = {
