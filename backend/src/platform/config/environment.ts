@@ -164,6 +164,22 @@ export const environmentSchema = z
     EMAIL_PROVIDER_URL: optionalUrl(['http:', 'https:']),
     EMAIL_API_KEY: z.string().optional(),
     EMAIL_SENDER: z.string().email().optional(),
+    // Thông báo (update 22-11 §8.4): địa chỉ gửi Bản tin và Bot; bỏ trống thì dùng EMAIL_SENDER.
+    EMAIL_SENDER_BULLETIN: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().email().optional(),
+    ),
+    EMAIL_SENDER_BOT: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().email().optional(),
+    ),
+    // Khoá HMAC của link "Tắt thông báo này" trong email (bắt buộc ở production).
+    NOTIFICATION_TOKEN_SECRET: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(32).optional(),
+    ),
+    // Job `notifications.email-dispatch` (mỗi phút); không làm gì khi EMAIL_ENABLED=false.
+    JOB_NOTIFICATIONS_EMAIL_DISPATCH_ENABLED: booleanSetting(true),
     AI_PROXY_BASE_URL: optionalUrl(['http:', 'https:']),
     AI_PROXY_API_KEY: z.string().optional(),
     AI_PROXY_MODEL: z.string().optional(),
@@ -325,6 +341,13 @@ export const environmentSchema = z
         code: 'custom',
         path: ['JWT_SECRET_KEY'],
         message: 'JWT secrets are required in production',
+      });
+    }
+    if (env.APP_ENV === 'production' && !env.NOTIFICATION_TOKEN_SECRET) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['NOTIFICATION_TOKEN_SECRET'],
+        message: 'Required in production (signs the email unsubscribe links)',
       });
     }
     if (

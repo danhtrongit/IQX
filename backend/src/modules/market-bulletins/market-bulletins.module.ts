@@ -4,6 +4,7 @@ import { DatabaseModule } from '../../platform/database/index.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { MarketDataModule } from '../market-data/market-data.module.js';
 import { MarketIntegrationModule } from '../market-integration/index.js';
+import { UserNotificationsModule } from '../notifications/user-notifications.module.js';
 import { BulletinDataService } from './bulletin-data.service.js';
 import { BulletinSlotsService } from './bulletin-slots.service.js';
 import { BulletinTrackingService } from './bulletin-tracking.service.js';
@@ -17,7 +18,13 @@ import { MarketBulletinsJob } from './bulletins.job.js';
 import { MarketBulletinsService } from './bulletins.service.js';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, MarketDataModule, MarketIntegrationModule],
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    MarketDataModule,
+    MarketIntegrationModule,
+    UserNotificationsModule,
+  ],
   controllers: [MarketBulletinsPublicController, MarketBulletinsAdminController],
   providers: [
     BulletinRepository,
