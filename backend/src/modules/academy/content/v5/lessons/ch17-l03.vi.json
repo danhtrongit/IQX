@@ -1,0 +1,336 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l3-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "LNST ÷ doanh thu thuần"
+          ],
+          "t": "Biên ròng năm",
+          "tone": "p1",
+          "v": "5 năm"
+        },
+        {
+          "notes": [
+            "Mức phân tán"
+          ],
+          "t": "Độ lệch chuẩn",
+          "tone": "warn",
+          "v": "σ"
+        },
+        {
+          "notes": [
+            "Càng thấp càng ổn định"
+          ],
+          "t": "Margin Stability",
+          "tone": "pos",
+          "v": "3,53 điểm %"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "arrow",
+        "="
+      ]
+    },
+    "c17l3-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Năm đỉnh chu kỳ",
+          "tone": "pos",
+          "value": 13
+        },
+        {
+          "label": "Năm bình thường",
+          "tone": "p1",
+          "value": 7
+        },
+        {
+          "label": "Năm đáy chu kỳ",
+          "tone": "neg",
+          "value": 3
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Biên ròng một công ty thép qua chu kỳ · số minh họa",
+      "unit": "%"
+    },
+    "c17l3-rep": {
+      "alt": "Margin Stability: 3,5 điểm %",
+      "chart": {
+        "hero": 3.533,
+        "kind": "E1",
+        "labels": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "Biên ròng năm",
+            "v": [
+              3.556,
+              7.355,
+              13.181,
+              8.397,
+              3.748
+            ]
+          }
+        ],
+        "mainUnit": "%",
+        "name": "Margin Stability",
+        "unit": "điểm %"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên lợi nhuận của công ty vật liệu cơ bản đi theo chu kỳ giá hàng hoá. Margin Stability giúp so công ty nào giữ biên tốt hơn qua chu kỳ, nhờ chi phí thấp hoặc sản phẩm đa dạng.",
+  "lesson_key": "fundamental:net_margin_stability-vl",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l3-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ số bằng <b>độ lệch chuẩn</b> của biên lợi nhuận ròng năm trong 5 năm, đơn vị điểm %. Cách tính giống bài Margin Stability ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l3-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Độ lệch chuẩn 3 đến 5 điểm % là phổ biến với thép, phân bón.",
+              "title": "Dao động cao là bình thường"
+            },
+            {
+              "text": "Công ty có chi phí sản xuất thấp nhất ngành vẫn có lãi ở đáy chu kỳ.",
+              "title": "Chi phí thấp giúp ổn định"
+            },
+            {
+              "text": "Nhiều sản phẩm có chu kỳ khác nhau giúp biên đều hơn.",
+              "title": "Đa dạng sản phẩm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l3-rep",
+          "title": "Margin Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên lợi nhuận ròng từng năm, đơn vị %.",
+              "title": "Đường giá trị"
+            },
+            {
+              "text": "Bình quân 5 năm và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "Năm vượt khỏi dải thường là đỉnh hoặc đáy của chu kỳ giá.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên ròng năm đáy vẫn dương và độ lệch chuẩn thấp hơn công ty cùng mảng.",
+              "title": "Giữ biên tốt qua chu kỳ",
+              "tone": "pos"
+            },
+            {
+              "text": "Có năm lỗ hoặc biên gần 0. Lợi nhuận khó dự báo.",
+              "title": "Phụ thuộc chu kỳ",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với vật liệu cơ bản, quan trọng là <b>biên ở năm đáy</b> chứ không phải biên ở năm đỉnh.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thép so với thép.",
+              "title": "So cùng mảng"
+            },
+            {
+              "text": "Biên năm đáy cho thấy sức chống chịu.",
+              "title": "Tìm năm đáy"
+            },
+            {
+              "text": "Ở đáy chu kỳ, định giá thường dùng P/B.",
+              "title": "Đọc cùng P/B"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu, biên ròng từng năm.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Biên ròng",
+                "3,6%",
+                "7,4%",
+                "13,2%",
+                "8,4%",
+                "3,7%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Biên ròng lên đỉnh 13,2% năm 2023 rồi giảm về 3,7% năm 2025. Năm đáy vẫn có lãi. Độ lệch chuẩn 3,53 điểm %.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Năm đỉnh không lặp lại đều.",
+              "title": "Dùng biên năm đỉnh để dự báo"
+            },
+            {
+              "text": "Vật liệu cơ bản luôn dao động hơn.",
+              "title": "So với ngành ổn định"
+            },
+            {
+              "text": "Năm lỗ cho thấy rủi ro thật của chu kỳ.",
+              "title": "Bỏ qua năm lỗ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên dao động mạnh nhất.",
+              "title": "Thép"
+            },
+            {
+              "text": "Biên ổn định hơn vì thị trường chủ yếu trong nước.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Biên đi theo chênh lệch giá khí và giá phân bón.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>Margin Stability</b> = độ lệch chuẩn biên ròng 5 năm.",
+    "Vật liệu cơ bản có biên <b>dao động theo chu kỳ</b>.",
+    "Quan trọng là <b>biên ở năm đáy</b>.",
+    "So <b>cùng mảng</b>."
+  ],
+  "title": "Margin Stability · ở vật liệu cơ bản"
+}

@@ -1,0 +1,405 @@
+{
+  "chapter": 2,
+  "charts": {
+    "c2l1-g1": {
+      "bounds": [
+        0,
+        60
+      ],
+      "kind": "category",
+      "labels": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T8",
+        "T9",
+        "T10",
+        "T11",
+        "T12"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Bỏ bê",
+          "tone": "p3",
+          "values": [
+            5,
+            9,
+            12.2,
+            14.76,
+            16.808,
+            18.4464,
+            19.7571,
+            20.8057,
+            21.6446,
+            22.3156,
+            22.8525,
+            23.282
+          ]
+        },
+        {
+          "name": "Chăm sóc tốt",
+          "tone": "p1",
+          "values": [
+            5,
+            9.85,
+            14.5545,
+            19.1179,
+            23.5443,
+            27.838,
+            32.0029,
+            36.0428,
+            39.9615,
+            43.7626,
+            47.4498,
+            51.0263
+          ]
+        }
+      ],
+      "ticks": [
+        0,
+        20,
+        40,
+        60
+      ],
+      "unit": "khách",
+      "value_labels": "last"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "SACO là người bạn đồng hành của nhà đầu tư. Bạn không cần là chuyên gia chứng khoán để bắt đầu. Bạn chỉ cần chăm chỉ, trung thực và thật lòng giúp khách hàng đi đúng đường ngay từ những bước đầu tiên.",
+  "lesson_key": "concept:saco_la_ai",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Hãy hình dung bạn như một người hướng dẫn viên du lịch. Khách là người tự đi, tự quyết định, còn bạn là người chỉ đường, nhắc nhở và luôn có mặt khi khách cần.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "subtitle": "Tìm và gặp gỡ khách",
+              "text": "Giới thiệu chứng khoán đến những người đang có nhu cầu cho tiền sinh lời.",
+              "title": "Kết nối",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Giúp khách bắt đầu",
+              "text": "Hướng dẫn mở tài khoản, nạp tiền, sử dụng ứng dụng và đặt lệnh đầu tiên.",
+              "title": "Hướng dẫn"
+            },
+            {
+              "subtitle": "Ở lại lâu dài",
+              "text": "Gửi thông tin thị trường, nhắc sự kiện, hỗ trợ khi khách gặp khó khăn.",
+              "title": "Đồng hành"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Ba việc chính của SACO"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khi khách hàng đăng ký bạn làm SACO và giao dịch, một phần phí giao dịch khách trả sẽ được chia lại cho bạn theo chính sách của DNSE. Điều quan trọng nhất cần nhớ: <b>thu nhập đến từ khách còn giao dịch</b>, không phải từ số tài khoản đã mở.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Một tài khoản mở rồi bỏ đó không tạo ra thu nhập. Một khách được chăm sóc tốt sẽ giao dịch đều đặn trong nhiều năm, và còn giới thiệu thêm người khác.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c2l1-g1",
+          "legend": [
+            {
+              "label": "Chăm sóc tốt: giữ được hầu hết khách",
+              "tone": "p1"
+            },
+            {
+              "label": "Bỏ bê: mỗi tháng mất 20% khách",
+              "tone": "p3"
+            }
+          ],
+          "note": "Số liệu giả định để minh họa",
+          "table_toggle": true,
+          "title": "Số khách còn giao dịch sau 12 tháng, mỗi tháng thêm 5 khách mới",
+          "type": "chart"
+        }
+      ],
+      "id": "s2",
+      "title": "Thu nhập của SACO đến từ đâu"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Mọi công việc của SACO đều nằm trong một phễu gồm bốn bước. Không phải ai bạn gặp cũng trở thành khách hàng, và đó là chuyện hoàn toàn bình thường.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "label": "Bước 1",
+              "text": "Tìm và tiếp cận người có thể quan tâm.",
+              "title": "Traffic"
+            },
+            {
+              "label": "Bước 2",
+              "text": "Trò chuyện, hiểu nhu cầu, giải thích dễ hiểu.",
+              "title": "Tư vấn"
+            },
+            {
+              "label": "Bước 3",
+              "text": "Khách mở tài khoản, đăng ký SACO, nạp tiền.",
+              "title": "Chuyển đổi"
+            },
+            {
+              "label": "Bước 4",
+              "text": "Giữ khách giao dịch lâu dài và xin giới thiệu.",
+              "title": "Chăm sóc"
+            }
+          ],
+          "type": "steps"
+        },
+        {
+          "items": [
+            {
+              "label": "Traffic",
+              "note": "100 người được tiếp cận",
+              "pct": 100,
+              "tone": "p1"
+            },
+            {
+              "label": "Tư vấn",
+              "note": "30 người trò chuyện sâu",
+              "pct": 82.7,
+              "tone": "pos"
+            },
+            {
+              "label": "Chuyển đổi",
+              "note": "10 người mở tài khoản",
+              "pct": 57.7,
+              "tone": "warn"
+            },
+            {
+              "label": "Chăm sóc",
+              "note": "7 khách giao dịch đều đặn",
+              "pct": 36.5,
+              "tone": "p4"
+            }
+          ],
+          "type": "funnel"
+        },
+        {
+          "text": "Tỷ lệ giả định để minh họa",
+          "type": "note"
+        }
+      ],
+      "id": "s3",
+      "title": "Phễu bán hàng 4 bước"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Nhờ phễu, bạn biết mỗi ngày cần làm bao nhiêu việc. Ví dụ, muốn có <b>7 khách hoạt động mới mỗi tháng</b>, theo tỷ lệ ở trên bạn cần tiếp cận khoảng <b>100 người</b> trong tháng. Chia cho khoảng 20 ngày làm việc, mỗi ngày chỉ cần tiếp cận <b>5 người</b>.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "label": "người tiếp cận mỗi tháng",
+              "value": "100"
+            },
+            {
+              "label": "ngày làm việc",
+              "value": "20"
+            },
+            {
+              "label": "người mỗi ngày",
+              "value": "5"
+            }
+          ],
+          "type": "stats",
+          "variant": "big"
+        },
+        {
+          "text": "Kết quả không đến từ một ngày may mắn, mà đến từ việc làm đủ con số mỗi ngày.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Làm ngược từ mục tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Bốn lý do phổ biến nhất khiến người mới không bán được hàng. Hãy tự xem mình đang mắc lý do nào.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Nói về sản phẩm trước khi biết khách cần gì.",
+              "title": "Không hiểu khách hàng",
+              "title_tone": "neg"
+            },
+            {
+              "text": "Gặp một lần rồi thôi, không hẹn bước tiếp theo.",
+              "title": "Không bám sát khách hàng",
+              "title_tone": "neg"
+            },
+            {
+              "text": "Không có con số mỗi ngày, làm theo cảm hứng.",
+              "title": "Không có kế hoạch cụ thể",
+              "title_tone": "neg"
+            },
+            {
+              "text": "Hết người quen là dừng, không xây kênh mới.",
+              "title": "Không mở rộng nguồn khách",
+              "title_tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Thu nhập thực tế tính thế nào",
+          "type": "heading"
+        },
+        {
+          "text": "Ví dụ với mức phí 0,15% mỗi lần khách mua hoặc bán, và SACO nhận 70% phí đó:",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Giá trị khách giao dịch"
+            },
+            {
+              "label": "Phí 0,15%"
+            },
+            {
+              "highlight": true,
+              "label": "Bạn nhận 70%"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "100 triệu",
+                "150.000 đ",
+                "105.000 đ"
+              ]
+            },
+            {
+              "cells": [
+                "500 triệu",
+                "750.000 đ",
+                "525.000 đ"
+              ]
+            },
+            {
+              "cells": [
+                "1 tỷ",
+                "1.500.000 đ",
+                "1.050.000 đ"
+              ]
+            },
+            {
+              "cells": [
+                "3 tỷ",
+                "4.500.000 đ",
+                "3.150.000 đ"
+              ]
+            },
+            {
+              "cells": [
+                "10 tỷ",
+                "15.000.000 đ",
+                "10.500.000 đ"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Theo ví dụ trong tài liệu đào tạo. Chính sách thực tế áp dụng theo công bố của DNSE.",
+          "type": "note"
+        },
+        {
+          "clients": {
+            "default": 20,
+            "label": "Số khách còn giao dịch"
+          },
+          "fee_rate": 0.0015,
+          "monthly_value_million": {
+            "default": 200,
+            "label": "Mỗi khách giao dịch bao nhiêu mỗi tháng (triệu đồng, cộng cả mua và bán)"
+          },
+          "result_label": "Thu nhập ước tính mỗi tháng",
+          "share_rate": 0.7,
+          "title": "Thu nhập mỗi tháng của bạn",
+          "type": "income_calculator"
+        },
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: gọi lại 7 khách chưa giao dịch.</b> Thu nhập đến từ khách còn giao dịch, không đến từ số tài khoản. Bảy khách đã tin Hùng đủ để mở tài khoản, nên kích hoạt họ dễ hơn nhiều so với tìm 20 người mới. Nếu tiếp tục mở thêm mà không kích hoạt, tháng sau Hùng sẽ lặp lại đúng kết quả cũ.",
+          "options": [
+            "Dồn sức mở thêm 20 tài khoản mới cho đủ số lượng",
+            "Gọi lại 7 khách chưa giao dịch, hỏi vì sao chưa nạp tiền, hướng dẫn từng người đặt lệnh đầu tiên",
+            "Chuyển sang công ty có phí thấp hơn để dễ mời khách"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Tháng đầu, Hùng mở được 8 tài khoản. Cuối tháng chỉ có 1 khách giao dịch, thu nhập gần như bằng 0. Hùng đang tính kế hoạch cho tháng tới."
+          ],
+          "title": "Mở nhiều tài khoản nhưng không có thu nhập",
+          "type": "scenario"
+        },
+        {
+          "id": "l1",
+          "items": [
+            {
+              "id": "0",
+              "text": "Viết mục tiêu: sau 3 tháng tôi muốn có bao nhiêu khách còn giao dịch"
+            },
+            {
+              "id": "1",
+              "text": "Dùng công thức phễu tính ngược ra số người cần tiếp cận mỗi ngày"
+            },
+            {
+              "id": "2",
+              "text": "Dán mục tiêu ở nơi bạn nhìn thấy mỗi sáng"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s5",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "SACO là <b>người bạn đồng hành</b>: kết nối, hướng dẫn và đồng hành cùng khách.",
+    "Thu nhập đến từ <b>khách còn giao dịch</b>, nên giữ khách quan trọng hơn mở thật nhiều tài khoản.",
+    "Phễu 4 bước: <b>Traffic, Tư vấn, Chuyển đổi, Chăm sóc</b>.",
+    "Đặt mục tiêu rồi <b>làm ngược</b> ra số việc cần làm mỗi ngày."
+  ],
+  "title": "SACO là ai và làm gì"
+}

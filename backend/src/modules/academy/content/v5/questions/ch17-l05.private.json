@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l05",
+  "questions": [
+    {
+      "correct_option_id": "380a914dae",
+      "id": "ch17-l05-q01",
+      "options": [
+        {
+          "id": "380a914dae",
+          "text": "Lập dự phòng giảm giá tồn kho"
+        },
+        {
+          "id": "f0c4492bd0",
+          "text": "Tăng doanh thu"
+        },
+        {
+          "id": "d65bc296ff",
+          "text": "Trả thêm cổ tức"
+        }
+      ],
+      "prompt": "Khi giá thép giảm thấp hơn giá trị hàng tồn trên sổ, công ty làm gì?"
+    },
+    {
+      "correct_option_id": "43e8fdccc4",
+      "id": "ch17-l05-q02",
+      "options": [
+        {
+          "id": "43e8fdccc4",
+          "text": "Làm lợi nhuận tăng"
+        },
+        {
+          "id": "4489856e4f",
+          "text": "Làm lợi nhuận giảm"
+        },
+        {
+          "id": "f6fb870568",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Hoàn nhập dự phòng ảnh hưởng thế nào đến lợi nhuận?"
+    },
+    {
+      "correct_option_id": "b2de669491",
+      "id": "ch17-l05-q03",
+      "options": [
+        {
+          "id": "b2de669491",
+          "text": "Giá hàng hoá đang giảm"
+        },
+        {
+          "id": "b49463f770",
+          "text": "Giá đang tăng mạnh"
+        },
+        {
+          "id": "0699bc141c",
+          "text": "Công ty giảm nợ"
+        }
+      ],
+      "prompt": "Dự phòng tăng nhanh nhiều quý cho thấy gì?"
+    },
+    {
+      "correct_option_id": "51849324f4",
+      "id": "ch17-l05-q04",
+      "options": [
+        {
+          "id": "51849324f4",
+          "text": "Xi măng"
+        },
+        {
+          "id": "860deab53b",
+          "text": "Thép"
+        },
+        {
+          "id": "000481868d",
+          "text": "Phân bón"
+        }
+      ],
+      "prompt": "Mảng nào thường ít phải lập dự phòng hơn?"
+    },
+    {
+      "chart_id": "c17l5-rep",
+      "correct_option_id": "b61d2634c7",
+      "id": "ch17-l05-q05",
+      "options": [
+        {
+          "id": "b61d2634c7",
+          "text": "Giá hàng hoá đang giảm"
+        },
+        {
+          "id": "194633fb79",
+          "text": "Giá hàng hoá đang tăng"
+        },
+        {
+          "id": "774ba58213",
+          "text": "Tồn kho giảm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột dự phòng từ 0 tăng dần cho thấy gì?"
+    }
+  ],
+  "salt": "0c72c0c89f9401d29075a220530829be2e4b6762ed9dd38bd86a577554074f3e"
+}

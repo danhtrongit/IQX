@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l11",
+  "questions": [
+    {
+      "correct_option_id": "0f5b147b87",
+      "id": "ch16-l11-q01",
+      "options": [
+        {
+          "id": "0f5b147b87",
+          "text": "EBITDA ổn định"
+        },
+        {
+          "id": "6efb2229e2",
+          "text": "Không phải trả lãi"
+        },
+        {
+          "id": "eefd61c151",
+          "text": "Không có nợ ngắn hạn"
+        }
+      ],
+      "prompt": "Vì sao công ty điện chịu được Net Debt / EBITDA cao hơn bán lẻ?"
+    },
+    {
+      "correct_option_id": "43d7d7fb2d",
+      "id": "ch16-l11-q02",
+      "options": [
+        {
+          "id": "43d7d7fb2d",
+          "text": "Tăng vì EBITDA giảm"
+        },
+        {
+          "id": "eb345e5fb6",
+          "text": "Giảm vì nợ giảm"
+        },
+        {
+          "id": "175091fd04",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Năm khô hạn ảnh hưởng thế nào đến chỉ tiêu của thủy điện?"
+    },
+    {
+      "correct_option_id": "b654dbf7bc",
+      "id": "ch16-l11-q03",
+      "options": [
+        {
+          "id": "b654dbf7bc",
+          "text": "Tăng tạm thời"
+        },
+        {
+          "id": "314447be0c",
+          "text": "Giảm mạnh"
+        },
+        {
+          "id": "86df21c5a1",
+          "text": "Bằng 0"
+        }
+      ],
+      "prompt": "Khi đang xây nhà máy, chỉ tiêu thường thế nào?"
+    },
+    {
+      "correct_option_id": "e610c48209",
+      "id": "ch16-l11-q04",
+      "options": [
+        {
+          "id": "e610c48209",
+          "text": "Dưới khoảng 3,5 lần"
+        },
+        {
+          "id": "1307696e0f",
+          "text": "Dưới 0,1 lần"
+        },
+        {
+          "id": "f4d70deac8",
+          "text": "Trên 10 lần"
+        }
+      ],
+      "prompt": "Mức tham khảo khả năng trả nợ tốt với công ty điện là bao nhiêu?"
+    },
+    {
+      "chart_id": "c16l11-rep",
+      "correct_option_id": "8a51072c3e",
+      "id": "ch16-l11-q05",
+      "options": [
+        {
+          "id": "8a51072c3e",
+          "text": "Đi xuống"
+        },
+        {
+          "id": "6273137963",
+          "text": "Đi lên"
+        },
+        {
+          "id": "f4f917b5b8",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, EBITDA tăng nhanh hơn nợ ròng làm đường thế nào?"
+    }
+  ],
+  "salt": "d94b9dc2a0c25bd661888004663a80087cf1e5f02890497661f72f0a931d58c8"
+}

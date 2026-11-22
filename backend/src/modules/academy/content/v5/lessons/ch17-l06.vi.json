@@ -1,0 +1,380 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l6-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 320"
+          ],
+          "t": "Vay ngắn hạn",
+          "tone": "neg",
+          "v": "26.246 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 140"
+          ],
+          "t": "Hàng tồn kho",
+          "tone": "warn",
+          "v": "32.243 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "p1",
+          "v": "0,81 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l6-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Ít vay, nhiều tiền",
+          "tone": "pos",
+          "value": 0.3
+        },
+        {
+          "label": "Vay nhập nguyên liệu",
+          "tone": "p1",
+          "value": 0.9
+        },
+        {
+          "label": "Vay ngắn hạn cho cả dự án",
+          "tone": "neg",
+          "value": 1.5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Vay ngắn hạn / Tồn kho · số minh họa",
+      "unit": " lần"
+    },
+    "c17l6-rep": {
+      "alt": "Vay ngắn hạn / Tồn kho: 0,81 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Vay ngắn hạn / Tồn kho",
+            "v": [
+              1.282,
+              1.198,
+              1.09,
+              1.003,
+              0.907,
+              0.915,
+              0.836,
+              0.814
+            ]
+          }
+        ],
+        "name": "Vay ngắn hạn / Tồn kho",
+        "sub": {
+          "series": [
+            {
+              "name": "Vay ngắn hạn",
+              "v": [
+                23564.448,
+                23960.419,
+                24450.009,
+                24890.087,
+                25438.618,
+                25519.383,
+                25740.323,
+                26246.469
+              ]
+            },
+            {
+              "name": "Hàng tồn kho",
+              "v": [
+                18378.27,
+                19997.535,
+                22431.864,
+                24806.917,
+                28056.226,
+                27883.197,
+                30783.876,
+                32242.552
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty thép, phân bón thường vay ngắn hạn ngân hàng để nhập nguyên liệu, nhiều khi bằng ngoại tệ. Chỉ tiêu này cho biết tồn kho đang được tài trợ bằng nợ vay ngắn hạn đến đâu.",
+  "lesson_key": "fundamental:st_debt_to_inventory-vl",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l6-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>vay và nợ thuê tài chính ngắn hạn</b> (mã 320) chia <b>hàng tồn kho</b> (mã 140). Số cuối kỳ trên bảng cân đối. Đơn vị lần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Vay ngắn hạn / Tồn kho là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l6-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mỗi lô quặng, than được tài trợ bằng khoản vay ngắn hạn.",
+              "title": "Vay để nhập nguyên liệu"
+            },
+            {
+              "text": "Tồn kho mất giá trong khi khoản vay giữ nguyên.",
+              "title": "Giá giảm là rủi ro kép"
+            },
+            {
+              "text": "Tỷ lệ trên 1 có thể là dùng vay ngắn hạn xây nhà máy.",
+              "title": "Vay ngắn hạn cho việc dài hạn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l6-rep",
+          "title": "Vay ngắn hạn / Tồn kho",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vay ngắn hạn chia tồn kho, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Vay ngắn hạn và hàng tồn kho, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Tồn kho tăng nhanh hơn vay làm đường đi xuống.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 1 lần. Mức tham khảo, vay ngắn hạn chủ yếu cho nguyên liệu.",
+              "title": "Tài trợ hợp lý",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 1,2 lần và tăng, nhất là khi giá đang giảm.",
+              "title": "Áp lực",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tỷ lệ giảm vì tồn kho tăng nhanh chưa chắc là tốt. Xem thêm số ngày tồn kho và dự phòng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vay ngắn hạn vượt tồn kho thì tiền đi đâu?",
+              "title": "Kiểm tra cách dùng vay"
+            },
+            {
+              "text": "Tồn kho lớn được tài trợ bằng nợ là rủi ro khi giá giảm.",
+              "title": "Đánh giá rủi ro giá"
+            },
+            {
+              "text": "Vay ngoại tệ ngắn hạn làm lỗ tỷ giá khi tỷ giá tăng.",
+              "title": "Đọc cùng chi phí tài chính"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Vay ngắn hạn"
+            },
+            {
+              "label": "Tồn kho"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "23.564",
+                "18.378",
+                "1,28 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "24.890",
+                "24.807",
+                "1,00 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "26.246",
+                "32.243",
+                "0,81 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ giảm từ 1,28 lần xuống 0,81 lần vì tồn kho tăng từ 18.378 lên 32.243 tỷ, nhanh hơn nợ vay. Đây không hẳn là tín hiệu tốt, vì số ngày tồn kho và dự phòng cũng tăng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Có thể do tồn kho phình ra.",
+              "title": "Coi tỷ lệ giảm luôn tốt"
+            },
+            {
+              "text": "Vay nhập nguyên liệu thường bằng USD.",
+              "title": "Bỏ qua nợ ngoại tệ"
+            },
+            {
+              "text": "Chỉ so vay ngắn hạn với tồn kho.",
+              "title": "Cộng nợ dài hạn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vay ngắn hạn lớn để nhập quặng, than.",
+              "title": "Thép"
+            },
+            {
+              "text": "Vay ngắn hạn ít hơn vì tồn kho nhỏ.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Vay theo mùa vụ, thường dư tiền ở doanh nghiệp lớn.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>vay ngắn hạn</b> (mã 320) ÷ <b>hàng tồn kho</b> (mã 140).",
+    "Vay ngắn hạn thường để <b>nhập nguyên liệu</b>.",
+    "Giá giảm là <b>rủi ro kép</b>: tồn kho mất giá, nợ giữ nguyên.",
+    "Tỷ lệ giảm do <b>tồn kho phình ra</b> không phải tín hiệu tốt."
+  ],
+  "title": "Vay ngắn hạn / Tồn kho · ở vật liệu cơ bản"
+}

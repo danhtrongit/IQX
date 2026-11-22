@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l05",
+  "questions": [
+    {
+      "correct_option_id": "e92ac0ec3e",
+      "id": "ch08-l05-q01",
+      "options": [
+        {
+          "id": "e92ac0ec3e",
+          "text": "LNST năm đầu và LNST năm cuối"
+        },
+        {
+          "id": "059e974713",
+          "text": "LNST của tất cả các quý trong 3 năm"
+        },
+        {
+          "id": "2482a0a0d6",
+          "text": "LNST năm cuối và doanh thu năm đầu"
+        }
+      ],
+      "prompt": "Net Profit CAGR 3Y phụ thuộc vào những số liệu nào?"
+    },
+    {
+      "correct_option_id": "587a48d2bd",
+      "id": "ch08-l05-q02",
+      "options": [
+        {
+          "id": "587a48d2bd",
+          "text": "Bằng nhau"
+        },
+        {
+          "id": "280f2ba66a",
+          "text": "Doanh nghiệp tăng đều có CAGR cao hơn"
+        },
+        {
+          "id": "01bbe4cd5d",
+          "text": "Doanh nghiệp biến động có CAGR cao hơn"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp có cùng LNST năm đầu và năm cuối nhưng đường đi khác nhau. CAGR của chúng thế nào?"
+    },
+    {
+      "correct_option_id": "76729f1fb5",
+      "id": "ch08-l05-q03",
+      "options": [
+        {
+          "id": "76729f1fb5",
+          "text": "Không có ý nghĩa"
+        },
+        {
+          "id": "89fe2e005f",
+          "text": "Luôn rất cao"
+        },
+        {
+          "id": "eed5f69398",
+          "text": "Bằng doanh thu CAGR"
+        }
+      ],
+      "prompt": "LNST năm gốc bị lỗ thì Net Profit CAGR 3Y thế nào?"
+    },
+    {
+      "correct_option_id": "953bb193d3",
+      "id": "ch08-l05-q04",
+      "options": [
+        {
+          "id": "953bb193d3",
+          "text": "Biên lợi nhuận đã mở rộng"
+        },
+        {
+          "id": "25f4700099",
+          "text": "Doanh nghiệp đã phát hành thêm cổ phiếu"
+        },
+        {
+          "id": "20a442e7a6",
+          "text": "Doanh thu đang giảm mỗi năm"
+        }
+      ],
+      "prompt": "LNST CAGR cao hơn doanh thu CAGR cho thấy điều gì?"
+    },
+    {
+      "chart_id": "c8l5-rep",
+      "correct_option_id": "518c279559",
+      "id": "ch08-l05-q05",
+      "options": [
+        {
+          "id": "518c279559",
+          "text": "Năm đó LNST biến động mạnh"
+        },
+        {
+          "id": "73365cf1c7",
+          "text": "Năm đó không có số liệu"
+        },
+        {
+          "id": "0c04d1605b",
+          "text": "Năm đó doanh nghiệp không nộp thuế"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của Net Profit CAGR 3Y, một cột nằm xa đường đứt nét cho thấy điều gì?"
+    }
+  ],
+  "salt": "1250e07e345836d00027d3fe5ec6ca77f64cd7c95e6808f2af21a979b586a880"
+}

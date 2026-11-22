@@ -1,0 +1,278 @@
+{
+  "chapter": 2,
+  "charts": {
+    "c2l5-g1": {
+      "alt": "Trong buổi tư vấn khách nói 70%, bạn nói 30%",
+      "kind": "segment_bar",
+      "max": 100,
+      "rows": [
+        {
+          "label": "Cuộc tư vấn",
+          "segments": [
+            {
+              "label": "Khách nói 70%",
+              "sub": "Mục tiêu, nỗi lo, kinh nghiệm, hoàn cảnh",
+              "tone": "pos",
+              "value": 70
+            },
+            {
+              "label": "Bạn nói 30%",
+              "sub": "Đặt câu hỏi, giải thích ngắn",
+              "tone": "p1",
+              "value": 30
+            }
+          ]
+        }
+      ],
+      "unit": "%"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tư vấn tốt không phải là nói thật hay, mà là hỏi đúng câu và lắng nghe thật kỹ. Khi khách được nói về mình, họ sẽ tin bạn hơn bất kỳ lời giới thiệu nào.",
+  "lesson_key": "concept:tu_van_hoi_nghe",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Trong một buổi tư vấn, hãy để khách nói khoảng 70% thời gian. Bạn chỉ nói 30%, chủ yếu là đặt câu hỏi và giải thích ngắn gọn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c2l5-g1",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Quy tắc 70/30"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "1. Mục tiêu",
+              "text": "“Anh/chị muốn khoản tiền này giúp mình điều gì trong 1-3 năm tới?”"
+            },
+            {
+              "term": "2. Kinh nghiệm",
+              "text": "“Anh/chị đã từng đầu tư chứng khoán chưa? Kết quả lúc đó thế nào?”"
+            },
+            {
+              "term": "3. Số vốn",
+              "text": "“Số tiền anh/chị định bắt đầu là tiền nhàn rỗi, hay có thể cần dùng gấp?”"
+            },
+            {
+              "term": "4. Thời gian",
+              "text": "“Mỗi ngày anh/chị có thời gian theo dõi thị trường không?”"
+            },
+            {
+              "term": "5. Chịu đựng rủi ro",
+              "text": "“Nếu tài khoản giảm 10-20% trong một tháng, anh/chị sẽ cảm thấy và làm gì?”"
+            }
+          ],
+          "type": "definitions"
+        },
+        {
+          "text": "Tiền bắt đầu đầu tư nên là <b>tiền nhàn rỗi</b>. Nếu khách định dùng tiền cần chi tiêu gấp hoặc tiền đi vay, hãy khuyên khách cân nhắc lại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Năm câu hỏi khám phá"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Khách nói"
+            },
+            {
+              "label": "Hướng gợi ý phù hợp"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "“Tôi bận, muốn an toàn”",
+                "Tìm hiểu quỹ đầu tư, ETF, đầu tư định kỳ hằng tháng với số tiền nhỏ"
+              ]
+            },
+            {
+              "cells": [
+                "“Tôi muốn tự học để giao dịch”",
+                "Bắt đầu với vốn nhỏ, học theo lộ trình Học viện, thực hành giao dịch thử"
+              ]
+            },
+            {
+              "cells": [
+                "“Tôi có kinh nghiệm rồi”",
+                "Bản tin hằng ngày, công cụ phân tích, hỗ trợ nhanh khi cần"
+              ]
+            },
+            {
+              "cells": [
+                "“Tôi muốn giàu nhanh, vay thêm”",
+                "Giải thích rủi ro của margin, khuyên bắt đầu bằng vốn tự có"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "text": "Bạn chỉ gợi ý hướng đi. <b>Quyết định đầu tư luôn là của khách</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s3",
+      "title": "Từ câu trả lời đến gợi ý"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Người mới sẽ ngại hỏi lại nếu nghe quá nhiều thuật ngữ. Hãy đổi thuật ngữ thành câu nói hằng ngày.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Thuật ngữ"
+            },
+            {
+              "highlight": true,
+              "label": "Cách nói dễ hiểu"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Thanh khoản cao",
+                "Dễ bán ra để lấy lại tiền"
+              ]
+            },
+            {
+              "cells": [
+                "Biên độ ±7%",
+                "Mỗi ngày giá chỉ tăng hoặc giảm tối đa 7%"
+              ]
+            },
+            {
+              "cells": [
+                "Cổ tức",
+                "Phần lợi nhuận công ty chia cho người sở hữu cổ phiếu"
+              ]
+            },
+            {
+              "cells": [
+                "T+2",
+                "Bán hôm nay thì 2 ngày làm việc sau tiền về tài khoản"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s4",
+      "title": "Nói bằng ngôn ngữ đời thường"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Đây là những câu khách hỏi nhiều nhất. Hãy chuẩn bị sẵn câu trả lời trung thực, ngắn gọn.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Khách hỏi"
+            },
+            {
+              "highlight": true,
+              "label": "Hướng trả lời"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "“Mai thị trường tăng hay giảm?”",
+                "“Không ai biết chắc ngày mai. Em gửi anh/chị bản tin mỗi sáng có các kịch bản, quan trọng là mình có kế hoạch cho cả hai trường hợp.”"
+              ]
+            },
+            {
+              "cells": [
+                "“Đầu tư chứng khoán có an toàn không?”",
+                "“Có rủi ro, có thể lỗ. Sẽ an toàn hơn khi dùng tiền nhàn rỗi, chia nhiều mã, đặt mức cắt lỗ và không vay quá sức.”"
+              ]
+            },
+            {
+              "cells": [
+                "“Thời điểm này cổ phiếu nào ngon?”",
+                "“Trước khi nói đến mã, em cần hiểu anh/chị muốn đầu tư bao lâu, chịu rủi ro thế nào. Mã hợp với người này chưa chắc hợp với anh/chị.”"
+              ]
+            },
+            {
+              "cells": [
+                "“Bao nhiêu tiền thì bắt đầu được?”",
+                "“Vài triệu đồng đã mua được 100 cổ phiếu. Nên bắt đầu nhỏ để học, rồi tăng dần khi đã quen.”"
+              ]
+            },
+            {
+              "cells": [
+                "“Em đánh giá thị trường đoạn này thế nào?”",
+                "Chia sẻ góc nhìn từ bản tin của đội nhóm, nói rõ đó là tham khảo, rồi hỏi lại khách đang có kế hoạch gì."
+              ]
+            },
+            {
+              "cells": [
+                "“Sao cổ phiếu A tăng mà B giảm?”",
+                "Giải thích bằng tin tức, kết quả kinh doanh hoặc ngành. Nếu chưa rõ, hẹn tìm hiểu rồi trả lời, không đoán bừa."
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "best_option": 0,
+          "debrief": "<b>Cách tốt nhất: hỏi trước, chia sẻ có kế hoạch sau.</b> Gửi mã ngay là đặt cược uy tín của bạn vào một lần may rủi, và nếu mã giảm, khách đổ lỗi cho bạn. Từ chối hoàn toàn khiến khách thấy bạn không giúp được gì. Hỏi mục tiêu rồi chia sẻ thông tin có kèm kế hoạch cắt lỗ cho thấy bạn là người đồng hành có trách nhiệm.",
+          "options": [
+            "Hỏi anh muốn đầu tư bao lâu, chịu lỗ được bao nhiêu, rồi chia sẻ thông tin tham khảo kèm mức cắt lỗ, nói rõ quyết định là của anh",
+            "Gửi ngay mã đang tăng mạnh nhất hôm nay",
+            "Từ chối, nói em không được phép nói về cổ phiếu"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Anh Bình vừa mở tài khoản, nhắn: “Em cho anh 1 mã đi, anh bỏ 50 triệu vô liền.”"
+          ],
+          "title": "Khách đòi mã ngay",
+          "type": "scenario"
+        },
+        {
+          "id": "l5",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Viết câu trả lời bằng lời của chính bạn cho 4 câu: Mai thị trường tăng hay giảm? Đầu tư có an toàn không? Cổ phiếu nào ngon? Bao nhiêu tiền thì bắt đầu? Sau đó luyện với một người trong nhóm."
+          ],
+          "title": "Bài tự làm: kịch bản tư vấn của bạn",
+          "type": "workpad"
+        }
+      ],
+      "id": "s5",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Để khách nói <b>70%</b>, bạn nói <b>30%</b>.",
+    "Hỏi 5 câu: <b>mục tiêu, kinh nghiệm, số vốn, thời gian, chịu đựng rủi ro</b>.",
+    "Chỉ đầu tư bằng <b>tiền nhàn rỗi</b>. Quyết định luôn là của khách.",
+    "Thay thuật ngữ bằng <b>ngôn ngữ đời thường</b>."
+  ],
+  "title": "Tư vấn: hỏi đúng, nghe nhiều"
+}

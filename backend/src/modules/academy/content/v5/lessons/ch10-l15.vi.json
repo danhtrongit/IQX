@@ -1,0 +1,538 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l15-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "Vốn hoá",
+          "tone": "p1",
+          "v": "Giá × số CP"
+        },
+        {
+          "notes": [
+            "Quý đã công bố"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "warn",
+          "v": "240.200 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "P/B",
+          "tone": "pos",
+          "v": "1,84 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c10l15-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "ROE 10%",
+          "tone": "warn",
+          "value": 1
+        },
+        {
+          "label": "ROE 15%",
+          "tone": "p1",
+          "value": 1.5
+        },
+        {
+          "label": "ROE 20%",
+          "tone": "pos",
+          "value": 2
+        },
+        {
+          "label": "ROE 25%",
+          "tone": "pos",
+          "value": 2.5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "note": "Ngân hàng sinh lời tốt hơn trên vốn chủ thì đáng giá cao hơn so với sổ sách.",
+      "title": "P/B hợp lý tăng theo ROE · số minh họa",
+      "unit": " lần"
+    },
+    "c10l15-rep": {
+      "alt": "P/B: 1,84 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "P/B",
+            "v": [
+              1.915,
+              1.933,
+              1.895,
+              1.876,
+              1.882,
+              1.851,
+              1.83,
+              1.727,
+              1.714,
+              1.782,
+              1.758,
+              1.797,
+              1.774,
+              1.739,
+              1.733,
+              1.699,
+              1.743,
+              1.782,
+              1.823,
+              1.856,
+              1.868,
+              1.877,
+              1.91,
+              1.863,
+              1.831,
+              1.831,
+              1.826,
+              1.787,
+              1.835,
+              1.822,
+              1.832,
+              1.835,
+              1.792,
+              1.763,
+              1.76,
+              1.755,
+              1.749,
+              1.639,
+              1.651,
+              1.619,
+              1.599,
+              1.665,
+              1.589,
+              1.649,
+              1.645,
+              1.704,
+              1.706,
+              1.62,
+              1.58,
+              1.601,
+              1.627,
+              1.571,
+              1.577,
+              1.539,
+              1.583,
+              1.612,
+              1.626,
+              1.645,
+              1.639,
+              1.651,
+              1.603,
+              1.6,
+              1.628,
+              1.618,
+              1.74,
+              1.796,
+              1.795,
+              1.862,
+              1.966,
+              1.992,
+              1.933,
+              1.985,
+              1.912,
+              1.871,
+              1.933,
+              1.923,
+              1.872,
+              1.849,
+              1.807,
+              1.868,
+              1.842,
+              1.83,
+              1.767,
+              1.805,
+              1.854,
+              1.827,
+              1.866,
+              1.827,
+              1.817,
+              1.824,
+              1.876,
+              1.913,
+              1.888,
+              1.897,
+              1.936,
+              1.942,
+              1.907,
+              1.93,
+              1.964,
+              1.955,
+              2.027,
+              1.993,
+              1.92,
+              1.917,
+              1.869,
+              1.888,
+              1.818,
+              1.789,
+              1.808,
+              1.788,
+              1.784,
+              1.829,
+              1.837,
+              1.829,
+              1.939,
+              1.923,
+              1.962,
+              1.891,
+              1.924,
+              1.862,
+              1.912,
+              1.923,
+              1.94,
+              1.915,
+              1.882,
+              1.84
+            ]
+          }
+        ],
+        "name": "P/B",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l15",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tài sản của ngân hàng chủ yếu là khoản cho vay và chứng khoán, ghi gần với giá trị thực. Vì vậy vốn chủ sổ sách của ngân hàng khá sát giá trị thật, và P/B là thước đo định giá được dùng nhiều nhất cho ngân hàng.",
+  "lesson_key": "fundamental:pb-nh",
+  "order": 15,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l15-g1",
+          "type": "chart"
+        },
+        {
+          "text": "P/B bằng <b>vốn hoá</b> chia <b>vốn chủ sở hữu</b> của quý gần nhất đã công bố. Cách tính giống bài P/B ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l15-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khác doanh nghiệp có đất, nhà máy ghi theo giá gốc lâu năm.",
+              "title": "Vốn chủ sát giá trị thật"
+            },
+            {
+              "text": "Ngân hàng ROE cao bền vững có P/B cao hơn là hợp lý.",
+              "title": "P/B đi cùng ROE"
+            },
+            {
+              "text": "Nếu dự phòng chưa đủ, vốn chủ thật thấp hơn sổ sách, P/B thật cao hơn.",
+              "title": "Rủi ro nợ xấu ẩn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở ngân hàng khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l15-rep",
+          "title": "P/B",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/B theo giá đóng cửa và vốn chủ quý đã công bố.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "P/B dưới dải là thị trường định giá thấp hơn thường lệ của chính ngân hàng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "P/B xấp xỉ ROE chia khoảng 10%. Ví dụ ROE 20% với P/B khoảng 2 lần. Đây là cách ước lượng thô để tham khảo.",
+              "title": "Hợp lý so với ROE",
+              "tone": "pos"
+            },
+            {
+              "text": "P/B cao trong khi ROE giảm, hoặc tỷ lệ dự phòng / dư nợ giảm mạnh.",
+              "title": "Cần thận trọng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc P/B ngân hàng <b>cùng ROE</b> và <b>Tỷ lệ dự phòng / Dư nợ</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng dải trên Dashboard.",
+              "title": "So với lịch sử"
+            },
+            {
+              "text": "P/B thấp mà ROE cao là điểm đáng chú ý.",
+              "title": "So với ROE"
+            },
+            {
+              "text": "Dự phòng mỏng làm vốn chủ sổ sách cao hơn thực tế.",
+              "title": "Kiểm tra bộ đệm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ngân hàng mẫu, P/B 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "P/B cuối Q2/26",
+              "text": "1,84 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "1,83 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "1,54 lần và 2,03 lần."
+            },
+            {
+              "term": "So với ROE",
+              "text": "ROE 4 quý 23,3%. P/B 1,84 lần thấp hơn mức ROE gợi ý theo cách ước lượng thô."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cấu trúc tài sản khác hẳn.",
+              "title": "So P/B ngân hàng với bất động sản"
+            },
+            {
+              "text": "P/B thấp có thể vì ROE thấp.",
+              "title": "Bỏ qua ROE"
+            },
+            {
+              "text": "Dự phòng thiếu làm vốn chủ sổ sách cao hơn thật.",
+              "title": "Tin tuyệt đối vào vốn chủ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>P/B</b> = vốn hoá ÷ vốn chủ sở hữu.",
+    "Vốn chủ ngân hàng <b>sát giá trị thật</b> nên P/B là thước đo chính.",
+    "P/B hợp lý <b>đi cùng ROE</b>.",
+    "Đọc cùng <b>Tỷ lệ dự phòng / Dư nợ</b>."
+  ],
+  "title": "P/B · ở ngân hàng"
+}

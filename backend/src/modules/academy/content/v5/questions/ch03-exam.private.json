@@ -1,0 +1,387 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-exam",
+  "questions": [
+    {
+      "correct_option_id": "f0f24769fb",
+      "id": "ch03-exam-q01",
+      "options": [
+        {
+          "id": "f0f24769fb",
+          "text": "Điều người khác nói về bạn khi bạn vắng mặt"
+        },
+        {
+          "id": "bdd18a321f",
+          "text": "Số lượt theo dõi trên mạng"
+        },
+        {
+          "id": "d4fa976546",
+          "text": "Logo riêng của bạn"
+        }
+      ],
+      "prompt": "Thương hiệu cá nhân của SACO tốt nhất được hiểu là gì?"
+    },
+    {
+      "correct_option_id": "daadfee498",
+      "id": "ch03-exam-q02",
+      "options": [
+        {
+          "id": "daadfee498",
+          "text": "Hai kênh bổ trợ: offline tạo niềm tin sâu, online tiếp cận nhiều người"
+        },
+        {
+          "id": "450f7ca1f9",
+          "text": "Vì offline đã lỗi thời"
+        },
+        {
+          "id": "892fdb4c00",
+          "text": "Vì online không cần thiết"
+        }
+      ],
+      "prompt": "Vì sao cần xây thương hiệu cả online và offline?"
+    },
+    {
+      "correct_option_id": "c58a534ea1",
+      "id": "ch03-exam-q03",
+      "options": [
+        {
+          "id": "c58a534ea1",
+          "text": "Video giải thích vì sao không nên tin lời hứa “x2 tài khoản”"
+        },
+        {
+          "id": "9ffc15f2cf",
+          "text": "Video khoe lệnh lãi x2 trong tháng"
+        },
+        {
+          "id": "f28e8d0e4c",
+          "text": "Ảnh chụp tài khoản của khách"
+        }
+      ],
+      "prompt": "Nội dung nào phù hợp để đăng trên trang cá nhân của SACO?"
+    },
+    {
+      "correct_option_id": "e8f53dfc05",
+      "id": "ch03-exam-q04",
+      "options": [
+        {
+          "id": "e8f53dfc05",
+          "text": "Tiếp tục, làm thêm chủ đề đã khiến người ta hỏi, chăm sóc 3 người đó"
+        },
+        {
+          "id": "ca063f54da",
+          "text": "Dừng lại vì lượt xem thấp"
+        },
+        {
+          "id": "d89b6fec57",
+          "text": "Chuyển sang nội dung gây tranh cãi"
+        }
+      ],
+      "prompt": "Sau 30 ngày đăng video, lượt xem thấp nhưng có 3 người nhắn hỏi. Nên làm gì?"
+    },
+    {
+      "correct_option_id": "80ef972068",
+      "id": "ch03-exam-q05",
+      "options": [
+        {
+          "id": "80ef972068",
+          "text": "Một câu hỏi mời người đọc bình luận"
+        },
+        {
+          "id": "b92dbd4565",
+          "text": "Link mở tài khoản"
+        },
+        {
+          "id": "18035e4499",
+          "text": "Cam kết lợi nhuận"
+        }
+      ],
+      "prompt": "Một bài Facebook hiệu quả nên kết thúc bằng gì?"
+    },
+    {
+      "correct_option_id": "493e9c9c61",
+      "id": "ch03-exam-q06",
+      "options": [
+        {
+          "id": "493e9c9c61",
+          "text": "Khách nhận ra tin nhắn hàng loạt và tài khoản dễ bị hạn chế"
+        },
+        {
+          "id": "9c0047a61d",
+          "text": "Vì Zalo không cho gửi tin"
+        },
+        {
+          "id": "687de60ca3",
+          "text": "Vì khách không đọc tin nhắn"
+        }
+      ],
+      "prompt": "Vì sao không nên gửi cùng một tin nhắn y hệt cho hàng trăm người trên Zalo?"
+    },
+    {
+      "correct_option_id": "133b6cac3e",
+      "id": "ch03-exam-q07",
+      "options": [
+        {
+          "id": "133b6cac3e",
+          "text": "Một câu mở đúng điều người xem quan tâm"
+        },
+        {
+          "id": "c5a815444f",
+          "text": "Lời chào dài và giới thiệu công ty"
+        },
+        {
+          "id": "3006251049",
+          "text": "Biểu phí giao dịch"
+        }
+      ],
+      "prompt": "Ba giây đầu của video ngắn nên là gì?"
+    },
+    {
+      "correct_option_id": "ca0eca5a8b",
+      "id": "ch03-exam-q08",
+      "options": [
+        {
+          "id": "ca0eca5a8b",
+          "text": "Trả lời đúng câu hỏi, gợi ý an toàn, để người hỏi tự chọn liên hệ"
+        },
+        {
+          "id": "43e5972078",
+          "text": "“Inbox em mở tài khoản phí ưu đãi”"
+        },
+        {
+          "id": "f56536e696",
+          "text": "Gửi link room cổ phiếu"
+        }
+      ],
+      "prompt": "Bình luận nào phù hợp khi trả lời câu hỏi trong hội nhóm?"
+    },
+    {
+      "correct_option_id": "4015e24e1a",
+      "id": "ch03-exam-q09",
+      "options": [
+        {
+          "id": "4015e24e1a",
+          "text": "Làm đúng cách, làm đủ số lượng và làm đều mỗi ngày"
+        },
+        {
+          "id": "85397f6657",
+          "text": "Đúng giờ, đủ vốn, đều lợi nhuận"
+        },
+        {
+          "id": "628805347f",
+          "text": "Đúng mã, đủ khách, đều phí"
+        }
+      ],
+      "prompt": "Ba chữ “Đúng, Đủ, Đều” khi xây thương hiệu nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "e32c36cf85",
+      "id": "ch03-exam-q10",
+      "options": [
+        {
+          "id": "e32c36cf85",
+          "text": "Bắt đầu từ nhóm giống mình nhất, vì mình hiểu họ"
+        },
+        {
+          "id": "f5f14b00bf",
+          "text": "Nói chuyện với tất cả mọi người để không bỏ lỡ ai"
+        },
+        {
+          "id": "85feecc984",
+          "text": "Chọn nhóm giàu nhất dù mình không hiểu họ"
+        }
+      ],
+      "prompt": "Nên chọn nhóm khách chính để bắt đầu như thế nào?"
+    },
+    {
+      "correct_option_id": "e3d0b2d0bd",
+      "id": "ch03-exam-q11",
+      "options": [
+        {
+          "id": "e3d0b2d0bd",
+          "text": "Tên thật, có thể thêm lĩnh vực"
+        },
+        {
+          "id": "1442cf1ea3",
+          "text": "Biệt danh vui nhộn cho dễ nhớ"
+        },
+        {
+          "id": "64b0a3e91a",
+          "text": "Chức danh “Chuyên gia đầu tư” để tạo uy tín"
+        }
+      ],
+      "prompt": "Tên hiển thị trên mạng xã hội nên đặt thế nào?"
+    },
+    {
+      "correct_option_id": "9cd4c06a37",
+      "id": "ch03-exam-q12",
+      "options": [
+        {
+          "id": "9cd4c06a37",
+          "text": "Giới thiệu bạn là ai, đang làm gì, ở đâu, không chào hàng"
+        },
+        {
+          "id": "5372a86b63",
+          "text": "Mời mở tài khoản ngay khi gặp"
+        },
+        {
+          "id": "36e21f69d2",
+          "text": "Gửi mã cổ phiếu để gây ấn tượng"
+        }
+      ],
+      "prompt": "Ở câu lạc bộ hay sự kiện, thông điệp chung khi xây thương hiệu offline là gì?"
+    },
+    {
+      "correct_option_id": "9060f7ed16",
+      "id": "ch03-exam-q13",
+      "options": [
+        {
+          "id": "9060f7ed16",
+          "text": "Khoảng 5-10 người, trong khoảng 60 phút"
+        },
+        {
+          "id": "6696111c37",
+          "text": "Hơn 200 người trong một hội trường"
+        },
+        {
+          "id": "d1d18bf45b",
+          "text": "Một người, trong 5 phút"
+        }
+      ],
+      "prompt": "Buổi cà phê chia sẻ tự tổ chức nên có quy mô thế nào?"
+    },
+    {
+      "correct_option_id": "3e63792d02",
+      "id": "ch03-exam-q14",
+      "options": [
+        {
+          "id": "3e63792d02",
+          "text": "TikTok và Reels"
+        },
+        {
+          "id": "a6d4ea3ed4",
+          "text": "Tin nhắn Zalo riêng"
+        },
+        {
+          "id": "db9fa557f4",
+          "text": "Danh bạ điện thoại"
+        }
+      ],
+      "prompt": "Kênh nào chủ yếu dùng để tiếp cận người lạ?"
+    },
+    {
+      "correct_option_id": "c80aca15bd",
+      "id": "ch03-exam-q15",
+      "options": [
+        {
+          "id": "c80aca15bd",
+          "text": "Bài hậu trường kèm ảnh thật của buổi chia sẻ"
+        },
+        {
+          "id": "7c40f88089",
+          "text": "Ảnh selfie đi du lịch"
+        },
+        {
+          "id": "d963e67e9c",
+          "text": "Tin tức chia sẻ lại nguyên văn"
+        }
+      ],
+      "prompt": "Dạng bài Facebook nào giúp người xem thấy bạn làm nghề thật?"
+    },
+    {
+      "correct_option_id": "d363c962c2",
+      "id": "ch03-exam-q16",
+      "options": [
+        {
+          "id": "d363c962c2",
+          "text": "Tên, nơi gặp và mức độ quan tâm"
+        },
+        {
+          "id": "911b1e5f97",
+          "text": "Chỉ lưu số điện thoại"
+        },
+        {
+          "id": "036ee1b3e4",
+          "text": "Lưu theo số tiền người đó có"
+        }
+      ],
+      "prompt": "Cách lưu tên danh bạ Zalo được gợi ý là gì?"
+    },
+    {
+      "correct_option_id": "4715a530bb",
+      "id": "ch03-exam-q17",
+      "options": [
+        {
+          "id": "4715a530bb",
+          "text": "Gửi bản tin, trả lời câu hỏi, nhắc sự kiện, không cam kết lợi nhuận"
+        },
+        {
+          "id": "ee83fa0bf5",
+          "text": "Gửi mã chắc chắn tăng mỗi ngày"
+        },
+        {
+          "id": "0391628e6d",
+          "text": "Thu phí để được vào nhóm"
+        }
+      ],
+      "prompt": "Nhóm Zalo chăm sóc khách khác “room phím hàng” ở điểm nào?"
+    },
+    {
+      "correct_option_id": "6e852cc844",
+      "id": "ch03-exam-q18",
+      "options": [
+        {
+          "id": "6e852cc844",
+          "text": "30-60 giây, mỗi video một ý"
+        },
+        {
+          "id": "8a955a9137",
+          "text": "10-15 phút để nói đủ mọi thứ"
+        },
+        {
+          "id": "ee2d97d2f2",
+          "text": "Càng dài càng được ưu tiên"
+        }
+      ],
+      "prompt": "Một video ngắn nên dài bao lâu?"
+    },
+    {
+      "correct_option_id": "fccb2d2b35",
+      "id": "ch03-exam-q19",
+      "options": [
+        {
+          "id": "fccb2d2b35",
+          "text": "Chào, nội dung chính, hỏi đáp, kết"
+        },
+        {
+          "id": "d645286d18",
+          "text": "Chỉ đọc bảng giá suốt buổi"
+        },
+        {
+          "id": "b48ec31d34",
+          "text": "Giới thiệu mã và mời mở tài khoản"
+        }
+      ],
+      "prompt": "Một buổi livestream 30 phút nên gồm những phần nào?"
+    },
+    {
+      "correct_option_id": "0c425e6a0d",
+      "id": "ch03-exam-q20",
+      "options": [
+        {
+          "id": "0c425e6a0d",
+          "text": "Hôm nay nói về đầu tư, mai than thở, mốt bán sản phẩm khác"
+        },
+        {
+          "id": "1dcc255948",
+          "text": "Dùng cùng một ảnh đại diện ở mọi kênh"
+        },
+        {
+          "id": "be12b8a769",
+          "text": "Đăng bài theo lịch cố định mỗi tuần"
+        }
+      ],
+      "prompt": "Sai lầm “không nhất quán hình ảnh” là gì?"
+    }
+  ],
+  "salt": "aaa4fe5dfe78cc9ebc8acb78f1fbc195c49bcdd526ff6f89011447c5613cb3f7"
+}

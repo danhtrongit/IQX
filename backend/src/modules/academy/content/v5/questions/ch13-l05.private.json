@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l05",
+  "questions": [
+    {
+      "correct_option_id": "1baa492f78",
+      "id": "ch13-l05-q01",
+      "options": [
+        {
+          "id": "1baa492f78",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "70f53a83af",
+          "text": "Báo cáo kết quả kinh doanh"
+        },
+        {
+          "id": "0ef607d719",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Người mua trả tiền trước nằm ở báo cáo nào?"
+    },
+    {
+      "correct_option_id": "869e90ad75",
+      "id": "ch13-l05-q02",
+      "options": [
+        {
+          "id": "869e90ad75",
+          "text": "Người mua trả tiền trước ngắn hạn và dài hạn"
+        },
+        {
+          "id": "5779650e7a",
+          "text": "Doanh thu chưa thực hiện ngắn hạn và dài hạn"
+        },
+        {
+          "id": "0f067cd96c",
+          "text": "Phải thu khách hàng ngắn hạn và dài hạn"
+        }
+      ],
+      "prompt": "Tử số của chỉ tiêu gồm những dòng nào?"
+    },
+    {
+      "correct_option_id": "91a9f841ac",
+      "id": "ch13-l05-q03",
+      "options": [
+        {
+          "id": "91a9f841ac",
+          "text": "Khi công ty bàn giao sản phẩm"
+        },
+        {
+          "id": "c294cfb050",
+          "text": "Khi khách ký hợp đồng"
+        },
+        {
+          "id": "4970ae3a34",
+          "text": "Khi công ty nhận được tiền"
+        }
+      ],
+      "prompt": "Khi nào tiền người mua trả trước trở thành doanh thu?"
+    },
+    {
+      "correct_option_id": "c1dcffb66e",
+      "id": "ch13-l05-q04",
+      "options": [
+        {
+          "id": "c1dcffb66e",
+          "text": "Chưa có dự án mới bù cho phần đã bàn giao"
+        },
+        {
+          "id": "f7a8d9cc20",
+          "text": "Công ty đang bán được rất nhiều hàng"
+        },
+        {
+          "id": "f756e73740",
+          "text": "Công ty vừa phát hành thêm cổ phiếu"
+        }
+      ],
+      "prompt": "Tỷ lệ giảm liên tục về mức rất thấp thường cho thấy điều gì?"
+    },
+    {
+      "chart_id": "c13l5-rep",
+      "correct_option_id": "df860cd012",
+      "id": "ch13-l05-q05",
+      "options": [
+        {
+          "id": "df860cd012",
+          "text": "Hàng đã bán nhiều nhưng chưa bàn giao"
+        },
+        {
+          "id": "48a84f6395",
+          "text": "Công ty đang lỗ"
+        },
+        {
+          "id": "41ae6b69d1",
+          "text": "Nợ vay ngắn hạn tăng nhanh"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột trả trước tăng dần trong khi cột doanh thu đi ngang cho thấy gì?"
+    }
+  ],
+  "salt": "5896070e883536b02d76a9e523a3e4be2920e6edcf9e6aced43d4b01bef2b793"
+}

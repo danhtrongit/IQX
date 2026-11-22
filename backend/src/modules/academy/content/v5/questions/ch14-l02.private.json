@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l02",
+  "questions": [
+    {
+      "correct_option_id": "3f64d100fa",
+      "id": "ch14-l02-q01",
+      "options": [
+        {
+          "id": "3f64d100fa",
+          "text": "Từng quý, không cộng 4 quý"
+        },
+        {
+          "id": "88657ebbb7",
+          "text": "Cộng 4 quý"
+        },
+        {
+          "id": "5bdcdb5d45",
+          "text": "Bình quân 5 năm"
+        }
+      ],
+      "prompt": "Ở chương dầu khí, biên gộp trên Dashboard tính theo cách nào?"
+    },
+    {
+      "correct_option_id": "79371e8ef9",
+      "id": "ch14-l02-q02",
+      "options": [
+        {
+          "id": "79371e8ef9",
+          "text": "Phình ra tạm thời"
+        },
+        {
+          "id": "4b22ec1fe5",
+          "text": "Giảm mạnh"
+        },
+        {
+          "id": "5a18553d59",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Khi giá dầu tăng mạnh trong quý, biên gộp của doanh nghiệp phân phối thường thế nào?"
+    },
+    {
+      "correct_option_id": "3e98ef41b0",
+      "id": "ch14-l02-q03",
+      "options": [
+        {
+          "id": "3e98ef41b0",
+          "text": "Đến rồi đi theo giá dầu, không lặp lại"
+        },
+        {
+          "id": "49bc02be30",
+          "text": "Tăng đều mỗi năm theo sản lượng"
+        },
+        {
+          "id": "f6681203cb",
+          "text": "Chỉ xuất hiện khi doanh nghiệp vay nợ"
+        }
+      ],
+      "prompt": "Lãi lỗ do tồn kho có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "48f671892e",
+      "id": "ch14-l02-q04",
+      "options": [
+        {
+          "id": "48f671892e",
+          "text": "Mức bình quân nhiều năm của chính doanh nghiệp"
+        },
+        {
+          "id": "b0be3cd437",
+          "text": "Biên gộp của ngân hàng cùng quý"
+        },
+        {
+          "id": "a938d8000f",
+          "text": "Biên gộp quý cao nhất trong lịch sử"
+        }
+      ],
+      "prompt": "Nên so biên gộp quý với gì?"
+    },
+    {
+      "chart_id": "c14l2-rep",
+      "correct_option_id": "ea1371c8dc",
+      "id": "ch14-l02-q05",
+      "options": [
+        {
+          "id": "ea1371c8dc",
+          "text": "Lợi nhuận gộp của quý"
+        },
+        {
+          "id": "822506c352",
+          "text": "Giá vốn của quý"
+        },
+        {
+          "id": "96b14fcd23",
+          "text": "Khấu hao của quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, phần trên đỉnh cột chồng là gì?"
+    }
+  ],
+  "salt": "2bf34770228b5810444c11fbb500445a3de013abf34d0b9ea4c94773201cb54d"
+}

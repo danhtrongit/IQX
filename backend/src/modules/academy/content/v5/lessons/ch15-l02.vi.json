@@ -1,0 +1,381 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l2-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Doanh thu − giá vốn"
+          ],
+          "t": "Lợi nhuận gộp 4 quý",
+          "tone": "pos",
+          "v": "12.496 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "58.913 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Biên gộp",
+          "tone": "warn",
+          "v": "21,2%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l2-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Điện thoại, điện máy",
+          "tone": "p1",
+          "value": 17
+        },
+        {
+          "label": "Bách hoá, thực phẩm",
+          "tone": "p1",
+          "value": 24
+        },
+        {
+          "label": "Trang sức",
+          "tone": "warn",
+          "value": 18
+        },
+        {
+          "label": "Sản xuất sữa, đồ uống",
+          "tone": "pos",
+          "value": 40
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Biên gộp tham khảo theo nhóm hàng · số minh họa",
+      "unit": "%"
+    },
+    "c15l2-rep": {
+      "alt": "Biên lợi nhuận gộp: 21,2%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Biên gộp (4 quý)",
+            "v": [
+              20.725,
+              20.904,
+              20.935,
+              20.898,
+              20.92,
+              20.898,
+              20.988,
+              21.211
+            ]
+          }
+        ],
+        "name": "Biên lợi nhuận gộp",
+        "sub": {
+          "series": [
+            {
+              "name": "Giá vốn 4 quý",
+              "v": [
+                36193.662,
+                37841.114,
+                39874.561,
+                41574.218,
+                43009.252,
+                44334.097,
+                45603.643,
+                46416.819
+              ]
+            },
+            {
+              "name": "Lợi nhuận gộp 4 quý",
+              "v": [
+                9462.058,
+                10000.768,
+                10557.916,
+                10983.576,
+                11377.883,
+                11712.681,
+                12114.046,
+                12496.339
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên gộp của chuỗi bán lẻ là chênh lệch giữa giá bán và giá nhập hàng. Biên này thường mỏng hơn nhà sản xuất hàng tiêu dùng, nhưng lại rất ổn định. Bài này giúp đọc biên gộp gắn với sức mạnh mặc cả và cơ cấu hàng hoá.",
+  "lesson_key": "fundamental:gross_margin-bl",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l2-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Biên gộp bằng <b>lợi nhuận gộp</b> chia <b>doanh thu thuần</b>, cộng 4 quý. Cách tính giống bài Biên lợi nhuận gộp ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l2-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bán nhiều hàng biên cao như phụ kiện, thực phẩm tươi làm biên gộp tăng.",
+              "title": "Cơ cấu hàng quyết định"
+            },
+            {
+              "text": "Chuỗi lớn được nhà cung cấp chiết khấu nhiều hơn, biên gộp cao hơn.",
+              "title": "Chiết khấu nhà cung cấp"
+            },
+            {
+              "text": "Giảm giá để kéo khách làm biên gộp giảm ngay.",
+              "title": "Khuyến mãi"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bán lẻ khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l2-rep",
+          "title": "Biên lợi nhuận gộp",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng giá vốn và lợi nhuận gộp 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột cao dần mà đường đi ngang: doanh thu tăng mà không phải giảm giá.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên gộp đi ngang hoặc tăng dần qua nhiều năm. Mức nền tham khảo: chuỗi bán lẻ 15% đến 25%, nhà sản xuất hàng tiêu dùng 25% đến 45%.",
+              "title": "Biên ổn định hoặc tăng nhẹ",
+              "tone": "pos"
+            },
+            {
+              "text": "Biên gộp giảm nhiều quý liền. Có thể do cạnh tranh giá, khuyến mãi kéo dài hoặc chi phí đầu vào tăng.",
+              "title": "Biên co lại",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với bán lẻ, thay đổi 1 điểm % biên gộp là lớn, vì biên lợi nhuận cuối cùng chỉ vài phần trăm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp giảm 1 điểm % có thể làm lợi nhuận giảm cả chục phần trăm.",
+              "title": "Theo dõi thay đổi nhỏ"
+            },
+            {
+              "text": "Biên gộp cao nhưng chi phí bán hàng cũng cao thì lãi cuối cùng không nhiều.",
+              "title": "Đọc cùng chi phí bán hàng"
+            },
+            {
+              "text": "Chuỗi điện máy không so với nhà sản xuất sữa.",
+              "title": "So cùng nhóm hàng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Lợi nhuận gộp"
+            },
+            {
+              "label": "Biên gộp"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "45.656",
+                "9.462",
+                "20,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "52.558",
+                "10.984",
+                "20,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "58.913",
+                "12.496",
+                "21,2%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Biên gộp giữ quanh 21% trong hai năm và nhích lên 21,2% ở quý gần nhất, nhờ cơ cấu hàng hoá tốt hơn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên 21% là bình thường với chuỗi bán lẻ, thấp với nhà sản xuất hàng tiêu dùng.",
+              "title": "So với nhà sản xuất"
+            },
+            {
+              "text": "Thay đổi 0,5 điểm % đã có ý nghĩa lớn với lợi nhuận bán lẻ.",
+              "title": "Bỏ qua thay đổi nhỏ"
+            },
+            {
+              "text": "Khuyến mãi theo mùa làm biên quý dao động.",
+              "title": "Đọc một quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên gộp mỏng, phụ thuộc cơ cấu hàng và chiết khấu nhà cung cấp.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "Biên gộp cao, phụ thuộc giá nguyên liệu như sữa bột, đường, nhựa.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "<b>Biên gộp</b> = lợi nhuận gộp 4 quý ÷ doanh thu thuần 4 quý.",
+    "Mức nền: <b>bán lẻ 15% đến 25%</b>, sản xuất hàng tiêu dùng 25% đến 45%.",
+    "Biên phụ thuộc <b>cơ cấu hàng, chiết khấu, khuyến mãi</b>.",
+    "Thay đổi <b>1 điểm %</b> là lớn với bán lẻ."
+  ],
+  "title": "Biên lợi nhuận gộp · ở bán lẻ và tiêu dùng"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l13",
+  "questions": [
+    {
+      "correct_option_id": "2be3b8f02d",
+      "id": "ch10-l13-q01",
+      "options": [
+        {
+          "id": "2be3b8f02d",
+          "text": "Ngân hàng dùng đòn bẩy rất cao"
+        },
+        {
+          "id": "ac2bb24838",
+          "text": "Ngân hàng không phải nộp thuế"
+        },
+        {
+          "id": "a0d0d056df",
+          "text": "Ngân hàng không có chi phí"
+        }
+      ],
+      "prompt": "Vì sao ROE ngân hàng thường cao hơn doanh nghiệp sản xuất?"
+    },
+    {
+      "correct_option_id": "9d9c7880f4",
+      "id": "ch10-l13-q02",
+      "options": [
+        {
+          "id": "9d9c7880f4",
+          "text": "ROA nhân đòn bẩy"
+        },
+        {
+          "id": "2bc777f5c4",
+          "text": "NIM nhân CIR"
+        },
+        {
+          "id": "842a7ca978",
+          "text": "LDR nhân chi phí tín dụng"
+        }
+      ],
+      "prompt": "ROE ngân hàng có thể tách thành hai phần nào?"
+    },
+    {
+      "correct_option_id": "7bd7f47d8b",
+      "id": "ch10-l13-q03",
+      "options": [
+        {
+          "id": "7bd7f47d8b",
+          "text": "Vốn đệm mỏng, sốc nợ xấu làm vốn giảm nhanh"
+        },
+        {
+          "id": "e4c3368d63",
+          "text": "Lợi nhuận bị đánh thuế cao hơn mức thông thường"
+        },
+        {
+          "id": "407d966fbd",
+          "text": "Ngân hàng bị cấm chia cổ tức bằng tiền mặt"
+        }
+      ],
+      "prompt": "ROE cao nhờ đòn bẩy cao có rủi ro gì?"
+    },
+    {
+      "correct_option_id": "4d0ced5759",
+      "id": "ch10-l13-q04",
+      "options": [
+        {
+          "id": "4d0ced5759",
+          "text": "ROA và VCSH / Tổng tài sản"
+        },
+        {
+          "id": "7fce390964",
+          "text": "P/S và PEG"
+        },
+        {
+          "id": "f94267d384",
+          "text": "Biên lợi nhuận gộp"
+        }
+      ],
+      "prompt": "Nên đọc ROE ngân hàng cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c10l13-rep",
+      "correct_option_id": "ee99fc3565",
+      "id": "ch10-l13-q05",
+      "options": [
+        {
+          "id": "ee99fc3565",
+          "text": "Tổng tài sản bình quân chia vốn chủ bình quân"
+        },
+        {
+          "id": "0e2a1ca421",
+          "text": "Lợi nhuận sau thuế cộng dồn 4 quý gần nhất"
+        },
+        {
+          "id": "50954ddfc3",
+          "text": "Thu nhập lãi thuần cộng dồn 4 quý gần nhất"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "6545b015339885b6ca8c8beb5916cd239ac2eec29ec40b8b413613842398ee07"
+}

@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-exam",
+  "questions": [
+    {
+      "correct_option_id": "26f295407b",
+      "id": "ch09-exam-q01",
+      "options": [
+        {
+          "id": "26f295407b",
+          "text": "Lợi nhuận hoạt động sau thuế"
+        },
+        {
+          "id": "e92bfd6d84",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "f8e197265d",
+          "text": "Lợi nhuận gộp trước chi phí"
+        }
+      ],
+      "prompt": "Lợi nhuận dùng để tính ROIC là gì?"
+    },
+    {
+      "correct_option_id": "a5fdac4835",
+      "id": "ch09-exam-q02",
+      "options": [
+        {
+          "id": "a5fdac4835",
+          "text": "Doanh thu, biên và ROIC cùng ổn định ở mức tốt"
+        },
+        {
+          "id": "f9da0a8c6b",
+          "text": "Chỉ doanh thu ổn định, biên dao động mạnh"
+        },
+        {
+          "id": "66057d88c3",
+          "text": "Chỉ ROIC cao trong năm gần nhất"
+        }
+      ],
+      "prompt": "Bức tranh nào vững chắc nhất khi kết hợp các chỉ tiêu ổn định?"
+    },
+    {
+      "correct_option_id": "d087a3f7f1",
+      "id": "ch09-exam-q03",
+      "options": [
+        {
+          "id": "d087a3f7f1",
+          "text": "Lợi nhuận hoạt động trên toàn bộ vốn đầu tư"
+        },
+        {
+          "id": "5ee25d2d39",
+          "text": "Lợi nhuận sau thuế trên vốn chủ sở hữu bình quân"
+        },
+        {
+          "id": "7f41f74cd5",
+          "text": "Doanh thu trên tổng tài sản bình quân"
+        }
+      ],
+      "prompt": "ROIC đo lường điều gì?"
+    },
+    {
+      "correct_option_id": "0b59cddb29",
+      "id": "ch09-exam-q04",
+      "options": [
+        {
+          "id": "0b59cddb29",
+          "text": "Mức lợi nhuận tối thiểu người góp vốn đòi hỏi"
+        },
+        {
+          "id": "dfa328be88",
+          "text": "Tổng chi phí lãi vay doanh nghiệp phải trả trong năm"
+        },
+        {
+          "id": "1a765a416e",
+          "text": "Chi phí mua sắm tài sản cố định"
+        }
+      ],
+      "prompt": "Chi phí vốn là gì?"
+    },
+    {
+      "correct_option_id": "7f2e508b6d",
+      "id": "ch09-exam-q05",
+      "options": [
+        {
+          "id": "7f2e508b6d",
+          "text": "Chi phí trực tiếp làm ra sản phẩm"
+        },
+        {
+          "id": "3a69a2fad4",
+          "text": "Chi phí bán hàng và quản lý doanh nghiệp"
+        },
+        {
+          "id": "6eed0012d3",
+          "text": "Chi phí lãi vay và thuế"
+        }
+      ],
+      "prompt": "Giá vốn hàng bán gồm những chi phí nào?"
+    },
+    {
+      "correct_option_id": "74100ab2a4",
+      "id": "ch09-exam-q06",
+      "options": [
+        {
+          "id": "74100ab2a4",
+          "text": "Để giảm dao động theo mùa vụ"
+        },
+        {
+          "id": "f0910b81a0",
+          "text": "Để biên gộp luôn tăng"
+        },
+        {
+          "id": "ad195904bc",
+          "text": "Vì báo cáo quý không có giá vốn"
+        }
+      ],
+      "prompt": "Vì sao nên dùng biên gộp tính theo 4 quý?"
+    },
+    {
+      "correct_option_id": "ca3cc222f8",
+      "id": "ch09-exam-q07",
+      "options": [
+        {
+          "id": "ca3cc222f8",
+          "text": "Làm biên ròng đẹp lên tạm thời"
+        },
+        {
+          "id": "94e43600e0",
+          "text": "Làm biên gộp của quý đó giảm mạnh"
+        },
+        {
+          "id": "5f2e555be8",
+          "text": "Không ảnh hưởng đến biên ròng"
+        }
+      ],
+      "prompt": "Lợi nhuận bất thường ảnh hưởng thế nào đến biên ròng?"
+    },
+    {
+      "correct_option_id": "c6c6c17332",
+      "id": "ch09-exam-q08",
+      "options": [
+        {
+          "id": "c6c6c17332",
+          "text": "Tồn kho ứ đọng hoặc đầu tư kém hiệu quả"
+        },
+        {
+          "id": "654f9d3af2",
+          "text": "Doanh thu tăng nhanh hơn tổng tài sản bình quân"
+        },
+        {
+          "id": "0641e03755",
+          "text": "Doanh nghiệp trả hết nợ vay"
+        }
+      ],
+      "prompt": "Vòng quay tài sản giảm liên tục có thể do nguyên nhân nào?"
+    },
+    {
+      "correct_option_id": "2277e1af1d",
+      "id": "ch09-exam-q09",
+      "options": [
+        {
+          "id": "2277e1af1d",
+          "text": "Khách hàng trả tiền chậm hơn"
+        },
+        {
+          "id": "7437e6c4bb",
+          "text": "Hàng bán nhanh hơn"
+        },
+        {
+          "id": "246f816f74",
+          "text": "Được nợ nhà cung cấp lâu hơn trước đây"
+        }
+      ],
+      "prompt": "Ngày thu tiền dài ra cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "cdf0c3c37f",
+      "id": "ch09-exam-q10",
+      "options": [
+        {
+          "id": "cdf0c3c37f",
+          "text": "Có thể làm xấu quan hệ với đối tác"
+        },
+        {
+          "id": "50601bca98",
+          "text": "Vì CCC chắc chắn sẽ trở thành số âm ngay quý sau"
+        },
+        {
+          "id": "3d4ac7b525",
+          "text": "Vì tồn kho sẽ tăng theo"
+        }
+      ],
+      "prompt": "Vì sao CCC rút ngắn chỉ nhờ chậm trả nhà cung cấp cần thận trọng?"
+    },
+    {
+      "correct_option_id": "05ebb65184",
+      "id": "ch09-exam-q11",
+      "options": [
+        {
+          "id": "05ebb65184",
+          "text": "Nợ vay ngắn hạn và dài hạn"
+        },
+        {
+          "id": "be6e6c9f00",
+          "text": "Toàn bộ nợ phải trả, kể cả nợ nhà cung cấp"
+        },
+        {
+          "id": "733668df0f",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Trong D/E, phần tử số là gì?"
+    },
+    {
+      "correct_option_id": "85381cef70",
+      "id": "ch09-exam-q12",
+      "options": [
+        {
+          "id": "85381cef70",
+          "text": "So với cùng ngành và theo dõi xu hướng"
+        },
+        {
+          "id": "cd0a9c0e0b",
+          "text": "Dùng một ngưỡng chung cho mọi ngành"
+        },
+        {
+          "id": "d6ae90e85f",
+          "text": "Chỉ xem giá trị của quý gần nhất là đủ để kết luận"
+        }
+      ],
+      "prompt": "Cách đánh giá D/E hợp lý nhất là gì?"
+    },
+    {
+      "correct_option_id": "993173b752",
+      "id": "ch09-exam-q13",
+      "options": [
+        {
+          "id": "993173b752",
+          "text": "Bán lẻ thu tiền ngay"
+        },
+        {
+          "id": "beae4e975c",
+          "text": "Bất động sản giữ nhiều hàng"
+        },
+        {
+          "id": "8fa99c7e74",
+          "text": "Đóng tàu có chu kỳ dài"
+        }
+      ],
+      "prompt": "Ngành nào thường có Current Ratio thấp mà vẫn bình thường?"
+    },
+    {
+      "correct_option_id": "3ddccf24ee",
+      "id": "ch09-exam-q14",
+      "options": [
+        {
+          "id": "3ddccf24ee",
+          "text": "Giảm"
+        },
+        {
+          "id": "aa604c29cf",
+          "text": "Tăng"
+        },
+        {
+          "id": "095ac5ab72",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Lãi suất tăng làm chi phí lãi vay tăng, EBIT không đổi. Interest Coverage sẽ thế nào?"
+    },
+    {
+      "correct_option_id": "c83bb1cd9f",
+      "id": "ch09-exam-q15",
+      "options": [
+        {
+          "id": "c83bb1cd9f",
+          "text": "EBIT và chi phí lãi vay của từng quý"
+        },
+        {
+          "id": "7d1cc8db22",
+          "text": "Nợ vay và vốn chủ sở hữu"
+        },
+        {
+          "id": "ad017cf8a7",
+          "text": "Tài sản ngắn hạn và nợ ngắn hạn"
+        }
+      ],
+      "prompt": "Biểu đồ đại diện của Interest Coverage có cột phía dưới là gì?"
+    },
+    {
+      "correct_option_id": "f69f07dbdc",
+      "id": "ch09-exam-q16",
+      "options": [
+        {
+          "id": "f69f07dbdc",
+          "text": "So nợ với dòng tiền tạo ra thay vì với vốn chủ"
+        },
+        {
+          "id": "c9d2c4742d",
+          "text": "Không tính đến khoản nợ vay nào"
+        },
+        {
+          "id": "b2e3f090e8",
+          "text": "Chỉ dùng được cho ngân hàng và công ty chứng khoán"
+        }
+      ],
+      "prompt": "Điểm khác của Net Debt / EBITDA so với D/E là gì?"
+    },
+    {
+      "correct_option_id": "680c2b6317",
+      "id": "ch09-exam-q17",
+      "options": [
+        {
+          "id": "680c2b6317",
+          "text": "Nợ ròng và EBITDA 4 quý"
+        },
+        {
+          "id": "b9f92f7aee",
+          "text": "EBIT và chi phí lãi vay"
+        },
+        {
+          "id": "b68431adc5",
+          "text": "Nợ vay và vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Biểu đồ đại diện của Net Debt / EBITDA có cột phía dưới là gì?"
+    },
+    {
+      "correct_option_id": "225ab32443",
+      "id": "ch09-exam-q18",
+      "options": [
+        {
+          "id": "225ab32443",
+          "text": "Dòng tiền kinh doanh"
+        },
+        {
+          "id": "be631c36e6",
+          "text": "Dòng tiền đầu tư"
+        },
+        {
+          "id": "a898606b43",
+          "text": "Dòng tiền tài chính"
+        }
+      ],
+      "prompt": "Dòng tiền nào phản ánh tiền từ bán hàng, sản xuất, cung cấp dịch vụ?"
+    },
+    {
+      "correct_option_id": "11235f139a",
+      "id": "ch09-exam-q19",
+      "options": [
+        {
+          "id": "11235f139a",
+          "text": "Làm CFO thấp hơn lợi nhuận"
+        },
+        {
+          "id": "acbaa073a0",
+          "text": "Làm CFO cao hơn lợi nhuận"
+        },
+        {
+          "id": "13a58d593f",
+          "text": "Không ảnh hưởng đến CFO"
+        }
+      ],
+      "prompt": "Phải thu khách hàng tăng mạnh ảnh hưởng thế nào đến CFO?"
+    },
+    {
+      "correct_option_id": "64dccaf076",
+      "id": "ch09-exam-q20",
+      "options": [
+        {
+          "id": "64dccaf076",
+          "text": "Có thể bình thường vì ngành có biên mỏng"
+        },
+        {
+          "id": "f17456c737",
+          "text": "Chắc chắn là doanh nghiệp yếu kém"
+        },
+        {
+          "id": "780b7cf914",
+          "text": "Doanh nghiệp đang đầu tư quá nhiều"
+        }
+      ],
+      "prompt": "CFO Margin của doanh nghiệp bán lẻ chỉ vài phần trăm nên hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "47892d47da",
+      "id": "ch09-exam-q21",
+      "options": [
+        {
+          "id": "47892d47da",
+          "text": "Lần"
+        },
+        {
+          "id": "a6d3cf20fe",
+          "text": "Phần trăm"
+        },
+        {
+          "id": "7aeb8433f8",
+          "text": "Tỷ đồng"
+        }
+      ],
+      "prompt": "Đơn vị của CFO / LNST là gì?"
+    },
+    {
+      "correct_option_id": "dca2480a86",
+      "id": "ch09-exam-q22",
+      "options": [
+        {
+          "id": "dca2480a86",
+          "text": "Nhằm tăng năng lực và doanh thu tương lai"
+        },
+        {
+          "id": "bd25a7602b",
+          "text": "Dùng để thay máy cũ, giữ năng lực hiện có"
+        },
+        {
+          "id": "450552f8d4",
+          "text": "Dùng để trả nợ vay ngân hàng"
+        }
+      ],
+      "prompt": "Capex mở rộng khác Capex duy trì ở điểm nào?"
+    },
+    {
+      "correct_option_id": "7606eb7b8b",
+      "id": "ch09-exam-q23",
+      "options": [
+        {
+          "id": "7606eb7b8b",
+          "text": "Doanh nghiệp tự tài trợ đầu tư bằng tiền kinh doanh"
+        },
+        {
+          "id": "47e8cb4906",
+          "text": "Doanh nghiệp phải vay thêm để đầu tư"
+        },
+        {
+          "id": "afe8333acb",
+          "text": "Doanh nghiệp đang không có doanh thu"
+        }
+      ],
+      "prompt": "Capex nhỏ hơn CFO cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "44ffe9b54c",
+      "id": "ch09-exam-q24",
+      "options": [
+        {
+          "id": "44ffe9b54c",
+          "text": "Có thể bình thường, cần xem FCF có trở lại dương"
+        },
+        {
+          "id": "c1a8d01fe7",
+          "text": "Luôn là dấu hiệu doanh nghiệp sắp phá sản"
+        },
+        {
+          "id": "eb06a02b29",
+          "text": "Cho thấy CFO của doanh nghiệp đang âm"
+        }
+      ],
+      "prompt": "FCF âm trong giai đoạn xây nhà máy mới nên hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "b63226d726",
+      "id": "ch09-exam-q25",
+      "options": [
+        {
+          "id": "b63226d726",
+          "text": "Chỉ đẹp tạm thời, có thể làm yếu tăng trưởng"
+        },
+        {
+          "id": "eb07adf361",
+          "text": "Luôn là dấu hiệu tốt và bền vững"
+        },
+        {
+          "id": "b3133da731",
+          "text": "Cho thấy CFO đang tăng rất mạnh"
+        }
+      ],
+      "prompt": "FCF tăng chỉ nhờ ngừng đầu tư nên được đánh giá thế nào?"
+    },
+    {
+      "correct_option_id": "4d134d94d1",
+      "id": "ch09-exam-q26",
+      "options": [
+        {
+          "id": "4d134d94d1",
+          "text": "Năm FCF dương nhưng nằm ngoài chuỗi hiện tại"
+        },
+        {
+          "id": "87faa4bb56",
+          "text": "Năm FCF âm nhỏ hơn năm trước"
+        },
+        {
+          "id": "182521398b",
+          "text": "Năm chưa có số liệu báo cáo"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện FCF Positive Streak, cột xanh nhạt hơn thể hiện gì?"
+    },
+    {
+      "correct_option_id": "98cd258c3d",
+      "id": "ch09-exam-q27",
+      "options": [
+        {
+          "id": "98cd258c3d",
+          "text": "Doanh nghiệp có nợ vay ròng lớn hơn"
+        },
+        {
+          "id": "4a22df2765",
+          "text": "Doanh nghiệp có nhiều tiền mặt hơn"
+        },
+        {
+          "id": "d2db7a8c23",
+          "text": "Hai doanh nghiệp luôn có chỉ số bằng nhau"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng vốn hóa và cùng EBITDA, doanh nghiệp nào có EV/EBITDA cao hơn?"
+    },
+    {
+      "correct_option_id": "8d19f526a7",
+      "id": "ch09-exam-q28",
+      "options": [
+        {
+          "id": "8d19f526a7",
+          "text": "EBITDA chưa trừ chi đầu tư và thuế"
+        },
+        {
+          "id": "20cee3ef7d",
+          "text": "EBITDA đã trừ hai lần chi phí lãi vay"
+        },
+        {
+          "id": "5aaceda647",
+          "text": "EBITDA chỉ tính doanh thu bán chịu"
+        }
+      ],
+      "prompt": "Vì sao không nên coi EBITDA là tiền mặt?"
+    },
+    {
+      "correct_option_id": "c19f201b68",
+      "id": "ch09-exam-q29",
+      "options": [
+        {
+          "id": "c19f201b68",
+          "text": "Chi đầu tư tài sản cố định"
+        },
+        {
+          "id": "4110a3fecc",
+          "text": "Chi trả cổ tức tiền mặt"
+        },
+        {
+          "id": "fe46ae61c9",
+          "text": "Chi phí lãi vay trả cho ngân hàng"
+        }
+      ],
+      "prompt": "Capex là gì?"
+    },
+    {
+      "correct_option_id": "5b0d1ff7c4",
+      "id": "ch09-exam-q30",
+      "options": [
+        {
+          "id": "5b0d1ff7c4",
+          "text": "Có thể do cắt đầu tư hoặc khoản thu một lần"
+        },
+        {
+          "id": "d13301bc12",
+          "text": "Vì FCF Yield cao luôn đi kèm thua lỗ"
+        },
+        {
+          "id": "9e35fe9391",
+          "text": "Vì FCF Yield chỉ dùng cho ngân hàng"
+        }
+      ],
+      "prompt": "Vì sao FCF Yield cao chưa chắc là rẻ?"
+    }
+  ],
+  "salt": "f25bc00578dbf16e4bffab77d1eb4f2da3dc706e2dfb47c6faed4bf8c13b445c"
+}

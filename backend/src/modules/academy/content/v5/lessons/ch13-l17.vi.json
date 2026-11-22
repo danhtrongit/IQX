@@ -1,0 +1,389 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l17-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Lưu chuyển tiền tệ"
+          ],
+          "t": "CFO 4 quý",
+          "tone": "neg",
+          "v": "−3.849 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "LNST 4 quý",
+          "tone": "pos",
+          "v": "4.868 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "CFO / LNST",
+          "tone": "warn",
+          "v": "−0,79 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l17-g2": {
+      "decimals": 0,
+      "fig": "wf",
+      "height": 270,
+      "items": [
+        {
+          "label": "LNST",
+          "step": "base",
+          "tone": "pos",
+          "value": 100
+        },
+        {
+          "label": "Tăng tồn kho dự án",
+          "step": "minus",
+          "tone": "neg",
+          "value": 260
+        },
+        {
+          "label": "Khách trả trước thêm",
+          "step": "plus",
+          "tone": "pos",
+          "value": 110
+        },
+        {
+          "label": "CFO",
+          "step": "total",
+          "tone": "warn",
+          "value": -50
+        }
+      ],
+      "kind": "figure",
+      "title": "Từ lợi nhuận đến dòng tiền kinh doanh · số minh họa",
+      "unit": " tỷ"
+    },
+    "c13l17-rep": {
+      "alt": "CFO / LNST: −0,79 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "CFO / LNST (4 quý)",
+            "v": [
+              -0.72,
+              -0.673,
+              -0.731,
+              -0.647,
+              -0.505,
+              -0.541,
+              -0.571,
+              -0.791
+            ]
+          }
+        ],
+        "name": "CFO / LNST",
+        "sub": {
+          "series": [
+            {
+              "name": "CFO 4 quý",
+              "v": [
+                -3045.971,
+                -3413.587,
+                -3927.394,
+                -3479.569,
+                -2734.777,
+                -2778.975,
+                -2925.119,
+                -3848.746
+              ]
+            },
+            {
+              "name": "LNST 4 quý",
+              "v": [
+                4233.352,
+                5071.548,
+                5369.724,
+                5379.452,
+                5419.82,
+                5135.005,
+                5123.288,
+                4867.986
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l17",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ở doanh nghiệp sản xuất, dòng tiền kinh doanh âm nhiều năm là dấu hiệu xấu. Ở công ty bất động sản đang làm dự án, đó lại là chuyện thường gặp. Bài này giúp phân biệt dòng tiền âm do đầu tư dự án với dòng tiền âm do kinh doanh kém.",
+  "lesson_key": "fundamental:cfo_profit-bds",
+  "order": 17,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l17-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>lưu chuyển tiền thuần từ hoạt động kinh doanh</b> chia <b>lợi nhuận sau thuế</b>, cộng 4 quý. Cách tính giống bài CFO / LNST ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tiền mua đất và xây dự án để bán là tiền mua hàng tồn kho. Nó nằm trong <b>dòng tiền kinh doanh</b>, không nằm ở dòng tiền đầu tư.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l17-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khi đang làm nhiều dự án, tiền chi vào tồn kho lớn hơn lợi nhuận.",
+              "title": "Tồn kho tăng làm CFO âm"
+            },
+            {
+              "text": "Tiền khách trả theo tiến độ đi vào CFO trước khi thành doanh thu.",
+              "title": "Khách trả trước làm CFO dương"
+            },
+            {
+              "text": "CFO âm ở giai đoạn xây, dương ở giai đoạn thu tiền và bàn giao.",
+              "title": "Theo chu kỳ dự án"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bất động sản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l17-rep",
+          "title": "CFO / LNST",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "CFO 4 quý chia LNST 4 quý, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "CFO và LNST 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột CFO âm trong khi LNST dương: tiền đang được dồn vào dự án.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "CFO âm khi tồn kho và tiền khách trả trước cùng tăng. Công ty đang xây dự án đã bán được.",
+              "title": "Dòng tiền âm có lý do",
+              "tone": "pos"
+            },
+            {
+              "text": "CFO âm nhiều năm trong khi tiền khách trả trước giảm và nợ vay tăng. Tiền dồn vào dự án chưa bán được.",
+              "title": "Dòng tiền âm đáng lo",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với bất động sản, nên đọc CFO / LNST <b>qua cả chu kỳ dự án</b>, thường 3 đến 5 năm, thay vì một năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tồn kho tăng giải thích phần lớn CFO âm.",
+              "title": "Đọc cùng tồn kho"
+            },
+            {
+              "text": "Trả trước tăng nghĩa là dự án đang thu tiền, CFO âm do xây.",
+              "title": "Đọc cùng tiền khách trả trước"
+            },
+            {
+              "text": "CFO âm được bù bằng nợ vay. Nợ vay tăng nhanh là rủi ro.",
+              "title": "Đọc cùng nợ vay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "CFO"
+            },
+            {
+              "label": "LNST"
+            },
+            {
+              "label": "CFO / LNST"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "−3.046",
+                "4.233",
+                "−0,72 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "−3.480",
+                "5.379",
+                "−0,65 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "−3.849",
+                "4.868",
+                "−0,79 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "CFO âm suốt hai năm dù có lãi. Cùng giai đoạn, tồn kho tăng mạnh và nợ vay tăng từ 21.762 lên 31.398 tỷ đồng. Tiền làm dự án đến từ nợ vay và tiền khách trả trước.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "CFO âm ở công ty đang xây dự án không có nghĩa là lợi nhuận ảo.",
+              "title": "Kết luận lợi nhuận kém chất lượng"
+            },
+            {
+              "text": "Cần nhìn cả chu kỳ dự án.",
+              "title": "Đọc một năm"
+            },
+            {
+              "text": "CFO âm kéo dài thì phải có nguồn bù, thường là nợ vay.",
+              "title": "Bỏ qua nợ vay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "CFO âm ở giai đoạn mua đất và xây, dương khi thu tiền và bàn giao.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Tiền thuê trả trước một lần làm CFO rất cao ở năm ký hợp đồng lớn.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "<b>CFO / LNST</b> = dòng tiền kinh doanh ÷ LNST, 4 quý.",
+    "Tiền làm dự án để bán nằm ở <b>dòng tiền kinh doanh</b>, nên CFO dễ âm.",
+    "Đọc qua <b>cả chu kỳ dự án</b>, không đọc một năm.",
+    "Đọc cùng <b>tồn kho, tiền khách trả trước và nợ vay</b>."
+  ],
+  "title": "CFO / LNST · ở bất động sản"
+}

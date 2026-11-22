@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l13",
+  "questions": [
+    {
+      "correct_option_id": "f5b0dfce54",
+      "id": "ch17-l13-q01",
+      "options": [
+        {
+          "id": "f5b0dfce54",
+          "text": "Thấp vì EBITDA cao"
+        },
+        {
+          "id": "4293c4f2b6",
+          "text": "Cao vì EBITDA cao"
+        },
+        {
+          "id": "c986c70953",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Ở đỉnh chu kỳ, EV / EBITDA của công ty thép thường thế nào?"
+    },
+    {
+      "correct_option_id": "e88aa6000c",
+      "id": "ch17-l13-q02",
+      "options": [
+        {
+          "id": "e88aa6000c",
+          "text": "Biên EBITDA"
+        },
+        {
+          "id": "ffecad1408",
+          "text": "Tỷ lệ chi trả cổ tức"
+        },
+        {
+          "id": "5ee2bbcd65",
+          "text": "Số ngày thu tiền"
+        }
+      ],
+      "prompt": "Nên đọc EV / EBITDA vật liệu cùng chỉ tiêu nào để biết vị trí chu kỳ?"
+    },
+    {
+      "correct_option_id": "06a12ba720",
+      "id": "ch17-l13-q03",
+      "options": [
+        {
+          "id": "06a12ba720",
+          "text": "Làm EV tăng"
+        },
+        {
+          "id": "9b113055f3",
+          "text": "Làm EV giảm"
+        },
+        {
+          "id": "699fac399d",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Nợ dự án tăng ảnh hưởng thế nào đến EV?"
+    },
+    {
+      "correct_option_id": "1ca62bb15e",
+      "id": "ch17-l13-q04",
+      "options": [
+        {
+          "id": "1ca62bb15e",
+          "text": "P/B"
+        },
+        {
+          "id": "31b3c656dc",
+          "text": "P/S"
+        },
+        {
+          "id": "7c500d7a36",
+          "text": "PEG"
+        }
+      ],
+      "prompt": "Ở đáy chu kỳ, chỉ tiêu định giá nào thường được dùng thêm?"
+    },
+    {
+      "chart_id": "c17l13-rep",
+      "correct_option_id": "e1eda59d18",
+      "id": "ch17-l13-q05",
+      "options": [
+        {
+          "id": "e1eda59d18",
+          "text": "EBITDA giảm"
+        },
+        {
+          "id": "7260fd7e2b",
+          "text": "Số cổ phiếu tăng"
+        },
+        {
+          "id": "dde24d76d5",
+          "text": "Cổ tức tăng"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, chỉ tiêu tăng khi giá không đổi là do đâu?"
+    }
+  ],
+  "salt": "12e55c082a256d8e45bed9934f92f26017ced57cd1e01d2f5ffb433e0ed7d344"
+}

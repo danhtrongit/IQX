@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-l08",
+  "questions": [
+    {
+      "correct_option_id": "120f5e47bb",
+      "id": "ch03-l08-q01",
+      "options": [
+        {
+          "id": "120f5e47bb",
+          "text": "Khi đã đăng khoảng 30 video và quen nói trước camera"
+        },
+        {
+          "id": "76deefc3ec",
+          "text": "Ngay ngày đầu vào nghề"
+        },
+        {
+          "id": "bd643e384d",
+          "text": "Chỉ khi có 10.000 người theo dõi"
+        }
+      ],
+      "prompt": "Khi nào nên bắt đầu livestream?"
+    },
+    {
+      "correct_option_id": "c10742cb2a",
+      "id": "ch03-l08-q02",
+      "options": [
+        {
+          "id": "c10742cb2a",
+          "text": "Giúp đỡ 9 lần mới nhắc đến mình 1 lần"
+        },
+        {
+          "id": "1e0b2f7537",
+          "text": "Đăng 9 bài quảng cáo, 1 bài kiến thức"
+        },
+        {
+          "id": "699ead4675",
+          "text": "Vào 9 nhóm mỗi ngày"
+        }
+      ],
+      "prompt": "Quy tắc 9-1 trong hội nhóm là gì?"
+    },
+    {
+      "correct_option_id": "5505475208",
+      "id": "ch03-l08-q03",
+      "options": [
+        {
+          "id": "5505475208",
+          "text": "Không khuyến nghị mã trên sóng, nhắc nguyên tắc, mời nhắn riêng"
+        },
+        {
+          "id": "f5e7fb88e1",
+          "text": "Khuyên vào ngay"
+        },
+        {
+          "id": "46571bf63a",
+          "text": "Lờ đi"
+        }
+      ],
+      "prompt": "Bị hỏi “mai mã X có lên không” trên livestream, nên làm gì?"
+    }
+  ],
+  "salt": "43952324b04df41887c6b468d602056a9cdcc753d9cc1da0a5574852bf5be41d"
+}

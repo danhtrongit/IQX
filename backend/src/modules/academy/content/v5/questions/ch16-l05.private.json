@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l05",
+  "questions": [
+    {
+      "correct_option_id": "c7c4b1d3da",
+      "id": "ch16-l05-q01",
+      "options": [
+        {
+          "id": "c7c4b1d3da",
+          "text": "Mã 02 trên lưu chuyển tiền tệ gián tiếp"
+        },
+        {
+          "id": "21e21a6d1b",
+          "text": "Mã 220 trên bảng cân đối"
+        },
+        {
+          "id": "4e4f4c71f5",
+          "text": "Mã 11 trên kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Khấu hao lấy ở đâu?"
+    },
+    {
+      "correct_option_id": "7f75e090fa",
+      "id": "ch16-l05-q02",
+      "options": [
+        {
+          "id": "7f75e090fa",
+          "text": "Tăng"
+        },
+        {
+          "id": "fbae3ca3e3",
+          "text": "Giảm"
+        },
+        {
+          "id": "89439cab03",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Nhà máy mới vận hành làm tỷ lệ thế nào?"
+    },
+    {
+      "correct_option_id": "cec5944b33",
+      "id": "ch16-l05-q03",
+      "options": [
+        {
+          "id": "cec5944b33",
+          "text": "Tăng"
+        },
+        {
+          "id": "e7f4919d72",
+          "text": "Giảm"
+        },
+        {
+          "id": "b44ce9b5ca",
+          "text": "Bằng 0"
+        }
+      ],
+      "prompt": "Khi nhà máy khấu hao xong phần lớn, lợi nhuận kế toán thường thế nào?"
+    },
+    {
+      "correct_option_id": "b8bcb00032",
+      "id": "ch16-l05-q04",
+      "options": [
+        {
+          "id": "b8bcb00032",
+          "text": "Không, tiền đã chi khi xây nhà máy"
+        },
+        {
+          "id": "b15538bb2a",
+          "text": "Có, chi ra đều vào mỗi tháng"
+        },
+        {
+          "id": "77ae4c8b7f",
+          "text": "Có, chi một lần vào cuối năm"
+        }
+      ],
+      "prompt": "Khấu hao có phải tiền chi ra trong năm không?"
+    },
+    {
+      "chart_id": "c16l5-rep",
+      "correct_option_id": "339cd9a116",
+      "id": "ch16-l05-q05",
+      "options": [
+        {
+          "id": "339cd9a116",
+          "text": "Đi ngang"
+        },
+        {
+          "id": "59e9733b9a",
+          "text": "Tăng vọt"
+        },
+        {
+          "id": "bea3cccbf0",
+          "text": "Giảm mạnh"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khấu hao tăng cùng nhịp doanh thu thì đường thế nào?"
+    }
+  ],
+  "salt": "ccd48f130460a3321158fd24f289b0dc3fe0620166500ff5d324ab82560066c6"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l02",
+  "questions": [
+    {
+      "correct_option_id": "6fcce628d3",
+      "id": "ch15-l02-q01",
+      "options": [
+        {
+          "id": "6fcce628d3",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "6de8e5eec1",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "0cf79343f9",
+          "text": "Luôn bằng nhau"
+        }
+      ],
+      "prompt": "Biên gộp của chuỗi bán lẻ thường so với nhà sản xuất hàng tiêu dùng thế nào?"
+    },
+    {
+      "correct_option_id": "48e12a543a",
+      "id": "ch15-l02-q02",
+      "options": [
+        {
+          "id": "48e12a543a",
+          "text": "Khuyến mãi giảm giá kéo dài"
+        },
+        {
+          "id": "ae75677204",
+          "text": "Mở thêm kho chứa hàng"
+        },
+        {
+          "id": "461eeeca4a",
+          "text": "Trả cổ tức bằng tiền mặt"
+        }
+      ],
+      "prompt": "Yếu tố nào làm biên gộp chuỗi bán lẻ giảm ngay?"
+    },
+    {
+      "correct_option_id": "01286cc322",
+      "id": "ch15-l02-q03",
+      "options": [
+        {
+          "id": "01286cc322",
+          "text": "Biên lợi nhuận cuối cùng chỉ vài phần trăm"
+        },
+        {
+          "id": "3a7f297e5e",
+          "text": "Biên gộp bán lẻ luôn trên 50%"
+        },
+        {
+          "id": "6238a155a7",
+          "text": "Bán lẻ không có chi phí bán hàng"
+        }
+      ],
+      "prompt": "Vì sao thay đổi 1 điểm % biên gộp là lớn với bán lẻ?"
+    },
+    {
+      "correct_option_id": "087ad8799f",
+      "id": "ch15-l02-q04",
+      "options": [
+        {
+          "id": "087ad8799f",
+          "text": "Chi phí bán hàng và quản lý / Doanh thu"
+        },
+        {
+          "id": "3b7f2978c8",
+          "text": "Tiền ròng / Vốn chủ sở hữu"
+        },
+        {
+          "id": "e5a846a0ca",
+          "text": "Tỷ lệ chi trả cổ tức hằng năm"
+        }
+      ],
+      "prompt": "Nên đọc biên gộp bán lẻ cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c15l2-rep",
+      "correct_option_id": "9e8fab55de",
+      "id": "ch15-l02-q05",
+      "options": [
+        {
+          "id": "9e8fab55de",
+          "text": "Doanh thu tăng mà không phải giảm giá"
+        },
+        {
+          "id": "faf8b66b67",
+          "text": "Biên gộp đang giảm mạnh"
+        },
+        {
+          "id": "7884919e7a",
+          "text": "Giá vốn bằng doanh thu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột cao dần mà đường đi ngang cho thấy gì?"
+    }
+  ],
+  "salt": "9c86275d6d9ef5136c9eb4bca0d4825a32181fa9076c17c4f22846e6dce4a04e"
+}

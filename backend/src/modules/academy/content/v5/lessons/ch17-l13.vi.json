@@ -1,0 +1,557 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l13-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "EV",
+          "tone": "p1",
+          "v": "Vốn hoá + nợ ròng"
+        },
+        {
+          "notes": [
+            "EBIT + khấu hao"
+          ],
+          "t": "EBITDA 4 quý",
+          "tone": "warn",
+          "v": "13.811 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "EV / EBITDA",
+          "tone": "pos",
+          "v": "9,95 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l13-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Đỉnh chu kỳ · EBITDA cao",
+          "tone": "warn",
+          "value": 4
+        },
+        {
+          "label": "Giữa chu kỳ",
+          "tone": "p1",
+          "value": 7
+        },
+        {
+          "label": "Đáy chu kỳ · EBITDA thấp",
+          "tone": "warn",
+          "value": 12
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "EV / EBITDA của một công ty thép · số minh họa",
+      "unit": " lần"
+    },
+    "c17l13-rep": {
+      "alt": "EV / EBITDA: 9,95 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "EV / EBITDA",
+            "v": [
+              5.786,
+              5.745,
+              5.529,
+              5.501,
+              5.316,
+              5.433,
+              5.606,
+              5.683,
+              5.878,
+              5.883,
+              5.751,
+              5.514,
+              5.45,
+              5.553,
+              5.781,
+              5.731,
+              5.655,
+              6.454,
+              6.428,
+              6.586,
+              6.435,
+              6.472,
+              6.394,
+              6.274,
+              6.219,
+              6.245,
+              5.955,
+              6.124,
+              5.982,
+              6.052,
+              6.047,
+              6.016,
+              6.024,
+              7.009,
+              7.26,
+              7.496,
+              7.719,
+              7.764,
+              7.563,
+              7.535,
+              7.484,
+              7.338,
+              7.291,
+              7.208,
+              7.24,
+              6.971,
+              6.949,
+              7.125,
+              6.941,
+              8.242,
+              8.353,
+              8.322,
+              8.219,
+              8.2,
+              8.289,
+              8.271,
+              8.115,
+              8.212,
+              8.023,
+              8.024,
+              8.051,
+              8.216,
+              8.237,
+              8.308,
+              8.243,
+              8.815,
+              8.875,
+              8.693,
+              8.721,
+              8.445,
+              8.435,
+              8.381,
+              8.531,
+              8.613,
+              8.442,
+              8.457,
+              8.603,
+              8.609,
+              8.578,
+              8.648,
+              8.501,
+              8.483,
+              9.253,
+              9.292,
+              9.254,
+              9.191,
+              9.221,
+              9.144,
+              9.228,
+              9.075,
+              8.851,
+              8.934,
+              8.851,
+              8.728,
+              8.774,
+              9.003,
+              8.828,
+              8.808,
+              9.255,
+              9.149,
+              8.93,
+              8.993,
+              8.958,
+              8.816,
+              9.057,
+              9.182,
+              9.223,
+              9.18,
+              9.245,
+              9.285,
+              9.414,
+              9.622,
+              9.553,
+              9.627,
+              9.408,
+              9.36,
+              9.365,
+              9.281,
+              9.193,
+              9.633,
+              9.703,
+              10.03,
+              10.247,
+              9.939,
+              10.042,
+              9.949
+            ]
+          }
+        ],
+        "name": "EV / EBITDA",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l13",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Với công ty vật liệu dùng nhiều nợ và khấu hao lớn, EV / EBITDA giúp so các công ty công bằng hơn P/E. Nhưng EBITDA đi theo chu kỳ, nên chỉ tiêu có thể cao ở đáy và thấp ở đỉnh.",
+  "lesson_key": "fundamental:ev_ebitda-vl",
+  "order": 13,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l13-g1",
+          "type": "chart"
+        },
+        {
+          "text": "EV bằng <b>vốn hoá cộng nợ vay trừ tiền</b>. Chỉ tiêu bằng EV chia <b>EBITDA 4 quý</b>. Cách tính giống bài EV / EBITDA ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l13-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA đỉnh làm chỉ tiêu thấp, trông rẻ.",
+              "title": "Thấp ở đỉnh"
+            },
+            {
+              "text": "EBITDA đáy làm chỉ tiêu cao, trông đắt.",
+              "title": "Cao ở đáy"
+            },
+            {
+              "text": "Ở đáy chu kỳ, P/B thường được dùng nhiều hơn.",
+              "title": "Kết hợp P/B"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l13-rep",
+          "title": "EV / EBITDA",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EV / EBITDA theo giá đóng cửa từng ngày.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "Chỉ tiêu tăng khi EBITDA giảm, dù giá cổ phiếu không đổi.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Chỉ tiêu thấp khi EBITDA ở mức giữa chu kỳ, không phải đỉnh.",
+              "title": "Vùng thấp thật",
+              "tone": "pos"
+            },
+            {
+              "text": "Chỉ tiêu thấp vì EBITDA đang ở đỉnh. Khi chu kỳ đảo chiều, chỉ tiêu tăng nhanh.",
+              "title": "Vùng thấp giả",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc EV / EBITDA vật liệu cùng <b>Biên EBITDA</b> để biết EBITDA đang ở đâu trong chu kỳ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giảm ảnh hưởng chu kỳ.",
+              "title": "Dùng EBITDA bình quân"
+            },
+            {
+              "text": "Thép so với thép.",
+              "title": "So cùng mảng"
+            },
+            {
+              "text": "Đặc biệt ở đáy chu kỳ.",
+              "title": "Kết hợp P/B"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu, EV / EBITDA 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Cuối Q2/26",
+              "text": "9,95 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "8,31 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "5,32 lần và 10,25 lần."
+            },
+            {
+              "term": "Nhận xét",
+              "text": "Chỉ tiêu tăng lên trên trung vị vì nợ ròng tăng do dự án mới, trong khi EBITDA giảm theo chu kỳ."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA đỉnh có thể sắp giảm.",
+              "title": "Mua vì chỉ tiêu thấp ở đỉnh"
+            },
+            {
+              "text": "Nợ tăng làm EV tăng trước khi EBITDA tăng.",
+              "title": "Quên nợ dự án"
+            },
+            {
+              "text": "Thép và xi măng có mức khác nhau.",
+              "title": "So khác mảng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dao động mạnh theo chu kỳ thép.",
+              "title": "Thép"
+            },
+            {
+              "text": "Ổn định hơn.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Theo chu kỳ giá phân bón, khí.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>EV / EBITDA</b> = (vốn hoá + nợ vay − tiền) ÷ EBITDA 4 quý.",
+    "Ở vật liệu, <b>thấp ở đỉnh, cao ở đáy</b>.",
+    "Đọc cùng <b>Biên EBITDA</b> để biết vị trí chu kỳ.",
+    "Kết hợp <b>P/B</b> ở đáy chu kỳ."
+  ],
+  "title": "EV / EBITDA · ở vật liệu cơ bản"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l19",
+  "questions": [
+    {
+      "correct_option_id": "9cd3eee3ae",
+      "id": "ch13-l19-q01",
+      "options": [
+        {
+          "id": "9cd3eee3ae",
+          "text": "Giá gốc"
+        },
+        {
+          "id": "48785ad042",
+          "text": "Giá thị trường cuối năm"
+        },
+        {
+          "id": "85c1bd8982",
+          "text": "Giá bán dự kiến"
+        }
+      ],
+      "prompt": "Đất của công ty bất động sản được ghi trên báo cáo theo giá nào?"
+    },
+    {
+      "correct_option_id": "2688535b8c",
+      "id": "ch13-l19-q02",
+      "options": [
+        {
+          "id": "2688535b8c",
+          "text": "Quỹ đất khó triển khai có thể đáng giá thấp hơn sổ sách"
+        },
+        {
+          "id": "a34cd681e0",
+          "text": "P/B dưới 1 luôn là đắt"
+        },
+        {
+          "id": "6834ed6b45",
+          "text": "P/B không tính cho bất động sản"
+        }
+      ],
+      "prompt": "Vì sao P/B dưới 1 chưa chắc là rẻ?"
+    },
+    {
+      "correct_option_id": "8f3d67f3d6",
+      "id": "ch13-l19-q03",
+      "options": [
+        {
+          "id": "8f3d67f3d6",
+          "text": "Lịch sử P/B của chính công ty"
+        },
+        {
+          "id": "2397b05233",
+          "text": "P/B của ngân hàng"
+        },
+        {
+          "id": "290bc20fc8",
+          "text": "P/B của công ty bán lẻ"
+        }
+      ],
+      "prompt": "Với bất động sản, nên so P/B với gì?"
+    },
+    {
+      "correct_option_id": "e49aef84c6",
+      "id": "ch13-l19-q04",
+      "options": [
+        {
+          "id": "e49aef84c6",
+          "text": "Không"
+        },
+        {
+          "id": "2f14dd52e7",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "30ebedd86b",
+          "text": "Có, ở báo cáo kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Giá trị thị trường của quỹ đất có trên 3 báo cáo tài chính không?"
+    },
+    {
+      "chart_id": "c13l19-rep",
+      "correct_option_id": "9042e3e192",
+      "id": "ch13-l19-q05",
+      "options": [
+        {
+          "id": "9042e3e192",
+          "text": "Thị trường định giá thấp hơn thường lệ của công ty"
+        },
+        {
+          "id": "f583a5abd4",
+          "text": "Công ty đang lỗ"
+        },
+        {
+          "id": "33d70bf051",
+          "text": "Công ty vừa phát hành cổ phiếu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, P/B nằm dưới dải cho thấy gì?"
+    }
+  ],
+  "salt": "da95bd37f37e86bbbe260cfb6c92d219296b44b93d6b8ee0e5cc40e97f24e259"
+}

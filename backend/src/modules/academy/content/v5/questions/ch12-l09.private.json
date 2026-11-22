@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l09",
+  "questions": [
+    {
+      "correct_option_id": "6e7926b7db",
+      "id": "ch12-l09-q01",
+      "options": [
+        {
+          "id": "6e7926b7db",
+          "text": "Doanh thu phí bảo hiểm thuần"
+        },
+        {
+          "id": "6536e2f0a7",
+          "text": "Phí bảo hiểm gốc"
+        },
+        {
+          "id": "c16831a9fb",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Ở công ty bảo hiểm, mẫu số của biên lợi nhuận ròng là gì?"
+    },
+    {
+      "correct_option_id": "c3d4190667",
+      "id": "ch12-l09-q02",
+      "options": [
+        {
+          "id": "c3d4190667",
+          "text": "Nghiệp vụ bảo hiểm và đầu tư"
+        },
+        {
+          "id": "b3e5bb58be",
+          "text": "Cho vay và huy động"
+        },
+        {
+          "id": "4775ee094d",
+          "text": "Môi giới và tự doanh"
+        }
+      ],
+      "prompt": "Lợi nhuận công ty bảo hiểm đến từ hai nguồn nào?"
+    },
+    {
+      "correct_option_id": "032e8cdba6",
+      "id": "ch12-l09-q03",
+      "options": [
+        {
+          "id": "032e8cdba6",
+          "text": "Làm biên ròng giảm"
+        },
+        {
+          "id": "a780a1738d",
+          "text": "Làm biên ròng tăng"
+        },
+        {
+          "id": "d21d2eb567",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Lãi suất giảm ảnh hưởng thế nào đến biên ròng công ty bảo hiểm?"
+    },
+    {
+      "correct_option_id": "6a9e4b8f26",
+      "id": "ch12-l09-q04",
+      "options": [
+        {
+          "id": "6a9e4b8f26",
+          "text": "Combined ratio và Cơ cấu lợi nhuận"
+        },
+        {
+          "id": "0d0747b441",
+          "text": "Tỷ lệ giữ lại và LDR"
+        },
+        {
+          "id": "d1d49f711b",
+          "text": "Tăng trưởng phí gốc và P/E"
+        }
+      ],
+      "prompt": "Nên đọc biên ròng bảo hiểm cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c12l9-rep",
+      "correct_option_id": "088c1d8c31",
+      "id": "ch12-l09-q05",
+      "options": [
+        {
+          "id": "088c1d8c31",
+          "text": "Lợi nhuận bảo hiểm và lợi nhuận đầu tư 4 quý"
+        },
+        {
+          "id": "ceb52b0d2a",
+          "text": "Phí bảo hiểm gốc và phí bảo hiểm thuần 4 quý"
+        },
+        {
+          "id": "bfec61eb6a",
+          "text": "Dự phòng nghiệp vụ và vốn chủ sở hữu cuối quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm gì?"
+    }
+  ],
+  "salt": "88bb2fe250b028ee55636b3849e16fc266bfc7b675013202f1b7455fc59d25cf"
+}

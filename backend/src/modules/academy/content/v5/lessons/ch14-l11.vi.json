@@ -1,0 +1,387 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l11-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Kết quả kinh doanh",
+            "Mã 21"
+          ],
+          "t": "Doanh thu tài chính 4 quý",
+          "tone": "p5",
+          "v": "956 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 50"
+          ],
+          "t": "LNTT 4 quý",
+          "tone": "p1",
+          "v": "4.393 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ trọng",
+          "tone": "warn",
+          "v": "21,8%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l11-g2": {
+      "decimals": 0,
+      "fig": "stack",
+      "kind": "figure",
+      "parts": [
+        {
+          "label": "Từ kinh doanh chính",
+          "tone": "pos",
+          "value": 45
+        },
+        {
+          "label": "Từ lãi tiền gửi",
+          "tone": "p5",
+          "value": 55
+        }
+      ],
+      "title": "100 đồng LNTT của doanh nghiệp dịch vụ dầu khí · số minh họa",
+      "unit": " đồng"
+    },
+    "c14l11-rep": {
+      "alt": "Thu nhập tài chính / LNTT: 21,8%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Doanh thu tài chính / LNTT (4 quý)",
+            "v": [
+              23.686,
+              18.813,
+              15.8,
+              14.689,
+              14.941,
+              17.799,
+              21.473,
+              21.769
+            ]
+          }
+        ],
+        "name": "Thu nhập tài chính / LNTT",
+        "sub": {
+          "series": [
+            {
+              "name": "Doanh thu tài chính 4 quý",
+              "v": [
+                827.366,
+                845.784,
+                870.965,
+                902.692,
+                935.573,
+                951.036,
+                949.987,
+                956.209
+              ]
+            },
+            {
+              "name": "LNTT 4 quý",
+              "v": [
+                3493.109,
+                4495.847,
+                5512.449,
+                6145.379,
+                6261.681,
+                5343.1,
+                4424.038,
+                4392.617
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l11",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh nghiệp dư nhiều tiền thường có khoản lãi tiền gửi lớn. Có lúc khoản này chiếm phần đáng kể lợi nhuận. Chỉ tiêu này cho biết bao nhiêu phần lợi nhuận trước thuế đến từ hoạt động tài chính chứ không từ kinh doanh chính.",
+  "lesson_key": "fundamental:fin_income_to_pbt-dk",
+  "order": 11,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l11-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>doanh thu hoạt động tài chính</b> chia <b>lợi nhuận kế toán trước thuế</b>, cộng 4 quý. Cả hai trên báo cáo kết quả kinh doanh. Đơn vị %.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Doanh thu tài chính gồm lãi tiền gửi, cổ tức được chia, lãi chênh lệch tỷ giá và lãi bán khoản đầu tư.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Thu nhập tài chính / LNTT là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l11-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp dịch vụ thấp, lãi tiền gửi có thể lớn hơn lãi kinh doanh.",
+              "title": "Kinh doanh chính mỏng"
+            },
+            {
+              "text": "Lãi suất tiền gửi giảm thì lợi nhuận giảm dù kinh doanh không đổi.",
+              "title": "Phụ thuộc lãi suất"
+            },
+            {
+              "text": "Lãi tiền gửi chỉ tăng khi tiền tăng. Không phải động lực tăng trưởng.",
+              "title": "Khó tăng trưởng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao cần tách"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l11-rep",
+          "title": "Thu nhập tài chính / LNTT",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu tài chính 4 quý chia LNTT 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu tài chính và LNTT 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Doanh thu tài chính đều, LNTT giảm thì tỷ trọng tăng: kinh doanh chính đang yếu đi.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ trọng dưới khoảng 20%. Mức tham khảo, lãi tiền gửi chỉ là phần bổ sung.",
+              "title": "Lợi nhuận từ kinh doanh chính",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 50%. Lợi nhuận nhạy với lãi suất, kinh doanh chính đóng góp ít.",
+              "title": "Phụ thuộc tài chính",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tỷ trọng tăng có thể vì doanh thu tài chính tăng, hoặc vì lợi nhuận kinh doanh chính giảm. Cần xem cột phía dưới để biết.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Trừ doanh thu tài chính khỏi LNTT để thấy lãi từ kinh doanh chính.",
+              "title": "Ước lượng lợi nhuận cốt lõi"
+            },
+            {
+              "text": "Tỷ trọng cao thì lãi suất giảm sẽ ảnh hưởng nhiều.",
+              "title": "Đánh giá độ nhạy lãi suất"
+            },
+            {
+              "text": "Tiền ròng lớn giải thích doanh thu tài chính lớn.",
+              "title": "Đọc cùng Tiền ròng / VCSH"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Doanh thu tài chính"
+            },
+            {
+              "label": "LNTT"
+            },
+            {
+              "label": "Tỷ trọng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "827",
+                "3.493",
+                "23,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "903",
+                "6.145",
+                "14,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q3/25",
+                "936",
+                "6.262",
+                "14,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "956",
+                "4.393",
+                "21,8%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Doanh thu tài chính tăng đều từ 827 lên 956 tỷ. Tỷ trọng tăng lại lên 21,8% chủ yếu vì LNTT giảm khi biên gộp co lại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tử số chỉ lấy doanh thu tài chính. Chi phí đã nằm trong LNTT.",
+              "title": "Trừ cả chi phí tài chính"
+            },
+            {
+              "text": "Lãi tiền gửi đều đặn là nguồn thu ổn định.",
+              "title": "Coi là xấu"
+            },
+            {
+              "text": "Doanh thu tài chính có thể chứa lãi một lần.",
+              "title": "Bỏ qua lãi bán khoản đầu tư"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dịch vụ thường dư tiền và biên mỏng, tỷ trọng cao nhất.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Doanh nghiệp khí lớn có lãi tiền gửi đáng kể nhưng kinh doanh chính vẫn lớn hơn.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Tỷ trọng thấp, thường dùng nợ vay hơn là dư tiền.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ trọng = <b>doanh thu tài chính</b> (B02 mã 21) ÷ <b>LNTT</b>, 4 quý.",
+    "Cho biết lợi nhuận <b>phụ thuộc lãi tiền gửi</b> đến đâu.",
+    "Mức tham khảo: <b>dưới khoảng 20%</b> là lợi nhuận chủ yếu từ kinh doanh.",
+    "Tỷ trọng tăng có thể do <b>kinh doanh chính yếu đi</b>."
+  ],
+  "title": "Thu nhập tài chính / LNTT · lợi nhuận từ tiền gửi"
+}

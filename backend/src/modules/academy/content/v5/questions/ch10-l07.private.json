@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l07",
+  "questions": [
+    {
+      "correct_option_id": "c2d53abd3d",
+      "id": "ch10-l07-q01",
+      "options": [
+        {
+          "id": "c2d53abd3d",
+          "text": "Dự phòng rủi ro cho vay chia cho vay khách hàng"
+        },
+        {
+          "id": "9e90120ba6",
+          "text": "Chi phí dự phòng 4 quý chia cho vay bình quân"
+        },
+        {
+          "id": "a3e31bbbd4",
+          "text": "Lãi phải thu chia cho vay khách hàng"
+        }
+      ],
+      "prompt": "Tỷ lệ dự phòng trên dư nợ được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "0924de5fe7",
+      "id": "ch10-l07-q02",
+      "options": [
+        {
+          "id": "0924de5fe7",
+          "text": "Bộ đệm đã dành sẵn để bù rủi ro cho vay"
+        },
+        {
+          "id": "f8af05df6a",
+          "text": "Tỷ lệ các khoản vay đang là nợ xấu"
+        },
+        {
+          "id": "3dc37aa899",
+          "text": "Phần chi phí trích trong năm nay"
+        }
+      ],
+      "prompt": "Tỷ lệ dự phòng trên dư nợ thể hiện điều gì?"
+    },
+    {
+      "correct_option_id": "8685a8dae7",
+      "id": "ch10-l07-q03",
+      "options": [
+        {
+          "id": "8685a8dae7",
+          "text": "Một bên là phần trích trong năm, một bên là số dư tích lũy"
+        },
+        {
+          "id": "967076a39c",
+          "text": "Một bên tính cho cá nhân, một bên tính cho doanh nghiệp"
+        },
+        {
+          "id": "c5f661f0ef",
+          "text": "Hai chỉ tiêu giống hệt nhau, chỉ khác tên gọi"
+        }
+      ],
+      "prompt": "Điểm khác nhau giữa chi phí tín dụng và tỷ lệ dự phòng là gì?"
+    },
+    {
+      "correct_option_id": "e65a930529",
+      "id": "ch10-l07-q04",
+      "options": [
+        {
+          "id": "e65a930529",
+          "text": "Giảm xuống"
+        },
+        {
+          "id": "9a35ca299b",
+          "text": "Tăng lên"
+        },
+        {
+          "id": "e47035d094",
+          "text": "Giữ nguyên"
+        }
+      ],
+      "prompt": "Khi cho vay tăng nhanh hơn số dư dự phòng, tỷ lệ này sẽ thế nào?"
+    },
+    {
+      "chart_id": "c10l7-rep",
+      "correct_option_id": "a115e0400f",
+      "id": "ch10-l07-q05",
+      "options": [
+        {
+          "id": "a115e0400f",
+          "text": "Cho vay tăng nhanh hơn dự phòng, bộ đệm mỏng dần"
+        },
+        {
+          "id": "80992b86af",
+          "text": "Dự phòng tăng nhanh hơn cho vay, bộ đệm dày lên"
+        },
+        {
+          "id": "7f85d9a315",
+          "text": "Ngân hàng đang hoàn nhập toàn bộ dự phòng"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột tăng mà đường giảm có nghĩa là gì?"
+    }
+  ],
+  "salt": "f339075a03946f5291e094dc5638563c02aaaed70ea4b28b6c1221b17919d791"
+}

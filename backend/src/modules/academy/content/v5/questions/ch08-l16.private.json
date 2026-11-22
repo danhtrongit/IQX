@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l16",
+  "questions": [
+    {
+      "correct_option_id": "9ee2590d09",
+      "id": "ch08-l16-q01",
+      "options": [
+        {
+          "id": "9ee2590d09",
+          "text": "Vốn hóa chia cho doanh thu 4 quý"
+        },
+        {
+          "id": "0e392b77be",
+          "text": "Vốn hóa chia cho lợi nhuận 4 quý"
+        },
+        {
+          "id": "29e7eb2648",
+          "text": "Doanh thu chia cho số cổ phiếu"
+        }
+      ],
+      "prompt": "P/S được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "bfc4fb5f09",
+      "id": "ch08-l16-q02",
+      "options": [
+        {
+          "id": "bfc4fb5f09",
+          "text": "Khi lợi nhuận âm hoặc rất thấp"
+        },
+        {
+          "id": "90ba9c52cf",
+          "text": "Khi doanh nghiệp không có doanh thu"
+        },
+        {
+          "id": "984dbf212a",
+          "text": "Khi chỉ cần biết khối lượng giao dịch"
+        }
+      ],
+      "prompt": "Khi nào P/S đặc biệt hữu ích?"
+    },
+    {
+      "correct_option_id": "0dc6fad427",
+      "id": "ch08-l16-q03",
+      "options": [
+        {
+          "id": "0dc6fad427",
+          "text": "Doanh nghiệp có biên lợi nhuận cao hơn"
+        },
+        {
+          "id": "eb515b71b5",
+          "text": "Doanh nghiệp có biên lợi nhuận thấp hơn"
+        },
+        {
+          "id": "079199bb35",
+          "text": "Doanh nghiệp có nhiều nhân viên hơn"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng P/S, doanh nghiệp nào thực chất rẻ hơn?"
+    },
+    {
+      "correct_option_id": "af65825773",
+      "id": "ch08-l16-q04",
+      "options": [
+        {
+          "id": "af65825773",
+          "text": "Biên lợi nhuận đặc trưng mỗi ngành rất khác nhau"
+        },
+        {
+          "id": "566abcb077",
+          "text": "Vì doanh thu mỗi ngành công bố vào ngày khác nhau"
+        },
+        {
+          "id": "2bba27b993",
+          "text": "Vì P/S chỉ được tính cho ngành bán lẻ"
+        }
+      ],
+      "prompt": "Vì sao không nên so P/S giữa các ngành khác nhau?"
+    },
+    {
+      "chart_id": "c8l16-rep",
+      "correct_option_id": "892a9d8683",
+      "id": "ch08-l16-q05",
+      "options": [
+        {
+          "id": "892a9d8683",
+          "text": "Cho thấy vùng P/S thường dao động của doanh nghiệp"
+        },
+        {
+          "id": "e58ffa949d",
+          "text": "Cho thấy biên lợi nhuận của doanh nghiệp"
+        },
+        {
+          "id": "409cd22d3d",
+          "text": "Cho thấy doanh thu dự kiến năm sau"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của P/S, dải trung vị ± độ lệch chuẩn dùng để làm gì?"
+    }
+  ],
+  "salt": "dea6604f2a32709a9b4d1acc3c42bf1992f61c6e11cb3ca8d8666dca6ce138fd"
+}

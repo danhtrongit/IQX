@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l06",
+  "questions": [
+    {
+      "correct_option_id": "c6dfa14698",
+      "id": "ch15-l06-q01",
+      "options": [
+        {
+          "id": "c6dfa14698",
+          "text": "Mã 149 trên bảng cân đối"
+        },
+        {
+          "id": "821a31c31f",
+          "text": "Mã 21 trên kết quả kinh doanh"
+        },
+        {
+          "id": "a70f42e0ab",
+          "text": "Mã 36 trên lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Dự phòng giảm giá tồn kho nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "2c5ed8d994",
+      "id": "ch15-l06-q02",
+      "options": [
+        {
+          "id": "2c5ed8d994",
+          "text": "Hàng tồn kho gốc, chưa trừ dự phòng"
+        },
+        {
+          "id": "f08d47d99f",
+          "text": "Hàng tồn kho thuần, đã trừ dự phòng"
+        },
+        {
+          "id": "0b928dc549",
+          "text": "Doanh thu thuần cộng dồn 4 quý"
+        }
+      ],
+      "prompt": "Mẫu số của chỉ tiêu là gì?"
+    },
+    {
+      "correct_option_id": "657cb25c75",
+      "id": "ch15-l06-q03",
+      "options": [
+        {
+          "id": "657cb25c75",
+          "text": "Làm lợi nhuận giảm"
+        },
+        {
+          "id": "07fa53034b",
+          "text": "Làm lợi nhuận tăng"
+        },
+        {
+          "id": "1e88cff370",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Tăng dự phòng ảnh hưởng thế nào đến lợi nhuận?"
+    },
+    {
+      "correct_option_id": "1a6ea3703f",
+      "id": "ch15-l06-q04",
+      "options": [
+        {
+          "id": "1a6ea3703f",
+          "text": "Hàng tồn đang mất giá"
+        },
+        {
+          "id": "4ac706361f",
+          "text": "Hàng bán rất chạy"
+        },
+        {
+          "id": "365e71d50c",
+          "text": "Chuỗi đang giảm nợ"
+        }
+      ],
+      "prompt": "Tỷ lệ tăng nhanh cùng số ngày tồn kho tăng cho thấy gì?"
+    },
+    {
+      "chart_id": "c15l6-rep",
+      "correct_option_id": "7340adfb10",
+      "id": "ch15-l06-q05",
+      "options": [
+        {
+          "id": "7340adfb10",
+          "text": "Dự phòng giảm giá tồn kho cuối quý"
+        },
+        {
+          "id": "3a64a46d43",
+          "text": "Hàng tồn kho thuần cuối quý"
+        },
+        {
+          "id": "417d861ed4",
+          "text": "Giá vốn hàng bán cộng 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới là gì?"
+    }
+  ],
+  "salt": "8a0debab09e4edae1e63a51b2125ca179d4e9f10e8ac33b80ae752ea7213ad22"
+}

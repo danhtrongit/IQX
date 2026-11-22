@@ -1,0 +1,281 @@
+{
+  "chapter": 2,
+  "charts": {
+    "c2l9-g1": {
+      "alt": "Lịch chăm sóc khách mới: ngày 1, ngày 3, ngày 7, ngày 30 và hằng tháng",
+      "kind": "milestones",
+      "points": [
+        {
+          "at": 0,
+          "detail": [
+            "Kiểm tra tài khoản,",
+            "hướng dẫn ứng dụng"
+          ],
+          "title": "Ngày 1",
+          "tone": "pos"
+        },
+        {
+          "at": 0.25,
+          "detail": [
+            "Hỏi thăm lệnh đầu tiên,",
+            "giải đáp thắc mắc"
+          ],
+          "title": "Ngày 3",
+          "tone": "pos"
+        },
+        {
+          "at": 0.5,
+          "detail": [
+            "Gửi tài liệu học,",
+            "mời vào nhóm Zalo"
+          ],
+          "title": "Ngày 7",
+          "tone": "p1"
+        },
+        {
+          "at": 0.75,
+          "detail": [
+            "Cùng nhìn lại kết quả,",
+            "hỏi nhu cầu mới"
+          ],
+          "title": "Ngày 30",
+          "tone": "p1"
+        },
+        {
+          "at": 1,
+          "detail": [
+            "Gọi hỏi thăm,",
+            "mời hội thảo"
+          ],
+          "title": "Hằng tháng",
+          "tone": "warn"
+        }
+      ],
+      "spans": [
+        {
+          "from": 0,
+          "label": "30 ngày đầu: khách dễ bỏ cuộc nhất, cần quan tâm nhiều nhất",
+          "side": "below",
+          "to": 0.75,
+          "tone": "pos"
+        }
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Khách ở lại vì được quan tâm. Chăm sóc tốt giúp khách giao dịch lâu dài, và một khách hài lòng sẽ giới thiệu cho bạn những khách hàng tiếp theo.",
+  "lesson_key": "concept:cham_soc_gioi_thieu",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Ba mươi ngày đầu tiên là giai đoạn quan trọng nhất. Đây là lúc khách còn bỡ ngỡ và dễ bỏ cuộc nhất.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c2l9-g1",
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Lịch chăm sóc khách mới"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Bản tin sáng",
+              "text": "Gửi trước giờ mở cửa: tin thế giới, tin trong nước, nhận định ngắn."
+            },
+            {
+              "term": "Cập nhật trưa",
+              "text": "Thị trường buổi sáng diễn biến thế nào."
+            },
+            {
+              "term": "Tổng kết cuối ngày",
+              "text": "Thị trường đóng cửa ra sao, điều cần chú ý ngày mai."
+            },
+            {
+              "term": "Nhóm Zalo khách hàng",
+              "text": "Nơi gửi bản tin, trả lời câu hỏi chung, thông báo hội thảo."
+            },
+            {
+              "term": "Nhắc sự kiện",
+              "text": "Ngày chốt quyền, cổ tức, phát hành thêm của cổ phiếu khách đang nắm giữ."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s2",
+      "title": "Công cụ chăm sóc hằng ngày"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Đây là lúc khách cần bạn nhất, cũng là lúc nhiều người làm sale im lặng. Người đồng hành thật sự xuất hiện vào lúc khó khăn.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "bullets": [
+                "Chủ động gọi trước khi khách gọi",
+                "Nhắc lại kế hoạch và mức cắt lỗ khách đã đặt",
+                "Kiểm tra tỷ lệ ký quỹ nếu khách dùng margin",
+                "Bình tĩnh, nói rõ điều đang xảy ra"
+              ],
+              "title": "Nên",
+              "tone": "good"
+            },
+            {
+              "bullets": [
+                "Im lặng, không nghe máy",
+                "Đổ lỗi cho thị trường hay cho khách",
+                "Hứa “chắc chắn sẽ hồi”",
+                "Khuyên vay thêm để “bình quân giá”"
+              ],
+              "title": "Không",
+              "tone": "bad"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Khi thị trường giảm mạnh"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Thời điểm tốt nhất để xin giới thiệu là ngay sau khi khách cảm thấy hài lòng: sau khi bạn giúp khách giải quyết một vấn đề, hay khi khách cảm ơn bạn.",
+          "type": "paragraph"
+        },
+        {
+          "label": "Câu mẫu",
+          "text": "“Em cảm ơn anh đã tin em. Nếu anh có người thân hay bạn bè cũng đang muốn tìm hiểu chứng khoán, anh giới thiệu em nhé, em sẽ hướng dẫn kỹ như đã làm với anh.”",
+          "tone": "good",
+          "type": "quote"
+        }
+      ],
+      "id": "s4",
+      "title": "Xin giới thiệu đúng lúc"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Mọi khách hàng nên nằm trong một bảng quản lý. Chỉ cần Google Sheets hoặc Excel là đủ:",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Tên"
+            },
+            {
+              "label": "Mức độ"
+            },
+            {
+              "label": "Đã làm"
+            },
+            {
+              "label": "Bước tiếp theo"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Chị Lan",
+                {
+                  "text": "Nóng",
+                  "tone": "neg"
+                },
+                "Đã tư vấn, hỏi cách mở tài khoản",
+                "Hẹn mở tài khoản tối thứ Năm"
+              ]
+            },
+            {
+              "cells": [
+                "Anh Minh",
+                {
+                  "text": "Ấm",
+                  "tone": "warn"
+                },
+                "Đã nhận bản tin 1 tuần",
+                "Gọi hỏi cảm nhận thứ Hai"
+              ]
+            },
+            {
+              "cells": [
+                "Cô Hoa",
+                {
+                  "text": "Lạnh",
+                  "tone": "info"
+                },
+                "Đã gửi lời mời hội thảo",
+                "Nhắc lại trước hội thảo 2 ngày"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "text": "<b>Nóng</b>: muốn bắt đầu ngay. <b>Ấm</b>: quan tâm nhưng chưa quyết. <b>Lạnh</b>: mới biết đến bạn. Mỗi ngày ưu tiên khách nóng trước.",
+          "type": "paragraph"
+        },
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: gọi ngay và nói thật.</b> Nếu chú bị bán giải chấp mà không được báo trước, bạn mất khách và mất uy tín. Khuyên vay thêm làm rủi ro tăng gấp bội. Gọi trước, nói rõ con số và lựa chọn, là lúc khách thấy giá trị thật của người đồng hành.",
+          "options": [
+            "Không gọi, sợ bị chú trách",
+            "Gọi ngay, nói rõ tỷ lệ ký quỹ hiện tại, giải thích các lựa chọn như nộp thêm tiền hoặc bán bớt, để chú quyết định",
+            "Khuyên chú vay thêm để mua bình quân giá xuống"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "VN-Index giảm mạnh hai phiên liên tiếp. Chú Dũng đang dùng margin và tỷ lệ ký quỹ đã gần ngưỡng duy trì. Chú chưa gọi cho bạn."
+          ],
+          "title": "Thị trường giảm mạnh, khách dùng margin",
+          "type": "scenario"
+        },
+        {
+          "id": "l9",
+          "items": [
+            {
+              "id": "0",
+              "text": "Tạo bảng quản lý khách hàng với các cột Tên, Mức độ, Đã làm, Bước tiếp theo"
+            },
+            {
+              "id": "1",
+              "text": "Phân loại toàn bộ khách và người quan tâm thành Nóng, Ấm, Lạnh"
+            },
+            {
+              "id": "2",
+              "text": "Gửi lời cảm ơn và xin giới thiệu tới 1 khách đang hài lòng"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s5",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "<b>30 ngày đầu</b> là giai đoạn quan trọng nhất để giữ khách.",
+    "Chăm sóc đều đặn bằng <b>bản tin sáng, trưa, cuối ngày</b> và nhắc sự kiện.",
+    "Khi thị trường giảm mạnh, hãy <b>chủ động gọi khách trước</b>.",
+    "Xin giới thiệu <b>ngay sau khi khách hài lòng</b>."
+  ],
+  "title": "Chăm sóc và giới thiệu"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l05",
+  "questions": [
+    {
+      "correct_option_id": "93c6be8b9a",
+      "id": "ch10-l05-q01",
+      "options": [
+        {
+          "id": "93c6be8b9a",
+          "text": "Lợi nhuận kinh doanh trước chi phí dự phòng rủi ro tín dụng"
+        },
+        {
+          "id": "65766995a9",
+          "text": "Lợi nhuận sau thuế trước khi chia cổ tức cho cổ đông"
+        },
+        {
+          "id": "a216be7bce",
+          "text": "Thu nhập lãi thuần trước chi phí hoạt động"
+        }
+      ],
+      "prompt": "Lợi nhuận trước dự phòng là gì?"
+    },
+    {
+      "correct_option_id": "ef58430921",
+      "id": "ch10-l05-q02",
+      "options": [
+        {
+          "id": "ef58430921",
+          "text": "Cùng quý năm trước"
+        },
+        {
+          "id": "1ec094364f",
+          "text": "Quý liền trước"
+        },
+        {
+          "id": "9be8ae7cc7",
+          "text": "Quý đầu tiên của năm"
+        }
+      ],
+      "prompt": "Tăng trưởng lợi nhuận trước dự phòng thường so với kỳ nào?"
+    },
+    {
+      "correct_option_id": "c3d0b41d48",
+      "id": "ch10-l05-q03",
+      "options": [
+        {
+          "id": "c3d0b41d48",
+          "text": "Ngân hàng đang trích dự phòng ít hơn"
+        },
+        {
+          "id": "71750fe41a",
+          "text": "Ngân hàng đang kinh doanh hiệu quả hơn hẳn"
+        },
+        {
+          "id": "a6417225f2",
+          "text": "Ngân hàng đang tăng chi phí hoạt động"
+        }
+      ],
+      "prompt": "Lợi nhuận trước thuế tăng mạnh trong khi PPOP đi ngang thường cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "6e89a05166",
+      "id": "ch10-l05-q04",
+      "options": [
+        {
+          "id": "6e89a05166",
+          "text": "Không bị ảnh hưởng bởi việc trích dự phòng nhiều hay ít"
+        },
+        {
+          "id": "321b8babba",
+          "text": "Đã trừ hết mọi chi phí, kể cả dự phòng và thuế"
+        },
+        {
+          "id": "dac1f71e22",
+          "text": "Chỉ gồm thu nhập từ dịch vụ và ngoại hối"
+        }
+      ],
+      "prompt": "Vì sao PPOP phản ánh tốt sức kiếm tiền cốt lõi?"
+    },
+    {
+      "chart_id": "c10l5-rep",
+      "correct_option_id": "889568513c",
+      "id": "ch10-l05-q05",
+      "options": [
+        {
+          "id": "889568513c",
+          "text": "PPOP quý này và PPOP cùng kỳ năm trước"
+        },
+        {
+          "id": "e1917b55ac",
+          "text": "Thu nhập lãi và chi phí lãi của quý"
+        },
+        {
+          "id": "a84767a1cc",
+          "text": "PPOP và lợi nhuận sau thuế của quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, hai cột mỗi quý thể hiện gì?"
+    }
+  ],
+  "salt": "f2f8aba7e97a9b430e17d08baa93e229292187a4b2984a4d0cb3cb7fd17baa6b"
+}

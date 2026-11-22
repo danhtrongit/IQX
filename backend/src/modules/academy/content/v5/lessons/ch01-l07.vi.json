@@ -1,0 +1,334 @@
+{
+  "chapter": 1,
+  "charts": {
+    "c1l7-g1": {
+      "alt": "Mốc thời gian của một sự kiện quyền: công bố, giao dịch không hưởng quyền, đăng ký cuối cùng, thanh toán",
+      "brace": {
+        "from": 0.42,
+        "label": "1 ngày làm việc",
+        "to": 0.6
+      },
+      "kind": "milestones",
+      "points": [
+        {
+          "at": 0,
+          "detail": [
+            "sự kiện"
+          ],
+          "title": "Công bố",
+          "tone": "p3"
+        },
+        {
+          "at": 0.42,
+          "detail": [
+            "không hưởng quyền"
+          ],
+          "title": "Giao dịch",
+          "tone": "neg"
+        },
+        {
+          "at": 0.6,
+          "detail": [
+            "cuối cùng"
+          ],
+          "title": "Đăng ký",
+          "tone": "p1"
+        },
+        {
+          "at": 1,
+          "detail": [
+            "cổ tức, cổ phiếu"
+          ],
+          "title": "Thanh toán",
+          "tone": "pos"
+        }
+      ],
+      "spans": [
+        {
+          "from": 0,
+          "label": "Mua trong giai đoạn này: được hưởng quyền",
+          "side": "above",
+          "to": 0.42,
+          "tone": "pos"
+        },
+        {
+          "from": 0.42,
+          "label": "Mua từ đây: không được hưởng quyền",
+          "side": "above",
+          "to": 1,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c1l7-g2": {
+      "alt": "Cổ tức tiền mặt: giá cổ phiếu giảm đúng bằng cổ tức, tổng tài sản không đổi",
+      "kind": "segment_bar",
+      "max": 33,
+      "rows": [
+        {
+          "label": "Trước",
+          "segments": [
+            {
+              "label": "Cổ phiếu 30 triệu",
+              "sub": "1.000 × 30.000",
+              "tone": "p1",
+              "value": 30
+            }
+          ],
+          "total": {
+            "text": "30 triệu"
+          }
+        },
+        {
+          "label": "Sau",
+          "segments": [
+            {
+              "label": "Cổ phiếu 28 triệu",
+              "sub": "1.000 × 28.000",
+              "tone": "p1",
+              "value": 28
+            },
+            {
+              "label": "2 tr",
+              "tone": "pos",
+              "value": 2
+            }
+          ],
+          "total": {
+            "text": "30 triệu"
+          }
+        }
+      ],
+      "unit": "triệu"
+    },
+    "c1l7-g3": {
+      "alt": "Cổ tức bằng cổ phiếu: số cổ phiếu tăng, giá điều chỉnh giảm, tổng giá trị không đổi",
+      "kind": "segment_bar",
+      "max": 33,
+      "rows": [
+        {
+          "label": "Trước",
+          "segments": [
+            {
+              "label": "Cổ phiếu 30 triệu",
+              "sub": "1.000 × 30.000",
+              "tone": "p1",
+              "value": 30
+            }
+          ],
+          "total": {
+            "text": "30 triệu"
+          }
+        },
+        {
+          "label": "Sau",
+          "segments": [
+            {
+              "label": "Cổ phiếu 30 triệu",
+              "sub": "1.200 × 25.000",
+              "tone": "p1",
+              "value": 30
+            }
+          ],
+          "total": {
+            "text": "30 triệu"
+          }
+        }
+      ],
+      "unit": "triệu"
+    },
+    "c1l7-g4": {
+      "alt": "Phát hành quyền mua: thực hiện quyền giữ nguyên 33 triệu, bỏ quyền còn 30,5 triệu",
+      "kind": "segment_bar",
+      "legend": [
+        {
+          "label": "Tiền mặt 3 triệu dùng để mua 200 cổ phiếu mới",
+          "tone": "p3"
+        }
+      ],
+      "max": 33,
+      "rows": [
+        {
+          "label": "Trước",
+          "segments": [
+            {
+              "label": "Cổ phiếu 30 triệu",
+              "sub": "1.000 × 30.000",
+              "tone": "p1",
+              "value": 30
+            },
+            {
+              "label": "3 tr",
+              "tone": "p3",
+              "value": 3
+            }
+          ],
+          "total": {
+            "text": "33 triệu"
+          }
+        },
+        {
+          "label": "Thực hiện quyền",
+          "segments": [
+            {
+              "label": "Cổ phiếu 33 triệu",
+              "sub": "1.200 × 27.500",
+              "tone": "p1",
+              "value": 33
+            }
+          ],
+          "total": {
+            "text": "33 triệu"
+          }
+        },
+        {
+          "label": "Bỏ quyền",
+          "segments": [
+            {
+              "label": "Cổ phiếu 27,5 triệu",
+              "sub": "1.000 × 27.500",
+              "tone": "p1",
+              "value": 27.5
+            },
+            {
+              "label": "3 tr",
+              "tone": "p3",
+              "value": 3
+            }
+          ],
+          "total": {
+            "text": "30,5 triệu",
+            "tone": "neg"
+          }
+        }
+      ],
+      "unit": "triệu"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch01-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Sở hữu cổ phiếu đi kèm những quyền lợi cụ thể. Khi doanh nghiệp chia cổ tức hay phát hành thêm cổ phiếu, giá cổ phiếu được điều chỉnh tương ứng. Hiểu cơ chế này giúp nhà đầu tư không lo lắng khi thấy giá giảm vào ngày giao dịch không hưởng quyền.",
+  "lesson_key": "concept:quyen_co_dong",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Được chia lợi nhuận bằng tiền hoặc cổ phiếu khi doanh nghiệp quyết định trả cổ tức.",
+              "title": "Nhận cổ tức"
+            },
+            {
+              "text": "Được tham dự và biểu quyết tại đại hội đồng cổ đông về các vấn đề quan trọng của doanh nghiệp.",
+              "title": "Biểu quyết"
+            },
+            {
+              "text": "Được ưu tiên mua cổ phiếu mới theo tỷ lệ sở hữu khi doanh nghiệp tăng vốn.",
+              "title": "Mua cổ phiếu phát hành thêm"
+            },
+            {
+              "text": "Được tiếp cận báo cáo tài chính và các thông tin doanh nghiệp công bố.",
+              "title": "Được cung cấp thông tin"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Quyền của cổ đông"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Mỗi sự kiện đều có <b>ngày đăng ký cuối cùng</b>: cổ đông có tên trong danh sách vào ngày này sẽ được hưởng quyền. Do cổ phiếu mua về tài khoản sau 2 ngày làm việc, <b>ngày giao dịch không hưởng quyền</b> rơi vào 1 ngày làm việc trước ngày đăng ký cuối cùng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l7-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Nhà đầu tư cần mua cổ phiếu <b>trước ngày giao dịch không hưởng quyền</b> để được nhận quyền. Mua từ ngày này trở đi sẽ không được hưởng quyền của đợt đó.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Ngày đăng ký cuối cùng và ngày giao dịch không hưởng quyền"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Vào ngày giao dịch không hưởng quyền, giá tham chiếu được điều chỉnh giảm. Phần giá giảm đã được bù lại bằng tiền cổ tức hoặc số cổ phiếu tăng thêm, nên <b>tổng tài sản của cổ đông không đổi</b>, chưa tính thuế.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Các ví dụ dưới đây cùng xuất phát từ 1.000 cổ phiếu, giá 30.000 đồng, tổng giá trị 30 triệu đồng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s3",
+      "title": "Giá điều chỉnh: giá giảm nhưng tài sản không mất"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Cổ tức được tính theo phần trăm <b>mệnh giá 10.000 đồng</b>. Cổ tức 20% nghĩa là mỗi cổ phiếu nhận 2.000 đồng. Giá tham chiếu giảm đúng bằng số tiền cổ tức: 30.000 − 2.000 = <b>28.000 đồng</b>. Cổ tức tiền mặt được khấu trừ thuế thu nhập cá nhân trước khi chuyển về tài khoản, nên số tiền thực nhận thấp hơn một chút.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l7-g2",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Cổ tức bằng tiền"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Với tỷ lệ 20%, cứ 100 cổ phiếu đang sở hữu sẽ nhận thêm 20 cổ phiếu mới. Số cổ phiếu tăng lên nên giá được chia lại: 30.000 ÷ 1,2 = <b>25.000 đồng</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l7-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s5",
+      "title": "Cổ tức bằng cổ phiếu và cổ phiếu thưởng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp bán thêm cổ phiếu cho cổ đông hiện hữu ở giá ưu đãi. Ví dụ tỷ lệ 5:1, giá phát hành 15.000 đồng: cứ 5 cổ phiếu được mua thêm 1 cổ phiếu mới. Giá điều chỉnh: (30.000 + 0,2 × 15.000) ÷ 1,2 = <b>27.500 đồng</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l7-g4",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Khác với cổ tức, quyền mua yêu cầu <b>nộp thêm tiền</b>. Nếu không thực hiện hoặc không chuyển nhượng quyền, cổ đông chịu thiệt do giá cổ phiếu đã điều chỉnh giảm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Phát hành quyền mua"
+    }
+  ],
+  "summary": [
+    "Cổ đông có quyền <b>nhận cổ tức, biểu quyết, mua cổ phiếu phát hành thêm</b> và được cung cấp thông tin.",
+    "Muốn hưởng quyền, phải mua cổ phiếu <b>trước ngày giao dịch không hưởng quyền</b>.",
+    "Sau sự kiện, <b>giá tham chiếu được điều chỉnh</b> nhưng tổng tài sản của cổ đông không đổi, chưa tính thuế.",
+    "Với quyền mua, cổ đông cần <b>nộp tiền hoặc chuyển nhượng quyền</b> để tránh thiệt hại."
+  ],
+  "title": "Quyền cổ đông và sự kiện doanh nghiệp"
+}

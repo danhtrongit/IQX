@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l16",
+  "questions": [
+    {
+      "correct_option_id": "6507801d7c",
+      "id": "ch09-l16-q01",
+      "options": [
+        {
+          "id": "6507801d7c",
+          "text": "CFO trừ Capex"
+        },
+        {
+          "id": "c103b9c6f1",
+          "text": "Lợi nhuận cộng khấu hao"
+        },
+        {
+          "id": "16f63801db",
+          "text": "Doanh thu trừ giá vốn"
+        }
+      ],
+      "prompt": "FCF (dòng tiền tự do) được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "23904990b6",
+      "id": "ch09-l16-q02",
+      "options": [
+        {
+          "id": "23904990b6",
+          "text": "FCF 4 quý chia vốn hóa, nhân 100"
+        },
+        {
+          "id": "8e7cb24c4f",
+          "text": "Vốn hóa chia FCF 4 quý"
+        },
+        {
+          "id": "45dc7598ce",
+          "text": "FCF 4 quý chia doanh thu, nhân 100"
+        }
+      ],
+      "prompt": "FCF Yield được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "44ebd36eb5",
+      "id": "ch09-l16-q03",
+      "options": [
+        {
+          "id": "44ebd36eb5",
+          "text": "Càng rẻ"
+        },
+        {
+          "id": "f656d164d5",
+          "text": "Càng đắt"
+        },
+        {
+          "id": "db2f45212c",
+          "text": "Không thay đổi"
+        }
+      ],
+      "prompt": "FCF Yield càng cao thì cổ phiếu thế nào, các yếu tố khác như nhau?"
+    },
+    {
+      "correct_option_id": "5a157f78f4",
+      "id": "ch09-l16-q04",
+      "options": [
+        {
+          "id": "5a157f78f4",
+          "text": "Lợi nhuận chưa chuyển thành tiền thật"
+        },
+        {
+          "id": "7d65c6d329",
+          "text": "Doanh nghiệp đang trả cổ tức tiền mặt quá cao"
+        },
+        {
+          "id": "0863fcee35",
+          "text": "Cổ phiếu đang rẻ hơn lịch sử"
+        }
+      ],
+      "prompt": "FCF Yield thấp hơn nhiều so với tỷ suất lợi nhuận cho thấy điều gì?"
+    },
+    {
+      "chart_id": "c9l16-rep",
+      "correct_option_id": "0650ae56b1",
+      "id": "ch09-l16-q05",
+      "options": [
+        {
+          "id": "0650ae56b1",
+          "text": "Rẻ hơn so với lịch sử của chính doanh nghiệp"
+        },
+        {
+          "id": "12b966f373",
+          "text": "Đắt hơn so với lịch sử của chính doanh nghiệp"
+        },
+        {
+          "id": "641197c79b",
+          "text": "Doanh nghiệp vừa tăng mạnh đầu tư"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của FCF Yield, đường chính nằm trên dải dao động cho thấy điều gì?"
+    }
+  ],
+  "salt": "6a024471a55cffb1362af6ac9833f4ec347016895e57579687259dd30421451f"
+}

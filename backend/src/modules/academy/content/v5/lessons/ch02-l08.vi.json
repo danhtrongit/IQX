@@ -1,0 +1,213 @@
+{
+  "chapter": 2,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l08",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Chuyển đổi không dừng lại ở việc khách mở tài khoản. Một khách hàng thật sự bắt đầu khi đã đăng ký SACO, nạp tiền và tự đặt được lệnh đầu tiên.",
+  "lesson_key": "concept:chot_kich_hoat_khach",
+  "order": 8,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "“Mở tài khoản có lâu không em?”",
+              "title": "Hỏi cách mở tài khoản"
+            },
+            {
+              "text": "“Cần ít nhất bao nhiêu tiền để bắt đầu?”",
+              "title": "Hỏi về số tiền"
+            },
+            {
+              "text": "“Mỗi lần mua bán mất phí bao nhiêu?”",
+              "title": "Hỏi về phí"
+            },
+            {
+              "text": "“Mở xong rồi thì làm gì tiếp?”",
+              "title": "Hỏi bước tiếp theo"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Dấu hiệu khách đã sẵn sàng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Thay vì hỏi “Anh có muốn mở không?”, hãy đưa ra <b>hai lựa chọn</b> đều dẫn đến bước tiếp theo.",
+          "type": "paragraph"
+        },
+        {
+          "label": "Câu mẫu",
+          "text": "“Anh muốn em hướng dẫn mở tài khoản qua điện thoại tối nay, hay mình gặp nhau sáng thứ Bảy để em làm cùng anh?”",
+          "tone": "good",
+          "type": "quote"
+        }
+      ],
+      "id": "s2",
+      "title": "Câu chốt nhẹ nhàng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "label": "Bước 1",
+              "text": "Mở trực tuyến trên ứng dụng DNSE, chỉ mất vài phút.",
+              "title": "Mở tài khoản"
+            },
+            {
+              "label": "Bước 2",
+              "text": "Đăng ký bạn làm SACO theo hướng dẫn của DNSE, kiểm tra lại đã ghi nhận.",
+              "title": "Đăng ký SACO"
+            },
+            {
+              "label": "Bước 3",
+              "text": "Khách tự chuyển khoản từ tài khoản ngân hàng đúng tên mình.",
+              "title": "Nạp tiền"
+            },
+            {
+              "label": "Bước 4",
+              "text": "Lệnh nhỏ, khách tự bấm, bạn hướng dẫn bên cạnh.",
+              "title": "Lệnh đầu tiên"
+            }
+          ],
+          "type": "steps"
+        }
+      ],
+      "id": "s3",
+      "title": "Bốn bước kích hoạt"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Căn cước công dân",
+              "text": "Bản gốc, còn hạn, để chụp hình xác thực."
+            },
+            {
+              "term": "Số điện thoại chính chủ",
+              "text": "Để nhận mã xác thực (OTP)."
+            },
+            {
+              "term": "Tài khoản ngân hàng",
+              "text": "Đúng tên khách, dùng để nạp và rút tiền."
+            },
+            {
+              "term": "Ứng dụng đã cài sẵn",
+              "text": "Nhờ khách tải trước ứng dụng DNSE để tiết kiệm thời gian."
+            },
+            {
+              "term": "Nơi yên tĩnh, đủ sáng",
+              "text": "Giúp chụp hình và quay video xác thực nhanh, không bị lỗi."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s4",
+      "title": "Chuẩn bị trước buổi mở tài khoản"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Từ bước mở tài khoản đến lệnh đầu tiên, <b>khách luôn tự bấm trên điện thoại của mình</b>. Bạn chỉ hướng dẫn. Không bao giờ hỏi mật khẩu, mã OTP, và không cầm tiền của khách để nạp hộ.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "bullets": [
+                "Ngồi cạnh, chỉ từng nút cho khách bấm",
+                "Gợi ý lệnh đầu tiên với số tiền nhỏ",
+                "Giải thích lệnh đã khớp và tiền, cổ phiếu khi nào về"
+              ],
+              "title": "Nên",
+              "tone": "good"
+            },
+            {
+              "bullets": [
+                "Xin mật khẩu, mã OTP để làm giúp",
+                "Nhận tiền mặt hay chuyển khoản của khách vào tài khoản riêng",
+                "Tự đặt lệnh thay khách"
+              ],
+              "title": "Không",
+              "tone": "bad"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Khách tự thao tác, bạn hướng dẫn"
+    },
+    {
+      "blocks": [
+        {
+          "label": "Nguyên tắc",
+          "text": "Không bán cho tất cả khách hàng. Chỉ chốt với khách hàng <b>muốn mua ở thời điểm hiện tại</b>.",
+          "tone": "neutral",
+          "type": "quote"
+        },
+        {
+          "text": "Người chưa sẵn sàng không phải là người thất bại của bạn. Hãy để họ nhận bản tin, xem nội dung của bạn. Dồn sức chốt cho người đang có nhu cầu thật.",
+          "type": "paragraph"
+        },
+        {
+          "best_option": 0,
+          "debrief": "<b>Cách tốt nhất: hướng dẫn trực tiếp, khách tự làm.</b> “App khó dùng” nghĩa là khách đang ngại, không phải không muốn. Thúc nạp tiền bằng “sóng” vừa gây áp lực vừa là lời hứa hẹn. Xin mật khẩu là vi phạm nguyên tắc nghề. Một cuộc gọi 15 phút giúp anh Khoa tự tin, và lần sau anh tự làm được.",
+          "options": [
+            "Hẹn gọi video 15 phút, hướng dẫn anh tự nạp một khoản nhỏ và đặt thử lệnh đầu tiên",
+            "Nhắn: “Anh nạp tiền đi anh, đang có sóng đấy”",
+            "Xin mật khẩu để đăng nhập làm giúp anh cho nhanh"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Anh Khoa mở tài khoản được 5 ngày nhưng chưa nạp tiền. Khi hỏi thăm, anh nói: “App khó dùng quá em ạ.”"
+          ],
+          "title": "Mở tài khoản xong rồi im lặng",
+          "type": "scenario"
+        },
+        {
+          "id": "l8",
+          "items": [
+            {
+              "id": "0",
+              "text": "Liệt kê tất cả khách đã mở tài khoản nhưng chưa nạp tiền hoặc chưa đặt lệnh"
+            },
+            {
+              "id": "1",
+              "text": "Gọi từng người, hỏi họ đang vướng ở bước nào"
+            },
+            {
+              "id": "2",
+              "text": "Hẹn hướng dẫn trực tiếp cho người đang vướng"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s6",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Nhận ra dấu hiệu sẵn sàng: khách hỏi về <b>mở tài khoản, số vốn, phí, bước tiếp</b>.",
+    "Chốt bằng <b>hai lựa chọn</b> đều dẫn tới bước tiếp theo.",
+    "Kích hoạt đủ 4 bước: <b>mở tài khoản, đăng ký SACO, nạp tiền, lệnh đầu tiên</b>.",
+    "<b>Khách tự bấm</b>. Không giữ mật khẩu, OTP hay tiền của khách."
+  ],
+  "title": "Chốt và kích hoạt khách"
+}

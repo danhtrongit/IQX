@@ -1,0 +1,532 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l14-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "Vốn hoá",
+          "tone": "p1",
+          "v": "Giá × số CP"
+        },
+        {
+          "notes": [
+            "Quý đã công bố"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "warn",
+          "v": "29.588 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "P/B",
+          "tone": "pos",
+          "v": "1,26 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c11l14-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Thị trường sôi động",
+          "tone": "warn",
+          "value": 2.5
+        },
+        {
+          "label": "Bình thường",
+          "tone": "p1",
+          "value": 1.5
+        },
+        {
+          "label": "Thị trường trầm lắng",
+          "tone": "pos",
+          "value": 1
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "P/B công ty chứng khoán qua chu kỳ · số minh họa",
+      "unit": " lần"
+    },
+    "c11l14-rep": {
+      "alt": "P/B: 1,26 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "P/B",
+            "v": [
+              1.355,
+              1.386,
+              1.406,
+              1.39,
+              1.418,
+              1.47,
+              1.477,
+              1.559,
+              1.509,
+              1.414,
+              1.325,
+              1.302,
+              1.315,
+              1.345,
+              1.35,
+              1.319,
+              1.351,
+              1.379,
+              1.384,
+              1.468,
+              1.504,
+              1.517,
+              1.502,
+              1.448,
+              1.482,
+              1.495,
+              1.464,
+              1.464,
+              1.478,
+              1.435,
+              1.376,
+              1.385,
+              1.377,
+              1.467,
+              1.487,
+              1.521,
+              1.524,
+              1.556,
+              1.474,
+              1.457,
+              1.521,
+              1.5,
+              1.512,
+              1.552,
+              1.575,
+              1.667,
+              1.666,
+              1.636,
+              1.57,
+              1.59,
+              1.569,
+              1.51,
+              1.504,
+              1.41,
+              1.488,
+              1.495,
+              1.568,
+              1.54,
+              1.476,
+              1.453,
+              1.437,
+              1.439,
+              1.417,
+              1.436,
+              1.413,
+              1.348,
+              1.368,
+              1.369,
+              1.327,
+              1.391,
+              1.407,
+              1.352,
+              1.374,
+              1.365,
+              1.348,
+              1.295,
+              1.247,
+              1.214,
+              1.23,
+              1.164,
+              1.166,
+              1.194,
+              1.151,
+              1.178,
+              1.219,
+              1.21,
+              1.21,
+              1.23,
+              1.229,
+              1.294,
+              1.288,
+              1.323,
+              1.362,
+              1.354,
+              1.338,
+              1.298,
+              1.259,
+              1.241,
+              1.22,
+              1.273,
+              1.257,
+              1.285,
+              1.291,
+              1.334,
+              1.38,
+              1.365,
+              1.389,
+              1.351,
+              1.328,
+              1.339,
+              1.327,
+              1.292,
+              1.27,
+              1.203,
+              1.206,
+              1.251,
+              1.261,
+              1.243,
+              1.248,
+              1.293,
+              1.274,
+              1.257,
+              1.186,
+              1.218,
+              1.225,
+              1.26
+            ]
+          }
+        ],
+        "name": "P/B",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l14",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tài sản công ty chứng khoán chủ yếu là tiền, khoản cho vay margin và chứng khoán tự doanh, phần lớn ghi theo giá trị hợp lý. Vốn chủ sổ sách vì vậy khá sát giá trị thật, và P/B là thước đo định giá phổ biến cho ngành này.",
+  "lesson_key": "fundamental:pb-ck",
+  "order": 14,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l14-g1",
+          "type": "chart"
+        },
+        {
+          "text": "P/B bằng <b>vốn hoá</b> chia <b>vốn chủ sở hữu</b> của quý gần nhất đã công bố. Cách tính giống bài P/B ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l14-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giá cổ phiếu chứng khoán thường tăng trước khi lợi nhuận tăng, vì thị trường kỳ vọng thanh khoản quay lại.",
+              "title": "P/B đi trước lợi nhuận"
+            },
+            {
+              "text": "FVTPL ghi theo giá thị trường. HTM và cho vay ghi theo giá gốc trừ dự phòng.",
+              "title": "Tài sản ghi gần giá trị thật"
+            },
+            {
+              "text": "P/B công ty chứng khoán dao động mạnh hơn ngân hàng.",
+              "title": "Biến động mạnh"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở công ty chứng khoán khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l14-rep",
+          "title": "P/B",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/B theo giá đóng cửa và vốn chủ quý đã công bố.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "P/B gần cận dưới của dải thường trùng với thị trường trầm lắng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "P/B gần cận dưới dải lịch sử. Mức tham khảo, thường gặp khi thanh khoản thị trường thấp.",
+              "title": "Vùng thấp",
+              "tone": "pos"
+            },
+            {
+              "text": "P/B gần cận trên dải, thị trường đang kỳ vọng nhiều vào chu kỳ tốt.",
+              "title": "Vùng cao",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc P/B cùng <b>ROE bình quân qua chu kỳ</b>, không chỉ ROE hiện tại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng dải trên Dashboard.",
+              "title": "So với lịch sử"
+            },
+            {
+              "text": "ROE bình quân cao thì P/B cao hơn là hợp lý.",
+              "title": "Đọc cùng ROE"
+            },
+            {
+              "text": "Dự phòng cho vay margin thiếu làm vốn chủ sổ sách cao hơn thật.",
+              "title": "Kiểm tra chất lượng tài sản"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu, P/B 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "P/B cuối Q2/26",
+              "text": "1,26 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "1,37 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "1,15 lần và 1,67 lần."
+            },
+            {
+              "term": "Nhận xét",
+              "text": "P/B dưới trung vị trong giai đoạn ROE giảm còn 3,6%."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE đáy chu kỳ làm P/B trông đắt.",
+              "title": "Dùng ROE hiện tại"
+            },
+            {
+              "text": "Mô hình và biến động khác.",
+              "title": "So với ngân hàng"
+            },
+            {
+              "text": "Tự doanh FVTPL đã phản ánh giá thị trường vào vốn chủ.",
+              "title": "Quên giá trị hợp lý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>P/B</b> = vốn hoá ÷ vốn chủ sở hữu.",
+    "Tài sản ghi gần giá trị thật nên <b>P/B phù hợp</b>.",
+    "P/B <b>dao động theo chu kỳ thị trường</b>.",
+    "Đọc cùng <b>ROE bình quân qua chu kỳ</b>."
+  ],
+  "title": "P/B · ở công ty chứng khoán"
+}

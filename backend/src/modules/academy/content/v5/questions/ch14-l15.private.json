@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l15",
+  "questions": [
+    {
+      "correct_option_id": "f308d1d17d",
+      "id": "ch14-l15-q01",
+      "options": [
+        {
+          "id": "f308d1d17d",
+          "text": "Vốn hoá cộng nợ vay trừ tiền"
+        },
+        {
+          "id": "6cf4a5e32c",
+          "text": "Vốn hoá cộng doanh thu"
+        },
+        {
+          "id": "d53a7998bc",
+          "text": "Vốn chủ cộng nợ vay"
+        }
+      ],
+      "prompt": "EV bằng gì?"
+    },
+    {
+      "correct_option_id": "ee4a59748a",
+      "id": "ch14-l15-q02",
+      "options": [
+        {
+          "id": "ee4a59748a",
+          "text": "Nhỏ hơn vốn hoá"
+        },
+        {
+          "id": "f277757421",
+          "text": "Lớn hơn vốn hoá"
+        },
+        {
+          "id": "5a3773cd58",
+          "text": "Luôn bằng vốn hoá"
+        }
+      ],
+      "prompt": "Doanh nghiệp dư nhiều tiền thì EV so với vốn hoá thế nào?"
+    },
+    {
+      "correct_option_id": "3fc116024f",
+      "id": "ch14-l15-q03",
+      "options": [
+        {
+          "id": "3fc116024f",
+          "text": "Tính cả nợ, tiền và bỏ khác biệt khấu hao"
+        },
+        {
+          "id": "77ae6bec7a",
+          "text": "Không bị ảnh hưởng bởi giá dầu"
+        },
+        {
+          "id": "93644c2fd3",
+          "text": "Không cần số liệu báo cáo"
+        }
+      ],
+      "prompt": "Vì sao EV / EBITDA phù hợp với dầu khí?"
+    },
+    {
+      "correct_option_id": "20d13c9861",
+      "id": "ch14-l15-q04",
+      "options": [
+        {
+          "id": "20d13c9861",
+          "text": "Thấp giả"
+        },
+        {
+          "id": "580e1e2dad",
+          "text": "Cao giả"
+        },
+        {
+          "id": "fae4d3e958",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "EBITDA ở đỉnh chu kỳ làm chỉ tiêu thế nào?"
+    },
+    {
+      "chart_id": "c14l15-rep",
+      "correct_option_id": "844f6ae905",
+      "id": "ch14-l15-q05",
+      "options": [
+        {
+          "id": "844f6ae905",
+          "text": "Dải lịch sử của chính doanh nghiệp"
+        },
+        {
+          "id": "96d859f9ef",
+          "text": "Lãi suất tiền gửi"
+        },
+        {
+          "id": "15f233c98b",
+          "text": "Tăng trưởng doanh thu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, nên so mức hiện tại với gì?"
+    }
+  ],
+  "salt": "a23f23f52a45afab59bfd91eae26a29cd977cc5979423754dfa1e8980c37d032"
+}

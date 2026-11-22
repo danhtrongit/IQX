@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-exam",
+  "questions": [
+    {
+      "correct_option_id": "c5f57c18e1",
+      "id": "ch17-exam-q01",
+      "options": [
+        {
+          "id": "c5f57c18e1",
+          "text": "Sản lượng và giá bán theo chu kỳ"
+        },
+        {
+          "id": "66b49354be",
+          "text": "Số chi nhánh bán hàng mở thêm"
+        },
+        {
+          "id": "c404100f92",
+          "text": "Lãi tiền gửi và cổ tức nhận được"
+        }
+      ],
+      "prompt": "Doanh thu công ty thép thay đổi chủ yếu theo yếu tố nào?"
+    },
+    {
+      "correct_option_id": "d9a2e5936a",
+      "id": "ch17-exam-q02",
+      "options": [
+        {
+          "id": "d9a2e5936a",
+          "text": "Sản lượng từ công suất mới"
+        },
+        {
+          "id": "ff4290151b",
+          "text": "Giá ở đỉnh chu kỳ"
+        },
+        {
+          "id": "d019031952",
+          "text": "Thanh lý tài sản"
+        }
+      ],
+      "prompt": "Tăng trưởng doanh thu nhờ yếu tố nào bền hơn?"
+    },
+    {
+      "correct_option_id": "cbe17b3954",
+      "id": "ch17-exam-q03",
+      "options": [
+        {
+          "id": "cbe17b3954",
+          "text": "Từng quý"
+        },
+        {
+          "id": "74bcbb6ba6",
+          "text": "Cộng 4 quý"
+        },
+        {
+          "id": "6c8717c9cb",
+          "text": "Bình quân 5 năm"
+        }
+      ],
+      "prompt": "Biên gộp ở chương vật liệu cơ bản được tính thế nào trên Dashboard?"
+    },
+    {
+      "correct_option_id": "5b51c57963",
+      "id": "ch17-exam-q04",
+      "options": [
+        {
+          "id": "5b51c57963",
+          "text": "Giá bán thép và giá nguyên liệu"
+        },
+        {
+          "id": "6b2f501bf6",
+          "text": "Giá cổ phiếu và EPS"
+        },
+        {
+          "id": "6c4e304f2d",
+          "text": "Lãi vay và lãi tiền gửi"
+        }
+      ],
+      "prompt": "Biên gộp thép đo khoảng chênh nào?"
+    },
+    {
+      "correct_option_id": "842ff1b098",
+      "id": "ch17-exam-q05",
+      "options": [
+        {
+          "id": "842ff1b098",
+          "text": "Nguyên liệu mua từ vài tháng trước"
+        },
+        {
+          "id": "cddf4e84e5",
+          "text": "Báo cáo công bố chậm"
+        },
+        {
+          "id": "f131410529",
+          "text": "Giá bán cố định"
+        }
+      ],
+      "prompt": "Vì sao biên gộp phản ứng chậm hơn giá thị trường?"
+    },
+    {
+      "correct_option_id": "0259fcfd81",
+      "id": "ch17-exam-q06",
+      "options": [
+        {
+          "id": "0259fcfd81",
+          "text": "Năm đáy chu kỳ"
+        },
+        {
+          "id": "313db8afb2",
+          "text": "Năm đỉnh chu kỳ"
+        },
+        {
+          "id": "dcf1e076cb",
+          "text": "Năm trả cổ tức cao"
+        }
+      ],
+      "prompt": "Với vật liệu cơ bản, biên năm nào cho biết sức chống chịu?"
+    },
+    {
+      "correct_option_id": "ccfbb36ce8",
+      "id": "ch17-exam-q07",
+      "options": [
+        {
+          "id": "ccfbb36ce8",
+          "text": "Xi măng"
+        },
+        {
+          "id": "ee780cdbdc",
+          "text": "Phân bón xuất khẩu"
+        },
+        {
+          "id": "3d0f546c51",
+          "text": "Không có"
+        }
+      ],
+      "prompt": "Mảng nào thường có biên ổn định hơn thép?"
+    },
+    {
+      "correct_option_id": "3710f356c1",
+      "id": "ch17-exam-q08",
+      "options": [
+        {
+          "id": "3710f356c1",
+          "text": "Chủ động mua nguyên liệu giá rẻ hoặc hàng bán chậm"
+        },
+        {
+          "id": "14acf28f33",
+          "text": "Công ty trả cổ tức tiền mặt cao"
+        },
+        {
+          "id": "6ff8696296",
+          "text": "Công ty trả bớt nợ vay dài hạn"
+        }
+      ],
+      "prompt": "Số ngày tồn kho tăng có thể do đâu?"
+    },
+    {
+      "correct_option_id": "fe7a771b85",
+      "id": "ch17-exam-q09",
+      "options": [
+        {
+          "id": "fe7a771b85",
+          "text": "Không"
+        },
+        {
+          "id": "acc459eb50",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "0709f945a0",
+          "text": "Có, ở lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Tồn kho thép có tách được nguyên liệu và thành phẩm từ 3 báo cáo không?"
+    },
+    {
+      "correct_option_id": "777c2fff26",
+      "id": "ch17-exam-q10",
+      "options": [
+        {
+          "id": "777c2fff26",
+          "text": "Tăng"
+        },
+        {
+          "id": "49616bd1a4",
+          "text": "Giảm"
+        },
+        {
+          "id": "4bdcfad487",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Hoàn nhập dự phòng giảm giá tồn kho làm lợi nhuận thế nào?"
+    },
+    {
+      "correct_option_id": "62fb085771",
+      "id": "ch17-exam-q11",
+      "options": [
+        {
+          "id": "62fb085771",
+          "text": "Giá hàng hoá đang giảm"
+        },
+        {
+          "id": "77533328f8",
+          "text": "Giá đang tăng"
+        },
+        {
+          "id": "314fb9dbb5",
+          "text": "Công ty giảm nợ"
+        }
+      ],
+      "prompt": "Dự phòng giảm giá tồn kho tăng nhanh cho thấy gì?"
+    },
+    {
+      "correct_option_id": "7bb7037ce8",
+      "id": "ch17-exam-q12",
+      "options": [
+        {
+          "id": "7bb7037ce8",
+          "text": "Tồn kho gốc chưa trừ dự phòng"
+        },
+        {
+          "id": "1087ca54ff",
+          "text": "Tồn kho thuần đã trừ dự phòng"
+        },
+        {
+          "id": "95c156c198",
+          "text": "Doanh thu thuần cả năm"
+        }
+      ],
+      "prompt": "Mẫu số của Dự phòng giảm giá tồn kho / Tồn kho là gì?"
+    },
+    {
+      "correct_option_id": "3cae472be7",
+      "id": "ch17-exam-q13",
+      "options": [
+        {
+          "id": "3cae472be7",
+          "text": "Nhập nguyên liệu"
+        },
+        {
+          "id": "2b36265ea1",
+          "text": "Trả cổ tức"
+        },
+        {
+          "id": "c6a9629b62",
+          "text": "Mua cổ phiếu quỹ"
+        }
+      ],
+      "prompt": "Vay ngắn hạn của công ty thép thường dùng để làm gì?"
+    },
+    {
+      "correct_option_id": "642c523f25",
+      "id": "ch17-exam-q14",
+      "options": [
+        {
+          "id": "642c523f25",
+          "text": "Tồn kho mất giá còn nợ giữ nguyên"
+        },
+        {
+          "id": "6109aecfa4",
+          "text": "Lãi vay tự giảm theo giá hàng"
+        },
+        {
+          "id": "9dcdfdd477",
+          "text": "Doanh thu tăng theo giá giảm"
+        }
+      ],
+      "prompt": "Vì sao giá giảm là rủi ro kép khi tồn kho được tài trợ bằng vay?"
+    },
+    {
+      "correct_option_id": "8780731b80",
+      "id": "ch17-exam-q15",
+      "options": [
+        {
+          "id": "8780731b80",
+          "text": "Không"
+        },
+        {
+          "id": "c3b16b5107",
+          "text": "Có"
+        },
+        {
+          "id": "b93bb44a49",
+          "text": "Chỉ tốt ở quý 4"
+        }
+      ],
+      "prompt": "Vay ngắn hạn / Tồn kho giảm vì tồn kho tăng nhanh có luôn tốt không?"
+    },
+    {
+      "correct_option_id": "fcab97170e",
+      "id": "ch17-exam-q16",
+      "options": [
+        {
+          "id": "fcab97170e",
+          "text": "(LN kinh doanh chính + khấu hao) ÷ doanh thu"
+        },
+        {
+          "id": "2d37188f96",
+          "text": "LNST ÷ vốn chủ bình quân"
+        },
+        {
+          "id": "68e7c9a942",
+          "text": "Khấu hao ÷ doanh thu thuần"
+        }
+      ],
+      "prompt": "Biên EBITDA tính thế nào?"
+    },
+    {
+      "correct_option_id": "aec90c5932",
+      "id": "ch17-exam-q17",
+      "options": [
+        {
+          "id": "aec90c5932",
+          "text": "Đáy chu kỳ"
+        },
+        {
+          "id": "d3f4102b17",
+          "text": "Đỉnh chu kỳ"
+        },
+        {
+          "id": "7e8394b176",
+          "text": "Không có nợ"
+        }
+      ],
+      "prompt": "Biên EBITDA thấp kéo dài thường là giai đoạn nào?"
+    },
+    {
+      "correct_option_id": "2c09d3333f",
+      "id": "ch17-exam-q18",
+      "options": [
+        {
+          "id": "2c09d3333f",
+          "text": "Đợt đầu tư lớn"
+        },
+        {
+          "id": "711e17fffc",
+          "text": "Chỉ duy trì tài sản"
+        },
+        {
+          "id": "f551afd6b5",
+          "text": "Thanh lý tài sản"
+        }
+      ],
+      "prompt": "Capex / Khấu hao trên 3 lần cho thấy gì?"
+    },
+    {
+      "correct_option_id": "1414c2280b",
+      "id": "ch17-exam-q19",
+      "options": [
+        {
+          "id": "1414c2280b",
+          "text": "Đáy chu kỳ, xong khi giá hồi"
+        },
+        {
+          "id": "77843915c4",
+          "text": "Đỉnh chu kỳ"
+        },
+        {
+          "id": "4031469a11",
+          "text": "Không quan trọng"
+        }
+      ],
+      "prompt": "Đầu tư nhà máy ở thời điểm nào thường hiệu quả hơn?"
+    },
+    {
+      "correct_option_id": "706c5d2498",
+      "id": "ch17-exam-q20",
+      "options": [
+        {
+          "id": "706c5d2498",
+          "text": "XDCB dở dang, mã 242"
+        },
+        {
+          "id": "d7faa6bf0c",
+          "text": "TSCĐ, mã 220"
+        },
+        {
+          "id": "c45a68cd14",
+          "text": "Tồn kho, mã 140"
+        }
+      ],
+      "prompt": "Công trình nhà máy đang xây nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "370e9eaba9",
+      "id": "ch17-exam-q21",
+      "options": [
+        {
+          "id": "370e9eaba9",
+          "text": "Rủi ro tài chính cao trong thời gian xây"
+        },
+        {
+          "id": "90aa538299",
+          "text": "Mức rất an toàn cho công ty"
+        },
+        {
+          "id": "ca874c743a",
+          "text": "Mức bắt buộc theo quy định"
+        }
+      ],
+      "prompt": "Xây dựng dở dang trên 50% tài sản cố định kéo dài là gì?"
+    },
+    {
+      "correct_option_id": "151ecd97c3",
+      "id": "ch17-exam-q22",
+      "options": [
+        {
+          "id": "151ecd97c3",
+          "text": "Chu kỳ giá yếu và dự án lớn đang xây"
+        },
+        {
+          "id": "79ff644c53",
+          "text": "Cổ tức tăng và thuế suất tăng"
+        },
+        {
+          "id": "797eb44894",
+          "text": "Tiền mặt và phải thu cùng tăng"
+        }
+      ],
+      "prompt": "Hai yếu tố nào có thể kéo ROIC công ty thép xuống cùng lúc?"
+    },
+    {
+      "correct_option_id": "06687aa652",
+      "id": "ch17-exam-q23",
+      "options": [
+        {
+          "id": "06687aa652",
+          "text": "Bình quân nhiều năm"
+        },
+        {
+          "id": "8c16d4da44",
+          "text": "Một quý"
+        },
+        {
+          "id": "787717dda2",
+          "text": "Chỉ năm đỉnh"
+        }
+      ],
+      "prompt": "Nên đọc ROIC vật liệu theo cách nào?"
+    },
+    {
+      "correct_option_id": "d205a88ab4",
+      "id": "ch17-exam-q24",
+      "options": [
+        {
+          "id": "d205a88ab4",
+          "text": "Tăng nhanh"
+        },
+        {
+          "id": "98dec7bc93",
+          "text": "Giảm nhanh"
+        },
+        {
+          "id": "5d8661e0a4",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Đầu tư lớn rơi vào chu kỳ yếu làm Net Debt / EBITDA thế nào?"
+    },
+    {
+      "correct_option_id": "0b157d918e",
+      "id": "ch17-exam-q25",
+      "options": [
+        {
+          "id": "0b157d918e",
+          "text": "EBITDA năm đáy chu kỳ"
+        },
+        {
+          "id": "d620b9f9c1",
+          "text": "EBITDA năm đỉnh"
+        },
+        {
+          "id": "fc410dc213",
+          "text": "Doanh thu"
+        }
+      ],
+      "prompt": "Nên kiểm tra Net Debt / EBITDA với EBITDA nào?"
+    },
+    {
+      "correct_option_id": "2ad5355930",
+      "id": "ch17-exam-q26",
+      "options": [
+        {
+          "id": "2ad5355930",
+          "text": "Lỗ tỷ giá"
+        },
+        {
+          "id": "d2adf2599a",
+          "text": "Lương"
+        },
+        {
+          "id": "6af5f767b8",
+          "text": "Khấu hao"
+        }
+      ],
+      "prompt": "Phần chi phí tài chính ngoài lãi vay của công ty thép chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "60997076cd",
+      "id": "ch17-exam-q27",
+      "options": [
+        {
+          "id": "60997076cd",
+          "text": "Nhập nguyên liệu và vay bằng ngoại tệ"
+        },
+        {
+          "id": "a57a77d194",
+          "text": "Bán toàn bộ hàng bằng vàng"
+        },
+        {
+          "id": "0c5a1e1c02",
+          "text": "Không có khoản nợ vay nào"
+        }
+      ],
+      "prompt": "Vì sao công ty thép nhạy với tỷ giá?"
+    },
+    {
+      "correct_option_id": "8313bcdfc5",
+      "id": "ch17-exam-q28",
+      "options": [
+        {
+          "id": "8313bcdfc5",
+          "text": "Thấp vì EBITDA cao"
+        },
+        {
+          "id": "4d1cdbbcc9",
+          "text": "Cao vì EBITDA cao"
+        },
+        {
+          "id": "40870375ab",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Ở đỉnh chu kỳ, EV / EBITDA của công ty thép thường thế nào?"
+    },
+    {
+      "correct_option_id": "d1c57bab23",
+      "id": "ch17-exam-q29",
+      "options": [
+        {
+          "id": "d1c57bab23",
+          "text": "Vốn chủ ổn định khi lợi nhuận rất thấp"
+        },
+        {
+          "id": "a27086080e",
+          "text": "P/B luôn bằng 1 ở đáy chu kỳ"
+        },
+        {
+          "id": "930e8ecfcd",
+          "text": "P/B không cần giá cổ phiếu để tính"
+        }
+      ],
+      "prompt": "Vì sao P/B hữu ích ở đáy chu kỳ vật liệu?"
+    },
+    {
+      "correct_option_id": "38e5d53c89",
+      "id": "ch17-exam-q30",
+      "options": [
+        {
+          "id": "38e5d53c89",
+          "text": "Không"
+        },
+        {
+          "id": "069331b02c",
+          "text": "Có"
+        },
+        {
+          "id": "93538e1e7f",
+          "text": "Chỉ ở quý 4"
+        }
+      ],
+      "prompt": "P/B dưới 1 có luôn là rẻ không?"
+    }
+  ],
+  "salt": "9226cd3ed5137dd6b39710e3d7add371aa7f1c08fe33a08af21b937da45d4db3"
+}

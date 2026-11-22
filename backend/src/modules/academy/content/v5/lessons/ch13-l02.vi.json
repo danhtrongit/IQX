@@ -1,0 +1,337 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l2-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "2021 đến 2025"
+          ],
+          "t": "Tăng trưởng doanh thu năm",
+          "tone": "p1",
+          "v": "5 năm"
+        },
+        {
+          "notes": [
+            "Mức phân tán quanh bình quân"
+          ],
+          "t": "Độ lệch chuẩn",
+          "tone": "warn",
+          "v": "σ"
+        },
+        {
+          "notes": [
+            "Càng thấp càng ổn định"
+          ],
+          "t": "Revenue Growth Stability",
+          "tone": "neg",
+          "v": "17,1 điểm %"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "arrow",
+        "="
+      ]
+    },
+    "c13l2-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Bán lẻ",
+          "tone": "pos",
+          "value": 6
+        },
+        {
+          "label": "Sản xuất hàng tiêu dùng",
+          "tone": "pos",
+          "value": 5
+        },
+        {
+          "label": "Bất động sản nhà ở",
+          "tone": "p5",
+          "value": 22
+        },
+        {
+          "label": "Khu công nghiệp",
+          "tone": "neg",
+          "value": 35
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Độ lệch chuẩn tăng trưởng doanh thu 5 năm · số minh họa",
+      "unit": " điểm %"
+    },
+    "c13l2-rep": {
+      "alt": "Revenue Growth Stability: 17,1 điểm %",
+      "chart": {
+        "hero": 17.149,
+        "kind": "E1",
+        "labels": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng doanh thu năm",
+            "v": [
+              -0.109,
+              -3.842,
+              40.702,
+              -4.73,
+              1.592
+            ]
+          }
+        ],
+        "mainUnit": "%",
+        "name": "Revenue Growth Stability",
+        "unit": "điểm %"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Độ ổn định tăng trưởng doanh thu đo mức lên xuống của tăng trưởng qua 5 năm. Ở công ty bất động sản, chỉ số này gần như luôn cao. Bài này giúp phân biệt dao động do lịch bàn giao với dao động do kinh doanh yếu đi.",
+  "lesson_key": "fundamental:revenue_growth_stability-bds",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l2-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ số bằng <b>độ lệch chuẩn</b> của tăng trưởng doanh thu thuần 5 năm gần nhất, đơn vị điểm %. Cách tính giống bài Revenue Growth Stability ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l2-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lịch bàn giao làm doanh thu năm có thể tăng 40% rồi giảm 5%. Độ lệch chuẩn 15 đến 25 điểm % là phổ biến.",
+              "title": "Mức nền cao hơn hẳn"
+            },
+            {
+              "text": "So với doanh nghiệp bán lẻ, công ty bất động sản nào cũng trông thiếu ổn định.",
+              "title": "Không so với ngành khác"
+            },
+            {
+              "text": "Công ty có nhiều dự án gối đầu thì doanh thu đều hơn công ty chỉ có một, hai dự án lớn.",
+              "title": "Quy mô dự án quyết định"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bất động sản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l2-rep",
+          "title": "Revenue Growth Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng doanh thu từng năm, đơn vị %.",
+              "title": "Đường giá trị"
+            },
+            {
+              "text": "Bình quân 5 năm và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "Năm nằm ngoài dải thường là năm có hoặc không có dự án lớn bàn giao.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 15 điểm % với công ty bất động sản nhà ở. Đây là mức tham khảo, cho thấy có nhiều dự án gối đầu.",
+              "title": "Tương đối ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 30 điểm %, hoặc có năm doanh thu giảm sâu. Doanh thu phụ thuộc vào một vài dự án.",
+              "title": "Rất bất ổn",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Chỉ số này nên dùng để <b>so các công ty bất động sản với nhau</b>, không so với doanh nghiệp ngành khác.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đặt các công ty bất động sản cạnh nhau để thấy công ty nào có dòng dự án đều hơn.",
+              "title": "So trong ngành"
+            },
+            {
+              "text": "Năm vượt ra ngoài dải thường gắn với một dự án lớn. Năm sau khó lặp lại.",
+              "title": "Tìm năm bất thường"
+            },
+            {
+              "text": "Tồn kho dự án lớn và tăng dần là nguồn doanh thu cho các năm tới.",
+              "title": "Đọc cùng tồn kho"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu có tăng trưởng doanh thu thuần từng năm như sau.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Tăng trưởng",
+                "−0,1%",
+                "−3,8%",
+                "40,7%",
+                "−4,7%",
+                "1,6%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Năm 2023 tăng 40,7% nhờ bàn giao dồn, các năm khác gần như đi ngang. Độ lệch chuẩn 5 năm là 17,1 điểm %, mức bình thường của công ty bất động sản nhà ở.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Độ lệch chuẩn 17 điểm % là cao với bán lẻ nhưng bình thường với bất động sản.",
+              "title": "So với ngành khác"
+            },
+            {
+              "text": "Doanh thu không đều có thể chỉ do lịch bàn giao, không phải do bán hàng kém.",
+              "title": "Coi bất ổn là xấu"
+            },
+            {
+              "text": "Một năm tăng rất cao kéo độ lệch chuẩn lên. Cần xem năm đó có dự án lớn nào.",
+              "title": "Bỏ qua năm đột biến"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Độ lệch chuẩn thường 15 đến 25 điểm %. Công ty nhiều dự án gối đầu ở mức thấp hơn.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Thường cao hơn nhà ở vì một hợp đồng thuê đất lớn có thể chiếm phần lớn doanh thu năm.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "<b>Revenue Growth Stability</b> = độ lệch chuẩn tăng trưởng doanh thu 5 năm.",
+    "Ở bất động sản, chỉ số <b>luôn cao</b> do lịch bàn giao.",
+    "Chỉ <b>so với công ty cùng ngành</b>, không so với ngành khác.",
+    "Năm vượt khỏi dải thường gắn với <b>một dự án lớn</b>."
+  ],
+  "title": "Revenue Growth Stability · ở bất động sản"
+}

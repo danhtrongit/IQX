@@ -1,0 +1,421 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l4-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Tài chính, liên doanh, khác"
+          ],
+          "t": "Thu nhập ngoài kinh doanh 4 quý",
+          "tone": "p5",
+          "v": "1.736 tỷ"
+        },
+        {
+          "notes": [
+            "Lợi nhuận trước thuế"
+          ],
+          "t": "LNTT 4 quý",
+          "tone": "p1",
+          "v": "6.085 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ trọng",
+          "tone": "warn",
+          "v": "28,5%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l4-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Mã 21",
+          "line": "Lãi tiền gửi, lãi bán công ty con, cổ tức",
+          "report": "Doanh thu hoạt động tài chính",
+          "tone": "p5"
+        },
+        {
+          "code": "Mã 24",
+          "line": "Phần lãi của dự án làm chung",
+          "report": "Lãi lỗ công ty liên doanh, liên kết",
+          "tone": "warn"
+        },
+        {
+          "code": "Mã 40",
+          "line": "Thu nhập khác trừ chi phí khác",
+          "report": "Lợi nhuận khác",
+          "tone": "pos"
+        },
+        {
+          "code": "Mã 50",
+          "line": "Mẫu số",
+          "report": "Tổng lợi nhuận kế toán trước thuế",
+          "tone": "p1"
+        }
+      ],
+      "title": "Báo cáo kết quả kinh doanh (mẫu B02-DN)"
+    },
+    "c13l4-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Công ty A · từ bán nhà",
+          "tone": "pos",
+          "value": 85
+        },
+        {
+          "label": "Công ty A · ngoài kinh doanh",
+          "tone": "p5",
+          "value": 15
+        },
+        {
+          "label": "Công ty B · từ bán nhà",
+          "tone": "pos",
+          "value": 45
+        },
+        {
+          "label": "Công ty B · ngoài kinh doanh",
+          "tone": "neg",
+          "value": 55
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "note": "Cùng mức lợi nhuận, công ty B phụ thuộc nhiều hơn vào khoản khó lặp lại.",
+      "title": "Lợi nhuận trước thuế 100 đồng của hai công ty · số minh họa",
+      "unit": " đồng"
+    },
+    "c13l4-rep": {
+      "alt": "Lợi nhuận ngoài kinh doanh bất động sản / LNTT: 28,5%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Ngoài kinh doanh / LNTT (4 quý)",
+            "v": [
+              10.192,
+              23.323,
+              23.103,
+              22.936,
+              23.542,
+              28.039,
+              26.647,
+              28.532
+            ]
+          }
+        ],
+        "name": "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+        "sub": {
+          "series": [
+            {
+              "name": "Thu nhập ngoài kinh doanh 4 quý",
+              "v": [
+                539.352,
+                1478.571,
+                1550.676,
+                1542.271,
+                1594.951,
+                1799.755,
+                1706.53,
+                1736.183
+              ]
+            },
+            {
+              "name": "LNTT 4 quý",
+              "v": [
+                5291.69,
+                6339.436,
+                6712.155,
+                6724.315,
+                6774.775,
+                6418.756,
+                6404.11,
+                6084.983
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty bất động sản có thể ghi lãi lớn từ việc bán một công ty con hay chuyển nhượng dự án. Khoản lãi này không nằm ở doanh thu bán hàng. Chỉ tiêu này cho biết bao nhiêu phần lợi nhuận đến từ ngoài việc bán nhà.",
+  "lesson_key": "fundamental:non_core_profit_to_pbt-bds",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l4-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>doanh thu hoạt động tài chính</b> cộng <b>lãi hoặc lỗ trong công ty liên doanh, liên kết</b> cộng <b>lợi nhuận khác</b>, chia cho <b>lợi nhuận trước thuế</b>. Tất cả lấy từ báo cáo kết quả kinh doanh, cộng 4 quý.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ trọng 28,5% nghĩa là cứ 100 đồng lợi nhuận trước thuế thì khoảng 29 đồng không đến từ bán và cho thuê bất động sản.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Lợi nhuận ngoài kinh doanh bất động sản / LNTT là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l4-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nhiều dự án nằm trong công ty con. Bán công ty con thì lãi thường ghi vào doanh thu tài chính.",
+              "title": "Lãi bán công ty con"
+            },
+            {
+              "text": "Lãi từ dự án hợp tác với đối tác nằm ở dòng lãi lỗ công ty liên doanh, liên kết.",
+              "title": "Dự án làm chung"
+            },
+            {
+              "text": "Tử số chỉ cộng các khoản thu. Chi phí lãi vay vẫn nằm trong lợi nhuận trước thuế ở mẫu số.",
+              "title": "Không trừ chi phí tài chính"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lấy ở dòng nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l4-rep",
+          "title": "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ trọng thu nhập ngoài kinh doanh trong lợi nhuận trước thuế, 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Thu nhập ngoài kinh doanh 4 quý và lợi nhuận trước thuế 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột thu nhập ngoài kinh doanh tăng trong khi lợi nhuận trước thuế đi ngang nghĩa là phần lãi từ bán nhà đang giảm.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ trọng dưới khoảng 20% và ổn định. Đây là mức tham khảo, lợi nhuận chủ yếu đến từ bàn giao và cho thuê.",
+              "title": "Lợi nhuận đến từ kinh doanh chính",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 40%, hoặc tăng vọt trong một năm. Lợi nhuận có thể không lặp lại năm sau.",
+              "title": "Phụ thuộc khoản ngoài kinh doanh",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Bán công ty con, bán dự án là hoạt động hợp pháp và phổ biến. Điều cần biết là khoản lãi này <b>có lặp lại được không</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l4-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Trừ phần ngoài kinh doanh khỏi lợi nhuận để ước lượng phần lãi từ bán và cho thuê.",
+              "title": "Tách lợi nhuận lặp lại"
+            },
+            {
+              "text": "Lợi nhuận tăng mạnh trong khi doanh thu đi ngang thường do khoản này.",
+              "title": "Giải thích EPS tăng đột biến"
+            },
+            {
+              "text": "Công ty có nhiều tiền gửi thì doanh thu tài chính đều đặn, không đáng lo bằng lãi bán dự án.",
+              "title": "Đọc cùng lãi tiền gửi"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Ngoài kinh doanh"
+            },
+            {
+              "label": "LNTT"
+            },
+            {
+              "label": "Tỷ trọng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "539",
+                "5.292",
+                "10,2%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "1.542",
+                "6.724",
+                "22,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "1.736",
+                "6.085",
+                "28,5%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ trọng tăng từ 10,2% lên 28,5% vì công ty ghi lãi chuyển nhượng dự án vào doanh thu tài chính ở Q4/24 và Q4/25. Phần lợi nhuận này khó lặp lại đều đặn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tử số chỉ lấy các khoản thu. Chi phí lãi vay đã nằm trong lợi nhuận trước thuế.",
+              "title": "Cộng cả chi phí tài chính"
+            },
+            {
+              "text": "Lãi tiền gửi từ lượng tiền lớn là khoản đều đặn, khác lãi bán công ty con.",
+              "title": "Coi mọi lãi tài chính là xấu"
+            },
+            {
+              "text": "Lợi nhuận tăng 50% nhưng doanh thu không tăng thì nên kiểm tra chỉ tiêu này đầu tiên.",
+              "title": "Bỏ qua khi lợi nhuận tăng vọt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Lãi bán dự án, bán công ty con khá phổ biến khi công ty cần tiền hoặc tái cơ cấu quỹ đất.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Công ty khu công nghiệp thường có lãi tiền gửi và lãi liên doanh đều hơn, tỷ trọng ổn định hơn.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Tỷ trọng = <b>(doanh thu tài chính + lãi liên doanh, liên kết + lợi nhuận khác)</b> ÷ <b>LNTT</b>, 4 quý.",
+    "Tỷ trọng cao nghĩa là lợi nhuận <b>phụ thuộc khoản ngoài bán nhà</b>.",
+    "Mức tham khảo: <b>dưới khoảng 20%</b> là lợi nhuận chủ yếu từ kinh doanh chính.",
+    "Điều cần hỏi: khoản lãi này <b>có lặp lại được không</b>."
+  ],
+  "title": "Lợi nhuận ngoài kinh doanh bất động sản / LNTT · lợi nhuận đến từ đâu"
+}

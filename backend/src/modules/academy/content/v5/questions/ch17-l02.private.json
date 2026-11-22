@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l02",
+  "questions": [
+    {
+      "correct_option_id": "2563251abe",
+      "id": "ch17-l02-q01",
+      "options": [
+        {
+          "id": "2563251abe",
+          "text": "Từng quý"
+        },
+        {
+          "id": "dae00be8f6",
+          "text": "Cộng 4 quý"
+        },
+        {
+          "id": "b94b0aff2b",
+          "text": "Bình quân 5 năm"
+        }
+      ],
+      "prompt": "Ở chương vật liệu cơ bản, biên gộp trên Dashboard tính thế nào?"
+    },
+    {
+      "correct_option_id": "38c9e74adc",
+      "id": "ch17-l02-q02",
+      "options": [
+        {
+          "id": "38c9e74adc",
+          "text": "Giá bán thép và giá nguyên liệu"
+        },
+        {
+          "id": "a56c7a4023",
+          "text": "Giá cổ phiếu và EPS"
+        },
+        {
+          "id": "b2a635b5c1",
+          "text": "Lãi vay và lãi tiền gửi"
+        }
+      ],
+      "prompt": "Biên gộp thép đo khoảng chênh nào?"
+    },
+    {
+      "correct_option_id": "c246cb7f7f",
+      "id": "ch17-l02-q03",
+      "options": [
+        {
+          "id": "c246cb7f7f",
+          "text": "Nguyên liệu mua từ vài tháng trước"
+        },
+        {
+          "id": "321cc7909d",
+          "text": "Vì báo cáo công bố chậm"
+        },
+        {
+          "id": "6425fbd6be",
+          "text": "Vì giá bán cố định"
+        }
+      ],
+      "prompt": "Vì sao biên gộp phản ứng chậm hơn giá thị trường?"
+    },
+    {
+      "correct_option_id": "9de9016e43",
+      "id": "ch17-l02-q04",
+      "options": [
+        {
+          "id": "9de9016e43",
+          "text": "Chu kỳ giá đang đi xuống"
+        },
+        {
+          "id": "a00bbff0be",
+          "text": "Chu kỳ giá đang đi lên"
+        },
+        {
+          "id": "8efc09d68a",
+          "text": "Công ty giảm nợ"
+        }
+      ],
+      "prompt": "Biên giảm cùng dự phòng tồn kho tăng cho thấy gì?"
+    },
+    {
+      "chart_id": "c17l2-rep",
+      "correct_option_id": "2bddf62862",
+      "id": "ch17-l02-q05",
+      "options": [
+        {
+          "id": "2bddf62862",
+          "text": "Lợi nhuận gộp của quý"
+        },
+        {
+          "id": "8374359b48",
+          "text": "Giá vốn của quý"
+        },
+        {
+          "id": "e76e3134f2",
+          "text": "Khấu hao"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, phần trên đỉnh cột chồng là gì?"
+    }
+  ],
+  "salt": "fde927fbbb743ed825e55b523503c7d07c56eea8d628db9cf229658dd846ff15"
+}

@@ -1,0 +1,377 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l12-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Lưu chuyển tiền tệ",
+            "Mã 36"
+          ],
+          "t": "Cổ tức đã trả năm 2025",
+          "tone": "pos",
+          "v": "375 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "LNST năm 2024",
+          "tone": "p1",
+          "v": "1.821 tỷ"
+        },
+        {
+          "notes": [
+            "Năm 2025"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "20,6%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l12-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Nhà sản xuất hàng tiêu dùng lâu năm",
+          "tone": "pos",
+          "value": 80
+        },
+        {
+          "label": "Chuỗi bán lẻ đã ổn định",
+          "tone": "p1",
+          "value": 40
+        },
+        {
+          "label": "Chuỗi bán lẻ đang mở rộng",
+          "tone": "warn",
+          "value": 15
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Tỷ lệ chi trả tham khảo · số minh họa",
+      "unit": "%"
+    },
+    "c15l12-rep": {
+      "alt": "Tỷ lệ chi trả cổ tức: 19,5%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Cổ tức đã trả 4 quý / LNST 4 quý trước đó",
+            "v": [
+              24.777,
+              21.36,
+              16.64,
+              14.861,
+              19.164,
+              20.6,
+              20.106,
+              19.527
+            ]
+          }
+        ],
+        "name": "Tỷ lệ chi trả cổ tức",
+        "sub": {
+          "series": [
+            {
+              "name": "Cổ tức đã trả 4 quý",
+              "v": [
+                198.175,
+                210.526,
+                210.526,
+                210.526,
+                309.266,
+                375.092,
+                375.092,
+                375.092
+              ]
+            },
+            {
+              "name": "LNST 4 quý trước đó",
+              "v": [
+                799.832,
+                985.603,
+                1265.216,
+                1416.621,
+                1613.753,
+                1820.836,
+                1865.531,
+                1920.883
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l12",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Nhà sản xuất hàng tiêu dùng lâu năm thường trả cổ tức cao, còn chuỗi bán lẻ đang mở rộng thường giữ lại lợi nhuận để mở cửa hàng. Tỷ lệ chi trả cổ tức cho biết công ty đang ở giai đoạn nào.",
+  "lesson_key": "fundamental:dividend_payout-bl",
+  "order": 12,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l12-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>cổ tức, lợi nhuận đã trả cho chủ sở hữu</b> (mã 36 trên lưu chuyển tiền tệ) trong năm, chia <b>LNST năm trước</b>. Ở chế độ Quý: cổ tức 4 quý gần nhất chia LNST 4 quý trước đó.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ lệ chi trả cổ tức là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l12-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty có ít cơ hội đầu tư mới, dòng tiền ổn định.",
+              "title": "Chia nhiều"
+            },
+            {
+              "text": "Công ty dùng lợi nhuận để mở rộng. Hợp lý nếu ROIC cao.",
+              "title": "Giữ lại nhiều"
+            },
+            {
+              "text": "Cổ tức bằng cổ phiếu không tính.",
+              "title": "Chỉ tiền mặt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Giữ lại hay chia ra"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l12-rep",
+          "title": "Tỷ lệ chi trả cổ tức",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cổ tức đã trả 4 quý chia LNST 4 quý trước đó, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cổ tức đã trả 4 quý và LNST 4 quý trước đó, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cổ tức tăng theo bậc mỗi năm, lợi nhuận tăng đều nên tỷ lệ dao động quanh một mức.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Chuỗi có ROIC cao giữ lại nhiều để mở rộng, nhà sản xuất ổn định trả cao. Cả hai đều hợp lý nếu dòng tiền đủ.",
+              "title": "Chi trả phù hợp",
+              "tone": "pos"
+            },
+            {
+              "text": "Trả trên 100% nhiều năm, hoặc trả cao trong khi phải vay ngắn hạn tăng nhanh.",
+              "title": "Chi trả khó bền",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc tỷ lệ chi trả cùng <b>ROIC</b>: ROIC cao thì giữ lại để đầu tư có lợi cho cổ đông hơn chia ra.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ thấp là đang mở rộng, cao là đã ổn định.",
+              "title": "Xác định giai đoạn"
+            },
+            {
+              "text": "Giữ lại nhiều với ROIC cao là hợp lý.",
+              "title": "Đọc cùng ROIC"
+            },
+            {
+              "text": "Cổ tức nên nhỏ hơn dòng tiền tự do.",
+              "title": "Kiểm tra dòng tiền"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu, theo năm (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "Cổ tức đã trả"
+            },
+            {
+              "label": "LNST năm trước"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "2023",
+                "180",
+                "825",
+                "21,8%"
+              ]
+            },
+            {
+              "cells": [
+                "2024",
+                "211",
+                "986",
+                "21,4%"
+              ]
+            },
+            {
+              "cells": [
+                "2025",
+                "375",
+                "1.821",
+                "20,6%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Chuỗi trả khoảng 20% lợi nhuận, giữ lại phần lớn để mở rộng. Với ROIC 37%, cách làm này hợp lý.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chuỗi đang mở rộng với ROIC cao nên giữ lại.",
+              "title": "Coi tỷ lệ thấp là xấu"
+            },
+            {
+              "text": "Chỉ tính tiền mặt.",
+              "title": "Tính cổ tức cổ phiếu"
+            },
+            {
+              "text": "Cổ tức trả theo đợt.",
+              "title": "Đọc theo quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thường giữ lại nhiều trong giai đoạn mở rộng.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "Thường trả cao, ổn định.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>cổ tức đã trả</b> (B03 mã 36) ÷ <b>LNST năm trước</b>.",
+    "Cho biết công ty <b>giữ lại để mở rộng</b> hay <b>chia ra</b>.",
+    "Đọc cùng <b>ROIC</b>.",
+    "Chỉ tính <b>cổ tức tiền mặt</b>."
+  ],
+  "title": "Tỷ lệ chi trả cổ tức · ở bán lẻ và tiêu dùng"
+}

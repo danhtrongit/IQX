@@ -1,0 +1,412 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l13-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 320"
+          ],
+          "t": "Vay ngắn hạn",
+          "tone": "neg",
+          "v": "11.931 tỷ"
+        },
+        {
+          "notes": [
+            "Ngắn hạn + dài hạn"
+          ],
+          "t": "Tổng nợ vay",
+          "tone": "p1",
+          "v": "31.398 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ trọng",
+          "tone": "warn",
+          "v": "38,0%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l13-g2": {
+      "fig": "formula",
+      "height": 170,
+      "items": [
+        {
+          "notes": [
+            "Phải trả hoặc vay lại"
+          ],
+          "t": "Nợ đến hạn 12 tháng",
+          "tone": "neg",
+          "v": "11.931 tỷ"
+        },
+        {
+          "notes": [
+            "Nguồn trả ngay"
+          ],
+          "t": "Tiền và đầu tư ngắn hạn",
+          "tone": "pos",
+          "v": "8.591 tỷ"
+        }
+      ],
+      "kind": "figure",
+      "ops": []
+    },
+    "c13l13-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Nợ dài hạn là chính",
+          "tone": "pos",
+          "value": 25
+        },
+        {
+          "label": "Cân bằng",
+          "tone": "warn",
+          "value": 40
+        },
+        {
+          "label": "Phần lớn đến hạn trong năm",
+          "tone": "neg",
+          "value": 65
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Tỷ trọng tham khảo · số minh họa",
+      "unit": "%"
+    },
+    "c13l13-rep": {
+      "alt": "Tỷ trọng nợ vay ngắn hạn: 38,0%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Vay ngắn hạn / Tổng nợ vay",
+            "v": [
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38
+            ]
+          }
+        ],
+        "name": "Tỷ trọng nợ vay ngắn hạn",
+        "sub": {
+          "series": [
+            {
+              "name": "Vay ngắn hạn",
+              "v": [
+                6746.234,
+                7214.09,
+                8209.313,
+                8815.725,
+                9442.818,
+                10026.972,
+                11191.357,
+                11931.341
+              ]
+            },
+            {
+              "name": "Vay dài hạn",
+              "v": [
+                15015.812,
+                15329.941,
+                16667.393,
+                17112.878,
+                17536.662,
+                17825.728,
+                19055.554,
+                19466.925
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l13",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Dự án bất động sản kéo dài nhiều năm. Nếu dùng nợ ngắn hạn để làm dự án dài, công ty phải liên tục vay mới để trả nợ cũ. Chỉ tiêu này cho biết bao nhiêu phần nợ vay phải trả trong vòng 12 tháng.",
+  "lesson_key": "fundamental:st_debt_share-bds",
+  "order": 13,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l13-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>vay và nợ thuê tài chính ngắn hạn</b> (mã 320) chia <b>tổng nợ vay</b> (mã 320 + 338 + 339). Số cuối kỳ trên bảng cân đối kế toán.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Vay ngắn hạn gồm cả phần nợ dài hạn đến hạn trả trong 12 tháng tới.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ trọng nợ vay ngắn hạn là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tiền về từ dự án đi theo tiến độ xây và bàn giao. Nợ đến hạn thì phải trả đúng ngày.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l13-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nhiều khoản vay dài hạn sắp đến hạn, hoặc công ty chuyển sang vay ngắn hạn.",
+              "title": "Tỷ trọng tăng"
+            },
+            {
+              "text": "Khi ngân hàng siết tín dụng hay thị trường trái phiếu khó, việc vay lại có thể không suôn sẻ.",
+              "title": "Rủi ro vay lại"
+            },
+            {
+              "text": "Nợ ngắn hạn lớn nhưng tiền mặt đủ trả thì áp lực thấp hơn.",
+              "title": "Đọc cùng tiền"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao quan trọng với bất động sản"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l13-rep",
+          "title": "Tỷ trọng nợ vay ngắn hạn",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vay ngắn hạn chia tổng nợ vay, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng vay ngắn hạn và vay dài hạn, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phần ngắn hạn chiếm ngày càng nhiều trong cột: áp lực đáo hạn tăng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 30%. Mức tham khảo, phần lớn nợ là dài hạn, phù hợp với dự án nhiều năm.",
+              "title": "Cơ cấu nợ an toàn",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 50%, hoặc tăng nhanh. Công ty cần nhiều tiền trong năm tới để trả hoặc vay lại.",
+              "title": "Áp lực đáo hạn",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tỷ trọng có thể tăng đột ngột khi một đợt trái phiếu lớn bước vào năm đáo hạn, dù công ty không vay thêm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l13-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ đến hạn trong năm là số tiền công ty phải lo trả hoặc vay lại.",
+              "title": "Dự báo nhu cầu tiền"
+            },
+            {
+              "text": "Hai chỉ tiêu cho biết nợ đến hạn bao nhiêu và có tiền trả không.",
+              "title": "Đọc cùng Tiền / Nợ vay ngắn hạn"
+            },
+            {
+              "text": "Tỷ trọng tăng vọt thường báo hiệu đợt đáo hạn lớn.",
+              "title": "Theo dõi năm đáo hạn trái phiếu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Vay ngắn hạn"
+            },
+            {
+              "label": "Vay dài hạn"
+            },
+            {
+              "label": "Tỷ trọng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "6.746",
+                "15.016",
+                "31%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "8.816",
+                "17.113",
+                "34%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "11.931",
+                "19.467",
+                "38%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ trọng tăng từ 31% lên 38% vì nhiều khoản vay dài hạn sắp đến hạn. Công ty cần khoảng 11.931 tỷ đồng trong 12 tháng tới.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ dài hạn đến hạn trong 12 tháng đã nằm ở vay ngắn hạn.",
+              "title": "Quên phần dài hạn đến hạn"
+            },
+            {
+              "text": "D/E không đổi nhưng nợ ngắn hạn tăng vẫn làm rủi ro tăng.",
+              "title": "Chỉ nhìn D/E"
+            },
+            {
+              "text": "Vay ngắn hạn để bổ sung vốn lưu động là bình thường nếu tiền mặt đủ.",
+              "title": "Coi vay ngắn hạn là xấu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dự án kéo dài nên nợ dài hạn phù hợp hơn. Tỷ trọng ngắn hạn cao là áp lực lớn.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Hạ tầng thu hồi vốn chậm, càng cần nợ dài hạn.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Tỷ trọng = <b>vay ngắn hạn</b> (mã 320) ÷ <b>tổng nợ vay</b>.",
+    "Vay ngắn hạn gồm cả <b>nợ dài hạn đến hạn trong 12 tháng</b>.",
+    "Mức tham khảo: <b>dưới khoảng 30%</b> là cơ cấu nợ an toàn.",
+    "Đọc cùng <b>Tiền / Nợ vay ngắn hạn</b>."
+  ],
+  "title": "Tỷ trọng nợ vay ngắn hạn · áp lực đáo hạn"
+}

@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch06-l03",
+  "questions": [
+    {
+      "correct_option_id": "a422e40c4c",
+      "id": "ch06-l03-q01",
+      "options": [
+        {
+          "id": "a422e40c4c",
+          "text": "Sức mạnh của chuyển động đi lên"
+        },
+        {
+          "id": "e601733ea9",
+          "text": "Khối lượng giao dịch trong phiên"
+        },
+        {
+          "id": "8f5064e119",
+          "text": "Giá đóng cửa trung bình 14 phiên"
+        }
+      ],
+      "prompt": "+DI đo điều gì?"
+    },
+    {
+      "correct_option_id": "0d8519a621",
+      "id": "ch06-l03-q02",
+      "options": [
+        {
+          "id": "0d8519a621",
+          "text": "Phe mua đang chiếm ưu thế"
+        },
+        {
+          "id": "f4334c0235",
+          "text": "Phe bán đang chiếm ưu thế"
+        },
+        {
+          "id": "1a0291ad04",
+          "text": "Thị trường không có giao dịch"
+        }
+      ],
+      "prompt": "Khi +DI nằm trên −DI, điều đó gợi ý gì?"
+    },
+    {
+      "correct_option_id": "9a18beeae4",
+      "id": "ch06-l03-q03",
+      "options": [
+        {
+          "id": "9a18beeae4",
+          "text": "Phần đỉnh hôm nay vượt lên trên đỉnh hôm qua"
+        },
+        {
+          "id": "8509abc48a",
+          "text": "Phần giá đóng cửa cao hơn giá mở cửa"
+        },
+        {
+          "id": "763ca78640",
+          "text": "Phần khối lượng tăng thêm"
+        }
+      ],
+      "prompt": "+DM được tính từ phần nào của giá?"
+    },
+    {
+      "correct_option_id": "43082efb29",
+      "id": "ch06-l03-q04",
+      "options": [
+        {
+          "id": "43082efb29",
+          "text": "Thị trường đi ngang, chưa có xu hướng rõ"
+        },
+        {
+          "id": "71373bea12",
+          "text": "Thị trường đang tăng rất mạnh"
+        },
+        {
+          "id": "b4e9232959",
+          "text": "Thị trường đang giảm rất mạnh"
+        }
+      ],
+      "prompt": "Hai đường +DI và −DI quấn vào nhau, cắt qua lại liên tục cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "240d15d2b1",
+      "id": "ch06-l03-q05",
+      "options": [
+        {
+          "id": "240d15d2b1",
+          "text": "+DI và −DI"
+        },
+        {
+          "id": "455729269c",
+          "text": "Chỉ đường ADX"
+        },
+        {
+          "id": "911f09262a",
+          "text": "+DI, −DI và ADX"
+        }
+      ],
+      "prompt": "Trong IQX, chỉ báo DMI dùng những đường nào?"
+    }
+  ],
+  "salt": "ffbb20b6265c6e5cc5a975d6be5b95a37c9564d503721dbbc565e6c24a933826"
+}

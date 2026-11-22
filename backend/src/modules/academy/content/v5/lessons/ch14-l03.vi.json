@@ -1,0 +1,341 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l3-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "LNST ÷ doanh thu thuần"
+          ],
+          "t": "Biên ròng năm",
+          "tone": "p1",
+          "v": "5 năm"
+        },
+        {
+          "notes": [
+            "Mức phân tán"
+          ],
+          "t": "Độ lệch chuẩn",
+          "tone": "warn",
+          "v": "σ"
+        },
+        {
+          "notes": [
+            "Càng thấp càng ổn định"
+          ],
+          "t": "Margin Stability",
+          "tone": "pos",
+          "v": "0,78 điểm %"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "arrow",
+        "="
+      ]
+    },
+    "c14l3-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Vận chuyển khí theo hợp đồng",
+          "tone": "pos",
+          "value": 0.8
+        },
+        {
+          "label": "Phân phối xăng dầu",
+          "tone": "p1",
+          "value": 1.2
+        },
+        {
+          "label": "Lọc dầu",
+          "tone": "warn",
+          "value": 2.5
+        },
+        {
+          "label": "Khai thác dầu khí",
+          "tone": "neg",
+          "value": 6
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Độ lệch chuẩn biên ròng 5 năm · số minh họa",
+      "unit": " điểm %"
+    },
+    "c14l3-rep": {
+      "alt": "Margin Stability: 0,8 điểm %",
+      "chart": {
+        "hero": 0.778,
+        "kind": "E1",
+        "labels": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "Biên ròng năm",
+            "v": [
+              7.786,
+              5.358,
+              6.622,
+              6.399,
+              6.291
+            ]
+          }
+        ],
+        "mainUnit": "%",
+        "name": "Margin Stability",
+        "unit": "điểm %"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Margin Stability đo mức dao động của biên lợi nhuận ròng qua 5 năm. Doanh nghiệp dầu khí chịu chu kỳ giá hàng hoá nên biên ròng khó đều. Bài này giúp phân biệt doanh nghiệp giữ biên tốt qua chu kỳ với doanh nghiệp bị giá dầu chi phối.",
+  "lesson_key": "fundamental:net_margin_stability-dk",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l3-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ số bằng <b>độ lệch chuẩn</b> của biên lợi nhuận ròng năm trong 5 năm, đơn vị điểm %. Cách tính giống bài Margin Stability ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l3-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên ròng 2% mà lệch 1 điểm % là dao động lớn. Biên 20% lệch 1 điểm % là nhỏ.",
+              "title": "Đọc theo mức biên"
+            },
+            {
+              "text": "Mảng thu phí theo hợp đồng ít bị giá dầu chi phối.",
+              "title": "Hợp đồng dài hạn giúp ổn định"
+            },
+            {
+              "text": "Một năm giá dầu giảm mạnh có thể làm chỉ số tăng vọt.",
+              "title": "Năm giá dầu sập"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở dầu khí khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l3-rep",
+          "title": "Margin Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên lợi nhuận ròng từng năm, đơn vị %.",
+              "title": "Đường giá trị"
+            },
+            {
+              "text": "Bình quân 5 năm và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "Năm nằm ngoài dải thường trùng với năm giá dầu biến động mạnh.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Độ lệch chuẩn nhỏ so với mức biên, ví dụ dưới khoảng 1/5 mức biên bình quân. Mức tham khảo.",
+              "title": "Ổn định qua chu kỳ",
+              "tone": "pos"
+            },
+            {
+              "text": "Độ lệch chuẩn lớn, có năm biên ròng gần 0 hoặc âm.",
+              "title": "Phụ thuộc chu kỳ",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "So Margin Stability giữa các doanh nghiệp <b>cùng mảng</b>. So mảng khai thác với mảng phân phối không có ý nghĩa.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đặt các doanh nghiệp phân phối cạnh nhau, khai thác cạnh nhau.",
+              "title": "So cùng mảng"
+            },
+            {
+              "text": "Chỉ số thấp cho thấy doanh nghiệp có hợp đồng hoặc cơ chế giá giúp giữ biên.",
+              "title": "Đánh giá mô hình"
+            },
+            {
+              "text": "Doanh thu dao động mạnh mà biên ổn định là dấu hiệu tốt.",
+              "title": "Đọc cùng tăng trưởng doanh thu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu, biên ròng từng năm.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Biên ròng",
+                "7,8%",
+                "5,4%",
+                "6,6%",
+                "6,4%",
+                "6,3%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Bình quân khoảng 6,5%, độ lệch chuẩn 0,78 điểm %. Biên ròng tương đối ổn định so với mức nền.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khai thác luôn dao động hơn phân phối.",
+              "title": "So khác mảng"
+            },
+            {
+              "text": "Cùng độ lệch chuẩn nhưng mức biên khác nhau thì ý nghĩa khác nhau.",
+              "title": "Bỏ qua mức nền"
+            },
+            {
+              "text": "Giai đoạn giá dầu đi ngang làm chỉ số thấp giả.",
+              "title": "Chỉ nhìn 5 năm không có chu kỳ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên dao động mạnh nhất theo giá dầu.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Ổn định nhờ hợp đồng và phí vận chuyển.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Biên mỏng, lãi lỗ tồn kho làm biên ròng dao động.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>Margin Stability</b> = độ lệch chuẩn biên ròng 5 năm.",
+    "Dầu khí chịu <b>chu kỳ giá</b> nên biên khó đều.",
+    "Đọc độ lệch chuẩn <b>so với mức biên bình quân</b>.",
+    "Chỉ so giữa doanh nghiệp <b>cùng mảng</b>."
+  ],
+  "title": "Margin Stability · ở dầu khí"
+}

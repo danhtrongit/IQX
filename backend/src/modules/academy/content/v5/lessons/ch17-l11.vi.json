@@ -1,0 +1,380 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l11-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Nợ vay − tiền"
+          ],
+          "t": "Nợ ròng",
+          "tone": "neg",
+          "v": "37.067 tỷ"
+        },
+        {
+          "notes": [
+            "EBIT + khấu hao"
+          ],
+          "t": "EBITDA 4 quý",
+          "tone": "p1",
+          "v": "13.811 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Net Debt / EBITDA",
+          "tone": "warn",
+          "v": "2,68 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l11-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Trước đầu tư, chu kỳ tốt",
+          "tone": "pos",
+          "value": 1
+        },
+        {
+          "label": "Đang xây, chu kỳ bình thường",
+          "tone": "warn",
+          "value": 2
+        },
+        {
+          "label": "Đang xây, chu kỳ yếu",
+          "tone": "neg",
+          "value": 3.5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 320,
+      "title": "Nợ ròng / EBITDA khi đầu tư rơi vào chu kỳ yếu · số minh họa",
+      "unit": " lần"
+    },
+    "c17l11-rep": {
+      "alt": "Net Debt / EBITDA: 2,68 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Nợ ròng / EBITDA",
+            "v": [
+              1.096,
+              1.549,
+              2.068,
+              2.47,
+              2.71,
+              2.882,
+              2.773,
+              2.684
+            ]
+          }
+        ],
+        "name": "Net Debt / EBITDA",
+        "sub": {
+          "series": [
+            {
+              "name": "Nợ ròng",
+              "v": [
+                19523.214,
+                25389.217,
+                30903.889,
+                36303.764,
+                36791.174,
+                36645.472,
+                36596.271,
+                37066.789
+              ]
+            },
+            {
+              "name": "EBITDA 4 quý",
+              "v": [
+                17812.809,
+                16387.441,
+                14946.035,
+                14698.633,
+                13574.385,
+                12716.206,
+                13198.276,
+                13811.334
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l11",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty vật liệu thường vay nhiều để xây nhà máy mới. Nếu đợt đầu tư rơi vào lúc chu kỳ giá yếu, nợ tăng trong khi EBITDA giảm. Net Debt / EBITDA cho thấy áp lực đó tăng nhanh đến đâu.",
+  "lesson_key": "fundamental:net_debt_ebitda-vl",
+  "order": 11,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l11-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>nợ vay trừ tiền và đầu tư ngắn hạn</b> chia <b>EBITDA 4 quý</b>. Cách tính giống bài Net Debt / EBITDA ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l11-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ vay tăng để xây nhà máy.",
+              "title": "Tử số tăng"
+            },
+            {
+              "text": "Chu kỳ yếu làm EBITDA giảm.",
+              "title": "Mẫu số giảm"
+            },
+            {
+              "text": "Chỉ tiêu tăng rất nhanh, áp lực trả nợ lớn.",
+              "title": "Cả hai cùng lúc"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l11-rep",
+          "title": "Net Debt / EBITDA",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ ròng chia EBITDA 4 quý, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Nợ ròng và EBITDA 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột nợ ròng tăng trong khi cột EBITDA giảm: đường đi lên nhanh.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 2,5 lần ngay cả khi đang đầu tư. Mức tham khảo.",
+              "title": "Kiểm soát được",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 3,5 lần và còn tăng. Cần chu kỳ giá hồi hoặc nhà máy mới vận hành sớm.",
+              "title": "Áp lực cao",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với công ty vật liệu, nên tính thử với EBITDA của năm đáy chu kỳ để thấy kịch bản xấu.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chỉ tiêu tăng nhanh là cần thận trọng.",
+              "title": "Theo dõi trong đợt đầu tư"
+            },
+            {
+              "text": "Dùng EBITDA năm thấp nhất gần đây.",
+              "title": "Kiểm tra kịch bản đáy"
+            },
+            {
+              "text": "Đầu tư lớn đẩy nợ lên.",
+              "title": "Đọc cùng Capex / Khấu hao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Nợ ròng"
+            },
+            {
+              "label": "EBITDA 4 quý"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "19.523",
+                "17.813",
+                "1,10 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "36.304",
+                "14.699",
+                "2,47 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "37.067",
+                "13.811",
+                "2,68 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Nợ ròng gần gấp đôi trong khi EBITDA giảm, chỉ tiêu tăng từ 1,10 lần lên 2,68 lần. Đây là kịch bản đầu tư lớn gặp chu kỳ yếu.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Làm chỉ tiêu trông an toàn hơn.",
+              "title": "Dùng EBITDA năm đỉnh"
+            },
+            {
+              "text": "Nợ đã tăng nhưng EBITDA chưa có.",
+              "title": "Bỏ qua dự án đang xây"
+            },
+            {
+              "text": "Vật liệu có EBITDA dao động hơn điện, nên chịu được mức thấp hơn.",
+              "title": "Áp mức của ngành điện"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ tăng mạnh theo đợt đầu tư lò cao, khu liên hợp.",
+              "title": "Thép"
+            },
+            {
+              "text": "Nợ vừa phải, EBITDA ổn định hơn.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Doanh nghiệp lớn thường dư tiền, chỉ tiêu âm.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>Net Debt / EBITDA</b> = (nợ vay − tiền) ÷ EBITDA 4 quý.",
+    "Đầu tư lớn gặp <b>chu kỳ yếu</b> làm chỉ tiêu tăng nhanh.",
+    "Mức tham khảo: <b>dưới khoảng 2,5 lần</b>.",
+    "Kiểm tra với <b>EBITDA năm đáy</b>."
+  ],
+  "title": "Net Debt / EBITDA · ở vật liệu cơ bản"
+}

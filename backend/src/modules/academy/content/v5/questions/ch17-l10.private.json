@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l10",
+  "questions": [
+    {
+      "correct_option_id": "642d6c7ed0",
+      "id": "ch17-l10-q01",
+      "options": [
+        {
+          "id": "642d6c7ed0",
+          "text": "Chu kỳ giá yếu và dự án lớn đang xây"
+        },
+        {
+          "id": "6875ecdbf0",
+          "text": "Cổ tức và thuế"
+        },
+        {
+          "id": "c2cf0654bf",
+          "text": "Tiền mặt và phải thu"
+        }
+      ],
+      "prompt": "Hai yếu tố nào có thể kéo ROIC công ty thép xuống cùng lúc?"
+    },
+    {
+      "correct_option_id": "ed64837b28",
+      "id": "ch17-l10-q02",
+      "options": [
+        {
+          "id": "ed64837b28",
+          "text": "Vốn đã bỏ vào nhưng chưa có lợi nhuận"
+        },
+        {
+          "id": "8c5009f992",
+          "text": "Vì dự án làm doanh thu giảm"
+        },
+        {
+          "id": "c78ab9fe91",
+          "text": "Vì dự án không có chi phí"
+        }
+      ],
+      "prompt": "Vì sao dự án đang xây làm ROIC giảm?"
+    },
+    {
+      "correct_option_id": "d49837af7e",
+      "id": "ch17-l10-q03",
+      "options": [
+        {
+          "id": "d49837af7e",
+          "text": "Bình quân nhiều năm"
+        },
+        {
+          "id": "e68b00f728",
+          "text": "Một quý"
+        },
+        {
+          "id": "cc56ff6e3d",
+          "text": "Chỉ năm đỉnh"
+        }
+      ],
+      "prompt": "Nên đọc ROIC vật liệu cơ bản theo cách nào?"
+    },
+    {
+      "correct_option_id": "a18862be17",
+      "id": "ch17-l10-q04",
+      "options": [
+        {
+          "id": "a18862be17",
+          "text": "12%"
+        },
+        {
+          "id": "56bdd684c6",
+          "text": "1%"
+        },
+        {
+          "id": "09c4b308a8",
+          "text": "50%"
+        }
+      ],
+      "prompt": "ROIC bình quân trên khoảng bao nhiêu là tạo giá trị?"
+    },
+    {
+      "chart_id": "c17l10-rep",
+      "correct_option_id": "6a619060e5",
+      "id": "ch17-l10-q05",
+      "options": [
+        {
+          "id": "6a619060e5",
+          "text": "NOPAT 4 quý"
+        },
+        {
+          "id": "ba997c8a01",
+          "text": "Vốn chủ sở hữu"
+        },
+        {
+          "id": "76bfb07520",
+          "text": "Capex 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới là gì?"
+    }
+  ],
+  "salt": "d74f2b62c344071e2cb1c77b8379f407f890de9e9ccc0a45b01bdd072b6faa3f"
+}

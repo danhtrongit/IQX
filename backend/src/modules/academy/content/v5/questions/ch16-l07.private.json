@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l07",
+  "questions": [
+    {
+      "correct_option_id": "8200f6553f",
+      "id": "ch16-l07-q01",
+      "options": [
+        {
+          "id": "8200f6553f",
+          "text": "Chi phí xây dựng cơ bản dở dang, mã 242"
+        },
+        {
+          "id": "a761e7d65c",
+          "text": "Tài sản cố định, mã 220"
+        },
+        {
+          "id": "272466bd8b",
+          "text": "Hàng tồn kho, mã 140"
+        }
+      ],
+      "prompt": "Nhà máy đang xây nằm ở dòng nào trên bảng cân đối?"
+    },
+    {
+      "correct_option_id": "3695efdf9c",
+      "id": "ch16-l07-q02",
+      "options": [
+        {
+          "id": "3695efdf9c",
+          "text": "Khi đưa vào sử dụng"
+        },
+        {
+          "id": "f498eeb497",
+          "text": "Khi bắt đầu xây"
+        },
+        {
+          "id": "5478abaa84",
+          "text": "Khi ký hợp đồng"
+        }
+      ],
+      "prompt": "Khi nào khấu hao của nhà máy mới bắt đầu?"
+    },
+    {
+      "correct_option_id": "9abaf8aadf",
+      "id": "ch16-l07-q03",
+      "options": [
+        {
+          "id": "9abaf8aadf",
+          "text": "Nhà máy mới đi vào vận hành"
+        },
+        {
+          "id": "863be6ea15",
+          "text": "Dự án bị huỷ"
+        },
+        {
+          "id": "aeb1a42a6e",
+          "text": "Công ty bán nhà máy"
+        }
+      ],
+      "prompt": "Tỷ lệ giảm đột ngột và TSCĐ tăng thường cho thấy gì?"
+    },
+    {
+      "correct_option_id": "27999355d4",
+      "id": "ch16-l07-q04",
+      "options": [
+        {
+          "id": "27999355d4",
+          "text": "Dự án chậm tiến độ"
+        },
+        {
+          "id": "720680082e",
+          "text": "Doanh thu tăng mạnh"
+        },
+        {
+          "id": "dc8fb98ccf",
+          "text": "Công ty không có nợ"
+        }
+      ],
+      "prompt": "Tỷ lệ cao kéo dài nhiều năm không giảm có thể là dấu hiệu gì?"
+    },
+    {
+      "chart_id": "c16l7-rep",
+      "correct_option_id": "7f0b0add27",
+      "id": "ch16-l07-q05",
+      "options": [
+        {
+          "id": "7f0b0add27",
+          "text": "Dự án mới đang được rót vốn"
+        },
+        {
+          "id": "c9435b24cb",
+          "text": "Nhà máy cũ bị bán"
+        },
+        {
+          "id": "84f39ef5df",
+          "text": "Doanh thu tăng"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột dở dang tăng nhanh cho thấy gì?"
+    }
+  ],
+  "salt": "76f730c6509263ef55f6317ed89107dc31fc26a5f9225f78f79763e82d104098"
+}

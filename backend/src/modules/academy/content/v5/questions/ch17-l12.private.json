@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l12",
+  "questions": [
+    {
+      "correct_option_id": "9fceb21323",
+      "id": "ch17-l12-q01",
+      "options": [
+        {
+          "id": "9fceb21323",
+          "text": "Lỗ tỷ giá"
+        },
+        {
+          "id": "ae3a63a9b3",
+          "text": "Lương"
+        },
+        {
+          "id": "9d4bc55391",
+          "text": "Khấu hao"
+        }
+      ],
+      "prompt": "Phần chi phí tài chính ngoài lãi vay của công ty thép chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "f528d12e7d",
+      "id": "ch17-l12-q02",
+      "options": [
+        {
+          "id": "f528d12e7d",
+          "text": "Nhập nguyên liệu và vay bằng ngoại tệ"
+        },
+        {
+          "id": "9053c84149",
+          "text": "Vì bán hàng bằng vàng"
+        },
+        {
+          "id": "d8ec1433cd",
+          "text": "Vì không có nợ"
+        }
+      ],
+      "prompt": "Vì sao công ty thép nhạy với tỷ giá?"
+    },
+    {
+      "correct_option_id": "2c07b22a6d",
+      "id": "ch17-l12-q03",
+      "options": [
+        {
+          "id": "2c07b22a6d",
+          "text": "Doanh thu hoạt động tài chính"
+        },
+        {
+          "id": "2a51b2a313",
+          "text": "Chi phí tài chính"
+        },
+        {
+          "id": "7a6d528301",
+          "text": "Giá vốn"
+        }
+      ],
+      "prompt": "Lãi tỷ giá nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "a4cde06d03",
+      "id": "ch17-l12-q04",
+      "options": [
+        {
+          "id": "a4cde06d03",
+          "text": "Tăng dù lỗ tỷ giá không đổi"
+        },
+        {
+          "id": "7c20408f5b",
+          "text": "Giảm theo cùng tỷ lệ với LNTT"
+        },
+        {
+          "id": "b3f329f149",
+          "text": "Không đổi vì tỷ giá không đổi"
+        }
+      ],
+      "prompt": "LNTT giảm ở đáy chu kỳ làm tỷ lệ thế nào?"
+    },
+    {
+      "chart_id": "c17l12-rep",
+      "correct_option_id": "875f6a5511",
+      "id": "ch17-l12-q05",
+      "options": [
+        {
+          "id": "875f6a5511",
+          "text": "Chi phí tài chính ngoài lãi vay và LNTT"
+        },
+        {
+          "id": "cb31abb88d",
+          "text": "Doanh thu thuần và giá vốn hàng bán"
+        },
+        {
+          "id": "ed9c110e7c",
+          "text": "Capex và khấu hao cộng dồn 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm gì?"
+    }
+  ],
+  "salt": "ffc895065578935254a870c3697953c60dc84201f12e9b0c35d9749f10b9a0bc"
+}

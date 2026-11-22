@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l13",
+  "questions": [
+    {
+      "correct_option_id": "5610e5b2af",
+      "id": "ch11-l13-q01",
+      "options": [
+        {
+          "id": "5610e5b2af",
+          "text": "Thấp hơn nhiều"
+        },
+        {
+          "id": "6d4fec0fb2",
+          "text": "Cao hơn nhiều"
+        },
+        {
+          "id": "02327b79f9",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "Đòn bẩy tổng tài sản trên vốn chủ của công ty chứng khoán thường thế nào so với ngân hàng?"
+    },
+    {
+      "correct_option_id": "eeb7e99785",
+      "id": "ch11-l13-q02",
+      "options": [
+        {
+          "id": "eeb7e99785",
+          "text": "Chu kỳ thị trường"
+        },
+        {
+          "id": "ff9835a492",
+          "text": "Giá dầu"
+        },
+        {
+          "id": "98333462c2",
+          "text": "Lượng mưa"
+        }
+      ],
+      "prompt": "ROE công ty chứng khoán đi theo yếu tố nào?"
+    },
+    {
+      "correct_option_id": "d71132892e",
+      "id": "ch11-l13-q03",
+      "options": [
+        {
+          "id": "d71132892e",
+          "text": "Dư nợ margin bị giới hạn theo vốn chủ"
+        },
+        {
+          "id": "b5e33bfaf1",
+          "text": "Để đáp ứng yêu cầu trả cổ tức cao"
+        },
+        {
+          "id": "75497e5b09",
+          "text": "Để giảm chi phí môi giới phải trả"
+        }
+      ],
+      "prompt": "Vì sao công ty chứng khoán thường tăng vốn khi thị trường tốt?"
+    },
+    {
+      "correct_option_id": "6fc430d18b",
+      "id": "ch11-l13-q04",
+      "options": [
+        {
+          "id": "6fc430d18b",
+          "text": "Cùng thời điểm với các công ty khác"
+        },
+        {
+          "id": "0e2c58e47c",
+          "text": "Với ROE của ngân hàng cùng thời điểm"
+        },
+        {
+          "id": "9ff18f2425",
+          "text": "Với ROE năm thị trường tốt nhất"
+        }
+      ],
+      "prompt": "Nên so ROE công ty chứng khoán theo cách nào?"
+    },
+    {
+      "chart_id": "c11l13-rep",
+      "correct_option_id": "6f7e25748e",
+      "id": "ch11-l13-q05",
+      "options": [
+        {
+          "id": "6f7e25748e",
+          "text": "ROE và ROA 4 quý"
+        },
+        {
+          "id": "47e2197563",
+          "text": "Doanh thu và lợi nhuận"
+        },
+        {
+          "id": "9562ac7745",
+          "text": "Dư nợ và VCSH"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, hai đường phía trên là gì?"
+    }
+  ],
+  "salt": "96304634ec70acb1345e75d3d74ca512c366ee306a170c5403a6c1a18f2cee8a"
+}

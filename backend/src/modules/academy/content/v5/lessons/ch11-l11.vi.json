@@ -1,0 +1,367 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l11-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Q2/26"
+          ],
+          "t": "Doanh thu hoạt động quý này",
+          "tone": "p1",
+          "v": "1.092 tỷ"
+        },
+        {
+          "notes": [
+            "Q2/25"
+          ],
+          "t": "Cùng kỳ",
+          "tone": "warn",
+          "v": "1.479 tỷ"
+        },
+        {
+          "notes": [
+            "So với cùng kỳ"
+          ],
+          "t": "Tăng trưởng",
+          "tone": "neg",
+          "v": "−26,2%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "so với",
+        "="
+      ]
+    },
+    "c11l11-g2": {
+      "decimals": 0,
+      "fig": "stack",
+      "kind": "figure",
+      "parts": [
+        {
+          "label": "Môi giới",
+          "tone": "p1",
+          "value": 332
+        },
+        {
+          "label": "Cho vay margin",
+          "tone": "p5",
+          "value": 500
+        },
+        {
+          "label": "Tự doanh",
+          "tone": "pos",
+          "value": 190
+        },
+        {
+          "label": "Ngân hàng đầu tư và khác",
+          "tone": "p4",
+          "value": 70
+        }
+      ],
+      "title": "Doanh thu hoạt động Q2/26 của công ty chứng khoán mẫu",
+      "unit": " tỷ"
+    },
+    "c11l11-rep": {
+      "alt": "Tăng trưởng doanh thu: −26,2%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              26.667,
+              9.091,
+              -7.181,
+              -22.158,
+              -49.842,
+              -36.111,
+              -36.39,
+              -26.166
+            ]
+          }
+        ],
+        "name": "Tăng trưởng doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Doanh thu hoạt động quý này",
+              "v": [
+                1900,
+                1800,
+                1745,
+                1479,
+                953,
+                1150,
+                1110,
+                1092
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                1500,
+                1650,
+                1880,
+                1900,
+                1900,
+                1800,
+                1745,
+                1479
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l11",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh thu công ty chứng khoán đi theo thị trường: thanh khoản cao thì phí môi giới và cho vay margin tăng, giá cổ phiếu tăng thì tự doanh có lãi. Bài này giúp đọc tăng trưởng doanh thu hoạt động theo chu kỳ thị trường.",
+  "lesson_key": "fundamental:revenue_yoy-ck",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l11-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Tăng trưởng doanh thu so \"doanh thu\" quý này với cùng quý năm trước. Ở công ty chứng khoán, \"doanh thu\" là <b>doanh thu hoạt động</b> trên báo cáo kết quả kinh doanh theo mẫu công ty chứng khoán.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l11-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Môi giới và margin tăng giảm theo giá trị giao dịch trên thị trường.",
+              "title": "Đi theo thanh khoản"
+            },
+            {
+              "text": "Lãi tự doanh đổi chiều theo giá cổ phiếu, trái phiếu.",
+              "title": "Tự doanh rất dao động"
+            },
+            {
+              "text": "Doanh thu có thể giảm 30% đến 50% khi thị trường đi xuống.",
+              "title": "Chu kỳ thị trường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở công ty chứng khoán khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l11-rep",
+          "title": "Tăng trưởng doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng doanh thu hoạt động so với cùng kỳ, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu hoạt động quý này và cùng kỳ năm trước, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Đường xuống dưới 0 nhiều quý liền: thị trường đang ở giai đoạn trầm lắng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh thu tăng nhờ môi giới và margin, không chỉ nhờ tự doanh. Thị phần và dư nợ tăng cùng lúc.",
+              "title": "Tăng trưởng bền",
+              "tone": "pos"
+            },
+            {
+              "text": "Doanh thu tăng giảm mạnh theo tự doanh. Khó dự báo.",
+              "title": "Phụ thuộc thị trường",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc tăng trưởng doanh thu cùng <b>Cơ cấu doanh thu hoạt động</b> để biết mảng nào kéo lên hay kéo xuống.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Xem bài Cơ cấu doanh thu hoạt động.",
+              "title": "Tách theo mảng"
+            },
+            {
+              "text": "Doanh thu giảm khi thị trường trầm lắng là bình thường.",
+              "title": "Đọc theo chu kỳ"
+            },
+            {
+              "text": "Bỏ ảnh hưởng mùa vụ giao dịch.",
+              "title": "So cùng kỳ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu, doanh thu hoạt động từng quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Doanh thu hoạt động"
+            },
+            {
+              "label": "Cùng kỳ"
+            },
+            {
+              "label": "Tăng trưởng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "1.900",
+                "1.500",
+                "26,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "1.479",
+                "1.900",
+                "−22,2%"
+              ]
+            },
+            {
+              "cells": [
+                "Q3/25",
+                "953",
+                "1.900",
+                "−49,8%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "1.092",
+                "1.479",
+                "−26,2%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Doanh thu giảm mạnh nhất ở Q3/25 (−49,8%) khi tự doanh gần như không có lãi. Đến Q2/26, mức giảm thu hẹp còn −26,2%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Có thể do cả thị trường trầm lắng.",
+              "title": "Coi doanh thu giảm là công ty yếu"
+            },
+            {
+              "text": "Tự doanh làm doanh thu nhảy mạnh.",
+              "title": "Không tách mảng"
+            },
+            {
+              "text": "Doanh thu chứng khoán biến động hơn hẳn.",
+              "title": "So với ngành ổn định"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Ở công ty chứng khoán, \"doanh thu\" là <b>doanh thu hoạt động</b>.",
+    "Doanh thu đi theo <b>thanh khoản và giá</b> trên thị trường.",
+    "<b>Tự doanh</b> làm doanh thu dao động mạnh nhất.",
+    "Đọc cùng <b>Cơ cấu doanh thu hoạt động</b>."
+  ],
+  "title": "Tăng trưởng doanh thu · ở công ty chứng khoán"
+}

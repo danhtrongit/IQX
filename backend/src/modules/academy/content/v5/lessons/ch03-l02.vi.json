@@ -1,0 +1,218 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Trước khi đăng bài hay đi gặp ai, hãy chuẩn bị “mặt tiền” của bạn: bạn nói chuyện với ai, nói về điều gì, và người khác nhìn thấy bạn như thế nào trong 5 giây đầu tiên.",
+  "lesson_key": "concept:dinh_vi_hinh_anh",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Không ai nói chuyện được với tất cả mọi người. Hãy chọn <b>một nhóm khách chính</b> để mọi nội dung đều hướng về họ.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Nếu bạn là"
+            },
+            {
+              "highlight": true,
+              "label": "Nhóm khách dễ bắt đầu nhất"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Nhân viên văn phòng",
+                "Đồng nghiệp, dân văn phòng muốn tiền nhàn rỗi sinh lời"
+              ]
+            },
+            {
+              "cells": [
+                "Sinh viên, người trẻ",
+                "Người trẻ mới đi làm, muốn học đầu tư từ số vốn nhỏ"
+              ]
+            },
+            {
+              "cells": [
+                "Chủ cửa hàng, kinh doanh",
+                "Tiểu thương, chủ doanh nghiệp nhỏ có tiền nhàn rỗi"
+              ]
+            },
+            {
+              "cells": [
+                "Mẹ bỉm, nội trợ",
+                "Phụ nữ quản lý tài chính gia đình"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "text": "Bắt đầu từ nhóm giống bạn nhất, vì bạn hiểu họ và họ dễ tin người giống mình.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Bạn nói chuyện với ai"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Chọn 3 chủ đề bạn sẽ nói đi nói lại. Người xem sẽ nhớ bạn gắn với 3 chủ đề đó.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "subtitle": "Giúp người mới hiểu",
+              "text": "Giải thích thuật ngữ, cách bắt đầu, cách quản lý rủi ro.",
+              "title": "Kiến thức",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Giúp khách cập nhật",
+              "text": "Bản tin ngắn mỗi ngày, sự kiện đáng chú ý trong tuần.",
+              "title": "Thị trường"
+            },
+            {
+              "subtitle": "Giúp khách tin bạn",
+              "text": "Hành trình làm nghề, bài học, hoạt động của đội nhóm.",
+              "title": "Con người"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ba trụ cột nội dung"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ảnh đại diện, tên hiển thị và phần giới thiệu là những thứ người lạ nhìn thấy đầu tiên. Ở mọi kênh, chúng nên giống nhau để người xem nhận ra ngay bạn.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Ảnh đại diện",
+              "text": "Ảnh rõ mặt, cười tự nhiên, trang phục gọn gàng, nền sáng. Dùng cùng một ảnh cho Facebook, Zalo, TikTok."
+            },
+            {
+              "term": "Tên hiển thị",
+              "text": "Tên thật, có thể thêm lĩnh vực. Ví dụ: “Lan Nguyễn · Đầu tư cho người mới”."
+            },
+            {
+              "term": "Phần giới thiệu",
+              "text": "3 dòng: bạn là ai, bạn giúp ai, cách liên hệ. Ghi rõ bạn là SACO tại DNSE."
+            },
+            {
+              "term": "Ảnh bìa",
+              "text": "Thông điệp ngắn hoặc hình ảnh hội thảo, buổi chia sẻ của bạn."
+            },
+            {
+              "term": "Màu sắc, phong cách",
+              "text": "Chọn 1-2 màu chủ đạo cho hình đăng bài để tạo nhận diện."
+            }
+          ],
+          "type": "definitions"
+        },
+        {
+          "label": "Lưu ý",
+          "text": "Không tự xưng chức danh không có thật như “chuyên gia”, “giám đốc đầu tư”. Dùng tên, logo DNSE theo đúng hướng dẫn của công ty.",
+          "tone": "bad",
+          "type": "quote"
+        }
+      ],
+      "id": "s3",
+      "title": "Hình ảnh nhất quán"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 2,
+          "debrief": "<b>Cách tốt nhất: chỉnh lại hồ sơ trước khi đăng.</b> Người xem đánh giá bạn trong vài giây đầu bằng ảnh, tên và phần giới thiệu. Đăng bài chứng khoán trên một hồ sơ như vậy khiến người đọc khó tin. Lập tài khoản mới thì mất toàn bộ bạn bè, những người dễ trở thành khách hàng đầu tiên nhất.",
+          "options": [
+            "Giữ nguyên, chỉ cần đăng thật nhiều bài về chứng khoán là được",
+            "Lập một tài khoản mới hoàn toàn, không cho bạn bè cũ biết",
+            "Đổi ảnh rõ mặt, tên thật, viết giới thiệu 3 dòng, ẩn bớt bài không phù hợp, rồi mới bắt đầu đăng nội dung"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Hằng muốn bắt đầu xây thương hiệu. Facebook của Hằng đang có ảnh đại diện là ảnh đi du lịch đeo kính râm, tên “Hằng Bé Bỏng”, phần giới thiệu trống, bài gần nhất là chia sẻ một bài bói toán."
+          ],
+          "title": "Hồ sơ Facebook của Hằng",
+          "type": "scenario"
+        },
+        {
+          "id": "br2",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Dòng 1: bạn là ai. Dòng 2: bạn giúp ai, giúp điều gì. Dòng 3: cách liên hệ. Ví dụ: “SACO tại Chứng khoán DNSE · Giúp người mới bắt đầu đầu tư an toàn từ vốn nhỏ · Nhắn Zalo để nhận bản tin mỗi sáng”."
+          ],
+          "title": "Bài tự làm: viết phần giới thiệu 3 dòng",
+          "type": "workpad"
+        },
+        {
+          "id": "br2a",
+          "items": [
+            {
+              "id": "0",
+              "text": "Ảnh đại diện rõ mặt, chuyên nghiệp, giống nhau ở mọi kênh"
+            },
+            {
+              "id": "1",
+              "text": "Tên hiển thị là tên thật"
+            },
+            {
+              "id": "2",
+              "text": "Phần giới thiệu đủ 3 dòng, ghi rõ SACO tại DNSE"
+            },
+            {
+              "id": "3",
+              "text": "Ảnh bìa có thông điệp hoặc hình hoạt động nghề"
+            },
+            {
+              "id": "4",
+              "text": "Đã ẩn hoặc xóa bài đăng không phù hợp"
+            },
+            {
+              "id": "5",
+              "text": "Có ít nhất 3 bài về kiến thức hoặc thị trường gần đây"
+            },
+            {
+              "id": "6",
+              "text": "Không có hình khoe lãi hay hứa lợi nhuận"
+            },
+            {
+              "id": "7",
+              "text": "Zalo có ảnh và tên giống Facebook"
+            }
+          ],
+          "mode": "self_check",
+          "result_label": "Số mục đã đạt",
+          "title": "Tự kiểm tra hồ sơ của bạn",
+          "type": "checklist"
+        }
+      ],
+      "id": "s4",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Chọn <b>một nhóm khách chính</b>, bắt đầu từ nhóm giống bạn nhất.",
+    "Có <b>3 trụ cột nội dung</b>: kiến thức, thị trường, con người.",
+    "<b>Ảnh, tên, giới thiệu</b> giống nhau ở mọi kênh, ghi rõ bạn là SACO tại DNSE.",
+    "Không tự xưng chức danh không có thật."
+  ],
+  "title": "Định vị và hình ảnh"
+}

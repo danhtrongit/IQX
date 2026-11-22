@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l10",
+  "questions": [
+    {
+      "correct_option_id": "20d3a7b756",
+      "id": "ch12-l10-q01",
+      "options": [
+        {
+          "id": "20d3a7b756",
+          "text": "Dự phòng nghiệp vụ"
+        },
+        {
+          "id": "162b3490b3",
+          "text": "Nợ vay ngân hàng"
+        },
+        {
+          "id": "164ac208b4",
+          "text": "Trái phiếu chuyển đổi"
+        }
+      ],
+      "prompt": "Đòn bẩy của công ty bảo hiểm chủ yếu đến từ đâu?"
+    },
+    {
+      "correct_option_id": "3a32df3a66",
+      "id": "ch12-l10-q02",
+      "options": [
+        {
+          "id": "3a32df3a66",
+          "text": "Không, nhưng là nghĩa vụ bồi thường"
+        },
+        {
+          "id": "c3cf5c86e0",
+          "text": "Có, lãi suất cao"
+        },
+        {
+          "id": "2f9072cf6f",
+          "text": "Có, lãi suất thả nổi"
+        }
+      ],
+      "prompt": "Dự phòng nghiệp vụ có phải trả lãi như nợ vay không?"
+    },
+    {
+      "correct_option_id": "a8509a90b0",
+      "id": "ch12-l10-q03",
+      "options": [
+        {
+          "id": "a8509a90b0",
+          "text": "Nhân thọ"
+        },
+        {
+          "id": "a3eb2e5091",
+          "text": "Phi nhân thọ"
+        },
+        {
+          "id": "47759d823f",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "Loại hình nào thường có đòn bẩy cao hơn?"
+    },
+    {
+      "correct_option_id": "43ae9fd26a",
+      "id": "ch12-l10-q04",
+      "options": [
+        {
+          "id": "43ae9fd26a",
+          "text": "Combined ratio và lợi suất đầu tư"
+        },
+        {
+          "id": "7a88d75d07",
+          "text": "Tỷ lệ giữ lại và tăng trưởng phí gốc"
+        },
+        {
+          "id": "dd364bfc35",
+          "text": "Dự phòng nghiệp vụ và nợ vay ngắn hạn"
+        }
+      ],
+      "prompt": "Hai yếu tố nào tạo ra lợi nhuận và ROE công ty bảo hiểm?"
+    },
+    {
+      "chart_id": "c12l10-rep",
+      "correct_option_id": "33f88f2841",
+      "id": "ch12-l10-q05",
+      "options": [
+        {
+          "id": "33f88f2841",
+          "text": "Tổng tài sản bình quân chia vốn chủ bình quân"
+        },
+        {
+          "id": "a8c3903781",
+          "text": "Phí bảo hiểm thuần cộng dồn 4 quý gần nhất"
+        },
+        {
+          "id": "67cff70bab",
+          "text": "Dự phòng nghiệp vụ cuối mỗi quý của công ty"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới là gì?"
+    }
+  ],
+  "salt": "4e82ea7f0606e652ebcbe1fed0c38accc61a74a6014084176270ea490f1f6d91"
+}

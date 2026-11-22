@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l12",
+  "questions": [
+    {
+      "correct_option_id": "5c4a874d04",
+      "id": "ch16-l12-q01",
+      "options": [
+        {
+          "id": "5c4a874d04",
+          "text": "EBIT"
+        },
+        {
+          "id": "172c1710ec",
+          "text": "Doanh thu"
+        },
+        {
+          "id": "69c3caebe0",
+          "text": "Vốn chủ"
+        }
+      ],
+      "prompt": "Interest Coverage bằng gì chia chi phí lãi vay?"
+    },
+    {
+      "correct_option_id": "d9879d9aef",
+      "id": "ch16-l12-q02",
+      "options": [
+        {
+          "id": "d9879d9aef",
+          "text": "Dùng nhiều nợ"
+        },
+        {
+          "id": "74970fed40",
+          "text": "Không có lợi nhuận"
+        },
+        {
+          "id": "e6a7009f03",
+          "text": "Không có lãi vay"
+        }
+      ],
+      "prompt": "Vì sao Interest Coverage công ty điện thường thấp hơn ngành khác?"
+    },
+    {
+      "correct_option_id": "4a7c1da35e",
+      "id": "ch16-l12-q03",
+      "options": [
+        {
+          "id": "4a7c1da35e",
+          "text": "Tăng vì lãi không còn được vốn hoá"
+        },
+        {
+          "id": "20c5c62ffa",
+          "text": "Giảm mạnh vì nợ vay được trả hết"
+        },
+        {
+          "id": "55a1937a49",
+          "text": "Bằng 0 vì lãi đã vốn hoá hết"
+        }
+      ],
+      "prompt": "Khi nhà máy mới vận hành, chi phí lãi vay thường thế nào?"
+    },
+    {
+      "correct_option_id": "33d04be127",
+      "id": "ch16-l12-q04",
+      "options": [
+        {
+          "id": "33d04be127",
+          "text": "Làm chỉ tiêu giảm"
+        },
+        {
+          "id": "fbafe69222",
+          "text": "Làm chỉ tiêu tăng"
+        },
+        {
+          "id": "24691ce13d",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Lãi suất thả nổi tăng ảnh hưởng thế nào?"
+    },
+    {
+      "chart_id": "c16l12-rep",
+      "correct_option_id": "c7a8831112",
+      "id": "ch16-l12-q05",
+      "options": [
+        {
+          "id": "c7a8831112",
+          "text": "EBIT và chi phí lãi vay từng quý"
+        },
+        {
+          "id": "e01de3811b",
+          "text": "Doanh thu và giá vốn"
+        },
+        {
+          "id": "4028e248fd",
+          "text": "Nợ ròng và EBITDA"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm gì?"
+    }
+  ],
+  "salt": "a897f0176ddea3c9cf34f1ac97c077c177fd15ec6c9a5b41720069f74b008228"
+}

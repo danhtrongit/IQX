@@ -1,0 +1,380 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l9-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 131"
+          ],
+          "t": "Phải thu khách hàng bình quân",
+          "tone": "warn",
+          "v": "2.747 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "12.507 tỷ"
+        },
+        {
+          "notes": [
+            "Nhân 365"
+          ],
+          "t": "Số ngày",
+          "tone": "pos",
+          "v": "80 ngày"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l9-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Bên mua trả đúng hạn",
+          "tone": "pos",
+          "value": 45
+        },
+        {
+          "label": "Chậm trả vừa phải",
+          "tone": "warn",
+          "value": 90
+        },
+        {
+          "label": "Chậm trả kéo dài",
+          "tone": "neg",
+          "value": 150
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Số ngày thu tiền tham khảo · số minh họa",
+      "unit": " ngày"
+    },
+    "c16l9-rep": {
+      "alt": "Số ngày thu tiền: 80 ngày",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Số ngày thu tiền (4 quý)",
+            "v": [
+              110.405,
+              110.415,
+              103.907,
+              97.826,
+              100.035,
+              92.518,
+              82.868,
+              80.155
+            ]
+          }
+        ],
+        "name": "Số ngày thu tiền",
+        "sub": {
+          "series": [
+            {
+              "name": "Phải thu khách hàng bình quân",
+              "v": [
+                3116.418,
+                3170.388,
+                3084.132,
+                3056.537,
+                3199.611,
+                3060.495,
+                2802.275,
+                2746.553
+              ]
+            },
+            {
+              "name": "Doanh thu 4 quý",
+              "v": [
+                10302.887,
+                10480.395,
+                10833.811,
+                11404.259,
+                11674.529,
+                12074.243,
+                12342.943,
+                12506.973
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "ngày"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Phần lớn điện được bán cho một bên mua lớn. Khi bên mua điện chậm trả, tiền của công ty điện nằm ở phải thu, trong khi công ty vẫn phải trả lãi vay và chi phí. Số ngày thu tiền cho biết mức chậm trả đó.",
+  "lesson_key": "fundamental:receivable_days-dien",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l9-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>phải thu ngắn hạn của khách hàng</b> bình quân (mã 131, cuối quý này và cuối cùng quý năm trước) chia <b>doanh thu thuần 4 quý</b>, nhân 365.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Số ngày thu tiền là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l9-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty điện khó đòi gấp vì phụ thuộc vào bên mua chính.",
+              "title": "Một khách hàng lớn"
+            },
+            {
+              "text": "Số ngày tăng 30 ngày là khoảng 8% doanh thu năm nằm ở phải thu.",
+              "title": "Tiền bị giữ"
+            },
+            {
+              "text": "Thiếu tiền thì phải vay ngắn hạn, chi phí lãi tăng.",
+              "title": "Ảnh hưởng nợ vay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao quan trọng với công ty điện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l9-rep",
+          "title": "Số ngày thu tiền",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số ngày thu tiền 4 quý, đơn vị ngày.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Phải thu khách hàng bình quân và doanh thu 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phải thu giảm trong khi doanh thu tăng: bên mua trả tiền nhanh hơn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 60 ngày. Mức tham khảo, tiền điện về khá đúng hạn.",
+              "title": "Thu tiền tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 100 ngày hoặc tăng liên tục. Dòng tiền kinh doanh thấp hơn lợi nhuận.",
+              "title": "Bị chậm trả",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Số ngày thu tiền giảm thường làm CFO tăng mạnh trong kỳ, vì tiền bị giữ trước đó được trả về.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "CFO thấp hơn lợi nhuận thường do phải thu tăng.",
+              "title": "Giải thích CFO"
+            },
+            {
+              "text": "Chậm trả kéo dài làm công ty phải vay thêm.",
+              "title": "Đánh giá rủi ro thanh khoản"
+            },
+            {
+              "text": "Giảm dần là bên mua đang trả nợ cũ.",
+              "title": "Theo dõi xu hướng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Phải thu bình quân"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Số ngày"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "3.116",
+                "10.303",
+                "110"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "3.057",
+                "11.404",
+                "98"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "2.747",
+                "12.507",
+                "80"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Số ngày giảm từ 110 xuống 80 ngày. Bên mua điện trả tiền nhanh hơn, giải phóng khoảng 370 tỷ đồng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chỉ dùng phải thu khách hàng, không gồm phải thu khác.",
+              "title": "Dùng tổng phải thu"
+            },
+            {
+              "text": "Dùng bình quân để tránh lệch do một ngày chốt sổ.",
+              "title": "Dùng số cuối kỳ"
+            },
+            {
+              "text": "Lợi nhuận tốt nhưng không thu được tiền thì vẫn thiếu tiền.",
+              "title": "Bỏ qua khi lợi nhuận tốt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bán phần lớn cho một bên mua, số ngày phụ thuộc bên mua.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Cũng bán cho bên mua lớn, giá trị phải thu lớn vì doanh thu lớn.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Nước sạch thu tiền từ nhiều hộ dân, số ngày ngắn và ổn định.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "Số ngày = <b>phải thu khách hàng bình quân</b> (mã 131) ÷ <b>doanh thu 4 quý</b> × 365.",
+    "Cho biết <b>bên mua điện trả nhanh hay chậm</b>.",
+    "Mức tham khảo: <b>dưới khoảng 60 ngày</b>.",
+    "Giảm số ngày làm <b>CFO tăng</b>."
+  ],
+  "title": "Số ngày thu tiền · bên mua điện trả tiền nhanh hay chậm"
+}

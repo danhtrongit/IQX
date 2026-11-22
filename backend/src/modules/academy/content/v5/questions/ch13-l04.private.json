@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l04",
+  "questions": [
+    {
+      "correct_option_id": "db6de1cfba",
+      "id": "ch13-l04-q01",
+      "options": [
+        {
+          "id": "db6de1cfba",
+          "text": "Doanh thu hoạt động tài chính"
+        },
+        {
+          "id": "b884b59132",
+          "text": "Doanh thu bán hàng và cung cấp dịch vụ"
+        },
+        {
+          "id": "8b55a6216c",
+          "text": "Giá vốn hàng bán"
+        }
+      ],
+      "prompt": "Lãi từ bán một công ty con sở hữu dự án thường nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "e2fafa1627",
+      "id": "ch13-l04-q02",
+      "options": [
+        {
+          "id": "e2fafa1627",
+          "text": "Lợi nhuận trước thuế"
+        },
+        {
+          "id": "2209f3d142",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "a57b68d477",
+          "text": "Vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Mẫu số của chỉ tiêu này là gì?"
+    },
+    {
+      "correct_option_id": "8715de8edc",
+      "id": "ch13-l04-q03",
+      "options": [
+        {
+          "id": "8715de8edc",
+          "text": "Khoản lãi đó có lặp lại được không"
+        },
+        {
+          "id": "a31a61ecb0",
+          "text": "Công ty có trả cổ tức không"
+        },
+        {
+          "id": "d9f1bbe4b0",
+          "text": "Công ty có bao nhiêu nhân viên"
+        }
+      ],
+      "prompt": "Tỷ trọng tăng vọt trong một năm cần hỏi điều gì?"
+    },
+    {
+      "correct_option_id": "88e15faf0c",
+      "id": "ch13-l04-q04",
+      "options": [
+        {
+          "id": "88e15faf0c",
+          "text": "Lãi tiền gửi từ lượng tiền lớn"
+        },
+        {
+          "id": "ddbdcaeeee",
+          "text": "Lãi bán công ty con"
+        },
+        {
+          "id": "8dd04e0fc0",
+          "text": "Lãi chuyển nhượng một khu đất"
+        }
+      ],
+      "prompt": "Khoản nào thường đều đặn hơn lãi bán dự án?"
+    },
+    {
+      "chart_id": "c13l4-rep",
+      "correct_option_id": "4115febc88",
+      "id": "ch13-l04-q05",
+      "options": [
+        {
+          "id": "4115febc88",
+          "text": "Tỷ trọng thu nhập ngoài kinh doanh trong LNTT 4 quý"
+        },
+        {
+          "id": "c5ba76ef5f",
+          "text": "Tăng trưởng doanh thu so với cùng kỳ"
+        },
+        {
+          "id": "5edc5787cc",
+          "text": "Tồn kho trên tổng tài sản"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường phía trên thể hiện gì?"
+    }
+  ],
+  "salt": "6515fa39b60d226d569b410607d8f6512e69bc02caf1538770b8993fabf96f09"
+}

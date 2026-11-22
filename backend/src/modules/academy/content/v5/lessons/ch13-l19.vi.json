@@ -1,0 +1,556 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l19-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "Vốn hoá",
+          "tone": "p1",
+          "v": "Giá × số CP"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "warn",
+          "v": "51.074 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "P/B",
+          "tone": "pos",
+          "v": "1,12 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l19-g2": {
+      "fig": "formula",
+      "height": 170,
+      "items": [
+        {
+          "notes": [
+            "Theo giá gốc"
+          ],
+          "t": "Giá trị sổ sách quỹ đất",
+          "tone": "warn",
+          "v": "100"
+        },
+        {
+          "notes": [
+            "Không có trên báo cáo"
+          ],
+          "t": "Giá trị thị trường ước tính",
+          "tone": "pos",
+          "v": "180"
+        }
+      ],
+      "kind": "figure",
+      "ops": []
+    },
+    "c13l19-rep": {
+      "alt": "P/B: 1,12 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "P/B",
+            "v": [
+              1.319,
+              1.343,
+              1.385,
+              1.371,
+              1.385,
+              1.412,
+              1.465,
+              1.408,
+              1.359,
+              1.31,
+              1.245,
+              1.249,
+              1.209,
+              1.197,
+              1.177,
+              1.131,
+              1.154,
+              1.153,
+              1.167,
+              1.137,
+              1.093,
+              1.104,
+              1.103,
+              1.127,
+              1.235,
+              1.208,
+              1.209,
+              1.267,
+              1.19,
+              1.193,
+              1.206,
+              1.211,
+              1.235,
+              1.289,
+              1.312,
+              1.322,
+              1.373,
+              1.342,
+              1.359,
+              1.328,
+              1.414,
+              1.364,
+              1.364,
+              1.344,
+              1.387,
+              1.35,
+              1.33,
+              1.354,
+              1.375,
+              1.297,
+              1.337,
+              1.348,
+              1.316,
+              1.29,
+              1.343,
+              1.364,
+              1.322,
+              1.429,
+              1.465,
+              1.44,
+              1.416,
+              1.418,
+              1.38,
+              1.339,
+              1.328,
+              1.432,
+              1.479,
+              1.496,
+              1.421,
+              1.428,
+              1.431,
+              1.354,
+              1.388,
+              1.342,
+              1.26,
+              1.291,
+              1.285,
+              1.229,
+              1.228,
+              1.241,
+              1.227,
+              1.176,
+              1.166,
+              1.168,
+              1.12,
+              1.116,
+              1.093,
+              1.124,
+              1.132,
+              1.117,
+              1.137,
+              1.125,
+              1.196,
+              1.167,
+              1.128,
+              1.177,
+              1.155,
+              1.173,
+              1.163,
+              1.186,
+              1.185,
+              1.145,
+              1.173,
+              1.229,
+              1.279,
+              1.277,
+              1.25,
+              1.197,
+              1.167,
+              1.135,
+              1.096,
+              1.137,
+              1.1,
+              1.092,
+              1.045,
+              1.083,
+              1.109,
+              1.062,
+              1.07,
+              1.055,
+              1.019,
+              1.008,
+              1.034,
+              1.086,
+              1.134,
+              1.12
+            ]
+          }
+        ],
+        "name": "P/B",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l19",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "P/B so vốn hoá với vốn chủ sở hữu trên sổ sách. Với công ty bất động sản, phần lớn tài sản là đất và dự án ghi theo giá gốc. Bài này nói P/B nói gì và không nói gì về giá trị quỹ đất.",
+  "lesson_key": "fundamental:pb-bds",
+  "order": 19,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l19-g1",
+          "type": "chart"
+        },
+        {
+          "text": "P/B bằng <b>vốn hoá</b> chia <b>vốn chủ sở hữu</b> của quý gần nhất đã công bố. Cách tính giống bài P/B ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Đất mua từ nhiều năm trước vẫn ghi theo giá mua cũ. Giá trị thị trường có thể cao hơn nhiều, nhưng báo cáo tài chính không ghi nhận phần chênh lệch đó.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l19-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Quỹ đất xấu, khó triển khai thì giá trị thật có thể thấp hơn sổ sách.",
+              "title": "P/B thấp chưa chắc rẻ"
+            },
+            {
+              "text": "Quỹ đất mua giá rẻ từ lâu làm vốn chủ sổ sách thấp hơn giá trị thật.",
+              "title": "P/B cao chưa chắc đắt"
+            },
+            {
+              "text": "Định giá quỹ đất cần thông tin thuyết minh và dự án, không có trên 3 báo cáo.",
+              "title": "Giá trị quỹ đất nằm ngoài báo cáo"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bất động sản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l19-rep",
+          "title": "P/B",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/B theo giá đóng cửa từng ngày và vốn chủ quý đã công bố.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "P/B dưới dải nghĩa là thị trường đang định giá thấp hơn thường lệ của chính công ty.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "P/B nằm dưới dải của chính công ty. Mức tham khảo, thường xảy ra khi thị trường bất động sản khó khăn.",
+              "title": "Vùng thấp so với lịch sử",
+              "tone": "pos"
+            },
+            {
+              "text": "P/B nằm trên dải. Thị trường kỳ vọng nhiều vào dự án sắp bán.",
+              "title": "Vùng cao so với lịch sử",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với bất động sản, P/B hữu ích nhất khi <b>so với lịch sử của chính công ty</b>, vì mỗi công ty có quỹ đất với giá gốc rất khác nhau.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng dải trên Dashboard để thấy P/B hiện tại cao hay thấp so với thường lệ.",
+              "title": "So với lịch sử"
+            },
+            {
+              "text": "P/B ít bị lịch bàn giao làm nhiễu hơn P/E.",
+              "title": "Kết hợp P/E"
+            },
+            {
+              "text": "ROE cao bền vững thì P/B cao hơn là hợp lý.",
+              "title": "Đọc cùng ROE"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu, P/B theo ngày trong 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "P/B cuối Q2/26",
+              "text": "1,12 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "1,23 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "1,01 lần và 1,50 lần."
+            },
+            {
+              "term": "Nhận xét",
+              "text": "P/B hiện tại thấp hơn trung vị. Thị trường đang thận trọng với nợ vay tăng và dòng tiền âm của công ty."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giá gốc quỹ đất mỗi công ty rất khác nhau.",
+              "title": "So P/B giữa các công ty"
+            },
+            {
+              "text": "Quỹ đất khó triển khai có thể đáng giá thấp hơn sổ sách.",
+              "title": "Coi P/B dưới 1 là rẻ"
+            },
+            {
+              "text": "Tài sản cho thuê ghi theo giá gốc trừ khấu hao, thường thấp hơn giá thị trường.",
+              "title": "Quên bất động sản đầu tư"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Vốn chủ sổ sách phụ thuộc giá gốc quỹ đất. So với lịch sử của chính công ty.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Đất khu công nghiệp đã cho thuê có giá trị phụ thuộc tiền thuê trả trước và thời hạn thuê.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "<b>P/B</b> = vốn hoá ÷ vốn chủ sở hữu, theo ngày.",
+    "Đất và dự án ghi theo <b>giá gốc</b>, không theo giá thị trường.",
+    "So P/B <b>với lịch sử của chính công ty</b>.",
+    "Giá trị quỹ đất <b>không có trên 3 báo cáo</b>."
+  ],
+  "title": "P/B · ở bất động sản"
+}

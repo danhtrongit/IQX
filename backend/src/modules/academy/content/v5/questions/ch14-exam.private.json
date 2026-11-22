@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-exam",
+  "questions": [
+    {
+      "correct_option_id": "7082476508",
+      "id": "ch14-exam-q01",
+      "options": [
+        {
+          "id": "7082476508",
+          "text": "Giá dầu, giá khí tăng"
+        },
+        {
+          "id": "67a1d6d684",
+          "text": "Đổi cách ghi nhận doanh thu"
+        },
+        {
+          "id": "45022d0298",
+          "text": "Chi phí bán hàng giảm"
+        }
+      ],
+      "prompt": "Vì sao doanh thu doanh nghiệp dầu khí có thể tăng mạnh dù sản lượng không đổi?"
+    },
+    {
+      "correct_option_id": "9092c19e72",
+      "id": "ch14-exam-q02",
+      "options": [
+        {
+          "id": "9092c19e72",
+          "text": "Biên lợi nhuận gộp"
+        },
+        {
+          "id": "d30f7ca2ea",
+          "text": "Số ngày thu tiền"
+        },
+        {
+          "id": "32dc91af5f",
+          "text": "P/B"
+        }
+      ],
+      "prompt": "Nên đọc tăng trưởng doanh thu dầu khí cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "1cbfbdcc08",
+      "id": "ch14-exam-q03",
+      "options": [
+        {
+          "id": "1cbfbdcc08",
+          "text": "Không"
+        },
+        {
+          "id": "85c438555a",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "9321c3d2ff",
+          "text": "Có, ở lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Sản lượng bán ra có trên 3 báo cáo tài chính không?"
+    },
+    {
+      "correct_option_id": "0febd66d51",
+      "id": "ch14-exam-q04",
+      "options": [
+        {
+          "id": "0febd66d51",
+          "text": "Từng quý"
+        },
+        {
+          "id": "f2169c4ffa",
+          "text": "Cộng 4 quý"
+        },
+        {
+          "id": "c23dbc03bc",
+          "text": "Bình quân 5 năm"
+        }
+      ],
+      "prompt": "Biên gộp ở chương dầu khí được tính theo cách nào trên Dashboard?"
+    },
+    {
+      "correct_option_id": "d8b1a294b1",
+      "id": "ch14-exam-q05",
+      "options": [
+        {
+          "id": "d8b1a294b1",
+          "text": "Khi giá dầu đổi chiều trong thời gian giữ hàng"
+        },
+        {
+          "id": "5c151b219f",
+          "text": "Khi doanh nghiệp trả cổ tức"
+        },
+        {
+          "id": "fef6ce8cda",
+          "text": "Khi lãi suất tiền gửi tăng"
+        }
+      ],
+      "prompt": "Lãi lỗ do giá trị tồn kho xuất hiện khi nào?"
+    },
+    {
+      "correct_option_id": "c3ff7037ef",
+      "id": "ch14-exam-q06",
+      "options": [
+        {
+          "id": "c3ff7037ef",
+          "text": "Doanh nghiệp cùng mảng"
+        },
+        {
+          "id": "4d279fa7b4",
+          "text": "Dầu khí và ngân hàng"
+        },
+        {
+          "id": "d32c7f1102",
+          "text": "Mọi doanh nghiệp"
+        }
+      ],
+      "prompt": "Margin Stability nên so giữa những doanh nghiệp nào?"
+    },
+    {
+      "correct_option_id": "213ae44750",
+      "id": "ch14-exam-q07",
+      "options": [
+        {
+          "id": "213ae44750",
+          "text": "Vận chuyển khí theo hợp đồng"
+        },
+        {
+          "id": "ea07671176",
+          "text": "Khai thác dầu khí"
+        },
+        {
+          "id": "b1538e7d44",
+          "text": "Lọc dầu"
+        }
+      ],
+      "prompt": "Mảng nào thường có biên ròng ổn định nhất?"
+    },
+    {
+      "correct_option_id": "4965820a43",
+      "id": "ch14-exam-q08",
+      "options": [
+        {
+          "id": "4965820a43",
+          "text": "Giá vốn 4 quý"
+        },
+        {
+          "id": "bf13ce66ee",
+          "text": "Doanh thu 4 quý"
+        },
+        {
+          "id": "84e6071240",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Số ngày tồn kho bằng tồn kho bình quân chia gì, nhân 365?"
+    },
+    {
+      "correct_option_id": "253a667a9c",
+      "id": "ch14-exam-q09",
+      "options": [
+        {
+          "id": "253a667a9c",
+          "text": "Lọc dầu và phân phối xăng dầu"
+        },
+        {
+          "id": "7277f2eb52",
+          "text": "Dịch vụ kỹ thuật"
+        },
+        {
+          "id": "2965f03c87",
+          "text": "Vận chuyển khí"
+        }
+      ],
+      "prompt": "Mảng nào có tồn kho chịu rủi ro giá dầu cao nhất?"
+    },
+    {
+      "correct_option_id": "ed19948972",
+      "id": "ch14-exam-q10",
+      "options": [
+        {
+          "id": "ed19948972",
+          "text": "Khấu hao TSCĐ và BĐS đầu tư, mã 02 trên lưu chuyển tiền tệ"
+        },
+        {
+          "id": "baf9e3c8b3",
+          "text": "Chi phí quản lý doanh nghiệp trên kết quả kinh doanh"
+        },
+        {
+          "id": "148ce00e2f",
+          "text": "Tài sản cố định cuối kỳ trên bảng cân đối"
+        }
+      ],
+      "prompt": "Khấu hao lấy từ dòng nào?"
+    },
+    {
+      "correct_option_id": "3e64292e43",
+      "id": "ch14-exam-q11",
+      "options": [
+        {
+          "id": "3e64292e43",
+          "text": "Để trống kỳ đó"
+        },
+        {
+          "id": "95534ad6bb",
+          "text": "Lấy số từ thuyết minh"
+        },
+        {
+          "id": "1fc36696ee",
+          "text": "Ghi bằng 0"
+        }
+      ],
+      "prompt": "Kỳ lưu chuyển tiền tệ lập theo phương pháp trực tiếp thì Dashboard làm gì với khấu hao?"
+    },
+    {
+      "correct_option_id": "b59342f4bc",
+      "id": "ch14-exam-q12",
+      "options": [
+        {
+          "id": "b59342f4bc",
+          "text": "Doanh nghiệp nặng tài sản, chi phí cố định lớn"
+        },
+        {
+          "id": "32d8e92475",
+          "text": "Doanh nghiệp không có tài sản"
+        },
+        {
+          "id": "7bfca3b6c2",
+          "text": "Doanh nghiệp dư tiền"
+        }
+      ],
+      "prompt": "Khấu hao / Doanh thu cao cho thấy gì?"
+    },
+    {
+      "correct_option_id": "42a4bbafd5",
+      "id": "ch14-exam-q13",
+      "options": [
+        {
+          "id": "42a4bbafd5",
+          "text": "Tài sản đang già đi"
+        },
+        {
+          "id": "7829caa1ea",
+          "text": "Đang mở rộng mạnh"
+        },
+        {
+          "id": "2d303c5641",
+          "text": "Đang dư tiền"
+        }
+      ],
+      "prompt": "Capex / Khấu hao dưới 1 lần nhiều năm cho thấy gì?"
+    },
+    {
+      "correct_option_id": "2c8d9009ed",
+      "id": "ch14-exam-q14",
+      "options": [
+        {
+          "id": "2c8d9009ed",
+          "text": "Tiền chi mua sắm, xây dựng TSCĐ, mã 21"
+        },
+        {
+          "id": "2d03dea521",
+          "text": "Tài sản cố định cuối kỳ"
+        },
+        {
+          "id": "4394a47617",
+          "text": "Giá vốn hàng bán"
+        }
+      ],
+      "prompt": "Capex lấy từ dòng nào?"
+    },
+    {
+      "correct_option_id": "48925b238f",
+      "id": "ch14-exam-q15",
+      "options": [
+        {
+          "id": "48925b238f",
+          "text": "ROIC đi theo chu kỳ giá dầu"
+        },
+        {
+          "id": "540dc454a6",
+          "text": "ROIC dầu khí không đổi"
+        },
+        {
+          "id": "78d2549f81",
+          "text": "ROIC công bố 5 năm một lần"
+        }
+      ],
+      "prompt": "Vì sao nên đọc ROIC dầu khí theo bình quân nhiều năm?"
+    },
+    {
+      "correct_option_id": "38290314ca",
+      "id": "ch14-exam-q16",
+      "options": [
+        {
+          "id": "38290314ca",
+          "text": "Giảm tạm thời"
+        },
+        {
+          "id": "9f5f08b443",
+          "text": "Tăng ngay"
+        },
+        {
+          "id": "6cb99c5e10",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Dự án lớn đang xây làm ROIC thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "787b459500",
+      "id": "ch14-exam-q17",
+      "options": [
+        {
+          "id": "787b459500",
+          "text": "Vốn lưu động hút thêm tiền"
+        },
+        {
+          "id": "4050bd5968",
+          "text": "Khấu hao tăng gấp đôi"
+        },
+        {
+          "id": "f2ebc33065",
+          "text": "Doanh thu giảm"
+        }
+      ],
+      "prompt": "Vì sao giá dầu tăng có thể làm FCF giảm?"
+    },
+    {
+      "correct_option_id": "0d444c3e21",
+      "id": "ch14-exam-q18",
+      "options": [
+        {
+          "id": "0d444c3e21",
+          "text": "CFO trừ capex"
+        },
+        {
+          "id": "fbdcf799e1",
+          "text": "LNST trừ cổ tức"
+        },
+        {
+          "id": "72ffb22c92",
+          "text": "Doanh thu trừ giá vốn"
+        }
+      ],
+      "prompt": "Dòng tiền tự do bằng gì?"
+    },
+    {
+      "correct_option_id": "a4a52c3bb9",
+      "id": "ch14-exam-q19",
+      "options": [
+        {
+          "id": "a4a52c3bb9",
+          "text": "Tiền và đầu tư ngắn hạn trừ nợ vay"
+        },
+        {
+          "id": "8d52726b9b",
+          "text": "Tiền trừ phải trả người bán"
+        },
+        {
+          "id": "d22d42f6d2",
+          "text": "Doanh thu trừ chi phí"
+        }
+      ],
+      "prompt": "Tiền ròng bằng gì?"
+    },
+    {
+      "correct_option_id": "295ec77c9e",
+      "id": "ch14-exam-q20",
+      "options": [
+        {
+          "id": "295ec77c9e",
+          "text": "Bộ đệm tốt khi giá dầu giảm"
+        },
+        {
+          "id": "842a65adb1",
+          "text": "Doanh nghiệp đang nợ nhiều"
+        },
+        {
+          "id": "76112e7e14",
+          "text": "Doanh nghiệp không có vốn chủ"
+        }
+      ],
+      "prompt": "Tiền ròng / VCSH dương lớn có ý nghĩa gì?"
+    },
+    {
+      "correct_option_id": "c85aaa99e1",
+      "id": "ch14-exam-q21",
+      "options": [
+        {
+          "id": "c85aaa99e1",
+          "text": "Tiền nhiều hơn nợ vay"
+        },
+        {
+          "id": "6badf35682",
+          "text": "Doanh nghiệp lỗ"
+        },
+        {
+          "id": "a265345dd6",
+          "text": "EBITDA âm"
+        }
+      ],
+      "prompt": "Net Debt / EBITDA âm nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "bc54adb842",
+      "id": "ch14-exam-q22",
+      "options": [
+        {
+          "id": "bc54adb842",
+          "text": "EBITDA năm giá dầu thấp"
+        },
+        {
+          "id": "30fba77447",
+          "text": "EBITDA năm giá dầu cao nhất"
+        },
+        {
+          "id": "13b72eaf76",
+          "text": "Doanh thu năm gần nhất"
+        }
+      ],
+      "prompt": "Nên kiểm tra Net Debt / EBITDA với EBITDA nào để thấy rủi ro?"
+    },
+    {
+      "correct_option_id": "4e0fa53abe",
+      "id": "ch14-exam-q23",
+      "options": [
+        {
+          "id": "4e0fa53abe",
+          "text": "Lãi suất tiền gửi"
+        },
+        {
+          "id": "fbce9cd67e",
+          "text": "Giá xăng bán lẻ"
+        },
+        {
+          "id": "3cb549e264",
+          "text": "Số chi nhánh"
+        }
+      ],
+      "prompt": "Thu nhập tài chính / LNTT cao làm lợi nhuận nhạy với yếu tố nào?"
+    },
+    {
+      "correct_option_id": "99ef70026a",
+      "id": "ch14-exam-q24",
+      "options": [
+        {
+          "id": "99ef70026a",
+          "text": "Lợi nhuận kinh doanh chính giảm"
+        },
+        {
+          "id": "8c824fbc88",
+          "text": "Gửi thêm nhiều tiền"
+        },
+        {
+          "id": "4b1d657cf0",
+          "text": "Không còn nợ vay"
+        }
+      ],
+      "prompt": "Tỷ trọng thu nhập tài chính tăng trong khi doanh thu tài chính đi ngang cho thấy gì?"
+    },
+    {
+      "correct_option_id": "4c00eb4b8b",
+      "id": "ch14-exam-q25",
+      "options": [
+        {
+          "id": "4c00eb4b8b",
+          "text": "Tạm ứng hợp đồng chế tạo, lắp đặt"
+        },
+        {
+          "id": "269cb54d44",
+          "text": "Tiền mua xăng trả sau"
+        },
+        {
+          "id": "9f762f585d",
+          "text": "Lãi tiền gửi"
+        }
+      ],
+      "prompt": "Ở doanh nghiệp dịch vụ dầu khí, người mua trả tiền trước chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "4b8eb13e1d",
+      "id": "ch14-exam-q26",
+      "options": [
+        {
+          "id": "4b8eb13e1d",
+          "text": "Dịch vụ kỹ thuật"
+        },
+        {
+          "id": "eabac4eeb6",
+          "text": "Phân phối xăng dầu"
+        },
+        {
+          "id": "a5d829389d",
+          "text": "Vận chuyển khí"
+        }
+      ],
+      "prompt": "Mảng nào chỉ tiêu Người mua trả tiền trước / Doanh thu có ý nghĩa nhất?"
+    },
+    {
+      "correct_option_id": "fda713660a",
+      "id": "ch14-exam-q27",
+      "options": [
+        {
+          "id": "fda713660a",
+          "text": "LNST năm trước"
+        },
+        {
+          "id": "46fb067226",
+          "text": "Doanh thu năm nay"
+        },
+        {
+          "id": "3f0934a6ca",
+          "text": "Vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Tỷ lệ chi trả cổ tức chia cổ tức đã trả cho gì?"
+    },
+    {
+      "correct_option_id": "630a3084ee",
+      "id": "ch14-exam-q28",
+      "options": [
+        {
+          "id": "630a3084ee",
+          "text": "Không"
+        },
+        {
+          "id": "7604ba2f9a",
+          "text": "Có"
+        },
+        {
+          "id": "3b10ab9302",
+          "text": "Chỉ khi trả ở quý 4"
+        }
+      ],
+      "prompt": "Cổ tức bằng cổ phiếu có được tính vào tỷ lệ chi trả không?"
+    },
+    {
+      "correct_option_id": "bca1b05cfb",
+      "id": "ch14-exam-q29",
+      "options": [
+        {
+          "id": "bca1b05cfb",
+          "text": "Thấp vì lợi nhuận cao"
+        },
+        {
+          "id": "22c8606218",
+          "text": "Cao vì lợi nhuận cao"
+        },
+        {
+          "id": "c1ddc6f7cb",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Ở đỉnh chu kỳ giá dầu, P/E thường thế nào?"
+    },
+    {
+      "correct_option_id": "f59f1e321b",
+      "id": "ch14-exam-q30",
+      "options": [
+        {
+          "id": "f59f1e321b",
+          "text": "Tính cả nợ, tiền và bỏ khác biệt khấu hao"
+        },
+        {
+          "id": "37f514ae64",
+          "text": "Không chịu ảnh hưởng giá dầu"
+        },
+        {
+          "id": "b3343647b0",
+          "text": "Không cần báo cáo tài chính"
+        }
+      ],
+      "prompt": "Vì sao EV / EBITDA phù hợp để định giá dầu khí?"
+    }
+  ],
+  "salt": "85ed28e565988958fe645f63dd2e07de231fbbbffcb6d798c479a7b16cc51c87"
+}

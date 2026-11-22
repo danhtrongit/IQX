@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l10",
+  "questions": [
+    {
+      "correct_option_id": "9e14a0dd73",
+      "id": "ch16-l10-q01",
+      "options": [
+        {
+          "id": "9e14a0dd73",
+          "text": "Nhà máy được xây chủ yếu bằng vốn vay dài hạn"
+        },
+        {
+          "id": "24ad7ea2f1",
+          "text": "Vì công ty điện không có vốn chủ"
+        },
+        {
+          "id": "6026dadbe8",
+          "text": "Vì giá điện thay đổi mỗi ngày"
+        }
+      ],
+      "prompt": "Vì sao D/E công ty điện thường cao hơn nhiều ngành?"
+    },
+    {
+      "correct_option_id": "b2f090db07",
+      "id": "ch16-l10-q02",
+      "options": [
+        {
+          "id": "b2f090db07",
+          "text": "Giảm dần vì trả nợ đều"
+        },
+        {
+          "id": "eb82d6271b",
+          "text": "Tăng mạnh"
+        },
+        {
+          "id": "7f444d0eca",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Khi nhà máy chạy ổn định, D/E thường thế nào?"
+    },
+    {
+      "correct_option_id": "e61877e3b7",
+      "id": "ch16-l10-q03",
+      "options": [
+        {
+          "id": "e61877e3b7",
+          "text": "Tỷ giá"
+        },
+        {
+          "id": "2d5009befa",
+          "text": "Số khách hàng"
+        },
+        {
+          "id": "7e4eed68d8",
+          "text": "Giá cổ phiếu"
+        }
+      ],
+      "prompt": "Nợ vay ngoại tệ chịu ảnh hưởng của yếu tố nào?"
+    },
+    {
+      "correct_option_id": "87f87f80eb",
+      "id": "ch16-l10-q04",
+      "options": [
+        {
+          "id": "87f87f80eb",
+          "text": "Net Debt / EBITDA và Interest Coverage"
+        },
+        {
+          "id": "c07210816f",
+          "text": "P/S và tăng trưởng doanh thu"
+        },
+        {
+          "id": "30e981ca12",
+          "text": "Số ngày tồn kho và biên gộp"
+        }
+      ],
+      "prompt": "Nên đọc D/E công ty điện cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c16l10-rep",
+      "correct_option_id": "b376bdf258",
+      "id": "ch16-l10-q05",
+      "options": [
+        {
+          "id": "b376bdf258",
+          "text": "Công ty xây nhà máy mới"
+        },
+        {
+          "id": "889774d604",
+          "text": "Công ty trả hết nợ"
+        },
+        {
+          "id": "898b5e9f1d",
+          "text": "Công ty chia cổ tức cổ phiếu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, nợ vay tăng nhanh hơn vốn chủ thường do đâu?"
+    }
+  ],
+  "salt": "b422f50657c0767dd8fc7b76cfd36ba8a1e87ea3f856f426997e510d75c787aa"
+}

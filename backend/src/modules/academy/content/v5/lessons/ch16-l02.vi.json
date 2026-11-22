@@ -1,0 +1,384 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l2-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Doanh thu − giá vốn"
+          ],
+          "t": "Lợi nhuận gộp 4 quý",
+          "tone": "pos",
+          "v": "4.022 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "12.507 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Biên gộp",
+          "tone": "warn",
+          "v": "32,2%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l2-g2": {
+      "decimals": 0,
+      "fig": "stack",
+      "kind": "figure",
+      "parts": [
+        {
+          "label": "Khấu hao",
+          "tone": "warn",
+          "value": 30
+        },
+        {
+          "label": "Thuế, phí tài nguyên",
+          "tone": "p5",
+          "value": 10
+        },
+        {
+          "label": "Vận hành",
+          "tone": "p1",
+          "value": 10
+        },
+        {
+          "label": "Lợi nhuận gộp",
+          "tone": "pos",
+          "value": 50
+        }
+      ],
+      "title": "Giá vốn 100 đồng doanh thu thủy điện · số minh họa",
+      "unit": " đồng"
+    },
+    "c16l2-rep": {
+      "alt": "Biên lợi nhuận gộp: 32,2%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Biên gộp (4 quý)",
+            "v": [
+              30.788,
+              28.662,
+              26.972,
+              25.736,
+              26.119,
+              27.487,
+              29.443,
+              32.16
+            ]
+          }
+        ],
+        "name": "Biên lợi nhuận gộp",
+        "sub": {
+          "series": [
+            {
+              "name": "Giá vốn 4 quý",
+              "v": [
+                7130.883,
+                7476.469,
+                7911.768,
+                8469.205,
+                8625.255,
+                8755.446,
+                8708.81,
+                8484.773
+              ]
+            },
+            {
+              "name": "Lợi nhuận gộp 4 quý",
+              "v": [
+                3172.004,
+                3003.926,
+                2922.043,
+                2935.055,
+                3049.273,
+                3318.797,
+                3634.132,
+                4022.2
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Giá vốn của thủy điện chủ yếu là khấu hao và thuế tài nguyên nước, gần như cố định. Giá vốn của nhiệt điện chủ yếu là than và khí. Hai loại nhà máy có biên gộp và cách biên thay đổi rất khác nhau.",
+  "lesson_key": "fundamental:gross_margin-dien",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l2-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Biên gộp bằng <b>lợi nhuận gộp</b> chia <b>doanh thu thuần</b>, cộng 4 quý. Cách tính giống bài Biên lợi nhuận gộp ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l2-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giá vốn gần như không đổi. Phát nhiều điện thì biên gộp tăng mạnh, phát ít thì giảm mạnh.",
+              "title": "Thủy điện: chi phí cố định"
+            },
+            {
+              "text": "Than, khí chiếm phần lớn giá vốn. Biên gộp mỏng và đi theo giá nhiên liệu.",
+              "title": "Nhiệt điện: chi phí nhiên liệu"
+            },
+            {
+              "text": "Biên gộp chung phụ thuộc tỷ trọng từng loại trong năm.",
+              "title": "Công ty nhiều loại nhà máy"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở điện khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l2-rep",
+          "title": "Biên lợi nhuận gộp",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng giá vốn và lợi nhuận gộp 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Giá vốn gần như đi ngang, lợi nhuận gộp tăng theo doanh thu: dấu hiệu của chi phí cố định.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thủy điện từ khoảng 45%, nhiệt điện từ khoảng 12%. Mức tham khảo khi thủy văn và giá nhiên liệu bình thường.",
+              "title": "Biên tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Biên giảm nhiều năm liền, không giải thích được bằng thủy văn. Có thể do nhà máy xuống cấp hoặc giá bán bị điều chỉnh.",
+              "title": "Biên yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Biên gộp thủy điện nên đọc <b>theo năm</b> và so với các năm có thủy văn tương tự.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đọc tài liệu công ty để biết tỷ trọng thủy điện, nhiệt điện.",
+              "title": "Tách theo loại nhà máy"
+            },
+            {
+              "text": "Bỏ ảnh hưởng mùa mưa.",
+              "title": "Đọc theo năm"
+            },
+            {
+              "text": "Khấu hao lớn trong giá vốn, EBITDA cho thấy biên tiền mặt.",
+              "title": "Đọc cùng Biên EBITDA"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Giá vốn"
+            },
+            {
+              "label": "Lợi nhuận gộp"
+            },
+            {
+              "label": "Biên gộp"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "7.131",
+                "3.172",
+                "30,8%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "8.469",
+                "2.935",
+                "25,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "8.485",
+                "4.022",
+                "32,2%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Biên gộp giảm về 25,7% rồi tăng lại 32,2% khi lượng nước về tốt hơn. Giá vốn gần như không đổi, lợi nhuận gộp tăng theo doanh thu.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cơ cấu chi phí khác hẳn.",
+              "title": "So thủy điện với nhiệt điện"
+            },
+            {
+              "text": "Mùa mưa làm biên quý dao động mạnh.",
+              "title": "Đọc theo quý"
+            },
+            {
+              "text": "Năm nhiều mưa làm biên cao bất thường.",
+              "title": "Kết luận từ một năm thủy văn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên cao, đi theo lượng nước.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Biên mỏng, đi theo giá than, khí.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Gió, mặt trời có biên cao. Nước sạch biên ổn định.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "<b>Biên gộp</b> = lợi nhuận gộp ÷ doanh thu thuần, 4 quý.",
+    "Thủy điện: <b>chi phí cố định</b>, biên đổi mạnh theo sản lượng.",
+    "Nhiệt điện: <b>chi phí nhiên liệu</b>, biên mỏng.",
+    "Đọc <b>theo năm</b>, so với năm thủy văn tương tự."
+  ],
+  "title": "Biên lợi nhuận gộp · ở điện"
+}

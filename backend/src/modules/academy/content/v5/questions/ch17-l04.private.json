@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l04",
+  "questions": [
+    {
+      "correct_option_id": "98adf186b6",
+      "id": "ch17-l04-q01",
+      "options": [
+        {
+          "id": "98adf186b6",
+          "text": "Giá vốn 4 quý"
+        },
+        {
+          "id": "4da7ce0610",
+          "text": "Doanh thu 4 quý"
+        },
+        {
+          "id": "694bcf785b",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Số ngày tồn kho bằng tồn kho bình quân chia gì, nhân 365?"
+    },
+    {
+      "correct_option_id": "88bddaae5f",
+      "id": "ch17-l04-q02",
+      "options": [
+        {
+          "id": "88bddaae5f",
+          "text": "Không"
+        },
+        {
+          "id": "eb6992ae0e",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "01cd1ac458",
+          "text": "Có, ở lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Tồn kho thép có tách được nguyên liệu và thành phẩm từ 3 báo cáo không?"
+    },
+    {
+      "correct_option_id": "e2432f4d36",
+      "id": "ch17-l04-q03",
+      "options": [
+        {
+          "id": "e2432f4d36",
+          "text": "Chủ động mua nguyên liệu giá rẻ hoặc hàng bán chậm"
+        },
+        {
+          "id": "15d3d6cccc",
+          "text": "Công ty trả cổ tức tiền mặt cao"
+        },
+        {
+          "id": "a6fa2c0425",
+          "text": "Công ty trả bớt nợ vay dài hạn"
+        }
+      ],
+      "prompt": "Số ngày tồn kho tăng có thể do đâu?"
+    },
+    {
+      "correct_option_id": "56415d9131",
+      "id": "ch17-l04-q04",
+      "options": [
+        {
+          "id": "56415d9131",
+          "text": "Dự phòng giảm giá tồn kho / Tồn kho"
+        },
+        {
+          "id": "af064f11f7",
+          "text": "P/E"
+        },
+        {
+          "id": "d062779205",
+          "text": "Tỷ lệ chi trả cổ tức"
+        }
+      ],
+      "prompt": "Nên đọc số ngày tồn kho cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c17l4-rep",
+      "correct_option_id": "06f8f77bed",
+      "id": "ch17-l04-q05",
+      "options": [
+        {
+          "id": "06f8f77bed",
+          "text": "Tăng"
+        },
+        {
+          "id": "9ea61f9ade",
+          "text": "Giảm"
+        },
+        {
+          "id": "18176e2cba",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, tồn kho tăng nhanh hơn giá vốn làm đường thế nào?"
+    }
+  ],
+  "salt": "763c9491ebba57d7748f33014858d9676aefeb4692b211a6ecec9d68446f118c"
+}

@@ -1,0 +1,391 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l3-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Doanh thu thuần trừ giá vốn"
+          ],
+          "t": "Lợi nhuận gộp 4 quý",
+          "tone": "pos",
+          "v": "7.820 tỷ"
+        },
+        {
+          "notes": [
+            "Báo cáo kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "20.406 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Biên lợi nhuận gộp",
+          "tone": "warn",
+          "v": "38,3%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l3-g2": {
+      "decimals": 0,
+      "fig": "stack",
+      "kind": "figure",
+      "parts": [
+        {
+          "label": "Tiền đất",
+          "tone": "warn",
+          "value": 22
+        },
+        {
+          "label": "Xây dựng",
+          "tone": "p1",
+          "value": 32
+        },
+        {
+          "label": "Lãi vay vốn hoá",
+          "tone": "p5",
+          "value": 6
+        },
+        {
+          "label": "Lợi nhuận gộp",
+          "tone": "pos",
+          "value": 40
+        }
+      ],
+      "title": "Giá vốn và lợi nhuận gộp của 100 đồng doanh thu · số minh họa",
+      "unit": " đồng"
+    },
+    "c13l3-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Đất nền, quỹ đất cũ",
+          "tone": "pos",
+          "value": 55
+        },
+        {
+          "label": "Căn hộ trung cấp",
+          "tone": "p1",
+          "value": 35
+        },
+        {
+          "label": "Nhà ở xã hội",
+          "tone": "warn",
+          "value": 12
+        },
+        {
+          "label": "Cho thuê khu công nghiệp",
+          "tone": "pos",
+          "value": 50
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Biên gộp tham khảo theo loại sản phẩm · số minh họa",
+      "unit": "%"
+    },
+    "c13l3-rep": {
+      "alt": "Biên lợi nhuận gộp: 38,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Biên gộp (4 quý)",
+            "v": [
+              39.153,
+              39.203,
+              38.739,
+              38.328,
+              38.286,
+              37.855,
+              38.239,
+              38.322
+            ]
+          }
+        ],
+        "name": "Biên lợi nhuận gộp",
+        "sub": {
+          "series": [
+            {
+              "name": "Giá vốn 4 quý",
+              "v": [
+                12439.705,
+                12874.76,
+                13944.196,
+                14389.573,
+                14469.411,
+                13369.704,
+                13360.438,
+                12585.931
+              ]
+            },
+            {
+              "name": "Lợi nhuận gộp 4 quý",
+              "v": [
+                8004.562,
+                8301.981,
+                8817.68,
+                8942.771,
+                8976.673,
+                8144.099,
+                8272.133,
+                7819.807
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên gộp của công ty bất động sản thường cao hơn hẳn doanh nghiệp sản xuất, nhưng thay đổi theo từng dự án được bàn giao. Bài này giúp đọc biên gộp gắn với chất lượng quỹ đất và giá bán.",
+  "lesson_key": "fundamental:gross_margin-bds",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l3-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Biên gộp bằng <b>lợi nhuận gộp</b> chia <b>doanh thu thuần</b>, cộng 4 quý gần nhất. Hai dòng đều trên báo cáo kết quả kinh doanh. Cách tính giống bài Biên lợi nhuận gộp ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Giá vốn của một căn hộ gồm tiền đất, chi phí xây dựng và lãi vay đã vốn hoá vào dự án. Biên gộp phụ thuộc nhiều vào <b>giá đất lúc mua</b> so với <b>giá bán lúc bàn giao</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l3-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đất mua từ lâu với giá thấp giúp biên gộp các dự án sau rất cao.",
+              "title": "Quỹ đất giá rẻ"
+            },
+            {
+              "text": "Mỗi dự án một mức biên. Biên gộp kỳ này cho biết dự án nào đang bàn giao, không phải xu hướng chung.",
+              "title": "Theo từng dự án"
+            },
+            {
+              "text": "Lãi vay vốn hoá không đi qua chi phí tài chính mà đi vào giá vốn khi bàn giao.",
+              "title": "Lãi vay nằm trong giá vốn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bất động sản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l3-rep",
+          "title": "Biên lợi nhuận gộp",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng giá vốn và lợi nhuận gộp 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột thấp đi mà biên giữ nguyên nghĩa là bàn giao ít hơn nhưng dự án vẫn có lãi tốt.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 35% trở lên và giữ được qua nhiều năm. Đây là mức tham khảo với nhà ở, cho thấy quỹ đất giá vốn thấp.",
+              "title": "Biên gộp tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 20%, hoặc giảm dần qua nhiều năm. Có thể do giảm giá bán, chi phí xây dựng tăng hoặc đất mua giá cao.",
+              "title": "Biên gộp yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Biên gộp tăng vọt một năm có thể chỉ do bàn giao một dự án đặc biệt có lãi. Cần xem các năm sau còn giữ được không.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l3-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp đều qua nhiều năm cho thấy quỹ đất tốt và định giá bán hợp lý.",
+              "title": "So giữa các năm"
+            },
+            {
+              "text": "Biên gộp cao và tiền khách trả trước tăng là dấu hiệu dự án bán tốt với giá tốt.",
+              "title": "Đọc cùng người mua trả tiền trước"
+            },
+            {
+              "text": "Khi thị trường khó, công ty có thể chiết khấu. Biên gộp các quý sau sẽ thấp đi.",
+              "title": "Để ý giảm giá bán"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu, số liệu 4 quý đến Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Doanh thu thuần 4 quý",
+              "text": "20.406 tỷ đồng."
+            },
+            {
+              "term": "Giá vốn 4 quý",
+              "text": "12.586 tỷ đồng."
+            },
+            {
+              "term": "Lợi nhuận gộp",
+              "text": "20.406 − 12.586 = 7.820 tỷ đồng."
+            },
+            {
+              "term": "Biên gộp",
+              "text": "7.820 ÷ 20.406 ≈ 38,3%, gần như không đổi so với 38,3% một năm trước."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên 38% là rất cao với sản xuất nhưng bình thường với bất động sản.",
+              "title": "So với doanh nghiệp sản xuất"
+            },
+            {
+              "text": "Biên gộp từng quý đổi theo dự án bàn giao. Dùng số 4 quý hoặc năm.",
+              "title": "Coi biên một quý là xu hướng"
+            },
+            {
+              "text": "Một phần lãi vay đã nằm trong giá vốn. Biên gộp vì vậy đã trừ một phần chi phí vốn.",
+              "title": "Quên lãi vay vốn hoá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên gộp phụ thuộc giá đất lúc mua và giá bán. Quỹ đất cũ cho biên cao.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Cho thuê đất có biên gộp cao vì giá vốn chủ yếu là tiền đền bù và hạ tầng đã làm từ lâu.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "<b>Biên gộp</b> = lợi nhuận gộp 4 quý ÷ doanh thu thuần 4 quý.",
+    "Biên gộp bất động sản <b>cao và đổi theo dự án</b> bàn giao.",
+    "Mức tham khảo nhà ở: <b>khoảng 35% trở lên</b> là tốt.",
+    "Giá vốn có cả <b>lãi vay vốn hoá</b> vào dự án."
+  ],
+  "title": "Biên lợi nhuận gộp · ở bất động sản"
+}

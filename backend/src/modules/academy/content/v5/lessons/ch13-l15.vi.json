@@ -1,0 +1,419 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l15-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Lưu chuyển tiền tệ",
+            "Mã 14"
+          ],
+          "t": "Tiền lãi vay đã trả 4 quý",
+          "tone": "neg",
+          "v": "2.903 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh",
+            "Mã 23"
+          ],
+          "t": "Chi phí lãi vay 4 quý",
+          "tone": "warn",
+          "v": "1.233 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "p1",
+          "v": "2,35 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l15-g2": {
+      "decimals": 0,
+      "fig": "wf",
+      "height": 270,
+      "items": [
+        {
+          "label": "Lãi vay thực trả",
+          "step": "base",
+          "tone": "neg",
+          "value": 100
+        },
+        {
+          "label": "Vốn hoá vào dự án",
+          "step": "minus",
+          "tone": "warn",
+          "value": 57
+        },
+        {
+          "label": "Ghi vào chi phí lãi vay",
+          "step": "total",
+          "tone": "p1",
+          "value": 43
+        }
+      ],
+      "kind": "figure",
+      "title": "100 đồng lãi vay thực trả · số minh họa",
+      "unit": " đồng"
+    },
+    "c13l15-g3": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Doanh nghiệp sản xuất",
+          "tone": "pos",
+          "value": 1
+        },
+        {
+          "label": "Bất động sản, ít dự án đang xây",
+          "tone": "p1",
+          "value": 1.3
+        },
+        {
+          "label": "Bất động sản, nhiều dự án đang xây",
+          "tone": "neg",
+          "value": 2.5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 300,
+      "title": "Tỷ lệ tham khảo · số minh họa",
+      "unit": " lần"
+    },
+    "c13l15-rep": {
+      "alt": "Lãi vay đã trả / Chi phí lãi vay: 2,35 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Lãi vay đã trả / Chi phí lãi vay (4 quý)",
+            "v": [
+              2.015,
+              2.07,
+              2.136,
+              2.15,
+              2.225,
+              2.258,
+              2.305,
+              2.354
+            ]
+          }
+        ],
+        "name": "Lãi vay đã trả / Chi phí lãi vay",
+        "ref": 1,
+        "sub": {
+          "series": [
+            {
+              "name": "Lãi vay đã trả 4 quý",
+              "v": [
+                1986.897,
+                2108.546,
+                2249.913,
+                2345.302,
+                2510.717,
+                2630.878,
+                2766.763,
+                2902.664
+              ]
+            },
+            {
+              "name": "Chi phí lãi vay 4 quý",
+              "v": [
+                985.809,
+                1018.437,
+                1053.208,
+                1090.803,
+                1128.482,
+                1165.25,
+                1200.116,
+                1232.96
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l15",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Lãi vay của khoản vay làm dự án được phép cộng vào giá trị dự án thay vì ghi vào chi phí ngay. Vì vậy chi phí lãi vay trên báo cáo kết quả kinh doanh có thể nhỏ hơn nhiều so với tiền lãi thực trả. Chỉ tiêu này cho thấy khoảng cách đó.",
+  "lesson_key": "fundamental:interest_paid_to_expense-bds",
+  "order": 15,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l15-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>tiền lãi vay đã trả</b> trên báo cáo lưu chuyển tiền tệ chia <b>chi phí lãi vay</b> trên báo cáo kết quả kinh doanh, cộng 4 quý. Đơn vị lần.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 2,35 lần nghĩa là công ty thực trả lãi gấp khoảng 2,4 lần số lãi ghi vào chi phí. Phần chênh lệch đang được vốn hoá vào dự án.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Lãi vay đã trả / Chi phí lãi vay là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lãi của khoản vay dùng để xây dự án được cộng vào giá trị dự án (tồn kho hoặc xây dựng dở dang). Khi bàn giao, phần này đi vào giá vốn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l15-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vốn hoá lãi vay là cách hạch toán được chuẩn mực kế toán cho phép.",
+              "title": "Đúng quy định"
+            },
+            {
+              "text": "Chi phí lãi vay ít đi nên lợi nhuận năm nay cao hơn. Chi phí dồn vào giá vốn các năm sau.",
+              "title": "Lợi nhuận hiện tại cao hơn"
+            },
+            {
+              "text": "Tiền lãi vẫn phải trả. Báo cáo lưu chuyển tiền tệ cho thấy số thật.",
+              "title": "Dòng tiền thì không đổi"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lãi vay đi đâu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l15-rep",
+          "title": "Lãi vay đã trả / Chi phí lãi vay",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền lãi vay đã trả 4 quý chia chi phí lãi vay 4 quý, đơn vị lần. Đường nét đứt là mốc 1 lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Tiền lãi vay đã trả và chi phí lãi vay, 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Khoảng cách giữa hai cột càng rộng thì lãi vay vốn hoá càng nhiều.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 1 đến 1,3 lần. Mức tham khảo, phần lớn lãi vay đã được ghi vào chi phí, lợi nhuận phản ánh sát chi phí vốn.",
+              "title": "Gần mốc 1",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 2 lần và tăng dần. Lợi nhuận hiện tại đang được hỗ trợ bởi việc vốn hoá, giá vốn các năm sau sẽ cao hơn.",
+              "title": "Vốn hoá nhiều",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Chỉ tiêu này giải thích vì sao Interest Coverage của công ty bất động sản thường cao. Chi phí lãi vay ở mẫu số đã nhỏ đi do vốn hoá.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l15-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng tiền lãi vay đã trả thay cho chi phí lãi vay để tính khả năng trả lãi thật.",
+              "title": "Điều chỉnh Interest Coverage"
+            },
+            {
+              "text": "Lãi vốn hoá nhiều hôm nay làm giá vốn tăng khi dự án bàn giao.",
+              "title": "Dự báo biên gộp"
+            },
+            {
+              "text": "Tỷ lệ tăng dần khi công ty triển khai nhiều dự án lớn cùng lúc.",
+              "title": "So với các năm trước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Lãi đã trả"
+            },
+            {
+              "label": "Chi phí lãi vay"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "1.987",
+                "986",
+                "2,02 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "2.345",
+                "1.091",
+                "2,15 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "2.903",
+                "1.233",
+                "2,35 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Năm gần nhất công ty trả 2.903 tỷ đồng tiền lãi nhưng chỉ 1.233 tỷ ghi vào chi phí. Khoảng 1.670 tỷ được vốn hoá vào dự án.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đây là cách hạch toán hợp lệ. Điều cần biết là quy mô của nó.",
+              "title": "Coi vốn hoá là gian lận"
+            },
+            {
+              "text": "Interest Coverage dùng chi phí lãi vay đã giảm nhờ vốn hoá, nên trông an toàn hơn thực tế.",
+              "title": "Chỉ tin Interest Coverage"
+            },
+            {
+              "text": "Lãi vay trả theo kỳ hạn, có quý trả nhiều quý trả ít. Dùng số 4 quý.",
+              "title": "Dùng số một quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Vốn hoá lãi vay phổ biến khi nhiều dự án đang xây. Tỷ lệ cao nhất ở giai đoạn đầu tư mạnh.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Lãi vay làm hạ tầng cũng được vốn hoá trong giai đoạn xây dựng.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>tiền lãi vay đã trả</b> (B03 mã 14) ÷ <b>chi phí lãi vay</b> (B02 mã 23), 4 quý.",
+    "Lớn hơn 1 nghĩa là <b>lãi vay đang được vốn hoá</b> vào dự án.",
+    "Lợi nhuận hiện tại cao hơn, <b>giá vốn các năm sau</b> sẽ cao hơn.",
+    "Giải thích vì sao <b>Interest Coverage</b> bất động sản thường cao."
+  ],
+  "title": "Lãi vay đã trả / Chi phí lãi vay · lãi vay đang được vốn hoá"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l06",
+  "questions": [
+    {
+      "correct_option_id": "05d3631117",
+      "id": "ch13-l06-q01",
+      "options": [
+        {
+          "id": "05d3631117",
+          "text": "Số dư trả trước cuối quý với cùng kỳ năm trước"
+        },
+        {
+          "id": "fe2a12ca2b",
+          "text": "Doanh thu quý này với quý trước"
+        },
+        {
+          "id": "35b934bf96",
+          "text": "Tồn kho cuối quý với đầu quý"
+        }
+      ],
+      "prompt": "Chỉ tiêu này so sánh gì?"
+    },
+    {
+      "correct_option_id": "6147ab9338",
+      "id": "ch13-l06-q02",
+      "options": [
+        {
+          "id": "6147ab9338",
+          "text": "Khi phần bàn giao nhiều hơn tiền khách mới trả"
+        },
+        {
+          "id": "4e52dde849",
+          "text": "Khi công ty mở bán dự án mới"
+        },
+        {
+          "id": "f6e71395c4",
+          "text": "Khi công ty vay thêm ngân hàng"
+        }
+      ],
+      "prompt": "Số dư trả trước giảm khi nào?"
+    },
+    {
+      "correct_option_id": "1b84a2f4f2",
+      "id": "ch13-l06-q03",
+      "options": [
+        {
+          "id": "1b84a2f4f2",
+          "text": "Vì thường đổi hướng sớm hơn doanh thu"
+        },
+        {
+          "id": "6e8c36efa4",
+          "text": "Vì được công bố trước báo cáo tài chính"
+        },
+        {
+          "id": "9d46cdfe39",
+          "text": "Vì luôn tăng trước giá cổ phiếu"
+        }
+      ],
+      "prompt": "Vì sao gọi đây là chỉ tiêu dẫn trước?"
+    },
+    {
+      "correct_option_id": "cabe5e2bf3",
+      "id": "ch13-l06-q04",
+      "options": [
+        {
+          "id": "cabe5e2bf3",
+          "text": "Tăng trưởng phần trăm dễ bị phóng đại"
+        },
+        {
+          "id": "315c91d82d",
+          "text": "Chỉ tiêu không tính được"
+        },
+        {
+          "id": "8aed46578b",
+          "text": "Phải cộng thêm doanh thu chưa thực hiện"
+        }
+      ],
+      "prompt": "Khi số dư nhỏ, cần chú ý gì?"
+    },
+    {
+      "chart_id": "c13l6-rep",
+      "correct_option_id": "f737e76a01",
+      "id": "ch13-l06-q05",
+      "options": [
+        {
+          "id": "f737e76a01",
+          "text": "Số dư vẫn tăng nhưng tăng chậm lại"
+        },
+        {
+          "id": "e7bfebb484",
+          "text": "Số dư đang giảm"
+        },
+        {
+          "id": "a02001ab15",
+          "text": "Doanh thu đang giảm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường giảm dần nhưng vẫn trên 0 nghĩa là gì?"
+    }
+  ],
+  "salt": "dced7354a1a3b1a1603df23f86d2c506089173721fe5758e1ea514741e094a7a"
+}

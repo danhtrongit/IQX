@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-exam",
+  "questions": [
+    {
+      "correct_option_id": "7f6dcf32ef",
+      "id": "ch04-exam-q01",
+      "options": [
+        {
+          "id": "7f6dcf32ef",
+          "text": "Áp lực bán ở vùng giá cao"
+        },
+        {
+          "id": "ed4b8604fe",
+          "text": "Lực mua mạnh ở vùng giá thấp"
+        },
+        {
+          "id": "6870095826",
+          "text": "Phiên không có giao dịch"
+        }
+      ],
+      "prompt": "Bóng trên dài của cây nến cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "404b555ba1",
+      "id": "ch04-exam-q02",
+      "options": [
+        {
+          "id": "404b555ba1",
+          "text": "Sau đà giảm, gợi ý lực mua quay lại"
+        },
+        {
+          "id": "14a44574ab",
+          "text": "Sau đà tăng, gợi ý áp lực bán"
+        },
+        {
+          "id": "25d87f73c8",
+          "text": "Giữa vùng đi ngang, không có ý nghĩa"
+        }
+      ],
+      "prompt": "Mẫu nến Búa thường xuất hiện ở đâu và gợi ý điều gì?"
+    },
+    {
+      "correct_option_id": "ea021a9346",
+      "id": "ch04-exam-q03",
+      "options": [
+        {
+          "id": "ea021a9346",
+          "text": "Từ các nến ngày trong tuần, mở cửa thứ Hai và đóng cửa thứ Sáu"
+        },
+        {
+          "id": "3cdb739ca6",
+          "text": "Chỉ từ nến của ngày thứ Sáu"
+        },
+        {
+          "id": "4ab6ea811d",
+          "text": "Từ các nến của tháng trước"
+        }
+      ],
+      "prompt": "Nến tuần được tạo thành như thế nào?"
+    },
+    {
+      "correct_option_id": "4dec3de99f",
+      "id": "ch04-exam-q04",
+      "options": [
+        {
+          "id": "4dec3de99f",
+          "text": "Nối ít nhất hai đỉnh"
+        },
+        {
+          "id": "30a2bb7454",
+          "text": "Nối ít nhất hai đáy"
+        },
+        {
+          "id": "33f20bc40e",
+          "text": "Nối giá đóng cửa các phiên"
+        }
+      ],
+      "prompt": "Đường xu hướng giảm được kẻ bằng cách nào?"
+    },
+    {
+      "correct_option_id": "02b71f067e",
+      "id": "ch04-exam-q05",
+      "options": [
+        {
+          "id": "02b71f067e",
+          "text": "Hạn chế mua mới, tránh bắt đáy"
+        },
+        {
+          "id": "c48b2593ea",
+          "text": "Mua thêm mỗi khi giá giảm"
+        },
+        {
+          "id": "bcbfa93335",
+          "text": "Dùng margin để mua nhiều hơn"
+        }
+      ],
+      "prompt": "Trong xu hướng giảm, nhà đầu tư nên làm gì?"
+    },
+    {
+      "correct_option_id": "f9d5f95af9",
+      "id": "ch04-exam-q06",
+      "options": [
+        {
+          "id": "f9d5f95af9",
+          "text": "Các đỉnh và đáy dao động quanh cùng một vùng giá"
+        },
+        {
+          "id": "f28b7905bf",
+          "text": "Đỉnh và đáy sau cao hơn trước"
+        },
+        {
+          "id": "220e1627ec",
+          "text": "Đỉnh và đáy sau thấp hơn trước"
+        }
+      ],
+      "prompt": "Thị trường đi ngang có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "9b8aec3e7c",
+      "id": "ch04-exam-q07",
+      "options": [
+        {
+          "id": "9b8aec3e7c",
+          "text": "Kháng cự"
+        },
+        {
+          "id": "1778162187",
+          "text": "Hỗ trợ mạnh hơn"
+        },
+        {
+          "id": "03793d6360",
+          "text": "Không còn ý nghĩa"
+        }
+      ],
+      "prompt": "Khi giá phá xuống dưới vùng hỗ trợ, vùng này thường trở thành gì?"
+    },
+    {
+      "correct_option_id": "06b1bb252f",
+      "id": "ch04-exam-q08",
+      "options": [
+        {
+          "id": "06b1bb252f",
+          "text": "Giá đã quay đầu nhiều lần tại vùng đó"
+        },
+        {
+          "id": "43bb606fff",
+          "text": "Giá mới chạm vùng đó một lần"
+        },
+        {
+          "id": "8b8a9cd95f",
+          "text": "Khối lượng giao dịch rất thấp"
+        }
+      ],
+      "prompt": "Vùng hỗ trợ hoặc kháng cự mạnh hơn khi nào?"
+    },
+    {
+      "correct_option_id": "ca4ad16a7e",
+      "id": "ch04-exam-q09",
+      "options": [
+        {
+          "id": "ca4ad16a7e",
+          "text": "Giá vượt lên trong phiên rồi nhanh chóng quay lại dưới kháng cự"
+        },
+        {
+          "id": "b3bb475f8e",
+          "text": "Giá đóng cửa vượt rõ kháng cự kèm khối lượng lớn"
+        },
+        {
+          "id": "a1e13cddd2",
+          "text": "Giá đi ngang trong biên độ hẹp"
+        }
+      ],
+      "prompt": "Phá vỡ giả là gì?"
+    },
+    {
+      "correct_option_id": "d136c87baa",
+      "id": "ch04-exam-q10",
+      "options": [
+        {
+          "id": "d136c87baa",
+          "text": "Áp lực bán mạnh"
+        },
+        {
+          "id": "64384ae87f",
+          "text": "Lực bán yếu dần"
+        },
+        {
+          "id": "6a25be5f8d",
+          "text": "Lực mua đang chiếm ưu thế"
+        }
+      ],
+      "prompt": "Giá giảm kèm khối lượng tăng cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "c9f6a0fb3b",
+      "id": "ch04-exam-q11",
+      "options": [
+        {
+          "id": "c9f6a0fb3b",
+          "text": "Khối lượng trung bình 20 phiên"
+        },
+        {
+          "id": "11b9d9115d",
+          "text": "Giá đóng cửa của phiên"
+        },
+        {
+          "id": "b4cf43fa40",
+          "text": "Điểm số VN-Index"
+        }
+      ],
+      "prompt": "Để biết khối lượng một phiên cao hay thấp, nhà đầu tư thường so sánh với gì?"
+    },
+    {
+      "correct_option_id": "9383b161f0",
+      "id": "ch04-exam-q12",
+      "options": [
+        {
+          "id": "9383b161f0",
+          "text": "Kèm khối lượng đột biến"
+        },
+        {
+          "id": "9c4987a55e",
+          "text": "Khi khối lượng giảm dần"
+        },
+        {
+          "id": "31fd6b5b50",
+          "text": "Khi giá không đóng cửa vượt kháng cự"
+        }
+      ],
+      "prompt": "Phá vỡ kháng cự đáng tin cậy hơn khi nào?"
+    },
+    {
+      "correct_option_id": "3efca71a9d",
+      "id": "ch04-exam-q13",
+      "options": [
+        {
+          "id": "3efca71a9d",
+          "text": "MA ngắn hạn cắt xuống dưới MA dài hạn"
+        },
+        {
+          "id": "359317aed5",
+          "text": "MA ngắn hạn cắt lên trên MA dài hạn"
+        },
+        {
+          "id": "ff9bcb748e",
+          "text": "Giá chạm vào đường MA200"
+        }
+      ],
+      "prompt": "Giao cắt tử thần là gì?"
+    },
+    {
+      "correct_option_id": "3918072339",
+      "id": "ch04-exam-q14",
+      "options": [
+        {
+          "id": "3918072339",
+          "text": "Hỗ trợ động"
+        },
+        {
+          "id": "930e8ecf8c",
+          "text": "Kháng cự động"
+        },
+        {
+          "id": "686b2f183c",
+          "text": "Không có vai trò gì"
+        }
+      ],
+      "prompt": "Trong xu hướng tăng, đường MA thường đóng vai trò gì?"
+    },
+    {
+      "correct_option_id": "1e245df96a",
+      "id": "ch04-exam-q15",
+      "options": [
+        {
+          "id": "1e245df96a",
+          "text": "EMA ưu tiên giá gần đây nên phản ứng nhanh hơn"
+        },
+        {
+          "id": "ada9e838e5",
+          "text": "EMA phản ứng chậm hơn SMA"
+        },
+        {
+          "id": "95a74c19cd",
+          "text": "EMA chỉ dùng để đo khối lượng"
+        }
+      ],
+      "prompt": "EMA khác SMA ở điểm nào?"
+    },
+    {
+      "correct_option_id": "bdf685f308",
+      "id": "ch04-exam-q16",
+      "options": [
+        {
+          "id": "bdf685f308",
+          "text": "Quá bán"
+        },
+        {
+          "id": "56c4dd834d",
+          "text": "Quá mua"
+        },
+        {
+          "id": "826e3298a2",
+          "text": "Trung tính"
+        }
+      ],
+      "prompt": "RSI dưới 30 thường được gọi là vùng gì?"
+    },
+    {
+      "correct_option_id": "ffb0d92d56",
+      "id": "ch04-exam-q17",
+      "options": [
+        {
+          "id": "ffb0d92d56",
+          "text": "Phần lớn thời gian trên 40"
+        },
+        {
+          "id": "2f53fd5bb2",
+          "text": "Phần lớn thời gian dưới 30"
+        },
+        {
+          "id": "2fd1212abd",
+          "text": "Luôn đứng yên ở mức 50"
+        }
+      ],
+      "prompt": "Trong xu hướng tăng, RSI thường nằm ở vùng nào?"
+    },
+    {
+      "correct_option_id": "1372a2b405",
+      "id": "ch04-exam-q18",
+      "options": [
+        {
+          "id": "1372a2b405",
+          "text": "Bắt đáy khi RSI dưới 30 trong xu hướng giảm"
+        },
+        {
+          "id": "4e20715587",
+          "text": "Kết hợp RSI với xu hướng"
+        },
+        {
+          "id": "2246643bd7",
+          "text": "Chờ RSI quay đầu rồi mới hành động"
+        }
+      ],
+      "prompt": "Sai lầm nào hay gặp khi dùng RSI?"
+    },
+    {
+      "correct_option_id": "a3ed79de05",
+      "id": "ch04-exam-q19",
+      "options": [
+        {
+          "id": "a3ed79de05",
+          "text": "EMA12 và EMA26"
+        },
+        {
+          "id": "0e77b7e432",
+          "text": "MA20 và MA50"
+        },
+        {
+          "id": "011950c1cb",
+          "text": "RSI và khối lượng"
+        }
+      ],
+      "prompt": "Đường MACD được tính từ hai đường nào?"
+    },
+    {
+      "correct_option_id": "631f4f1915",
+      "id": "ch04-exam-q20",
+      "options": [
+        {
+          "id": "631f4f1915",
+          "text": "Đường trung bình 9 phiên của đường MACD"
+        },
+        {
+          "id": "8860f149fa",
+          "text": "Đường MA200 của giá"
+        },
+        {
+          "id": "9e7222b5dc",
+          "text": "Đường nối các đỉnh giá"
+        }
+      ],
+      "prompt": "Đường tín hiệu của MACD là gì?"
+    },
+    {
+      "correct_option_id": "0af3fd0e58",
+      "id": "ch04-exam-q21",
+      "options": [
+        {
+          "id": "0af3fd0e58",
+          "text": "Giá trị MACD phụ thuộc vào thị giá của từng cổ phiếu"
+        },
+        {
+          "id": "a75f5c2608",
+          "text": "MACD luôn bằng 0"
+        },
+        {
+          "id": "ea5102f7fa",
+          "text": "MACD chỉ dùng được cho chỉ số"
+        }
+      ],
+      "prompt": "Vì sao không nên so sánh giá trị MACD giữa các cổ phiếu?"
+    },
+    {
+      "correct_option_id": "21d92c14bc",
+      "id": "ch04-exam-q22",
+      "options": [
+        {
+          "id": "21d92c14bc",
+          "text": "Dải giữa cộng 2 lần độ lệch chuẩn"
+        },
+        {
+          "id": "3bd18c759e",
+          "text": "Đường MA200 cộng 10%"
+        },
+        {
+          "id": "994a99a1ea",
+          "text": "Giá cao nhất của 20 phiên"
+        }
+      ],
+      "prompt": "Dải trên của Bollinger Bands được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "96b828c2b0",
+      "id": "ch04-exam-q23",
+      "options": [
+        {
+          "id": "96b828c2b0",
+          "text": "Thường bật lên"
+        },
+        {
+          "id": "fd0ed0500b",
+          "text": "Luôn giảm sâu hơn"
+        },
+        {
+          "id": "cede993f1d",
+          "text": "Không thay đổi"
+        }
+      ],
+      "prompt": "Trong thị trường đi ngang, giá chạm dải dưới thường diễn biến thế nào?"
+    },
+    {
+      "correct_option_id": "a6cd7a917e",
+      "id": "ch04-exam-q24",
+      "options": [
+        {
+          "id": "a6cd7a917e",
+          "text": "Giá đi dọc theo dải trên hoặc dải dưới trong thời gian dài"
+        },
+        {
+          "id": "523274f868",
+          "text": "Dải Bollinger thu hẹp lại"
+        },
+        {
+          "id": "cc3676a948",
+          "text": "Giá nằm đúng trên dải giữa"
+        }
+      ],
+      "prompt": "Hiện tượng bám dải là gì?"
+    },
+    {
+      "correct_option_id": "aebc3ae7b6",
+      "id": "ch04-exam-q25",
+      "options": [
+        {
+          "id": "aebc3ae7b6",
+          "text": "Từ đỉnh xuống đáy"
+        },
+        {
+          "id": "5f1a386793",
+          "text": "Từ đáy lên đỉnh"
+        },
+        {
+          "id": "b922b33ebb",
+          "text": "Từ giá trần xuống giá sàn"
+        }
+      ],
+      "prompt": "Trong xu hướng giảm, kéo Fibonacci như thế nào?"
+    },
+    {
+      "correct_option_id": "23a9f26789",
+      "id": "ch04-exam-q26",
+      "options": [
+        {
+          "id": "23a9f26789",
+          "text": "Giá điều chỉnh một nửa đợt tăng, là mức tâm lý quan trọng"
+        },
+        {
+          "id": "1ec8f86b3c",
+          "text": "Mức cao nhất của đợt tăng"
+        },
+        {
+          "id": "0d3bbc8080",
+          "text": "Giá đã giảm về đáy của đợt tăng"
+        }
+      ],
+      "prompt": "Mức 50% trong Fibonacci có ý nghĩa gì?"
+    },
+    {
+      "correct_option_id": "351379069a",
+      "id": "ch04-exam-q27",
+      "options": [
+        {
+          "id": "351379069a",
+          "text": "Trùng với vùng hỗ trợ cũ hoặc đường MA"
+        },
+        {
+          "id": "8079625697",
+          "text": "Nằm xa mọi vùng hỗ trợ"
+        },
+        {
+          "id": "a6229780dc",
+          "text": "Được kẻ trên những biến động rất nhỏ"
+        }
+      ],
+      "prompt": "Mức Fibonacci đáng tin cậy hơn khi nào?"
+    },
+    {
+      "correct_option_id": "db800224c7",
+      "id": "ch04-exam-q28",
+      "options": [
+        {
+          "id": "db800224c7",
+          "text": "Đáy sóng 4 không thấp hơn đỉnh sóng 1"
+        },
+        {
+          "id": "3ae9f4453d",
+          "text": "Sóng 4 luôn là sóng dài nhất"
+        },
+        {
+          "id": "f5dee7f47d",
+          "text": "Sóng 4 luôn thủng đáy sóng 2"
+        }
+      ],
+      "prompt": "Quy tắc của sóng 4 là gì?"
+    },
+    {
+      "correct_option_id": "9a84b5c610",
+      "id": "ch04-exam-q29",
+      "options": [
+        {
+          "id": "9a84b5c610",
+          "text": "Sóng 2 và sóng 4"
+        },
+        {
+          "id": "89777716b5",
+          "text": "Sóng 5"
+        },
+        {
+          "id": "4f789511de",
+          "text": "Sóng B"
+        }
+      ],
+      "prompt": "Theo sóng Elliott, nên tìm điểm mua ở sóng nào?"
+    },
+    {
+      "correct_option_id": "8b4cc305e4",
+      "id": "ch04-exam-q30",
+      "options": [
+        {
+          "id": "8b4cc305e4",
+          "text": "Từ 50% đến 61,8% của sóng 1"
+        },
+        {
+          "id": "0a59316224",
+          "text": "Từ 0% đến 10% của sóng 1"
+        },
+        {
+          "id": "f17677430f",
+          "text": "Thấp hơn điểm bắt đầu của sóng 1"
+        }
+      ],
+      "prompt": "Sóng 2 thường điều chỉnh về vùng nào?"
+    }
+  ],
+  "salt": "15d5df37ab9d8758a34df1ce4a0e58b425d094076d9a0bababe78714b4c613f6"
+}

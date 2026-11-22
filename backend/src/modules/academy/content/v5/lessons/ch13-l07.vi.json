@@ -1,0 +1,409 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l7-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Ngắn hạn + dài hạn"
+          ],
+          "t": "Doanh thu chưa thực hiện",
+          "tone": "pos",
+          "v": "11.725 tỷ"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "p1",
+          "v": "35.686 tỷ"
+        },
+        {
+          "notes": [
+            "Công ty khu công nghiệp mẫu"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "32,9%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l7-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Mã 318",
+          "line": "Doanh thu chưa thực hiện ngắn hạn",
+          "report": "Nợ ngắn hạn",
+          "tone": "pos"
+        },
+        {
+          "code": "Mã 336",
+          "line": "Doanh thu chưa thực hiện dài hạn",
+          "report": "Nợ dài hạn",
+          "tone": "pos"
+        },
+        {
+          "code": "Mã 410",
+          "line": "Vốn chủ sở hữu",
+          "report": "Mẫu số",
+          "tone": "p1"
+        }
+      ],
+      "title": "Bảng cân đối kế toán (mẫu B01-DN)"
+    },
+    "c13l7-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Khu công nghiệp ghi nhận dần",
+          "tone": "pos",
+          "value": 35
+        },
+        {
+          "label": "Cho thuê văn phòng, trung tâm thương mại",
+          "tone": "p1",
+          "value": 12
+        },
+        {
+          "label": "Nhà ở để bán",
+          "tone": "warn",
+          "value": 3
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Tỷ lệ tham khảo theo mô hình · số minh họa",
+      "unit": "%"
+    },
+    "c13l7-rep": {
+      "alt": "Doanh thu chưa thực hiện / VCSH: 32,9%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Doanh thu chưa thực hiện / VCSH",
+            "v": [
+              31.376,
+              30.937,
+              32.687,
+              32.941,
+              33.102,
+              30.908,
+              33.472,
+              32.856
+            ]
+          }
+        ],
+        "name": "Doanh thu chưa thực hiện / VCSH",
+        "sub": {
+          "series": [
+            {
+              "name": "Doanh thu chưa thực hiện",
+              "v": [
+                8735.651,
+                9086.882,
+                9752.925,
+                10033.762,
+                10324.289,
+                10603.958,
+                11642.676,
+                11725.189
+              ]
+            },
+            {
+              "name": "Vốn chủ sở hữu",
+              "v": [
+                27841.663,
+                29371.874,
+                29837.523,
+                30459.581,
+                31189.285,
+                34307.592,
+                34783.487,
+                35686.172
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Khách thuê đất khu công nghiệp, khách thuê văn phòng thường trả trước tiền thuê nhiều năm. Công ty ghi khoản này là doanh thu chưa thực hiện rồi phân bổ dần. Chỉ tiêu này đo quy mô khoản tiền đó so với vốn chủ sở hữu.",
+  "lesson_key": "fundamental:unearned_to_equity-bds",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l7-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>doanh thu chưa thực hiện</b> ngắn hạn cộng dài hạn, chia <b>vốn chủ sở hữu</b>. Cả hai lấy từ bảng cân đối kế toán, số cuối kỳ. Đơn vị %.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Bài này dùng số của một công ty khu công nghiệp mẫu, vì chỉ tiêu này quan trọng nhất với khu công nghiệp và cho thuê.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Doanh thu chưa thực hiện / VCSH là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l7-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khách trả trước tiền thuê đất 40 đến 50 năm. Công ty có thể ghi nhận dần theo thời gian thuê.",
+              "title": "Tiền thuê trả trước"
+            },
+            {
+              "text": "Một số trường hợp đủ điều kiện được ghi nhận doanh thu một lần khi giao đất. Khi đó số dư này nhỏ.",
+              "title": "Hoặc ghi một lần"
+            },
+            {
+              "text": "Người mua trả tiền trước là tiền mua nhà. Doanh thu chưa thực hiện chủ yếu là tiền thuê.",
+              "title": "Khác người mua trả tiền trước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lấy ở dòng nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l7-rep",
+          "title": "Doanh thu chưa thực hiện / VCSH",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu chưa thực hiện chia vốn chủ sở hữu, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu chưa thực hiện và vốn chủ sở hữu cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột doanh thu chưa thực hiện tăng nhanh hơn vốn chủ nghĩa là hợp đồng thuê mới đang về nhiều.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 20% vốn chủ trở lên và tăng dần. Mức tham khảo với công ty khu công nghiệp, có nhiều tiền thuê trả trước sẽ phân bổ dần.",
+              "title": "Nguồn doanh thu dài hạn lớn",
+              "tone": "pos"
+            },
+            {
+              "text": "Gần 0% hoặc giảm. Công ty ghi nhận doanh thu một lần hoặc ít hợp đồng thuê mới.",
+              "title": "Nguồn doanh thu dài hạn ít",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với công ty nhà ở, chỉ tiêu này thường rất nhỏ, chỉ vài phần trăm. Không nên dùng để so công ty nhà ở với công ty khu công nghiệp.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l7-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phần phân bổ dần sẽ thành doanh thu đều mỗi năm trong nhiều năm.",
+              "title": "Ước lượng doanh thu ổn định"
+            },
+            {
+              "text": "Số dư tăng nghĩa là khách thuê mới trả tiền nhiều hơn phần đã phân bổ.",
+              "title": "Theo dõi hợp đồng thuê mới"
+            },
+            {
+              "text": "Hai công ty khu công nghiệp có thể ghi nhận khác nhau. Đọc chỉ tiêu này cùng doanh thu.",
+              "title": "Hiểu cách ghi nhận"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty khu công nghiệp mẫu, số dư cuối quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Doanh thu chưa thực hiện"
+            },
+            {
+              "label": "Vốn chủ"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "8.736",
+                "27.842",
+                "31,4%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "10.034",
+                "30.460",
+                "32,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "11.725",
+                "35.686",
+                "32,9%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ quanh 33%, ổn định. Với công ty bất động sản nhà ở mẫu, tỷ lệ chỉ khoảng 3,0%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Hai dòng khác nhau trên bảng cân đối. Không cộng chung.",
+              "title": "Nhầm với người mua trả tiền trước"
+            },
+            {
+              "text": "Công ty nhà ở có tỷ lệ thấp là bình thường.",
+              "title": "So công ty khác mô hình"
+            },
+            {
+              "text": "Tiền thuê trả trước là nghĩa vụ với khách thuê. Công ty phải cung cấp hạ tầng trong nhiều năm.",
+              "title": "Coi là tiền tự do"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thường rất nhỏ. Tiền khách mua nhà nằm ở người mua trả tiền trước.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Chỉ tiêu chính để thấy nguồn doanh thu ổn định nhiều năm từ tiền thuê đất.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>doanh thu chưa thực hiện</b> (mã 318 + 336) ÷ <b>vốn chủ sở hữu</b>.",
+    "Chủ yếu là <b>tiền thuê trả trước</b>, phân bổ dần thành doanh thu.",
+    "Quan trọng với <b>khu công nghiệp và cho thuê</b>, nhỏ với nhà ở.",
+    "Không cộng chung với <b>người mua trả tiền trước</b>."
+  ],
+  "title": "Doanh thu chưa thực hiện / VCSH · tiền thuê trả trước"
+}

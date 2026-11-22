@@ -1,0 +1,388 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l4-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Tồn kho bình quân",
+          "tone": "warn",
+          "v": "28.525 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Giá vốn 4 quý",
+          "tone": "p1",
+          "v": "109.619 tỷ"
+        },
+        {
+          "notes": [
+            "Nhân 365"
+          ],
+          "t": "Số ngày",
+          "tone": "pos",
+          "v": "95 ngày"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l4-g2": {
+      "decimals": 0,
+      "fig": "stack",
+      "kind": "figure",
+      "note": "Báo cáo tài chính chỉ có tổng tồn kho, không tách các loại.",
+      "parts": [
+        {
+          "label": "Nguyên liệu: quặng, than",
+          "tone": "warn",
+          "value": 45
+        },
+        {
+          "label": "Bán thành phẩm: phôi",
+          "tone": "p1",
+          "value": 25
+        },
+        {
+          "label": "Thành phẩm",
+          "tone": "pos",
+          "value": 30
+        }
+      ],
+      "title": "Tồn kho 100 đồng của công ty thép · số minh họa",
+      "unit": " đồng"
+    },
+    "c17l4-rep": {
+      "alt": "Số ngày tồn kho: 95 ngày",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Số ngày tồn kho (4 quý)",
+            "v": [
+              93.458,
+              87.087,
+              82.036,
+              82.437,
+              85.242,
+              84.18,
+              91.685,
+              94.98
+            ]
+          }
+        ],
+        "name": "Số ngày tồn kho",
+        "sub": {
+          "series": [
+            {
+              "name": "Tồn kho bình quân",
+              "v": [
+                19833.972,
+                19485.516,
+                19753.649,
+                20930.306,
+                23217.248,
+                23940.366,
+                26607.87,
+                28524.735
+              ]
+            },
+            {
+              "name": "Giá vốn 4 quý",
+              "v": [
+                77461.553,
+                81667.448,
+                87889.761,
+                92671.047,
+                99414.282,
+                103803.724,
+                105926.708,
+                109618.515
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "ngày"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty thép giữ nhiều quặng, than, phôi và thép thành phẩm. Lượng tồn kho lớn khiến lợi nhuận nhạy với giá hàng hoá. Số ngày tồn kho cho biết lượng hàng đó bằng bao nhiêu ngày sản xuất và bán.",
+  "lesson_key": "fundamental:inventory_days-vl",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l4-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>hàng tồn kho bình quân</b> (cuối quý này và cuối cùng quý năm trước) chia <b>giá vốn 4 quý</b>, nhân 365.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Số ngày tồn kho là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l4-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nguyên liệu nhập khẩu phải dự trữ vài tháng.",
+              "title": "Dự trữ nguyên liệu"
+            },
+            {
+              "text": "Công ty có thể tăng dự trữ khi giá nguyên liệu thấp.",
+              "title": "Mua khi giá rẻ"
+            },
+            {
+              "text": "Tồn kho lớn khi giá giảm thì phải lập dự phòng.",
+              "title": "Rủi ro giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l4-rep",
+          "title": "Số ngày tồn kho",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số ngày tồn kho 4 quý, đơn vị ngày.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Tồn kho bình quân và giá vốn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Tồn kho tăng nhanh hơn giá vốn làm số ngày tăng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 60 đến 100 ngày với thép. Mức tham khảo, đủ dự trữ nguyên liệu nhập khẩu.",
+              "title": "Mức hợp lý",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 120 ngày hoặc tăng nhanh khi giá đang giảm. Rủi ro phải lập dự phòng lớn.",
+              "title": "Cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Số ngày tồn kho tăng có hai cách hiểu: công ty chủ động mua nguyên liệu giá rẻ, hoặc hàng thành phẩm bán chậm. Đọc cùng dự phòng giảm giá tồn kho.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tồn kho lớn nhân mức giảm giá cho biết lỗ có thể lớn đến đâu.",
+              "title": "Đánh giá rủi ro giá"
+            },
+            {
+              "text": "Tăng cùng lúc là tín hiệu xấu.",
+              "title": "Đọc cùng dự phòng"
+            },
+            {
+              "text": "Tồn kho được tài trợ bằng nợ.",
+              "title": "Đọc cùng Vay ngắn hạn / Tồn kho"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Tồn kho bình quân"
+            },
+            {
+              "label": "Giá vốn 4 quý"
+            },
+            {
+              "label": "Số ngày"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "19.834",
+                "77.462",
+                "93"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "20.930",
+                "92.671",
+                "82"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "23.940",
+                "103.804",
+                "84"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "28.525",
+                "109.619",
+                "95"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Số ngày giảm về 82 rồi tăng lên 95 ngày. Tồn kho bình quân tăng 36% trong một năm, nhanh hơn giá vốn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tồn kho theo giá gốc, chia giá vốn.",
+              "title": "Dùng doanh thu"
+            },
+            {
+              "text": "Có thể chủ động mua nguyên liệu giá rẻ.",
+              "title": "Coi tăng luôn là xấu"
+            },
+            {
+              "text": "Xi măng tồn kho ít hơn thép.",
+              "title": "So khác mảng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tồn kho lớn: quặng, than, phôi, thép.",
+              "title": "Thép"
+            },
+            {
+              "text": "Tồn kho nhỏ hơn: clinker, than.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Tồn kho theo mùa vụ nông nghiệp.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Số ngày = <b>tồn kho bình quân</b> ÷ <b>giá vốn 4 quý</b> × 365.",
+    "Tồn kho gồm <b>nguyên liệu, bán thành phẩm, thành phẩm</b>.",
+    "Mức tham khảo thép: <b>khoảng 60 đến 100 ngày</b>.",
+    "Đọc cùng <b>dự phòng giảm giá tồn kho</b>."
+  ],
+  "title": "Số ngày tồn kho · ở vật liệu cơ bản"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l08",
+  "questions": [
+    {
+      "correct_option_id": "48f8357d94",
+      "id": "ch16-l08-q01",
+      "options": [
+        {
+          "id": "48f8357d94",
+          "text": "Giai đoạn xây nhà máy mới"
+        },
+        {
+          "id": "4f1bfd3506",
+          "text": "Giai đoạn thu tiền"
+        },
+        {
+          "id": "f52e876d8f",
+          "text": "Giai đoạn giải thể"
+        }
+      ],
+      "prompt": "Capex / Khấu hao trên 2 lần thường cho thấy công ty điện đang ở giai đoạn nào?"
+    },
+    {
+      "correct_option_id": "b764513a6c",
+      "id": "ch16-l08-q02",
+      "options": [
+        {
+          "id": "b764513a6c",
+          "text": "Dòng tiền dư để trả nợ, chia cổ tức"
+        },
+        {
+          "id": "5d1870f67b",
+          "text": "Nợ vay tăng mạnh để xây nhà máy"
+        },
+        {
+          "id": "0b347189a6",
+          "text": "Không còn khấu hao tài sản cố định"
+        }
+      ],
+      "prompt": "Giai đoạn thu tiền thường có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "78a961e5e2",
+      "id": "ch16-l08-q03",
+      "options": [
+        {
+          "id": "78a961e5e2",
+          "text": "Mã 21 trên lưu chuyển tiền tệ"
+        },
+        {
+          "id": "27d24d063d",
+          "text": "Mã 220 trên bảng cân đối"
+        },
+        {
+          "id": "f454d1fd96",
+          "text": "Mã 11 trên kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Capex lấy từ đâu?"
+    },
+    {
+      "correct_option_id": "3fdab130bb",
+      "id": "ch16-l08-q04",
+      "options": [
+        {
+          "id": "3fdab130bb",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "fdebfddff5",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "42ceecc542",
+          "text": "Luôn bằng 100% lợi nhuận"
+        }
+      ],
+      "prompt": "Trong giai đoạn xây, cổ tức thường thế nào?"
+    },
+    {
+      "chart_id": "c16l8-rep",
+      "correct_option_id": "a40a61bc4b",
+      "id": "ch16-l08-q05",
+      "options": [
+        {
+          "id": "a40a61bc4b",
+          "text": "Công ty đang trong giai đoạn xây"
+        },
+        {
+          "id": "7da2b39e26",
+          "text": "Công ty đang bán tài sản"
+        },
+        {
+          "id": "119a799469",
+          "text": "Công ty đang lỗ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột capex vượt xa cột khấu hao nghĩa là gì?"
+    }
+  ],
+  "salt": "186407fae9e487dfff2a3027297f7095a527896ae03f68db953d96f9134718ca"
+}

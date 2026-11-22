@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l05",
+  "questions": [
+    {
+      "correct_option_id": "0eeeee8d32",
+      "id": "ch11-l05-q01",
+      "options": [
+        {
+          "id": "0eeeee8d32",
+          "text": "Lãi từ các khoản cho vay 4 quý ÷ dư nợ bình quân"
+        },
+        {
+          "id": "264ca5c58d",
+          "text": "Lãi từ các khoản cho vay 4 quý ÷ vốn chủ sở hữu"
+        },
+        {
+          "id": "8b929ed41c",
+          "text": "Dư nợ cho vay ÷ tổng tài sản cuối kỳ"
+        }
+      ],
+      "prompt": "Lợi suất cho vay được tính thế nào?"
+    },
+    {
+      "correct_option_id": "a665eb5ae1",
+      "id": "ch11-l05-q02",
+      "options": [
+        {
+          "id": "a665eb5ae1",
+          "text": "Vì tiền lãi phát sinh suốt kỳ khi dư nợ thay đổi"
+        },
+        {
+          "id": "942bfe016d",
+          "text": "Vì dư nợ cuối kỳ không có trên bảng cân đối"
+        },
+        {
+          "id": "ac86290a9f",
+          "text": "Vì dư nợ bình quân luôn lớn hơn dư nợ cuối kỳ"
+        }
+      ],
+      "prompt": "Vì sao dùng dư nợ bình quân thay vì dư nợ cuối kỳ?"
+    },
+    {
+      "correct_option_id": "fd2bcd245a",
+      "id": "ch11-l05-q03",
+      "options": [
+        {
+          "id": "fd2bcd245a",
+          "text": "Chi phí vay của công ty"
+        },
+        {
+          "id": "6e081688f3",
+          "text": "Biên lợi nhuận môi giới"
+        },
+        {
+          "id": "20e9a5a1de",
+          "text": "Tỷ trọng tài sản tự doanh"
+        }
+      ],
+      "prompt": "Lợi suất cho vay cần so với chỉ tiêu nào để thấy phần lãi thật?"
+    },
+    {
+      "correct_option_id": "22685ac068",
+      "id": "ch11-l05-q04",
+      "options": [
+        {
+          "id": "22685ac068",
+          "text": "Cạnh tranh khiến công ty hạ lãi margin"
+        },
+        {
+          "id": "52d95a8a3a",
+          "text": "Công ty tăng mạnh danh mục HTM"
+        },
+        {
+          "id": "defd3751f9",
+          "text": "Doanh thu môi giới tăng nhanh"
+        }
+      ],
+      "prompt": "Lợi suất cho vay giảm liên tục thường do đâu?"
+    },
+    {
+      "chart_id": "c11l5-rep",
+      "correct_option_id": "f993466906",
+      "id": "ch11-l05-q05",
+      "options": [
+        {
+          "id": "f993466906",
+          "text": "Lãi từ các khoản cho vay cộng 4 quý"
+        },
+        {
+          "id": "523b9dc899",
+          "text": "Dư nợ cho vay cuối mỗi quý"
+        },
+        {
+          "id": "6c0739d90d",
+          "text": "Chi phí lãi vay cộng 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "b112d74f9dbaf38df78e6bc2343f3e50340f5f786232c8492a02f831e949bf71"
+}

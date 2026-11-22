@@ -1,0 +1,380 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l10-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Nợ vay − tiền"
+          ],
+          "t": "Nợ ròng",
+          "tone": "pos",
+          "v": "−13.149 tỷ"
+        },
+        {
+          "notes": [
+            "EBIT + khấu hao"
+          ],
+          "t": "EBITDA 4 quý",
+          "tone": "p1",
+          "v": "6.839 tỷ"
+        },
+        {
+          "notes": [
+            "Âm là dư tiền"
+          ],
+          "t": "Net Debt / EBITDA",
+          "tone": "warn",
+          "v": "−1,92 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l10-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Giá dầu cao · EBITDA 3.000 tỷ",
+          "tone": "pos",
+          "value": 1
+        },
+        {
+          "label": "Giá dầu trung bình · EBITDA 2.000 tỷ",
+          "tone": "warn",
+          "value": 1.5
+        },
+        {
+          "label": "Giá dầu thấp · EBITDA 1.000 tỷ",
+          "tone": "neg",
+          "value": 3
+        }
+      ],
+      "kind": "figure",
+      "label_width": 330,
+      "title": "Cùng mức nợ ròng 3.000 tỷ, EBITDA đổi theo giá dầu · số minh họa",
+      "unit": " lần"
+    },
+    "c14l10-rep": {
+      "alt": "Net Debt / EBITDA: −1,92 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Nợ ròng / EBITDA",
+            "v": [
+              -1.883,
+              -1.679,
+              -1.591,
+              -1.488,
+              -1.361,
+              -1.411,
+              -1.849,
+              -1.923
+            ]
+          }
+        ],
+        "name": "Net Debt / EBITDA",
+        "sub": {
+          "series": [
+            {
+              "name": "Nợ ròng",
+              "v": [
+                -11089.182,
+                -11574.705,
+                -12588.547,
+                -12721.333,
+                -11802.734,
+                -10953.728,
+                -12683.67,
+                -13149.069
+              ]
+            },
+            {
+              "name": "EBITDA 4 quý",
+              "v": [
+                5889.855,
+                6895.826,
+                7913.066,
+                8550.066,
+                8673.88,
+                7765.713,
+                6858.416,
+                6838.768
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Net Debt / EBITDA cho biết cần bao nhiêu năm EBITDA để trả hết nợ ròng. Ở dầu khí, EBITDA thay đổi mạnh theo giá dầu, nên chỉ tiêu có thể xấu đi nhanh khi giá giảm dù nợ không tăng.",
+  "lesson_key": "fundamental:net_debt_ebitda-dk",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l10-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>nợ vay trừ tiền và đầu tư ngắn hạn</b>, chia <b>EBITDA 4 quý</b>. Cách tính giống bài Net Debt / EBITDA ở phần doanh nghiệp sản xuất. Số âm nghĩa là doanh nghiệp dư tiền.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l10-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA giảm mạnh khi giá dầu giảm, kéo chỉ tiêu lên.",
+              "title": "Mẫu số biến động"
+            },
+            {
+              "text": "Thử tính với EBITDA của năm giá dầu thấp để thấy rủi ro.",
+              "title": "Kiểm tra với EBITDA đáy"
+            },
+            {
+              "text": "Doanh nghiệp dư tiền không chịu áp lực trả nợ.",
+              "title": "Âm thì an toàn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở dầu khí khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l10-rep",
+          "title": "Net Debt / EBITDA",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ ròng chia EBITDA 4 quý, đơn vị lần. Âm là dư tiền.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Nợ ròng và EBITDA 4 quý, đơn vị tỷ đồng. Cột nợ ròng âm.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Nợ ròng âm càng sâu, EBITDA càng lớn thì doanh nghiệp càng an toàn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Âm, hoặc dưới khoảng 1,5 lần ngay cả khi tính với EBITDA năm giá dầu thấp. Mức tham khảo.",
+              "title": "An toàn",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 3 lần, hoặc tăng nhanh khi giá dầu giảm.",
+              "title": "Rủi ro",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với dầu khí, nên đọc chỉ tiêu này cùng Tiền ròng / VCSH. Hai chỉ tiêu nhìn cùng một vấn đề từ hai phía.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng EBITDA năm thấp nhất gần đây để tính lại.",
+              "title": "Kiểm tra kịch bản xấu"
+            },
+            {
+              "text": "Lọc dầu và vận tải biển thường dùng nhiều nợ hơn phân phối khí.",
+              "title": "So cùng mảng"
+            },
+            {
+              "text": "Đầu tư lớn thường làm nợ ròng tăng.",
+              "title": "Đọc cùng Capex / Khấu hao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Nợ ròng"
+            },
+            {
+              "label": "EBITDA 4 quý"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "−11.089",
+                "5.890",
+                "−1,88 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "−12.721",
+                "8.550",
+                "−1,49 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "−13.149",
+                "6.839",
+                "−1,92 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Nợ ròng âm suốt hai năm. Doanh nghiệp dư tiền, không chịu áp lực trả nợ dù EBITDA giảm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Âm nghĩa là dư tiền, là an toàn.",
+              "title": "Đọc số âm là xấu"
+            },
+            {
+              "text": "EBITDA năm giá dầu cao làm chỉ tiêu trông an toàn hơn thực tế.",
+              "title": "Dùng EBITDA đỉnh"
+            },
+            {
+              "text": "Kỳ không có khấu hao thì EBITDA không đủ dữ liệu.",
+              "title": "Quên phương pháp trực tiếp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA biến động mạnh nhất. Kiểm tra với EBITDA đáy.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "EBITDA ổn định, chịu được mức nợ cao hơn.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Dùng nhiều nợ ngắn hạn cho vốn lưu động.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>Net Debt / EBITDA</b> = (nợ vay − tiền) ÷ EBITDA 4 quý.",
+    "EBITDA dầu khí <b>biến động theo giá dầu</b>.",
+    "Kiểm tra với <b>EBITDA năm giá dầu thấp</b>.",
+    "Số <b>âm là dư tiền</b>."
+  ],
+  "title": "Net Debt / EBITDA · ở dầu khí"
+}

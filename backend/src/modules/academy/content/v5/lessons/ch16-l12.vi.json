@@ -1,0 +1,368 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l12-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "LNTT + chi phí lãi vay"
+          ],
+          "t": "EBIT 4 quý",
+          "tone": "pos",
+          "v": "3.567 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 23"
+          ],
+          "t": "Chi phí lãi vay 4 quý",
+          "tone": "neg",
+          "v": "1.137 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Interest Coverage",
+          "tone": "warn",
+          "v": "3,14 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l12-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Công ty điện ít nợ",
+          "tone": "pos",
+          "value": 8
+        },
+        {
+          "label": "Công ty điện điển hình",
+          "tone": "p1",
+          "value": 3
+        },
+        {
+          "label": "Dự án mới, nợ cao",
+          "tone": "neg",
+          "value": 1.5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Interest Coverage tham khảo · số minh họa",
+      "unit": " lần"
+    },
+    "c16l12-rep": {
+      "alt": "Interest Coverage: 3,14 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "EBIT / lãi vay (4 quý)",
+            "v": [
+              3.109,
+              2.792,
+              2.612,
+              2.508,
+              2.552,
+              2.674,
+              2.882,
+              3.138
+            ]
+          }
+        ],
+        "name": "Interest Coverage",
+        "sub": {
+          "series": [
+            {
+              "name": "EBIT quý",
+              "v": [
+                694.272,
+                506.032,
+                523.062,
+                774.78,
+                818.249,
+                719.64,
+                848.372,
+                1180.692
+              ]
+            },
+            {
+              "name": "Chi phí lãi vay quý",
+              "v": [
+                238.21,
+                246.765,
+                252.005,
+                259.086,
+                269.564,
+                279.738,
+                288.29,
+                299.154
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l12",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty điện có lãi vay lớn vì dùng nhiều nợ. Interest Coverage cho biết lợi nhuận trước lãi vay và thuế gấp bao nhiêu lần chi phí lãi vay. Với ngành dùng nhiều nợ, đây là chỉ tiêu an toàn quan trọng.",
+  "lesson_key": "fundamental:interest_coverage-dien",
+  "order": 12,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l12-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Interest Coverage bằng <b>EBIT</b> chia <b>chi phí lãi vay</b>, cộng 4 quý. Cách tính giống bài Interest Coverage ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l12-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ lớn nên chỉ tiêu 2 đến 4 lần là phổ biến.",
+              "title": "Mức thấp hơn ngành khác"
+            },
+            {
+              "text": "Lãi vay của nhà máy đang xây được vốn hoá, chưa vào chi phí. Khi vận hành, chi phí lãi vay tăng.",
+              "title": "Lãi vay vốn hoá"
+            },
+            {
+              "text": "Lãi suất tăng làm chỉ tiêu giảm dù lợi nhuận không đổi.",
+              "title": "Lãi suất thả nổi"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở điện khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l12-rep",
+          "title": "Interest Coverage",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBIT 4 quý chia chi phí lãi vay 4 quý, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "EBIT và chi phí lãi vay từng quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Chi phí lãi vay tăng đều theo nợ, EBIT dao động theo mùa.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 3 lần trở lên với công ty điện. Mức tham khảo.",
+              "title": "An toàn",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 1,5 lần. Lợi nhuận gần như chỉ đủ trả lãi.",
+              "title": "Áp lực trả lãi",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Khi nhà máy mới đi vào vận hành, lãi vay chuyển từ vốn hoá sang chi phí. Chỉ tiêu có thể giảm đột ngột dù không vay thêm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí lãi vay sẽ tăng.",
+              "title": "Dự báo khi nhà máy mới vận hành"
+            },
+            {
+              "text": "Lãi suất tăng làm chỉ tiêu giảm.",
+              "title": "Đọc cùng lãi suất"
+            },
+            {
+              "text": "Trả lãi và trả gốc.",
+              "title": "Đọc cùng Net Debt / EBITDA"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Interest Coverage"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "3,11 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "2,51 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "3,14 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Chỉ tiêu giảm về 2,51 lần rồi tăng lên 3,14 lần nhờ EBIT tăng. Chi phí lãi vay tăng đều từ 238 lên 299 tỷ mỗi quý.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty điện có mức thấp hơn là bình thường.",
+              "title": "Áp mức ngành khác"
+            },
+            {
+              "text": "Chi phí lãi vay sẽ tăng khi nhà máy vận hành.",
+              "title": "Quên lãi vay vốn hoá"
+            },
+            {
+              "text": "EBIT có mùa vụ. Dùng 4 quý.",
+              "title": "Đọc theo quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBIT dao động theo thủy văn.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "EBIT phụ thuộc giá nhiên liệu và huy động.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Dự án mới thường có chỉ tiêu thấp những năm đầu.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "<b>Interest Coverage</b> = EBIT ÷ chi phí lãi vay, 4 quý.",
+    "Công ty điện có mức <b>thấp hơn ngành khác</b>.",
+    "Mức tham khảo: <b>từ khoảng 3 lần</b> là an toàn.",
+    "Nhà máy mới vận hành làm <b>chi phí lãi vay tăng</b>."
+  ],
+  "title": "Interest Coverage · ở điện"
+}

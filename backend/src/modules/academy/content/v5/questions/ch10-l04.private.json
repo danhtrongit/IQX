@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l04",
+  "questions": [
+    {
+      "correct_option_id": "c1aa955f6f",
+      "id": "ch10-l04-q01",
+      "options": [
+        {
+          "id": "c1aa955f6f",
+          "text": "Tổng thu nhập hoạt động trừ thu nhập lãi thuần"
+        },
+        {
+          "id": "689784d50d",
+          "text": "Thu nhập lãi trừ chi phí lãi"
+        },
+        {
+          "id": "9ffe5c8556",
+          "text": "Lợi nhuận trước thuế cộng chi phí dự phòng rủi ro tín dụng"
+        }
+      ],
+      "prompt": "Thu nhập ngoài lãi được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "c26d5de58d",
+      "id": "ch10-l04-q02",
+      "options": [
+        {
+          "id": "c26d5de58d",
+          "text": "Lãi thuần từ dịch vụ"
+        },
+        {
+          "id": "9730b94ab4",
+          "text": "Lãi mua bán chứng khoán kinh doanh"
+        },
+        {
+          "id": "b8d0360750",
+          "text": "Thu hồi nợ đã xử lý"
+        }
+      ],
+      "prompt": "Nguồn thu ngoài lãi nào thường ổn định nhất?"
+    },
+    {
+      "correct_option_id": "a8402808dc",
+      "id": "ch10-l04-q03",
+      "options": [
+        {
+          "id": "a8402808dc",
+          "text": "Phần tăng này khó lặp lại ở các quý sau"
+        },
+        {
+          "id": "c9d7e021a5",
+          "text": "Ngân hàng đã đa dạng nguồn thu bền vững"
+        },
+        {
+          "id": "059ff10b97",
+          "text": "Biên lãi thuần của ngân hàng đang tăng"
+        }
+      ],
+      "prompt": "Tỷ trọng thu nhập ngoài lãi tăng vọt nhờ lãi chứng khoán nên được hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "53aa889b1d",
+      "id": "ch10-l04-q04",
+      "options": [
+        {
+          "id": "53aa889b1d",
+          "text": "Thu nhập lãi thuần giảm"
+        },
+        {
+          "id": "ad5b7877c1",
+          "text": "Chi phí hoạt động giảm"
+        },
+        {
+          "id": "9ddc568cf4",
+          "text": "Cho vay khách hàng tăng"
+        }
+      ],
+      "prompt": "Vì sao tỷ trọng ngoài lãi có thể tăng dù thu nhập ngoài lãi không đổi?"
+    },
+    {
+      "chart_id": "c10l4-rep",
+      "correct_option_id": "20b35915ef",
+      "id": "ch10-l04-q05",
+      "options": [
+        {
+          "id": "20b35915ef",
+          "text": "Thu nhập lãi thuần và thu nhập ngoài lãi"
+        },
+        {
+          "id": "a9c5d5d65d",
+          "text": "Chi phí hoạt động và chi phí dự phòng"
+        },
+        {
+          "id": "b35ce45179",
+          "text": "Lãi dịch vụ và lãi ngoại hối"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột chồng phía dưới gồm những phần nào?"
+    }
+  ],
+  "salt": "77c559e37dd4929b595a8689c5f4a5fd3248dc3285e113d5d3ba05bb56c6eb55"
+}

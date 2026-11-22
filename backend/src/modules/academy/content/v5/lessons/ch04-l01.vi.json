@@ -1,0 +1,618 @@
+{
+  "chapter": 4,
+  "charts": {
+    "c4l1-g1": {
+      "alt": "Cấu tạo nến tăng và nến giảm: giá mở cửa, đóng cửa, cao nhất, thấp nhất",
+      "domain": [
+        0,
+        110
+      ],
+      "groups": [
+        {
+          "annotate": "ohlc",
+          "candles": [
+            {
+              "c": 80,
+              "h": 100,
+              "l": 15,
+              "o": 40,
+              "size": "l"
+            }
+          ],
+          "title": "Nến tăng"
+        },
+        {
+          "annotate": "ohlc",
+          "candles": [
+            {
+              "c": 40,
+              "h": 100,
+              "l": 15,
+              "o": 80,
+              "size": "l"
+            }
+          ],
+          "title": "Nến giảm"
+        }
+      ],
+      "kind": "candle_glyphs"
+    },
+    "c4l1-g2": {
+      "alt": "Bốn dạng nến: thân dài, thân ngắn, bóng trên dài, bóng dưới dài",
+      "domain": [
+        0,
+        110
+      ],
+      "groups": [
+        {
+          "candles": [
+            {
+              "c": 95,
+              "h": 100,
+              "l": 15,
+              "label": "Thân dài",
+              "o": 20
+            },
+            {
+              "c": 60,
+              "h": 75,
+              "l": 40,
+              "label": "Thân ngắn",
+              "o": 55
+            },
+            {
+              "c": 42,
+              "h": 105,
+              "l": 25,
+              "label": "Bóng trên dài",
+              "o": 30
+            },
+            {
+              "c": 92,
+              "h": 88,
+              "l": 5,
+              "label": "Bóng dưới dài",
+              "o": 80
+            }
+          ]
+        }
+      ],
+      "kind": "candle_glyphs"
+    },
+    "c4l1-g3": {
+      "alt": "Năm nến ngày từ thứ Hai đến thứ Sáu gộp thành một nến tuần",
+      "domain": [
+        20,
+        90
+      ],
+      "groups": [
+        {
+          "candles": [
+            {
+              "c": 45,
+              "h": 48,
+              "l": 25,
+              "label": "T2",
+              "o": 30
+            },
+            {
+              "c": 55,
+              "h": 60,
+              "l": 40,
+              "label": "T3",
+              "o": 45
+            },
+            {
+              "c": 42,
+              "h": 58,
+              "l": 38,
+              "label": "T4",
+              "o": 55
+            },
+            {
+              "c": 66,
+              "h": 70,
+              "l": 40,
+              "label": "T5",
+              "o": 42
+            },
+            {
+              "c": 80,
+              "h": 85,
+              "l": 60,
+              "label": "T6",
+              "o": 66
+            }
+          ],
+          "title": "5 nến ngày"
+        },
+        {
+          "candles": [
+            {
+              "c": 80,
+              "h": 85,
+              "l": 25,
+              "label": "Tuần",
+              "o": 30,
+              "size": "l"
+            }
+          ],
+          "title": "1 nến tuần"
+        }
+      ],
+      "join": "=",
+      "kind": "candle_glyphs"
+    },
+    "c4l1-g4": {
+      "alt": "Biểu đồ nến 42 phiên: giảm, tăng mạnh rồi đi ngang",
+      "axes": false,
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "candles": {
+            "close": [
+              50.1495,
+              47.5699,
+              45.444,
+              44.0381,
+              45.7018,
+              44.8678,
+              43.0524,
+              43.8551,
+              42.9588,
+              43.1297,
+              44.2173,
+              43.1546,
+              43.9576,
+              42.726,
+              44.3426,
+              47.3736,
+              49.1685,
+              49.1603,
+              48.8651,
+              51.8825,
+              53.8953,
+              52.6697,
+              53.0554,
+              51.985,
+              53.4749,
+              53.6247,
+              55.617,
+              54.7182,
+              58.2779,
+              60.7287,
+              62.2871,
+              62.8525,
+              63.1077,
+              60.819,
+              60.836,
+              60.0914,
+              57.6016,
+              59.4659,
+              58.8674,
+              61.0722,
+              58.4298,
+              60.3731
+            ],
+            "high": [
+              52.4106,
+              50.72,
+              48.3885,
+              46.9911,
+              46.9992,
+              46.8133,
+              46.8987,
+              43.9524,
+              45.2075,
+              44.9674,
+              44.3124,
+              46.3835,
+              45.5501,
+              45.8734,
+              46.0204,
+              49.2937,
+              50.3529,
+              49.6809,
+              50.106,
+              52.9084,
+              55.6902,
+              55.6894,
+              55.1208,
+              54.2057,
+              53.5655,
+              56.0524,
+              57.3207,
+              57.0769,
+              58.5159,
+              62.3086,
+              63.8142,
+              63.9737,
+              64.5118,
+              64.0249,
+              61.5384,
+              62.6372,
+              60.3467,
+              61.5723,
+              60.3621,
+              61.2384,
+              62.0305,
+              62.1872
+            ],
+            "low": [
+              49.256,
+              45.6712,
+              43.438,
+              41.9306,
+              43.2933,
+              43.408,
+              42.7584,
+              42.2634,
+              41.4723,
+              42.0305,
+              42.9737,
+              42.9434,
+              41.019,
+              40.7551,
+              41.9673,
+              42.3018,
+              45.5149,
+              47.9061,
+              47.5962,
+              48.4207,
+              49.5599,
+              52.2249,
+              51.8166,
+              49.8962,
+              51.7912,
+              52.2653,
+              52.4466,
+              53.5776,
+              52.5791,
+              58.0627,
+              59.3183,
+              60.5205,
+              60.5272,
+              59.1909,
+              60.1021,
+              59.4582,
+              55.1828,
+              55.4864,
+              58.1033,
+              56.9601,
+              56.8435,
+              57.5869
+            ],
+            "open": [
+              50,
+              50.1495,
+              47.5699,
+              45.444,
+              44.0381,
+              45.7018,
+              44.8678,
+              43.0524,
+              43.8551,
+              42.9588,
+              43.1297,
+              44.2173,
+              43.1546,
+              43.9576,
+              42.726,
+              44.3426,
+              47.3736,
+              49.1685,
+              49.1603,
+              48.8651,
+              51.8825,
+              53.8953,
+              52.6697,
+              53.0554,
+              51.985,
+              53.4749,
+              53.6247,
+              55.617,
+              54.7182,
+              58.2779,
+              60.7287,
+              62.2871,
+              62.8525,
+              63.1077,
+              60.819,
+              60.836,
+              60.0914,
+              57.6016,
+              59.4659,
+              58.8674,
+              61.0722,
+              58.4298
+            ]
+          },
+          "series": [],
+          "title": ""
+        }
+      ],
+      "x": {
+        "end": 41,
+        "start": 0
+      }
+    },
+    "c4l1-p1": {
+      "alt": "Mô hình nến Doji",
+      "domain": [
+        0,
+        100
+      ],
+      "groups": [
+        {
+          "candles": [
+            {
+              "c": 51,
+              "h": 95,
+              "l": 5,
+              "o": 50
+            }
+          ]
+        }
+      ],
+      "kind": "candle_glyphs"
+    },
+    "c4l1-p2": {
+      "alt": "Mô hình nến Búa",
+      "domain": [
+        0,
+        100
+      ],
+      "groups": [
+        {
+          "candles": [
+            {
+              "c": 88,
+              "h": 92,
+              "l": 10,
+              "o": 78
+            }
+          ]
+        }
+      ],
+      "kind": "candle_glyphs"
+    },
+    "c4l1-p3": {
+      "alt": "Mô hình nến Sao băng",
+      "domain": [
+        0,
+        100
+      ],
+      "groups": [
+        {
+          "candles": [
+            {
+              "c": 12,
+              "h": 90,
+              "l": 8,
+              "o": 22
+            }
+          ]
+        }
+      ],
+      "kind": "candle_glyphs"
+    },
+    "c4l1-p4": {
+      "alt": "Mô hình nến Nhấn chìm tăng",
+      "domain": [
+        0,
+        100
+      ],
+      "groups": [
+        {
+          "candles": [
+            {
+              "c": 34,
+              "h": 64,
+              "l": 30,
+              "o": 60
+            },
+            {
+              "c": 86,
+              "h": 90,
+              "l": 26,
+              "o": 30
+            }
+          ]
+        }
+      ],
+      "kind": "candle_glyphs"
+    },
+    "c4l1-p5": {
+      "alt": "Mô hình nến Nhấn chìm giảm",
+      "domain": [
+        0,
+        100
+      ],
+      "groups": [
+        {
+          "candles": [
+            {
+              "c": 60,
+              "h": 64,
+              "l": 30,
+              "o": 34
+            },
+            {
+              "c": 30,
+              "h": 90,
+              "l": 26,
+              "o": 86
+            }
+          ]
+        }
+      ],
+      "kind": "candle_glyphs"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch04-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biểu đồ nến là cách thể hiện giá phổ biến nhất trên các nền tảng giao dịch. Chỉ cần nhìn một cây nến, nhà đầu tư biết được giá đã biến động thế nào trong một phiên: mở cửa ở đâu, lên cao nhất, xuống thấp nhất và đóng cửa ở mức nào.",
+  "lesson_key": "concept:bieu_do_nen",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Mỗi cây nến thể hiện bốn mức giá trong một khoảng thời gian: <b>giá mở cửa, giá cao nhất, giá thấp nhất và giá đóng cửa</b>. Phần hình chữ nhật gọi là <b>thân nến</b>, nằm giữa giá mở cửa và giá đóng cửa. Hai đường mảnh phía trên và dưới gọi là <b>bóng nến</b>, kéo dài tới giá cao nhất và thấp nhất.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l1-g1",
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Cấu tạo một cây nến"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "subtitle": "Màu xanh",
+              "text": "Giá đóng cửa <b>cao hơn</b> giá mở cửa. Bên mua chiếm ưu thế trong phiên.",
+              "title": "Nến tăng",
+              "tone": "pos"
+            },
+            {
+              "subtitle": "Màu đỏ",
+              "text": "Giá đóng cửa <b>thấp hơn</b> giá mở cửa. Bên bán chiếm ưu thế trong phiên.",
+              "title": "Nến giảm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Nến tăng và nến giảm"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Độ dài của thân và bóng cho biết lực mua bán trong phiên mạnh hay yếu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l1-g2",
+          "type": "chart"
+        },
+        {
+          "items": [
+            {
+              "term": "Thân dài",
+              "text": "Một bên áp đảo, giá đi mạnh theo một hướng."
+            },
+            {
+              "term": "Thân ngắn",
+              "text": "Bên mua và bên bán giằng co, giá ít thay đổi."
+            },
+            {
+              "term": "Bóng trên dài",
+              "text": "Giá từng lên cao nhưng bị bán xuống, áp lực bán ở vùng giá cao."
+            },
+            {
+              "term": "Bóng dưới dài",
+              "text": "Giá từng xuống thấp nhưng được mua lên, lực mua ở vùng giá thấp."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s3",
+      "title": "Đọc thân nến và bóng nến"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Một cây nến có thể đại diện cho một phiên, một tuần, một tháng hay chỉ một giờ. Nến tuần được tạo từ các nến ngày trong tuần đó: mở cửa bằng giá mở của thứ Hai, đóng cửa bằng giá đóng của thứ Sáu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l1-g3",
+          "type": "chart"
+        },
+        {
+          "text": "Nhà đầu tư dài hạn thường xem nến tuần hoặc nến tháng. Người giao dịch ngắn hạn thường xem nến ngày hoặc nến giờ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Khung thời gian"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 5,
+          "items": [
+            {
+              "chart_id": "c4l1-p1",
+              "text": "Giá mở cửa và đóng cửa gần bằng nhau. Thị trường lưỡng lự.",
+              "title": "Doji"
+            },
+            {
+              "chart_id": "c4l1-p2",
+              "text": "Thân nhỏ ở trên, bóng dưới dài. Xuất hiện sau đà giảm, gợi ý lực mua quay lại.",
+              "title": "Búa"
+            },
+            {
+              "chart_id": "c4l1-p3",
+              "text": "Thân nhỏ ở dưới, bóng trên dài. Xuất hiện sau đà tăng, gợi ý áp lực bán.",
+              "title": "Sao băng"
+            },
+            {
+              "chart_id": "c4l1-p4",
+              "text": "Nến tăng lớn bao trùm nến giảm trước đó. Tín hiệu đảo chiều tăng.",
+              "title": "Nhấn chìm tăng"
+            },
+            {
+              "chart_id": "c4l1-p5",
+              "text": "Nến giảm lớn bao trùm nến tăng trước đó. Tín hiệu đảo chiều giảm.",
+              "title": "Nhấn chìm giảm"
+            }
+          ],
+          "layout": "grid",
+          "type": "chart_grid"
+        },
+        {
+          "text": "Mẫu nến chỉ là tín hiệu tham khảo. Nên kết hợp với xu hướng, vùng hỗ trợ, kháng cự và khối lượng, sẽ học ở các bài tiếp theo.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Một số mẫu nến phổ biến"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ghép nhiều cây nến liên tiếp tạo thành biểu đồ nến, cho thấy hành trình của giá qua thời gian.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l1-g4",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s6",
+      "title": "Biểu đồ nến hoàn chỉnh"
+    }
+  ],
+  "summary": [
+    "Mỗi cây nến thể hiện <b>giá mở cửa, cao nhất, thấp nhất và đóng cửa</b>.",
+    "<b>Nến xanh</b>: đóng cửa cao hơn mở cửa. <b>Nến đỏ</b>: đóng cửa thấp hơn mở cửa.",
+    "Thân và bóng nến cho biết <b>lực mua bán</b> trong phiên.",
+    "Mẫu nến là <b>tín hiệu tham khảo</b>, cần kết hợp với các công cụ khác."
+  ],
+  "title": "Biểu đồ nến"
+}
