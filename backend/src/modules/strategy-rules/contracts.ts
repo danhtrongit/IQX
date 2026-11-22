@@ -194,7 +194,8 @@ export type SessionBuy = {
   sellable_from: string | null;
 };
 
-export type BuySkipCode = 'session_buy_limit' | 'insufficient_cash' | 'budget_below_lot' | 'symbol_cap';
+export type BuySkipCode =
+  'session_buy_limit' | 'insufficient_cash' | 'budget_below_lot' | 'symbol_cap';
 
 export type SessionSkip = {
   symbol: string;
@@ -367,6 +368,8 @@ export type BasketBacktestInput = {
   fees?: FeeRules;
   /** Reuse signals across runs keyed by (config hash, symbol, series_rev). */
   signal_cache?: SignalCache;
+  /** Precomputed signals (replays and golden tests); default = computed from `content`. */
+  signals?: SignalProvider;
 };
 
 export type BacktestTrade = Omit<SessionSell, 'symbol'> & {
@@ -421,7 +424,12 @@ export type BacktestOpenPosition = {
   unrealized_pct: number;
 };
 
-export type BacktestSkippedOrder = { date: string; symbol: string; code: BuySkipCode; message: string };
+export type BacktestSkippedOrder = {
+  date: string;
+  symbol: string;
+  code: BuySkipCode;
+  message: string;
+};
 
 export type BacktestResult = {
   rules_version: string;
@@ -451,6 +459,9 @@ export type SignalCache = Map<string, SymbolSignals>;
 
 /** Tri-state series aligned to a symbol's bars: 1 true, 0 false, -1 unknown. */
 export type SymbolSignals = { buy: Int8Array; sell: Int8Array };
+
+/** Signals of one strategy per symbol (memoised by the caller). */
+export type SignalProvider = (symbol: string) => SymbolSignals | null;
 
 export type DateRangeCheck =
   | { ok: true; start: string; end: string; earliest_start: string; latest_end: string }
@@ -515,7 +526,13 @@ export type BotTradesNotificationPayload = {
   strategy_label: string;
   version_label: string;
   buys: Array<{ symbol: string; qty: number; price_vnd: string }>;
-  sells: Array<{ symbol: string; qty: number; price_vnd: string; exit_reason: ExitReason; pnl_vnd: string }>;
+  sells: Array<{
+    symbol: string;
+    qty: number;
+    price_vnd: string;
+    exit_reason: ExitReason;
+    pnl_vnd: string;
+  }>;
 };
 
 export interface NotificationWriterPort {

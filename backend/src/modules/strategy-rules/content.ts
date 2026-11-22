@@ -178,7 +178,10 @@ export function validateStrategyContent(
       issues.push({ path: 'indicators', message: 'Cần ít nhất một dòng Mua đang bật.' });
     }
     if (kind === 'iqx' && sellIds.length === 0) {
-      issues.push({ path: 'indicators', message: 'Chiến lược IQX cần ít nhất một dòng Bán đang bật.' });
+      issues.push({
+        path: 'indicators',
+        message: 'Chiến lược IQX cần ít nhất một dòng Bán đang bật.',
+      });
     }
   }
   if (kind === 'iqx' && content.universe.type === 'saved_list') {
@@ -218,7 +221,8 @@ export function sessionStrategyOf(
 ): { max_holding: number; buy_enabled: boolean; sell_enabled: boolean } {
   return {
     max_holding: content.max_holding,
-    buy_enabled: content.sell_only !== true && activeIndicatorIds(content, 'buy', registry).length > 0,
+    buy_enabled:
+      content.sell_only !== true && activeIndicatorIds(content, 'buy', registry).length > 0,
     sell_enabled: activeIndicatorIds(content, 'sell', registry).length > 0,
   };
 }
