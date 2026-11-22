@@ -3,7 +3,7 @@ import { createMemoryRouter, RouterProvider, useLocation } from "react-router"
 import { describe, expect, it } from "vitest"
 
 import { AcademyMetricRedirect, AcademyRedirect } from "./academy-redirect"
-import { academyWorkspaceLocation, legacyWorkspaceLoader, parseMetricParam, resolveWorkspaceLocation, workspaceLoader } from "./workspace-url"
+import { academyWorkspaceLocation, legacyWorkspaceLoader, parseMetricParam, parseNganhParam, resolveWorkspaceLocation, workspaceLoader } from "./workspace-url"
 
 function Where() {
   const location = useLocation()
@@ -207,6 +207,27 @@ describe("/hoc-vien redirect", () => {
     expect(academyWorkspaceLocation(undefined, "?metric=%20%20").search).toBe("?tool=hoc-vien")
     expect(academyWorkspaceLocation(undefined, "", "", "x".repeat(121)).search).toBe("?tool=hoc-vien")
     expect(academyWorkspaceLocation("ch10-l01", "", "", "nim").search).toBe("?tool=hoc-vien&lesson=ch10-l01&metric=nim")
+  })
+
+  it("keeps nganh with a usable metric (spec Học viện v5 §6) and drops it otherwise", () => {
+    // /academy?metric=roe&nganh=nh (Dashboard "Học") and /hoc-vien/bai/roe?nganh=nh
+    expect(academyWorkspaceLocation(undefined, "?metric=roe&nganh=nh").search).toBe("?metric=roe&nganh=nh&tool=hoc-vien")
+    expect(academyWorkspaceLocation(undefined, "?nganh=bds", "", "inventory_years").search).toBe("?nganh=bds&tool=hoc-vien&metric=inventory_years")
+    expect(academyWorkspaceLocation(undefined, "?nganh=%20vl%20", "", "roe").search).toBe("?nganh=vl&tool=hoc-vien&metric=roe")
+    expect(academyWorkspaceLocation(undefined, "?nganh=NH%2F..", "", "roe").search).toBe("?tool=hoc-vien&metric=roe")
+    expect(academyWorkspaceLocation(undefined, "?nganh=nh").search).toBe("?tool=hoc-vien")
+    expect(academyWorkspaceLocation("ch10-l01", "?nganh=nh").search).toBe("?tool=hoc-vien&lesson=ch10-l01")
+  })
+})
+
+describe("parseNganhParam", () => {
+  it("accepts a lowercase code and refuses anything else", () => {
+    expect(parseNganhParam("nh")).toBe("nh")
+    expect(parseNganhParam(" bds ")).toBe("bds")
+    expect(parseNganhParam("NH")).toBeNull()
+    expect(parseNganhParam("x".repeat(17))).toBeNull()
+    expect(parseNganhParam("")).toBeNull()
+    expect(parseNganhParam(null)).toBeNull()
   })
 })
 

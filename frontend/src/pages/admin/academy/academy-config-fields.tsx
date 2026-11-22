@@ -63,7 +63,7 @@ function chapterNote(chapter: AcademyCatalogChapter): string | null {
 }
 
 /**
- * 12 chương theo thứ tự và số gốc của danh mục, mỗi chương một ô tick (spec §1.4). Chọn theo cả
+ * Các chương theo thứ tự và số gốc của danh mục, mỗi chương một ô tick (spec §1.4). Chọn theo cả
  * chương. Số ở đây là số gốc; số người học thấy (đã đánh lại) chỉ có ở phần xem trước.
  */
 export function AcademyChapterField({

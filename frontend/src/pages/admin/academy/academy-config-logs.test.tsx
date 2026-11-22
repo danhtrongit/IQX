@@ -49,9 +49,9 @@ describe("academy config change log (spec §1.3)", () => {
     expect(entry.getByText("Cập nhật")).toBeTruthy()
     expect(entry.getByText("Quản Trị Viên (admin)")).toBeTruthy()
     expect(entry.getByText(formatDateTime("2026-11-02T04:30:00Z"))).toBeTruthy()
-    expect(entry.getByText("Tự do · 12 chương")).toBeTruthy()
+    expect(entry.getByText("Tự do · 17 chương")).toBeTruthy()
     expect(entry.getByText(titles(ALL_IDS))).toBeTruthy()
-    expect(entry.getByText("Lần lượt · 11 chương")).toBeTruthy()
+    expect(entry.getByText("Lần lượt · 16 chương")).toBeTruthy()
     expect(entry.getByText(titles(IDS_WITHOUT_CH02))).toBeTruthy()
     expect(mocks.api).toHaveBeenCalledWith("/admin/academy-configs/cfg-lan/logs?limit=50", expect.objectContaining({ method: "GET" }))
   })
@@ -76,7 +76,7 @@ describe("academy config change log (spec §1.3)", () => {
     const entry = within((await screen.findAllByRole("listitem"))[0])
     expect(entry.getByText("Chưa có")).toBeTruthy()
     expect(entry.getByText("Hệ thống")).toBeTruthy()
-    expect(entry.getByText("Lần lượt · 11 chương")).toBeTruthy()
+    expect(entry.getByText("Lần lượt · 16 chương")).toBeTruthy()
   })
 
   it("falls back to the chapter id when the catalog does not know it", async () => {

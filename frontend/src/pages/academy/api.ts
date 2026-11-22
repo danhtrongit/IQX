@@ -12,7 +12,7 @@
  * 9  `POST /academy/attempts`                   every question of the bank in a server-shuffled order, no key
  * 10 `PUT  /academy/attempts/{id}/answers`      save draft selections (partial, merged, revisioned)
  * 11 `POST /academy/attempts/{id}/submit`       server grading: score only, completion, reward
- * 12 `GET  /academy/link?metric=`               deep link: the lesson of a metric (never an error)
+ * 12 `GET  /academy/link?metric=&nganh=`        deep link: the lesson of a metric in an industry (never an error)
  *
  * Correctness, locks (only in a `sequential` account), completion and coins are only ever decided by
  * the server; the client never sends a score or a pass flag, and never receives an answer key, and never
@@ -73,8 +73,10 @@ export async function fetchItem(lessonId: string, signal?: AbortSignal): Promise
  * `found` is false and `lesson_id` is the lesson the learner was last on (null when there is none). `locked`
  * is true when the account learns in order and it is not that lesson's turn yet (spec v4.1 §4).
  */
-export async function fetchLink(metric: string, signal?: AbortSignal): Promise<LinkResponse> {
-  return unwrap<LinkResponse>(await requestOperation("GET /api/v2/academy/link", { query: { metric } }, { signal }))
+/** `nganh` (spec v5 §6) is sent only when known; the server ignores an unknown code. */
+export async function fetchLink(metric: string, nganh?: string | null, signal?: AbortSignal): Promise<LinkResponse> {
+  const query: { metric: string; nganh?: string } = nganh ? { metric, nganh } : { metric }
+  return unwrap<LinkResponse>(await requestOperation("GET /api/v2/academy/link", { query }, { signal }))
 }
 
 export async function chooseScenario(

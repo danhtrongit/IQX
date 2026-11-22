@@ -2,16 +2,26 @@ import { useCallback, useEffect } from "react"
 import { useSearchParams } from "react-router"
 
 import { useAuth } from "@/hooks/use-auth"
-import { ACADEMY_TOOL, LESSON_PARAM, METRIC_PARAM, parseMetricParam, TOOL_PARAM } from "@/pages/demo-trading/workspace-url"
+import {
+  ACADEMY_TOOL,
+  LESSON_PARAM,
+  METRIC_PARAM,
+  NGANH_PARAM,
+  parseMetricParam,
+  parseNganhParam,
+  TOOL_PARAM,
+} from "@/pages/demo-trading/workspace-url"
 import { fetchLink } from "./api"
 import { parseLessonParam } from "./navigation"
 
 /**
- * Link into one lesson by metric name (spec v4 §6): `?tool=hoc-vien&metric=<key or name>`, reached from
- * `/hoc-vien/bai/<metric>`, `/hoc-vien?metric=<metric>` or the Dashboard's "Học" button.
+ * Link into one lesson by metric name (spec v4 §6): `?tool=hoc-vien&metric=<key or name>[&nganh=<code>]`,
+ * reached from `/hoc-vien/bai/<metric>?nganh=`, `/academy?metric=&nganh=`, the Dashboard's "Học" button
+ * (always with the industry of the symbol, spec v5 §6.3) or a "Có bài riêng" link of a lesson.
  *
  * Once the account is known the server resolves the name (`GET /academy/link`: `metric_key`, else the exact
- * lesson title, else a title starting with `name + " ·"`, among the lessons of the account's chapters) and the
+ * lesson title, else a title starting with `name + " ·"`, among the lessons of the account's chapters; with
+ * `nganh` the industry chapter first, then Chương 8, then any chapter) and the
  * lesson replaces the parameter in the URL (a replace, so Back never returns to the link). A lesson that is
  * not its turn yet (`locked`, an account that learns in order, spec v4.1 §4) opens the same way: the reader
  * asks the server for it, gets the 403 and shows the lock frame with "Học tiếp", never the lesson. It is never
@@ -19,7 +29,8 @@ import { parseLessonParam } from "./navigation"
  * - a name no lesson teaches opens the lesson the learner was last on (the server's answer), or nothing;
  * - a failed request just drops the parameter, so the tool shows its list as usual;
  * - a guest keeps the parameter, which resolves after sign-in;
- * - a new `metric` while the tool is open switches to its lesson at once.
+ * - a new `metric` (or `nganh`) while the tool is open switches to its lesson at once;
+ * - `nganh` is dropped together with `metric`; an unusable code is simply not sent.
  *
  * `pending` is true while an account's link is being resolved, so the reader area shows a placeholder
  * instead of the mascot (or the previous lesson) for a moment.
@@ -29,14 +40,16 @@ export function useAcademyDeepLink(): { pending: boolean } {
   const { isAuthenticated } = useAuth()
   const hasParam = params.has(METRIC_PARAM)
   const metric = parseMetricParam(params.get(METRIC_PARAM))
+  const nganh = parseNganhParam(params.get(NGANH_PARAM))
 
-  /** Drops `metric` and, when the server named a lesson, opens it (the same keys `openLesson` writes). */
+  /** Drops `metric` and `nganh` and, when the server named a lesson, opens it (the same keys `openLesson` writes). */
   const settle = useCallback(
     (itemId: string | null) =>
       setParams(
         (current) => {
           const next = new URLSearchParams(current)
           next.delete(METRIC_PARAM)
+          next.delete(NGANH_PARAM)
           if (itemId) {
             next.delete("content")
             next.delete("tab")
@@ -63,12 +76,12 @@ export function useAcademyDeepLink(): { pending: boolean } {
     const finish = (itemId: string | null) => {
       if (!controller.signal.aborted) settle(itemId)
     }
-    fetchLink(metric, controller.signal).then(
+    fetchLink(metric, nganh, controller.signal).then(
       (link) => finish(parseLessonParam(link.lesson_id)),
       () => finish(null),
     )
     return () => controller.abort()
-  }, [hasParam, metric, isAuthenticated, settle])
+  }, [hasParam, metric, nganh, isAuthenticated, settle])
 
   return { pending: metric !== null && isAuthenticated }
 }

@@ -33,12 +33,12 @@ export const ACADEMY_LOG_ACTION_LABELS: Record<AcademyConfigLogAction, string> =
   delete: "Về mặc định",
 }
 
-/** "11/12 chương". */
+/** "16/17 chương". */
 export function chapterCountLabel(count: number, total: number): string {
   return `${count}/${total} chương`
 }
 
-/** "106 bài học". */
+/** "193 bài học". */
 export function lessonTotalLabel(requiredTotal: number): string {
   return `${requiredTotal} bài học`
 }

@@ -3,21 +3,24 @@ import { FundamentalChart } from "@/components/fundamental-charts"
 import type { ChartModel } from "../content-types"
 import { chartTables, type DataTable } from "./chart-math"
 import { CompareChart } from "./compare-chart"
+import { FigureChart } from "./figure-chart"
 import { LeafChart } from "./leaf-chart"
 
 /**
- * Draws one precomputed chart model of a lesson. Every `kind` of the v4 schema has a renderer;
+ * Draws one precomputed chart model of a lesson. Every `kind` of the content schema has a renderer;
  * colours come from theme tokens (chart-theme.ts) and every chart lays out at the measured width.
- * `fundamental` (the 62 representative charts of chapters 8-12) uses the shared Dashboard renderer.
+ * `fundamental` (the representative charts of chapters 8-17) uses the shared Dashboard renderer;
+ * `figure` (v5) draws the mockup's `FIG` illustrations (figure-chart.tsx).
  */
 export function LessonChart({ model, label, autoLegend = true }: { model: ChartModel; label: string; autoLegend?: boolean }) {
   if (model.kind === "compare") return <CompareChart model={model} label={label} />
-  // Biểu đồ đại diện Chương 8-12: cùng bộ khuôn với Dashboard phân tích (spec cập nhật 22-10 DB-02, spec Học viện v4 §2.1).
-  // Bộ khuôn tự có chú giải và nút "Bảng số".
+  if (model.kind === "figure") return <FigureChart model={model} label={label} />
+  // Biểu đồ đại diện: cùng bộ khuôn với Dashboard phân tích (spec cập nhật 22-10 DB-02, spec Học viện v4 §2.1),
+  // bỏ nút "Bảng số" (spec Học viện v5 §2.4); bộ khuôn tự có chú giải.
   if (model.kind === "fundamental") {
     return (
       <div role="group" aria-label={label} className="min-w-0">
-        <FundamentalChart chart={model.chart} />
+        <FundamentalChart chart={model.chart} showTable={false} />
       </div>
     )
   }

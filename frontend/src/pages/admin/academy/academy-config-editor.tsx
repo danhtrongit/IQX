@@ -35,7 +35,7 @@ function sameChapters(a: readonly string[], b: readonly string[]): boolean {
 }
 
 /**
- * Màn sửa một cấu hình (spec §1.4): cách học, 12 chương theo danh mục gốc, xem trước đã đánh số
+ * Màn sửa một cấu hình (spec §1.4): cách học, các chương theo danh mục gốc, xem trước đã đánh số
  * lại, Lưu, Về mặc định (chỉ cấu hình riêng) và nhật ký thay đổi.
  *
  * Ba trường hợp: sửa cấu hình mặc định, sửa cấu hình riêng của trưởng nhóm, và "Tạo cấu hình
