@@ -1,25 +1,21 @@
 /**
- * Dashboard phân tích v2 (spec §11): thiết lập theo tài khoản và theo ngành, danh mục 62 chỉ tiêu
- * và số liệu theo khuôn biểu đồ. Số liệu lấy từ nguồn BCTC của VCI (cùng nguồn với Bộ lọc); 33
- * chỉ tiêu chạy qua công thức của registry Bộ lọc, 29 chỉ tiêu mới của ngân hàng, chứng khoán,
- * bảo hiểm tính ở `dashboard.native.ts`. Ngành của mã lấy từ mẫu báo cáo tài chính (§1.3).
+ * Dashboard phân tích v3 (spec v3 §11): thiết lập theo tài khoản và theo 9 ngành, danh mục theo cặp
+ * (ngành, tên) và số liệu theo khuôn biểu đồ. Số liệu lấy từ nguồn BCTC của VCI (cùng nguồn với Bộ
+ * lọc); chỉ tiêu registry chạy qua công thức của Bộ lọc, chỉ tiêu ngành tính ở `dashboard.native.ts`.
+ * Ngành của mã (§1.3): mẫu báo cáo tài chính trước, rồi phân ngành ICB của VCI (`dashboard.icb.ts`).
  */
 import {
   BadRequestException,
   Inject,
   Injectable,
   Logger,
+  Optional,
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 
 import { finite } from '../financials/financials.calculations.js';
-import {
-  detectIndustry,
-  INDUSTRIES,
-  INDUSTRY_LABELS,
-  type Industry,
-} from '../financials/financials.industry.js';
+import { detectIndustry, type Industry } from '../financials/financials.industry.js';
 import { MarketDataService, MarketTransportError, VciMarketProvider } from '../market-data/index.js';
 import {
   sharesAt,
@@ -34,16 +30,19 @@ import {
   type VciStatementSections,
 } from '../screener/screener.statements.js';
 import {
-  chartInIndustry,
+  chartFor,
   DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY,
   DASHBOARD_INDUSTRY_CHAPTERS,
   DASHBOARD_INDUSTRY_CHARTS,
   DASHBOARD_INDUSTRY_COUNTS,
-  dashboardChart,
+  dashboardDecimals,
   dashboardUnit,
+  isDashboardChartName,
   type DashboardChartSpec,
 } from './dashboard.catalog.js';
+import { IcbDirectory } from './dashboard.icb.js';
 import { normalizeIndustryStatements } from './dashboard.mapping.js';
+import { NGANH, NGANH_LABELS, nganhOf, type Nganh } from './dashboard.nganh.js';
 import {
   DashboardSettingsRepository,
   type DashboardSettingsStore,
@@ -55,6 +54,7 @@ import {
   displayValue,
   sliceQuarters,
   type DashboardChartPayload,
+  type DashboardContext,
 } from './dashboard.series.js';
 import type {
   DashboardCatalog,
@@ -66,17 +66,25 @@ import type {
 } from './dashboard.schemas.js';
 
 /** Bộ mặc định của một ngành chưa lưu thiết lập (spec §6.3): Quý, mỗi biểu đồ 5 kỳ. */
-export function defaultDashboardSettings(industry: Industry): DashboardSettings {
-  return { charts: [...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[industry]], per: 'q', nks: {} };
+export function defaultDashboardSettings(nganh: Nganh): DashboardSettings {
+  return { charts: [...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[nganh]], per: 'q', nks: {} };
 }
 
 /** Bộ mặc định của từng ngành (spec §6.3). */
-export const DASHBOARD_DEFAULT_SETTINGS: Readonly<Record<Industry, DashboardSettings>> = {
-  thuong: defaultDashboardSettings('thuong'),
-  nh: defaultDashboardSettings('nh'),
-  ck: defaultDashboardSettings('ck'),
-  bh: defaultDashboardSettings('bh'),
-};
+export const DASHBOARD_DEFAULT_SETTINGS: Readonly<Record<Nganh, DashboardSettings>> =
+  Object.fromEntries(NGANH.map((nganh) => [nganh, defaultDashboardSettings(nganh)])) as Record<
+    Nganh,
+    DashboardSettings
+  >;
+
+/**
+ * Ngữ cảnh tính biểu đồ của v3: `industry` (= `template`, mẫu báo cáo) như v2, thêm `template` và
+ * `nganh` cho các công thức theo ngành (T2 đưa hai trường này vào `DashboardContext`).
+ */
+export type DashboardV3Context = DashboardContext & { template: Industry; nganh: Nganh };
+
+/** Lý do trống của chỉ tiêu v3 chưa có công thức. */
+const PENDING_NOTE = 'Chỉ tiêu đang được hoàn thiện công thức';
 
 /** Chuỗi định giá theo ngày dài tối đa 10 năm (spec §11). */
 export const DASHBOARD_MAX_VALUATION_YEARS = 10;
@@ -132,13 +140,15 @@ const tradingDate = (value: unknown): string | null => {
 
 export interface DashboardIndustryResponse {
   symbol: string;
-  nganh: Industry;
+  nganh: Nganh;
   label: string;
+  /** Mẫu báo cáo tài chính (4 giá trị). */
+  template: Industry;
 }
 
 export interface DashboardFundamentalResponse {
   symbol: string;
-  nganh: Industry;
+  nganh: Nganh;
   per: 'q' | 'y';
   charts: Record<string, DashboardChartPayload>;
 }
@@ -152,7 +162,7 @@ export interface DashboardValuationChart {
 
 export interface DashboardValuationResponse {
   symbol: string;
-  nganh: Industry;
+  nganh: Nganh;
   dates: string[];
   charts: Record<string, DashboardValuationChart>;
 }
@@ -165,39 +175,60 @@ function chartNames(raw: string | undefined): string[] {
     .filter((item) => item.length > 0);
 }
 
-/** Tên chỉ tiêu → chỉ tiêu; tên ngoài danh mục 62 chỉ tiêu là lỗi 422. */
-function lookupCharts(names: readonly string[]): DashboardChartSpec[] {
-  return names.map((name) => {
-    const spec = dashboardChart(name);
-    if (!spec)
-      throw new UnprocessableEntityException({
-        code: 'UNKNOWN_DASHBOARD_CHART',
-        message: `Chỉ tiêu '${name}' không có trong danh mục 62 chỉ tiêu của dashboard`,
-      });
-    return spec;
-  });
+/** Tên ngoài danh mục 90 tên của dashboard là lỗi 422 (kiểm trước khi gọi nguồn). */
+function assertKnownNames(names: readonly string[]): void {
+  const unknown = names.find((name) => !isDashboardChartName(name));
+  if (unknown !== undefined)
+    throw new UnprocessableEntityException({
+      code: 'UNKNOWN_DASHBOARD_CHART',
+      message: `Chỉ tiêu '${unknown}' không có trong danh mục chỉ tiêu của dashboard`,
+    });
 }
 
-/** Chỉ tiêu của ngành khác với ngành của mã là lỗi 400 (spec §11). */
-function assertInIndustry(names: readonly string[], industry: Industry): void {
-  const foreign = lookupCharts(names).filter((spec) => !chartInIndustry(spec, industry));
+/**
+ * Tên → chỉ tiêu của cặp (ngành, tên). Tên ngoài 90 tên là 422; tên không thuộc ngành của mã là
+ * 400 `CHART_NOT_IN_INDUSTRY` (spec §11).
+ */
+function lookupCharts(names: readonly string[], nganh: Nganh): DashboardChartSpec[] {
+  assertKnownNames(names);
+  const foreign = names.filter((name) => chartFor(nganh, name) === null);
   if (foreign.length > 0)
     throw new BadRequestException({
       code: 'CHART_NOT_IN_INDUSTRY',
-      message: `Chỉ tiêu ${foreign.map((spec) => `'${spec.name}'`).join(', ')} không thuộc ngành ${INDUSTRY_LABELS[industry]} của mã`,
+      message: `Chỉ tiêu ${foreign.map((name) => `'${name}'`).join(', ')} không thuộc ngành ${NGANH_LABELS[nganh]} của mã`,
     });
+  return names.map((name) => chartFor(nganh, name)!);
+}
+
+/** Biểu đồ trống của chỉ tiêu v3 chưa có công thức (T2 viết công thức rồi bỏ nhánh này). */
+function pendingChart(spec: DashboardChartSpec): DashboardChartPayload {
+  const payload: DashboardChartPayload = {
+    name: spec.name,
+    kind: spec.kind,
+    unit: dashboardUnit(spec),
+    decimals: dashboardDecimals(spec.unit, spec.kind),
+    status: 'definition_pending',
+    note: PENDING_NOTE,
+  };
+  if (spec.ref !== null) payload.ref = spec.ref;
+  return payload;
 }
 
 @Injectable()
 export class DashboardService {
   private readonly logger = new Logger(DashboardService.name);
 
+  private readonly icb: IcbDirectory;
+
   constructor(
     private readonly vci: VciMarketProvider,
     private readonly market: MarketDataService,
     @Inject(DashboardSettingsRepository)
     private readonly store: DashboardSettingsStore,
-  ) {}
+    @Optional() icb?: IcbDirectory,
+  ) {
+    this.icb = icb ?? new IcbDirectory(vci);
+  }
 
   /**
    * Thiết lập của tài khoản theo ngành (spec §6.1); ngành chưa lưu thì trả bộ mặc định của ngành
@@ -206,7 +237,7 @@ export class DashboardService {
   async settings(userId: string): Promise<DashboardIndustrySettings> {
     const stored = await this.store.findAll(userId);
     const result = {} as DashboardIndustrySettings;
-    for (const industry of INDUSTRIES) {
+    for (const industry of NGANH) {
       const saved = stored[industry];
       const names = new Set(DASHBOARD_INDUSTRY_CHARTS[industry].map((chart) => chart.name));
       result[industry] =
@@ -226,10 +257,10 @@ export class DashboardService {
   /** Lưu thiết lập của MỘT ngành theo tài khoản (spec §6.2). */
   async saveSettings(
     userId: string,
-    industry: Industry,
+    industry: Nganh,
     input: DashboardSettingsInput,
   ): Promise<StoredDashboardSettings> {
-    assertInIndustry([...input.charts, ...Object.keys(input.nks)], industry);
+    lookupCharts([...input.charts, ...Object.keys(input.nks)], industry);
     return this.store.save(userId, industry, {
       charts: input.charts,
       per: input.per,
@@ -238,14 +269,14 @@ export class DashboardService {
   }
 
   /**
-   * Danh mục 62 chỉ tiêu theo ngành (spec §3.2, §8): mỗi ngành gồm chương chung và chương riêng,
-   * mỗi chương chia nhóm, kèm `metric_key` cho nút "Học" và bộ mặc định 6 biểu đồ (§6.3).
+   * Danh mục theo 9 ngành (spec §3.2, §8): mỗi ngành gồm nhóm chung và nhóm riêng, mỗi nhóm chia
+   * nhóm cấp 2, kèm `metric_key` cho nút "Học" và bộ mặc định 6 biểu đồ (§6.3).
    */
   catalog(): DashboardCatalog {
     return {
-      industries: INDUSTRIES.map((industry) => ({
+      industries: NGANH.map((industry) => ({
         nganh: industry,
-        label: INDUSTRY_LABELS[industry],
+        label: NGANH_LABELS[industry],
         total: DASHBOARD_INDUSTRY_COUNTS[industry],
         default_charts: [...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[industry]],
         chapters: DASHBOARD_INDUSTRY_CHAPTERS[industry].map((chapter) => ({
@@ -264,12 +295,29 @@ export class DashboardService {
     };
   }
 
-  /** Ngành của một mã theo mẫu báo cáo tài chính (spec §1.3); chưa rõ mẫu thì `thuong` (§13). */
+  /**
+   * Ngành của một mã (spec §1.3): mẫu báo cáo tài chính trước; mẫu doanh nghiệp chia tiếp theo ICB.
+   * Chưa rõ mẫu hoặc phân ngành thì `thuong` (§13.1).
+   */
   async industry(symbol: string): Promise<DashboardIndustryResponse> {
     const sym = symbol.toUpperCase();
     const income = await this.financialRaw(sym, 'INCOME_STATEMENT');
-    const nganh = detectIndustry(income.data);
-    return { symbol: sym, nganh, label: INDUSTRY_LABELS[nganh] };
+    const template = detectIndustry(income.data);
+    const nganh = await this.nganhOf(sym, template);
+    return { symbol: sym, nganh, label: NGANH_LABELS[nganh], template };
+  }
+
+  /** Ngành dashboard từ mẫu báo cáo và ICB; chỉ hỏi ICB với mẫu doanh nghiệp. Không ném lỗi. */
+  private async nganhOf(symbol: string, template: Industry): Promise<Nganh> {
+    if (template !== 'thuong') return template;
+    try {
+      return nganhOf(template, await this.icb.lookup(symbol));
+    } catch (error) {
+      this.logger.warn(
+        `Dashboard ICB lookup failed for ${symbol}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return 'thuong';
+    }
   }
 
   /**
@@ -282,28 +330,41 @@ export class DashboardService {
   ): Promise<DashboardFundamentalResponse> {
     const sym = symbol.toUpperCase();
     const names = chartNames(query.charts);
-    lookupCharts(names);
+    assertKnownNames(names);
     const now = new Date();
     const [sections, events] = await Promise.all([this.sections(sym), this.shareEvents(sym, now)]);
-    const industry = detectIndustry(sections.income_statement);
-    assertInIndustry(names, industry);
-    const specs = names.length ? lookupCharts(names) : [...DASHBOARD_INDUSTRY_CHARTS[industry]];
+    const template = detectIndustry(sections.income_statement);
+    const nganh = await this.nganhOf(sym, template);
+    const specs = names.length ? lookupCharts(names, nganh) : [...DASHBOARD_INDUSTRY_CHARTS[nganh]];
     const statements = withShareHistory(
-      normalizeIndustryStatements(sections, now, industry),
+      normalizeIndustryStatements(sections, now, template),
       events,
     );
     const prices = specs.some((spec) => spec.registry_id === 'peg')
       ? await this.dailyPrices(sym, undefined, now)
       : [];
-    const context = {
-      statements: annualStatements(statements, industry),
-      industry,
+    const context: DashboardV3Context = {
+      statements: annualStatements(statements, template),
+      industry: template,
+      template,
+      nganh,
       market: { price: null, shares: null },
       priceAt: (date: string) => closeOnOrBefore(prices, date),
     };
     const charts: DashboardFundamentalResponse['charts'] = {};
-    for (const spec of specs) charts[spec.name] = buildDashboardChart(spec, context);
-    return { symbol: sym, nganh: industry, per: query.per, charts };
+    for (const spec of specs) charts[spec.name] = this.chart(spec, context);
+    return { symbol: sym, nganh, per: query.per, charts };
+  }
+
+  /**
+   * Một biểu đồ: chỉ tiêu mới chưa có công thức trả trống `definition_pending`; biến thể đang chờ
+   * tạm tính bằng công thức gốc (registry). Số lẻ theo đơn vị và khuôn (D11).
+   */
+  private chart(spec: DashboardChartSpec, context: DashboardV3Context): DashboardChartPayload {
+    if (spec.pending && spec.registry_id === null) return pendingChart(spec);
+    const payload = buildDashboardChart(spec, context);
+    payload.decimals = dashboardDecimals(spec.unit, spec.kind);
+    return payload;
   }
 
   /**
@@ -315,17 +376,18 @@ export class DashboardService {
   ): Promise<DashboardValuationResponse> {
     const sym = symbol.toUpperCase();
     const names = chartNames(query.charts);
-    lookupCharts(names);
+    assertKnownNames(names);
     const now = new Date();
     const [sections, events, prices] = await Promise.all([
       this.sections(sym),
       this.shareEvents(sym, now),
       this.dailyPrices(sym, query.from, now),
     ]);
-    const industry = detectIndustry(sections.income_statement);
-    const specs = this.resolveValuationCharts(names, industry);
+    const template = detectIndustry(sections.income_statement);
+    const nganh = await this.nganhOf(sym, template);
+    const specs = this.resolveValuationCharts(names, nganh);
     const statements = withShareHistory(
-      normalizeIndustryStatements(sections, now, industry),
+      normalizeIndustryStatements(sections, now, template),
       events,
     );
     // Point-in-time share count (DB-03); without the event history, the current share count.
@@ -337,21 +399,17 @@ export class DashboardService {
       charts[spec.name] = this.valuationSeries(spec, statements, prices, shares);
     return {
       symbol: sym,
-      nganh: industry,
+      nganh,
       dates: prices.map((price) => price.date),
       charts,
     };
   }
 
   /** Chỉ các chỉ tiêu định giá theo ngày (khuôn F) của ngành được hỏi ở endpoint định giá. */
-  private resolveValuationCharts(
-    names: readonly string[],
-    industry: Industry,
-  ): DashboardChartSpec[] {
-    assertInIndustry(names, industry);
+  private resolveValuationCharts(names: readonly string[], nganh: Nganh): DashboardChartSpec[] {
     const specs = names.length
-      ? lookupCharts(names)
-      : DASHBOARD_INDUSTRY_CHARTS[industry].filter((spec) => spec.kind === 'F');
+      ? lookupCharts(names, nganh)
+      : DASHBOARD_INDUSTRY_CHARTS[nganh].filter((spec) => spec.kind === 'F');
     const valuation = specs.filter((spec) => spec.kind === 'F');
     if (valuation.length !== specs.length)
       throw new UnprocessableEntityException({

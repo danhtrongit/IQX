@@ -1,22 +1,21 @@
 /**
- * Dashboard phân tích v2 (spec §1–§11): thiết lập theo tài khoản và theo ngành, danh mục 62 chỉ
- * tiêu và số liệu theo khuôn biểu đồ. Mã đang xem là trạng thái chung của trang, không nằm trong
- * thiết lập; ngành của mã (§1.3) lấy từ mẫu báo cáo tài chính.
+ * Dashboard phân tích v3 (spec v3 §1–§11): thiết lập theo tài khoản và theo 9 ngành, danh mục theo
+ * cặp (ngành, tên) và số liệu theo khuôn biểu đồ. Mã đang xem là trạng thái chung của trang, không
+ * nằm trong thiết lập; ngành của mã (§1.3) lấy từ mẫu báo cáo tài chính rồi phân ngành ICB.
  */
 import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags, type SchemaObject } from '@nestjs/swagger';
 import { z } from 'zod';
 
 import { ApiAuthGuard, CurrentUser, Public, type AuthenticatedUser } from '../auth/index.js';
-import type { Industry } from '../financials/financials.industry.js';
 import { symbolSchema } from '../market-data/market-data.schemas.js';
 import {
   dashboardCatalogSchema,
   dashboardFundamentalQuerySchema,
   dashboardFundamentalResponseSchema,
   dashboardIndustryResponseSchema,
-  dashboardIndustrySchema,
   dashboardIndustrySettingsSchema,
+  dashboardNganhSchema,
   dashboardSavedSettingsSchema,
   dashboardSettingsInputSchema,
   dashboardValuationQuerySchema,
@@ -25,6 +24,7 @@ import {
   type DashboardSettingsInput,
   type DashboardValuationQuery,
 } from './dashboard.schemas.js';
+import type { Nganh } from './dashboard.nganh.js';
 import { DashboardService } from './dashboard.service.js';
 
 const openApi = (schema: z.ZodType) =>
@@ -41,7 +41,7 @@ export class DashboardSettingsController {
   @ApiOperation({
     operationId: 'dashboardSettings',
     summary:
-      'Dashboard settings of the account per industry {thuong, nh, ck, bh}: chart list and order, quarter/year mode, periods per chart; an industry never saved returns its default set',
+      'Dashboard settings of the account per industry {thuong, nh, ck, bh, bds, dk, bl, dien, vl}: chart list and order, quarter/year mode, periods per chart; an industry never saved returns its default set',
   })
   @ApiOkResponse({ schema: openApi(dashboardIndustrySettingsSchema) })
   settings(@CurrentUser() user: AuthenticatedUser) {
@@ -57,7 +57,7 @@ export class DashboardSettingsController {
   @ApiOkResponse({ schema: openApi(dashboardSavedSettingsSchema) })
   saveSettings(
     @CurrentUser() user: AuthenticatedUser,
-    @Param('nganh', { schema: dashboardIndustrySchema }) industry: Industry,
+    @Param('nganh', { schema: dashboardNganhSchema }) industry: Nganh,
     @Body({ schema: dashboardSettingsInputSchema }) body: DashboardSettingsInput,
   ) {
     return this.dashboard.saveSettings(user.id, industry, body);
@@ -78,7 +78,7 @@ export class DashboardDataController {
   @ApiOperation({
     operationId: 'dashboardCatalog',
     summary:
-      'The 62 analysis charts by industry: 17 common + 16 manufacturing + 11 bank + 10 securities + 8 insurance, in chapters and groups, with the Academy lesson key and the default set of each industry',
+      'The analysis charts of the 9 industries (90 names, 260 industry/name pairs): per industry a common chapter and its own, in groups, with the Academy lesson key and the default set of each industry',
   })
   @ApiOkResponse({ schema: openApi(dashboardCatalogSchema) })
   catalog() {
@@ -89,7 +89,7 @@ export class DashboardDataController {
   @ApiOperation({
     operationId: 'dashboardIndustry',
     summary:
-      'Industry of one symbol from its financial statement template: thuong, nh (banks and finance companies), ck or bh; unknown template counts as thuong',
+      'Industry of one symbol: nh (banks and finance companies), ck, bh from the statement template; the enterprise template is split by the VCI ICB code into bds, dk, bl, dien, vl or thuong; unknown counts as thuong',
   })
   @ApiOkResponse({ schema: openApi(dashboardIndustryResponseSchema) })
   industry(@Param('symbol', { schema: symbolSchema }) symbol: string) {

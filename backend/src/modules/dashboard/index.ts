@@ -18,8 +18,10 @@ export {
   DASHBOARD_SCOPES,
   DASHBOARD_YEAR_PERIODS,
   NATIVE_METRIC_IDS,
-  chartInIndustry,
-  dashboardChart,
+  PENDING_V3_METRIC_IDS,
+  V3_NEW_METRIC_IDS,
+  V3_VARIANT_METRIC_KEYS,
+  chartFor,
   dashboardDecimals,
   dashboardUnit,
   isDashboardChartName,
@@ -33,7 +35,22 @@ export type {
   DashboardScope,
   DashboardSubType,
   NativeMetricId,
+  PendingV3MetricId,
+  V3NewMetricId,
+  V3VariantMetricId,
 } from './dashboard.catalog.js';
+export {
+  COMMON_ACADEMY_CHAPTER,
+  NEW_NGANH,
+  NGANH,
+  NGANH_ACADEMY_CHAPTERS,
+  NGANH_CHAPTER_TITLES,
+  NGANH_LABELS,
+  isNganh,
+  nganhOf,
+} from './dashboard.nganh.js';
+export type { IcbCodes, Nganh } from './dashboard.nganh.js';
+export { ICB_RETRY_MS, ICB_TTL_MS, IcbDirectory } from './dashboard.icb.js';
 export {
   INDUSTRY_MAPPINGS,
   industryConcepts,
@@ -58,6 +75,7 @@ export type {
   DashboardFundamentalResponse,
   DashboardIndustryResponse,
   DashboardValuationChart,
+  DashboardV3Context,
   DashboardValuationResponse,
 } from './dashboard.service.js';
 export {
