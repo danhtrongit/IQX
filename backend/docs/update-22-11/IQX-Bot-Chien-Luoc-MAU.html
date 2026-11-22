@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IQX · Bot và Chiến lược v2.0 (HTML mẫu)</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--line:#e3e7ee;--line2:#eef1f5;--txt:#111827;--mut:#6b7280;--pri:#1a56db;--pri-bg:#eaf1ff;--ok:#047857;--ok-bg:#e7f6ef;--bad:#c81e1e;--bad-bg:#fdecec;--warn:#92400e;--warn-bg:#fff6e0;--iqx:#5b21b6;--iqx-bg:#f1eaff;--s1:#1a56db;--s2:#d97706;--s3:#8a94a6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt)}
+button{font:inherit;cursor:pointer}
+input,select{font:inherit;color:inherit}
+.hdr{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 16px;height:52px;overflow-x:auto}
+.logo{font-weight:800;font-size:18px;color:var(--pri);margin-right:12px;white-space:nowrap}
+.nav{border:0;background:none;padding:0 12px;height:52px;font-weight:600;color:#374151;white-space:nowrap;border-bottom:3px solid transparent}
+.nav.on{color:var(--pri);border-bottom-color:var(--pri)}
+.bellw{position:relative}
+.bell{position:relative;border:1px solid var(--line);background:#fff;border-radius:8px;width:38px;height:36px;display:grid;place-items:center;color:#374151}
+.bdot{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.bdot:empty{display:none}
+.ntpop{position:fixed;top:56px;right:16px;width:360px;max-width:calc(100vw - 32px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.15);z-index:40;max-height:70vh;overflow:auto}
+.ntpop .ph,.ntpop .pf{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line2)}
+.ntpop .pf{border-top:1px solid var(--line2);border-bottom:0}
+.nti{display:flex;gap:10px;width:100%;text-align:left;border:0;background:#fff;padding:10px 12px;border-bottom:1px solid var(--line2);align-items:flex-start}
+.nti:hover{background:#f8fafc}.nti .tx{flex:1;min-width:0}.nti .tx span{display:block;font-size:12px;color:var(--mut)}
+.nti .u{width:8px;height:8px;border-radius:50%;background:var(--pri);margin-top:6px}.nti.read .u{visibility:hidden}.nti.read b{font-weight:500}
+.swb{width:36px;height:20px;border-radius:999px;border:0;background:#d1d5db;position:relative;flex:none;padding:0}
+.swb:after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+.swb.on{background:var(--pri)}.swb.on:after{transform:translateX(16px)}.swb:disabled{opacity:.45}
+.ntrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0}
+.ntoff{opacity:.5}
+.em{border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}.em .eh{background:#f8fafc;padding:10px 12px;border-bottom:1px solid var(--line)}.em .eb{padding:12px}.em .eb h4{margin:0 0 8px}.em .ef{padding:10px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--mut)}
+.em .cta{display:inline-block;margin-top:10px;background:var(--pri);color:#fff;border-radius:6px;padding:6px 12px;font-weight:600}
+.stk small{display:block;font-size:11px;color:var(--mut)}
+.hdr .note{margin-left:auto;font-size:12px;color:var(--mut);white-space:nowrap}
+.page{max-width:1400px;margin:0 auto;padding:16px}
+.hide{display:none!important}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.cap{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+.h2{font-size:16px;font-weight:700;margin:0}
+.mut{color:var(--mut)}
+.sm{font-size:12px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;font-weight:600;color:#1f2937}
+.btn:hover{background:#f8fafc}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.pri:hover{background:#1648b8}
+.btn.ghost{border-color:transparent;background:none;color:var(--pri);padding:4px 6px}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;background:var(--line2);color:#374151;white-space:nowrap}
+.pill.iqx{background:var(--iqx-bg);color:var(--iqx)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.pri{background:var(--pri-bg);color:var(--pri)}
+.badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.03em;border-radius:4px;padding:1px 5px;background:var(--iqx);color:#fff;vertical-align:1px}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+.lock{font-size:12px;color:var(--warn);background:var(--warn-bg);border-radius:6px;padding:6px 10px}
+.info{font-size:13px;background:var(--iqx-bg);border:1px solid #ddd0fb;border-radius:8px;padding:8px 12px}
+/* backtest */
+.sbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.sbar .ttl{font-size:18px;font-weight:700}
+.btgrid{display:grid;grid-template-columns:350px minmax(0,1fr);gap:16px;align-items:start}
+.lib{position:sticky;top:68px;height:calc(100vh - 84px);display:flex;flex-direction:column;padding:0;overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;border:0;background:none;padding:10px 4px;font-weight:600;color:var(--mut);border-bottom:2px solid transparent;font-size:13px}
+.tab.on{color:var(--pri);border-bottom-color:var(--pri)}
+.libbody{overflow:auto;padding:10px;flex:1}
+.libfoot{font-size:12px;color:var(--mut);padding:8px 12px;border-top:1px solid var(--line);background:#fafbfc}
+.scard{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px;background:#fff}
+.scard.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri)}
+.scard .nm{font-weight:700}
+.grp{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;margin:10px 2px 6px}
+.ind{display:flex;align-items:center;gap:6px;padding:7px 8px;border:1px solid var(--line2);border-radius:8px;margin-bottom:6px}
+.ind .nm{flex:1;font-weight:600;font-size:13px;min-width:0}
+.ind .btn{white-space:nowrap;padding:3px 7px}
+.setup{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fld label{display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:4px}
+.fld input,.fld select{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff}
+.fixed{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.conds{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.side h4{margin:0 0 8px;font-size:12px;letter-spacing:.04em}
+.side.buy h4{color:var(--ok)}.side.sell h4{color:var(--bad)}
+.icard{border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:8px;background:#fff}
+.icard .top{display:flex;align-items:center;gap:6px}
+.icard .top b{flex:1}
+.icard .ln{font-size:12px;color:#374151;margin-top:2px}
+.icard .ln.off{color:#9ca3af;text-decoration:line-through}
+.empty{border:1px dashed var(--line);border-radius:8px;padding:14px;text-align:center;color:var(--mut);font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin:12px 0}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:10px}
+.kpi .v{font-size:18px;font-weight:700;margin-top:2px}
+.kpi.cmp{background:#fafbfc}
+.chart{position:relative}
+.chart svg{width:100%;height:auto;display:block}
+.tip{position:absolute;pointer-events:none;background:#111827;color:#fff;font-size:12px;border-radius:6px;padding:6px 8px;white-space:nowrap;display:none;z-index:2}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#374151;margin-top:6px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.rtabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:14px;overflow-x:auto}
+.rtab{border:0;background:none;padding:8px 10px;font-weight:600;color:var(--mut);border-bottom:2px solid transparent;white-space:nowrap}
+.rtab.on{color:var(--pri);border-bottom-color:var(--pri)}
+.tw{overflow-x:auto;margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line2);text-align:right;white-space:nowrap}
+th{font-size:11px;color:var(--mut);font-weight:700;text-transform:uppercase;background:#fafbfc}
+th:first-child,td:first-child{text-align:left}
+td.l,th.l{text-align:left}
+tr.click{cursor:pointer}tr.click:hover td{background:#f8fafc}
+.pager{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:8px;font-size:12px}
+.menu{position:relative}
+.dd{position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.12);width:330px;max-width:calc(100vw - 32px);z-index:30;padding:6px}
+.picker{display:flex;align-items:center;gap:8px;padding:6px 12px}
+.picker .ttl{font-size:17px}
+.dd.pk{left:0;right:auto;width:440px;max-height:70vh;overflow:auto}
+.dd .sec{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;padding:8px 10px 4px}
+.dd button.cur{background:var(--pri-bg)}
+.pkrow{display:flex;align-items:center;gap:4px;border-radius:6px}.pkrow.cur{background:var(--pri-bg)}
+.pkrow button:first-child{flex:1}
+.dd .pkrow button.del{width:auto;flex:none;padding:6px 9px;color:var(--bad)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.picker b{font-size:15px}
+.subnav{display:flex;gap:28px;border-bottom:1px solid var(--line);margin-bottom:16px;font-weight:600;color:#374151}
+.subnav span{padding:8px 2px}.subnav .on{color:var(--pri);border-bottom:3px solid var(--pri)}
+.tabs2{display:flex;gap:8px;padding:12px;border-bottom:1px solid var(--line)}
+.t2{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px;font-weight:700;color:#374151}
+.t2.on{background:var(--pri-bg);border-color:#9db6f5;color:var(--pri)}
+.libind{display:flex;flex-direction:column;min-height:0;flex:1}
+.saved{border-top:1px solid var(--line);padding:10px 12px;max-height:280px;overflow:auto;background:#fafbfc}
+.sv{display:block;width:100%;text-align:left;border:1px solid var(--line2);background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:6px}
+.sv:hover{background:#f8fafc}.sv.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri)}
+.iq{cursor:pointer}.iq:hover{border-color:#9db6f5}
+.conds2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cbox{border:1px solid;border-radius:10px;overflow:hidden;background:#fff;min-width:0}
+.cbox.buy{border-color:#a7dcc4}.cbox.sell{border-color:#f3b4b4}
+.chd{display:flex;align-items:center;gap:8px;padding:10px 14px;font-weight:700;font-size:13px}
+.buy .chd{background:#ecf8f2;color:var(--ok)}.sell .chd{background:#fdeeee;color:var(--bad)}
+.chd .and{background:#fff;border:1px solid var(--line);color:#111827;border-radius:6px;padding:1px 7px;font-size:11px}
+.cbody{padding:12px}
+.holdbox{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:#fff}
+.holdbox input{width:64px;border:0;padding:7px 0;outline:none;background:transparent}
+.fld input:disabled,.fld select:disabled,.holdbox:has(input:disabled){background:#f3f4f6;color:#4b5563}
+.libhd2{padding:10px 12px;border-bottom:1px solid var(--line)}
+.libhd2 input{width:100%;margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.ind2{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px}
+.ind2 b{display:block;margin-bottom:8px}
+.ind2 .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ind2 .two button{border:1px solid var(--line);background:#f8fafc;border-radius:6px;padding:5px;font-weight:600}
+.libhd{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.libhd input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 9px}
+.dd button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:6px}
+.dd button:hover:not(:disabled){background:#f3f6fb}
+.dd button:disabled{opacity:.5;cursor:not-allowed}
+.dd .why{display:block;font-size:11px;color:var(--warn);font-weight:400}
+.dd .sub{display:block;font-size:11px;color:var(--mut);font-weight:400}
+/* bot */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:16px}
+.stats>div{padding:12px 16px;border-right:1px solid var(--line)}
+.stats>div:last-child{border-right:0}
+.stats .v{font-size:18px;font-weight:700;margin-top:2px}
+.botgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.pet{text-align:center;padding:18px}
+.pet h1{margin:4px 0 2px;font-size:26px}
+.chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.sched .ln{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;padding:8px 0;border-bottom:1px solid var(--line2);align-items:start}
+.sched .ln:last-of-type{border-bottom:0}
+.slist button.it{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1px solid var(--line2);background:#fff;border-radius:8px;padding:9px 10px;margin-bottom:6px}
+.slist button.it:hover{background:#f8fafc}
+.slist button.it.view{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri)}
+.slist .nm{flex:1;font-weight:600}
+.srow{border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-bottom:6px}
+.srow .top{display:flex;align-items:center;gap:6px}
+.srow .tags:empty{display:none}.srow .tags{margin-top:4px}
+.srow.run{border-color:#a7dcc4;background:#f6fcf9}
+.demo{background:#fffdf5;border-style:dashed}
+.det2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.det2 .box{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.det2 h4{margin:0 0 6px;font-size:12px;letter-spacing:.04em}
+/* modal */
+.mbg{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:12px;max-width:640px;width:100%;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{margin:0 0 10px;font-size:17px}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+.eline{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line2)}
+.eline .txt{flex:1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.eline input[type=number]{width:72px;border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.eline select{border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:#fff}
+.sw{position:relative;width:36px;height:20px;flex:none;margin-top:2px}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#d1d5db;border-radius:999px;transition:.15s}
+.sw span:before{content:"";position:absolute;width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.15s}
+.sw input:checked+span{background:var(--pri)}
+.sw input:checked+span:before{transform:translateX(16px)}
+.diff div{font-size:13px;padding:3px 0}
+.diff .add{color:var(--ok)}.diff .rem{color:var(--bad);text-decoration:line-through}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:60;max-width:calc(100vw - 32px)}
+.symgrid{display:flex;flex-wrap:wrap;gap:6px}
+.symgrid span{border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:12px;font-weight:600}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:1024px){
+ .btgrid,.botgrid{grid-template-columns:minmax(0,1fr)}
+ .lib{position:static;height:auto}
+ .saved{max-height:none}
+ .libbody{max-height:420px}
+}
+@media (max-width:720px){
+ .bellw{margin-left:auto}
+ .dd{position:fixed;left:16px!important;right:16px!important;width:auto!important;top:90px;max-height:75vh;overflow:auto}
+ .conds2{grid-template-columns:minmax(0,1fr)}
+ .page{padding:12px}
+ .setup{grid-template-columns:1fr 1fr}
+ .conds,.det2{grid-template-columns:minmax(0,1fr)}
+ .kpis{grid-template-columns:1fr 1fr}
+ .stats{grid-template-columns:1fr 1fr}
+ .stats>div:nth-child(2){border-right:0}
+ .stats>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+ .sched .ln{grid-template-columns:minmax(0,1fr)}
+ .hdr .note{display:none}
+}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">IQX</div>
+  <button class="nav on" data-pg="bt">Backtest</button>
+  <button class="nav" data-pg="bot">Bot</button>
+  <button class="nav" data-pg="adm">Quản trị · Mẫu IQX</button>
+  <div class="note">HTML mẫu · dữ liệu minh họa · hôm nay CN 08/11/2026</div>
+  <div class="bellw"><button class="bell" id="bell" aria-label="Thông báo"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bdot" id="bdot"></span></button></div>
+</div>
+<div class="ntpop hide" id="ntPop"></div>
+
+<!-- ================= BACKTEST ================= -->
+<div class="page" id="pg-bt">
+  <div class="subnav"><span>Cảnh báo</span><span class="on">Backtest</span><span>Bộ lọc</span></div>
+  <div class="btgrid">
+    <div class="card lib">
+      <div class="tabs2"><button class="t2" data-mode="iqx">IQX</button><button class="t2" data-mode="ind">Chỉ báo <span class="pill">16</span></button></div>
+      <div class="libbody" id="libIqx"></div>
+      <div id="libInd" class="libind">
+        <div class="libhd2"><input id="libQ" placeholder="Tìm chỉ báo…"></div>
+        <div class="libbody" id="libBody"></div>
+      </div>
+      <div class="libfoot" id="libFoot"></div>
+    </div>
+    <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+      <div class="card" id="btTop"></div>
+      <div id="btBand"></div>
+      <div class="card">
+        <div class="setup">
+          <div class="fld"><label>RỔ MÃ</label><select id="fUni"></select></div>
+          <div class="fld"><label>TỪ NGÀY</label><input type="date" id="fFrom"></div>
+          <div class="fld"><label>ĐẾN NGÀY</label><input type="date" id="fTo"></div>
+          <div class="fld"><label>VỐN BAN ĐẦU (VND)</label><input value="100.000.000" disabled title="Cố định bằng vốn Bot"></div>
+        </div>
+      </div>
+      <div class="card" id="uniRow" style="padding:10px 16px"></div>
+      <div class="conds2">
+        <div class="cbox buy"><div class="chd"><span>↑ ĐIỀU KIỆN MUA</span><span style="flex:1"></span><span class="sm" id="nBuy" style="font-weight:500"></span><span class="and">AND</span></div><div class="cbody" id="cBuy"></div></div>
+        <div class="cbox sell"><div class="chd"><span>↓ ĐIỀU KIỆN BÁN</span><span style="flex:1"></span><span class="sm" id="nSell" style="font-weight:500"></span><span class="and">AND</span></div><div class="cbody" id="cSell"></div></div>
+      </div>
+      <div class="card">
+        <div class="fld" style="margin-bottom:6px"><label>GIỮ TỐI ĐA</label></div>
+        <div class="row">
+          <div class="holdbox"><input type="number" id="fHold" min="3" max="250" step="1"><span class="mut sm">phiên</span></div>
+          <button class="btn pri" id="btRun">▶ Chạy</button>
+          <div class="menu" id="saveWrap"><button class="btn" id="btSave">Lưu ▾</button><div class="dd hide" id="btSaveDd"></div></div>
+          <span class="sm mut" id="holdNote" style="flex:1;min-width:220px"></span>
+        </div>
+        <div id="runMsg" class="sm" style="margin-top:8px"></div>
+      </div>
+      <div class="card" id="res"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= BOT ================= -->
+<div class="page hide" id="pg-bot">
+  <div class="stats">
+    <div><div class="cap">Vốn bot ban đầu</div><div class="v">100.000.000 đ</div></div>
+    <div><div class="cap">Tiền mặt</div><div class="v">36.860.432 đ</div></div>
+    <div><div class="cap">Giá trị danh mục</div><div class="v">96.570.432 đ</div></div>
+    <div><div class="cap">Tổng lợi nhuận</div><div class="v neg">−3,43%</div></div>
+  </div>
+  <div class="botgrid">
+    <div style="min-width:0;display:flex;flex-direction:column;gap:16px">
+      <div class="card pet">
+        <div class="row"><span class="cap">Linh thú của bạn</span></div>
+        <h1>Bạch Hổ</h1>
+        <div class="mut sm">Học kiến thức. Chọn chiến lược cho Bot.</div>
+        <svg viewBox="0 0 200 150" width="200" height="150" aria-label="Linh thú (giữ nguyên hình hiện có)" style="margin-top:6px">
+          <ellipse cx="100" cy="138" rx="70" ry="8" fill="#e6eefc"/>
+          <path d="M55 52 L70 18 L88 46 Z M145 52 L130 18 L112 46 Z" fill="#4f7df0"/>
+          <circle cx="100" cy="80" r="50" fill="#fff" stroke="#9db6f5" stroke-width="3"/>
+          <path d="M100 32 l6 10 -6 10 -6 -10z" fill="#4f7df0"/>
+          <circle cx="82" cy="80" r="8" fill="#1e3a8a"/><circle cx="118" cy="80" r="8" fill="#1e3a8a"/>
+          <circle cx="84" cy="77" r="2.5" fill="#fff"/><circle cx="120" cy="77" r="2.5" fill="#fff"/>
+          <path d="M92 100 q8 8 16 0" stroke="#1e3a8a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <text x="100" y="146" font-size="9" text-anchor="middle" fill="#6b7280">(hình linh thú giữ nguyên)</text>
+        </svg>
+        <div class="chips" id="petChips"></div>
+      </div>
+      <div class="card sched" id="sched"></div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between"><span class="h2">Danh mục Bot</span>
+          <div class="row" style="gap:2px"><button class="rtab on" data-bt="hold">Đang giữ</button><button class="rtab" data-bt="hist">Lịch sử</button><button class="rtab" data-bt="log">Nhật ký</button><button class="btn ghost sm" id="botRules" aria-label="Nguyên tắc Bot" title="Nguyên tắc Bot">ⓘ</button></div></div>
+        <div class="tw"><table id="botTbl"></table></div>
+      </div>
+    </div>
+    <div style="min-width:0;display:flex;flex-direction:column;gap:16px">
+      <div class="card slist"><div class="cap" style="margin-bottom:8px">Chiến lược IQX</div><div id="lstIqx"></div>
+        <div class="sm mut">Tham khảo để học, không phải khuyến nghị đầu tư.</div></div>
+      <div class="card slist"><div class="cap" style="margin-bottom:8px">Chiến lược của tôi</div><div id="lstMe"></div>
+        <button class="btn ghost" id="botNew">＋ Tạo chiến lược trong Backtest</button></div>
+      <div class="card" id="notiCard"></div>
+      <div class="card demo">
+        <div class="cap" style="color:var(--warn)">Điều khiển mô phỏng · chỉ có trong file mẫu</div>
+        <p class="sm mut" style="margin:6px 0 10px">Không thuộc giao diện thật.</p>
+        <div class="row"><button class="btn sm" id="demoNext">Sang phiên tới</button><button class="btn sm" id="demoBulletin">Bản tin mới</button><button class="btn sm" id="demoEmail">Mẫu email</button><button class="btn sm" id="demoNew">Tài khoản Bot mới</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ADMIN ================= -->
+<div class="page hide" id="pg-adm">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div><span class="pill" style="background:#111827;color:#fff">QUẢN TRỊ</span> <span class="h2" style="margin-left:6px">Mẫu IQX · Chiến lược IQX</span></div>
+      <span class="sm mut">Chỉ admin</span>
+    </div>
+    <p class="sm mut">Danh sách, nháp, xuất bản, ẩn/hiện, sắp xếp, lịch sử: giữ như spec Tab IQX §5. Mới: mỗi chiến lược IQX có <b>Rổ mã</b> và <b>Giữ tối đa</b> (khởi tạo VN30 · 30 phiên). Điều kiện Mua/Bán soạn bằng đúng form Backtest; file mẫu này chỉ minh họa sửa Rổ và Giữ tối đa.</p>
+    <div class="tw"><table id="admTbl"></table></div>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+/* ============================================================
+   1. TIỆN ÍCH
+   ============================================================ */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtN=(x,d=0)=>x==null||!isFinite(x)?'—':x.toLocaleString('vi-VN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtVnd=x=>fmtN(Math.round(x))+' đ';
+const fmtP=(x,sign=true)=>x==null||!isFinite(x)?'—':((sign&&x>0?'+':'')+(x<0?'−':'')+Math.abs(x).toFixed(1).replace('.',',')+'%');
+const cls=x=>x>0?'pos':x<0?'neg':'';
+const dmy=iso=>iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
+const dm=iso=>iso.slice(8,10)+'/'+iso.slice(5,7);
+function toast(msg){document.querySelectorAll('.toast').forEach(x=>x.remove());const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
+function modal(title,html,acts,wide){
+  const bg=document.createElement('div');bg.className='mbg';
+  bg.innerHTML=`<div class="modal" style="${wide?'max-width:860px':''}"><h3>${title}</h3><div class="mb">${html}</div><div class="acts"></div></div>`;
+  const close=()=>bg.remove();
+  const box=bg.querySelector('.acts');
+  (acts||[{label:'Đóng'}]).forEach(a=>{const b=document.createElement('button');b.className='btn '+(a.cls||'');b.textContent=a.label;
+    b.onclick=()=>{if(a.fn){if(a.fn(bg)===false)return}close()};box.appendChild(b)});
+  bg.addEventListener('mousedown',e=>{if(e.target===bg)close()});
+  $('modalRoot').appendChild(bg);return bg;
+}
+// đồng hồ mô phỏng: CN 08/11/2026 từ 13:45
+let CLOCK=13*60+45;
+function nowLabel(){CLOCK+=2;const h=Math.floor(CLOCK/60),m=CLOCK%60;return '08/11 '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')}
+
+/* ============================================================
+   2. DỮ LIỆU GIÁ MINH HỌA (sinh ngẫu nhiên có seed)
+   ============================================================ */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(20261108);
+const gauss=()=>{let u=0,v=0;while(!u)u=R();while(!v)v=R();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const VN30=['ACB','BCM','BID','BVH','CTG','FPT','GAS','GVR','HDB','HPG','LPB','MBB','MSN','MWG','PLX','SAB','SHB','SSB','SSI','STB','TCB','TPB','VCB','VHM','VIB','VIC','VJC','VNM','VPB','VRE'];
+const VN70=['BMP','BWE','CII','CMG','CTD','CTR','DBC','DCM','DGC','DHC','DIG','DPM','DXG','DXS','EIB','EVF','FRT','FTS','GEX','GMD','HAG','HAH','HCM','HDC','HDG','HHV','HSG','HT1','IMP','KBC','KDC','KDH','KOS','KSB','LCG','NKG','NLG','NT2','NVL','OCB','PAN','PC1','PDR','PHR','PNJ','POW','PPC','PTB','PVD','PVT','REE','SAM','SBT','SCS','SIP','SJS','SZC','TCH','VCG','VCI','VGC','VHC','VIX','VND','VPI','VSC','VTP','YEG','ANV','ASM'];
+const VN100=VN30.concat(VN70);
+const LISTS=[
+  {id:'L1',name:'Giá trị HOSE',symbols:['ACB','BID','CTG','DPM','GMD','HPG','KDH','MBB','NT2','PVT','REE','VCB']},
+  {id:'L2',name:'Ngân hàng tốt',symbols:['ACB','BID','CTG','HDB','MBB','TCB','VCB','VPB']},
+  {id:'L3',name:'Tăng trưởng mở rộng',symbols:['FPT','MWG','PNJ','AAA','TNG','PVS','DGW','REE','GMD','VHC']}
+];
+// phiên giao dịch: các ngày làm việc 04/01/2021 → 06/11/2026
+const DATES=[];(()=>{const d=new Date(Date.UTC(2021,0,4));const end=Date.UTC(2026,10,6);while(d.getTime()<=end){const w=d.getUTCDay();if(w>0&&w<6)DATES.push(d.toISOString().slice(0,10));d.setUTCDate(d.getUTCDate()+1)}})();
+const NB=DATES.length;
+const tick=p=>p<10000?10:p<50000?50:100;
+const rnd=p=>Math.max(tick(p),Math.round(p/tick(p))*tick(p));
+// nhân tố thị trường theo pha
+const MKT=[];(()=>{let mu=0,left=0;for(let i=0;i<NB;i++){if(left<=0){const r=R();mu=r<.4?0.0011:r<.7?-0.001:0.0001;left=50+Math.floor(R()*110)}left--;MKT.push(mu+0.0105*gauss())}})();
+const VNI=[];(()=>{let x=1080;for(let i=0;i<NB;i++){x*=1+MKT[i];VNI.push(x)}})();
+const DATA={};
+VN100.forEach((s,k)=>{
+  const beta=.6+R()*.9, iv=.011+R()*.014, base=(.4+R()*7)*1e6;
+  let p=10000, prev=0, mu=0, left=0;
+  const raw=[];
+  for(let i=0;i<NB;i++){
+    if(left<=0){mu=(R()-.5)*.003;left=40+Math.floor(R()*120)}left--;
+    let r=beta*MKT[i]+mu+.06*prev+iv*gauss();r=Math.max(-.069,Math.min(.069,r));prev=r;
+    const pc=p;p=pc*(1+r);raw.push([pc,pc*(1+.004*gauss()),p,Math.abs(gauss()),Math.abs(gauss()),r]);
+  }
+  const f=(22000+R()*70000)/Math.max(...raw.map(x=>x[2])); // giá cao nhất 22–92 nghìn đồng
+  const o=[],h=[],l=[],c=[],v=[];let lc=null;
+  raw.forEach(([pc,op,cl,g1,g2,r])=>{pc=lc==null?rnd(pc*f):lc;const C=rnd(cl*f),O=rnd(op*f);
+    const lim=x=>Math.min(pc*1.07,Math.max(pc*.93,x));
+    const H=rnd(lim(Math.max(O,C)*(1+g1*.006))),L=rnd(lim(Math.min(O,C)*(1-g2*.006)));
+    o.push(O);h.push(Math.max(H,O,C));l.push(Math.min(L,O,C));c.push(C);lc=C;
+    v.push(Math.round(base*Math.exp(.35*gauss())*(1+9*Math.abs(r))/100)*100)});
+  DATA[s]=mkD(s,o,h,l,c,v);
+});
+
+/* ============================================================
+   3. CHỈ BÁO (chỉ dùng nến đến phiên t, không nhìn trước)
+   ============================================================ */
+function sma(a,n){const r=new Array(a.length).fill(null);let s=0,cnt=0;for(let i=0;i<a.length;i++){if(a[i]==null){s=0;cnt=0;continue}s+=a[i];cnt++;if(cnt>n){s-=a[i-n];cnt=n}if(cnt===n)r[i]=s/n}return r}
+function ema(a,n){const r=new Array(a.length).fill(null);const k=2/(n+1);let st=-1,s=0,m=null;for(let i=0;i<a.length;i++){if(a[i]==null){continue}if(st<0)st=i;if(m==null){s+=a[i];if(i-st+1===n){m=s/n;r[i]=m}}else{m=a[i]*k+m*(1-k);r[i]=m}}return r}
+function rsi(c,n){const r=new Array(c.length).fill(null);let ag=0,al=0;for(let i=1;i<c.length;i++){const d=c[i]-c[i-1],g=Math.max(d,0),lo=Math.max(-d,0);if(i<=n){ag+=g;al+=lo;if(i===n){ag/=n;al/=n;r[i]=al===0?100:100-100/(1+ag/al)}}else{ag=(ag*(n-1)+g)/n;al=(al*(n-1)+lo)/n;r[i]=al===0?100:100-100/(1+ag/al)}}return r}
+function stdev(a,n,m){const r=new Array(a.length).fill(null);for(let i=n-1;i<a.length;i++){if(m[i]==null)continue;let s=0;for(let j=i-n+1;j<=i;j++)s+=(a[j]-m[i])**2;r[i]=Math.sqrt(s/n)}return r}
+function wilder(a,n,start){const r=new Array(a.length).fill(null);let s=0;for(let i=start;i<a.length;i++){if(i<start+n){s+=a[i];if(i===start+n-1)r[i]=s}else r[i]=r[i-1]-r[i-1]/n+a[i]}return r}
+function mkD(sym,o,h,l,c,v){
+  const memo={};const M=(k,f)=>memo[k]||(memo[k]=f());
+  const D={sym,o,h,l,c,v};
+  D.sma=n=>M('sma'+n,()=>sma(c,n));
+  D.ema=n=>M('ema'+n,()=>ema(c,n));
+  D.rsi=n=>M('rsi'+n,()=>rsi(c,n));
+  D.macd=(f,s)=>M('macd'+f+'_'+s,()=>{const a=ema(c,f),b=ema(c,s);return a.map((x,i)=>x==null||b[i]==null?null:x-b[i])});
+  D.macdSig=(f,s,g)=>M('ms'+f+'_'+s+'_'+g,()=>ema(D.macd(f,s),g));
+  D.hist=(f,s,g)=>M('mh'+f+'_'+s+'_'+g,()=>{const m=D.macd(f,s),q=D.macdSig(f,s,g);return m.map((x,i)=>x==null||q[i]==null?null:x-q[i])});
+  D.bb=(n,k)=>M('bb'+n+'_'+k,()=>{const m=sma(c,n),sd=stdev(c,n,m);return{m,u:m.map((x,i)=>x==null?null:x+k*sd[i]),lo:m.map((x,i)=>x==null?null:x-k*sd[i]),w:m.map((x,i)=>x==null?null:2*k*sd[i]/x)}});
+  D.don=n=>M('don'+n,()=>{const u=new Array(NB).fill(null),lo=new Array(NB).fill(null);for(let i=n;i<NB;i++){let a=-Infinity,b=Infinity;for(let j=i-n;j<i;j++){a=Math.max(a,h[j]);b=Math.min(b,l[j])}u[i]=a;lo[i]=b}return{u,lo}});
+  D.volAvg=n=>M('va'+n,()=>{const r=new Array(NB).fill(null);for(let i=n;i<NB;i++){let s=0;for(let j=i-n;j<i;j++)s+=v[j];r[i]=s/n}return r});
+  D.obv=()=>M('obv',()=>{const r=[0];for(let i=1;i<NB;i++)r.push(r[i-1]+(c[i]>c[i-1]?v[i]:c[i]<c[i-1]?-v[i]:0));return r});
+  D.obvSma=n=>M('obvs'+n,()=>sma(D.obv(),n));
+  D.cmf=n=>M('cmf'+n,()=>{const mv=c.map((x,i)=>h[i]===l[i]?0:((x-l[i])-(h[i]-x))/(h[i]-l[i])*v[i]);const r=new Array(NB).fill(null);for(let i=n-1;i<NB;i++){let a=0,b=0;for(let j=i-n+1;j<=i;j++){a+=mv[j];b+=v[j]}r[i]=b?a/b:null}return r});
+  D.stoch=(k,sm,d)=>M('st'+k+'_'+sm+'_'+d,()=>{const raw=new Array(NB).fill(null);for(let i=k-1;i<NB;i++){let a=-Infinity,b=Infinity;for(let j=i-k+1;j<=i;j++){a=Math.max(a,h[j]);b=Math.min(b,l[j])}raw[i]=a===b?50:100*(c[i]-b)/(a-b)}const K=sma(raw,sm);return{K,D:sma(K,d)}});
+  D.cci=n=>M('cci'+n,()=>{const tp=c.map((x,i)=>(x+h[i]+l[i])/3),m=sma(tp,n);return tp.map((x,i)=>{if(m[i]==null)return null;let md=0;for(let j=i-n+1;j<=i;j++)md+=Math.abs(tp[j]-m[i]);md/=n;return md?(x-m[i])/(.015*md):0})});
+  D.mfi=n=>M('mfi'+n,()=>{const tp=c.map((x,i)=>(x+h[i]+l[i])/3);const r=new Array(NB).fill(null);for(let i=n;i<NB;i++){let p=0,q=0;for(let j=i-n+1;j<=i;j++){const f=tp[j]*v[j];if(tp[j]>tp[j-1])p+=f;else if(tp[j]<tp[j-1])q+=f}r[i]=q===0?100:100-100/(1+p/q)}return r});
+  D.roc=n=>M('roc'+n,()=>c.map((x,i)=>i<n?null:(x/c[i-n]-1)*100));
+  D.wr=n=>M('wr'+n,()=>{const r=new Array(NB).fill(null);for(let i=n-1;i<NB;i++){let a=-Infinity,b=Infinity;for(let j=i-n+1;j<=i;j++){a=Math.max(a,h[j]);b=Math.min(b,l[j])}r[i]=a===b?-50:-100*(a-c[i])/(a-b)}return r});
+  D.dmi=n=>M('dmi'+n,()=>{const tr=[0],pd=[0],md=[0];for(let i=1;i<NB;i++){tr.push(Math.max(h[i]-l[i],Math.abs(h[i]-c[i-1]),Math.abs(l[i]-c[i-1])));const up=h[i]-h[i-1],dn=l[i-1]-l[i];pd.push(up>dn&&up>0?up:0);md.push(dn>up&&dn>0?dn:0)}
+    const T=wilder(tr,n,1),P=wilder(pd,n,1),Mn=wilder(md,n,1);const pdi=T.map((x,i)=>x?100*P[i]/x:null),mdi=T.map((x,i)=>x?100*Mn[i]/x:null);
+    const dx=pdi.map((x,i)=>x==null||mdi[i]==null||x+mdi[i]===0?null:100*Math.abs(x-mdi[i])/(x+mdi[i]));const st=dx.findIndex(x=>x!=null);const adx=new Array(NB).fill(null);
+    if(st>=0){let s=0;for(let i=st;i<NB;i++){if(i<st+n){s+=dx[i];if(i===st+n-1)adx[i]=s/n}else adx[i]=(adx[i-1]*(n-1)+dx[i])/n}}return{pdi,mdi,adx}});
+  D.gtgd20=()=>M('g20',()=>sma(c.map((x,i)=>x*v[i]),20));
+  return D;
+}
+
+/* ============================================================
+   4. ĐĂNG KÝ 16 CHỈ BÁO (rút gọn từ spec Chỉ báo v3 cho file mẫu)
+   ============================================================ */
+const C4=['cắt lên','cắt xuống','>','<'],C2=['cắt lên','cắt xuống'],CMP=['>','<'],DIR=['lên','xuống'],MAN=[5,10,20,50,100,200];
+const Nm=(min,max,step=1)=>({t:'n',min,max,step}),Sl=o=>({t:'s',o});
+const at=(X,i)=>i<0?null:(typeof X==='number'?X:(X[i]==null?null:X[i]));
+function cmpS(op,X,Y,t){const x=at(X,t),y=at(Y,t);if(x==null||y==null)return null;
+  if(op==='>')return x>y;if(op==='<')return x<y;const xp=at(X,t-1),yp=at(Y,t-1);if(xp==null||yp==null)return null;
+  return op==='cắt lên'?(xp<=yp&&x>y):(xp>=yp&&x<y)}
+function trend(A,t,n,dir){const a=at(A,t),b=at(A,t-n);if(a==null||b==null)return null;return dir==='lên'||dir==='tăng'||dir==='mở rộng'?a>b:a<b}
+const IND=[
+ {id:'ma',name:'MA / SMA',g:'Đường trung bình',lines:[
+  {tpl:'Giá đóng cửa {op} SMA {n}',P:{op:Sl(C4),n:Sl(MAN)},b:{op:'cắt lên',n:20},s:{op:'cắt xuống',n:20},ev:(D,t,p)=>cmpS(p.op,D.c,D.sma(+p.n),t)},
+  {tpl:'SMA {a} {op} SMA {b}',P:{a:Sl(MAN),op:Sl(C4),b:Sl(MAN)},b:{a:20,op:'cắt lên',b:50},s:{a:20,op:'cắt xuống',b:50},ev:(D,t,p)=>cmpS(p.op,D.sma(+p.a),D.sma(+p.b),t)},
+  {tpl:'SMA {n} xu hướng {dir}',P:{n:Sl(MAN),dir:Sl(DIR)},b:{n:50,dir:'lên'},s:{n:50,dir:'xuống'},ev:(D,t,p)=>trend(D.sma(+p.n),t,+p.n,p.dir)}]},
+ {id:'ema',name:'EMA',g:'Đường trung bình',lines:[
+  {tpl:'Giá đóng cửa {op} EMA {n}',P:{op:Sl(C4),n:Nm(2,200)},b:{op:'cắt lên',n:20},s:{op:'cắt xuống',n:20},ev:(D,t,p)=>cmpS(p.op,D.c,D.ema(+p.n),t)},
+  {tpl:'EMA {a} {op} EMA {b}',P:{a:Nm(2,200),op:Sl(C4),b:Nm(2,200)},b:{a:12,op:'cắt lên',b:26},s:{a:12,op:'cắt xuống',b:26},ev:(D,t,p)=>cmpS(p.op,D.ema(+p.a),D.ema(+p.b),t)},
+  {tpl:'EMA {n} xu hướng {dir}',P:{n:Nm(2,200),dir:Sl(DIR)},b:{n:50,dir:'lên'},s:{n:50,dir:'xuống'},ev:(D,t,p)=>trend(D.ema(+p.n),t,+p.n,p.dir)}]},
+ {id:'macross',name:'MA Cross',g:'Đường trung bình',lines:[
+  {tpl:'SMA {a} {op} SMA {b}',P:{a:Sl(MAN),op:Sl(C2),b:Sl(MAN)},b:{a:20,op:'cắt lên',b:50},s:{a:20,op:'cắt xuống',b:50},ev:(D,t,p)=>cmpS(p.op,D.sma(+p.a),D.sma(+p.b),t)}]},
+ {id:'rsi',name:'RSI',g:'Động lượng',lines:[
+  {tpl:'RSI {n} {op} {v}',P:{n:Nm(2,200),op:Sl(CMP),v:Nm(0,100)},b:{n:14,op:'<',v:30},s:{n:14,op:'>',v:70},ev:(D,t,p)=>cmpS(p.op,D.rsi(+p.n),+p.v,t)},
+  {tpl:'RSI {n} xu hướng {dir}',P:{n:Nm(2,200),dir:Sl(DIR)},b:{n:14,dir:'lên'},s:{n:14,dir:'xuống'},ev:(D,t,p)=>trend(D.rsi(+p.n),t,+p.n,p.dir)}]},
+ {id:'macd',name:'MACD',g:'Động lượng',lines:[
+  {tpl:'MACD {f}/{s} {op} Signal {g}',P:{f:Nm(2,200),s:Nm(2,200),op:Sl(C4),g:Nm(2,200)},b:{f:12,s:26,op:'cắt lên',g:9},s:{f:12,s:26,op:'cắt xuống',g:9},ev:(D,t,p)=>cmpS(p.op,D.macd(+p.f,+p.s),D.macdSig(+p.f,+p.s,+p.g),t)},
+  {tpl:'MACD {f}/{s} {op} 0',P:{f:Nm(2,200),s:Nm(2,200),op:Sl(CMP)},b:{f:12,s:26,op:'>'},s:{f:12,s:26,op:'<'},ev:(D,t,p)=>cmpS(p.op,D.macd(+p.f,+p.s),0,t)},
+  {tpl:'Histogram MACD {f}/{s}/{g} {dir} so phiên trước',P:{f:Nm(2,200),s:Nm(2,200),g:Nm(2,200),dir:Sl(['tăng','giảm'])},b:{f:12,s:26,g:9,dir:'tăng'},s:{f:12,s:26,g:9,dir:'giảm'},ev:(D,t,p)=>trend(D.hist(+p.f,+p.s,+p.g),t,1,p.dir)}]},
+ {id:'stoch',name:'Stochastic',g:'Động lượng',lines:[
+  {tpl:'%K {k},{sm} {op} {v}',P:{k:Nm(2,200),sm:Nm(1,10),op:Sl(CMP),v:Nm(0,100)},b:{k:14,sm:3,op:'<',v:20},s:{k:14,sm:3,op:'>',v:80},ev:(D,t,p)=>cmpS(p.op,D.stoch(+p.k,+p.sm,3).K,+p.v,t)},
+  {tpl:'%K {k},{sm} {op} %D {d}',P:{k:Nm(2,200),sm:Nm(1,10),op:Sl(C2),d:Nm(1,20)},b:{k:14,sm:3,op:'cắt lên',d:3},s:{k:14,sm:3,op:'cắt xuống',d:3},ev:(D,t,p)=>{const S=D.stoch(+p.k,+p.sm,+p.d);return cmpS(p.op,S.K,S.D,t)}}]},
+ {id:'cci',name:'CCI',g:'Động lượng',lines:[
+  {tpl:'CCI {n} {op} {v}',P:{n:Nm(2,200),op:Sl(C2),v:Nm(-300,300)},b:{n:20,op:'cắt lên',v:-100},s:{n:20,op:'cắt xuống',v:100},ev:(D,t,p)=>cmpS(p.op,D.cci(+p.n),+p.v,t)}]},
+ {id:'roc',name:'ROC',g:'Động lượng',lines:[
+  {tpl:'ROC {n} {op} {v}',P:{n:Nm(2,252),op:Sl(C2),v:Nm(-100,10000)},b:{n:12,op:'cắt lên',v:0},s:{n:12,op:'cắt xuống',v:0},ev:(D,t,p)=>cmpS(p.op,D.roc(+p.n),+p.v,t)}]},
+ {id:'wr',name:'Williams %R',g:'Động lượng',lines:[
+  {tpl:'Williams %R {n} {op} {v}',P:{n:Nm(2,200),op:Sl(C2),v:Nm(-100,0)},b:{n:14,op:'cắt lên',v:-80},s:{n:14,op:'cắt xuống',v:-20},ev:(D,t,p)=>cmpS(p.op,D.wr(+p.n),+p.v,t)}]},
+ {id:'dmi',name:'DMI',g:'Xu hướng',lines:[
+  {tpl:'+DI {n} {op} −DI',P:{n:Nm(2,200),op:Sl(C4)},b:{n:14,op:'cắt lên'},s:{n:14,op:'cắt xuống'},ev:(D,t,p)=>{const X=D.dmi(+p.n);return cmpS(p.op,X.pdi,X.mdi,t)}},
+  {tpl:'ADX {n} {op} {v}',P:{n:Nm(2,200),op:Sl(CMP),v:Nm(0,100)},b:{n:14,op:'>',v:25},s:{n:14,op:'<',v:20},ev:(D,t,p)=>cmpS(p.op,D.dmi(+p.n).adx,+p.v,t)}]},
+ {id:'boll',name:'Bollinger Bands',g:'Biến động',lines:[
+  {tpl:'Giá đóng cửa {act} Bollinger {n} hệ số {k}',P:{act:Sl(['quay vào dải từ dưới','quay vào dải từ trên','vượt dải trên','phá dải dưới','cắt lên dải giữa','cắt xuống dải giữa']),n:Nm(2,200),k:Nm(1,3.5,.1)},b:{act:'quay vào dải từ dưới',n:20,k:2},s:{act:'vượt dải trên',n:20,k:2},
+   ev:(D,t,p)=>{const B=D.bb(+p.n,+p.k),c=D.c;const map={'quay vào dải từ dưới':['cắt lên',B.lo],'quay vào dải từ trên':['cắt xuống',B.u],'vượt dải trên':['cắt lên',B.u],'phá dải dưới':['cắt xuống',B.lo],'cắt lên dải giữa':['cắt lên',B.m],'cắt xuống dải giữa':['cắt xuống',B.m]};const [op,Y]=map[p.act];return cmpS(op,c,Y,t)}},
+  {tpl:'Giá đóng cửa {dir} so phiên trước',P:{dir:Sl(['tăng','giảm'])},b:{dir:'tăng'},s:{dir:'giảm'},ev:(D,t,p)=>trend(D.c,t,1,p.dir)},
+  {tpl:'Độ rộng Bollinger {n} hệ số {k} {dir}',P:{n:Nm(2,200),k:Nm(1,3.5,.1),dir:Sl(['mở rộng','thu hẹp'])},b:{n:20,k:2,dir:'mở rộng'},s:{n:20,k:2,dir:'thu hẹp'},ev:(D,t,p)=>trend(D.bb(+p.n,+p.k).w,t,1,p.dir)}]},
+ {id:'don',name:'Donchian',g:'Biến động',lines:[
+  {tpl:'Giá đóng cửa {op} dải {band} Donchian {n}',P:{op:Sl(CMP),band:Sl(['trên','dưới']),n:Nm(2,252)},b:{op:'>',band:'trên',n:20},s:{op:'<',band:'dưới',n:10},ev:(D,t,p)=>{const X=D.don(+p.n);return cmpS(p.op,D.c,p.band==='trên'?X.u:X.lo,t)}}]},
+ {id:'vol',name:'Khối lượng',g:'Khối lượng và dòng tiền',lines:[
+  {tpl:'Giá đóng cửa {pop} phiên trước · KL {vop} {k} × TB {n} phiên trước',P:{pop:Sl(CMP),vop:Sl(CMP),k:Nm(.5,3,.1),n:Nm(5,100)},b:{pop:'>',vop:'>',k:1.5,n:20},s:{pop:'<',vop:'>',k:1.5,n:20},
+   ev:(D,t,p)=>{if(t<1)return null;const a=D.volAvg(+p.n)[t];if(a==null)return null;const pc=p.pop==='>'?D.c[t]>D.c[t-1]:D.c[t]<D.c[t-1];const vc=p.vop==='>'?D.v[t]>p.k*a:D.v[t]<p.k*a;return pc&&vc}}]},
+ {id:'obv',name:'OBV',g:'Khối lượng và dòng tiền',lines:[
+  {tpl:'OBV {op} SMA {n} của OBV',P:{op:Sl(C2),n:Nm(2,200)},b:{op:'cắt lên',n:20},s:{op:'cắt xuống',n:20},ev:(D,t,p)=>cmpS(p.op,D.obv(),D.obvSma(+p.n),t)},
+  {tpl:'OBV {op} {n} phiên trước',P:{op:Sl(['vượt đỉnh','phá đáy']),n:Nm(2,252)},b:{op:'vượt đỉnh',n:20},s:{op:'phá đáy',n:20},ev:(D,t,p)=>{const O=D.obv(),n=+p.n;if(t<n)return null;let a=-Infinity,b=Infinity;for(let j=t-n;j<t;j++){a=Math.max(a,O[j]);b=Math.min(b,O[j])}return p.op==='vượt đỉnh'?O[t]>a:O[t]<b}}]},
+ {id:'mfi',name:'MFI',g:'Khối lượng và dòng tiền',lines:[
+  {tpl:'MFI {n} {op} {v}',P:{n:Nm(2,200),op:Sl(C2),v:Nm(0,100)},b:{n:14,op:'cắt lên',v:20},s:{n:14,op:'cắt xuống',v:80},ev:(D,t,p)=>cmpS(p.op,D.mfi(+p.n),+p.v,t)}]},
+ {id:'cmf',name:'Chaikin Money Flow',g:'Khối lượng và dòng tiền',lines:[
+  {tpl:'CMF {n} {op} {v}',P:{n:Nm(2,200),op:Sl(C2),v:Nm(-1,1,.05)},b:{n:20,op:'cắt lên',v:0},s:{n:20,op:'cắt xuống',v:0},ev:(D,t,p)=>cmpS(p.op,D.cmf(+p.n),+p.v,t)}]}
+];
+const IB={};IND.forEach(x=>IB[x.id]=x);
+const fillTpl=(tpl,p)=>tpl.replace(/\{(\w+)\}/g,(_,k)=>typeof p[k]==='number'?String(p[k]).replace('.',','):p[k]);
+function mkCard(ind,side,on){const R=IB[ind];on=on||{0:{}};return{ind,lines:R.lines.map((L,i)=>({on:i in on,p:{...(side==='buy'?L.b:L.s),...(on[i]||{})}}))}}
+function cardTxt(cd){const R=IB[cd.ind];return cd.lines.map((x,i)=>({on:x.on,t:fillTpl(R.lines[i].tpl,x.p)}))}
+function sideOn(cards){return cards.some(cd=>cd.lines.some(l=>l.on))}
+function evalSide(cards,D,t){if(!sideOn(cards))return false;let res=true;
+  for(const cd of cards){const R=IB[cd.ind];const act=cd.lines.map((l,i)=>[l,i]).filter(([l])=>l.on);if(!act.length)continue;
+    for(const [l,i] of act){const v=R.lines[i].ev(D,t,l.p);if(v===false)return false;if(v==null)res=null}}
+  return res}
+
+/* ============================================================
+   5. CHIẾN LƯỢC IQX, CỦA TÔI, BOT
+   ============================================================ */
+const clone=o=>JSON.parse(JSON.stringify(o));
+const sig=ct=>JSON.stringify([ct.universe.type,ct.universe.listId||'',ct.hold,ct.buy,ct.sell]);
+const UNI_LBL=u=>u.type==='vn30'?'VN30':u.type==='vn100'?'VN100':('Danh mục: '+(u.name||(LISTS.find(x=>x.id===u.listId)||{}).name||'?'));
+function uniRaw(u){return u.type==='vn30'?VN30:u.type==='vn100'?VN100:(u.symbols||(LISTS.find(x=>x.id===u.listId)||{symbols:[]}).symbols)}
+function uniSyms(u){return uniRaw(u).filter(x=>VN100.includes(x))}   // chỉ mã có trong kho VN100
+function uniOut(u){return uniRaw(u).filter(x=>!VN100.includes(x))}
+const V30={type:'vn30'};
+const IQX=[
+ {id:'xuhuong',name:'Theo xu hướng',idea:'Đi theo xu hướng trung hạn bằng giao cắt hai đường trung bình.',origin:'Theo xu hướng (trend following)',wrong:'Thị trường đi ngang tạo nhiều tín hiệu giả, vào lệnh trễ ở đầu xu hướng.',
+  ct:{universe:V30,hold:30,buy:[mkCard('macross','buy',{0:{a:20,op:'cắt lên',b:50}})],sell:[mkCard('macross','sell',{0:{a:20,op:'cắt xuống',b:50}})]}},
+ {id:'phadinh',name:'Phá đỉnh',idea:'Mua khi giá vượt đỉnh 20 phiên có khối lượng xác nhận.',origin:'Kênh Donchian; động lượng giá',wrong:'Hay thua khi thị trường đi ngang, vì có nhiều cú phá đỉnh giả.',
+  ct:{universe:V30,hold:30,buy:[mkCard('don','buy',{0:{op:'>',band:'trên',n:20}}),mkCard('vol','buy',{0:{pop:'>',vop:'>',k:1.5,n:20}})],sell:[mkCard('don','sell',{0:{op:'<',band:'dưới',n:10}})]}},
+ {id:'macd',name:'Động lượng MACD',idea:'Mua khi động lượng chuyển dương và MACD đang ở vùng tích cực.',origin:'Gerald Appel (MACD)',wrong:'Tín hiệu đến chậm; thị trường giật mạnh dễ mua đỉnh, bán đáy.',
+  ct:{universe:V30,hold:30,buy:[mkCard('macd','buy',{0:{},1:{}})],sell:[mkCard('macd','sell',{0:{}})]}},
+ {id:'hoiphuc',name:'Hồi phục quá bán',idea:'Mua nhịp hồi ngắn sau khi giá rơi ra ngoài dải dưới Bollinger.',origin:'Hiệu ứng đảo chiều ngắn hạn',wrong:'Trong xu hướng giảm mạnh, quá bán có thể còn quá bán hơn.',
+  ct:{universe:V30,hold:30,buy:[mkCard('boll','buy',{0:{act:'quay vào dải từ dưới',n:20,k:2}}),mkCard('rsi','buy',{1:{n:14,dir:'lên'}})],sell:[mkCard('rsi','sell',{0:{n:14,op:'>',v:70}})]}},
+ {id:'dongtien',name:'Theo dòng tiền',idea:'Mua khi dòng tiền tích lũy chuyển sang tích cực.',origin:'OBV (Granville); Chaikin Money Flow',wrong:'Khối lượng bất thường (thỏa thuận, sự kiện) có thể làm sai tín hiệu dòng tiền.',
+  ct:{universe:V30,hold:30,buy:[mkCard('obv','buy',{0:{op:'cắt lên',n:20}}),mkCard('cmf','buy',{0:{n:20,op:'cắt lên',v:0}})],sell:[mkCard('cmf','sell',{0:{n:20,op:'cắt xuống',v:0}})]}}
+].map(x=>({id:x.id,name:x.name,idea:x.idea,origin:x.origin,wrong:x.wrong,cur:1,hidden:false,versions:[{v:1,at:'06/11/2026 10:00',reason:'Khởi tạo',ct:x.ct}]}));
+const iqxById=id=>IQX.find(x=>x.id===id);
+const iqxCt=(id,v)=>{const s=iqxById(id);return(s.versions.find(x=>x.v===(v||s.cur))).ct};
+
+const u1v1={universe:{type:'vn30'},hold:30,buy:[mkCard('rsi','buy',{0:{n:14,op:'<',v:32},1:{n:14,dir:'lên'}}),mkCard('ma','buy',{0:{op:'cắt lên',n:20}})],sell:[mkCard('rsi','sell',{0:{n:14,op:'>',v:73},1:{n:14,dir:'xuống'}})]};
+const u1v2=clone(u1v1);u1v2.hold=30;u1v2.buy[0].lines[0].p.v=45;
+const USER=[
+ {id:'u1',name:'RSI + SMA20',versions:[{v:1,at:'05/11 20:02',note:'Chuyển từ thiết lập Bot cũ',ct:u1v1},{v:2,at:'08/11 13:20',note:'',ct:u1v2}]},
+ {id:'u2',name:'Bollinger VN100',versions:[{v:1,at:'03/11 21:10',note:'',ct:{universe:{type:'vn100'},hold:10,buy:[mkCard('boll','buy',{0:{}}),mkCard('vol','buy',{0:{k:1.2}})],sell:[mkCard('boll','sell',{0:{act:'cắt lên dải giữa'}})]}}]}
+];
+const userById=id=>USER.find(x=>x.id===id);
+const latestV=u=>u.versions[u.versions.length-1].v;
+const userVer=(id,v)=>{const u=userById(id);return u.versions.find(x=>x.v===v)};
+// Lịch Bot: phiên gần nhất đã khóa; phiên tới có thể đổi
+let SESS=['2026-11-06','2026-11-09','2026-11-10','2026-11-11','2026-11-12','2026-11-13'];let SI=0;
+const WD=['CN','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+const sessLbl=iso=>WD[new Date(iso+'T00:00:00Z').getUTCDay()]+' '+dm(iso);
+const BOT={last:{src:'user',id:'u1',v:1},next:{src:'user',id:'u1',v:'latest'},log:[]};
+function resolve(ref){if(!ref)return null;if(ref.src==='iqx'){const s=iqxById(ref.id);const v=ref.v;return{ref,name:s.name,v,lbl:'v'+v,ct:iqxCt(ref.id,v),iqx:true}}
+  const u=userById(ref.id);const v=ref.v==='latest'?latestV(u):ref.v;const ver=userVer(ref.id,v);return{ref,name:u.name,v,lbl:'bản '+ver.at,ct:ver.ct,iqx:false}}
+const sameStrat=(a,b)=>a&&b&&a.src===b.src&&a.id===b.id;
+const stratName=ref=>ref.src==='iqx'?'Chiến lược IQX · '+iqxById(ref.id).name:userById(ref.id).name;
+
+/* ============================================================
+   6. BACKTEST: BẢN NHÁP
+   ============================================================ */
+let DRAFT=null;      // {ct, origin:{src:'iqx'|'user'|'new', id, v}}
+let MODE='ind',IQXSEL='phadinh';
+const RUNS={iqx:null,ind:null};
+Object.defineProperty(window,'LASTRUN',{get(){return RUNS[MODE]},set(v){RUNS[MODE]=v}});
+const curCt=()=>MODE==='iqx'?iqxCt(IQXSEL):DRAFT.ct;
+function originCt(){const o=DRAFT.origin;if(o.src==='iqx')return iqxCt(o.id,o.v);if(o.src==='user')return userVer(o.id,o.v).ct;return null}
+const dirty=()=>{const oc=originCt();return !oc||sig(oc)!==sig(DRAFT.ct)};
+function loadDraft(ct,origin){MODE='ind';DRAFT={ct:clone(ct),origin};RUNS.ind=null;renderBt();renderRes()}
+function confirmReplace(label,go){
+  if(DRAFT&&dirty()&&(sideOn(DRAFT.ct.buy)||sideOn(DRAFT.ct.sell))){
+    modal('Thay bản nháp đang chỉnh?',`<p>Rổ mã, Điều kiện Mua, Bán và Giữ tối đa của bản nháp sẽ được thay bằng <b>${esc(label)}</b>. Chiến lược đã lưu và Bot không đổi.</p>`,
+      [{label:'Hủy'},{label:'Thay',cls:'pri',fn:go}]);
+  }else go();
+}
+function useIqx(id){MODE='iqx';if(IQXSEL!==id){IQXSEL=id;RUNS.iqx=null}renderBt();renderRes()}
+function openUser(id,v){const u=userById(id);v=v||latestV(u);confirmReplace(u.name,()=>{loadDraft(userVer(id,v).ct,{src:'user',id,v});toast('Đã mở '+u.name+' · bản '+userVer(id,v).at)})}
+function newDraft(){confirmReplace('chiến lược mới (trống)',()=>{loadDraft({universe:{type:'vn30'},hold:30,buy:[],sell:[]},{src:'new'})})}
+
+function stateHtml(){
+  const o=DRAFT.origin,d=dirty();
+  if(o.src==='iqx'){const s=iqxById(o.id);return d?`<span class="pill warn">Bản nháp · từ <span class="badge">IQX</span> ${esc(s.name)} v${o.v} · đã sửa</span>`:`<span class="pill iqx"><span class="badge">IQX</span> v${o.v} · chưa sửa</span>`}
+  if(o.src==='user'){const u=userById(o.id),ver=userVer(o.id,o.v);const tags=botTags({src:'user',id:o.id},o.v);
+    return (d?`<span class="pill warn">Bản nháp · sửa từ bản ${ver.at}</span>`:`<span class="pill">Của tôi · bản ${ver.at}${o.v!==latestV(u)?' (bản cũ)':''}</span>`)+tags}
+  return `<span class="pill warn">Chiến lược mới · chưa lưu</span>`;
+}
+function botTags(ref,v){let t='';const L=resolve(BOT.last),Nx=resolve(BOT.next);
+  if(sameStrat(ref,BOT.last)&&(v==null||L.v===v))t+=' <span class="pill ok">▶ Đang chạy trên Bot</span>';
+  if(sameStrat(ref,BOT.next)&&(v==null||Nx.v===v)&&!(sameStrat(BOT.last,BOT.next)&&L.v===Nx.v))t+=` <span class="pill pri">→ Phiên tới (${sessLbl(SESS[SI+1])})</span>`;
+  return t}
+function draftTitle(){const o=DRAFT.origin;if(o.src==='iqx')return 'Chiến lược IQX · '+iqxById(o.id).name;if(o.src==='user')return userById(o.id).name;return 'Chiến lược mới'}
+
+function renderBt(){
+  const ro=MODE==='iqx',ct=curCt();
+  document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===MODE));
+  $('libIqx').classList.toggle('hide',!ro);$('libInd').classList.toggle('hide',ro);$('libFoot').classList.toggle('hide',!ro);
+  const L=resolve(BOT.last);
+  const botTxt=L?`<span class="sm mut">Bot đang chạy: ${L.iqx?'<span class="badge">IQX</span> ':''}${esc(L.name)} · ${L.lbl}</span>`:'<span class="sm mut">Bot: chưa chọn chiến lược</span>';
+  if(ro){const s=iqxById(IQXSEL);
+    $('btTop').innerHTML=`<div class="row"><span class="badge">IQX</span><b>Chiến lược IQX · ${esc(s.name)}</b><span class="pill">v${s.cur}</span><span class="pill iqx">Chỉ xem · chạy thử</span>${botTags({src:'iqx',id:s.id})}<span style="flex:1"></span>${botTxt}<button class="btn sm" id="btRuns">Lần chạy đã lưu</button><button class="btn sm" id="btHist">Lịch sử phiên bản</button></div>`;
+    $('btBand').innerHTML=`<div class="info"><span class="badge">IQX</span> ${esc(s.idea)} <span class="mut">Chiến lược IQX không chỉnh được; bấm Chạy để xem hiệu quả.</span>
+     <button class="btn ghost sm" id="bandMore">Xem thêm</button><div id="bandX" class="hide sm" style="margin-top:6px"><b>Nguồn gốc:</b> ${esc(s.origin)}<br><b>Khi nào dễ sai:</b> ${esc(s.wrong)}<br><i>Tham khảo để học, không phải khuyến nghị đầu tư.</i></div></div>`;
+    $('bandMore').onclick=()=>{const x=$('bandX');x.classList.toggle('hide');$('bandMore').textContent=x.classList.contains('hide')?'Xem thêm':'Thu gọn'};
+  }else{
+    $('btTop').innerHTML=`<div class="row"><span class="cap">Chiến lược</span><div class="menu"><button class="btn picker" id="btPick" title="Chọn chiến lược đã lưu hoặc tạo mới"><b>${esc(draftTitle())}</b><span class="mut">▾</span></button><div class="dd pk hide" id="btPickDd"></div></div><span style="flex:1"></span>${botTxt}<button class="btn sm" id="btRuns">Lần chạy đã lưu</button><button class="btn sm" id="btHist">Lịch sử bản</button></div>`;
+    $('btPick').onclick=renderPicker;
+    $('btBand').innerHTML='';
+  }
+    $('btHist').onclick=showHist;$('btRuns').onclick=()=>showRuns(true);
+  const u=ct.universe,sel=$('fUni');
+  sel.innerHTML=`<optgroup label="Rổ"><option value="vn30">VN30 (30 mã)</option><option value="vn100">VN100 (100 mã)</option></optgroup><optgroup label="Danh mục đã lưu (Bộ lọc)">${LISTS.map(l=>`<option value="L:${l.id}">${esc(l.name)} (${l.symbols.length} mã)</option>`).join('')}</optgroup>`;
+  sel.value=u.type==='list'?'L:'+u.listId:u.type;sel.disabled=ro;
+  $('fHold').value=ct.hold;$('fHold').disabled=ro;
+  const sy=uniSyms(u);
+  $('uniRow').innerHTML=`<div class="row"><b>${UNI_LBL(u)}</b><span class="mut">· ${sy.length} mã · ${sy.slice(0,10).join(', ')}${sy.length>10?'…':''}</span><button class="btn ghost sm" id="fUniList">Xem danh sách</button></div>${uniOut(u).length?`<div class="lock" style="margin-top:6px">Bỏ ${uniOut(u).length} mã ngoài VN100 (không có trong kho dữ liệu): ${uniOut(u).join(', ')}. Backtest và Bot chỉ dùng ${sy.length} mã còn lại.</div>`:''}`;
+  $('fUniList').onclick=()=>modal(`${UNI_LBL(u)} · ${sy.length} mã`,`<div class="symgrid">${sy.map(x=>`<span>${x}</span>`).join('')}</div><p class="sm mut">${u.type==='list'?'Danh mục đã lưu bên Bộ lọc. Khi lưu chiến lược, danh sách mã được chép vào bản lưu.':'Danh sách minh họa. Hiện dùng thành phần rổ hiện tại cho cả quá khứ.'}</p>`);
+    $('saveWrap').classList.toggle('hide',ro);
+  $('holdNote').textContent='T+2 · có phí · khớp giá đóng cửa cùng phiên · vốn 100 triệu, 12% NAV mỗi lệnh, tối đa 2 lệnh mua mỗi phiên, tối đa 30% mỗi mã.'+(ro?'':' Chỉnh ở đây chỉ đổi bản nháp; Bot đổi khi bạn lưu và chọn cho Bot.');
+  renderSide('buy');renderSide('sell');renderLib();renderRunMsg();
+}
+function renderSide(side){
+  const ro=MODE==='iqx',ct=curCt(),box=$(side==='buy'?'cBuy':'cSell');const cards=ct[side];
+  $(side==='buy'?'nBuy':'nSell').textContent=cards.length+' chỉ báo';
+  if(!cards.length){box.innerHTML=side==='buy'?`<div class="empty">Chưa có điều kiện Mua.<br>Bấm <b>+ Mua</b> ở cột Chỉ báo bên trái.</div>`:`<div class="empty">Chưa có điều kiện Bán.<br>Bấm <b>+ Bán</b> ở cột Chỉ báo. Không có điều kiện Bán thì vị thế được bán khi đủ Giữ tối đa.</div>`;return}
+  box.innerHTML=cards.map((cd,i)=>`<div class="icard"><div class="top"><b>${esc(IB[cd.ind].name)}</b>${ro?'':`<button class="btn sm" data-ed="${side}:${i}">Chỉnh</button><button class="btn sm" data-rm="${side}:${i}" aria-label="Bỏ" style="color:var(--bad)">✕</button>`}</div>
+    ${cardTxt(cd).filter(l=>!ro||l.on).map(l=>`<div class="ln ${l.on?'':'off'}">${esc(l.t)}</div>`).join('')}</div>`).join('');
+}
+function renderLib(){
+  // tab IQX
+  const nm=cs=>cs.filter(x=>x.lines.some(l=>l.on)).map(x=>IB[x.ind].name).join(' + ')||'—';
+  $('libIqx').innerHTML=IQX.filter(s=>!s.hidden).map(s=>{const c=iqxCt(s.id);return `<div class="scard iq ${MODE==='iqx'&&IQXSEL===s.id?'on':''}" data-iqxsel="${s.id}">
+    <div class="nm"><span class="badge">IQX</span> ${esc(s.name)}</div><div class="sm" style="margin-top:4px">${esc(s.idea)}</div>
+    <div class="sm" style="margin-top:4px"><b style="color:var(--ok)">Mua:</b> ${esc(nm(c.buy))}<br><b style="color:var(--bad)">Bán:</b> ${esc(nm(c.sell))} · giữ tối đa ${c.hold} phiên<br><span class="mut">Rổ ${UNI_LBL(c.universe)}</span></div>
+    ${botTags({src:'iqx',id:s.id})?'<div style="margin-top:4px">'+botTags({src:'iqx',id:s.id})+'</div>':''}</div>`}).join('');
+  $('libFoot').textContent='Chiến lược dựng sẵn bởi IQX: bấm để xem điều kiện và chạy thử, không chỉnh được. Chọn cho Bot ở trang Bot. Tham khảo để học, không phải khuyến nghị đầu tư.';
+  // tab Chỉ báo
+  const q=($('libQ').value||'').trim().toLowerCase();
+  const used=side=>new Set(DRAFT.ct[side].map(c=>c.ind));const ub=used('buy'),us=used('sell');let g='',h='';
+  IND.filter(x=>!q||x.name.toLowerCase().includes(q)).forEach(x=>{if(x.g!==g){g=x.g;h+=`<div class="grp">${g}</div>`}
+    h+=`<div class="ind2"><b>${esc(x.name)}</b><div class="two">
+    <button data-add="buy:${x.id}" style="color:var(--ok)">${ub.has(x.id)?'✓':'+'} Mua</button>
+    <button data-add="sell:${x.id}" style="color:var(--bad)">${us.has(x.id)?'✓':'+'} Bán</button></div></div>`});
+  $('libBody').innerHTML=h||'<div class="empty">Không tìm thấy chỉ báo.</div>';
+}
+function renderPicker(){
+  const dd=$('btPickDd');const o=DRAFT.origin;
+  const inUse=u=>sameStrat({src:'user',id:u.id},BOT.last)||sameStrat({src:'user',id:u.id},BOT.next);
+  dd.innerHTML=`<div class="sec">Chiến lược đã lưu (${USER.length}/20)</div>`+(USER.map(u=>{const lv=userVer(u.id,latestV(u));const cur=o.src==='user'&&o.id===u.id;
+    return `<div class="pkrow ${cur?'cur':''}"><button data-pickopen="${u.id}"><b>${esc(u.name)}</b>${botTags({src:'user',id:u.id})}<span class="sub">Bản mới nhất ${lv.at} · ${UNI_LBL(lv.ct.universe)}</span></button>
+    <button class="del" data-del="${u.id}" ${inUse(u)?'disabled title="Đang dùng trên Bot. Đổi chiến lược của Bot trước khi xóa."':'title="Xóa chiến lược"'} aria-label="Xóa ${esc(u.name)}">🗑</button></div>`}).join('')||'<div class="sm mut" style="padding:6px 10px">Chưa có chiến lược nào.</div>')+
+   `<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px"><button data-new="1" style="color:var(--pri);font-weight:600" ${USER.length>=20?'disabled':''}>＋ Tạo chiến lược mới${USER.length>=20?'<span class="why">Đã đủ 20 chiến lược. Xóa bớt trước khi tạo mới.</span>':''}</button></div>
+   <div class="sm mut" style="padding:4px 10px">Không xóa được chiến lược Bot đang chạy hoặc sẽ chạy phiên tới.</div>`;
+  dd.classList.toggle('hide');
+}
+function delStrat(id){const u=userById(id);
+  modal('Xóa chiến lược?',`<p>Xóa <b>${esc(u.name)}</b> và toàn bộ ${u.versions.length} bản của chiến lược này khỏi danh sách.</p><p class="sm mut">Kết quả backtest đã chạy và lịch sử giao dịch, nhật ký của Bot vẫn giữ tên chiến lược để tra cứu. Không hoàn tác được.</p>`,
+   [{label:'Hủy'},{label:'Xóa chiến lược',cls:'danger',fn:()=>{const i=USER.indexOf(u);USER.splice(i,1);
+     if(DRAFT.origin.src==='user'&&DRAFT.origin.id===id){DRAFT.origin={src:'new'};RUNS.ind=null}
+     toast(`Đã xóa "${u.name}".`+(DRAFT.origin.src==='new'?' Nội dung đang mở được giữ ở dạng bản nháp chưa lưu.':''));renderAll()}}]);
+}
+function editCard(side,i,isNew){
+  const cd=DRAFT.ct[side][i],R=IB[cd.ind];const w=clone(cd);
+  const html=`<div class="sm mut" style="margin-bottom:6px">${side==='buy'?'Điều kiện Mua':'Điều kiện Bán'} · các dòng đang bật nối bằng AND</div>`+
+   R.lines.map((L,li)=>{const p=w.lines[li].p;const parts=L.tpl.split(/(\{\w+\})/).map(tok=>{const m=tok.match(/^\{(\w+)\}$/);if(!m)return tok?`<span>${esc(tok)}</span>`:'';const k=m[1],P=L.P[k];
+     if(P.t==='s')return `<select data-l="${li}" data-k="${k}">${P.o.map(o=>`<option ${String(o)===String(p[k])?'selected':''}>${o}</option>`).join('')}</select>`;
+     return `<input type="number" data-l="${li}" data-k="${k}" min="${P.min}" max="${P.max}" step="${P.step}" value="${p[k]}">`}).join('');
+     return `<div class="eline"><label class="sw"><input type="checkbox" data-on="${li}" ${w.lines[li].on?'checked':''}><span></span></label><div class="txt">${parts}</div></div>`}).join('')+
+   `<div id="edErr" class="lock hide" style="margin-top:8px"></div>`;
+  const bg=modal(`${R.name} · ${side==='buy'?'Mua':'Bán'}`,html,[
+    {label:'Hủy',fn:()=>{if(isNew){DRAFT.ct[side].splice(i,1);renderBt()}}},
+    {label:'Lưu thẻ',cls:'pri',fn:bg=>{
+      const errs=[];
+      bg.querySelectorAll('[data-on]').forEach(x=>w.lines[+x.dataset.on].on=x.checked);
+      bg.querySelectorAll('[data-k]').forEach(x=>{const li=+x.dataset.l,k=x.dataset.k,P=R.lines[li].P[k];
+        if(P.t==='s'){const o=P.o.find(o=>String(o)===x.value);w.lines[li].p[k]=o}
+        else{const v=Number(x.value);if(x.value===''||!isFinite(v)||v<P.min||v>P.max||(P.step===1&&!Number.isInteger(v)))errs.push(`Dòng ${li+1}: ${k} phải từ ${P.min} đến ${P.max}${P.step===1?', số nguyên':''}.`);else w.lines[li].p[k]=v}});
+      if(!w.lines.some(l=>l.on))errs.push('Bật ít nhất một dòng, hoặc bấm ✕ để bỏ thẻ.');
+      if(errs.length){const e=bg.querySelector('#edErr');e.innerHTML=errs.map(esc).join('<br>');e.classList.remove('hide');return false}
+      DRAFT.ct[side][i]=w;renderBt();}}]);
+}
+function renderRunMsg(){
+  const m=$('runMsg'),ct=curCt();
+  if(!sideOn(ct.buy)){m.innerHTML='<span class="lock">Cần ít nhất một dòng Mua đang bật để chạy.</span>';$('btRun').disabled=true;return}
+  $('btRun').disabled=false;
+  if(MODE==='iqx'){m.innerHTML=LASTRUN?'<span class="mut">Kết quả bên dưới là của chiến lược IQX đang xem.</span>':'<span class="mut">Bấm ▶ Chạy để xem hiệu quả chiến lược trên rổ mã.</span>';return}
+  if(LASTRUN&&LASTRUN.sig!==sig(ct))m.innerHTML='<span class="lock">Bản nháp đã sửa sau lần chạy. Bấm Chạy trước khi Lưu.</span>';
+  else if(LASTRUN)m.innerHTML='<span class="mut">Kết quả bên dưới là của bản nháp hiện tại.</span>';
+  else m.innerHTML='<span class="mut">Chưa chạy bản nháp này.</span>';
+}
+
+/* ============================================================
+   7. BACKTEST: MÔ PHỎNG THEO LUẬT BOT
+   ============================================================ */
+const CAP=1e8,FB=.0015,FS=.0025;
+function runBT(ct,from,to){
+  const syms=uniSyms(ct.universe);let i0=DATES.findIndex(d=>d>=from),i1=-1;for(let i=NB-1;i>=0;i--)if(DATES[i]<=to){i1=i;break}
+  if(i0<0||i1<i0)return{err:'Không có phiên nào trong khoảng thời gian.'};
+  const sb={},ss={};syms.forEach(s=>{const D=DATA[s];sb[s]=[];ss[s]=[];for(let t=i0;t<=i1;t++){sb[s].push(evalSide(ct.buy,D,t));ss[s].push(evalSide(ct.sell,D,t))}});
+  let cash=CAP;const pos=[],trades=[],skip=[],curve=[];let peak=CAP,mdd=0;
+  for(let t=i0;t<=i1;t++){const k=t-i0;const sold=new Set();
+    // 1) BÁN trước (khớp giá đóng cửa phiên t)
+    for(let j=pos.length-1;j>=0;j--){const p=pos[j];const held=t-p.bi;if(held<2)continue; // T+2: hàng chưa về
+      const bySig=ss[p.s][k]===true,byHold=held>=ct.hold;if(!bySig&&!byHold)continue;
+      const px=DATA[p.s].c[t],proc=p.q*px*(1-FS);cash+=proc;
+      trades.push({s:p.s,bd:DATES[p.bi],bp:p.bp,q:p.q,sd:DATES[t],sp:px,held,why:bySig?'Điều kiện Bán':'Hết thời gian giữ',both:bySig&&byHold,pnl:proc-p.cost,pct:(proc/p.cost-1)*100});
+      sold.add(p.s);pos.splice(j,1)}
+    // 2) MUA: tối đa 2 mã, ưu tiên GTGD TB 20 phiên cao hơn
+    const held=new Set(pos.map(p=>p.s));
+    let nav=cash+pos.reduce((a,p)=>a+p.q*DATA[p.s].c[t],0);
+    const cand=syms.filter(s=>sb[s][k]===true&&!held.has(s)&&!sold.has(s)).sort((a,b)=>(DATA[b].gtgd20()[t]||0)-(DATA[a].gtgd20()[t]||0));
+    let n=0;
+    for(const s of cand){const px=DATA[s].c[t];
+      if(n>=2){skip.push({d:DATES[t],s,why:'Đã đủ 2 lệnh mua trong phiên'});continue}
+      const budget=Math.min(.12*nav,cash);const q=Math.floor(budget/(px*(1+FB))/100)*100;
+      if(q<100){skip.push({d:DATES[t],s,why:cash<px*100*(1+FB)?'Không đủ tiền mặt cho 1 lô':'12% NAV không đủ mua 1 lô (giá cao)'});continue}
+      if(q*px>.3*nav){skip.push({d:DATES[t],s,why:'Vượt trần 30% NAV mỗi mã'});continue}
+      const cost=q*px*(1+FB);cash-=cost;pos.push({s,bi:t,bp:px,q,cost});n++}
+    nav=cash+pos.reduce((a,p)=>a+p.q*DATA[p.s].c[t],0);peak=Math.max(peak,nav);mdd=Math.min(mdd,(nav/peak-1)*100);
+    const bh=syms.reduce((a,s)=>a+DATA[s].c[t]/DATA[s].c[i0],0)/syms.length/(1+FB);
+    curve.push({d:DATES[t],st:(nav/CAP-1)*100,bh:(bh-1)*100,vni:(VNI[t]/VNI[i0]-1)*100,nav});
+  }
+  const last=curve[curve.length-1],nb=curve.length;
+  const open=pos.map(p=>{const px=DATA[p.s].c[i1];return{s:p.s,bd:DATES[p.bi],bp:p.bp,q:p.q,px,held:i1-p.bi,un:p.q*px-p.cost,pct:(p.q*px/p.cost-1)*100}});
+  const wins=trades.filter(x=>x.pnl>0).length;
+  const per={};syms.forEach(s=>per[s]={s,n:0,w:0,pnl:0,un:0});trades.forEach(x=>{const r=per[x.s];r.n++;if(x.pnl>0)r.w++;r.pnl+=x.pnl});open.forEach(o=>per[o.s].un+=o.un);
+  return{ct:clone(ct),syms,from:DATES[i0],to:DATES[i1],nb,curve,trades:trades.reverse(),open,skip:skip.reverse(),
+    k:{tot:last.st,cagr:nb<60?null:(Math.pow(last.nav/CAP,252/nb)-1)*100,mdd,closed:trades.length,win:trades.length?wins/trades.length*100:null,bh:last.bh,vni:last.vni,cash,nav:last.nav},
+    per:Object.values(per).sort((a,b)=>(b.pnl+b.un)-(a.pnl+a.un)),
+    byHold:trades.filter(x=>x.why==='Hết thời gian giữ').length};
+}
+let RTAB='tr',PAGE=0;
+function renderRes(){
+  const box=$('res');
+  if(!LASTRUN){box.innerHTML=`<div class="empty">Bấm <b>▶ Chạy</b> để mô phỏng chiến lược trên cả rổ mã, theo đúng luật Bot.</div>`;return}
+  const r=LASTRUN.res,k=r.k,stale=LASTRUN.sig!==sig(curCt());
+  box.innerHTML=`${stale?'<div class="lock" style="margin-bottom:10px">Cấu hình đã đổi sau lần chạy này · cần chạy lại</div>':''}
+   <div class="row" style="justify-content:space-between"><div><div class="h2">Kết quả · ${esc(LASTRUN.label)}</div>
+   <div class="sm mut">Rổ ${UNI_LBL(r.ct.universe)} (${r.syms.length} mã) · ${dmy(r.from)} – ${dmy(r.to)} · ${r.nb} phiên · giữ tối đa ${r.ct.hold} phiên · khớp giá đóng cửa cùng phiên</div></div></div>
+   <div class="kpis">
+    ${kpi('Tổng lợi nhuận',fmtP(k.tot),cls(k.tot))}${kpi('Lợi nhuận năm hóa',fmtP(k.cagr),cls(k.cagr))}${kpi('Sụt giảm lớn nhất',fmtP(k.mdd),'neg')}
+    ${kpi('Giao dịch đã đóng',fmtN(k.closed))}${kpi('Tỷ lệ thắng',k.win==null?'—':fmtP(k.win,false))}
+    ${kpi('Mua và giữ rổ',fmtP(k.bh),cls(k.bh),1)}${kpi('VN-Index',fmtP(k.vni),cls(k.vni),1)}
+   </div>
+   <div class="chart" id="eq"></div>
+   <div class="legend"><span><i style="background:var(--s1)"></i>Chiến lược</span><span><i style="background:var(--s2)"></i>Mua và giữ rổ (chia đều vốn)</span><span><i style="background:var(--s3)"></i>VN-Index</span></div>
+   <div class="rtabs">${[['tr',`Giao dịch (${r.trades.length})`],['sym','Theo mã'],['open',`Vị thế còn mở (${r.open.length})`],['skip',`Lệnh mua bị bỏ qua (${r.skip.length})`],['as','Giả định']].map(([id,l])=>`<button class="rtab ${RTAB===id?'on':''}" data-rt="${id}">${l}</button>`).join('')}</div>
+   <div id="rbody"></div>
+   <div class="sm mut" style="margin-top:10px">Kết quả quá khứ không bảo đảm kết quả tương lai.</div>`;
+  drawEq($('eq'),r.curve);renderRBody();
+}
+const kpi=(l,v,c,cmp)=>`<div class="kpi ${cmp?'cmp':''}"><div class="cap">${l}</div><div class="v ${c||''}">${v}</div></div>`;
+function renderRBody(){
+  const r=LASTRUN.res,b=$('rbody');const PS=20;
+  if(RTAB==='tr'){
+    if(!r.trades.length){b.innerHTML='<div class="empty" style="margin-top:8px">Chưa có giao dịch nào được đóng trong khoảng thời gian này.</div>';return}
+    const pages=Math.ceil(r.trades.length/PS);PAGE=Math.min(PAGE,pages-1);const rows=r.trades.slice(PAGE*PS,PAGE*PS+PS);
+    b.innerHTML=`<div class="tw"><table><tr><th>Mã</th><th>Ngày mua</th><th>Giá mua</th><th>KL</th><th>Ngày bán</th><th>Giá bán</th><th>Số phiên giữ</th><th class="l">Lý do bán</th><th>Lãi/lỗ</th><th>%</th></tr>
+     ${rows.map(x=>`<tr class="click" data-sym="${x.s}"><td><b>${x.s}</b></td><td>${dmy(x.bd)}</td><td>${fmtN(x.bp)}</td><td>${fmtN(x.q)}</td><td>${dmy(x.sd)}</td><td>${fmtN(x.sp)}</td><td>${x.held}</td>
+     <td class="l">${x.why==='Hết thời gian giữ'?'<span class="pill warn">Hết thời gian giữ</span>':'<span class="pill">Điều kiện Bán</span>'+(x.both?' <span class="sm mut">(cùng đến hạn)</span>':'')}</td><td class="${cls(x.pnl)}">${fmtN(Math.round(x.pnl))}</td><td class="${cls(x.pct)}">${fmtP(x.pct)}</td></tr>`).join('')}</table></div>
+     <div class="pager"><span class="mut">Trang ${PAGE+1}/${pages} · ${r.byHold} lệnh bán do hết thời gian giữ</span><button class="btn sm" data-pg="-1" ${PAGE?'':'disabled'}>‹</button><button class="btn sm" data-pg="1" ${PAGE<pages-1?'':'disabled'}>›</button></div>`;
+  }else if(RTAB==='sym'){
+    b.innerHTML=`<div class="tw"><table><tr><th>Mã</th><th>Lệnh đã đóng</th><th>Thắng</th><th>Lãi/lỗ đã chốt</th><th>Tạm tính (đang giữ)</th><th>Đóng góp vào vốn</th></tr>
+     ${r.per.filter(x=>x.n||x.un).map(x=>`<tr class="click" data-sym="${x.s}"><td><b>${x.s}</b></td><td>${x.n}</td><td>${x.w}</td><td class="${cls(x.pnl)}">${fmtN(Math.round(x.pnl))}</td><td class="${cls(x.un)}">${x.un?fmtN(Math.round(x.un)):'—'}</td><td class="${cls(x.pnl+x.un)}">${fmtP((x.pnl+x.un)/CAP*100)}</td></tr>`).join('')||'<tr><td colspan="6" class="l mut">Không có mã nào được giao dịch.</td></tr>'}</table></div>
+     <div class="sm mut" style="margin-top:6px">Bấm một mã để xem biểu đồ giá với điểm mua, bán. Các mã trong rổ chưa từng được mua không hiện ở đây.</div>`;
+  }else if(RTAB==='open'){
+    b.innerHTML=r.open.length?`<div class="tw"><table><tr><th>Mã</th><th>Ngày mua</th><th>Giá mua</th><th>KL</th><th>Giá cuối kỳ</th><th>Đã giữ</th><th>Tạm tính</th><th>%</th></tr>
+     ${r.open.map(x=>`<tr class="click" data-sym="${x.s}"><td><b>${x.s}</b></td><td>${dmy(x.bd)}</td><td>${fmtN(x.bp)}</td><td>${fmtN(x.q)}</td><td>${fmtN(x.px)}</td><td>${x.held}/${r.ct.hold} phiên</td><td class="${cls(x.un)}">${fmtN(Math.round(x.un))}</td><td class="${cls(x.pct)}">${fmtP(x.pct)}</td></tr>`).join('')}</table></div>
+     <div class="sm mut" style="margin-top:6px">Tạm tính theo giá đóng cửa phiên cuối, chưa trừ phí bán. Tiền mặt cuối kỳ: ${fmtVnd(r.k.cash)}.</div>`:'<div class="empty" style="margin-top:8px">Không còn vị thế mở cuối kỳ.</div>';
+  }else if(RTAB==='skip'){
+    const cnt={};r.skip.forEach(x=>cnt[x.why]=(cnt[x.why]||0)+1);
+    b.innerHTML=r.skip.length?`<div class="row" style="margin-top:8px">${Object.entries(cnt).map(([w,n])=>`<span class="pill">${esc(w)}: ${n}</span>`).join('')}</div>
+     <div class="tw"><table><tr><th>Ngày</th><th class="l">Mã</th><th class="l">Lý do</th></tr>${r.skip.slice(0,60).map(x=>`<tr><td>${dmy(x.d)}</td><td class="l"><b>${x.s}</b></td><td class="l">${esc(x.why)}</td></tr>`).join('')}</table></div>
+     ${r.skip.length>60?`<div class="sm mut">Hiện 60 dòng gần nhất / ${r.skip.length}.</div>`:''}
+     <div class="sm mut" style="margin-top:6px">Khi có hơn 2 mã đạt điều kiện Mua trong cùng phiên, ưu tiên mã có GTGD trung bình 20 phiên cao hơn.</div>`:'<div class="empty" style="margin-top:8px">Không có lệnh mua nào bị bỏ qua.</div>';
+  }else{
+    b.innerHTML=`<ul class="sm" style="margin:10px 0 0;padding-left:18px;line-height:1.7">
+     <li>Vốn ban đầu cố định <b>100.000.000 đ</b>, bằng vốn Bot. Người dùng không đổi.</li>
+     <li>Tín hiệu tính khi có giá đóng cửa phiên T, chỉ dùng nến đến phiên T. Lệnh <b>khớp giá đóng cửa cùng phiên T</b>.</li>
+     <li>Mỗi phiên: <b>bán trước, mua sau</b>. Tiền bán dùng mua được ngay trong phiên.</li>
+     <li>Bán khi: điều kiện Bán đạt <b>hoặc</b> đã giữ đủ ${r.ct.hold} phiên (hết thời gian giữ; phiên mua là phiên 0). Chỉ bán khi hàng đã về (T+2: giữ ít nhất 2 phiên).</li>
+     <li>Mua: tối đa 2 mã mỗi phiên, mỗi lệnh 12% NAV, làm tròn xuống lô 100, mỗi mã tối đa 30% NAV, không mua thêm mã đang giữ, không mua lại mã vừa bán trong cùng phiên.</li>
+     <li>Phí mua 0,15%, bán 0,25% (đã gồm thuế). Cuối kỳ không ép bán; vị thế mở tạm tính theo giá đóng cửa.</li>
+     <li>Khi có hơn 2 mã đạt điều kiện Mua trong cùng phiên: ưu tiên mã có GTGD trung bình 20 phiên cao hơn.</li>
+     <li>Dữ liệu giá: kho VN100 (dùng chung với Flashback), cập nhật tới phiên gần nhất.</li>
+     <li><b>Giả định khớp đúng giá đóng cửa; thực tế có thể khác.</b></li>
+     <li>Mua và giữ rổ: chia đều vốn cho các mã trong rổ ở phiên đầu, tính theo tỷ lệ, có phí mua.</li></ul>
+     <div class="lock" style="margin-top:10px">⚠ ${r.ct.universe.type==='list'?'Danh mục đã lưu: danh sách mã được chép vào chiến lược khi lưu và dùng cho cả quá khứ.':'Rổ dùng thành phần hiện tại cho cả quá khứ (chưa có dữ liệu thành phần rổ theo thời điểm). Kết quả có thể đẹp hơn thực tế.'}</div>`;
+  }
+}
+function drawEq(el,cv){
+  const W=820,H=260,pl=48,pr=12,pt=12,pb=26;const ys=cv.flatMap(p=>[p.st,p.bh,p.vni]);let mn=Math.min(0,...ys),mx=Math.max(0,...ys);const pad=(mx-mn)*.08||1;mn-=pad;mx+=pad;
+  const X=i=>pl+(W-pl-pr)*i/(cv.length-1||1),Y=v=>pt+(H-pt-pb)*(1-(v-mn)/(mx-mn));
+  const path=k=>cv.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p[k]).toFixed(1)).join('');
+  let g='';const step=(mx-mn)/4;for(let j=0;j<=4;j++){const v=mn+step*j;g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef1f5"/><text x="${pl-6}" y="${Y(v)+4}" font-size="10" text-anchor="end" fill="#6b7280">${v.toFixed(0)}%</text>`}
+  const xt=[0,Math.floor(cv.length/3),Math.floor(cv.length*2/3),cv.length-1];xt.forEach(i=>g+=`<text x="${X(i)}" y="${H-8}" font-size="10" text-anchor="middle" fill="#6b7280">${dmy(cv[i].d)}</text>`);
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lợi nhuận danh mục">${g}<line x1="${pl}" x2="${W-pr}" y1="${Y(0)}" y2="${Y(0)}" stroke="#c7cdd8"/>
+   <path d="${path('vni')}" fill="none" stroke="var(--s3)" stroke-width="1.5"/><path d="${path('bh')}" fill="none" stroke="var(--s2)" stroke-width="1.6"/><path d="${path('st')}" fill="none" stroke="var(--s1)" stroke-width="2.2"/>
+   <line id="hx" y1="${pt}" y2="${H-pb}" stroke="#9ca3af" stroke-dasharray="3 3" style="display:none"/><rect x="${pl}" y="${pt}" width="${W-pl-pr}" height="${H-pt-pb}" fill="transparent" id="hov"/></svg><div class="tip" id="eqTip"></div>`;
+  const svg=el.querySelector('svg'),tip=el.querySelector('#eqTip'),hx=el.querySelector('#hx');
+  const mv=e=>{const r=svg.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*W;const i=Math.max(0,Math.min(cv.length-1,Math.round((x-pl)/(W-pl-pr)*(cv.length-1))));const p=cv[i];
+    hx.setAttribute('x1',X(i));hx.setAttribute('x2',X(i));hx.style.display='';tip.style.display='block';
+    tip.innerHTML=`${dmy(p.d)}<br>Chiến lược ${fmtP(p.st)}<br>Mua và giữ rổ ${fmtP(p.bh)}<br>VN-Index ${fmtP(p.vni)}`;
+    const px=X(i)/W*r.width;tip.style.left=Math.min(px+10,r.width-150)+'px';tip.style.top='10px'};
+  svg.querySelector('#hov').addEventListener('mousemove',mv);svg.querySelector('#hov').addEventListener('mouseleave',()=>{tip.style.display='none';hx.style.display='none'});
+}
+function symChart(s){
+  const r=LASTRUN.res;const i0=DATES.indexOf(r.from),i1=DATES.indexOf(r.to);const D=DATA[s];const c=D.c.slice(i0,i1+1);
+  const W=820,H=240,pl=56,pr=12,pt=12,pb=24;const mn=Math.min(...c)*.97,mx=Math.max(...c)*1.03;
+  const X=i=>pl+(W-pl-pr)*i/(c.length-1),Y=v=>pt+(H-pt-pb)*(1-(v-mn)/(mx-mn));
+  let mk='';const tr=r.trades.filter(x=>x.s===s);const op=r.open.filter(x=>x.s===s);
+  const ix=d=>DATES.indexOf(d)-i0;
+  tr.concat(op).forEach(x=>{const a=ix(x.bd);mk+=`<path d="M${X(a)} ${Y(x.bp)+4} l-5 9 h10z" fill="#047857"/>`;if(x.sd){const b=ix(x.sd);mk+=`<path d="M${X(b)} ${Y(x.sp)-4} l-5 -9 h10z" fill="${x.why==='Hết thời gian giữ'?'#d97706':'#c81e1e'}"/>`}});
+  const html=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto"><path d="${c.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join('')}" fill="none" stroke="#1a56db" stroke-width="1.5"/>${mk}
+   <text x="${pl-6}" y="${Y(mx/1.03)+4}" font-size="10" text-anchor="end" fill="#6b7280">${fmtN(mx/1.03)}</text><text x="${pl-6}" y="${Y(mn/.97)+4}" font-size="10" text-anchor="end" fill="#6b7280">${fmtN(mn/.97)}</text>
+   <text x="${pl}" y="${H-6}" font-size="10" fill="#6b7280">${dmy(r.from)}</text><text x="${W-pr}" y="${H-6}" font-size="10" text-anchor="end" fill="#6b7280">${dmy(r.to)}</text></svg>
+   <div class="legend"><span><span style="color:#047857">▲</span> Mua</span><span><span style="color:#c81e1e">▼</span> Bán · Điều kiện Bán</span><span><span style="color:#d97706">▼</span> Bán · Hết thời gian giữ</span></div>
+   <div class="sm mut" style="margin-top:6px">${tr.length} giao dịch đã đóng${op.length?' · đang giữ cuối kỳ':''}.</div>`;
+  modal(s+' · giá đóng cửa và điểm giao dịch',html,null,true);
+}
+
+/* ============================================================
+   8. BACKTEST: LƯU, LỊCH SỬ BẢN
+   ============================================================ */
+function saveMenu(){
+  const dd=$('btSaveDd');const need=!LASTRUN||LASTRUN.sig!==sig(DRAFT.ct);const why=need?'<span class="why">Bản nháp đã sửa sau lần chạy (hoặc chưa chạy). Bấm Chạy trước khi Lưu.</span>':'';
+  const o=DRAFT.origin,d=dirty();let h='';
+  if(o.src==='user'){const u=userById(o.id);h+=`<button data-sv="ver" ${need||!d?'disabled':''}>Lưu thành bản mới của "${esc(u.name)}"${!d?'<span class="sub">Chưa có thay đổi so với bản đang mở.</span>':why}</button>`}
+  h+=`<button data-sv="new" ${need?'disabled':''}>Lưu thành chiến lược mới…${why}</button>`;
+  if(!d&&o.src==='iqx')h+=`<button data-sv="useiqx">Dùng Chiến lược IQX · ${esc(iqxById(o.id).name)} cho Bot<span class="sub">Không cần lưu. Áp dụng từ phiên ${sessLbl(SESS[SI+1])}.</span></button>`;
+  else if(!d&&o.src==='user'&&o.v===latestV(userById(o.id))){const nx=sameStrat(BOT.next,{src:'user',id:o.id});h+=`<button data-sv="useuser" ${nx?'disabled':''}>Dùng chiến lược này cho Bot<span class="sub">${nx?'Đã là chiến lược của Bot ở phiên tới.':'Áp dụng từ phiên '+sessLbl(SESS[SI+1])+'.'}</span></button>`}
+  else h+=`<button data-sv="saveuse" ${need?'disabled':''}>Lưu và dùng cho Bot…<span class="sub">Áp dụng từ phiên ${sessLbl(SESS[SI+1])}.</span>${why}</button>`;
+  dd.innerHTML=h;dd.classList.toggle('hide');
+}
+function askName(def,cb){
+  const bg=modal('Lưu thành chiến lược mới',`<div class="fld"><label>Tên chiến lược (tối đa 40 ký tự)</label><input id="nmIn" maxlength="40" value="${esc(def)}"></div><div id="nmErr" class="lock hide" style="margin-top:8px"></div>
+   <p class="sm mut">Lưu: rổ mã${DRAFT.ct.universe.type==='list'?' (chép danh sách mã hiện tại)':''}, Điều kiện Mua, Bán và Giữ tối đa. Lần chạy vừa rồi được gắn với bản này.</p>`,
+   [{label:'Hủy'},{label:'Lưu',cls:'pri',fn:bg=>{const v=bg.querySelector('#nmIn').value.trim();const e=bg.querySelector('#nmErr');
+     const err=!v?'Nhập tên chiến lược.':USER.some(u=>u.name.toLowerCase()===v.toLowerCase())?'Tên này đã có trong chiến lược của bạn.':USER.length>=20?'Đã đủ 20 chiến lược. Lưu trữ bớt trước khi tạo mới.':'';
+     if(err){e.textContent=err;e.classList.remove('hide');return false}cb(v)}}]);
+  setTimeout(()=>bg.querySelector('#nmIn').select(),30);
+}
+function snapCt(){const ct=clone(DRAFT.ct);if(ct.universe.type==='list'){const L=LISTS.find(x=>x.id===ct.universe.listId);ct.universe.symbols=L.symbols.filter(x=>VN100.includes(x));ct.universe.name=L.name}return ct}
+function saveNew(name,thenUse){const id='u'+(USER.length+1)+'_'+Date.now()%1e4;const at=nowLabel();
+  const o=DRAFT.origin;USER.push({id,name,versions:[{v:1,at,note:o.src==='iqx'?'Từ Chiến lược IQX · '+iqxById(o.id).name+' v'+o.v:'',ct:snapCt()}]});
+  DRAFT.origin={src:'user',id,v:1};DRAFT.ct=clone(userVer(id,1).ct);LASTRUN.sig=sig(DRAFT.ct);LASTRUN.label=name+' · bản '+at;RUNLOG.filter(r=>r.res===LASTRUN.res).forEach(r=>{r.key='user:'+id;r.label=name+' · bản '+at;r.sig=LASTRUN.sig});
+  if(thenUse){if(impacted(DRAFT.ct.hold,nextHold()).length&&DRAFT.ct.hold<nextHold()){renderAll();setBot({src:'user',id,v:'latest'},name);return}BOT.next={src:'user',id,v:'latest'};toast(`Đã lưu "${name}". Bot dùng từ phiên ${sessLbl(SESS[SI+1])}.`)}else toast(`Đã lưu "${name}" · bản ${at}.`);
+  renderAll()}
+function saveVer(thenUse){
+  const o=DRAFT.origin,u=userById(o.id);
+  const doIt=apply=>{const at=nowLabel();const v=latestV(u)+1;u.versions.push({v,at,note:o.v!==v-1?'Sửa từ bản '+userVer(o.id,o.v).at:'',ct:snapCt()});DRAFT.origin={src:'user',id:u.id,v};LASTRUN.sig=sig(DRAFT.ct);LASTRUN.label=u.name+' · bản '+at;RUNLOG.filter(r=>r.res===LASTRUN.res).forEach(r=>{r.label=u.name+' · bản '+at;r.sig=LASTRUN.sig});
+    if(apply||thenUse){BOT.next={src:'user',id:u.id,v:'latest'}}
+    toast(apply||thenUse||sameStrat(BOT.next,{src:'user',id:u.id})?`Đã lưu bản ${at}. Bot dùng bản này từ phiên ${sessLbl(SESS[SI+1])}.`:`Đã lưu bản ${at}.`);renderAll()};
+  if(sameStrat(BOT.next,{src:'user',id:u.id})||thenUse){
+    modal('Lưu bản mới cho chiến lược đang dùng trên Bot',`<p>Chiến lược <b>${esc(u.name)}</b> ${sameStrat(BOT.next,{src:'user',id:u.id})?'đang được Bot dùng':'sẽ được đặt cho Bot'}.</p>
+      <p>Bản này sẽ được Bot dùng từ <b>phiên ${sessLbl(SESS[SI+1])}</b>. Phiên gần nhất (${sessLbl(SESS[SI])}) vẫn ghi nhận bản cũ.</p><p class="sm mut">Lưu trước giờ chốt dữ liệu của phiên ${sessLbl(SESS[SI+1])} thì áp dụng cho phiên đó. Mã đang giữ bán theo điều kiện Bán và Giữ tối đa của bản mới; số phiên đã giữ vẫn tính tiếp.</p>${impactHtml(DRAFT.ct.hold)}`,
+      [{label:'Hủy'},{label:'Lưu thành chiến lược mới',fn:()=>{setTimeout(()=>askName(u.name+' (2)',n=>saveNew(n,false)),0)}},{label:'Lưu và áp dụng phiên tới',cls:'pri',fn:()=>doIt(true)}]);
+    guard(document.querySelector('#modalRoot .mbg:last-child'));
+  }else doIt(false);
+}
+/* Hạ giữ tối đa: liệt kê vị thế sẽ bị bán ở phiên tới, bắt tích xác nhận (v1.2 §2.7) */
+const nextHold=()=>{const N=resolve(BOT.next);return N?N.ct.hold:DEF_HOLD};
+function impacted(newN,oldN){return BH.filter(p=>!p.susp&&p.held+1>=2&&p.counted+1>=newN&&!(p.counted+1>=oldN))}
+function impactHtml(newN){const oldN=nextHold();if(newN>=oldN)return '';const L=impacted(newN,oldN);if(!L.length)return '';
+  return `<div class="lock" style="margin-top:10px"><b>${L.length} vị thế sẽ được bán ở phiên ${sessLbl(SESS[SI+1])}</b> vì đã giữ từ ${newN} phiên trở lên: ${L.map(p=>p.s+' ('+(p.counted+1)+' phiên)').join(', ')}.</div><label class="row sm" style="margin-top:8px"><input type="checkbox" id="impOk"> Tôi hiểu các vị thế trên sẽ được bán.</label>`}
+function guard(bg){const c=bg.querySelector('#impOk');if(!c)return;const b=[...bg.querySelectorAll('.acts .btn.pri')].pop();b.disabled=true;c.onchange=()=>b.disabled=!c.checked}
+function setBot(ref,label){const ct=resolve(ref).ct;
+  const bg=modal('Đổi chiến lược của Bot?',`<p>Từ <b>phiên ${sessLbl(SESS[SI+1])}</b>, Bot dùng <b>${esc(label)}</b>.</p><p class="sm mut">Mã đang giữ bán theo điều kiện Bán và Giữ tối đa của chiến lược mới.</p>${impactHtml(ct.hold)}`,
+   [{label:'Hủy'},{label:'Dùng cho Bot',cls:'pri',fn:()=>{BOT.next=ref;toast(`Bot dùng ${label} từ phiên ${sessLbl(SESS[SI+1])}.`);renderAll()}}]);guard(bg);
+}
+function onSave(kind){
+  $('btSaveDd').classList.add('hide');const o=DRAFT.origin;
+  const defName=o.src==='iqx'?iqxById(o.id).name+' (từ Chiến lược IQX)':o.src==='user'?userById(o.id).name+' (2)':'';
+  if(kind==='new')askName(defName,n=>saveNew(n,false));
+  else if(kind==='ver')saveVer(false);
+  else if(kind==='useiqx')setBot({src:'iqx',id:o.id,v:o.v},'Chiến lược IQX · '+iqxById(o.id).name+' v'+o.v);
+  else if(kind==='useuser')setBot({src:'user',id:o.id,v:'latest'},userById(o.id).name);
+  else if(kind==='saveuse'){if(o.src==='user')saveVer(true);else askName(defName,n=>saveNew(n,true))}
+}
+const RUNLOG=[
+ {id:'old2',at:'02/11 10:15',key:'legacy',label:'Cấu hình chung · bản 15 · FPT',legacy:true,uni:'1 mã: FPT',range:'05/01/2022 – 31/10/2026',k:{tot:43.3,mdd:-10.6,closed:14}},
+ {id:'old1',at:'28/10 21:40',key:'legacy',label:'Cấu hình chung · bản 14 · HPG',legacy:true,uni:'1 mã: HPG',range:'01/01/2024 – 27/10/2026',k:{tot:-4.1,mdd:-18.2,closed:9}}];
+const runKey=()=>MODE==='iqx'?'iqx:'+IQXSEL:(DRAFT.origin.src==='user'?'user:'+DRAFT.origin.id:'new');
+function showRuns(only){
+  const key=runKey();const rows=RUNLOG.filter(r=>!only||r.key===key);
+  const keyName=k=>k==='legacy'?'':k==='new'?'Chiến lược mới (chưa lưu)':k.startsWith('iqx:')?'Chiến lược IQX · '+iqxById(k.slice(4)).name:(userById(k.slice(5))||{name:'(đã xóa)'}).name;
+  const bg=modal('Lần chạy đã lưu',`<div class="row" style="margin-bottom:8px"><button class="btn sm ${only?'pri':''}" data-rf="1">Chiến lược đang mở</button><button class="btn sm ${only?'':'pri'}" data-rf="0">Tất cả</button></div>
+   <div class="tw"><table><tr><th class="l">Thời điểm</th><th class="l">Chiến lược · bản</th><th class="l">Rổ · khoảng</th><th>Tổng LN</th><th>Sụt giảm</th><th>Số GD</th><th class="l"></th></tr>
+   ${rows.map(r=>`<tr><td class="l">${r.at}</td><td class="l">${r.legacy?'<span class="pill">Cấu hình cũ</span> ':''}${esc(r.label)}${!only&&!r.legacy?`<div class="sm mut">${esc(keyName(r.key))}</div>`:''}</td><td class="l sm">${esc(r.uni)}<div class="mut">${r.range}</div></td>
+     <td class="${cls(r.k.tot)}">${fmtP(r.k.tot)}</td><td class="neg">${fmtP(r.k.mdd)}</td><td>${r.k.closed}</td>
+     <td class="l">${r.legacy?'<button class="btn sm" data-rv="'+r.id+'">Xem số liệu</button>':r.key===key?'<button class="btn sm" data-rv="'+r.id+'">Xem</button>':(r.key==='new'?'':'<button class="btn sm" data-ro="'+r.key+'">Mở chiến lược</button>')}</td></tr>`).join('')||'<tr><td colspan="7" class="l mut">Chưa có lần chạy nào.</td></tr>'}</table></div>
+   <p class="sm mut">Mỗi lần bấm Chạy được lưu lại, không sửa được. Lần chạy theo cấu hình cũ (1 mã) chỉ xem số liệu, không chạy lại.</p>`,null,true);
+  bg.querySelectorAll('[data-rf]').forEach(b=>b.onclick=()=>{bg.remove();showRuns(b.dataset.rf==='1')});
+  bg.querySelectorAll('[data-ro]').forEach(b=>b.onclick=()=>{bg.remove();const k=b.dataset.ro;k.startsWith('iqx:')?useIqx(k.slice(4)):openUser(k.slice(5))});
+  bg.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{const r=RUNLOG.find(x=>x.id===b.dataset.rv);bg.remove();
+    if(r.legacy){modal('Lần chạy theo cấu hình cũ',`<p>${esc(r.label)} · ${r.range}</p><div class="kpis" style="grid-template-columns:repeat(3,1fr)">${kpi('Tổng lợi nhuận',fmtP(r.k.tot),cls(r.k.tot))}${kpi('Sụt giảm lớn nhất',fmtP(r.k.mdd),'neg')}${kpi('Số giao dịch',r.k.closed)}</div><p class="sm mut">Chạy trên 1 mã theo cấu hình chung trước đây. Chỉ xem, không chạy lại.</p>`);return}
+    LASTRUN={sig:r.sig,res:r.res,label:r.label+' · chạy lúc '+r.at};RTAB='tr';PAGE=0;renderBt();renderRes();window.scrollTo(0,document.getElementById('res').offsetTop-70)});
+}
+function showHist(){
+  const o=DRAFT.origin;
+  if(MODE==='iqx'){const s=iqxById(IQXSEL);modal('Lịch sử phiên bản · Chiến lược IQX · '+esc(s.name),`<div class="tw"><table><tr><th>Phiên bản</th><th class="l">Xuất bản</th><th class="l">Lý do</th><th class="l"></th></tr>${s.versions.slice().reverse().map(v=>`<tr><td><b>v${v.v}</b>${v.v===s.cur?' <span class="pill iqx">hiện hành</span>':''}</td><td class="l">${v.at}</td><td class="l">${esc(v.reason)}</td><td class="l">${botTags({src:'iqx',id:s.id},v.v)}</td></tr>`).join('')}</table></div>`);return}
+  if(o.src==='new'){modal('Lịch sử bản','<p>Chiến lược mới chưa có bản nào. Chạy rồi bấm Lưu để tạo bản đầu tiên.</p>');return}
+  if(o.src==='iqx'){const s=iqxById(o.id);modal('Lịch sử bản · Chiến lược IQX · '+esc(s.name),`<div class="tw"><table><tr><th>Phiên bản</th><th class="l">Xuất bản</th><th class="l">Lý do</th><th class="l"></th></tr>${s.versions.slice().reverse().map(v=>`<tr><td><b>v${v.v}</b>${v.v===s.cur?' <span class="pill iqx">hiện hành</span>':''}</td><td class="l">${v.at}</td><td class="l">${esc(v.reason)}</td><td class="l">${botTags({src:'iqx',id:s.id},v.v)}</td></tr>`).join('')}</table></div><p class="sm mut">Chiến lược IQX do quản trị viên xuất bản. Muốn sửa, chỉnh bản nháp rồi lưu thành chiến lược của bạn.</p>`);return}
+  const u=userById(o.id);
+  const bg=modal('Lịch sử bản · '+esc(u.name),`<div class="tw"><table><tr><th>Bản</th><th class="l">Ghi chú</th><th class="l">Trên Bot</th><th class="l"></th></tr>${u.versions.slice().reverse().map(v=>`<tr><td class="l"><b>${v.at}</b>${v.v===latestV(u)?' <span class="pill">mới nhất</span>':''}</td><td class="l sm">${esc(v.note||'')}<div class="mut">Rổ ${UNI_LBL(v.ct.universe)} · giữ tối đa ${v.ct.hold}</div></td><td class="l">${botTags({src:'user',id:u.id},v.v)||'<span class="mut">—</span>'}</td>
+    <td class="l"><button class="btn sm" data-hopen="${v.v}">Mở</button>${v.v!==latestV(u)?` <button class="btn sm" data-hres="${v.v}">Khôi phục thành bản mới</button>`:''}</td></tr>`).join('')}</table></div>
+    <p class="sm mut">Mỗi lần Lưu tạo một bản mới; bản cũ giữ nguyên. Bot dùng bản mới nhất của chiến lược được chọn từ phiên kế tiếp.</p>`,null,true);
+  bg.querySelectorAll('[data-hopen]').forEach(b=>b.onclick=()=>{bg.remove();openUser(u.id,+b.dataset.hopen)});
+  bg.querySelectorAll('[data-hres]').forEach(b=>b.onclick=()=>{bg.remove();const src=userVer(u.id,+b.dataset.hres);
+    DRAFT={ct:clone(src.ct),origin:{src:'user',id:u.id,v:latestV(u)}};LASTRUN={sig:sig(DRAFT.ct),res:runBT(DRAFT.ct,$('fFrom').value,$('fTo').value),label:'Khôi phục từ bản '+src.at};
+    saveVer(false);u.versions[u.versions.length-1].note='Khôi phục từ bản '+src.at;renderAll()});
+}
+
+/* ============================================================
+   9. BOT
+   ============================================================ */
+let VIEW={src:'user',id:'u1'};
+function diffCt(a,b){const out=[];
+  if(UNI_LBL(a.universe)!==UNI_LBL(b.universe))out.push(['Rổ mã',UNI_LBL(a.universe),UNI_LBL(b.universe)]);
+  if(a.hold!==b.hold)out.push(['Giữ tối đa',a.hold+' phiên',b.hold+' phiên']);
+  ['buy','sell'].forEach(side=>{const L=x=>x[side].flatMap(cd=>cardTxt(cd).filter(l=>l.on).map(l=>IB[cd.ind].name+': '+l.t));const A=L(a),B=L(b);
+    A.filter(x=>!B.includes(x)).forEach(x=>out.push([side==='buy'?'Mua':'Bán',x,null]));B.filter(x=>!A.includes(x)).forEach(x=>out.push([side==='buy'?'Mua':'Bán',null,x]))});
+  return out}
+function showDiff(a,b,ta,tb){const d=diffCt(a.ct,b.ct);
+  modal('Khác biệt giữa hai bản',`<p class="sm mut">${esc(ta)} → ${esc(tb)}</p><div class="diff">${d.length?d.map(([k,x,y])=>`<div><b>${k}:</b> ${x?`<span class="rem">${esc(x)}</span>`:''} ${x&&y?'→':''} ${y?`<span class="add">${esc(y)}</span>`:''}</div>`).join(''):'<div class="mut">Hai bản giống nhau về điều kiện.</div>'}</div>`)}
+let BTAB='hold';
+const DEF_HOLD=30;
+function addSess(iso,n){const d=new Date(iso+'T00:00:00Z');let k=0;const st=n>=0?1:-1;while(k!==n){d.setUTCDate(d.getUTCDate()+st);const w=d.getUTCDay();if(w>0&&w<6)k+=st}return d.toISOString().slice(0,10)}
+// Vị thế Bot (minh họa). held = thực giữ (phiên mua = 0); counted = số phiên tính hạn (mốc P=23/10 cho vị thế mở trước chuyển đổi)
+let BH=[
+ {s:'HDB',q:500,cost:22550,px:22500,held:34,counted:11,src:'VN30'},
+ {s:'HPG',q:500,cost:20900,px:21200,held:10,counted:10,src:'VN30'},
+ {s:'MSN',q:100,cost:74200,px:73000,held:11,counted:11,src:'VN30'},
+ {s:'SHB',q:1100,cost:10800,px:10750,held:1,counted:1,src:'VN30'},
+ {s:'SSI',q:600,cost:19800,px:20400,held:9,counted:9,src:'VN30'},
+ {s:'TCB',q:300,cost:33800,px:33150,held:0,counted:0,src:'VN30'},
+ {s:'KDH',q:400,cost:31200,px:30800,held:52,counted:30,src:'VN100',susp:true}];
+let BSOLD=[
+ {s:'VPB',q:600,bd:'2026-10-21',sd:'2026-11-04',bp:19150,sp:20500,held:10,why:'Điều kiện Bán',both:false,N:30,st:'RSI + SMA20 · bản 05/11 20:02'},
+ {s:'ACB',q:400,bd:'2026-09-21',sd:'2026-11-03',bp:24100,sp:23500,held:31,counted:30,why:'Hết thời gian giữ',both:false,N:30,st:'RSI + SMA20 · bản 05/11 20:02'},
+ {s:'STB',q:200,bd:'2026-09-18',sd:'2026-10-30',bp:47800,sp:51300,held:30,why:'Điều kiện Bán',both:true,N:30,st:'RSI + SMA20 · bản 05/11 20:02'}];
+let BLOG=[
+ {d:'2026-11-06',st:'RSI + SMA20 · bản 05/11 20:02',uni:'VN30 · 30 mã',t:'Mua TCB · 1 đến hạn chưa khớp (KDH tạm ngừng giao dịch)'},
+ {d:'2026-11-05',st:'RSI + SMA20 · bản 05/11 20:02',uni:'VN30 · 30 mã',t:'Mua SHB · 1 vị thế có tín hiệu Bán chờ T+2'},
+ {d:'2026-11-04',st:'RSI + SMA20 · bản 22/10 09:00',uni:'VN30 · 30 mã',t:'Bán VPB (Điều kiện Bán)'}];
+function renderBot(){
+  const L=resolve(BOT.last),Nx=resolve(BOT.next);
+  $('petChips').innerHTML=`<span class="pill">Chiến lược: ${L?(L.iqx?'<span class="badge">IQX</span> ':'')+esc(L.name):'chưa chọn'}</span><span class="pill">${BH.length} mã đang giữ</span>`;
+  const nm=X=>X?`${X.iqx?'<span class="badge">IQX</span> ':''}<b>${esc(X.name)}</b> · <span class="mut">${X.lbl}</span>`:'<span class="mut">Chưa chọn chiến lược</span>';
+  const same=(!L&&!Nx)||(sameStrat(BOT.last,BOT.next)&&L.v===Nx.v);
+  let newer='';if(Nx&&Nx.iqx){const s=iqxById(Nx.ref.id);if(s.cur>Nx.v)newer=`<div class="info" style="margin-top:8px">Chiến lược IQX · <b>${esc(s.name)}</b> có bản <b>v${s.cur}</b>.
+    <div class="row" style="margin-top:6px"><button class="btn sm" id="iqxDiff">Xem khác biệt</button><button class="btn sm pri" id="iqxUp">Cập nhật từ phiên ${sessLbl(SESS[SI+1])}</button></div></div>`}
+  $('sched').innerHTML=`<span class="h2">Lịch phiên</span>
+   <div class="ln"><div><div class="cap">Phiên gần nhất</div><b>${sessLbl(SESS[SI])}</b></div><div>${nm(L)}</div></div>
+   <div class="ln"><div><div class="cap">Phiên tới</div><b>${sessLbl(SESS[SI+1])}</b></div><div>${!Nx?'<span class="mut">Chưa chọn chiến lược · chọn ở danh sách bên phải</span>':same?`${nm(Nx)} <span class="pill">không đổi</span>`:
+     `${nm(Nx)} <span class="pill pri">● có thay đổi</span>
+      <div class="row" style="margin-top:6px">${L?'<button class="btn sm" id="schDiff">Xem khác biệt</button><button class="btn sm" id="schKeep">Giữ như phiên gần nhất</button>':''}</div>`}${newer}</div></div>`;
+  if($('schDiff'))$('schDiff').onclick=()=>showDiff(L,Nx,`${L.name} · ${L.lbl}`,`${Nx.name} · ${Nx.lbl}`);
+  if($('schKeep'))$('schKeep').onclick=()=>{const bg=modal('Giữ như phiên gần nhất?',`<p>Phiên ${sessLbl(SESS[SI+1])} dùng <b>${esc(L.name)} · ${L.lbl}</b>.</p>${impactHtml(L.ct.hold)}`,[{label:'Hủy'},{label:'Giữ như phiên gần nhất',cls:'pri',fn:()=>{BOT.next=clone(BOT.last);toast('Phiên tới giữ như phiên gần nhất.');renderAll()}}]);guard(bg)};
+  if($('iqxDiff'))$('iqxDiff').onclick=()=>{const s=iqxById(Nx.ref.id);showDiff(Nx,{ct:iqxCt(s.id,s.cur)},`v${Nx.v}`,`v${s.cur}`)};
+  if($('iqxUp'))$('iqxUp').onclick=()=>{const s=iqxById(Nx.ref.id);const ct=iqxCt(s.id,s.cur);const bg=modal(`Cập nhật Chiến lược IQX · ${esc(s.name)} lên v${s.cur}?`,`<p>Từ phiên ${sessLbl(SESS[SI+1])}, Bot dùng v${s.cur}.</p>${impactHtml(ct.hold)}`,[{label:'Hủy'},{label:'Cập nhật',cls:'pri',fn:()=>{BOT.next={src:'iqx',id:s.id,v:s.cur};toast(`Bot dùng v${s.cur} từ phiên ${sessLbl(SESS[SI+1])}.`);renderAll()}}]);guard(bg)};
+  const it=(ref,name,iqx,hid)=>{const run=sameStrat(ref,BOT.last),nxt=sameStrat(ref,BOT.next);
+    const tags=(run?'<span class="pill ok">▶ Đang chạy</span> ':'')+(nxt&&!sameStrat(BOT.next,BOT.last)?`<span class="pill pri">→ Từ phiên ${sessLbl(SESS[SI+1])}</span>`:'');
+    return `<div class="srow ${run?'run':''}"><div class="top">${iqx?'<span class="badge">IQX</span>':''}<span class="nm">${esc(name)}</span>
+      <button class="btn sm" data-det="${ref.src}:${ref.id}">Chi tiết</button>${nxt||hid?'':`<button class="btn sm pri" data-use="${ref.src}:${ref.id}">Dùng</button>`}</div><div class="tags">${tags}${hid?'<span class="pill warn">IQX đã ngừng cung cấp</span>':''}</div></div>`};
+  $('lstIqx').innerHTML=IQX.filter(s=>!s.hidden||sameStrat({src:'iqx',id:s.id},BOT.last)||sameStrat({src:'iqx',id:s.id},BOT.next)).map(s=>it({src:'iqx',id:s.id},s.name,1,s.hidden)).join('');
+  $('lstMe').innerHTML=USER.map(u=>it({src:'user',id:u.id},u.name,0)).join('')||'<div class="empty">Chưa có chiến lược nào.</div>';
+  renderBotTbl();renderNoti();
+}
+function posState(p,N){const last=SESS[SI];
+  if(p.held<2)return `<span class="pill warn">Chờ T+2</span><small>Bán được từ ${dm(addSess(last,2-p.held))}</small>`;
+  if(p.counted>=N)return p.susp?`<span class="pill warn">Đến hạn, chưa khớp</span><small>Tạm ngừng giao dịch · thử lại mỗi phiên</small>`:`<span class="pill" style="background:var(--bad-bg);color:var(--bad)">Đến hạn</span><small>Bán ở phiên xử lý kế tiếp</small>`;
+  return `<span class="pill pri">Có thể bán</span><small>Đến hạn ${dm(addSess(last,N-p.counted))}</small>`}
+function renderBotTbl(){
+  document.querySelectorAll('[data-bt]').forEach(b=>b.classList.toggle('on',b.dataset.bt===BTAB));
+  const T=$('botTbl'),L=resolve(BOT.last),N=L?L.ct.hold:DEF_HOLD,uni=L?uniSyms(L.ct.universe):[];
+  const pv=(v,p)=>`<span class="${cls(v)}">${v>0?'+':''}${fmtN(Math.round(v))} đ</span><div class="sm ${cls(v)}">${fmtP(p)}</div>`;
+  if(BTAB==='hold')T.innerHTML=BH.length?`<tr><th>Mã</th><th>Số CP</th><th>Giá vốn</th><th>Giá tham chiếu</th><th>Lãi / Lỗ</th><th>Đã giữ</th><th class="l">Trạng thái bán</th><th class="l">Nguồn mua lúc mở</th><th class="l">Phạm vi hiện tại</th></tr>`+
+    BH.map((p,i)=>{const v=p.q*p.px-p.q*p.cost;return `<tr class="click" data-pos="${i}"><td><b style="color:var(--pri)">${p.s}</b></td><td>${fmtN(p.q)}</td><td>${fmtN(p.cost)} đ</td><td>${fmtN(p.px)} đ</td><td>${pv(v,(p.px/p.cost-1)*100)}</td>
+      <td class="stk">${p.counted} / ${N} phiên${p.held!==p.counted?`<small>Thực giữ ${p.held} phiên</small>`:''}</td><td class="l stk">${posState(p,N)}</td><td class="l">${p.src}</td><td class="l">${uni.includes(p.s)?'<span class="pill pri">● Trong nguồn mua</span>':'<span class="pill warn">Ngoài nguồn mua</span>'}</td></tr>`}).join('')
+    :'<tr><td class="l mut" style="padding:18px">Chưa có cổ phiếu đang nắm giữ.</td></tr>';
+  else if(BTAB==='hist')T.innerHTML=BSOLD.length?`<tr><th>Mã</th><th>Số CP</th><th>Ngày mua</th><th>Ngày bán</th><th>Giá mua</th><th>Giá bán</th><th>Thời gian giữ</th><th>Lãi / Lỗ</th><th class="l">Lý do bán</th><th class="l">Chiến lược · bản</th><th></th></tr>`+
+    BSOLD.map((x,i)=>{const v=x.q*x.sp*(1-FS)-x.q*x.bp*(1+FB);return `<tr><td><b style="color:var(--pri)">${x.s}</b></td><td>${fmtN(x.q)}</td><td>${dm(x.bd)}</td><td>${dm(x.sd)}</td><td>${fmtN(x.bp)} đ</td><td>${fmtN(x.sp)} đ</td><td>${x.held} phiên</td><td>${pv(v,v/(x.q*x.bp*(1+FB))*100)}</td>
+      <td class="l">${x.why==='Hết thời gian giữ'?'<span class="pill warn">Hết thời gian giữ</span>':'<span class="pill">Điều kiện Bán</span>'}${x.both?' <span class="sm mut">(cùng đến hạn)</span>':''}</td><td class="l sm">${esc(x.st)}</td><td><button class="btn ghost sm" data-sold="${i}">Chi tiết</button></td></tr>`}).join('')
+    :'<tr><td class="l mut" style="padding:18px">Chưa có giao dịch đã bán.</td></tr>';
+  else T.innerHTML=`<tr><th class="l">Phiên</th><th class="l">Chiến lược · bản</th><th class="l">Rổ</th><th class="l">Kết quả</th></tr>`+
+    BLOG.map(x=>`<tr><td class="l">${dm(x.d)}</td><td class="l sm">${esc(x.st)}</td><td class="l sm">${esc(x.uni)}</td><td class="l sm">${esc(x.t)}</td></tr>`).join('');
+}
+function posDetail(i){const p=BH[i],L=resolve(BOT.last),N=L?L.ct.hold:DEF_HOLD,last=SESS[SI],entry=addSess(last,-p.held);
+  const rows=[['Phiên mua',dmy(entry)],['Bán được từ (T+2)',dmy(addSess(entry,2))],['Đã giữ',p.held+' phiên'],...(p.held!==p.counted?[['Mốc tính hạn',dmy(addSess(last,-p.counted))+' (phiên áp dụng giới hạn)']]:[]),['Giới hạn',N+' phiên · '+(L?esc(L.name):'mặc định')],['Đến hạn',p.counted>=N?(p.susp?'Đến hạn, chưa khớp':'Đã đến hạn'):dmy(addSess(last,N-p.counted))],['Nguồn mua lúc mở',p.src]];
+  modal(p.s+' · chi tiết vị thế',`<table>${rows.map(([a,b])=>`<tr><td class="l mut">${a}</td><td class="l"><b>${b}</b></td></tr>`).join('')}</table>`)}
+function soldDetail(i){const x=BSOLD[i];modal(x.s+' · chi tiết giao dịch Bán',`<table>${[['Phiên mua',dmy(x.bd)],['Phiên bán',dmy(x.sd)],['Thời gian giữ',x.held+' phiên'],['Lý do bán',x.why+(x.both?' (cùng đến hạn)':'')],['Giới hạn khi bán',x.N+' phiên'],['Chiến lược · bản',esc(x.st)]].map(([a,b])=>`<tr><td class="l mut">${a}</td><td class="l"><b>${b}</b></td></tr>`).join('')}</table>`)}
+function botRules(){modal('Nguyên tắc Bot',`<table>${[['Vốn khởi tạo','100.000.000 đồng · tài khoản riêng'],['Chiến lược','Chọn ở Bot · tạo và sửa ở Backtest · Chiến lược IQX hoặc chiến lược của bạn'],['Nguồn mua mới','Rổ của chiến lược: VN30, VN100 hoặc danh mục đã lưu · chỉ mã VN100 · ưu tiên GTGD TB20 cao'],['Mua','AND các điều kiện Mua của chiến lược'],['Bán','Khi điều kiện Bán đạt hoặc hết thời gian giữ · mọi mã đang giữ'],['Giữ tối đa','Theo chiến lược · 3 đến 250 phiên · phiên mua là phiên 0'],['Ngân sách mỗi lần mua','12% giá trị danh mục tham chiếu, gồm phí'],['Mua mới mỗi phiên','Tối đa 2 lần mua thành công'],['Tỷ trọng khi mua','Tối đa 30% mỗi mã'],['Mã đang nắm giữ','Không mua thêm'],['Khớp lệnh','Giá đóng cửa cùng phiên'],['Thanh toán','T+2 · cổ phiếu mua phiên T bán được từ phiên T+2'],['Đổi chiến lược','Có hiệu lực từ phiên tới · không tạo lệnh ngay'],['Cắt lỗ / chốt lời tự động','Không sử dụng'],['Thông báo','Khi bản tin lên web và khi phiên Bot có lệnh khớp']].map(([a,b])=>`<tr><td class="l mut">${a}</td><td class="l"><b>${b}</b></td></tr>`).join('')}</table>`)}
+
+/* ---------- THÔNG BÁO (giữ nguyên Bot v1.2 §8) ---------- */
+const NT={all:true,bt:true,bot:true,mail:false,list:[{id:'bt-2026-11-06',k:'bt',t1:'Bản tin cuối phiên 06/11',t2:'VN-Index 1.755,61 (−0,63%) · 14 mã trong 3 bộ lọc',read:false}]};
+function renderNoti(){
+  const sw=(k,on,dis)=>`<button class="swb ${on?'on':''}" data-ntx="${k}" role="switch" aria-checked="${on}" ${dis?'disabled':''}></button>`;
+  $('notiCard').innerHTML=`<div class="ntrow"><span class="cap">🔔 Thông báo</span>${sw('all',NT.all)}</div><div class="${NT.all?'':'ntoff'}">
+   <div class="ntrow"><span>Bản tin cuối phiên</span>${sw('bt',NT.bt,!NT.all)}</div><div class="ntrow"><span>Bot giao dịch</span>${sw('bot',NT.bot,!NT.all)}</div>
+   <div class="ntrow"><span class="sm mut">Gửi qua</span><span class="row" style="gap:6px"><span class="pill pri">Trên web</span><button class="pill ${NT.mail?'pri':''}" style="border:0" data-ntx="mail" ${NT.all?'':'disabled'}>Email${NT.mail?' ✓':''}</button></span></div></div>`;
+  bellRender()}
+function bellRender(){const u=NT.list.filter(n=>!n.read).length;$('bdot').textContent=u||'';const p=$('ntPop');if(p.classList.contains('hide'))return;
+  p.innerHTML=`<div class="ph"><b>Thông báo</b><button class="btn ghost sm" data-ntx="readall">Đánh dấu đã đọc</button></div>${NT.list.length?NT.list.map((n,i)=>`<button class="nti ${n.read?'read':''}" data-ntx="open" data-i="${i}"><span>${n.k==='bt'?'📰':'🤖'}</span><span class="tx"><b>${esc(n.t1)}</b><span>${esc(n.t2)}</span></span><i class="u"></i></button>`).join(''):'<div class="empty" style="margin:10px">Chưa có thông báo.</div>'}<div class="pf"><button class="btn ghost sm" data-ntx="toset">Cài đặt thông báo</button></div>`}
+function ntPush(n){if(NT.list.some(x=>x.id===n.id))return false;NT.list.unshift(n);NT.list=NT.list.slice(0,50);bellRender();return true}
+function emailModal(k){const d=dm(SESS[SI]);
+  const bt=`<div class="em"><div class="eh">Từ: <b>IQX</b> &lt;bantin@iqx.vn&gt;<br>Tiêu đề: <b>Bản tin cuối phiên ${d}: VN-Index 1.755,61 (−0,63%)</b></div><div class="eb"><h4>Bản tin cuối phiên · ${d}</h4>VN-Index đóng cửa <b>1.755,61</b> điểm, <b class="neg">−11,13 (−0,63%)</b>. Khối lượng 516 triệu cp.<br>Bộ lọc cổ phiếu hôm nay: <b>14 mã</b> trong 3 bộ lọc.<br><span class="cta">Đọc bản tin</span></div><div class="ef">Bạn nhận email này vì đã bật thông báo Bản tin cuối phiên. <u>Tắt thông báo này</u> · Không phải khuyến nghị đầu tư.</div></div>`;
+  const bot=`<div class="em"><div class="eh">Từ: <b>IQX</b> &lt;bot@iqx.vn&gt;<br>Tiêu đề: <b>Bot giao dịch phiên ${d}: mua FPT, bán KDH</b></div><div class="eb"><h4>Bot giao dịch · phiên ${d}</h4><div class="tw"><table><tr><th class="l">Lệnh</th><th class="l">Mã</th><th>Giá khớp</th><th>Khối lượng</th><th class="l">Lý do</th></tr><tr><td class="l pos">Mua</td><td class="l"><b>FPT</b></td><td>98.700</td><td>100</td><td class="l">Điều kiện Mua</td></tr><tr><td class="l neg">Bán</td><td class="l"><b>KDH</b></td><td>30.800</td><td>400</td><td class="l">Hết thời gian giữ</td></tr></table></div>Chiến lược: <b>${esc((resolve(BOT.last)||{name:'—'}).name)}</b> · Tài sản Bot: <b>96,6 triệu</b>.<br><span class="cta">Xem Bot</span></div><div class="ef">Bạn nhận email này vì đã bật thông báo Bot giao dịch. <u>Tắt thông báo này</u> · Giao dịch mô phỏng, không phải khuyến nghị đầu tư.</div></div>`;
+  const bg=modal('Mẫu email',`<div class="row" style="margin-bottom:10px"><button class="btn sm ${k==='bt'?'pri':''}" data-em="bt">Bản tin cuối phiên</button><button class="btn sm ${k==='bot'?'pri':''}" data-em="bot">Bot giao dịch</button></div>${k==='bt'?bt:bot}`,null,true);
+  bg.querySelectorAll('[data-em]').forEach(b=>b.onclick=()=>{bg.remove();emailModal(b.dataset.em)})}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-ntx]');const pop=$('ntPop');
+  if(!t){if(!pop.classList.contains('hide')&&!e.target.closest('#ntPop')&&!e.target.closest('#bell'))pop.classList.add('hide');return}
+  const a=t.dataset.ntx;
+  if(a==='all'){NT.all=!NT.all;if(NT.all&&!NT.bt&&!NT.bot)NT.bt=NT.bot=true;renderNoti();toast(NT.all?'Đã bật thông báo.':'Đã tắt mọi thông báo.')}
+  else if(a==='bt'||a==='bot'){NT[a]=!NT[a];if(!NT.bt&&!NT.bot)NT.all=false;renderNoti()}
+  else if(a==='mail'){NT.mail=!NT.mail;renderNoti();toast(NT.mail?'Đã bật gửi qua email.':'Đã tắt gửi qua email.')}
+  else if(a==='readall'){NT.list.forEach(n=>n.read=true);bellRender()}
+  else if(a==='open'){const n=NT.list[+t.dataset.i];n.read=true;pop.classList.add('hide');bellRender();if(n.k==='bot'){BTAB='hist';go('bot');renderBotTbl()}else toast('Mở Phân tích thị trường › Bản tin '+n.t1.slice(-5)+'.')}
+  else if(a==='toset'){pop.classList.add('hide');go('bot');setTimeout(()=>$('notiCard').scrollIntoView({block:'center'}),30)}
+});
+$('bell').onclick=()=>{const p=$('ntPop');p.classList.toggle('hide');bellRender()};
+
+/* ============================================================
+   10. QUẢN TRỊ · MẪU IQX
+   ============================================================ */
+function renderAdm(){
+  $('admTbl').innerHTML=`<tr><th class="l">Thứ tự</th><th class="l">Tên</th><th class="l">Rổ mã</th><th>Giữ tối đa</th><th>Phiên bản</th><th class="l">Trạng thái</th><th class="l">Thao tác</th></tr>`+
+   IQX.map((s,i)=>{const c=iqxCt(s.id);return `<tr><td class="l">${i+1}</td><td class="l"><span class="badge">IQX</span> <b>${esc(s.name)}</b><div class="sm mut">${esc(s.idea)}</div></td><td class="l">${UNI_LBL(c.universe)}</td><td>${c.hold} phiên</td><td>v${s.cur}</td><td class="l">${s.hidden?'<span class="pill">Đã ẩn</span>':'<span class="pill ok">Đang hiện</span>'}</td>
+   <td class="l"><button class="btn sm" data-aed="${s.id}">Sửa</button> <button class="btn sm" data-ahide="${s.id}">${s.hidden?'Hiện':'Ẩn'}</button> <button class="btn sm" data-ahist="${s.id}">Lịch sử</button></td></tr>`}).join('');
+}
+function admHide(id){const s=iqxById(id);const h=!s.hidden;
+  modal(`${h?'Ẩn':'Hiện'} Chiến lược IQX · ${esc(s.name)}?`,`<p>${h?'Mục này biến mất khỏi tab IQX của Backtest và danh sách chọn của Bot. <b>Bot đang chạy chiến lược này vẫn chạy tiếp</b> phiên bản đã chọn, có nhãn "IQX đã ngừng cung cấp"; người dùng không chọn mới được.':'Mục hiện lại với phiên bản hiện hành.'}</p><div class="fld"><label>Lý do (bắt buộc)</label><input id="hR"></div><div id="hErr" class="lock hide" style="margin-top:8px"></div>`,
+   [{label:'Hủy'},{label:h?'Ẩn':'Hiện',cls:'pri',fn:bg=>{const r=bg.querySelector('#hR').value.trim();if(!r){const e=bg.querySelector('#hErr');e.textContent='Nhập lý do.';e.classList.remove('hide');return false}
+     s.hidden=h;s.versions[s.versions.length-1].log=(s.versions[s.versions.length-1].log||[]).concat([(h?'Ẩn':'Hiện')+' · '+r]);toast(`Đã ${h?'ẩn':'hiện'} ${s.name}.`);renderAll()}}]);}
+function admEdit(id){const s=iqxById(id),c=iqxCt(id);
+  modal(`Soạn Chiến lược IQX · ${esc(s.name)}`,`<div class="sm mut" style="margin-bottom:10px">Đang hiện với người dùng · v${s.cur}. Điều kiện Mua/Bán soạn bằng đúng form Backtest (spec Tab IQX §5.3).</div>
+   <div class="setup" style="grid-template-columns:1fr 1fr"><div class="fld"><label>Rổ mã</label><select id="aU"><option value="vn30" ${c.universe.type==='vn30'?'selected':''}>VN30</option><option value="vn100" ${c.universe.type==='vn100'?'selected':''}>VN100</option></select></div>
+   <div class="fld"><label>Giữ tối đa (3–250 phiên)</label><input id="aH" type="number" min="3" max="250" value="${c.hold}"></div></div>
+   <div class="fld" style="margin-top:10px"><label>Lý do thay đổi (bắt buộc)</label><input id="aR" placeholder="Ví dụ: Nới giữ tối đa cho phù hợp xu hướng trung hạn"></div>
+   <div id="aErr" class="lock hide" style="margin-top:8px"></div>
+   <p class="sm mut">Xuất bản tạo v${s.cur+1}. Người dùng thấy phiên bản mới ngay trong tab IQX. Bot đang dùng v${s.cur} <b>không đổi theo</b>; người dùng thấy thông báo "có bản mới" ở Lịch phiên và tự bấm Cập nhật.</p>`,
+   [{label:'Hủy'},{label:'Xuất bản…',cls:'pri',fn:bg=>{const h=Number(bg.querySelector('#aH').value),r=bg.querySelector('#aR').value.trim(),e=bg.querySelector('#aErr');
+     const err=!Number.isInteger(h)||h<3||h>250?'Giữ tối đa phải từ 3 đến 250 phiên, số nguyên.':!r?'Nhập lý do thay đổi.':'';if(err){e.textContent=err;e.classList.remove('hide');return false}
+     const ct=clone(c);ct.universe={type:bg.querySelector('#aU').value};ct.hold=h;
+     if(sig(ct)===sig(c)){e.textContent='Chưa có thay đổi so với v'+s.cur+'.';e.classList.remove('hide');return false}
+     s.versions.push({v:s.cur+1,at:nowLabel(),reason:r,ct});s.cur++;toast(`Đã xuất bản Chiến lược IQX · ${s.name} v${s.cur}.`);renderAll()}}]);
+}
+function admHist(id){const s=iqxById(id);modal('Lịch sử · '+esc(s.name),`<div class="tw"><table><tr><th>Phiên bản</th><th class="l">Thời điểm</th><th class="l">Rổ · giữ tối đa</th><th class="l">Lý do</th></tr>${s.versions.slice().reverse().map(v=>`<tr><td>v${v.v}</td><td class="l">${v.at}</td><td class="l">${UNI_LBL(v.ct.universe)} · ${v.ct.hold} phiên</td><td class="l">${esc(v.reason)}</td></tr>`).join('')}</table></div>`)}
+
+/* ============================================================
+   11. ĐIỀU HƯỚNG, SỰ KIỆN
+   ============================================================ */
+function go(pg){document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('on',b.dataset.pg===pg));['bt','bot','adm'].forEach(p=>$('pg-'+p).classList.toggle('hide',p!==pg));window.scrollTo(0,0)}
+function renderAll(){renderBt();renderRes();renderBot();renderAdm()}
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.pg));
+$('libQ').oninput=renderLib;
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{MODE=b.dataset.mode;renderBt();renderRes()});
+document.addEventListener('click',e=>{
+  const q=e.target.closest('[data-iqxsel]');if(q){useIqx(q.dataset.iqxsel);return}
+  const t=e.target.closest('button,tr');if(!t)return;const d=t.dataset;
+  if(d.new){$('btPickDd')&&$('btPickDd').classList.add('hide');newDraft()}
+  else if(d.pickopen){$('btPickDd').classList.add('hide');openUser(d.pickopen)}
+  else if(d.del){$('btPickDd').classList.add('hide');delStrat(d.del)}
+  else if(d.iqx)useIqx(d.iqx);
+  else if(d.open)openUser(d.open);
+  else if(d.add){const [side,ind]=d.add.split(':');const i=DRAFT.ct[side].findIndex(c=>c.ind===ind);if(i>=0)editCard(side,i,false);else{DRAFT.ct[side].push(mkCard(ind,side));renderBt();editCard(side,DRAFT.ct[side].length-1,true)}}
+  else if(d.ed){const [s,i]=d.ed.split(':');editCard(s,+i,false)}
+  else if(d.rm){const [s,i]=d.rm.split(':');DRAFT.ct[s].splice(+i,1);renderBt()}
+  else if(d.sv)onSave(d.sv);
+  else if(d.rt){RTAB=d.rt;PAGE=0;renderRes()}
+  else if(d.pg&&t.classList.contains('btn')){PAGE+=+d.pg;renderRBody()}
+  else if(d.sym&&LASTRUN)symChart(d.sym);
+  else if(d.det){const [src,id]=d.det.split(':');go('bt');src==='iqx'?useIqx(id):openUser(id)}
+  else if(d.use){const [src,id]=d.use.split(':');if(src==='iqx'){const x=iqxById(id);setBot({src,id,v:x.cur},'Chiến lược IQX · '+x.name)}else setBot({src,id,v:'latest'},userById(id).name)}
+  else if(d.bt){BTAB=d.bt;renderBotTbl()}
+  else if(d.pos!=null&&d.pos!=='')posDetail(+d.pos);
+  else if(d.sold!=null&&d.sold!=='')soldDetail(+d.sold);
+  else if(d.aed)admEdit(d.aed);
+  else if(d.ahist)admHist(d.ahist);
+  else if(d.ahide)admHide(d.ahide);
+});
+document.addEventListener('mousedown',e=>{const m=e.target.closest('.menu');document.querySelectorAll('.dd').forEach(d=>{if(!m||!m.contains(d))d.classList.add('hide')})});
+$('btSave').onclick=saveMenu;
+$('fUni').onchange=e=>{const v=e.target.value;DRAFT.ct.universe=v.startsWith('L:')?{type:'list',listId:v.slice(2)}:{type:v};renderBt()};
+$('fHold').onchange=e=>{const v=Number(e.target.value);if(!Number.isInteger(v)||v<3||v>250){toast('Giữ tối đa phải từ 3 đến 250 phiên, số nguyên.');e.target.value=DRAFT.ct.hold;return}DRAFT.ct.hold=v;renderBt()};
+$('fFrom').min=$('fTo').min=DATES[450];$('fFrom').max=$('fTo').max='2026-11-06';$('fFrom').value='2024-11-06';$('fTo').value='2026-11-06';
+$('btRun').onclick=()=>{
+  const f=$('fFrom').value,t=$('fTo').value;if(!f||!t||t<=f){toast('Đến ngày phải sau Từ ngày.');return}
+  $('btRun').disabled=true;$('runMsg').textContent='Đang chạy…';
+  setTimeout(()=>{const ct=curCt();const res=runBT(ct,f,t);if(res.err){toast(res.err);renderRunMsg();return}
+    const o=DRAFT.origin;const label=MODE==='iqx'?'Chiến lược IQX · '+iqxById(IQXSEL).name+' v'+iqxById(IQXSEL).cur:dirty()?'Bản nháp'+(o.src==='iqx'?' · từ Chiến lược IQX '+iqxById(o.id).name+' v'+o.v:o.src==='user'?' · sửa từ '+userById(o.id).name:''):(o.src==='iqx'?'Chiến lược IQX · '+iqxById(o.id).name+' v'+o.v:userById(o.id).name+' · bản '+userVer(o.id,o.v).at);
+    LASTRUN={sig:sig(ct),res,label};RUNLOG.unshift({id:'r'+RUNLOG.length+'_'+Date.now()%1e5,at:nowLabel(),key:runKey(),label,sig:sig(ct),res,uni:UNI_LBL(ct.universe)+' · '+res.syms.length+' mã',range:dmy(res.from)+' – '+dmy(res.to),k:res.k});RTAB='tr';PAGE=0;renderRunMsg();renderRes();renderBt()},30);
+};
+$('botNew').onclick=()=>{go('bt');newDraft()};
+$('botRules').onclick=botRules;
+let DEMO_TRADED=false;
+$('demoNext').onclick=()=>{
+  if(SI+2>=SESS.length){toast('Hết lịch mô phỏng.');return}
+  const Nx=resolve(BOT.next);
+  if(Nx){BOT.last={src:BOT.next.src,id:BOT.next.id,v:Nx.v};BOT.next=BOT.next.src==='user'?{src:'user',id:BOT.next.id,v:'latest'}:{...BOT.last}}
+  SI++;const d=SESS[SI],N=Nx?Nx.ct.hold:DEF_HOLD,stl=Nx?(Nx.iqx?'Chiến lược IQX · ':'')+Nx.name+' · '+Nx.lbl:'Chưa chọn chiến lược';
+  BH.forEach(p=>{p.held++;p.counted++});
+  const sells=[],buys=[];
+  // minh họa: KDH có giá lại → bán do hết thời gian giữ; vị thế đủ hạn mới cũng bán
+  BH.filter(p=>p.held>=2&&p.counted>=N).forEach(p=>{p.susp=false;sells.push(p)});
+  sells.forEach(p=>{BH=BH.filter(x=>x!==p);BSOLD.unshift({s:p.s,q:p.q,bd:addSess(d,-p.held),sd:d,bp:p.cost,sp:p.px,held:p.held,why:'Hết thời gian giữ',both:false,N,st:stl})});
+  if(Nx&&!DEMO_TRADED){BH.push({s:'FPT',q:100,cost:98700,px:98700,held:0,counted:0,src:UNI_LBL(Nx.ct.universe)});buys.push('FPT');DEMO_TRADED=true}
+  const t=[buys.length?'Mua '+buys.join(', '):'',sells.length?'Bán '+sells.map(p=>p.s+' (hết thời gian giữ)').join(', '):''].filter(Boolean).join(' · ');
+  BLOG.unshift({d,st:stl,uni:Nx?UNI_LBL(Nx.ct.universe)+' · '+uniSyms(Nx.ct.universe).length+' mã':'—',t:t||(Nx?'Không có lệnh':'Chưa chọn chiến lược · không mua mới')});
+  if(t&&NT.all&&NT.bot&&ntPush({id:'bot-'+d,k:'bot',t1:'Bot giao dịch · phiên '+dm(d),t2:t,read:false})&&NT.mail)setTimeout(()=>toast('Đã gửi kèm email: Bot giao dịch phiên '+dmy(d)+'.'),3300);
+  toast(`Đã sang phiên ${sessLbl(d)}.`+(t?' '+t+'.':''));renderAll()};
+$('demoBulletin').onclick=()=>{const d=SESS[SI];if(!(NT.all&&NT.bt)){toast('Bản tin đã Public. Thông báo Bản tin đang tắt.');return}
+  if(ntPush({id:'bt-'+d,k:'bt',t1:'Bản tin cuối phiên '+dm(d),t2:'VN-Index 1.761,20 (+0,32%) · 12 mã trong 3 bộ lọc',read:false}))toast('Bản tin phiên '+dm(d)+' đã Public: có 1 thông báo.');else toast('Bản tin phiên '+dm(d)+' đã có thông báo, không gửi lại.')};
+$('demoEmail').onclick=()=>emailModal('bot');
+$('demoNew').onclick=()=>{BOT.last=null;BOT.next=null;BH=[];BSOLD=[];BLOG=[];toast('Tài khoản Bot mới: chưa chọn chiến lược.');renderAll()};
+
+// khởi tạo: mở chiến lược Bot đang dùng ở phiên tới
+DRAFT={ct:clone(userVer('u1',2).ct),origin:{src:'user',id:'u1',v:2}};
+renderAll();
+</script>
+</body>
+</html>
