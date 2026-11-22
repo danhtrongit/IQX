@@ -1317,6 +1317,21 @@
       "requestType": "GetMarketTrackingData",
       "responseType": "GetMarketTrackingResponses"
     },
+    "GET /api/v2/me/notification-settings": {
+      "operationId": "notificationSettings",
+      "requestType": "NotificationSettingsData",
+      "responseType": "NotificationSettingsResponses"
+    },
+    "GET /api/v2/me/notifications": {
+      "operationId": "notificationList",
+      "requestType": "NotificationListData",
+      "responseType": "NotificationListResponses"
+    },
+    "GET /api/v2/me/notifications/unread-count": {
+      "operationId": "notificationUnreadCount",
+      "requestType": "NotificationUnreadCountData",
+      "responseType": "NotificationUnreadCountResponses"
+    },
     "GET /api/v2/media/{token}": {
       "operationId": "MediaController_download",
       "requestType": "MediaControllerDownloadData",
@@ -2502,6 +2517,16 @@
       "requestType": "PushMarketBulletinSlotData",
       "responseType": "PushMarketBulletinSlotResponses"
     },
+    "POST /api/v2/me/notifications/read": {
+      "operationId": "notificationMarkRead",
+      "requestType": "NotificationMarkReadData",
+      "responseType": "NotificationMarkReadResponses"
+    },
+    "POST /api/v2/notifications/unsubscribe": {
+      "operationId": "notificationUnsubscribe",
+      "requestType": "NotificationUnsubscribeData",
+      "responseType": "NotificationUnsubscribeResponses"
+    },
     "POST /api/v2/portfolio-manager/analyze": {
       "operationId": "analyzePortfolioV2",
       "requestType": "AnalyzePortfolioV2Data",
@@ -2891,6 +2916,11 @@
       "operationId": "flashbackSaveIndicators",
       "requestType": "FlashbackSaveIndicatorsData",
       "responseType": "FlashbackSaveIndicatorsResponses"
+    },
+    "PUT /api/v2/me/notification-settings": {
+      "operationId": "notificationSaveSettings",
+      "requestType": "NotificationSaveSettingsData",
+      "responseType": "NotificationSaveSettingsResponses"
     },
     "PUT /api/v2/practice/{indicatorId}/draft": {
       "operationId": "practiceSaveDraft",

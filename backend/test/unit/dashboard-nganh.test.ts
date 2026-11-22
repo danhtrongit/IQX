@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DASHBOARD_INDUSTRY_CHARTS } from '../../src/modules/dashboard/dashboard.catalog.js';
-import { ICB_RETRY_MS, ICB_TTL_MS, IcbDirectory } from '../../src/modules/dashboard/dashboard.icb.js';
+import {
+  ICB_RETRY_MS,
+  ICB_TTL_MS,
+  IcbDirectory,
+} from '../../src/modules/dashboard/dashboard.icb.js';
 import { NGANH, nganhOf, type Nganh } from '../../src/modules/dashboard/dashboard.nganh.js';
 import type { DashboardSettingsStore } from '../../src/modules/dashboard/dashboard.repository.js';
 import { DashboardService } from '../../src/modules/dashboard/dashboard.service.js';
@@ -15,7 +19,13 @@ type IcbRow = { symbol: string; lv2: string | null; lv4: string | null };
  * ICB codes of the 21 test symbols as VCI returned them on 2026-11-22 (`v2/company/search-bar`),
  * with the statement template of each one and the industry the spec expects (S §0, PLAN §4).
  */
-const SYMBOLS: readonly [symbol: string, template: Industry, lv2: string, lv4: string, nganh: Nganh][] = [
+const SYMBOLS: readonly [
+  symbol: string,
+  template: Industry,
+  lv2: string,
+  lv4: string,
+  nganh: Nganh,
+][] = [
   ['FPT', 'thuong', '9500', '9537', 'thuong'],
   ['CTD', 'thuong', '2300', '2357', 'thuong'],
   ['VCB', 'nh', '8300', '8355', 'nh'],
@@ -51,7 +61,9 @@ function fakeVci(
 ) {
   const calls = { directory: 0, company: [] as string[] };
   const income =
-    options.template === 'nh' ? [{ year_report: 2024, length_report: 1, isb27: 200, isb38: 400 }] : [];
+    options.template === 'nh'
+      ? [{ year_report: 2024, length_report: 1, isb27: 200, isb38: 400 }]
+      : [];
   const vci = {
     fetchIcbDirectory: async () => {
       calls.directory += 1;
@@ -215,7 +227,9 @@ describe('DashboardService.industry (spec v3 §1.3, §12.4 backend)', () => {
   it('gives VHM and NLG the same industry (bds) and GAS dk', async () => {
     const { vci } = fakeVci();
     const dashboard = new DashboardService(vci, market, store);
-    const [vhm, nlg, gas] = await Promise.all(['VHM', 'NLG', 'GAS'].map((s) => dashboard.industry(s)));
+    const [vhm, nlg, gas] = await Promise.all(
+      ['VHM', 'NLG', 'GAS'].map((s) => dashboard.industry(s)),
+    );
     expect(vhm).toEqual({ symbol: 'VHM', nganh: 'bds', label: 'Bất động sản', template: 'thuong' });
     expect(nlg!.nganh).toBe(vhm!.nganh);
     expect(gas).toEqual({ symbol: 'GAS', nganh: 'dk', label: 'Dầu khí', template: 'thuong' });
@@ -248,7 +262,7 @@ describe('DashboardService.industry (spec v3 §1.3, §12.4 backend)', () => {
     expect(await dashboard.industry('VHM')).toMatchObject({ nganh: 'thuong', template: 'thuong' });
   });
 
-  it('serves the charts of the symbol industry: a new metric is empty and pending, foreign charts 400', async () => {
+  it('serves the charts of the symbol industry with their v3 shape, foreign charts 400', async () => {
     const { vci } = fakeVci();
     const dashboard = new DashboardService(vci, market, store);
     const response = await dashboard.fundamental('VHM', {
@@ -260,15 +274,14 @@ describe('DashboardService.industry (spec v3 §1.3, §12.4 backend)', () => {
       kind: 'B',
       unit: 'năm',
       decimals: 1,
-      status: 'definition_pending',
     });
     expect(response.charts['Tiền / Nợ vay ngắn hạn']).toMatchObject({
       unit: 'lần',
       decimals: 2,
       ref: 1,
-      status: 'definition_pending',
     });
-    expect(response.charts['D/E']!.status).not.toBe('definition_pending');
+    for (const chart of Object.values(response.charts))
+      expect((chart as { status: string }).status).not.toBe('definition_pending');
     await expect(
       dashboard.fundamental('VHM', { charts: 'Asset Turnover', per: 'q' }),
     ).rejects.toMatchObject({ status: 400, response: { code: 'CHART_NOT_IN_INDUSTRY' } });

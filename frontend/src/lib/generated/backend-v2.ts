@@ -44507,13 +44507,13 @@ export type DashboardCatalogResponses = {
               | "VCSH / Tổng tài sản"
               | "Cơ cấu doanh thu hoạt động"
               | "Biên lợi nhuận hoạt động"
-              | "Chi phí hoạt động / Doanh thu hoạt động"
               | "Tăng trưởng dư nợ cho vay"
               | "Dư nợ cho vay / VCSH"
               | "Lợi suất cho vay"
               | "Biên lợi nhuận môi giới"
               | "Tỷ trọng tài sản tự doanh"
               | "Hiệu suất tự doanh"
+              | "Chi phí hoạt động / Doanh thu hoạt động"
               | "Nợ vay / VCSH"
               | "Tăng trưởng doanh thu phí bảo hiểm gốc"
               | "Tỷ lệ giữ lại"
@@ -44522,7 +44522,35 @@ export type DashboardCatalogResponses = {
               | "Combined ratio"
               | "Lợi suất đầu tư"
               | "Cơ cấu lợi nhuận"
-              | "Dự phòng nghiệp vụ / VCSH";
+              | "Dự phòng nghiệp vụ / VCSH"
+              | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+              | "Người mua trả tiền trước / Doanh thu"
+              | "Tăng trưởng người mua trả tiền trước"
+              | "Doanh thu chưa thực hiện / VCSH"
+              | "Tồn kho / Tổng tài sản"
+              | "Số năm bán hết tồn kho"
+              | "Tỷ trọng bất động sản đầu tư"
+              | "Phải thu và trả trước / VCSH"
+              | "Tỷ trọng nợ vay ngắn hạn"
+              | "Tiền / Nợ vay ngắn hạn"
+              | "Lãi vay đã trả / Chi phí lãi vay"
+              | "Số ngày tồn kho"
+              | "Khấu hao / Doanh thu"
+              | "Capex / Khấu hao"
+              | "Tiền ròng / VCSH"
+              | "Thu nhập tài chính / LNTT"
+              | "Tỷ lệ chi trả cổ tức"
+              | "Chi phí bán hàng và quản lý / Doanh thu"
+              | "Biên lợi nhuận kinh doanh chính"
+              | "Dự phòng giảm giá tồn kho / Tồn kho"
+              | "Phải trả người bán / Tồn kho"
+              | "Vay ngắn hạn / Tồn kho"
+              | "Doanh thu / Tài sản cố định"
+              | "Biên EBITDA"
+              | "Tài sản cố định / Tổng tài sản"
+              | "Xây dựng dở dang / Tài sản cố định"
+              | "Số ngày thu tiền"
+              | "Chi phí tài chính ngoài lãi vay / LNTT";
           }>;
         }>;
       }>;
@@ -44573,13 +44601,13 @@ export type DashboardCatalogResponses = {
         | "VCSH / Tổng tài sản"
         | "Cơ cấu doanh thu hoạt động"
         | "Biên lợi nhuận hoạt động"
-        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Tăng trưởng dư nợ cho vay"
         | "Dư nợ cho vay / VCSH"
         | "Lợi suất cho vay"
         | "Biên lợi nhuận môi giới"
         | "Tỷ trọng tài sản tự doanh"
         | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Nợ vay / VCSH"
         | "Tăng trưởng doanh thu phí bảo hiểm gốc"
         | "Tỷ lệ giữ lại"
@@ -44589,9 +44617,38 @@ export type DashboardCatalogResponses = {
         | "Lợi suất đầu tư"
         | "Cơ cấu lợi nhuận"
         | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
       >;
       label: string;
-      nganh: "thuong" | "nh" | "ck" | "bh";
+      nganh:
+        "thuong" | "nh" | "ck" | "bh" | "bds" | "dk" | "bl" | "dien" | "vl";
       total: number;
     }>;
   };
@@ -44634,8 +44691,9 @@ export type DashboardIndustryError =
 export type DashboardIndustryResponses = {
   200: {
     label: string;
-    nganh: "thuong" | "nh" | "ck" | "bh";
+    nganh: "thuong" | "nh" | "ck" | "bh" | "bds" | "dk" | "bl" | "dien" | "vl";
     symbol: string;
+    template: "thuong" | "nh" | "ck" | "bh";
   };
 };
 
@@ -44677,6 +44735,107 @@ export type DashboardSettingsError =
 
 export type DashboardSettingsResponses = {
   200: {
+    bds: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
+      };
+      per: "q" | "y";
+    };
     bh: {
       charts: Array<
         | "Tăng trưởng doanh thu"
@@ -44725,13 +44884,13 @@ export type DashboardSettingsResponses = {
         | "VCSH / Tổng tài sản"
         | "Cơ cấu doanh thu hoạt động"
         | "Biên lợi nhuận hoạt động"
-        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Tăng trưởng dư nợ cho vay"
         | "Dư nợ cho vay / VCSH"
         | "Lợi suất cho vay"
         | "Biên lợi nhuận môi giới"
         | "Tỷ trọng tài sản tự doanh"
         | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Nợ vay / VCSH"
         | "Tăng trưởng doanh thu phí bảo hiểm gốc"
         | "Tỷ lệ giữ lại"
@@ -44741,6 +44900,135 @@ export type DashboardSettingsResponses = {
         | "Lợi suất đầu tư"
         | "Cơ cấu lợi nhuận"
         | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
+      };
+      per: "q" | "y";
+    };
+    bl: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
       >;
       nks: {
         [key: string]: {
@@ -44798,13 +45086,13 @@ export type DashboardSettingsResponses = {
         | "VCSH / Tổng tài sản"
         | "Cơ cấu doanh thu hoạt động"
         | "Biên lợi nhuận hoạt động"
-        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Tăng trưởng dư nợ cho vay"
         | "Dư nợ cho vay / VCSH"
         | "Lợi suất cho vay"
         | "Biên lợi nhuận môi giới"
         | "Tỷ trọng tài sản tự doanh"
         | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Nợ vay / VCSH"
         | "Tăng trưởng doanh thu phí bảo hiểm gốc"
         | "Tỷ lệ giữ lại"
@@ -44814,6 +45102,236 @@ export type DashboardSettingsResponses = {
         | "Lợi suất đầu tư"
         | "Cơ cấu lợi nhuận"
         | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
+      };
+      per: "q" | "y";
+    };
+    dien: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
+      };
+      per: "q" | "y";
+    };
+    dk: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
       >;
       nks: {
         [key: string]: {
@@ -44871,13 +45389,13 @@ export type DashboardSettingsResponses = {
         | "VCSH / Tổng tài sản"
         | "Cơ cấu doanh thu hoạt động"
         | "Biên lợi nhuận hoạt động"
-        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Tăng trưởng dư nợ cho vay"
         | "Dư nợ cho vay / VCSH"
         | "Lợi suất cho vay"
         | "Biên lợi nhuận môi giới"
         | "Tỷ trọng tài sản tự doanh"
         | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Nợ vay / VCSH"
         | "Tăng trưởng doanh thu phí bảo hiểm gốc"
         | "Tỷ lệ giữ lại"
@@ -44887,6 +45405,34 @@ export type DashboardSettingsResponses = {
         | "Lợi suất đầu tư"
         | "Cơ cấu lợi nhuận"
         | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
       >;
       nks: {
         [key: string]: {
@@ -44944,13 +45490,13 @@ export type DashboardSettingsResponses = {
         | "VCSH / Tổng tài sản"
         | "Cơ cấu doanh thu hoạt động"
         | "Biên lợi nhuận hoạt động"
-        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Tăng trưởng dư nợ cho vay"
         | "Dư nợ cho vay / VCSH"
         | "Lợi suất cho vay"
         | "Biên lợi nhuận môi giới"
         | "Tỷ trọng tài sản tự doanh"
         | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
         | "Nợ vay / VCSH"
         | "Tăng trưởng doanh thu phí bảo hiểm gốc"
         | "Tỷ lệ giữ lại"
@@ -44960,6 +45506,135 @@ export type DashboardSettingsResponses = {
         | "Lợi suất đầu tư"
         | "Cơ cấu lợi nhuận"
         | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
+      };
+      per: "q" | "y";
+    };
+    vl: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+        | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+        | "Người mua trả tiền trước / Doanh thu"
+        | "Tăng trưởng người mua trả tiền trước"
+        | "Doanh thu chưa thực hiện / VCSH"
+        | "Tồn kho / Tổng tài sản"
+        | "Số năm bán hết tồn kho"
+        | "Tỷ trọng bất động sản đầu tư"
+        | "Phải thu và trả trước / VCSH"
+        | "Tỷ trọng nợ vay ngắn hạn"
+        | "Tiền / Nợ vay ngắn hạn"
+        | "Lãi vay đã trả / Chi phí lãi vay"
+        | "Số ngày tồn kho"
+        | "Khấu hao / Doanh thu"
+        | "Capex / Khấu hao"
+        | "Tiền ròng / VCSH"
+        | "Thu nhập tài chính / LNTT"
+        | "Tỷ lệ chi trả cổ tức"
+        | "Chi phí bán hàng và quản lý / Doanh thu"
+        | "Biên lợi nhuận kinh doanh chính"
+        | "Dự phòng giảm giá tồn kho / Tồn kho"
+        | "Phải trả người bán / Tồn kho"
+        | "Vay ngắn hạn / Tồn kho"
+        | "Doanh thu / Tài sản cố định"
+        | "Biên EBITDA"
+        | "Tài sản cố định / Tổng tài sản"
+        | "Xây dựng dở dang / Tài sản cố định"
+        | "Số ngày thu tiền"
+        | "Chi phí tài chính ngoài lãi vay / LNTT"
       >;
       nks: {
         [key: string]: {
@@ -45024,13 +45699,13 @@ export type DashboardSaveSettingsData = {
       | "VCSH / Tổng tài sản"
       | "Cơ cấu doanh thu hoạt động"
       | "Biên lợi nhuận hoạt động"
-      | "Chi phí hoạt động / Doanh thu hoạt động"
       | "Tăng trưởng dư nợ cho vay"
       | "Dư nợ cho vay / VCSH"
       | "Lợi suất cho vay"
       | "Biên lợi nhuận môi giới"
       | "Tỷ trọng tài sản tự doanh"
       | "Hiệu suất tự doanh"
+      | "Chi phí hoạt động / Doanh thu hoạt động"
       | "Nợ vay / VCSH"
       | "Tăng trưởng doanh thu phí bảo hiểm gốc"
       | "Tỷ lệ giữ lại"
@@ -45040,6 +45715,34 @@ export type DashboardSaveSettingsData = {
       | "Lợi suất đầu tư"
       | "Cơ cấu lợi nhuận"
       | "Dự phòng nghiệp vụ / VCSH"
+      | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+      | "Người mua trả tiền trước / Doanh thu"
+      | "Tăng trưởng người mua trả tiền trước"
+      | "Doanh thu chưa thực hiện / VCSH"
+      | "Tồn kho / Tổng tài sản"
+      | "Số năm bán hết tồn kho"
+      | "Tỷ trọng bất động sản đầu tư"
+      | "Phải thu và trả trước / VCSH"
+      | "Tỷ trọng nợ vay ngắn hạn"
+      | "Tiền / Nợ vay ngắn hạn"
+      | "Lãi vay đã trả / Chi phí lãi vay"
+      | "Số ngày tồn kho"
+      | "Khấu hao / Doanh thu"
+      | "Capex / Khấu hao"
+      | "Tiền ròng / VCSH"
+      | "Thu nhập tài chính / LNTT"
+      | "Tỷ lệ chi trả cổ tức"
+      | "Chi phí bán hàng và quản lý / Doanh thu"
+      | "Biên lợi nhuận kinh doanh chính"
+      | "Dự phòng giảm giá tồn kho / Tồn kho"
+      | "Phải trả người bán / Tồn kho"
+      | "Vay ngắn hạn / Tồn kho"
+      | "Doanh thu / Tài sản cố định"
+      | "Biên EBITDA"
+      | "Tài sản cố định / Tổng tài sản"
+      | "Xây dựng dở dang / Tài sản cố định"
+      | "Số ngày thu tiền"
+      | "Chi phí tài chính ngoài lãi vay / LNTT"
     >;
     nks: {
       [key: string]: {
@@ -45050,7 +45753,7 @@ export type DashboardSaveSettingsData = {
     per: "q" | "y";
   };
   path: {
-    nganh: "thuong" | "nh" | "ck" | "bh";
+    nganh: "thuong" | "nh" | "ck" | "bh" | "bds" | "dk" | "bl" | "dien" | "vl";
   };
   query?: never;
   url: "/api/v2/dashboard/settings/{nganh}";
@@ -45131,13 +45834,13 @@ export type DashboardSaveSettingsResponses = {
       | "VCSH / Tổng tài sản"
       | "Cơ cấu doanh thu hoạt động"
       | "Biên lợi nhuận hoạt động"
-      | "Chi phí hoạt động / Doanh thu hoạt động"
       | "Tăng trưởng dư nợ cho vay"
       | "Dư nợ cho vay / VCSH"
       | "Lợi suất cho vay"
       | "Biên lợi nhuận môi giới"
       | "Tỷ trọng tài sản tự doanh"
       | "Hiệu suất tự doanh"
+      | "Chi phí hoạt động / Doanh thu hoạt động"
       | "Nợ vay / VCSH"
       | "Tăng trưởng doanh thu phí bảo hiểm gốc"
       | "Tỷ lệ giữ lại"
@@ -45147,8 +45850,36 @@ export type DashboardSaveSettingsResponses = {
       | "Lợi suất đầu tư"
       | "Cơ cấu lợi nhuận"
       | "Dự phòng nghiệp vụ / VCSH"
+      | "Lợi nhuận ngoài kinh doanh bất động sản / LNTT"
+      | "Người mua trả tiền trước / Doanh thu"
+      | "Tăng trưởng người mua trả tiền trước"
+      | "Doanh thu chưa thực hiện / VCSH"
+      | "Tồn kho / Tổng tài sản"
+      | "Số năm bán hết tồn kho"
+      | "Tỷ trọng bất động sản đầu tư"
+      | "Phải thu và trả trước / VCSH"
+      | "Tỷ trọng nợ vay ngắn hạn"
+      | "Tiền / Nợ vay ngắn hạn"
+      | "Lãi vay đã trả / Chi phí lãi vay"
+      | "Số ngày tồn kho"
+      | "Khấu hao / Doanh thu"
+      | "Capex / Khấu hao"
+      | "Tiền ròng / VCSH"
+      | "Thu nhập tài chính / LNTT"
+      | "Tỷ lệ chi trả cổ tức"
+      | "Chi phí bán hàng và quản lý / Doanh thu"
+      | "Biên lợi nhuận kinh doanh chính"
+      | "Dự phòng giảm giá tồn kho / Tồn kho"
+      | "Phải trả người bán / Tồn kho"
+      | "Vay ngắn hạn / Tồn kho"
+      | "Doanh thu / Tài sản cố định"
+      | "Biên EBITDA"
+      | "Tài sản cố định / Tổng tài sản"
+      | "Xây dựng dở dang / Tài sản cố định"
+      | "Số ngày thu tiền"
+      | "Chi phí tài chính ngoài lãi vay / LNTT"
     >;
-    nganh: "thuong" | "nh" | "ck" | "bh";
+    nganh: "thuong" | "nh" | "ck" | "bh" | "bds" | "dk" | "bl" | "dien" | "vl";
     nks: {
       [key: string]: {
         q?: 4 | 5 | 8 | 12 | 20;
@@ -47749,7 +48480,7 @@ export type DashboardFundamentalResponses = {
         };
       };
     };
-    nganh: "thuong" | "nh" | "ck" | "bh";
+    nganh: "thuong" | "nh" | "ck" | "bh" | "bds" | "dk" | "bl" | "dien" | "vl";
     per: "q" | "y";
     symbol: string;
   };
@@ -51938,6 +52669,264 @@ export type GetMarketTrackingResponses = {
 export type GetMarketTrackingResponse =
   GetMarketTrackingResponses[keyof GetMarketTrackingResponses];
 
+export type NotificationSettingsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/me/notification-settings";
+};
+
+export type NotificationSettingsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationSettingsError =
+  NotificationSettingsErrors[keyof NotificationSettingsErrors];
+
+export type NotificationSettingsResponses = {
+  200: {
+    channels: {
+      email: boolean;
+      web: true;
+    };
+    email_available: boolean;
+    enabled: boolean;
+    types: {
+      bot_trades: boolean;
+      bulletin: boolean;
+    };
+    updated_at: string | null;
+  };
+};
+
+export type NotificationSettingsResponse =
+  NotificationSettingsResponses[keyof NotificationSettingsResponses];
+
+export type NotificationSaveSettingsData = {
+  body: {
+    channels: {
+      email: boolean;
+      web?: true;
+    };
+    enabled: boolean;
+    types: {
+      bot_trades: boolean;
+      bulletin: boolean;
+    };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/me/notification-settings";
+};
+
+export type NotificationSaveSettingsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationSaveSettingsError =
+  NotificationSaveSettingsErrors[keyof NotificationSaveSettingsErrors];
+
+export type NotificationSaveSettingsResponses = {
+  200: {
+    channels: {
+      email: boolean;
+      web: true;
+    };
+    email_available: boolean;
+    enabled: boolean;
+    types: {
+      bot_trades: boolean;
+      bulletin: boolean;
+    };
+    updated_at: string | null;
+  };
+};
+
+export type NotificationSaveSettingsResponse =
+  NotificationSaveSettingsResponses[keyof NotificationSaveSettingsResponses];
+
+export type NotificationListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/me/notifications";
+};
+
+export type NotificationListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationListError =
+  NotificationListErrors[keyof NotificationListErrors];
+
+export type NotificationListResponses = {
+  200: {
+    items: Array<{
+      body: string;
+      created_at: string;
+      id: string;
+      link: string;
+      read_at: string | null;
+      title: string;
+      trade_date: string;
+      type: "bulletin" | "bot_trades";
+    }>;
+    unread_count: number;
+  };
+};
+
+export type NotificationListResponse =
+  NotificationListResponses[keyof NotificationListResponses];
+
+export type NotificationMarkReadData = {
+  body:
+    | {
+        id: string;
+      }
+    | {
+        all: true;
+      };
+  path?: never;
+  query?: never;
+  url: "/api/v2/me/notifications/read";
+};
+
+export type NotificationMarkReadErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationMarkReadError =
+  NotificationMarkReadErrors[keyof NotificationMarkReadErrors];
+
+export type NotificationMarkReadResponses = {
+  200: {
+    unread_count: number;
+  };
+};
+
+export type NotificationMarkReadResponse =
+  NotificationMarkReadResponses[keyof NotificationMarkReadResponses];
+
+export type NotificationUnreadCountData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/me/notifications/unread-count";
+};
+
+export type NotificationUnreadCountErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationUnreadCountError =
+  NotificationUnreadCountErrors[keyof NotificationUnreadCountErrors];
+
+export type NotificationUnreadCountResponses = {
+  200: {
+    unread_count: number;
+  };
+};
+
+export type NotificationUnreadCountResponse =
+  NotificationUnreadCountResponses[keyof NotificationUnreadCountResponses];
+
 export type MediaControllerDownloadData = {
   body?: never;
   path: {
@@ -51983,6 +52972,47 @@ export type MediaControllerDownloadResponses = {
 
 export type MediaControllerDownloadResponse =
   MediaControllerDownloadResponses[keyof MediaControllerDownloadResponses];
+
+export type NotificationUnsubscribeData = {
+  body: {
+    token: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/notifications/unsubscribe";
+};
+
+export type NotificationUnsubscribeErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationUnsubscribeError =
+  NotificationUnsubscribeErrors[keyof NotificationUnsubscribeErrors];
+
+export type NotificationUnsubscribeResponses = {
+  200: {
+    status: "unsubscribed" | "already_used";
+    type: "bulletin" | "bot_trades";
+  };
+};
+
+export type NotificationUnsubscribeResponse =
+  NotificationUnsubscribeResponses[keyof NotificationUnsubscribeResponses];
 
 export type AnalyzePortfolioV2Data = {
   body?: never;
@@ -68797,7 +69827,7 @@ export type DashboardValuationResponses = {
       };
     };
     dates: Array<string>;
-    nganh: "thuong" | "nh" | "ck" | "bh";
+    nganh: "thuong" | "nh" | "ck" | "bh" | "bds" | "dk" | "bl" | "dien" | "vl";
     symbol: string;
   };
 };

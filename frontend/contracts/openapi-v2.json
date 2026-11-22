@@ -35149,7 +35149,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 918 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 924 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -117577,13 +117577,13 @@
                                                 "VCSH / Tổng tài sản",
                                                 "Cơ cấu doanh thu hoạt động",
                                                 "Biên lợi nhuận hoạt động",
-                                                "Chi phí hoạt động / Doanh thu hoạt động",
                                                 "Tăng trưởng dư nợ cho vay",
                                                 "Dư nợ cho vay / VCSH",
                                                 "Lợi suất cho vay",
                                                 "Biên lợi nhuận môi giới",
                                                 "Tỷ trọng tài sản tự doanh",
                                                 "Hiệu suất tự doanh",
+                                                "Chi phí hoạt động / Doanh thu hoạt động",
                                                 "Nợ vay / VCSH",
                                                 "Tăng trưởng doanh thu phí bảo hiểm gốc",
                                                 "Tỷ lệ giữ lại",
@@ -117592,7 +117592,35 @@
                                                 "Combined ratio",
                                                 "Lợi suất đầu tư",
                                                 "Cơ cấu lợi nhuận",
-                                                "Dự phòng nghiệp vụ / VCSH"
+                                                "Dự phòng nghiệp vụ / VCSH",
+                                                "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                                                "Người mua trả tiền trước / Doanh thu",
+                                                "Tăng trưởng người mua trả tiền trước",
+                                                "Doanh thu chưa thực hiện / VCSH",
+                                                "Tồn kho / Tổng tài sản",
+                                                "Số năm bán hết tồn kho",
+                                                "Tỷ trọng bất động sản đầu tư",
+                                                "Phải thu và trả trước / VCSH",
+                                                "Tỷ trọng nợ vay ngắn hạn",
+                                                "Tiền / Nợ vay ngắn hạn",
+                                                "Lãi vay đã trả / Chi phí lãi vay",
+                                                "Số ngày tồn kho",
+                                                "Khấu hao / Doanh thu",
+                                                "Capex / Khấu hao",
+                                                "Tiền ròng / VCSH",
+                                                "Thu nhập tài chính / LNTT",
+                                                "Tỷ lệ chi trả cổ tức",
+                                                "Chi phí bán hàng và quản lý / Doanh thu",
+                                                "Biên lợi nhuận kinh doanh chính",
+                                                "Dự phòng giảm giá tồn kho / Tồn kho",
+                                                "Phải trả người bán / Tồn kho",
+                                                "Vay ngắn hạn / Tồn kho",
+                                                "Doanh thu / Tài sản cố định",
+                                                "Biên EBITDA",
+                                                "Tài sản cố định / Tổng tài sản",
+                                                "Xây dựng dở dang / Tài sản cố định",
+                                                "Số ngày thu tiền",
+                                                "Chi phí tài chính ngoài lãi vay / LNTT"
                                               ],
                                               "type": "string"
                                             }
@@ -117674,13 +117702,13 @@
                                 "VCSH / Tổng tài sản",
                                 "Cơ cấu doanh thu hoạt động",
                                 "Biên lợi nhuận hoạt động",
-                                "Chi phí hoạt động / Doanh thu hoạt động",
                                 "Tăng trưởng dư nợ cho vay",
                                 "Dư nợ cho vay / VCSH",
                                 "Lợi suất cho vay",
                                 "Biên lợi nhuận môi giới",
                                 "Tỷ trọng tài sản tự doanh",
                                 "Hiệu suất tự doanh",
+                                "Chi phí hoạt động / Doanh thu hoạt động",
                                 "Nợ vay / VCSH",
                                 "Tăng trưởng doanh thu phí bảo hiểm gốc",
                                 "Tỷ lệ giữ lại",
@@ -117689,7 +117717,35 @@
                                 "Combined ratio",
                                 "Lợi suất đầu tư",
                                 "Cơ cấu lợi nhuận",
-                                "Dự phòng nghiệp vụ / VCSH"
+                                "Dự phòng nghiệp vụ / VCSH",
+                                "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                                "Người mua trả tiền trước / Doanh thu",
+                                "Tăng trưởng người mua trả tiền trước",
+                                "Doanh thu chưa thực hiện / VCSH",
+                                "Tồn kho / Tổng tài sản",
+                                "Số năm bán hết tồn kho",
+                                "Tỷ trọng bất động sản đầu tư",
+                                "Phải thu và trả trước / VCSH",
+                                "Tỷ trọng nợ vay ngắn hạn",
+                                "Tiền / Nợ vay ngắn hạn",
+                                "Lãi vay đã trả / Chi phí lãi vay",
+                                "Số ngày tồn kho",
+                                "Khấu hao / Doanh thu",
+                                "Capex / Khấu hao",
+                                "Tiền ròng / VCSH",
+                                "Thu nhập tài chính / LNTT",
+                                "Tỷ lệ chi trả cổ tức",
+                                "Chi phí bán hàng và quản lý / Doanh thu",
+                                "Biên lợi nhuận kinh doanh chính",
+                                "Dự phòng giảm giá tồn kho / Tồn kho",
+                                "Phải trả người bán / Tồn kho",
+                                "Vay ngắn hạn / Tồn kho",
+                                "Doanh thu / Tài sản cố định",
+                                "Biên EBITDA",
+                                "Tài sản cố định / Tổng tài sản",
+                                "Xây dựng dở dang / Tài sản cố định",
+                                "Số ngày thu tiền",
+                                "Chi phí tài chính ngoài lãi vay / LNTT"
                               ],
                               "type": "string"
                             },
@@ -117703,7 +117759,12 @@
                               "thuong",
                               "nh",
                               "ck",
-                              "bh"
+                              "bh",
+                              "bds",
+                              "dk",
+                              "bl",
+                              "dien",
+                              "vl"
                             ],
                             "type": "string"
                           },
@@ -117776,7 +117837,7 @@
           }
         },
         "security": [],
-        "summary": "The 62 analysis charts by industry: 17 common + 16 manufacturing + 11 bank + 10 securities + 8 insurance, in chapters and groups, with the Academy lesson key and the default set of each industry",
+        "summary": "The analysis charts of the 9 industries (90 names, 260 industry/name pairs): per industry a common chapter and its own, in groups, with the Academy lesson key and the default set of each industry",
         "tags": [
           "Dashboard phân tích"
         ],
@@ -117813,18 +117874,33 @@
                         "thuong",
                         "nh",
                         "ck",
-                        "bh"
+                        "bh",
+                        "bds",
+                        "dk",
+                        "bl",
+                        "dien",
+                        "vl"
                       ],
                       "type": "string"
                     },
                     "symbol": {
+                      "type": "string"
+                    },
+                    "template": {
+                      "enum": [
+                        "thuong",
+                        "nh",
+                        "ck",
+                        "bh"
+                      ],
                       "type": "string"
                     }
                   },
                   "required": [
                     "symbol",
                     "nganh",
-                    "label"
+                    "label",
+                    "template"
                   ],
                   "type": "object"
                 }
@@ -117874,7 +117950,7 @@
           }
         },
         "security": [],
-        "summary": "Industry of one symbol from its financial statement template: thuong, nh (banks and finance companies), ck or bh; unknown template counts as thuong",
+        "summary": "Industry of one symbol: nh (banks and finance companies), ck, bh from the statement template; the enterprise template is split by the VCI ICB code into bds, dk, bl, dien, vl or thuong; unknown counts as thuong",
         "tags": [
           "Dashboard phân tích"
         ],
@@ -117893,6 +117969,187 @@
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
+                    "bds": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
+                      ],
+                      "type": "object"
+                    },
                     "bh": {
                       "additionalProperties": false,
                       "properties": {
@@ -117945,13 +118202,13 @@
                               "VCSH / Tổng tài sản",
                               "Cơ cấu doanh thu hoạt động",
                               "Biên lợi nhuận hoạt động",
-                              "Chi phí hoạt động / Doanh thu hoạt động",
                               "Tăng trưởng dư nợ cho vay",
                               "Dư nợ cho vay / VCSH",
                               "Lợi suất cho vay",
                               "Biên lợi nhuận môi giới",
                               "Tỷ trọng tài sản tự doanh",
                               "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
                               "Nợ vay / VCSH",
                               "Tăng trưởng doanh thu phí bảo hiểm gốc",
                               "Tỷ lệ giữ lại",
@@ -117960,7 +118217,216 @@
                               "Combined ratio",
                               "Lợi suất đầu tư",
                               "Cơ cấu lợi nhuận",
-                              "Dự phòng nghiệp vụ / VCSH"
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
+                      ],
+                      "type": "object"
+                    },
+                    "bl": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
                             ],
                             "type": "string"
                           },
@@ -118098,13 +118564,13 @@
                               "VCSH / Tổng tài sản",
                               "Cơ cấu doanh thu hoạt động",
                               "Biên lợi nhuận hoạt động",
-                              "Chi phí hoạt động / Doanh thu hoạt động",
                               "Tăng trưởng dư nợ cho vay",
                               "Dư nợ cho vay / VCSH",
                               "Lợi suất cho vay",
                               "Biên lợi nhuận môi giới",
                               "Tỷ trọng tài sản tự doanh",
                               "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
                               "Nợ vay / VCSH",
                               "Tăng trưởng doanh thu phí bảo hiểm gốc",
                               "Tỷ lệ giữ lại",
@@ -118113,7 +118579,397 @@
                               "Combined ratio",
                               "Lợi suất đầu tư",
                               "Cơ cấu lợi nhuận",
-                              "Dự phòng nghiệp vụ / VCSH"
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
+                      ],
+                      "type": "object"
+                    },
+                    "dien": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
+                      ],
+                      "type": "object"
+                    },
+                    "dk": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
                             ],
                             "type": "string"
                           },
@@ -118251,13 +119107,13 @@
                               "VCSH / Tổng tài sản",
                               "Cơ cấu doanh thu hoạt động",
                               "Biên lợi nhuận hoạt động",
-                              "Chi phí hoạt động / Doanh thu hoạt động",
                               "Tăng trưởng dư nợ cho vay",
                               "Dư nợ cho vay / VCSH",
                               "Lợi suất cho vay",
                               "Biên lợi nhuận môi giới",
                               "Tỷ trọng tài sản tự doanh",
                               "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
                               "Nợ vay / VCSH",
                               "Tăng trưởng doanh thu phí bảo hiểm gốc",
                               "Tỷ lệ giữ lại",
@@ -118266,7 +119122,35 @@
                               "Combined ratio",
                               "Lợi suất đầu tư",
                               "Cơ cấu lợi nhuận",
-                              "Dự phòng nghiệp vụ / VCSH"
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
                             ],
                             "type": "string"
                           },
@@ -118404,13 +119288,13 @@
                               "VCSH / Tổng tài sản",
                               "Cơ cấu doanh thu hoạt động",
                               "Biên lợi nhuận hoạt động",
-                              "Chi phí hoạt động / Doanh thu hoạt động",
                               "Tăng trưởng dư nợ cho vay",
                               "Dư nợ cho vay / VCSH",
                               "Lợi suất cho vay",
                               "Biên lợi nhuận môi giới",
                               "Tỷ trọng tài sản tự doanh",
                               "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
                               "Nợ vay / VCSH",
                               "Tăng trưởng doanh thu phí bảo hiểm gốc",
                               "Tỷ lệ giữ lại",
@@ -118419,7 +119303,216 @@
                               "Combined ratio",
                               "Lợi suất đầu tư",
                               "Cơ cấu lợi nhuận",
-                              "Dự phòng nghiệp vụ / VCSH"
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
+                      ],
+                      "type": "object"
+                    },
+                    "vl": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH",
+                              "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                              "Người mua trả tiền trước / Doanh thu",
+                              "Tăng trưởng người mua trả tiền trước",
+                              "Doanh thu chưa thực hiện / VCSH",
+                              "Tồn kho / Tổng tài sản",
+                              "Số năm bán hết tồn kho",
+                              "Tỷ trọng bất động sản đầu tư",
+                              "Phải thu và trả trước / VCSH",
+                              "Tỷ trọng nợ vay ngắn hạn",
+                              "Tiền / Nợ vay ngắn hạn",
+                              "Lãi vay đã trả / Chi phí lãi vay",
+                              "Số ngày tồn kho",
+                              "Khấu hao / Doanh thu",
+                              "Capex / Khấu hao",
+                              "Tiền ròng / VCSH",
+                              "Thu nhập tài chính / LNTT",
+                              "Tỷ lệ chi trả cổ tức",
+                              "Chi phí bán hàng và quản lý / Doanh thu",
+                              "Biên lợi nhuận kinh doanh chính",
+                              "Dự phòng giảm giá tồn kho / Tồn kho",
+                              "Phải trả người bán / Tồn kho",
+                              "Vay ngắn hạn / Tồn kho",
+                              "Doanh thu / Tài sản cố định",
+                              "Biên EBITDA",
+                              "Tài sản cố định / Tổng tài sản",
+                              "Xây dựng dở dang / Tài sản cố định",
+                              "Số ngày thu tiền",
+                              "Chi phí tài chính ngoài lãi vay / LNTT"
                             ],
                             "type": "string"
                           },
@@ -118510,7 +119603,12 @@
                     "thuong",
                     "nh",
                     "ck",
-                    "bh"
+                    "bh",
+                    "bds",
+                    "dk",
+                    "bl",
+                    "dien",
+                    "vl"
                   ],
                   "type": "object"
                 }
@@ -118574,7 +119672,7 @@
             "bearer": []
           }
         ],
-        "summary": "Dashboard settings of the account per industry {thuong, nh, ck, bh}: chart list and order, quarter/year mode, periods per chart; an industry never saved returns its default set",
+        "summary": "Dashboard settings of the account per industry {thuong, nh, ck, bh, bds, dk, bl, dien, vl}: chart list and order, quarter/year mode, periods per chart; an industry never saved returns its default set",
         "tags": [
           "Dashboard phân tích"
         ],
@@ -118595,7 +119693,12 @@
                 "thuong",
                 "nh",
                 "ck",
-                "bh"
+                "bh",
+                "bds",
+                "dk",
+                "bl",
+                "dien",
+                "vl"
               ],
               "type": "string"
             }
@@ -118656,13 +119759,13 @@
                         "VCSH / Tổng tài sản",
                         "Cơ cấu doanh thu hoạt động",
                         "Biên lợi nhuận hoạt động",
-                        "Chi phí hoạt động / Doanh thu hoạt động",
                         "Tăng trưởng dư nợ cho vay",
                         "Dư nợ cho vay / VCSH",
                         "Lợi suất cho vay",
                         "Biên lợi nhuận môi giới",
                         "Tỷ trọng tài sản tự doanh",
                         "Hiệu suất tự doanh",
+                        "Chi phí hoạt động / Doanh thu hoạt động",
                         "Nợ vay / VCSH",
                         "Tăng trưởng doanh thu phí bảo hiểm gốc",
                         "Tỷ lệ giữ lại",
@@ -118671,11 +119774,39 @@
                         "Combined ratio",
                         "Lợi suất đầu tư",
                         "Cơ cấu lợi nhuận",
-                        "Dự phòng nghiệp vụ / VCSH"
+                        "Dự phòng nghiệp vụ / VCSH",
+                        "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                        "Người mua trả tiền trước / Doanh thu",
+                        "Tăng trưởng người mua trả tiền trước",
+                        "Doanh thu chưa thực hiện / VCSH",
+                        "Tồn kho / Tổng tài sản",
+                        "Số năm bán hết tồn kho",
+                        "Tỷ trọng bất động sản đầu tư",
+                        "Phải thu và trả trước / VCSH",
+                        "Tỷ trọng nợ vay ngắn hạn",
+                        "Tiền / Nợ vay ngắn hạn",
+                        "Lãi vay đã trả / Chi phí lãi vay",
+                        "Số ngày tồn kho",
+                        "Khấu hao / Doanh thu",
+                        "Capex / Khấu hao",
+                        "Tiền ròng / VCSH",
+                        "Thu nhập tài chính / LNTT",
+                        "Tỷ lệ chi trả cổ tức",
+                        "Chi phí bán hàng và quản lý / Doanh thu",
+                        "Biên lợi nhuận kinh doanh chính",
+                        "Dự phòng giảm giá tồn kho / Tồn kho",
+                        "Phải trả người bán / Tồn kho",
+                        "Vay ngắn hạn / Tồn kho",
+                        "Doanh thu / Tài sản cố định",
+                        "Biên EBITDA",
+                        "Tài sản cố định / Tổng tài sản",
+                        "Xây dựng dở dang / Tài sản cố định",
+                        "Số ngày thu tiền",
+                        "Chi phí tài chính ngoài lãi vay / LNTT"
                       ],
                       "type": "string"
                     },
-                    "maxItems": 62,
+                    "maxItems": 33,
                     "type": "array"
                   },
                   "nks": {
@@ -118818,13 +119949,13 @@
                           "VCSH / Tổng tài sản",
                           "Cơ cấu doanh thu hoạt động",
                           "Biên lợi nhuận hoạt động",
-                          "Chi phí hoạt động / Doanh thu hoạt động",
                           "Tăng trưởng dư nợ cho vay",
                           "Dư nợ cho vay / VCSH",
                           "Lợi suất cho vay",
                           "Biên lợi nhuận môi giới",
                           "Tỷ trọng tài sản tự doanh",
                           "Hiệu suất tự doanh",
+                          "Chi phí hoạt động / Doanh thu hoạt động",
                           "Nợ vay / VCSH",
                           "Tăng trưởng doanh thu phí bảo hiểm gốc",
                           "Tỷ lệ giữ lại",
@@ -118833,7 +119964,35 @@
                           "Combined ratio",
                           "Lợi suất đầu tư",
                           "Cơ cấu lợi nhuận",
-                          "Dự phòng nghiệp vụ / VCSH"
+                          "Dự phòng nghiệp vụ / VCSH",
+                          "Lợi nhuận ngoài kinh doanh bất động sản / LNTT",
+                          "Người mua trả tiền trước / Doanh thu",
+                          "Tăng trưởng người mua trả tiền trước",
+                          "Doanh thu chưa thực hiện / VCSH",
+                          "Tồn kho / Tổng tài sản",
+                          "Số năm bán hết tồn kho",
+                          "Tỷ trọng bất động sản đầu tư",
+                          "Phải thu và trả trước / VCSH",
+                          "Tỷ trọng nợ vay ngắn hạn",
+                          "Tiền / Nợ vay ngắn hạn",
+                          "Lãi vay đã trả / Chi phí lãi vay",
+                          "Số ngày tồn kho",
+                          "Khấu hao / Doanh thu",
+                          "Capex / Khấu hao",
+                          "Tiền ròng / VCSH",
+                          "Thu nhập tài chính / LNTT",
+                          "Tỷ lệ chi trả cổ tức",
+                          "Chi phí bán hàng và quản lý / Doanh thu",
+                          "Biên lợi nhuận kinh doanh chính",
+                          "Dự phòng giảm giá tồn kho / Tồn kho",
+                          "Phải trả người bán / Tồn kho",
+                          "Vay ngắn hạn / Tồn kho",
+                          "Doanh thu / Tài sản cố định",
+                          "Biên EBITDA",
+                          "Tài sản cố định / Tổng tài sản",
+                          "Xây dựng dở dang / Tài sản cố định",
+                          "Số ngày thu tiền",
+                          "Chi phí tài chính ngoài lãi vay / LNTT"
                         ],
                         "type": "string"
                       },
@@ -118844,7 +120003,12 @@
                         "thuong",
                         "nh",
                         "ck",
-                        "bh"
+                        "bh",
+                        "bds",
+                        "dk",
+                        "bl",
+                        "dien",
+                        "vl"
                       ],
                       "type": "string"
                     },
@@ -127553,7 +128717,12 @@
                         "thuong",
                         "nh",
                         "ck",
-                        "bh"
+                        "bh",
+                        "bds",
+                        "dk",
+                        "bl",
+                        "dien",
+                        "vl"
                       ],
                       "type": "string"
                     },
@@ -137170,6 +138339,700 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/me/notification-settings": {
+      "get": {
+        "operationId": "notificationSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "channels": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "email": {
+                          "type": "boolean"
+                        },
+                        "web": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "web",
+                        "email"
+                      ],
+                      "type": "object"
+                    },
+                    "email_available": {
+                      "type": "boolean"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "types": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "bot_trades": {
+                          "type": "boolean"
+                        },
+                        "bulletin": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "bulletin",
+                        "bot_trades"
+                      ],
+                      "type": "object"
+                    },
+                    "updated_at": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "types",
+                    "channels",
+                    "email_available",
+                    "updated_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Notification settings of the account (master, Bản tin cuối phiên, Bot giao dịch, email channel); defaults when never saved",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      },
+      "put": {
+        "operationId": "notificationSaveSettings",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "channels": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "email": {
+                        "type": "boolean"
+                      },
+                      "web": {
+                        "enum": [
+                          true
+                        ],
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "email"
+                    ],
+                    "type": "object"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "types": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "bot_trades": {
+                        "type": "boolean"
+                      },
+                      "bulletin": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "bulletin",
+                      "bot_trades"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "types",
+                  "channels"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "channels": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "email": {
+                          "type": "boolean"
+                        },
+                        "web": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "web",
+                        "email"
+                      ],
+                      "type": "object"
+                    },
+                    "email_available": {
+                      "type": "boolean"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "types": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "bot_trades": {
+                          "type": "boolean"
+                        },
+                        "bulletin": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "bulletin",
+                        "bot_trades"
+                      ],
+                      "type": "object"
+                    },
+                    "updated_at": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "types",
+                    "channels",
+                    "email_available",
+                    "updated_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Save notification settings (applies immediately); email on without a verified email → 422 EMAIL_UNVERIFIED",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/me/notifications": {
+      "get": {
+        "operationId": "notificationList",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "body": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                            "type": "string"
+                          },
+                          "link": {
+                            "type": "string"
+                          },
+                          "read_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "trade_date": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "enum": [
+                              "bulletin",
+                              "bot_trades"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "type",
+                          "trade_date",
+                          "title",
+                          "body",
+                          "link",
+                          "read_at",
+                          "created_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "unread_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "unread_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Latest notifications of the account (max 50, newest first) and the unread count",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/me/notifications/read": {
+      "post": {
+        "operationId": "notificationMarkRead",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "all": {
+                        "enum": [
+                          true
+                        ],
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "all"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "unread_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "unread_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark one notification ({id}) or all ({all:true}) as read",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/me/notifications/unread-count": {
+      "get": {
+        "operationId": "notificationUnreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "unread_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "unread_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unread notification count",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/media/{token}": {
       "get": {
         "operationId": "MediaController_download",
@@ -137265,6 +139128,113 @@
         ],
         "x-auth-level": "public",
         "x-response-schema-status": "v2-declared"
+      }
+    },
+    "/api/v2/notifications/unsubscribe": {
+      "post": {
+        "operationId": "notificationUnsubscribe",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "token": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "unsubscribed",
+                        "already_used"
+                      ],
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "bulletin",
+                        "bot_trades"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Turn off one notification type from the signed single-use email token; reusing it → already_used; bad token → 400 TOKEN_INVALID",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
       }
     },
     "/api/v2/portfolio-manager/analyze": {
@@ -194121,7 +196091,12 @@
                         "thuong",
                         "nh",
                         "ck",
-                        "bh"
+                        "bh",
+                        "bds",
+                        "dk",
+                        "bl",
+                        "dien",
+                        "vl"
                       ],
                       "type": "string"
                     },
@@ -197069,11 +199044,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 700,
+    "authenticatedOperations": 705,
     "noContentResponses": 18,
-    "operations": 936,
-    "publicOperations": 236,
-    "responseSchemas": 918,
+    "operations": 942,
+    "publicOperations": 237,
+    "responseSchemas": 924,
     "untypedResponses": 0
   }
 }
