@@ -72,7 +72,6 @@ export const SCHEDULE_ERRORS = {
 
 /* ── Wire ───────────────────────────────────────────────────────────────── */
 
-const json = (body: unknown): RequestInit => ({ method: "PUT", body: JSON.stringify(body) })
 
 export function fetchBotSchedule(signal?: AbortSignal): Promise<BotSchedule> {
   return api<BotSchedule>("/bot/schedule", { signal })
@@ -86,7 +85,7 @@ export function fetchScheduleImpact(target: ScheduleTarget, signal?: AbortSignal
 
 /** `PUT /bot/schedule/next`: the next session runs `target` (mine: `follow_latest`, IQX: pinned). */
 export function putScheduleNext(target: ScheduleTarget, guard: ScheduleGuard): Promise<BotSchedule> {
-  return api<BotSchedule>("/bot/schedule/next", json({ ...target, ...guard }))
+  return api<BotSchedule>("/bot/schedule/next", { method: "PUT", body: JSON.stringify({ ...target, ...guard }) })
 }
 
 /** `POST /bot/schedule/next/keep-last`: the next session copies the last one, version pinned. */

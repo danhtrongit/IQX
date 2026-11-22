@@ -506,7 +506,7 @@ export const createStrategy = (body: { name: string; content: StrategyContent; f
 export const createVersion = (id: string, body: { content: StrategyContent; from_run_id: string; expected_latest_version: number } & ApplyNext) =>
   api<SaveResult>(`/strategy/strategies/${enc(id)}/versions`, json(body))
 export const restoreVersion = (id: string, version: number, body: { expected_latest_version: number } & ApplyNext) =>
-  api<SaveResult>(`/strategy/strategies/${enc(id)}/versions/${version}/restore`, json(body))
+  api<SaveResult>(`/strategy/strategies/${enc(id)}/versions/${version}/restore`, { method: "POST", body: JSON.stringify(body) })
 export const deleteStrategy = (id: string) => api<void>(`/strategy/strategies/${enc(id)}`, { method: "DELETE" })
 
 export const fetchIqxVersions = (id: string, signal?: AbortSignal) => api<IqxVersionList>(`/strategy/iqx-templates/${enc(id)}/versions`, { signal })
