@@ -204,6 +204,17 @@ export async function mockMember(page: Page, options: MemberOptions = {}) {
       const kind = url.searchParams.get("kind")
       return json(route, { items: kind === "strategy" ? iqx.strategy : kind === "filter" ? iqx.filter : [...iqx.filter, ...iqx.strategy] })
     }
+    // Bot và Chiến lược v2.0 (update 22-11) endpoints the in-page fake does not serve: an empty but well-formed
+    // answer so the Bot panel and the header bell render (`e2e/update-2211-bot.spec.ts` routes richer state on top).
+    if (p === "/bot/schedule" && method === "GET") {
+      return json(route, { last: null, next: { session_date: "2026-11-09", source: null, follow_latest: false, cutoff_at: null }, iqx_update: null })
+    }
+    if (p === "/bot/strategy-options") return json(route, { iqx: [], mine: [] })
+    if (p === "/me/notification-settings") {
+      return json(route, { enabled: true, types: { bulletin: true, bot_trades: true }, channels: { web: true, email: false }, email_available: true, updated_at: null })
+    }
+    if (p === "/me/notifications/unread-count") return json(route, { unread_count: 0 })
+    if (p === "/me/notifications") return json(route, { items: [], unread_count: 0 })
     if (/^\/(strategy|bot|instruments)(\/|$)/.test(p)) {
       type Result = { ok: true; value: unknown } | { ok: false; status: number; message: string; code: string | null }
       let result: Result
