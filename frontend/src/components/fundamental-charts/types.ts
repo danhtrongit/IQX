@@ -31,7 +31,8 @@ export type FundamentalChartData = {
   labels: string[]
   /**
    * Chuỗi trên tầng trên. Khuôn A và B có thể có hai đường (đường 1 `--s1`, đường 2 `--line2`,
-   * spec Dashboard v2 §9); các khuôn còn lại dùng đường đầu tiên.
+   * nền tối `#f5d76e`; ví dụ ROE và ROA của ngân hàng, chứng khoán, bảo hiểm với cột đòn bẩy ở
+   * tầng dưới, spec Dashboard v3 §9); các khuôn còn lại dùng đường đầu tiên.
    */
   main: FundamentalSeries[]
   sub?: FundamentalSub
@@ -40,8 +41,9 @@ export type FundamentalChartData = {
   /** Giá trị tóm tắt máy chủ tính sẵn: CAGR %, độ lệch chuẩn, số năm dương liên tục. */
   hero?: number | null
   /**
-   * Đường tham chiếu cố định nét đứt: khuôn F2 (PEG = 1) và khuôn B (Combined ratio, mốc 100%).
-   * Trục giá trị của tầng trên luôn chứa mốc này.
+   * Đường tham chiếu cố định nét đứt: khuôn F2 (PEG = 1) và khuôn B (Combined ratio, mốc 100%;
+   * mốc 1 lần ở Tiền / Nợ vay ngắn hạn, Lãi vay đã trả / Chi phí lãi vay, Capex / Khấu hao,
+   * Phải trả người bán / Tồn kho, chú giải "Mốc 1,00"). Trục giá trị của tầng trên luôn chứa mốc này.
    */
   ref?: number
   /**

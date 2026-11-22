@@ -2,6 +2,7 @@ import { dailyAxis, finiteValues, meanOf, medianOf, stdDevOf } from "./format"
 import {
   cagrPath,
   figureTooltip,
+  hasNegativeMain,
   lineColor,
   MAIN_COLOR,
   REFERENCE_COLOR,
@@ -49,9 +50,6 @@ export function ChartFigure({
 
   let drawing
   if (chart.kind === "A" || chart.kind === "B" || chart.kind === "C") {
-    const hasNegative = chart.main.some((series) =>
-      series.v.some((value) => typeof value === "number" && value < 0),
-    )
     drawing = (
       <>
         <PanelLabel>{unit}</PanelLabel>
@@ -59,7 +57,7 @@ export function ChartFigure({
           {...panelProps}
           height={150}
           axis={false}
-          zero={chart.kind === "A" && hasNegative}
+          zero={hasNegativeMain(chart)}
           reference={chart.ref}
           lines={chart.main.map((series, index) => ({
             name: series.name,
@@ -176,8 +174,13 @@ export function ChartFigure({
       {drawing}
       {tooltip && hover && (
         <div
-          className="pointer-events-none absolute top-1 z-10 w-max max-w-64 rounded-sm border border-border bg-popover px-2 py-1.5 text-xs text-popover-foreground shadow-lg"
-          style={{ left: `clamp(0px, ${hover.x + 10}px, calc(100% - 13rem))` }}
+          className="pointer-events-none absolute top-1 z-10 w-max max-w-[min(16rem,100%)] rounded-sm border border-border bg-popover px-2 py-1.5 text-xs text-popover-foreground shadow-lg"
+          // Hộp số liệu nằm bên phải đường dọc ở nửa trái, bên trái ở nửa phải: không bao giờ tràn khỏi thẻ (390px).
+          style={
+            hover.x > width / 2
+              ? { right: `${Math.max(0, width - hover.x + 10)}px` }
+              : { left: `${Math.max(0, hover.x + 10)}px` }
+          }
           role="status"
         >
           <p className="mb-1 font-semibold">{tooltip.title}</p>

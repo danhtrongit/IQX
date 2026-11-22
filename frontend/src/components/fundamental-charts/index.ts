@@ -1,4 +1,4 @@
-export { FundamentalChart } from "./fundamental-chart"
+export { FundamentalChart, type FundamentalChartProps } from "./fundamental-chart"
 export {
   BAND_COLOR,
   FOURTH_COLOR,
@@ -15,6 +15,7 @@ export {
   figureTable,
   figureTooltip,
   hasChartData,
+  hasNegativeMain,
   lineColor,
   referenceLabel,
   streakStart,

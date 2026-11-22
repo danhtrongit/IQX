@@ -24,19 +24,28 @@ function LegendSwatch({ item }: { item: LegendItem }) {
   )
 }
 
+export type FundamentalChartProps = {
+  chart: FundamentalChartData
+  /**
+   * Hiện nút "Bảng số" / "Ẩn bảng" dưới chú giải. Mặc định `true` (Dashboard phân tích);
+   * Học viện truyền `false` vì bài học có bảng số riêng (spec Học viện v5 §2.4).
+   */
+  showTable?: boolean
+}
+
 /**
  * Bộ khuôn biểu đồ chỉ tiêu dùng chung cho Dashboard phân tích và biểu đồ đại
- * diện của Học viện (spec Dashboard §4.2, §9): hình theo khuôn A, B, C, D, E1,
+ * diện của Học viện (spec Dashboard v3 §4.2, §9): hình theo khuôn A, B, C, D, E1,
  * E2, F, F2, hộp số liệu khi rê chuột hoặc chạm, chú giải và nút "Bảng số".
  * Hình vẽ lại theo độ rộng khung khi đổi kích thước cửa sổ.
  */
-export function FundamentalChart({ chart }: { chart: FundamentalChartData }) {
+export function FundamentalChart({ chart, showTable = true }: FundamentalChartProps) {
   const [measure, width] = useElementWidth()
   const [hover, setHover] = useState<HoverState | null>(null)
   const [tableOpen, setTableOpen] = useState(false)
   const root = useRef<HTMLDivElement | null>(null)
   const legend = figureLegend(chart)
-  const table = tableOpen ? figureTable(chart) : null
+  const table = showTable && tableOpen ? figureTable(chart) : null
 
   // Chạm vào biểu đồ giữ hộp số liệu; chạm ra ngoài thì đóng.
   useEffect(() => {
@@ -65,14 +74,16 @@ export function FundamentalChart({ chart }: { chart: FundamentalChartData }) {
 
       {chart.legendNote && <p className="text-xs leading-5 text-text-secondary">{chart.legendNote}</p>}
 
-      <button
-        type="button"
-        aria-expanded={tableOpen}
-        onClick={() => setTableOpen((open) => !open)}
-        className="w-fit rounded-sm text-[11px] font-semibold text-text-secondary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-      >
-        {tableOpen ? "Ẩn bảng" : "Bảng số"}
-      </button>
+      {showTable && (
+        <button
+          type="button"
+          aria-expanded={tableOpen}
+          onClick={() => setTableOpen((open) => !open)}
+          className="w-fit rounded-sm text-[11px] font-semibold text-text-secondary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          {tableOpen ? "Ẩn bảng" : "Bảng số"}
+        </button>
+      )}
 
       {table && (
         <div className="max-h-60 overflow-auto rounded-sm border border-border">

@@ -51,6 +51,8 @@ function mainUnitOf(chart: FundamentalChartData): string {
 
 function mainDecimalsOf(chart: FundamentalChartData): number {
   if (chart.mainUnit) return decimalsForUnit(chart.mainUnit)
+  // Số năm dương liên tục (khuôn E2) là số nguyên dù đơn vị "năm" có 1 chữ số thập phân (spec v3 §10).
+  if (chart.kind === "E2" && chart.unit === "năm" && chart.decimals === undefined) return 0
   return chart.decimals ?? decimalsForUnit(chart.unit)
 }
 
@@ -84,10 +86,19 @@ export function lineColor(index: number): string {
   return LINE_COLORS[index % LINE_COLORS.length]
 }
 
-/** Nhãn đường tham chiếu của khuôn A, B, C, ví dụ "Mốc 100%" (spec Dashboard v2 §9). */
+/**
+ * Nhãn đường tham chiếu của khuôn A, B, C (spec Dashboard v3 §9): đơn vị "lần" ghi đủ 2 chữ số
+ * ("Mốc 1,00" ở Tiền / Nợ vay ngắn hạn, Capex / Khấu hao…), "%" ghi "Mốc 100%".
+ */
 export function referenceLabel(chart: Pick<FundamentalChartData, "ref" | "unit">): string {
   const value = chart.ref ?? 0
-  return `Mốc ${formatNumber(value, Number.isInteger(value) ? 0 : decimalsForUnit(chart.unit))}${chart.unit === "%" ? "%" : ""}`
+  const decimals = chart.unit === "lần" || !Number.isInteger(value) ? decimalsForUnit(chart.unit) : 0
+  return `Mốc ${formatNumber(value, decimals)}${chart.unit === "%" ? "%" : ""}`
+}
+
+/** Tầng trên của khuôn A, B, C có giá trị âm thì trục có mốc 0 (spec Dashboard v3 §9). */
+export function hasNegativeMain(chart: Pick<FundamentalChartData, "main">): boolean {
+  return chart.main.some((series) => series.v.some((value) => typeof value === "number" && value < 0))
 }
 
 /** Chú giải của một biểu đồ theo khuôn của nó. */
