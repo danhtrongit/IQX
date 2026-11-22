@@ -77,6 +77,11 @@
       "requestType": "DeleteStrategyResultSnapshotData",
       "responseType": "DeleteStrategyResultSnapshotResponses"
     },
+    "DELETE /api/v2/strategy/strategies/{id}": {
+      "operationId": "strategyDelete",
+      "requestType": "StrategyDeleteData",
+      "responseType": "StrategyDeleteResponses"
+    },
     "DELETE /api/v2/trading-floor/posts/comments/{commentId}": {
       "operationId": "tradingFloorPostCommentDelete",
       "requestType": "TradingFloorPostCommentDeleteData",
@@ -557,20 +562,30 @@
       "requestType": "GetBotPositionsGetApiV2BotPositionsData",
       "responseType": "GetBotPositionsGetApiV2BotPositionsResponses"
     },
+    "GET /api/v2/bot/schedule": {
+      "operationId": "getBotSchedule",
+      "requestType": "GetBotScheduleData",
+      "responseType": "GetBotScheduleResponses"
+    },
+    "GET /api/v2/bot/schedule/next/impact": {
+      "operationId": "getBotScheduleImpact",
+      "requestType": "GetBotScheduleImpactData",
+      "responseType": "GetBotScheduleImpactResponses"
+    },
     "GET /api/v2/bot/status": {
       "operationId": "getBotStatus_get_api_v2_bot_status",
       "requestType": "GetBotStatusGetApiV2BotStatusData",
       "responseType": "GetBotStatusGetApiV2BotStatusResponses"
     },
+    "GET /api/v2/bot/strategy-options": {
+      "operationId": "getBotStrategyOptions",
+      "requestType": "GetBotStrategyOptionsData",
+      "responseType": "GetBotStrategyOptionsResponses"
+    },
     "GET /api/v2/bot/trades": {
       "operationId": "getBotTrades",
       "requestType": "GetBotTradesData",
       "responseType": "GetBotTradesResponses"
-    },
-    "GET /api/v2/bot/universe": {
-      "operationId": "getBotUniverse",
-      "requestType": "GetBotUniverseData",
-      "responseType": "GetBotUniverseResponses"
     },
     "GET /api/v2/candle-dojo/cards": {
       "operationId": "listCandleDojoCards",
@@ -1342,26 +1357,6 @@
       "requestType": "GetPortfolioReportV2Data",
       "responseType": "GetPortfolioReportV2Responses"
     },
-    "GET /api/v2/practice/{indicatorId}/history": {
-      "operationId": "practiceHistory",
-      "requestType": "PracticeHistoryData",
-      "responseType": "PracticeHistoryResponses"
-    },
-    "GET /api/v2/practice/{indicatorId}/state": {
-      "operationId": "practiceState",
-      "requestType": "PracticeStateData",
-      "responseType": "PracticeStateResponses"
-    },
-    "GET /api/v2/practice/indicators": {
-      "operationId": "practiceIndicators",
-      "requestType": "PracticeIndicatorsData",
-      "responseType": "PracticeIndicatorsResponses"
-    },
-    "GET /api/v2/practice/runs/{runId}": {
-      "operationId": "practiceGetRun",
-      "requestType": "PracticeGetRunData",
-      "responseType": "PracticeGetRunResponses"
-    },
     "GET /api/v2/premium/admin/plans": {
       "operationId": "adminListPremiumPlans_get_api_v2_premium_admin_plans",
       "requestType": "AdminListPremiumPlansGetApiV2PremiumAdminPlansData",
@@ -1452,6 +1447,16 @@
       "requestType": "ListStrategyIqxTemplatesData",
       "responseType": "ListStrategyIqxTemplatesResponses"
     },
+    "GET /api/v2/strategy/iqx-templates/{id}/versions": {
+      "operationId": "listStrategyIqxTemplateVersions",
+      "requestType": "ListStrategyIqxTemplateVersionsData",
+      "responseType": "ListStrategyIqxTemplateVersionsResponses"
+    },
+    "GET /api/v2/strategy/iqx-templates/{id}/versions/{version}": {
+      "operationId": "getStrategyIqxTemplateVersion",
+      "requestType": "GetStrategyIqxTemplateVersionData",
+      "responseType": "GetStrategyIqxTemplateVersionResponses"
+    },
     "GET /api/v2/strategy/lists": {
       "operationId": "listStrategySavedLists",
       "requestType": "ListStrategySavedListsData",
@@ -1496,6 +1501,31 @@
       "operationId": "strategyConfigListRevisions",
       "requestType": "StrategyConfigListRevisionsData",
       "responseType": "StrategyConfigListRevisionsResponses"
+    },
+    "GET /api/v2/strategy/store/meta": {
+      "operationId": "strategyStoreMeta",
+      "requestType": "StrategyStoreMetaData",
+      "responseType": "StrategyStoreMetaResponses"
+    },
+    "GET /api/v2/strategy/strategies": {
+      "operationId": "strategyList",
+      "requestType": "StrategyListData",
+      "responseType": "StrategyListResponses"
+    },
+    "GET /api/v2/strategy/strategies/{id}/versions": {
+      "operationId": "strategyVersions",
+      "requestType": "StrategyVersionsData",
+      "responseType": "StrategyVersionsResponses"
+    },
+    "GET /api/v2/strategy/strategies/{id}/versions/{version}": {
+      "operationId": "strategyVersion",
+      "requestType": "StrategyVersionData",
+      "responseType": "StrategyVersionResponses"
+    },
+    "GET /api/v2/strategy/universe-options": {
+      "operationId": "strategyUniverseOptions",
+      "requestType": "StrategyUniverseOptionsData",
+      "responseType": "StrategyUniverseOptionsResponses"
     },
     "GET /api/v2/team/academy-config": {
       "operationId": "teamAcademyConfig_get_api_v2_team_academy_config",
@@ -1791,6 +1821,11 @@
       "operationId": "strategyConfigPatchSharedConfig",
       "requestType": "StrategyConfigPatchSharedConfigData",
       "responseType": "StrategyConfigPatchSharedConfigResponses"
+    },
+    "PATCH /api/v2/strategy/strategies/{id}": {
+      "operationId": "strategyRename",
+      "requestType": "StrategyRenameData",
+      "responseType": "StrategyRenameResponses"
     },
     "PATCH /api/v2/trading-floor/manage/sacos/{id}": {
       "operationId": "floorManageSacoUpdate",
@@ -2127,20 +2162,10 @@
       "requestType": "JourneyIdentityControllerUiEvent1Data",
       "responseType": "JourneyIdentityControllerUiEvent1Responses"
     },
-    "POST /api/v2/bot/universe/apply-list": {
-      "operationId": "applyBotUniverseList",
-      "requestType": "ApplyBotUniverseListData",
-      "responseType": "ApplyBotUniverseListResponses"
-    },
-    "POST /api/v2/bot/universe/pending/cancel": {
-      "operationId": "cancelBotUniversePending",
-      "requestType": "CancelBotUniversePendingData",
-      "responseType": "CancelBotUniversePendingResponses"
-    },
-    "POST /api/v2/bot/universe/revert-vn30": {
-      "operationId": "revertBotUniverseToVn30",
-      "requestType": "RevertBotUniverseToVn30Data",
-      "responseType": "RevertBotUniverseToVn30Responses"
+    "POST /api/v2/bot/schedule/next/keep-last": {
+      "operationId": "keepBotScheduleLast",
+      "requestType": "KeepBotScheduleLastData",
+      "responseType": "KeepBotScheduleLastResponses"
     },
     "POST /api/v2/candle-dojo/cards/{cardId}/purchase": {
       "operationId": "purchaseCandleDojoCard",
@@ -2532,21 +2557,6 @@
       "requestType": "AnalyzePortfolioV2Data",
       "responseType": "AnalyzePortfolioV2Responses"
     },
-    "POST /api/v2/practice/{indicatorId}/next": {
-      "operationId": "practiceNext",
-      "requestType": "PracticeNextData",
-      "responseType": "PracticeNextResponses"
-    },
-    "POST /api/v2/practice/{indicatorId}/preview": {
-      "operationId": "practicePreview",
-      "requestType": "PracticePreviewData",
-      "responseType": "PracticePreviewResponses"
-    },
-    "POST /api/v2/practice/{indicatorId}/runs": {
-      "operationId": "practiceStartRun",
-      "requestType": "PracticeStartRunData",
-      "responseType": "PracticeStartRunResponses"
-    },
     "POST /api/v2/premium/admin/plans": {
       "operationId": "adminCreatePremiumPlan_post_api_v2_premium_admin_plans",
       "requestType": "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData",
@@ -2631,6 +2641,21 @@
       "operationId": "screenerRun",
       "requestType": "ScreenerRunData",
       "responseType": "ScreenerRunResponses"
+    },
+    "POST /api/v2/strategy/strategies": {
+      "operationId": "strategyCreate",
+      "requestType": "StrategyCreateData",
+      "responseType": "StrategyCreateResponses"
+    },
+    "POST /api/v2/strategy/strategies/{id}/versions": {
+      "operationId": "strategyVersionCreate",
+      "requestType": "StrategyVersionCreateData",
+      "responseType": "StrategyVersionCreateResponses"
+    },
+    "POST /api/v2/strategy/strategies/{id}/versions/{version}/restore": {
+      "operationId": "strategyVersionRestore",
+      "requestType": "StrategyVersionRestoreData",
+      "responseType": "StrategyVersionRestoreResponses"
     },
     "POST /api/v2/team/users/{userId}/remove": {
       "operationId": "TeamController_remove[1]",
@@ -2902,6 +2927,11 @@
       "requestType": "QuantControllerUpdate0Data",
       "responseType": "QuantControllerUpdate0Responses"
     },
+    "PUT /api/v2/bot/schedule/next": {
+      "operationId": "putBotScheduleNext",
+      "requestType": "PutBotScheduleNextData",
+      "responseType": "PutBotScheduleNextResponses"
+    },
     "PUT /api/v2/chart-drawings/{symbol}": {
       "operationId": "saveChartDrawingV2",
       "requestType": "SaveChartDrawingV2Data",
@@ -2921,11 +2951,6 @@
       "operationId": "notificationSaveSettings",
       "requestType": "NotificationSaveSettingsData",
       "responseType": "NotificationSaveSettingsResponses"
-    },
-    "PUT /api/v2/practice/{indicatorId}/draft": {
-      "operationId": "practiceSaveDraft",
-      "requestType": "PracticeSaveDraftData",
-      "responseType": "PracticeSaveDraftResponses"
     },
     "PUT /api/v2/shop/active-mascot": {
       "operationId": "setShopActiveMascot",

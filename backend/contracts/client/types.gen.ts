@@ -32296,16 +32296,22 @@ export type ListAdminIqxTemplatesError =
 export type ListAdminIqxTemplatesResponses = {
   200: {
     items: Array<{
+      bots_using: number | null;
       current_version: number | null;
       draft_updated_at: string | null;
       has_draft: boolean;
       id: string;
       idea: string;
       kind: "filter" | "strategy";
+      max_holding: number | null;
       name: string;
       slug: string;
       sort_order: number;
       status: "shown" | "hidden" | "unpublished";
+      trial_runs_30d: number | null;
+      universe: {
+        type: "vn30" | "vn100";
+      } | null;
       updated_at: string;
       updated_by: {
         id: string | null;
@@ -32371,6 +32377,7 @@ export type CreateAdminIqxTemplateError =
 
 export type CreateAdminIqxTemplateResponses = {
   200: {
+    bots_using: number | null;
     current: {
       content: {
         [key: string]: unknown;
@@ -32414,10 +32421,15 @@ export type CreateAdminIqxTemplateResponses = {
     id: string;
     idea: string;
     kind: "filter" | "strategy";
+    max_holding: number | null;
     name: string;
     slug: string;
     sort_order: number;
     status: "shown" | "hidden" | "unpublished";
+    trial_runs_30d: number | null;
+    universe: {
+      type: "vn30" | "vn100";
+    } | null;
     updated_at: string;
     updated_by: {
       id: string | null;
@@ -32486,16 +32498,22 @@ export type ReorderAdminIqxTemplatesError =
 export type ReorderAdminIqxTemplatesResponses = {
   200: {
     items: Array<{
+      bots_using: number | null;
       current_version: number | null;
       draft_updated_at: string | null;
       has_draft: boolean;
       id: string;
       idea: string;
       kind: "filter" | "strategy";
+      max_holding: number | null;
       name: string;
       slug: string;
       sort_order: number;
       status: "shown" | "hidden" | "unpublished";
+      trial_runs_30d: number | null;
+      universe: {
+        type: "vn30" | "vn100";
+      } | null;
       updated_at: string;
       updated_by: {
         id: string | null;
@@ -32601,6 +32619,7 @@ export type GetAdminIqxTemplateError =
 
 export type GetAdminIqxTemplateResponses = {
   200: {
+    bots_using: number | null;
     current: {
       content: {
         [key: string]: unknown;
@@ -32644,10 +32663,15 @@ export type GetAdminIqxTemplateResponses = {
     id: string;
     idea: string;
     kind: "filter" | "strategy";
+    max_holding: number | null;
     name: string;
     slug: string;
     sort_order: number;
     status: "shown" | "hidden" | "unpublished";
+    trial_runs_30d: number | null;
+    universe: {
+      type: "vn30" | "vn100";
+    } | null;
     updated_at: string;
     updated_by: {
       id: string | null;
@@ -32725,6 +32749,7 @@ export type SaveAdminIqxTemplateDraftError =
 
 export type SaveAdminIqxTemplateDraftResponses = {
   200: {
+    bots_using: number | null;
     current: {
       content: {
         [key: string]: unknown;
@@ -32768,10 +32793,15 @@ export type SaveAdminIqxTemplateDraftResponses = {
     id: string;
     idea: string;
     kind: "filter" | "strategy";
+    max_holding: number | null;
     name: string;
     slug: string;
     sort_order: number;
     status: "shown" | "hidden" | "unpublished";
+    trial_runs_30d: number | null;
+    universe: {
+      type: "vn30" | "vn100";
+    } | null;
     updated_at: string;
     updated_by: {
       id: string | null;
@@ -32840,6 +32870,7 @@ export type HideAdminIqxTemplateError =
 
 export type HideAdminIqxTemplateResponses = {
   200: {
+    bots_using: number | null;
     current: {
       content: {
         [key: string]: unknown;
@@ -32883,10 +32914,15 @@ export type HideAdminIqxTemplateResponses = {
     id: string;
     idea: string;
     kind: "filter" | "strategy";
+    max_holding: number | null;
     name: string;
     slug: string;
     sort_order: number;
     status: "shown" | "hidden" | "unpublished";
+    trial_runs_30d: number | null;
+    universe: {
+      type: "vn30" | "vn100";
+    } | null;
     updated_at: string;
     updated_by: {
       id: string | null;
@@ -32966,6 +33002,7 @@ export type PublishAdminIqxTemplateError =
 
 export type PublishAdminIqxTemplateResponses = {
   200: {
+    bots_using: number | null;
     current: {
       content: {
         [key: string]: unknown;
@@ -33009,10 +33046,15 @@ export type PublishAdminIqxTemplateResponses = {
     id: string;
     idea: string;
     kind: "filter" | "strategy";
+    max_holding: number | null;
     name: string;
     slug: string;
     sort_order: number;
     status: "shown" | "hidden" | "unpublished";
+    trial_runs_30d: number | null;
+    universe: {
+      type: "vn30" | "vn100";
+    } | null;
     updated_at: string;
     updated_by: {
       id: string | null;
@@ -33081,6 +33123,7 @@ export type RestoreAdminIqxTemplateError =
 
 export type RestoreAdminIqxTemplateResponses = {
   200: {
+    bots_using: number | null;
     current: {
       content: {
         [key: string]: unknown;
@@ -33124,10 +33167,15 @@ export type RestoreAdminIqxTemplateResponses = {
     id: string;
     idea: string;
     kind: "filter" | "strategy";
+    max_holding: number | null;
     name: string;
     slug: string;
     sort_order: number;
     status: "shown" | "hidden" | "unpublished";
+    trial_runs_30d: number | null;
+    universe: {
+      type: "vn30" | "vn100";
+    } | null;
     updated_at: string;
     updated_by: {
       id: string | null;
@@ -33196,6 +33244,7 @@ export type ShowAdminIqxTemplateError =
 
 export type ShowAdminIqxTemplateResponses = {
   200: {
+    bots_using: number | null;
     current: {
       content: {
         [key: string]: unknown;
@@ -33239,10 +33288,15 @@ export type ShowAdminIqxTemplateResponses = {
     id: string;
     idea: string;
     kind: "filter" | "strategy";
+    max_holding: number | null;
     name: string;
     slug: string;
     sort_order: number;
     status: "shown" | "hidden" | "unpublished";
+    trial_runs_30d: number | null;
+    universe: {
+      type: "vn30" | "vn100";
+    } | null;
     updated_at: string;
     updated_by: {
       id: string | null;
@@ -39410,6 +39464,15 @@ export type ListBotJournalSessionsResponses = {
       cash_end_vnd: string | null;
       completed_at: string | null;
       config_revision: number | null;
+      counters: {
+        buys: number;
+        due_unfilled: number;
+        sells: number;
+        skipped_buys: number;
+        t2_blocked: number;
+        time_exits: number;
+        universe_empty: boolean;
+      } | null;
       counts: {
         buy: number;
         hold: number;
@@ -39434,12 +39497,17 @@ export type ListBotJournalSessionsResponses = {
       run_status: "running" | "succeeded" | "failed";
       session: string;
       started_at: string;
+      strategy_label: string | null;
+      summary: string | null;
       universe: {
         kind: "vn30" | "custom";
         name: string | null;
         revision: number;
       } | null;
+      universe_count: number | null;
+      universe_label: string | null;
       valuation_complete: boolean | null;
+      version_label: string | null;
     }>;
     next_cursor: string | null;
   };
@@ -39528,6 +39596,15 @@ export type GetBotJournalSessionResponses = {
       cash_end_vnd: string | null;
       completed_at: string | null;
       config_revision: number | null;
+      counters: {
+        buys: number;
+        due_unfilled: number;
+        sells: number;
+        skipped_buys: number;
+        t2_blocked: number;
+        time_exits: number;
+        universe_empty: boolean;
+      } | null;
       counts: {
         buy: number;
         hold: number;
@@ -39552,12 +39629,17 @@ export type GetBotJournalSessionResponses = {
       run_status: "running" | "succeeded" | "failed";
       session: string;
       started_at: string;
+      strategy_label: string | null;
+      summary: string | null;
       universe: {
         kind: "vn30" | "custom";
         name: string | null;
         revision: number;
       } | null;
+      universe_count: number | null;
+      universe_label: string | null;
       valuation_complete: boolean | null;
+      version_label: string | null;
     };
   };
 };
@@ -39739,6 +39821,305 @@ export type GetBotPositionsGetApiV2BotPositionsResponses = {
 export type GetBotPositionsGetApiV2BotPositionsResponse =
   GetBotPositionsGetApiV2BotPositionsResponses[keyof GetBotPositionsGetApiV2BotPositionsResponses];
 
+export type GetBotScheduleData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/schedule";
+};
+
+export type GetBotScheduleErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotScheduleError =
+  GetBotScheduleErrors[keyof GetBotScheduleErrors];
+
+export type GetBotScheduleResponses = {
+  200: {
+    iqx_update: {
+      content: {
+        [key: string]: unknown;
+      };
+      latest_version: number;
+    } | null;
+    last: {
+      content: {
+        [key: string]: unknown;
+      } | null;
+      deleted: boolean;
+      hidden: boolean;
+      id: string | null;
+      max_holding: number;
+      name: string | null;
+      session_date: string;
+      source: "iqx" | "user";
+      universe_label: string | null;
+      version: number | null;
+      version_label: string | null;
+    } | null;
+    next: {
+      content: {
+        [key: string]: unknown;
+      } | null;
+      cutoff_at: string;
+      deleted: boolean;
+      follow_latest: boolean;
+      hidden: boolean;
+      id: string | null;
+      max_holding: number;
+      name: string | null;
+      session_date: string;
+      source: "iqx" | "user";
+      universe_label: string | null;
+      version: number | null;
+      version_label: string | null;
+    };
+  };
+};
+
+export type GetBotScheduleResponse =
+  GetBotScheduleResponses[keyof GetBotScheduleResponses];
+
+export type PutBotScheduleNextData = {
+  body: {
+    confirm_due_positions?: Array<string>;
+    expected_next_session: string;
+    id: string;
+    source: "iqx" | "user";
+    version?: number;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/schedule/next";
+};
+
+export type PutBotScheduleNextErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PutBotScheduleNextError =
+  PutBotScheduleNextErrors[keyof PutBotScheduleNextErrors];
+
+export type PutBotScheduleNextResponses = {
+  200: {
+    iqx_update: {
+      content: {
+        [key: string]: unknown;
+      };
+      latest_version: number;
+    } | null;
+    last: {
+      content: {
+        [key: string]: unknown;
+      } | null;
+      deleted: boolean;
+      hidden: boolean;
+      id: string | null;
+      max_holding: number;
+      name: string | null;
+      session_date: string;
+      source: "iqx" | "user";
+      universe_label: string | null;
+      version: number | null;
+      version_label: string | null;
+    } | null;
+    next: {
+      content: {
+        [key: string]: unknown;
+      } | null;
+      cutoff_at: string;
+      deleted: boolean;
+      follow_latest: boolean;
+      hidden: boolean;
+      id: string | null;
+      max_holding: number;
+      name: string | null;
+      session_date: string;
+      source: "iqx" | "user";
+      universe_label: string | null;
+      version: number | null;
+      version_label: string | null;
+    };
+  };
+};
+
+export type PutBotScheduleNextResponse =
+  PutBotScheduleNextResponses[keyof PutBotScheduleNextResponses];
+
+export type GetBotScheduleImpactData = {
+  body?: never;
+  path?: never;
+  query: {
+    source: "iqx" | "user";
+    id: string;
+    version?: number;
+  };
+  url: "/api/v2/bot/schedule/next/impact";
+};
+
+export type GetBotScheduleImpactErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotScheduleImpactError =
+  GetBotScheduleImpactErrors[keyof GetBotScheduleImpactErrors];
+
+export type GetBotScheduleImpactResponses = {
+  200: {
+    n_current: number;
+    n_new: number;
+    next_session: string;
+    positions: Array<{
+      counted: number;
+      sell_session: string;
+      symbol: string;
+    }>;
+  };
+};
+
+export type GetBotScheduleImpactResponse =
+  GetBotScheduleImpactResponses[keyof GetBotScheduleImpactResponses];
+
+export type KeepBotScheduleLastData = {
+  body: {
+    confirm_due_positions?: Array<string>;
+    expected_next_session: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/schedule/next/keep-last";
+};
+
+export type KeepBotScheduleLastErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type KeepBotScheduleLastError =
+  KeepBotScheduleLastErrors[keyof KeepBotScheduleLastErrors];
+
+export type KeepBotScheduleLastResponses = {
+  200: {
+    iqx_update: {
+      content: {
+        [key: string]: unknown;
+      };
+      latest_version: number;
+    } | null;
+    last: {
+      content: {
+        [key: string]: unknown;
+      } | null;
+      deleted: boolean;
+      hidden: boolean;
+      id: string | null;
+      max_holding: number;
+      name: string | null;
+      session_date: string;
+      source: "iqx" | "user";
+      universe_label: string | null;
+      version: number | null;
+      version_label: string | null;
+    } | null;
+    next: {
+      content: {
+        [key: string]: unknown;
+      } | null;
+      cutoff_at: string;
+      deleted: boolean;
+      follow_latest: boolean;
+      hidden: boolean;
+      id: string | null;
+      max_holding: number;
+      name: string | null;
+      session_date: string;
+      source: "iqx" | "user";
+      universe_label: string | null;
+      version: number | null;
+      version_label: string | null;
+    };
+  };
+};
+
+export type KeepBotScheduleLastResponse =
+  KeepBotScheduleLastResponses[keyof KeepBotScheduleLastResponses];
+
 export type GetBotStatusGetApiV2BotStatusData = {
   body?: never;
   path?: never;
@@ -39778,6 +40159,70 @@ export type GetBotStatusGetApiV2BotStatusResponses = {
 
 export type GetBotStatusGetApiV2BotStatusResponse =
   GetBotStatusGetApiV2BotStatusResponses[keyof GetBotStatusGetApiV2BotStatusResponses];
+
+export type GetBotStrategyOptionsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/strategy-options";
+};
+
+export type GetBotStrategyOptionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotStrategyOptionsError =
+  GetBotStrategyOptionsErrors[keyof GetBotStrategyOptionsErrors];
+
+export type GetBotStrategyOptionsResponses = {
+  200: {
+    iqx: Array<{
+      hidden: boolean;
+      id: string;
+      max_holding: number;
+      name: string;
+      on_bot: {
+        last: boolean;
+        next: boolean;
+      };
+      slug: string;
+      universe_label: string;
+      version: number;
+    }>;
+    mine: Array<{
+      id: string;
+      latest_saved_at: string | null;
+      latest_version: number;
+      name: string;
+      on_bot: {
+        last: boolean;
+        next: boolean;
+      };
+    }>;
+  };
+};
+
+export type GetBotStrategyOptionsResponse =
+  GetBotStrategyOptionsResponses[keyof GetBotStrategyOptionsResponses];
 
 export type GetBotTradesData = {
   body?: never;
@@ -39835,6 +40280,10 @@ export type GetBotTradesResponses = {
         session: string;
         total_vnd: string;
       };
+      counted_sessions: number | null;
+      exit_reason: "indicator" | "max_holding" | "legacy";
+      exit_reason_label: string | null;
+      exit_reasons: Array<"indicator" | "max_holding">;
       holding_days: number;
       holding_sessions: number;
       id: string;
@@ -39843,6 +40292,7 @@ export type GetBotTradesResponses = {
       legacy_filter_ids: Array<string>;
       legacy_stop_loss_vnd: string | null;
       legacy_take_profit_vnd: string | null;
+      max_holding_at_exit: number | null;
       realized_pnl_pct: string | null;
       realized_pnl_vnd: string;
       sell: {
@@ -39861,7 +40311,9 @@ export type GetBotTradesResponses = {
         session: string;
         tax_vnd: string;
       };
+      strategy_label: string | null;
       symbol: string;
+      version_label: string | null;
     }>;
     next_cursor: string | null;
   };
@@ -39869,552 +40321,6 @@ export type GetBotTradesResponses = {
 
 export type GetBotTradesResponse =
   GetBotTradesResponses[keyof GetBotTradesResponses];
-
-export type GetBotUniverseData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/api/v2/bot/universe";
-};
-
-export type GetBotUniverseErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type GetBotUniverseError =
-  GetBotUniverseErrors[keyof GetBotUniverseErrors];
-
-export type GetBotUniverseResponses = {
-  200: {
-    effective: {
-      cancelled_at: string | null;
-      effective_session: string | null;
-      kind: "vn30" | "custom";
-      list_as_of: string | null;
-      membership_session: string | null;
-      name: string;
-      provenance: {
-        [key: string]: unknown;
-      };
-      requested_at: string | null;
-      revision: number;
-      saved_list_id: string | null;
-      status:
-        | "implicit"
-        | "pending"
-        | "effective"
-        | "cancelled"
-        | "superseded"
-        | "calendar_unavailable";
-      superseded_by: number | null;
-      symbol_count: number | null;
-      symbols: Array<{
-        exchange: string | null;
-        name: string | null;
-        symbol: string;
-      }>;
-      unavailable_reason: string | null;
-    };
-    history: Array<{
-      cancelled_at: string | null;
-      effective_session: string | null;
-      kind: "vn30" | "custom";
-      list_as_of: string | null;
-      name: string;
-      provenance: {
-        [key: string]: unknown;
-      };
-      requested_at: string | null;
-      revision: number;
-      saved_list_id: string | null;
-      status:
-        | "implicit"
-        | "pending"
-        | "effective"
-        | "cancelled"
-        | "superseded"
-        | "calendar_unavailable";
-      superseded_by: number | null;
-      symbol_count: number | null;
-    }>;
-    pending: {
-      cancelled_at: string | null;
-      effective_session: string | null;
-      kind: "vn30" | "custom";
-      list_as_of: string | null;
-      name: string;
-      provenance: {
-        [key: string]: unknown;
-      };
-      requested_at: string | null;
-      revision: number;
-      saved_list_id: string | null;
-      status:
-        | "implicit"
-        | "pending"
-        | "effective"
-        | "cancelled"
-        | "superseded"
-        | "calendar_unavailable";
-      superseded_by: number | null;
-      symbol_count: number | null;
-    } | null;
-    revision: number;
-    server_date: string;
-  };
-};
-
-export type GetBotUniverseResponse =
-  GetBotUniverseResponses[keyof GetBotUniverseResponses];
-
-export type ApplyBotUniverseListData = {
-  body: {
-    expected_revision: number;
-    idempotency_key: string;
-    list_id: string;
-    symbols: Array<string>;
-  };
-  path?: never;
-  query?: never;
-  url: "/api/v2/bot/universe/apply-list";
-};
-
-export type ApplyBotUniverseListErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type ApplyBotUniverseListError =
-  ApplyBotUniverseListErrors[keyof ApplyBotUniverseListErrors];
-
-export type ApplyBotUniverseListResponses = {
-  201: {
-    request: {
-      cancelled_at: string | null;
-      effective_session: string | null;
-      kind: "vn30" | "custom";
-      list_as_of: string | null;
-      name: string;
-      provenance: {
-        [key: string]: unknown;
-      };
-      requested_at: string | null;
-      revision: number;
-      saved_list_id: string | null;
-      status:
-        | "implicit"
-        | "pending"
-        | "effective"
-        | "cancelled"
-        | "superseded"
-        | "calendar_unavailable";
-      superseded_by: number | null;
-      symbol_count: number | null;
-    };
-    state: {
-      effective: {
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        membership_session: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-        symbols: Array<{
-          exchange: string | null;
-          name: string | null;
-          symbol: string;
-        }>;
-        unavailable_reason: string | null;
-      };
-      history: Array<{
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-      }>;
-      pending: {
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-      } | null;
-      revision: number;
-      server_date: string;
-    };
-  };
-};
-
-export type ApplyBotUniverseListResponse =
-  ApplyBotUniverseListResponses[keyof ApplyBotUniverseListResponses];
-
-export type CancelBotUniversePendingData = {
-  body: {
-    expected_revision: number;
-  };
-  path?: never;
-  query?: never;
-  url: "/api/v2/bot/universe/pending/cancel";
-};
-
-export type CancelBotUniversePendingErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type CancelBotUniversePendingError =
-  CancelBotUniversePendingErrors[keyof CancelBotUniversePendingErrors];
-
-export type CancelBotUniversePendingResponses = {
-  200: {
-    request: {
-      cancelled_at: string | null;
-      effective_session: string | null;
-      kind: "vn30" | "custom";
-      list_as_of: string | null;
-      name: string;
-      provenance: {
-        [key: string]: unknown;
-      };
-      requested_at: string | null;
-      revision: number;
-      saved_list_id: string | null;
-      status:
-        | "implicit"
-        | "pending"
-        | "effective"
-        | "cancelled"
-        | "superseded"
-        | "calendar_unavailable";
-      superseded_by: number | null;
-      symbol_count: number | null;
-    };
-    state: {
-      effective: {
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        membership_session: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-        symbols: Array<{
-          exchange: string | null;
-          name: string | null;
-          symbol: string;
-        }>;
-        unavailable_reason: string | null;
-      };
-      history: Array<{
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-      }>;
-      pending: {
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-      } | null;
-      revision: number;
-      server_date: string;
-    };
-  };
-};
-
-export type CancelBotUniversePendingResponse =
-  CancelBotUniversePendingResponses[keyof CancelBotUniversePendingResponses];
-
-export type RevertBotUniverseToVn30Data = {
-  body: {
-    expected_revision: number;
-    idempotency_key: string;
-  };
-  path?: never;
-  query?: never;
-  url: "/api/v2/bot/universe/revert-vn30";
-};
-
-export type RevertBotUniverseToVn30Errors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type RevertBotUniverseToVn30Error =
-  RevertBotUniverseToVn30Errors[keyof RevertBotUniverseToVn30Errors];
-
-export type RevertBotUniverseToVn30Responses = {
-  201: {
-    request: {
-      cancelled_at: string | null;
-      effective_session: string | null;
-      kind: "vn30" | "custom";
-      list_as_of: string | null;
-      name: string;
-      provenance: {
-        [key: string]: unknown;
-      };
-      requested_at: string | null;
-      revision: number;
-      saved_list_id: string | null;
-      status:
-        | "implicit"
-        | "pending"
-        | "effective"
-        | "cancelled"
-        | "superseded"
-        | "calendar_unavailable";
-      superseded_by: number | null;
-      symbol_count: number | null;
-    };
-    state: {
-      effective: {
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        membership_session: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-        symbols: Array<{
-          exchange: string | null;
-          name: string | null;
-          symbol: string;
-        }>;
-        unavailable_reason: string | null;
-      };
-      history: Array<{
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-      }>;
-      pending: {
-        cancelled_at: string | null;
-        effective_session: string | null;
-        kind: "vn30" | "custom";
-        list_as_of: string | null;
-        name: string;
-        provenance: {
-          [key: string]: unknown;
-        };
-        requested_at: string | null;
-        revision: number;
-        saved_list_id: string | null;
-        status:
-          | "implicit"
-          | "pending"
-          | "effective"
-          | "cancelled"
-          | "superseded"
-          | "calendar_unavailable";
-        superseded_by: number | null;
-        symbol_count: number | null;
-      } | null;
-      revision: number;
-      server_date: string;
-    };
-  };
-};
-
-export type RevertBotUniverseToVn30Response =
-  RevertBotUniverseToVn30Responses[keyof RevertBotUniverseToVn30Responses];
 
 export type ListCandleDojoCardsData = {
   body?: never;
@@ -53250,2409 +53156,6 @@ export type GetPortfolioReportV2Responses = {
 export type GetPortfolioReportV2Response =
   GetPortfolioReportV2Responses[keyof GetPortfolioReportV2Responses];
 
-export type PracticeIndicatorsData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/api/v2/practice/indicators";
-};
-
-export type PracticeIndicatorsErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type PracticeIndicatorsError =
-  PracticeIndicatorsErrors[keyof PracticeIndicatorsErrors];
-
-export type PracticeIndicatorsResponses = {
-  200: {
-    hold: {
-      default: number;
-      max: number;
-      min: number;
-    };
-    indicators: Array<{
-      granted: boolean;
-      indicator_id: string;
-      lesson_key: string;
-      name: string;
-      progress: {
-        completed_count: number;
-        cursor: number;
-        status: "not_started" | "in_progress" | "completed";
-        total: number;
-      } | null;
-    }>;
-    profile: {
-      buy_fee_rate: number;
-      capital: number;
-      lot: number;
-      profile_version: string;
-      sell_cost_rate: number;
-      verified: boolean;
-      [key: string]: unknown;
-    };
-    set: {
-      case_count: number;
-      set_version: string;
-      test_months: number;
-      window_bars: number;
-    };
-  };
-};
-
-export type PracticeIndicatorsResponse =
-  PracticeIndicatorsResponses[keyof PracticeIndicatorsResponses];
-
-export type PracticeGetRunData = {
-  body?: never;
-  path: {
-    runId: string;
-  };
-  query?: never;
-  url: "/api/v2/practice/runs/{runId}";
-};
-
-export type PracticeGetRunErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type PracticeGetRunError =
-  PracticeGetRunErrors[keyof PracticeGetRunErrors];
-
-export type PracticeGetRunResponses = {
-  200: {
-    attempts: number;
-    case_id: string;
-    chart: {
-      bars: {
-        close: Array<number>;
-        high: Array<number>;
-        low: Array<number>;
-        open: Array<number>;
-        volume: Array<number>;
-      };
-      first_session: number;
-      last_observed_session: 0;
-      last_session: number;
-      plot: {
-        buy: {
-          bounds: [number, number] | null;
-          histogram_key: string | null;
-          lines: Array<{
-            key: string;
-            label: string;
-          }>;
-          nonnegative: boolean;
-          overlay: boolean;
-          reference_levels: Array<number>;
-          threshold_levels: Array<number>;
-          volume_key: string | null;
-          zero_line: boolean;
-        };
-        sell: {
-          bounds: [number, number] | null;
-          histogram_key: string | null;
-          lines: Array<{
-            key: string;
-            label: string;
-          }>;
-          nonnegative: boolean;
-          overlay: boolean;
-          reference_levels: Array<number>;
-          threshold_levels: Array<number>;
-          volume_key: string | null;
-          zero_line: boolean;
-        };
-      };
-      series: {
-        buy: {
-          [key: string]: Array<number | null>;
-        };
-        sell: {
-          [key: string]: Array<number | null>;
-        };
-      };
-    } | null;
-    completed_at: string | null;
-    config:
-      | {
-          buy: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-        }
-      | {
-          buy: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-        };
-    error: {
-      code: string;
-      message: string;
-    } | null;
-    indicator_id: string;
-    locked_at: string;
-    ordinal: number;
-    result: {
-      comment: {
-        rule_id: string;
-        status: "ok" | "unavailable";
-        text: string | null;
-        values: {
-          [key: string]: unknown;
-        };
-        version: string;
-      };
-      data_notes: Array<string>;
-      events: Array<{
-        price: number;
-        reason?: "indicator" | "max_holding";
-        session: number;
-        side: "buy" | "sell";
-        trade_ordinal: number;
-      }>;
-      first_session: 1;
-      kpis: {
-        buy_count: number;
-        capital_initial: number;
-        cash_end: number;
-        closed_trade_count: number;
-        insufficient_cash_buys: number;
-        nav_end: number | null;
-        open_position: boolean;
-        open_position_value: number | null;
-        total_return: number | null;
-        valuation: "ok" | "missing";
-      };
-      last_session: number;
-      missed_buys: Array<{
-        cash: number;
-        fill_session: number;
-        price: number;
-        signal_session: number;
-      }>;
-      nav: Array<number>;
-      pending_orders: Array<{
-        reason: "indicator" | "max_holding" | "buy_signal";
-        side: "buy" | "sell";
-        signal_session: number;
-        status: "unfilled_end_of_window";
-        time_due: boolean;
-      }>;
-      trades: Array<{
-        buy: {
-          evidence: {
-            enabled: boolean;
-            params: {
-              [key: string]: number;
-            };
-            reason?: "indicator_off" | "side_off" | "no_rows";
-            result: boolean | null;
-            rules: Array<{
-              kind: "compare" | "cross" | "membership";
-              label?: string;
-              left_label: string;
-              lhs: number | null;
-              missing: boolean;
-              op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-              result: boolean | null;
-              rhs: number | null;
-              right_label: string;
-              rule_id: string;
-              values?: {
-                [key: string]: number | string;
-              };
-              [key: string]: unknown;
-            }>;
-            side: "buy" | "sell";
-            signal_session: number;
-            status?: "ok" | "no_signal";
-          };
-          fee: number;
-          price: number;
-          session: number;
-          signal_session: number;
-          total_cost: number;
-        };
-        holding_sessions: number;
-        mark: {
-          market_value: number;
-          price: number;
-          session: number;
-        } | null;
-        ordinal: number;
-        pnl_kind: "realized" | "unrealized";
-        pnl_ratio: number;
-        pnl_vnd: number;
-        qty: number;
-        sell: {
-          evidence: {
-            enabled: boolean;
-            params: {
-              [key: string]: number;
-            };
-            reason?: "indicator_off" | "side_off" | "no_rows";
-            result: boolean | null;
-            rules: Array<{
-              kind: "compare" | "cross" | "membership";
-              label?: string;
-              left_label: string;
-              lhs: number | null;
-              missing: boolean;
-              op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-              result: boolean | null;
-              rhs: number | null;
-              right_label: string;
-              rule_id: string;
-              values?: {
-                [key: string]: number | string;
-              };
-              [key: string]: unknown;
-            }>;
-            side: "buy" | "sell";
-            signal_session: number;
-            status?: "ok" | "no_signal";
-          };
-          fee: number;
-          indicator_met: boolean;
-          net_proceeds: number;
-          price: number;
-          reason: "indicator" | "max_holding";
-          session: number;
-          signal_session: number;
-          time_due: boolean;
-          time_exit: {
-            due: boolean;
-            held_sessions_at_signal: number;
-            hold_max_sessions: number;
-          };
-        } | null;
-        status: "closed" | "open";
-      }>;
-    } | null;
-    run_id: string;
-    status: "computing" | "succeeded" | "failed";
-    total: number;
-    versions: {
-      calculation_version: string;
-      comment_version: string;
-      data_version: string;
-      engine_version: string;
-      execution_version: string;
-      profile_version: string;
-      rule_version: string;
-      set_version: string;
-    };
-  };
-};
-
-export type PracticeGetRunResponse =
-  PracticeGetRunResponses[keyof PracticeGetRunResponses];
-
-export type PracticeSaveDraftData = {
-  body: {
-    draft:
-      | {
-          buy: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-        }
-      | {
-          buy: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-        };
-    expected_revision: number;
-  };
-  path: {
-    indicatorId: string;
-  };
-  query?: never;
-  url: "/api/v2/practice/{indicatorId}/draft";
-};
-
-export type PracticeSaveDraftErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type PracticeSaveDraftError =
-  PracticeSaveDraftErrors[keyof PracticeSaveDraftErrors];
-
-export type PracticeSaveDraftResponses = {
-  200: {
-    draft:
-      | {
-          buy: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-        }
-      | {
-          buy: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-        };
-    draft_revision: number;
-    validation: {
-      errors: Array<{
-        message: string;
-        path: string;
-        row?: number;
-        side?: "buy" | "sell";
-      }>;
-      valid: boolean;
-    };
-  };
-};
-
-export type PracticeSaveDraftResponse =
-  PracticeSaveDraftResponses[keyof PracticeSaveDraftResponses];
-
-export type PracticeHistoryData = {
-  body?: never;
-  path: {
-    indicatorId: string;
-  };
-  query?: {
-    page?: number;
-    page_size?: number;
-  };
-  url: "/api/v2/practice/{indicatorId}/history";
-};
-
-export type PracticeHistoryErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type PracticeHistoryError =
-  PracticeHistoryErrors[keyof PracticeHistoryErrors];
-
-export type PracticeHistoryResponses = {
-  200: {
-    items: Array<{
-      case_id: string;
-      completed_at: string | null;
-      config:
-        | {
-            buy: {
-              enabled: boolean;
-              rules: Array<{
-                enabled: boolean;
-                id: string;
-                [key: string]: number | string | boolean | boolean | string;
-              }>;
-            };
-            hold_max_sessions: number;
-            sell: {
-              enabled: boolean;
-              rules: Array<{
-                enabled: boolean;
-                id: string;
-                [key: string]: number | string | boolean | boolean | string;
-              }>;
-            };
-          }
-        | {
-            buy: {
-              enabled: boolean;
-              ops: {
-                [key: string]:
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low"
-                  | "∈"
-                  | "∉";
-              };
-              params: {
-                [key: string]: number;
-              };
-              rules_enabled?: {
-                [key: string]: boolean;
-              };
-            };
-            hold_max_sessions: number;
-            sell: {
-              enabled: boolean;
-              ops: {
-                [key: string]:
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low"
-                  | "∈"
-                  | "∉";
-              };
-              params: {
-                [key: string]: number;
-              };
-              rules_enabled?: {
-                [key: string]: boolean;
-              };
-            };
-          };
-      kpis: {
-        buy_count: number;
-        closed_trade_count: number;
-        comment_rule_id: string | null;
-        open_position: boolean;
-        total_return: number | null;
-      } | null;
-      ordinal: number;
-      run_id: string;
-      versions: {
-        calculation_version: string;
-        comment_version: string;
-        data_version: string;
-        engine_version: string;
-        execution_version: string;
-        profile_version: string;
-        rule_version: string;
-        set_version: string;
-      };
-    }>;
-    page: number;
-    page_size: number;
-    total: number;
-  };
-};
-
-export type PracticeHistoryResponse =
-  PracticeHistoryResponses[keyof PracticeHistoryResponses];
-
-export type PracticeNextData = {
-  body: {
-    expected_cursor: number;
-    idempotency_key: string;
-  };
-  path: {
-    indicatorId: string;
-  };
-  query?: never;
-  url: "/api/v2/practice/{indicatorId}/next";
-};
-
-export type PracticeNextErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type PracticeNextError = PracticeNextErrors[keyof PracticeNextErrors];
-
-export type PracticeNextResponses = {
-  200: {
-    can_next: boolean;
-    can_retry: boolean;
-    can_start: boolean;
-    case: {
-      case_id: string;
-      ordinal: number;
-      window_bars: number;
-    };
-    completed_count: number;
-    current_run: {
-      case_id: string;
-      error: {
-        code: string;
-        message: string;
-      } | null;
-      ordinal: number;
-      run_id: string;
-      status: "computing" | "succeeded" | "failed";
-      summary: {
-        buy_count: number;
-        closed_trade_count: number;
-        comment_rule_id: string | null;
-        open_position: boolean;
-        total_return: number | null;
-      } | null;
-    } | null;
-    draft:
-      | {
-          buy: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-        }
-      | {
-          buy: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-        };
-    draft_revision: number;
-    form:
-      | {
-          defaults: {
-            buy: {
-              enabled: boolean;
-              rules: Array<{
-                enabled: boolean;
-                id: string;
-                [key: string]: number | string | boolean | boolean | string;
-              }>;
-            };
-            hold_max_sessions: number;
-            sell: {
-              enabled: boolean;
-              rules: Array<{
-                enabled: boolean;
-                id: string;
-                [key: string]: number | string | boolean | boolean | string;
-              }>;
-            };
-          };
-          indicator_id: string;
-          model: "rows";
-          rows: Array<{
-            buy: {
-              [key: string]: number | string;
-            };
-            constraints: Array<{
-              left: string;
-              op: "<";
-              right: string;
-            }>;
-            default_enabled: boolean;
-            fields: Array<
-              | {
-                  key: string;
-                  label: string;
-                  max: number;
-                  min: number;
-                  options?: Array<number>;
-                  step: number;
-                  type: "integer" | "number";
-                }
-              | {
-                  key: string;
-                  label: string;
-                  options: Array<{
-                    label: string;
-                    value: string;
-                  }>;
-                  type: "enum";
-                }
-            >;
-            id: string;
-            sell: {
-              [key: string]: number | string;
-            };
-            sentence: string;
-          }>;
-        }
-      | {
-          buy: {
-            fields: Array<{
-              key: string;
-              label: string;
-              max: number;
-              min: number;
-              options?: Array<number>;
-              step: number;
-              type: "integer" | "number";
-              unit: string;
-            }>;
-            rules: Array<{
-              allowed_ops: Array<
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉"
-              >;
-              default_enabled?: boolean;
-              default_op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-              kind: "compare" | "cross" | "membership";
-              left_label: string;
-              lhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-              rhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  }
-                | {
-                    lower:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    upper:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  };
-              right_label: string;
-              rule_id: string;
-            }>;
-          };
-          cross_fields: Array<{
-            left: string;
-            op: ">" | "<";
-            right: string;
-          }>;
-          defaults: {
-            buy: {
-              enabled: boolean;
-              ops: {
-                [key: string]:
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low"
-                  | "∈"
-                  | "∉";
-              };
-              params: {
-                [key: string]: number;
-              };
-              rules_enabled?: {
-                [key: string]: boolean;
-              };
-            };
-            hold_max_sessions: number;
-            sell: {
-              enabled: boolean;
-              ops: {
-                [key: string]:
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low"
-                  | "∈"
-                  | "∉";
-              };
-              params: {
-                [key: string]: number;
-              };
-              rules_enabled?: {
-                [key: string]: boolean;
-              };
-            };
-          };
-          indicator_id: string;
-          model: "legacy_params";
-          sell: {
-            fields: Array<{
-              key: string;
-              label: string;
-              max: number;
-              min: number;
-              options?: Array<number>;
-              step: number;
-              type: "integer" | "number";
-              unit: string;
-            }>;
-            rules: Array<{
-              allowed_ops: Array<
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉"
-              >;
-              default_enabled?: boolean;
-              default_op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-              kind: "compare" | "cross" | "membership";
-              left_label: string;
-              lhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-              rhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  }
-                | {
-                    lower:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    upper:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  };
-              right_label: string;
-              rule_id: string;
-            }>;
-          };
-        };
-    indicator: {
-      id: string;
-      name: string;
-    };
-    ordinal: number;
-    profile: {
-      buy_fee_rate: number;
-      capital: number;
-      lot: number;
-      profile_version: string;
-      sell_cost_rate: number;
-      verified: boolean;
-      [key: string]: unknown;
-    };
-    runs: Array<{
-      case_id: string;
-      error: {
-        code: string;
-        message: string;
-      } | null;
-      ordinal: number;
-      run_id: string;
-      status: "computing" | "succeeded" | "failed";
-      summary: {
-        buy_count: number;
-        closed_trade_count: number;
-        comment_rule_id: string | null;
-        open_position: boolean;
-        total_return: number | null;
-      } | null;
-    }>;
-    set_version: string;
-    status: "ready" | "computing" | "failed" | "completed" | "set_completed";
-    total: number;
-    validation: {
-      errors: Array<{
-        message: string;
-        path: string;
-        row?: number;
-        side?: "buy" | "sell";
-      }>;
-      valid: boolean;
-    };
-  };
-};
-
-export type PracticeNextResponse =
-  PracticeNextResponses[keyof PracticeNextResponses];
-
-export type PracticePreviewData = {
-  body: {
-    buy_params?: {
-      [key: string]: number;
-    };
-    buy_rows?: Array<{
-      enabled: boolean;
-      id: string;
-      [key: string]: number | string | boolean | boolean | string;
-    }>;
-    sell_params?: {
-      [key: string]: number;
-    };
-    sell_rows?: Array<{
-      enabled: boolean;
-      id: string;
-      [key: string]: number | string | boolean | boolean | string;
-    }>;
-  };
-  path: {
-    indicatorId: string;
-  };
-  query?: never;
-  url: "/api/v2/practice/{indicatorId}/preview";
-};
-
-export type PracticePreviewErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type PracticePreviewError =
-  PracticePreviewErrors[keyof PracticePreviewErrors];
-
-export type PracticePreviewResponses = {
-  200: {
-    case_id: string;
-    chart: {
-      bars: {
-        close: Array<number>;
-        high: Array<number>;
-        low: Array<number>;
-        open: Array<number>;
-        volume: Array<number>;
-      };
-      first_session: number;
-      last_observed_session: 0;
-      last_session: number;
-      plot: {
-        buy: {
-          bounds: [number, number] | null;
-          histogram_key: string | null;
-          lines: Array<{
-            key: string;
-            label: string;
-          }>;
-          nonnegative: boolean;
-          overlay: boolean;
-          reference_levels: Array<number>;
-          threshold_levels: Array<number>;
-          volume_key: string | null;
-          zero_line: boolean;
-        };
-        sell: {
-          bounds: [number, number] | null;
-          histogram_key: string | null;
-          lines: Array<{
-            key: string;
-            label: string;
-          }>;
-          nonnegative: boolean;
-          overlay: boolean;
-          reference_levels: Array<number>;
-          threshold_levels: Array<number>;
-          volume_key: string | null;
-          zero_line: boolean;
-        };
-      };
-      series: {
-        buy: {
-          [key: string]: Array<number | null>;
-        };
-        sell: {
-          [key: string]: Array<number | null>;
-        };
-      };
-    };
-    data_notes: Array<string>;
-    ordinal: number;
-    window_bars: number;
-  };
-};
-
-export type PracticePreviewResponse =
-  PracticePreviewResponses[keyof PracticePreviewResponses];
-
-export type PracticeStartRunData = {
-  body: {
-    case_id: string;
-    config:
-      | {
-          buy: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-        }
-      | {
-          buy: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-        };
-    idempotency_key: string;
-    ordinal: number;
-  };
-  path: {
-    indicatorId: string;
-  };
-  query?: never;
-  url: "/api/v2/practice/{indicatorId}/runs";
-};
-
-export type PracticeStartRunErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type PracticeStartRunError =
-  PracticeStartRunErrors[keyof PracticeStartRunErrors];
-
-export type PracticeStartRunResponses = {
-  201: {
-    attempts: number;
-    case_id: string;
-    chart: {
-      bars: {
-        close: Array<number>;
-        high: Array<number>;
-        low: Array<number>;
-        open: Array<number>;
-        volume: Array<number>;
-      };
-      first_session: number;
-      last_observed_session: 0;
-      last_session: number;
-      plot: {
-        buy: {
-          bounds: [number, number] | null;
-          histogram_key: string | null;
-          lines: Array<{
-            key: string;
-            label: string;
-          }>;
-          nonnegative: boolean;
-          overlay: boolean;
-          reference_levels: Array<number>;
-          threshold_levels: Array<number>;
-          volume_key: string | null;
-          zero_line: boolean;
-        };
-        sell: {
-          bounds: [number, number] | null;
-          histogram_key: string | null;
-          lines: Array<{
-            key: string;
-            label: string;
-          }>;
-          nonnegative: boolean;
-          overlay: boolean;
-          reference_levels: Array<number>;
-          threshold_levels: Array<number>;
-          volume_key: string | null;
-          zero_line: boolean;
-        };
-      };
-      series: {
-        buy: {
-          [key: string]: Array<number | null>;
-        };
-        sell: {
-          [key: string]: Array<number | null>;
-        };
-      };
-    } | null;
-    completed_at: string | null;
-    config:
-      | {
-          buy: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-        }
-      | {
-          buy: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-        };
-    error: {
-      code: string;
-      message: string;
-    } | null;
-    indicator_id: string;
-    locked_at: string;
-    ordinal: number;
-    result: {
-      comment: {
-        rule_id: string;
-        status: "ok" | "unavailable";
-        text: string | null;
-        values: {
-          [key: string]: unknown;
-        };
-        version: string;
-      };
-      data_notes: Array<string>;
-      events: Array<{
-        price: number;
-        reason?: "indicator" | "max_holding";
-        session: number;
-        side: "buy" | "sell";
-        trade_ordinal: number;
-      }>;
-      first_session: 1;
-      kpis: {
-        buy_count: number;
-        capital_initial: number;
-        cash_end: number;
-        closed_trade_count: number;
-        insufficient_cash_buys: number;
-        nav_end: number | null;
-        open_position: boolean;
-        open_position_value: number | null;
-        total_return: number | null;
-        valuation: "ok" | "missing";
-      };
-      last_session: number;
-      missed_buys: Array<{
-        cash: number;
-        fill_session: number;
-        price: number;
-        signal_session: number;
-      }>;
-      nav: Array<number>;
-      pending_orders: Array<{
-        reason: "indicator" | "max_holding" | "buy_signal";
-        side: "buy" | "sell";
-        signal_session: number;
-        status: "unfilled_end_of_window";
-        time_due: boolean;
-      }>;
-      trades: Array<{
-        buy: {
-          evidence: {
-            enabled: boolean;
-            params: {
-              [key: string]: number;
-            };
-            reason?: "indicator_off" | "side_off" | "no_rows";
-            result: boolean | null;
-            rules: Array<{
-              kind: "compare" | "cross" | "membership";
-              label?: string;
-              left_label: string;
-              lhs: number | null;
-              missing: boolean;
-              op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-              result: boolean | null;
-              rhs: number | null;
-              right_label: string;
-              rule_id: string;
-              values?: {
-                [key: string]: number | string;
-              };
-              [key: string]: unknown;
-            }>;
-            side: "buy" | "sell";
-            signal_session: number;
-            status?: "ok" | "no_signal";
-          };
-          fee: number;
-          price: number;
-          session: number;
-          signal_session: number;
-          total_cost: number;
-        };
-        holding_sessions: number;
-        mark: {
-          market_value: number;
-          price: number;
-          session: number;
-        } | null;
-        ordinal: number;
-        pnl_kind: "realized" | "unrealized";
-        pnl_ratio: number;
-        pnl_vnd: number;
-        qty: number;
-        sell: {
-          evidence: {
-            enabled: boolean;
-            params: {
-              [key: string]: number;
-            };
-            reason?: "indicator_off" | "side_off" | "no_rows";
-            result: boolean | null;
-            rules: Array<{
-              kind: "compare" | "cross" | "membership";
-              label?: string;
-              left_label: string;
-              lhs: number | null;
-              missing: boolean;
-              op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-              result: boolean | null;
-              rhs: number | null;
-              right_label: string;
-              rule_id: string;
-              values?: {
-                [key: string]: number | string;
-              };
-              [key: string]: unknown;
-            }>;
-            side: "buy" | "sell";
-            signal_session: number;
-            status?: "ok" | "no_signal";
-          };
-          fee: number;
-          indicator_met: boolean;
-          net_proceeds: number;
-          price: number;
-          reason: "indicator" | "max_holding";
-          session: number;
-          signal_session: number;
-          time_due: boolean;
-          time_exit: {
-            due: boolean;
-            held_sessions_at_signal: number;
-            hold_max_sessions: number;
-          };
-        } | null;
-        status: "closed" | "open";
-      }>;
-    } | null;
-    run_id: string;
-    status: "computing" | "succeeded" | "failed";
-    total: number;
-    versions: {
-      calculation_version: string;
-      comment_version: string;
-      data_version: string;
-      engine_version: string;
-      execution_version: string;
-      profile_version: string;
-      rule_version: string;
-      set_version: string;
-    };
-  };
-};
-
-export type PracticeStartRunResponse =
-  PracticeStartRunResponses[keyof PracticeStartRunResponses];
-
-export type PracticeStateData = {
-  body?: never;
-  path: {
-    indicatorId: string;
-  };
-  query?: never;
-  url: "/api/v2/practice/{indicatorId}/state";
-};
-
-export type PracticeStateErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type PracticeStateError = PracticeStateErrors[keyof PracticeStateErrors];
-
-export type PracticeStateResponses = {
-  200: {
-    can_next: boolean;
-    can_retry: boolean;
-    can_start: boolean;
-    case: {
-      case_id: string;
-      ordinal: number;
-      window_bars: number;
-    };
-    completed_count: number;
-    current_run: {
-      case_id: string;
-      error: {
-        code: string;
-        message: string;
-      } | null;
-      ordinal: number;
-      run_id: string;
-      status: "computing" | "succeeded" | "failed";
-      summary: {
-        buy_count: number;
-        closed_trade_count: number;
-        comment_rule_id: string | null;
-        open_position: boolean;
-        total_return: number | null;
-      } | null;
-    } | null;
-    draft:
-      | {
-          buy: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            rules: Array<{
-              enabled: boolean;
-              id: string;
-              [key: string]: number | string | boolean | boolean | string;
-            }>;
-          };
-        }
-      | {
-          buy: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-          hold_max_sessions: number;
-          sell: {
-            enabled: boolean;
-            ops: {
-              [key: string]:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-            };
-            params: {
-              [key: string]: number;
-            };
-            rules_enabled?: {
-              [key: string]: boolean;
-            };
-          };
-        };
-    draft_revision: number;
-    form:
-      | {
-          defaults: {
-            buy: {
-              enabled: boolean;
-              rules: Array<{
-                enabled: boolean;
-                id: string;
-                [key: string]: number | string | boolean | boolean | string;
-              }>;
-            };
-            hold_max_sessions: number;
-            sell: {
-              enabled: boolean;
-              rules: Array<{
-                enabled: boolean;
-                id: string;
-                [key: string]: number | string | boolean | boolean | string;
-              }>;
-            };
-          };
-          indicator_id: string;
-          model: "rows";
-          rows: Array<{
-            buy: {
-              [key: string]: number | string;
-            };
-            constraints: Array<{
-              left: string;
-              op: "<";
-              right: string;
-            }>;
-            default_enabled: boolean;
-            fields: Array<
-              | {
-                  key: string;
-                  label: string;
-                  max: number;
-                  min: number;
-                  options?: Array<number>;
-                  step: number;
-                  type: "integer" | "number";
-                }
-              | {
-                  key: string;
-                  label: string;
-                  options: Array<{
-                    label: string;
-                    value: string;
-                  }>;
-                  type: "enum";
-                }
-            >;
-            id: string;
-            sell: {
-              [key: string]: number | string;
-            };
-            sentence: string;
-          }>;
-        }
-      | {
-          buy: {
-            fields: Array<{
-              key: string;
-              label: string;
-              max: number;
-              min: number;
-              options?: Array<number>;
-              step: number;
-              type: "integer" | "number";
-              unit: string;
-            }>;
-            rules: Array<{
-              allowed_ops: Array<
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉"
-              >;
-              default_enabled?: boolean;
-              default_op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-              kind: "compare" | "cross" | "membership";
-              left_label: string;
-              lhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-              rhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  }
-                | {
-                    lower:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    upper:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  };
-              right_label: string;
-              rule_id: string;
-            }>;
-          };
-          cross_fields: Array<{
-            left: string;
-            op: ">" | "<";
-            right: string;
-          }>;
-          defaults: {
-            buy: {
-              enabled: boolean;
-              ops: {
-                [key: string]:
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low"
-                  | "∈"
-                  | "∉";
-              };
-              params: {
-                [key: string]: number;
-              };
-              rules_enabled?: {
-                [key: string]: boolean;
-              };
-            };
-            hold_max_sessions: number;
-            sell: {
-              enabled: boolean;
-              ops: {
-                [key: string]:
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low"
-                  | "∈"
-                  | "∉";
-              };
-              params: {
-                [key: string]: number;
-              };
-              rules_enabled?: {
-                [key: string]: boolean;
-              };
-            };
-          };
-          indicator_id: string;
-          model: "legacy_params";
-          sell: {
-            fields: Array<{
-              key: string;
-              label: string;
-              max: number;
-              min: number;
-              options?: Array<number>;
-              step: number;
-              type: "integer" | "number";
-              unit: string;
-            }>;
-            rules: Array<{
-              allowed_ops: Array<
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉"
-              >;
-              default_enabled?: boolean;
-              default_op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-                | "∈"
-                | "∉";
-              kind: "compare" | "cross" | "membership";
-              left_label: string;
-              lhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-              rhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  }
-                | {
-                    lower:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    upper:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  };
-              right_label: string;
-              rule_id: string;
-            }>;
-          };
-        };
-    indicator: {
-      id: string;
-      name: string;
-    };
-    ordinal: number;
-    profile: {
-      buy_fee_rate: number;
-      capital: number;
-      lot: number;
-      profile_version: string;
-      sell_cost_rate: number;
-      verified: boolean;
-      [key: string]: unknown;
-    };
-    runs: Array<{
-      case_id: string;
-      error: {
-        code: string;
-        message: string;
-      } | null;
-      ordinal: number;
-      run_id: string;
-      status: "computing" | "succeeded" | "failed";
-      summary: {
-        buy_count: number;
-        closed_trade_count: number;
-        comment_rule_id: string | null;
-        open_position: boolean;
-        total_return: number | null;
-      } | null;
-    }>;
-    set_version: string;
-    status: "ready" | "computing" | "failed" | "completed" | "set_completed";
-    total: number;
-    validation: {
-      errors: Array<{
-        message: string;
-        path: string;
-        row?: number;
-        side?: "buy" | "sell";
-      }>;
-      valid: boolean;
-    };
-  };
-};
-
-export type PracticeStateResponse =
-  PracticeStateResponses[keyof PracticeStateResponses];
-
 export type AdminListPremiumPlansGetApiV2PremiumAdminPlansData = {
   body?: never;
   path?: never;
@@ -57713,6 +55216,8 @@ export type StrategyBacktestsListData = {
   body?: never;
   path?: never;
   query?: {
+    strategy_source?: "iqx" | "user" | "draft";
+    strategy_id?: string;
     limit?: number;
   };
   url: "/api/v2/strategy/backtests";
@@ -57753,27 +55258,22 @@ export type StrategyBacktestsListResponses = {
     items: Array<{
       config_hash: string;
       created_at: string;
-      end: string;
-      error_code: string | null;
-      kind:
-        | "single"
-        | "sensitivity"
-        | "out_of_sample"
-        | "walk_forward"
-        | "portfolio";
+      end: string | null;
       kpis: {
-        annualized_return_pct: number | null;
-        buy_hold_return_pct: number;
-        closed_trade_count: number;
+        closed_trades: number;
         max_drawdown_pct: number;
         total_return_pct: number;
-        win_rate_pct: number | null;
       } | null;
+      legacy: boolean;
       run_id: string;
-      shared_revision: number;
-      start: string;
+      start: string | null;
       status: "succeeded" | "failed";
-      symbol: string;
+      strategy_id: string | null;
+      strategy_label: string;
+      strategy_source: "iqx" | "user" | "draft";
+      strategy_version: number | null;
+      universe_label: string;
+      version_label: string | null;
     }>;
   };
 };
@@ -57783,374 +55283,39 @@ export type StrategyBacktestsListResponse =
 
 export type StrategyBacktestsCreateData = {
   body: {
-    assumptions?: {
-      capital?: number;
-      execution?: "next_open" | "same_close";
-      fee_preset?: "standard" | "none";
-    };
-    draft?: {
-      indicators: {
-        [key: string]: {
-          buy:
-            | {
-                enabled: boolean;
-                rules: Array<{
-                  enabled: boolean;
-                  id: string;
-                  [key: string]: number | string | boolean | boolean | string;
-                }>;
-              }
-            | {
-                enabled: boolean;
-                params: {
-                  [key: string]: number;
-                };
-                rules: Array<
-                  | {
-                      allowed_ops: Array<
-                        | ">"
-                        | "<"
-                        | "cross_up"
-                        | "cross_down"
-                        | "reenter_lower"
-                        | "reenter_upper"
-                        | "break_upper"
-                        | "break_lower"
-                        | "cross_up_middle"
-                        | "cross_down_middle"
-                        | "break_high"
-                        | "break_low"
-                      >;
-                      enabled?: boolean;
-                      id: string;
-                      kind: "compare" | "cross";
-                      lhs:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                      op:
-                        | ">"
-                        | "<"
-                        | "cross_up"
-                        | "cross_down"
-                        | "reenter_lower"
-                        | "reenter_upper"
-                        | "break_upper"
-                        | "break_lower"
-                        | "cross_up_middle"
-                        | "cross_down_middle"
-                        | "break_high"
-                        | "break_low";
-                      rhs:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                    }
-                  | {
-                      allowed_ops: Array<"∈" | "∉">;
-                      enabled?: boolean;
-                      id: string;
-                      kind: "membership";
-                      lhs:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                      op: "∈" | "∉";
-                      rhs: {
-                        bounds?: "open";
-                        kind?: "interval";
-                        lower:
-                          | {
-                              key: string;
-                              kind: "series";
-                              offset?: number;
-                              offset_param?: string;
-                            }
-                          | {
-                              key: string;
-                              kind: "param";
-                            }
-                          | {
-                              kind: "constant";
-                              value: number;
-                            };
-                        upper:
-                          | {
-                              key: string;
-                              kind: "series";
-                              offset?: number;
-                              offset_param?: string;
-                            }
-                          | {
-                              key: string;
-                              kind: "param";
-                            }
-                          | {
-                              kind: "constant";
-                              value: number;
-                            };
-                      };
-                    }
-                >;
-              };
-          master_enabled: boolean;
-          sell:
-            | {
-                enabled: boolean;
-                rules: Array<{
-                  enabled: boolean;
-                  id: string;
-                  [key: string]: number | string | boolean | boolean | string;
-                }>;
-              }
-            | {
-                enabled: boolean;
-                params: {
-                  [key: string]: number;
-                };
-                rules: Array<
-                  | {
-                      allowed_ops: Array<
-                        | ">"
-                        | "<"
-                        | "cross_up"
-                        | "cross_down"
-                        | "reenter_lower"
-                        | "reenter_upper"
-                        | "break_upper"
-                        | "break_lower"
-                        | "cross_up_middle"
-                        | "cross_down_middle"
-                        | "break_high"
-                        | "break_low"
-                      >;
-                      enabled?: boolean;
-                      id: string;
-                      kind: "compare" | "cross";
-                      lhs:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                      op:
-                        | ">"
-                        | "<"
-                        | "cross_up"
-                        | "cross_down"
-                        | "reenter_lower"
-                        | "reenter_upper"
-                        | "break_upper"
-                        | "break_lower"
-                        | "cross_up_middle"
-                        | "cross_down_middle"
-                        | "break_high"
-                        | "break_low";
-                      rhs:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                    }
-                  | {
-                      allowed_ops: Array<"∈" | "∉">;
-                      enabled?: boolean;
-                      id: string;
-                      kind: "membership";
-                      lhs:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                      op: "∈" | "∉";
-                      rhs: {
-                        bounds?: "open";
-                        kind?: "interval";
-                        lower:
-                          | {
-                              key: string;
-                              kind: "series";
-                              offset?: number;
-                              offset_param?: string;
-                            }
-                          | {
-                              key: string;
-                              kind: "param";
-                            }
-                          | {
-                              kind: "constant";
-                              value: number;
-                            };
-                        upper:
-                          | {
-                              key: string;
-                              kind: "series";
-                              offset?: number;
-                              offset_param?: string;
-                            }
-                          | {
-                              key: string;
-                              kind: "param";
-                            }
-                          | {
-                              kind: "constant";
-                              value: number;
-                            };
-                      };
-                    }
-                >;
-              };
-        };
-      };
-      max_holding?: number | null;
-    };
     end: string;
     idempotency_key: string;
-    origin?: {
-      id: string;
-      type: "iqx_strategy";
-      version: number;
-    };
-    research?:
-      | {
-          kind: "sensitivity";
-          path: {
-            indicator: string;
-            key: string;
-            rule?: string;
-            side: "buy" | "sell";
-          };
-          values: Array<number>;
-        }
-      | {
-          kind: "out_of_sample";
-          split_date: string;
-        }
-      | {
-          criterion: "net_return" | "cagr" | "profit_factor";
-          kind: "walk_forward";
-          min_trades: number;
-          path: {
-            indicator: string;
-            key: string;
-            rule?: string;
-            side: "buy" | "sell";
-          };
-          step_bars: number;
-          test_bars: number;
-          train_bars: number;
-          values: Array<number>;
-        };
-    shared_revision: number;
     start: string;
-    symbol: string;
-    system?: {
-      cooldown_bars?: number;
-      correlation_lookback?: number;
-      exits?: {
-        max_holding?: number;
-        stop_loss_pct?: number;
-        take_profit_pct?: number;
-        trailing_pct?: number;
-      };
-      /**
-       * LogicNode over buy-side indicator ids (depth ≤ 4, children ≤ 16)
-       */
-      logic?: {
-        type: "indicator" | "and" | "or" | "not";
-        [key: string]: unknown;
-      };
-      max_correlation?: number;
-      max_positions?: number;
-      max_sector_weight_pct?: number;
-      max_symbol_weight_pct?: number;
-      portfolio_drawdown_stop_pct?: number;
-      priority?: "exit_first";
-      ranking?: {
-        direction: "desc" | "asc";
-        key: "roc_20" | "rs_market" | "relative_volume" | "distance_52w_high";
-      };
-      rebalance?: {
-        every_bars: number;
-      };
-      sizing?:
-        | {
-            mode: "pct_nav";
-            pct: number;
-          }
-        | {
-            amount_vnd: number;
-            mode: "fixed_amount";
+    strategy:
+      | {
+          id: string;
+          source: "iqx";
+          version?: number;
+        }
+      | {
+          id: string;
+          source: "user";
+          version?: number;
+        }
+      | {
+          base?: {
+            id: string;
+            version: number;
+          } | null;
+          content: {
+            indicators: {
+              [key: string]: unknown;
+            };
+            max_holding: number;
+            sell_only?: boolean;
+            universe: {
+              [key: string]: unknown;
+            };
           };
-      symbols?: Array<string>;
-      universe?: {
-        list_id?: string;
-        market?: "HOSE" | "HNX" | "UPCOM" | "ALL";
-      };
-    };
+          source: "draft";
+        };
     trial?: boolean;
+    [key: string]: unknown;
   };
   path?: never;
   query?: never;
@@ -58190,629 +55355,151 @@ export type StrategyBacktestsCreateError =
 export type StrategyBacktestsCreateResponses = {
   201: {
     created_at: string;
-    data_warnings: Array<{
-      code: string;
-      indicators?: Array<string>;
-      message: string;
-      symbols?: Array<string>;
-    }>;
     error: {
       code: string;
       details?: Array<unknown>;
       message: string;
       status: number;
     } | null;
-    kind:
-      "single" | "sensitivity" | "out_of_sample" | "walk_forward" | "portfolio";
-    request: {
-      [key: string]: unknown;
-    };
-    /**
-     * Advanced engine output: sensitivity {candidates}, out_of_sample {train,test,attempt}, walk_forward {windows}
-     */
-    research_result: {
-      data_hash: string;
-      type:
-        "sensitivity" | "out_of_sample_fixed_config" | "walk_forward_windows";
-      [key: string]: unknown;
-    } | null;
-    result: {
-      calculation_version: string;
-      canceled: Array<{
-        action: "buy" | "sell";
-        concurrent_reasons?: Array<string>;
-        exit_reason?: string;
-        reason: "end_of_range";
-        signalIndex: number;
-      }>;
-      cash: number;
-      chart: {
-        baseline_field: "initial";
-        point_count: number;
-        series: Array<{
-          available: boolean;
-          end_value_pct: number | null;
-          field: "return_pct" | "buy_hold_pct" | "market_pct";
-          id: "strategy" | "buy_hold" | "market";
-          label: string;
-          unavailable_reason: string | null;
-        }>;
-        title: "Lợi nhuận danh mục (%)";
-        unit: "percent_points";
-      };
-      contract: "iqx-strategy-backtest-1.0";
-      counts: {
-        buy_count: number;
-        closed_trade_count: number;
-        open_position_count: number;
-        pending_order_count: number;
-      };
-      curve: Array<{
-        buy_hold_pct: number;
-        date: string;
-        market_pct: number | null;
-        phase?: "before_first_execution";
-        return_pct: number;
-        value: number;
-      }>;
-      engine_version: string;
-      formula_version: string;
-      initial: {
-        buy_hold_pct: number;
-        date: string;
-        market_pct: number | null;
-        phase?: "before_first_execution";
-        return_pct: number;
-        value: number;
-      };
-      kpi_basis: {
-        [key: string]: unknown;
-      };
+    legacy: boolean;
+    legacy_view: {
+      end: string | null;
+      kind: string;
       kpis: {
-        annualized_return_pct: number | null;
-        buy_hold_return_pct: number;
-        closed_trade_count: number;
+        closed_trades: number;
         max_drawdown_pct: number;
         total_return_pct: number;
+      } | null;
+      note: string;
+      start: string | null;
+      symbol: string | null;
+    } | null;
+    result: {
+      basket_buy_hold: {
+        return_pct: number;
+        symbols: Array<string>;
+      };
+      cash_end_vnd: string;
+      curve: Array<{
+        basket: number;
+        date: string;
+        nav_vnd: string;
+        strategy: number;
+        vnindex: number | null;
+      }>;
+      end_session: string | null;
+      final_nav_vnd: string;
+      initial_cash_vnd: string;
+      kpis: {
+        annualized_return_pct: number | null;
+        basket_buy_hold_pct: number;
+        closed_trades: number;
+        max_drawdown_pct: number;
+        total_return_pct: number;
+        vnindex_pct: number | null;
         win_rate_pct: number | null;
       };
-      open_position: {
-        cost: number;
-        date: string;
-        entry_conditions: {
-          indicator_ids: Array<string>;
-          rules: Array<{
-            id: string;
-            indicator: string;
-            lhs: number | null;
-            missing: boolean;
-            op:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-            previous_lhs?: number | null;
-            previous_rhs?: number | null;
-            result: boolean | null;
-            rhs: number | null;
-            rhs_lower?: number | null;
-            rhs_upper?: number | null;
-            side: "buy" | "sell";
-            values?: {
-              [key: string]: number | string;
-            };
-          }>;
-        } | null;
-        index: number;
-        last_price: number;
-        market_value: number;
-        price: number;
+      open_positions: Array<{
+        counted_sessions: number;
+        entry_price_vnd: string;
+        entry_session: string;
+        holding_sessions: number;
+        last_close_vnd: string;
+        max_holding: number;
         qty: number;
-        signal_date: string;
-        unrealized_pnl: number;
-        unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
-      } | null;
-      pending_orders: Array<{
-        action: "buy" | "sell";
-        evidence: {
-          indicator_ids: Array<string>;
-          rules: Array<{
-            id: string;
-            indicator: string;
-            lhs: number | null;
-            missing: boolean;
-            op:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-            previous_lhs?: number | null;
-            previous_rhs?: number | null;
-            result: boolean | null;
-            rhs: number | null;
-            rhs_lower?: number | null;
-            rhs_upper?: number | null;
-            side: "buy" | "sell";
-            values?: {
-              [key: string]: number | string;
-            };
-          }>;
-        } | null;
-        exit_reason?: string;
-        note: string;
-        reason: "end_of_range";
-        signal_date: string;
-      }>;
-      profile: {
-        lot_size: number;
-        max_holding: number | null;
-        min_held_bars: number;
-        position_size: "all_cash";
-        stop_loss: "none";
-        take_profit_pct: null;
-        trailing: "none";
-      };
-      rule_version: string;
-      schema_version: string;
-      snapshot: {
-        actual_end: string;
-        actual_start: string;
-        adjusted: boolean;
-        bar_count: number;
-        benchmark: {
-          available: boolean;
-          source: string | null;
-          symbol: "VNINDEX";
-        };
-        buy_and_hold?: {
-          basis: "iqx-buy-hold-1.0";
-          buy_fee: number;
-          capital: number;
-          cash_left: number;
-          curve: Array<{
-            date: string;
-            return_pct: number;
-            value: number;
-          }>;
-          end_value: number;
-          entry_date: string | null;
-          entry_price: number | null;
-          qty: number;
-          return_pct: number;
-        } | null;
-        capital: number;
-        config: {
-          indicators: {
-            [key: string]: unknown;
-          };
-          max_holding?: number | null;
-          schema_version: string;
-          [key: string]: unknown;
-        };
-        config_hash: string;
-        data_hash: string;
-        data_source: string;
-        data_source_priority: number | null;
-        data_warnings: Array<{
-          code: string;
-          indicators?: Array<string>;
-          message: string;
-          symbols?: Array<string>;
-        }>;
-        execution: "next_open" | "same_close";
-        execution_profile: "CLEAN_TECH_2.0";
-        fee_preset: "standard" | "none";
-        fees: {
-          buy: number;
-          sell: number;
-        };
-        lot_size: number;
-        open_position_policy: "mark_to_market_last_close";
-        options: {
-          capital: number;
-          end: string;
-          execution: "next_open" | "same_close";
-          fee_buy: number;
-          fee_sell: number;
-          lot: number;
-          min_held_bars: number;
-          start: string;
-        };
-        profile: {
-          lot_size: number;
-          max_holding: number | null;
-          min_held_bars: number;
-          position_size: "all_cash";
-          stop_loss: "none";
-          take_profit_pct: null;
-          trailing: "none";
-        };
-        requested_end: string;
-        requested_start: string;
-        research: {
-          [key: string]: unknown;
-        } | null;
-        revision_saved_at: string;
-        shared_revision: number;
-        simulation?: {
-          annualization_sessions: 252;
-          buy_hold_basis: "close_ratio_before_fees_and_dividends";
-          caveat: string;
-          contract: "iqx-strategy-backtest-1.0";
-          execution: "next_open" | "same_close";
-          execution_label: string;
-          exits:
-            | "none: no stop, take-profit, trailing or max holding"
-            | "max_holding_only: no stop, take-profit or trailing";
-          fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
-          fill_price: string;
-          liquidity: "not_modelled";
-          max_holding?: number | null;
-          min_held_bars: number;
-          min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
-          position_policy: "single_symbol_long_only_one_position";
-          price_adjustment: "provider_adjusted" | "not_confirmed";
-          settlement: "not_modelled";
-          signal_after_open_fill: boolean;
-          sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
-          slippage: "not_modelled";
-        };
-        skipped_rows: number;
-        slippage: "not_modelled";
-        source?: {
-          kind: "saved" | "draft";
-          label: string;
-          origin: {
-            id: string;
-            name: string;
-            type: "iqx_strategy";
-            version: number;
-          } | null;
-        };
         symbol: string;
-        system: {
-          data_hash: string;
-          excluded_symbols: Array<string>;
-          options: {
-            [key: string]: unknown;
-          };
-          profile: {
-            [key: string]: unknown;
-          };
-          sectors: {
-            [key: string]: string | null;
-          } | null;
-          symbols: Array<string>;
-          universe: {
-            [key: string]: unknown;
-          } | null;
-          universe_policy: "explicit_symbols";
-        } | null;
-        versions: {
-          calculation_version: string;
-          engine_version: string;
-          formula_version: string;
-          rule_version: string;
-          schema_version: string;
+        unrealized_pct: number;
+        unrealized_pnl_vnd: string;
+      }>;
+      per_symbol: Array<{
+        closed_trades: number;
+        contribution_pct: number;
+        realized_pnl_vnd: string;
+        symbol: string;
+        unrealized_pnl_vnd: string;
+        wins: number;
+      }>;
+      sessions: number;
+      skipped_orders: {
+        counts: {
+          [key: string]: number;
         };
-        warmup_bars: number;
-        warmup_sessions_requested: number;
+        items: Array<{
+          code:
+            | "session_buy_limit"
+            | "insufficient_cash"
+            | "budget_below_lot"
+            | "symbol_cap";
+          date: string;
+          message: string;
+          symbol: string;
+        }>;
+        total: number;
       };
-      supplementary: {
-        profit_factor: number | null;
-        winning_trade_count: number;
-      };
+      start_session: string | null;
+      time_exits: number;
       trades: Array<{
-        concurrent_reasons?: Array<string>;
-        entry_conditions: {
-          indicator_ids: Array<string>;
-          rules: Array<{
-            id: string;
-            indicator: string;
-            lhs: number | null;
-            missing: boolean;
-            op:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-            previous_lhs?: number | null;
-            previous_rhs?: number | null;
-            result: boolean | null;
-            rhs: number | null;
-            rhs_lower?: number | null;
-            rhs_upper?: number | null;
-            side: "buy" | "sell";
-            values?: {
-              [key: string]: number | string;
-            };
-          }>;
-        } | null;
-        entry_date: string;
-        entry_fee: number;
-        entry_price: number;
-        entry_signal_date: string;
-        entry_total: number;
-        exit_conditions: {
-          indicator_ids: Array<string>;
-          rules: Array<{
-            id: string;
-            indicator: string;
-            lhs: number | null;
-            missing: boolean;
-            op:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-            previous_lhs?: number | null;
-            previous_rhs?: number | null;
-            result: boolean | null;
-            rhs: number | null;
-            rhs_lower?: number | null;
-            rhs_upper?: number | null;
-            side: "buy" | "sell";
-            values?: {
-              [key: string]: number | string;
-            };
-          }>;
-        } | null;
-        exit_date: string;
-        exit_fee_tax: number;
-        exit_gross: number;
-        exit_net: number;
-        exit_price: number;
-        exit_reason: string;
-        exit_signal_date: string;
-        hold: number;
-        number: number;
-        outcome: "win" | "loss" | "flat";
-        pnl: number;
+        counted_sessions: number;
+        entry_cost_vnd: string;
+        entry_price_vnd: string;
+        entry_session: string;
+        exit_reason: "indicator" | "max_holding";
+        exit_reasons: Array<"indicator" | "max_holding">;
+        exit_session: string;
+        fee_vnd: string;
+        gross_vnd: string;
+        holding_sessions: number;
+        max_holding_at_exit: number;
+        net_vnd: string;
         pnl_pct: number;
+        pnl_vnd: string;
+        price_vnd: string;
         qty: number;
+        symbol: string;
+        tax_vnd: string;
       }>;
     } | null;
     run_id: string;
-    shared_revision: number;
     snapshot: {
-      actual_end: string;
-      actual_start: string;
       adjusted: boolean;
-      bar_count: number;
-      benchmark: {
-        available: boolean;
-        source: string | null;
-        symbol: "VNINDEX";
-      };
-      buy_and_hold?: {
-        basis: "iqx-buy-hold-1.0";
-        buy_fee: number;
-        capital: number;
-        cash_left: number;
-        curve: Array<{
-          date: string;
-          return_pct: number;
-          value: number;
-        }>;
-        end_value: number;
-        entry_date: string | null;
-        entry_price: number | null;
-        qty: number;
-        return_pct: number;
-      } | null;
-      capital: number;
-      config: {
-        indicators: {
-          [key: string]: unknown;
-        };
-        max_holding?: number | null;
-        schema_version: string;
+      config_hash: string;
+      content: {
         [key: string]: unknown;
       };
-      config_hash: string;
+      data_as_of: string | null;
       data_hash: string;
-      data_source: string;
-      data_source_priority: number | null;
-      data_warnings: Array<{
+      data_store: "flashback_vn100";
+      excluded_symbols: Array<string>;
+      fee_rules: {
+        buy_fee_bps: number;
+        lot_size: number;
+        sell_fee_bps: number;
+        sell_tax_bps: number;
+      };
+      initial_cash_vnd: string;
+      price_unit: "VND";
+      requested_end: string;
+      requested_start: string;
+      result_label: string;
+      rules_version: string;
+      strategy_label: string;
+      strategy_ref: {
+        id: string | null;
+        source: "iqx" | "user" | "draft";
+        version: number | null;
+      };
+      subtitle: string;
+      universe_label: string;
+      universe_resolved: Array<string>;
+      version_label: string | null;
+      warnings: Array<{
         code: string;
-        indicators?: Array<string>;
         message: string;
         symbols?: Array<string>;
       }>;
-      execution: "next_open" | "same_close";
-      execution_profile: "CLEAN_TECH_2.0";
-      fee_preset: "standard" | "none";
-      fees: {
-        buy: number;
-        sell: number;
-      };
-      lot_size: number;
-      open_position_policy: "mark_to_market_last_close";
-      options: {
-        capital: number;
-        end: string;
-        execution: "next_open" | "same_close";
-        fee_buy: number;
-        fee_sell: number;
-        lot: number;
-        min_held_bars: number;
-        start: string;
-      };
-      profile: {
-        lot_size: number;
-        max_holding: number | null;
-        min_held_bars: number;
-        position_size: "all_cash";
-        stop_loss: "none";
-        take_profit_pct: null;
-        trailing: "none";
-      };
-      requested_end: string;
-      requested_start: string;
-      research: {
-        [key: string]: unknown;
-      } | null;
-      revision_saved_at: string;
-      shared_revision: number;
-      simulation?: {
-        annualization_sessions: 252;
-        buy_hold_basis: "close_ratio_before_fees_and_dividends";
-        caveat: string;
-        contract: "iqx-strategy-backtest-1.0";
-        execution: "next_open" | "same_close";
-        execution_label: string;
-        exits:
-          | "none: no stop, take-profit, trailing or max holding"
-          | "max_holding_only: no stop, take-profit or trailing";
-        fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
-        fill_price: string;
-        liquidity: "not_modelled";
-        max_holding?: number | null;
-        min_held_bars: number;
-        min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
-        position_policy: "single_symbol_long_only_one_position";
-        price_adjustment: "provider_adjusted" | "not_confirmed";
-        settlement: "not_modelled";
-        signal_after_open_fill: boolean;
-        sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
-        slippage: "not_modelled";
-      };
-      skipped_rows: number;
-      slippage: "not_modelled";
-      source?: {
-        kind: "saved" | "draft";
-        label: string;
-        origin: {
-          id: string;
-          name: string;
-          type: "iqx_strategy";
-          version: number;
-        } | null;
-      };
-      symbol: string;
-      system: {
-        data_hash: string;
-        excluded_symbols: Array<string>;
-        options: {
-          [key: string]: unknown;
-        };
-        profile: {
-          [key: string]: unknown;
-        };
-        sectors: {
-          [key: string]: string | null;
-        } | null;
-        symbols: Array<string>;
-        universe: {
-          [key: string]: unknown;
-        } | null;
-        universe_policy: "explicit_symbols";
-      } | null;
-      versions: {
-        calculation_version: string;
-        engine_version: string;
-        formula_version: string;
-        rule_version: string;
-        schema_version: string;
-      };
-      warmup_bars: number;
-      warmup_sessions_requested: number;
     } | null;
     status: "succeeded" | "failed";
-    system_result: {
-      applied: Array<string>;
-      curve: Array<{
-        buy_hold_pct: number;
-        date: string;
-        market_pct: number | null;
-        phase?: "before_first_execution";
-        return_pct: number;
-        value: number;
-      }>;
-      kpis: {
-        buy_hold_return: number;
-        cagr: number;
-        market_return: number | null;
-        max_drawdown: number;
-        n_trades: number;
-        n_wins: number;
-        net_return: number;
-        profit_factor: number | null;
-        win_rate: number | null;
-      };
-      ledger_size: number;
-      positions_open: Array<{
-        cost: number;
-        date: string;
-        index: number;
-        last_price: number;
-        market_value: number;
-        peak_close: number;
-        price: number;
-        qty: number;
-        sector: string | null;
-        signal_date: string;
-        symbol: string;
-        unrealized_pnl: number;
-      }>;
-      trades: Array<{
-        concurrent_reasons?: Array<string>;
-        entry_date: string;
-        entry_price: number;
-        entry_signal_date: string;
-        exit_date: string;
-        exit_price: number;
-        exit_reason: string;
-        exit_signal_date: string;
-        hold: number;
-        number: number;
-        partial: boolean;
-        pnl: number;
-        pnl_pct: number;
-        qty: number;
-        symbol: string;
-      }>;
-    } | null;
+    trial: boolean;
   };
 };
 
@@ -58861,629 +55548,151 @@ export type StrategyBacktestsGetError =
 export type StrategyBacktestsGetResponses = {
   200: {
     created_at: string;
-    data_warnings: Array<{
-      code: string;
-      indicators?: Array<string>;
-      message: string;
-      symbols?: Array<string>;
-    }>;
     error: {
       code: string;
       details?: Array<unknown>;
       message: string;
       status: number;
     } | null;
-    kind:
-      "single" | "sensitivity" | "out_of_sample" | "walk_forward" | "portfolio";
-    request: {
-      [key: string]: unknown;
-    };
-    /**
-     * Advanced engine output: sensitivity {candidates}, out_of_sample {train,test,attempt}, walk_forward {windows}
-     */
-    research_result: {
-      data_hash: string;
-      type:
-        "sensitivity" | "out_of_sample_fixed_config" | "walk_forward_windows";
-      [key: string]: unknown;
-    } | null;
-    result: {
-      calculation_version: string;
-      canceled: Array<{
-        action: "buy" | "sell";
-        concurrent_reasons?: Array<string>;
-        exit_reason?: string;
-        reason: "end_of_range";
-        signalIndex: number;
-      }>;
-      cash: number;
-      chart: {
-        baseline_field: "initial";
-        point_count: number;
-        series: Array<{
-          available: boolean;
-          end_value_pct: number | null;
-          field: "return_pct" | "buy_hold_pct" | "market_pct";
-          id: "strategy" | "buy_hold" | "market";
-          label: string;
-          unavailable_reason: string | null;
-        }>;
-        title: "Lợi nhuận danh mục (%)";
-        unit: "percent_points";
-      };
-      contract: "iqx-strategy-backtest-1.0";
-      counts: {
-        buy_count: number;
-        closed_trade_count: number;
-        open_position_count: number;
-        pending_order_count: number;
-      };
-      curve: Array<{
-        buy_hold_pct: number;
-        date: string;
-        market_pct: number | null;
-        phase?: "before_first_execution";
-        return_pct: number;
-        value: number;
-      }>;
-      engine_version: string;
-      formula_version: string;
-      initial: {
-        buy_hold_pct: number;
-        date: string;
-        market_pct: number | null;
-        phase?: "before_first_execution";
-        return_pct: number;
-        value: number;
-      };
-      kpi_basis: {
-        [key: string]: unknown;
-      };
+    legacy: boolean;
+    legacy_view: {
+      end: string | null;
+      kind: string;
       kpis: {
-        annualized_return_pct: number | null;
-        buy_hold_return_pct: number;
-        closed_trade_count: number;
+        closed_trades: number;
         max_drawdown_pct: number;
         total_return_pct: number;
+      } | null;
+      note: string;
+      start: string | null;
+      symbol: string | null;
+    } | null;
+    result: {
+      basket_buy_hold: {
+        return_pct: number;
+        symbols: Array<string>;
+      };
+      cash_end_vnd: string;
+      curve: Array<{
+        basket: number;
+        date: string;
+        nav_vnd: string;
+        strategy: number;
+        vnindex: number | null;
+      }>;
+      end_session: string | null;
+      final_nav_vnd: string;
+      initial_cash_vnd: string;
+      kpis: {
+        annualized_return_pct: number | null;
+        basket_buy_hold_pct: number;
+        closed_trades: number;
+        max_drawdown_pct: number;
+        total_return_pct: number;
+        vnindex_pct: number | null;
         win_rate_pct: number | null;
       };
-      open_position: {
-        cost: number;
-        date: string;
-        entry_conditions: {
-          indicator_ids: Array<string>;
-          rules: Array<{
-            id: string;
-            indicator: string;
-            lhs: number | null;
-            missing: boolean;
-            op:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-            previous_lhs?: number | null;
-            previous_rhs?: number | null;
-            result: boolean | null;
-            rhs: number | null;
-            rhs_lower?: number | null;
-            rhs_upper?: number | null;
-            side: "buy" | "sell";
-            values?: {
-              [key: string]: number | string;
-            };
-          }>;
-        } | null;
-        index: number;
-        last_price: number;
-        market_value: number;
-        price: number;
+      open_positions: Array<{
+        counted_sessions: number;
+        entry_price_vnd: string;
+        entry_session: string;
+        holding_sessions: number;
+        last_close_vnd: string;
+        max_holding: number;
         qty: number;
-        signal_date: string;
-        unrealized_pnl: number;
-        unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
-      } | null;
-      pending_orders: Array<{
-        action: "buy" | "sell";
-        evidence: {
-          indicator_ids: Array<string>;
-          rules: Array<{
-            id: string;
-            indicator: string;
-            lhs: number | null;
-            missing: boolean;
-            op:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-            previous_lhs?: number | null;
-            previous_rhs?: number | null;
-            result: boolean | null;
-            rhs: number | null;
-            rhs_lower?: number | null;
-            rhs_upper?: number | null;
-            side: "buy" | "sell";
-            values?: {
-              [key: string]: number | string;
-            };
-          }>;
-        } | null;
-        exit_reason?: string;
-        note: string;
-        reason: "end_of_range";
-        signal_date: string;
-      }>;
-      profile: {
-        lot_size: number;
-        max_holding: number | null;
-        min_held_bars: number;
-        position_size: "all_cash";
-        stop_loss: "none";
-        take_profit_pct: null;
-        trailing: "none";
-      };
-      rule_version: string;
-      schema_version: string;
-      snapshot: {
-        actual_end: string;
-        actual_start: string;
-        adjusted: boolean;
-        bar_count: number;
-        benchmark: {
-          available: boolean;
-          source: string | null;
-          symbol: "VNINDEX";
-        };
-        buy_and_hold?: {
-          basis: "iqx-buy-hold-1.0";
-          buy_fee: number;
-          capital: number;
-          cash_left: number;
-          curve: Array<{
-            date: string;
-            return_pct: number;
-            value: number;
-          }>;
-          end_value: number;
-          entry_date: string | null;
-          entry_price: number | null;
-          qty: number;
-          return_pct: number;
-        } | null;
-        capital: number;
-        config: {
-          indicators: {
-            [key: string]: unknown;
-          };
-          max_holding?: number | null;
-          schema_version: string;
-          [key: string]: unknown;
-        };
-        config_hash: string;
-        data_hash: string;
-        data_source: string;
-        data_source_priority: number | null;
-        data_warnings: Array<{
-          code: string;
-          indicators?: Array<string>;
-          message: string;
-          symbols?: Array<string>;
-        }>;
-        execution: "next_open" | "same_close";
-        execution_profile: "CLEAN_TECH_2.0";
-        fee_preset: "standard" | "none";
-        fees: {
-          buy: number;
-          sell: number;
-        };
-        lot_size: number;
-        open_position_policy: "mark_to_market_last_close";
-        options: {
-          capital: number;
-          end: string;
-          execution: "next_open" | "same_close";
-          fee_buy: number;
-          fee_sell: number;
-          lot: number;
-          min_held_bars: number;
-          start: string;
-        };
-        profile: {
-          lot_size: number;
-          max_holding: number | null;
-          min_held_bars: number;
-          position_size: "all_cash";
-          stop_loss: "none";
-          take_profit_pct: null;
-          trailing: "none";
-        };
-        requested_end: string;
-        requested_start: string;
-        research: {
-          [key: string]: unknown;
-        } | null;
-        revision_saved_at: string;
-        shared_revision: number;
-        simulation?: {
-          annualization_sessions: 252;
-          buy_hold_basis: "close_ratio_before_fees_and_dividends";
-          caveat: string;
-          contract: "iqx-strategy-backtest-1.0";
-          execution: "next_open" | "same_close";
-          execution_label: string;
-          exits:
-            | "none: no stop, take-profit, trailing or max holding"
-            | "max_holding_only: no stop, take-profit or trailing";
-          fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
-          fill_price: string;
-          liquidity: "not_modelled";
-          max_holding?: number | null;
-          min_held_bars: number;
-          min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
-          position_policy: "single_symbol_long_only_one_position";
-          price_adjustment: "provider_adjusted" | "not_confirmed";
-          settlement: "not_modelled";
-          signal_after_open_fill: boolean;
-          sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
-          slippage: "not_modelled";
-        };
-        skipped_rows: number;
-        slippage: "not_modelled";
-        source?: {
-          kind: "saved" | "draft";
-          label: string;
-          origin: {
-            id: string;
-            name: string;
-            type: "iqx_strategy";
-            version: number;
-          } | null;
-        };
         symbol: string;
-        system: {
-          data_hash: string;
-          excluded_symbols: Array<string>;
-          options: {
-            [key: string]: unknown;
-          };
-          profile: {
-            [key: string]: unknown;
-          };
-          sectors: {
-            [key: string]: string | null;
-          } | null;
-          symbols: Array<string>;
-          universe: {
-            [key: string]: unknown;
-          } | null;
-          universe_policy: "explicit_symbols";
-        } | null;
-        versions: {
-          calculation_version: string;
-          engine_version: string;
-          formula_version: string;
-          rule_version: string;
-          schema_version: string;
+        unrealized_pct: number;
+        unrealized_pnl_vnd: string;
+      }>;
+      per_symbol: Array<{
+        closed_trades: number;
+        contribution_pct: number;
+        realized_pnl_vnd: string;
+        symbol: string;
+        unrealized_pnl_vnd: string;
+        wins: number;
+      }>;
+      sessions: number;
+      skipped_orders: {
+        counts: {
+          [key: string]: number;
         };
-        warmup_bars: number;
-        warmup_sessions_requested: number;
+        items: Array<{
+          code:
+            | "session_buy_limit"
+            | "insufficient_cash"
+            | "budget_below_lot"
+            | "symbol_cap";
+          date: string;
+          message: string;
+          symbol: string;
+        }>;
+        total: number;
       };
-      supplementary: {
-        profit_factor: number | null;
-        winning_trade_count: number;
-      };
+      start_session: string | null;
+      time_exits: number;
       trades: Array<{
-        concurrent_reasons?: Array<string>;
-        entry_conditions: {
-          indicator_ids: Array<string>;
-          rules: Array<{
-            id: string;
-            indicator: string;
-            lhs: number | null;
-            missing: boolean;
-            op:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-            previous_lhs?: number | null;
-            previous_rhs?: number | null;
-            result: boolean | null;
-            rhs: number | null;
-            rhs_lower?: number | null;
-            rhs_upper?: number | null;
-            side: "buy" | "sell";
-            values?: {
-              [key: string]: number | string;
-            };
-          }>;
-        } | null;
-        entry_date: string;
-        entry_fee: number;
-        entry_price: number;
-        entry_signal_date: string;
-        entry_total: number;
-        exit_conditions: {
-          indicator_ids: Array<string>;
-          rules: Array<{
-            id: string;
-            indicator: string;
-            lhs: number | null;
-            missing: boolean;
-            op:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-            previous_lhs?: number | null;
-            previous_rhs?: number | null;
-            result: boolean | null;
-            rhs: number | null;
-            rhs_lower?: number | null;
-            rhs_upper?: number | null;
-            side: "buy" | "sell";
-            values?: {
-              [key: string]: number | string;
-            };
-          }>;
-        } | null;
-        exit_date: string;
-        exit_fee_tax: number;
-        exit_gross: number;
-        exit_net: number;
-        exit_price: number;
-        exit_reason: string;
-        exit_signal_date: string;
-        hold: number;
-        number: number;
-        outcome: "win" | "loss" | "flat";
-        pnl: number;
+        counted_sessions: number;
+        entry_cost_vnd: string;
+        entry_price_vnd: string;
+        entry_session: string;
+        exit_reason: "indicator" | "max_holding";
+        exit_reasons: Array<"indicator" | "max_holding">;
+        exit_session: string;
+        fee_vnd: string;
+        gross_vnd: string;
+        holding_sessions: number;
+        max_holding_at_exit: number;
+        net_vnd: string;
         pnl_pct: number;
+        pnl_vnd: string;
+        price_vnd: string;
         qty: number;
+        symbol: string;
+        tax_vnd: string;
       }>;
     } | null;
     run_id: string;
-    shared_revision: number;
     snapshot: {
-      actual_end: string;
-      actual_start: string;
       adjusted: boolean;
-      bar_count: number;
-      benchmark: {
-        available: boolean;
-        source: string | null;
-        symbol: "VNINDEX";
-      };
-      buy_and_hold?: {
-        basis: "iqx-buy-hold-1.0";
-        buy_fee: number;
-        capital: number;
-        cash_left: number;
-        curve: Array<{
-          date: string;
-          return_pct: number;
-          value: number;
-        }>;
-        end_value: number;
-        entry_date: string | null;
-        entry_price: number | null;
-        qty: number;
-        return_pct: number;
-      } | null;
-      capital: number;
-      config: {
-        indicators: {
-          [key: string]: unknown;
-        };
-        max_holding?: number | null;
-        schema_version: string;
+      config_hash: string;
+      content: {
         [key: string]: unknown;
       };
-      config_hash: string;
+      data_as_of: string | null;
       data_hash: string;
-      data_source: string;
-      data_source_priority: number | null;
-      data_warnings: Array<{
+      data_store: "flashback_vn100";
+      excluded_symbols: Array<string>;
+      fee_rules: {
+        buy_fee_bps: number;
+        lot_size: number;
+        sell_fee_bps: number;
+        sell_tax_bps: number;
+      };
+      initial_cash_vnd: string;
+      price_unit: "VND";
+      requested_end: string;
+      requested_start: string;
+      result_label: string;
+      rules_version: string;
+      strategy_label: string;
+      strategy_ref: {
+        id: string | null;
+        source: "iqx" | "user" | "draft";
+        version: number | null;
+      };
+      subtitle: string;
+      universe_label: string;
+      universe_resolved: Array<string>;
+      version_label: string | null;
+      warnings: Array<{
         code: string;
-        indicators?: Array<string>;
         message: string;
         symbols?: Array<string>;
       }>;
-      execution: "next_open" | "same_close";
-      execution_profile: "CLEAN_TECH_2.0";
-      fee_preset: "standard" | "none";
-      fees: {
-        buy: number;
-        sell: number;
-      };
-      lot_size: number;
-      open_position_policy: "mark_to_market_last_close";
-      options: {
-        capital: number;
-        end: string;
-        execution: "next_open" | "same_close";
-        fee_buy: number;
-        fee_sell: number;
-        lot: number;
-        min_held_bars: number;
-        start: string;
-      };
-      profile: {
-        lot_size: number;
-        max_holding: number | null;
-        min_held_bars: number;
-        position_size: "all_cash";
-        stop_loss: "none";
-        take_profit_pct: null;
-        trailing: "none";
-      };
-      requested_end: string;
-      requested_start: string;
-      research: {
-        [key: string]: unknown;
-      } | null;
-      revision_saved_at: string;
-      shared_revision: number;
-      simulation?: {
-        annualization_sessions: 252;
-        buy_hold_basis: "close_ratio_before_fees_and_dividends";
-        caveat: string;
-        contract: "iqx-strategy-backtest-1.0";
-        execution: "next_open" | "same_close";
-        execution_label: string;
-        exits:
-          | "none: no stop, take-profit, trailing or max holding"
-          | "max_holding_only: no stop, take-profit or trailing";
-        fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
-        fill_price: string;
-        liquidity: "not_modelled";
-        max_holding?: number | null;
-        min_held_bars: number;
-        min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
-        position_policy: "single_symbol_long_only_one_position";
-        price_adjustment: "provider_adjusted" | "not_confirmed";
-        settlement: "not_modelled";
-        signal_after_open_fill: boolean;
-        sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
-        slippage: "not_modelled";
-      };
-      skipped_rows: number;
-      slippage: "not_modelled";
-      source?: {
-        kind: "saved" | "draft";
-        label: string;
-        origin: {
-          id: string;
-          name: string;
-          type: "iqx_strategy";
-          version: number;
-        } | null;
-      };
-      symbol: string;
-      system: {
-        data_hash: string;
-        excluded_symbols: Array<string>;
-        options: {
-          [key: string]: unknown;
-        };
-        profile: {
-          [key: string]: unknown;
-        };
-        sectors: {
-          [key: string]: string | null;
-        } | null;
-        symbols: Array<string>;
-        universe: {
-          [key: string]: unknown;
-        } | null;
-        universe_policy: "explicit_symbols";
-      } | null;
-      versions: {
-        calculation_version: string;
-        engine_version: string;
-        formula_version: string;
-        rule_version: string;
-        schema_version: string;
-      };
-      warmup_bars: number;
-      warmup_sessions_requested: number;
     } | null;
     status: "succeeded" | "failed";
-    system_result: {
-      applied: Array<string>;
-      curve: Array<{
-        buy_hold_pct: number;
-        date: string;
-        market_pct: number | null;
-        phase?: "before_first_execution";
-        return_pct: number;
-        value: number;
-      }>;
-      kpis: {
-        buy_hold_return: number;
-        cagr: number;
-        market_return: number | null;
-        max_drawdown: number;
-        n_trades: number;
-        n_wins: number;
-        net_return: number;
-        profit_factor: number | null;
-        win_rate: number | null;
-      };
-      ledger_size: number;
-      positions_open: Array<{
-        cost: number;
-        date: string;
-        index: number;
-        last_price: number;
-        market_value: number;
-        peak_close: number;
-        price: number;
-        qty: number;
-        sector: string | null;
-        signal_date: string;
-        symbol: string;
-        unrealized_pnl: number;
-      }>;
-      trades: Array<{
-        concurrent_reasons?: Array<string>;
-        entry_date: string;
-        entry_price: number;
-        entry_signal_date: string;
-        exit_date: string;
-        exit_price: number;
-        exit_reason: string;
-        exit_signal_date: string;
-        hold: number;
-        number: number;
-        partial: boolean;
-        pnl: number;
-        pnl_pct: number;
-        qty: number;
-        symbol: string;
-      }>;
-    } | null;
+    trial: boolean;
   };
 };
 
@@ -59534,191 +55743,30 @@ export type StrategyBacktestsTradesError =
 
 export type StrategyBacktestsTradesResponses = {
   200: {
-    counts: {
-      buy_count: number;
-      closed_trade_count: number;
-      open_position_count: number;
-      pending_order_count: number;
-    };
     items: Array<{
-      concurrent_reasons?: Array<string>;
-      entry_conditions: {
-        indicator_ids: Array<string>;
-        rules: Array<{
-          id: string;
-          indicator: string;
-          lhs: number | null;
-          missing: boolean;
-          op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-          previous_lhs?: number | null;
-          previous_rhs?: number | null;
-          result: boolean | null;
-          rhs: number | null;
-          rhs_lower?: number | null;
-          rhs_upper?: number | null;
-          side: "buy" | "sell";
-          values?: {
-            [key: string]: number | string;
-          };
-        }>;
-      } | null;
-      entry_date: string;
-      entry_fee: number;
-      entry_price: number;
-      entry_signal_date: string;
-      entry_total: number;
-      exit_conditions: {
-        indicator_ids: Array<string>;
-        rules: Array<{
-          id: string;
-          indicator: string;
-          lhs: number | null;
-          missing: boolean;
-          op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-          previous_lhs?: number | null;
-          previous_rhs?: number | null;
-          result: boolean | null;
-          rhs: number | null;
-          rhs_lower?: number | null;
-          rhs_upper?: number | null;
-          side: "buy" | "sell";
-          values?: {
-            [key: string]: number | string;
-          };
-        }>;
-      } | null;
-      exit_date: string;
-      exit_fee_tax: number;
-      exit_gross: number;
-      exit_net: number;
-      exit_price: number;
-      exit_reason: string;
-      exit_signal_date: string;
-      hold: number;
-      number: number;
-      outcome: "win" | "loss" | "flat";
-      pnl: number;
+      counted_sessions: number;
+      entry_cost_vnd: string;
+      entry_price_vnd: string;
+      entry_session: string;
+      exit_reason: "indicator" | "max_holding";
+      exit_reasons: Array<"indicator" | "max_holding">;
+      exit_session: string;
+      fee_vnd: string;
+      gross_vnd: string;
+      holding_sessions: number;
+      max_holding_at_exit: number;
+      net_vnd: string;
       pnl_pct: number;
+      pnl_vnd: string;
+      price_vnd: string;
       qty: number;
+      symbol: string;
+      tax_vnd: string;
     }>;
     limit: number;
     offset: number;
-    open_position: {
-      cost: number;
-      date: string;
-      entry_conditions: {
-        indicator_ids: Array<string>;
-        rules: Array<{
-          id: string;
-          indicator: string;
-          lhs: number | null;
-          missing: boolean;
-          op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-          previous_lhs?: number | null;
-          previous_rhs?: number | null;
-          result: boolean | null;
-          rhs: number | null;
-          rhs_lower?: number | null;
-          rhs_upper?: number | null;
-          side: "buy" | "sell";
-          values?: {
-            [key: string]: number | string;
-          };
-        }>;
-      } | null;
-      index: number;
-      last_price: number;
-      market_value: number;
-      price: number;
-      qty: number;
-      signal_date: string;
-      unrealized_pnl: number;
-      unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
-    } | null;
-    pending_orders: Array<{
-      action: "buy" | "sell";
-      evidence: {
-        indicator_ids: Array<string>;
-        rules: Array<{
-          id: string;
-          indicator: string;
-          lhs: number | null;
-          missing: boolean;
-          op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-          previous_lhs?: number | null;
-          previous_rhs?: number | null;
-          result: boolean | null;
-          rhs: number | null;
-          rhs_lower?: number | null;
-          rhs_upper?: number | null;
-          side: "buy" | "sell";
-          values?: {
-            [key: string]: number | string;
-          };
-        }>;
-      } | null;
-      exit_reason?: string;
-      note: string;
-      reason: "end_of_range";
-      signal_date: string;
-    }>;
     run_id: string;
+    time_exits: number;
     total: number;
   };
 };
@@ -61122,16 +57170,28 @@ export type ListStrategyIqxTemplatesResponses = {
                 };
               };
               max_holding: number;
+              universe: {
+                type: "vn30" | "vn100";
+              };
             };
             idea: string;
             name: string;
             origin: string;
             when_wrong: string;
           };
+          current_version: number;
           id: string;
           kind: "strategy";
+          max_holding: number;
+          on_bot: {
+            last: boolean;
+            next: boolean;
+          };
           pair: null;
           slug: string;
+          universe: {
+            type: "vn30" | "vn100";
+          };
           version: number;
         }
     >;
@@ -61191,6 +57251,137 @@ export type RecordStrategyIqxTemplateUsedResponses = {
 
 export type RecordStrategyIqxTemplateUsedResponse =
   RecordStrategyIqxTemplateUsedResponses[keyof RecordStrategyIqxTemplateUsedResponses];
+
+export type ListStrategyIqxTemplateVersionsData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/iqx-templates/{id}/versions";
+};
+
+export type ListStrategyIqxTemplateVersionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListStrategyIqxTemplateVersionsError =
+  ListStrategyIqxTemplateVersionsErrors[keyof ListStrategyIqxTemplateVersionsErrors];
+
+export type ListStrategyIqxTemplateVersionsResponses = {
+  200: {
+    current_version: number;
+    hidden: boolean;
+    id: string;
+    items: Array<{
+      current: boolean;
+      published_at: string;
+      reason: string;
+      version: number;
+    }>;
+    name: string;
+    on_bot: {
+      last: boolean;
+      next: boolean;
+    };
+    slug: string;
+  };
+};
+
+export type ListStrategyIqxTemplateVersionsResponse =
+  ListStrategyIqxTemplateVersionsResponses[keyof ListStrategyIqxTemplateVersionsResponses];
+
+export type GetStrategyIqxTemplateVersionData = {
+  body?: never;
+  path: {
+    id: string;
+    version: number;
+  };
+  query?: never;
+  url: "/api/v2/strategy/iqx-templates/{id}/versions/{version}";
+};
+
+export type GetStrategyIqxTemplateVersionErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetStrategyIqxTemplateVersionError =
+  GetStrategyIqxTemplateVersionErrors[keyof GetStrategyIqxTemplateVersionErrors];
+
+export type GetStrategyIqxTemplateVersionResponses = {
+  200: {
+    content: {
+      [key: string]: unknown;
+    };
+    current_version: number;
+    hidden: boolean;
+    id: string;
+    published_at: string;
+    reason: string;
+    slug: string;
+    strategy_content: {
+      indicators: {
+        [key: string]: {
+          [key: string]: unknown;
+        };
+      };
+      max_holding: number;
+      universe: {
+        type: "vn30" | "vn100";
+      };
+    };
+    version: number;
+  };
+};
+
+export type GetStrategyIqxTemplateVersionResponse =
+  GetStrategyIqxTemplateVersionResponses[keyof GetStrategyIqxTemplateVersionResponses];
 
 export type ListStrategySavedListsData = {
   body?: never;
@@ -64609,289 +60800,7 @@ export type StrategyConfigGetSharedConfigResponse =
   StrategyConfigGetSharedConfigResponses[keyof StrategyConfigGetSharedConfigResponses];
 
 export type StrategyConfigPatchSharedConfigData = {
-  body: {
-    expected_revision: number;
-    idempotency_key: string;
-    indicators: {
-      [key: string]: {
-        buy:
-          | {
-              enabled: boolean;
-              rules: Array<{
-                enabled: boolean;
-                id: string;
-                [key: string]: number | string | boolean | boolean | string;
-              }>;
-            }
-          | {
-              enabled: boolean;
-              params: {
-                [key: string]: number;
-              };
-              rules: Array<
-                | {
-                    allowed_ops: Array<
-                      | ">"
-                      | "<"
-                      | "cross_up"
-                      | "cross_down"
-                      | "reenter_lower"
-                      | "reenter_upper"
-                      | "break_upper"
-                      | "break_lower"
-                      | "cross_up_middle"
-                      | "cross_down_middle"
-                      | "break_high"
-                      | "break_low"
-                    >;
-                    enabled?: boolean;
-                    id: string;
-                    kind: "compare" | "cross";
-                    lhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    op:
-                      | ">"
-                      | "<"
-                      | "cross_up"
-                      | "cross_down"
-                      | "reenter_lower"
-                      | "reenter_upper"
-                      | "break_upper"
-                      | "break_lower"
-                      | "cross_up_middle"
-                      | "cross_down_middle"
-                      | "break_high"
-                      | "break_low";
-                    rhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  }
-                | {
-                    allowed_ops: Array<"∈" | "∉">;
-                    enabled?: boolean;
-                    id: string;
-                    kind: "membership";
-                    lhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    op: "∈" | "∉";
-                    rhs: {
-                      bounds?: "open";
-                      kind?: "interval";
-                      lower:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                      upper:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                    };
-                  }
-              >;
-            };
-        master_enabled: boolean;
-        sell:
-          | {
-              enabled: boolean;
-              rules: Array<{
-                enabled: boolean;
-                id: string;
-                [key: string]: number | string | boolean | boolean | string;
-              }>;
-            }
-          | {
-              enabled: boolean;
-              params: {
-                [key: string]: number;
-              };
-              rules: Array<
-                | {
-                    allowed_ops: Array<
-                      | ">"
-                      | "<"
-                      | "cross_up"
-                      | "cross_down"
-                      | "reenter_lower"
-                      | "reenter_upper"
-                      | "break_upper"
-                      | "break_lower"
-                      | "cross_up_middle"
-                      | "cross_down_middle"
-                      | "break_high"
-                      | "break_low"
-                    >;
-                    enabled?: boolean;
-                    id: string;
-                    kind: "compare" | "cross";
-                    lhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    op:
-                      | ">"
-                      | "<"
-                      | "cross_up"
-                      | "cross_down"
-                      | "reenter_lower"
-                      | "reenter_upper"
-                      | "break_upper"
-                      | "break_lower"
-                      | "cross_up_middle"
-                      | "cross_down_middle"
-                      | "break_high"
-                      | "break_low";
-                    rhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  }
-                | {
-                    allowed_ops: Array<"∈" | "∉">;
-                    enabled?: boolean;
-                    id: string;
-                    kind: "membership";
-                    lhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    op: "∈" | "∉";
-                    rhs: {
-                      bounds?: "open";
-                      kind?: "interval";
-                      lower:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                      upper:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                    };
-                  }
-              >;
-            };
-      };
-    };
-    max_holding?: number | null;
-    source?: {
-      backtest_run_id: string;
-    };
-  };
+  body?: never;
   path?: never;
   query?: never;
   url: "/api/v2/strategy/shared-config";
@@ -64911,6 +60820,10 @@ export type StrategyConfigPatchSharedConfigErrors = {
    */
   403: ApiErrorV2;
   /**
+   * SHARED_CONFIG_RETIRED
+   */
+  410: unknown;
+  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -64928,6 +60841,9 @@ export type StrategyConfigPatchSharedConfigError =
   StrategyConfigPatchSharedConfigErrors[keyof StrategyConfigPatchSharedConfigErrors];
 
 export type StrategyConfigPatchSharedConfigResponses = {
+  /**
+   * Legacy shape, never returned since update 22-11
+   */
   200: {
     config: {
       indicators: {
@@ -65211,8 +61127,331 @@ export type StrategyConfigPatchSharedConfigResponses = {
       schema_version: "3.0";
     };
     config_hash: string;
+    effective?: {
+      config: {
+        indicators: {
+          [key: string]: {
+            buy:
+              | {
+                  enabled: boolean;
+                  rules: Array<{
+                    enabled: boolean;
+                    id: string;
+                    [key: string]: number | string | boolean | boolean | string;
+                  }>;
+                }
+              | {
+                  enabled: boolean;
+                  params: {
+                    [key: string]: number;
+                  };
+                  rules: Array<
+                    | {
+                        allowed_ops: Array<
+                          | ">"
+                          | "<"
+                          | "cross_up"
+                          | "cross_down"
+                          | "reenter_lower"
+                          | "reenter_upper"
+                          | "break_upper"
+                          | "break_lower"
+                          | "cross_up_middle"
+                          | "cross_down_middle"
+                          | "break_high"
+                          | "break_low"
+                        >;
+                        enabled?: boolean;
+                        id: string;
+                        kind: "compare" | "cross";
+                        lhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        op:
+                          | ">"
+                          | "<"
+                          | "cross_up"
+                          | "cross_down"
+                          | "reenter_lower"
+                          | "reenter_upper"
+                          | "break_upper"
+                          | "break_lower"
+                          | "cross_up_middle"
+                          | "cross_down_middle"
+                          | "break_high"
+                          | "break_low";
+                        rhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                      }
+                    | {
+                        allowed_ops: Array<"∈" | "∉">;
+                        enabled?: boolean;
+                        id: string;
+                        kind: "membership";
+                        lhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        op: "∈" | "∉";
+                        rhs: {
+                          bounds?: "open";
+                          kind?: "interval";
+                          lower:
+                            | {
+                                key: string;
+                                kind: "series";
+                                offset?: number;
+                                offset_param?: string;
+                              }
+                            | {
+                                key: string;
+                                kind: "param";
+                              }
+                            | {
+                                kind: "constant";
+                                value: number;
+                              };
+                          upper:
+                            | {
+                                key: string;
+                                kind: "series";
+                                offset?: number;
+                                offset_param?: string;
+                              }
+                            | {
+                                key: string;
+                                kind: "param";
+                              }
+                            | {
+                                kind: "constant";
+                                value: number;
+                              };
+                        };
+                      }
+                  >;
+                };
+            master_enabled: boolean;
+            sell:
+              | {
+                  enabled: boolean;
+                  rules: Array<{
+                    enabled: boolean;
+                    id: string;
+                    [key: string]: number | string | boolean | boolean | string;
+                  }>;
+                }
+              | {
+                  enabled: boolean;
+                  params: {
+                    [key: string]: number;
+                  };
+                  rules: Array<
+                    | {
+                        allowed_ops: Array<
+                          | ">"
+                          | "<"
+                          | "cross_up"
+                          | "cross_down"
+                          | "reenter_lower"
+                          | "reenter_upper"
+                          | "break_upper"
+                          | "break_lower"
+                          | "cross_up_middle"
+                          | "cross_down_middle"
+                          | "break_high"
+                          | "break_low"
+                        >;
+                        enabled?: boolean;
+                        id: string;
+                        kind: "compare" | "cross";
+                        lhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        op:
+                          | ">"
+                          | "<"
+                          | "cross_up"
+                          | "cross_down"
+                          | "reenter_lower"
+                          | "reenter_upper"
+                          | "break_upper"
+                          | "break_lower"
+                          | "cross_up_middle"
+                          | "cross_down_middle"
+                          | "break_high"
+                          | "break_low";
+                        rhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                      }
+                    | {
+                        allowed_ops: Array<"∈" | "∉">;
+                        enabled?: boolean;
+                        id: string;
+                        kind: "membership";
+                        lhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        op: "∈" | "∉";
+                        rhs: {
+                          bounds?: "open";
+                          kind?: "interval";
+                          lower:
+                            | {
+                                key: string;
+                                kind: "series";
+                                offset?: number;
+                                offset_param?: string;
+                              }
+                            | {
+                                key: string;
+                                kind: "param";
+                              }
+                            | {
+                                kind: "constant";
+                                value: number;
+                              };
+                          upper:
+                            | {
+                                key: string;
+                                kind: "series";
+                                offset?: number;
+                                offset_param?: string;
+                              }
+                            | {
+                                key: string;
+                                kind: "param";
+                              }
+                            | {
+                                kind: "constant";
+                                value: number;
+                              };
+                        };
+                      }
+                  >;
+                };
+          };
+        };
+        max_holding?: number | null;
+        revision: number;
+        rule_version: "iqx-rules-4.0";
+        schema_version: "3.0";
+      };
+      config_hash: string;
+      effective_session: string;
+      legacy: {
+        buy: {
+          indicators: Array<string>;
+          status: "ok" | "legacy_needs_review";
+        };
+        defaulted_indicators: Array<string>;
+        from_rule_version: string;
+        legacy: boolean;
+        needs_review: boolean;
+        removed_indicators: Array<string>;
+        reset: boolean;
+        sell: {
+          indicators: Array<string>;
+          status: "ok" | "legacy_needs_review";
+        };
+      } | null;
+      outdated: boolean;
+      revision: number;
+    } | null;
+    effective_revision: number | null;
     effective_session: string | null;
-    revision: number;
+    granted_indicators: Array<string>;
+    legacy?: {
+      buy: {
+        indicators: Array<string>;
+        status: "ok" | "legacy_needs_review";
+      };
+      defaulted_indicators: Array<string>;
+      from_rule_version: string;
+      legacy: boolean;
+      needs_review: boolean;
+      removed_indicators: Array<string>;
+      reset: boolean;
+      sell: {
+        indicators: Array<string>;
+        status: "ok" | "legacy_needs_review";
+      };
+    } | null;
+    outdated: boolean;
+    registry_version: string;
+    saved_revision: number;
     status: "pending" | "effective" | "calendar_unavailable";
   };
 };
@@ -65274,6 +61513,720 @@ export type StrategyConfigListRevisionsResponses = {
 
 export type StrategyConfigListRevisionsResponse =
   StrategyConfigListRevisionsResponses[keyof StrategyConfigListRevisionsResponses];
+
+export type StrategyStoreMetaData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/store/meta";
+};
+
+export type StrategyStoreMetaErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyStoreMetaError =
+  StrategyStoreMetaErrors[keyof StrategyStoreMetaErrors];
+
+export type StrategyStoreMetaResponses = {
+  200: {
+    adjusted: boolean;
+    data_as_of: string | null;
+    data_store: "flashback_vn100";
+    default_end: string | null;
+    default_start: string | null;
+    earliest_start: string | null;
+    max_range_days: number;
+    price_unit: "VND";
+    sessions: number;
+  };
+};
+
+export type StrategyStoreMetaResponse =
+  StrategyStoreMetaResponses[keyof StrategyStoreMetaResponses];
+
+export type StrategyListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/strategies";
+};
+
+export type StrategyListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyListError = StrategyListErrors[keyof StrategyListErrors];
+
+export type StrategyListResponses = {
+  200: {
+    items: Array<{
+      id: string;
+      latest_saved_at: string;
+      latest_version: number;
+      name: string;
+      on_bot: {
+        last: boolean;
+        next: boolean;
+      };
+      sell_only: boolean;
+      universe_count: number | null;
+      universe_label: string;
+    }>;
+    limit: 20;
+  };
+};
+
+export type StrategyListResponse =
+  StrategyListResponses[keyof StrategyListResponses];
+
+export type StrategyCreateData = {
+  body: {
+    apply_next?: boolean;
+    confirm_due_positions?: Array<string>;
+    content: {
+      indicators: {
+        [key: string]: unknown;
+      };
+      max_holding: number;
+      sell_only?: boolean;
+      universe:
+        | {
+            type: "vn30" | "vn100";
+          }
+        | {
+            list_id: string;
+            list_name: string;
+            symbols: Array<string>;
+            type: "saved_list";
+          };
+    };
+    expected_next_session?: string;
+    from_run_id: string;
+    name: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/strategies";
+};
+
+export type StrategyCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyCreateError =
+  StrategyCreateErrors[keyof StrategyCreateErrors];
+
+export type StrategyCreateResponses = {
+  201: {
+    schedule: unknown;
+    strategy: {
+      created_at: string;
+      id: string;
+      latest_version: number;
+      name: string;
+      sell_only: boolean;
+      updated_at: string;
+    };
+    version: {
+      config_hash: string;
+      content: {
+        indicators: {
+          [key: string]: {
+            [key: string]: unknown;
+          };
+        };
+        max_holding: number;
+        sell_only?: boolean;
+        universe:
+          | {
+              type: "vn30" | "vn100";
+            }
+          | {
+              list_id: string;
+              list_name: string;
+              symbols: Array<string>;
+              type: "saved_list";
+            };
+      };
+      created_at: string;
+      from_run_id: string | null;
+      name: string;
+      note: string | null;
+      strategy_id: string;
+      version: number;
+      version_label: string;
+    };
+  };
+};
+
+export type StrategyCreateResponse =
+  StrategyCreateResponses[keyof StrategyCreateResponses];
+
+export type StrategyDeleteData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/strategies/{id}";
+};
+
+export type StrategyDeleteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyDeleteError =
+  StrategyDeleteErrors[keyof StrategyDeleteErrors];
+
+export type StrategyDeleteResponses = {
+  204: void;
+};
+
+export type StrategyDeleteResponse =
+  StrategyDeleteResponses[keyof StrategyDeleteResponses];
+
+export type StrategyRenameData = {
+  body: {
+    name: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/strategies/{id}";
+};
+
+export type StrategyRenameErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyRenameError =
+  StrategyRenameErrors[keyof StrategyRenameErrors];
+
+export type StrategyRenameResponses = {
+  200: {
+    created_at: string;
+    id: string;
+    latest_version: number;
+    name: string;
+    sell_only: boolean;
+    updated_at: string;
+  };
+};
+
+export type StrategyRenameResponse =
+  StrategyRenameResponses[keyof StrategyRenameResponses];
+
+export type StrategyVersionsData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/strategies/{id}/versions";
+};
+
+export type StrategyVersionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyVersionsError =
+  StrategyVersionsErrors[keyof StrategyVersionsErrors];
+
+export type StrategyVersionsResponses = {
+  200: {
+    items: Array<{
+      created_at: string;
+      from_run_id: string | null;
+      max_holding: number;
+      note: string | null;
+      on_bot: {
+        last: boolean;
+        next: boolean;
+      };
+      universe_label: string;
+      version: number;
+      version_label: string;
+    }>;
+    latest_version: number;
+    name: string;
+    strategy_id: string;
+  };
+};
+
+export type StrategyVersionsResponse =
+  StrategyVersionsResponses[keyof StrategyVersionsResponses];
+
+export type StrategyVersionCreateData = {
+  body: {
+    apply_next?: boolean;
+    confirm_due_positions?: Array<string>;
+    content: {
+      indicators: {
+        [key: string]: unknown;
+      };
+      max_holding: number;
+      sell_only?: boolean;
+      universe:
+        | {
+            type: "vn30" | "vn100";
+          }
+        | {
+            list_id: string;
+            list_name: string;
+            symbols: Array<string>;
+            type: "saved_list";
+          };
+    };
+    expected_latest_version: number;
+    expected_next_session?: string;
+    from_run_id: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/strategies/{id}/versions";
+};
+
+export type StrategyVersionCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyVersionCreateError =
+  StrategyVersionCreateErrors[keyof StrategyVersionCreateErrors];
+
+export type StrategyVersionCreateResponses = {
+  201: {
+    schedule: unknown;
+    strategy: {
+      created_at: string;
+      id: string;
+      latest_version: number;
+      name: string;
+      sell_only: boolean;
+      updated_at: string;
+    };
+    version: {
+      config_hash: string;
+      content: {
+        indicators: {
+          [key: string]: {
+            [key: string]: unknown;
+          };
+        };
+        max_holding: number;
+        sell_only?: boolean;
+        universe:
+          | {
+              type: "vn30" | "vn100";
+            }
+          | {
+              list_id: string;
+              list_name: string;
+              symbols: Array<string>;
+              type: "saved_list";
+            };
+      };
+      created_at: string;
+      from_run_id: string | null;
+      name: string;
+      note: string | null;
+      strategy_id: string;
+      version: number;
+      version_label: string;
+    };
+  };
+};
+
+export type StrategyVersionCreateResponse =
+  StrategyVersionCreateResponses[keyof StrategyVersionCreateResponses];
+
+export type StrategyVersionData = {
+  body?: never;
+  path: {
+    id: string;
+    version: number;
+  };
+  query?: never;
+  url: "/api/v2/strategy/strategies/{id}/versions/{version}";
+};
+
+export type StrategyVersionErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyVersionError =
+  StrategyVersionErrors[keyof StrategyVersionErrors];
+
+export type StrategyVersionResponses = {
+  200: {
+    config_hash: string;
+    content: {
+      indicators: {
+        [key: string]: {
+          [key: string]: unknown;
+        };
+      };
+      max_holding: number;
+      sell_only?: boolean;
+      universe:
+        | {
+            type: "vn30" | "vn100";
+          }
+        | {
+            list_id: string;
+            list_name: string;
+            symbols: Array<string>;
+            type: "saved_list";
+          };
+    };
+    created_at: string;
+    from_run_id: string | null;
+    name: string;
+    note: string | null;
+    strategy_id: string;
+    version: number;
+    version_label: string;
+  };
+};
+
+export type StrategyVersionResponse =
+  StrategyVersionResponses[keyof StrategyVersionResponses];
+
+export type StrategyVersionRestoreData = {
+  body: {
+    apply_next?: boolean;
+    confirm_due_positions?: Array<string>;
+    expected_latest_version: number;
+    expected_next_session?: string;
+  };
+  path: {
+    id: string;
+    version: number;
+  };
+  query?: never;
+  url: "/api/v2/strategy/strategies/{id}/versions/{version}/restore";
+};
+
+export type StrategyVersionRestoreErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyVersionRestoreError =
+  StrategyVersionRestoreErrors[keyof StrategyVersionRestoreErrors];
+
+export type StrategyVersionRestoreResponses = {
+  201: {
+    schedule: unknown;
+    strategy: {
+      created_at: string;
+      id: string;
+      latest_version: number;
+      name: string;
+      sell_only: boolean;
+      updated_at: string;
+    };
+    version: {
+      config_hash: string;
+      content: {
+        indicators: {
+          [key: string]: {
+            [key: string]: unknown;
+          };
+        };
+        max_holding: number;
+        sell_only?: boolean;
+        universe:
+          | {
+              type: "vn30" | "vn100";
+            }
+          | {
+              list_id: string;
+              list_name: string;
+              symbols: Array<string>;
+              type: "saved_list";
+            };
+      };
+      created_at: string;
+      from_run_id: string | null;
+      name: string;
+      note: string | null;
+      strategy_id: string;
+      version: number;
+      version_label: string;
+    };
+  };
+};
+
+export type StrategyVersionRestoreResponse =
+  StrategyVersionRestoreResponses[keyof StrategyVersionRestoreResponses];
+
+export type StrategyUniverseOptionsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/universe-options";
+};
+
+export type StrategyUniverseOptionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyUniverseOptionsError =
+  StrategyUniverseOptionsErrors[keyof StrategyUniverseOptionsErrors];
+
+export type StrategyUniverseOptionsResponses = {
+  200: {
+    saved_lists: Array<{
+      excluded: Array<string>;
+      id: string;
+      name: string;
+      symbols_kept: Array<string>;
+      symbols_total: number;
+    }>;
+    vn100: {
+      symbols: Array<string>;
+    };
+    vn30: {
+      symbols: Array<string>;
+    };
+  };
+};
+
+export type StrategyUniverseOptionsResponse =
+  StrategyUniverseOptionsResponses[keyof StrategyUniverseOptionsResponses];
 
 export type TeamAcademyConfigGetApiV2TeamAcademyConfigData = {
   body?: never;

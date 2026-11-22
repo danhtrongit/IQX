@@ -53,7 +53,12 @@ export class StrategyConfigController {
   @HttpCode(410)
   @ApiOperation({
     operationId: 'strategyConfigPatchSharedConfig',
+    deprecated: true,
     summary: 'Retired: 410 SHARED_CONFIG_RETIRED (use strategies + Bot schedule)',
+  })
+  @ApiOkResponse({
+    description: 'Legacy shape, never returned since update 22-11',
+    schema: openApi(sharedConfigStateSchema),
   })
   @ApiGoneResponse({ description: 'SHARED_CONFIG_RETIRED' })
   save(): never {
