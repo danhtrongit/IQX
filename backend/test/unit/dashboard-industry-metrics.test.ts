@@ -84,7 +84,10 @@ function service(years: Record<number, YearFixture>) {
       },
     }),
   } as unknown as MarketDataService;
-  const store = { findAll: async () => ({}), save: async () => null } as unknown as DashboardSettingsStore;
+  const store = {
+    findAll: async () => ({}),
+    save: async () => null,
+  } as unknown as DashboardSettingsStore;
   return new DashboardService(vci, market, store);
 }
 
@@ -459,8 +462,7 @@ describe('securities metrics (spec §8.4) on the securities template', () => {
 
   it('computes brokerage margin, proprietary asset share and return, and borrowings over equity', async () => {
     const response = await service(SECURITIES).fundamental('SSI', {
-      charts:
-        'Biên lợi nhuận môi giới,Tỷ trọng tài sản tự doanh,Hiệu suất tự doanh,Nợ vay / VCSH',
+      charts: 'Biên lợi nhuận môi giới,Tỷ trọng tài sản tự doanh,Hiệu suất tự doanh,Nợ vay / VCSH',
       per: 'q',
     });
     // Brokerage: revenue 144 less cost 80 → 44,44%.
@@ -573,10 +575,7 @@ describe('insurance metrics (spec §8.5) on the insurance template', () => {
     expect(expense.legend_note).toContain('số thuần');
     expect(lastQuarter(combined)).toBeCloseTo(95, 9);
     // Combined ratio = loss + expense = 1 − underwriting profit / net premium (4 x 10 / 800).
-    expect(lastQuarter(combined)).toBeCloseTo(
-      lastQuarter(loss)! + lastQuarter(expense)!,
-      9,
-    );
+    expect(lastQuarter(combined)).toBeCloseTo(lastQuarter(loss)! + lastQuarter(expense)!, 9);
     expect(lastQuarter(combined)).toBeCloseTo((1 - 40 / 800) * 100, 9);
     // Stacked bars in % under the line, a dashed reference at 100% above them (§9).
     expect(combined.ref).toBe(100);
@@ -684,9 +683,9 @@ describe('industry catalogue guard (spec §11)', () => {
       await expect(
         dashboard.fundamental('XXX', { charts: `ROE,${foreign}`, per: 'q' }),
       ).rejects.toThrow(BadRequestException);
-      await expect(
-        dashboard.fundamental('XXX', { charts: 'D/E', per: 'q' }),
-      ).rejects.toMatchObject({ response: { code: 'CHART_NOT_IN_INDUSTRY' } });
+      await expect(dashboard.fundamental('XXX', { charts: 'D/E', per: 'q' })).rejects.toMatchObject(
+        { response: { code: 'CHART_NOT_IN_INDUSTRY' } },
+      );
     },
   );
 
@@ -735,10 +734,7 @@ describe('industry statement mapping (spec §7)', () => {
 
   it('adds up the lines of a derived concept and keeps it absent when none of them is reported', () => {
     const statements = normalizeIndustryStatements(
-      rows(
-        {},
-        { bsb98: 300, bsb99: 200, bsb104: 1800, bsb106: 200, bsb111: 50, bsb113: 2000 },
-      ),
+      rows({}, { bsb98: 300, bsb99: 200, bsb104: 1800, bsb106: 200, bsb111: 50, bsb113: 2000 }),
       asOf,
       'nh',
     );
@@ -759,7 +755,22 @@ describe('industry statement mapping (spec §7)', () => {
   });
 
   it('sorts the industry concepts into flows (summed over four quarters) and balances (year end)', () => {
-    expect(industryConcepts('thuong', 'flow')).toEqual([]);
+    // Enterprise template (v3): TT200 lines of the 28 new metrics (PLAN §5).
+    expect(industryConcepts('thuong', 'flow')).toEqual([
+      'dn_fin_income',
+      'dn_fin_expense',
+      'dn_jv_profit',
+      'dn_selling_exp',
+      'dn_admin_exp',
+      'dn_other_profit',
+      'dn_interest_paid',
+      'dn_dividends_paid',
+    ]);
+    expect(industryConcepts('thuong', 'balance')).toContain('dn_buyer_prepay');
+    // D5: convertible bonds join the long-term debt of the 5 new industries only.
+    expect(industryFieldMap('thuong', 'bds').lt_debt).toEqual({ fields: ['bsa71', 'bsa173'] });
+    expect(industryFieldMap('thuong', 'thuong').lt_debt).toBeUndefined();
+    expect(industryFieldMap('thuong').lt_debt).toBeUndefined();
     expect(industryConcepts('nh', 'flow')).toContain('nh_net_interest_income');
     expect(industryConcepts('nh', 'balance')).toContain('nh_gross_loans');
     expect(industryConcepts('ck', 'balance')).toContain('ck_margin_loans');
@@ -815,7 +826,9 @@ describe('window length with a long history (spec §12.10)', () => {
 
   /** Twelve fiscal years of the same figures: 48 quarters, more than any chart ever draws. */
   const longHistory = (year: YearFixture): Record<number, YearFixture> =>
-    Object.fromEntries(Array.from({ length: 12 }, (_, index) => [2013 + index, withCommonLines(year)]));
+    Object.fromEntries(
+      Array.from({ length: 12 }, (_, index) => [2013 + index, withCommonLines(year)]),
+    );
 
   /** Window of the year-fixed kinds (spec §9): CAGR 4 years, stability 5, streak 7. */
   const FIXED_YEARS: Record<string, number> = { D: 4, E1: 5, E2: 7 };
@@ -847,7 +860,8 @@ describe('window length with a long history (spec §12.10)', () => {
         const block = chart[mode]!;
         expect(block.labels, `${name} ${mode}`).toHaveLength(length);
         for (const line of block.main) expect(line.v, `${name} ${mode}`).toHaveLength(length);
-        for (const bar of block.sub?.series ?? []) expect(bar.v, `${name} ${mode}`).toHaveLength(length);
+        for (const bar of block.sub?.series ?? [])
+          expect(bar.v, `${name} ${mode}`).toHaveLength(length);
       }
     }
   });
@@ -857,20 +871,23 @@ describe('window length with a long history (spec §12.10)', () => {
     ['nh', BANK[2024]!],
     ['ck', SECURITIES[2024]!],
     ['bh', INSURER[2024]!],
-  ])('computes every chart of %s with real values, never an empty card', async (_industry, fixture) => {
-    const response = await service(longHistory(fixture)).fundamental('XXX', { per: 'q' });
-    const empty: string[] = [];
-    for (const [name, raw] of Object.entries(response.charts)) {
-      const chart = raw as DashboardChartPayload;
-      if (chart.kind === 'F') continue;
-      if (chart.status !== 'ok') empty.push(`${name}: ${chart.status}`);
-      else if (chart.q) {
-        // A constant history is the easy case: the newest quarter and year always have a value.
-        expect(chart.q.main[0]!.v.at(-1), `${name} q`).not.toBeNull();
-        expect(chart.y!.main[0]!.v.at(-1), `${name} y`).not.toBeNull();
+  ])(
+    'computes every chart of %s with real values, never an empty card',
+    async (_industry, fixture) => {
+      const response = await service(longHistory(fixture)).fundamental('XXX', { per: 'q' });
+      const empty: string[] = [];
+      for (const [name, raw] of Object.entries(response.charts)) {
+        const chart = raw as DashboardChartPayload;
+        if (chart.kind === 'F') continue;
+        if (chart.status !== 'ok') empty.push(`${name}: ${chart.status}`);
+        else if (chart.q) {
+          // A constant history is the easy case: the newest quarter and year always have a value.
+          expect(chart.q.main[0]!.v.at(-1), `${name} q`).not.toBeNull();
+          expect(chart.y!.main[0]!.v.at(-1), `${name} y`).not.toBeNull();
+        }
       }
-    }
-    // The only chart that needs the market price (no quotes in this fixture) is the PEG.
-    expect(empty).toEqual(['PEG: missing']);
-  });
+      // The only chart that needs the market price (no quotes in this fixture) is the PEG.
+      expect(empty).toEqual(['PEG: missing']);
+    },
+  );
 });
