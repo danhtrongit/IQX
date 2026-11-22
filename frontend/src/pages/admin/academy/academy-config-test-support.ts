@@ -33,20 +33,25 @@ function chapter(
   }
 }
 
-/** 12 chương của danh mục gốc, tổng 116 bài bắt buộc. */
+/** 17 chương của danh mục gốc v5, tổng 203 bài bắt buộc (spec Học viện v5 §1.1). */
 export const CATALOG: AcademyCatalogChapter[] = [
-  chapter(1, "Nền tảng", 12),
+  chapter(1, "Nền tảng", 10),
   chapter(2, "Kỹ năng Sale SACO", 10),
-  chapter(3, "Thương hiệu cá nhân", 10, { has_practice: true }),
-  chapter(4, "Phương pháp kỹ thuật", 18),
-  chapter(5, "Chỉ báo xu hướng", 8),
-  chapter(6, "Chỉ báo động lượng", 8),
-  chapter(7, "Chỉ báo khối lượng", 6),
-  chapter(8, "Phân tích cơ bản chung", 12, { has_dashboard_metrics: true }),
-  chapter(9, "Phân tích doanh nghiệp sản xuất", 10, { has_dashboard_metrics: true }),
-  chapter(10, "Phân tích ngân hàng", 8, { has_dashboard_metrics: true }),
-  chapter(11, "Phân tích công ty chứng khoán", 7),
-  chapter(12, "Phân tích công ty bảo hiểm", 7),
+  chapter(3, "Thương hiệu cá nhân", 9, { has_practice: true }),
+  chapter(4, "Phương pháp kỹ thuật", 10),
+  chapter(5, "Chỉ báo xu hướng", 4),
+  chapter(6, "Chỉ báo động lượng", 4),
+  chapter(7, "Chỉ báo khối lượng", 7),
+  chapter(8, "Phân tích cơ bản chung", 17, { has_dashboard_metrics: true }),
+  chapter(9, "Phân tích doanh nghiệp sản xuất", 16, { has_dashboard_metrics: true }),
+  chapter(10, "Phân tích ngân hàng", 15, { has_dashboard_metrics: true }),
+  chapter(11, "Phân tích công ty chứng khoán", 14, { has_dashboard_metrics: true }),
+  chapter(12, "Phân tích công ty bảo hiểm", 11, { has_dashboard_metrics: true }),
+  chapter(13, "Phân tích công ty bất động sản", 19, { has_dashboard_metrics: true }),
+  chapter(14, "Phân tích doanh nghiệp dầu khí", 15, { has_dashboard_metrics: true }),
+  chapter(15, "Phân tích bán lẻ và hàng tiêu dùng", 13, { has_dashboard_metrics: true }),
+  chapter(16, "Phân tích điện và tiện ích", 15, { has_dashboard_metrics: true }),
+  chapter(17, "Phân tích vật liệu cơ bản", 14, { has_dashboard_metrics: true }),
 ]
 
 export const ALL_IDS = CATALOG.map((entry) => entry.chapter_id)
@@ -58,7 +63,7 @@ function lessonsOf(ids: readonly string[]): number {
   return CATALOG.filter((entry) => ids.includes(entry.chapter_id)).reduce((sum, entry) => sum + entry.lesson_count, 0)
 }
 
-/** Cấu hình mặc định: học tự do, đủ 12 chương, 12 người dùng đang áp dụng. */
+/** Cấu hình mặc định: học tự do, đủ 17 chương, 12 người dùng đang áp dụng. */
 export function defaultItem(overrides: Partial<AcademyConfigItem> = {}): AcademyConfigItem {
   return {
     id: "cfg-default",
@@ -68,9 +73,9 @@ export function defaultItem(overrides: Partial<AcademyConfigItem> = {}): Academy
     inherits_default: false,
     mode: "free",
     chapter_ids: ALL_IDS,
-    chapter_count: 12,
-    chapter_total: 12,
-    required_total: 116,
+    chapter_count: 17,
+    chapter_total: 17,
+    required_total: 203,
     user_count: 12,
     updated_at: "2026-11-01T03:00:00Z",
     updated_by: ADMIN,
@@ -78,7 +83,7 @@ export function defaultItem(overrides: Partial<AcademyConfigItem> = {}): Academy
   }
 }
 
-/** Trưởng nhóm có cấu hình riêng: học lần lượt, bỏ chương 2 (11/12 chương, 106 bài). */
+/** Trưởng nhóm có cấu hình riêng: học lần lượt, bỏ chương 2 (16/17 chương, 193 bài). */
 export function leaderOwnItem(overrides: Partial<AcademyConfigItem> = {}): AcademyConfigItem {
   return {
     id: "cfg-lan",
@@ -88,9 +93,9 @@ export function leaderOwnItem(overrides: Partial<AcademyConfigItem> = {}): Acade
     inherits_default: false,
     mode: "sequential",
     chapter_ids: IDS_WITHOUT_CH02,
-    chapter_count: 11,
-    chapter_total: 12,
-    required_total: 106,
+    chapter_count: 16,
+    chapter_total: 17,
+    required_total: 193,
     user_count: 5,
     updated_at: "2026-11-02T04:30:00Z",
     updated_by: ADMIN,
@@ -108,9 +113,9 @@ export function leaderInheritingItem(overrides: Partial<AcademyConfigItem> = {})
     inherits_default: true,
     mode: "free",
     chapter_ids: ALL_IDS,
-    chapter_count: 12,
-    chapter_total: 12,
-    required_total: 116,
+    chapter_count: 17,
+    chapter_total: 17,
+    required_total: 203,
     user_count: 3,
     updated_at: null,
     updated_by: null,
@@ -127,14 +132,14 @@ export function leaderRevokedItem(overrides: Partial<AcademyConfigItem> = {}): A
     mode: "free",
     chapter_ids: ALL_IDS.slice(0, 4),
     chapter_count: 4,
-    required_total: 50,
+    required_total: 39,
     user_count: 0,
     ...overrides,
   })
 }
 
 export function listResponse(items: AcademyConfigItem[] = [defaultItem(), leaderOwnItem(), leaderInheritingItem(), leaderRevokedItem()]): AcademyConfigListResponse {
-  return { catalog_version: "v4", catalog_chapters: CATALOG, items }
+  return { catalog_version: "iqx-academy-v5.0-17ch-203lessons", catalog_chapters: CATALOG, items }
 }
 
 /** Bản giả của máy chủ: đánh số lại từ 1 theo thứ tự danh mục, cộng số bài, cảnh báo chương chỉ tiêu. */

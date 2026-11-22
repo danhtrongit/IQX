@@ -660,8 +660,8 @@ describe("real content: representative charts use the shared Dashboard renderer 
         ) as HTMLElement
         expect(figure.querySelector("[data-fundamental-chart]")).not.toBeNull()
         expect(figure.querySelectorAll('svg[role="img"]').length).toBeGreaterThan(0)
-        // The shared renderer brings its own legend and "Bảng số" toggle.
-        expect(within(figure).getByRole("button", { name: "Bảng số" })).toBeTruthy()
+        // The shared renderer brings its own legend; lessons hide its "Bảng số" toggle (spec v5 §2.4).
+        expect(within(figure).queryByRole("button", { name: "Bảng số" })).toBeNull()
         expect(figure.querySelector("li")).not.toBeNull()
         expect(figure.textContent).not.toContain("Xem bảng số liệu")
         expect(svgOverflows(figure, width)).toEqual([])

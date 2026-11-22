@@ -6,12 +6,11 @@
  * dạy lại) và "Chỉ tiêu <ngành>" (gồm cả chỉ tiêu dạy lại). Thứ tự nhóm, tên nhóm và tên chỉ tiêu
  * lấy nguyên `SEC`/`DEFS` của bản mẫu `IQX-Dashboard-Phan-Tich-v3-MAU.html`.
  *
- * - `metric_id`: khoá công thức. 33 chỉ tiêu v1 dùng id registry Bộ lọc (`screener.registry.ts`),
- *   29 chỉ tiêu ngành của v2 có công thức ở `dashboard.native.ts`.
+ * - `metric_id`: khoá công thức. 33 chỉ tiêu v1 dùng id registry Bộ lọc (`screener.registry.ts`);
+ *   29 chỉ tiêu ngành của v2, 28 chỉ tiêu mới và 3 biến thể của v3 có công thức ở
+ *   `dashboard.native.ts`.
  * - `metric_key`: khoá bài học của Học viện v5 (tìm bài theo `(metric_key, nganh)`). Bằng
  *   `metric_id`, trừ 3 biến thể công thức của chỉ tiêu dạy lại (PLAN D7).
- * - 28 chỉ tiêu mới + 3 biến thể (`PENDING_V3_METRIC_IDS`) chưa có công thức (T2 viết): mục của
- *   chúng mang `pending: true`.
  */
 import { fundamentalMetric, type ScreenerMetricId } from '../screener/screener.registry.js';
 import {
@@ -71,7 +70,7 @@ export const DASHBOARD_CHAPTERS: Readonly<Record<DashboardScope, DashboardChapte
 };
 
 /** Id của 29 chỉ tiêu ngành của v2 (công thức ở `dashboard.native.ts`). */
-export const NATIVE_METRIC_IDS = [
+export const V2_NATIVE_METRIC_IDS = [
   // Ngân hàng (Chương 10)
   'nim',
   'yield_cost',
@@ -105,7 +104,6 @@ export const NATIVE_METRIC_IDS = [
   'profit_mix',
   'reserves_to_equity',
 ] as const;
-export type NativeMetricId = (typeof NATIVE_METRIC_IDS)[number];
 
 /**
  * 28 chỉ tiêu mới của v3 (PLAN §6.3). Các id này LÀ `metric_key` — hợp đồng với Học viện v5
@@ -151,15 +149,14 @@ export const V3_VARIANT_METRIC_KEYS = {
 } as const satisfies Record<string, ScreenerMetricId>;
 export type V3VariantMetricId = keyof typeof V3_VARIANT_METRIC_KEYS;
 
-/**
- * 31 id chưa có công thức ở dashboard (28 mới + 3 biến thể). T2 chuyển chúng vào
- * `NATIVE_METRIC_IDS` khi viết công thức và gỡ cờ `pending`.
- */
-export const PENDING_V3_METRIC_IDS = [
+/** Id của mọi chỉ tiêu có công thức ở `dashboard.native.ts`: 29 của v2, 28 mới và 3 biến thể. */
+export const NATIVE_METRIC_IDS = [
+  ...V2_NATIVE_METRIC_IDS,
   ...V3_NEW_METRIC_IDS,
   ...(Object.keys(V3_VARIANT_METRIC_KEYS) as V3VariantMetricId[]),
 ] as const;
-export type PendingV3MetricId = V3NewMetricId | V3VariantMetricId;
+export type NativeMetricId =
+  (typeof V2_NATIVE_METRIC_IDS)[number] | V3NewMetricId | V3VariantMetricId;
 
 export interface DashboardChartSpec {
   /** Ngành của cặp (ngành, tên). */
@@ -190,14 +187,8 @@ export interface DashboardChartSpec {
   main_unit: string | null;
   /** Mốc tham chiếu: PEG = 1 (F2), combined ratio = 100, 4 chỉ tiêu mốc 1 lần (§9). */
   ref: number | null;
-  /**
-   * Chỉ tiêu tính bằng registry Bộ lọc; null khi công thức nằm ở `dashboard.native.ts`. Ba biến thể
-   * đang chờ (`pending`) tạm giữ id registry của chỉ tiêu gốc (công thức v2) cho tới khi T2 viết
-   * công thức riêng.
-   */
+  /** Chỉ tiêu tính bằng registry Bộ lọc; null khi công thức nằm ở `dashboard.native.ts`. */
   registry_id: ScreenerMetricId | null;
-  /** Chỉ tiêu v3 chưa có công thức riêng (`PENDING_V3_METRIC_IDS`). */
-  pending: boolean;
 }
 
 export interface DashboardGroupSpec {
@@ -226,7 +217,6 @@ interface ChartDef {
   main_unit: string | null;
   ref: number | null;
   registry_id: ScreenerMetricId | null;
-  pending: boolean;
 }
 
 interface ChartOptions {
@@ -241,11 +231,11 @@ function def(
   unit: string,
   registryId: ScreenerMetricId | null,
   options: ChartOptions = {},
-  extra: { metricKey?: string; pending?: boolean } = {},
+  metricKey: string = metricId,
 ): ChartDef {
   return {
     metric_id: metricId,
-    metric_key: extra.metricKey ?? metricId,
+    metric_key: metricKey,
     kind,
     unit,
     sub_unit: options.sub?.[0] ?? null,
@@ -253,7 +243,6 @@ function def(
     main_unit: options.mainUnit ?? null,
     ref: options.ref ?? null,
     registry_id: registryId,
-    pending: extra.pending ?? false,
   };
 }
 
@@ -261,7 +250,7 @@ function def(
 const registry = (id: ScreenerMetricId, kind: DashboardChartKind, options: ChartOptions = {}) =>
   def(id, kind, fundamentalMetric(id).unit, id, options);
 
-/** Chỉ tiêu ngành của v2: công thức ở `dashboard.native.ts`. */
+/** Chỉ tiêu có công thức ở `dashboard.native.ts` (29 của v2, 28 mới của v3). */
 const native = (
   id: NativeMetricId,
   kind: DashboardChartKind,
@@ -269,24 +258,16 @@ const native = (
   options: ChartOptions = {},
 ) => def(id, kind, unit, null, options);
 
-/** Chỉ tiêu mới của v3: chưa có công thức (T2). */
-const fresh = (
-  id: V3NewMetricId,
-  kind: DashboardChartKind,
-  unit: string,
-  options: ChartOptions = {},
-) => def(id, kind, unit, null, options, { pending: true });
+/** Chỉ tiêu mới của v3 (Chương 13–17), công thức ở `dashboard.native.ts`. */
+const fresh = native;
 
-/** Biến thể công thức của chỉ tiêu dạy lại; tạm tính bằng công thức gốc (registry). */
+/** Biến thể công thức của chỉ tiêu dạy lại: công thức riêng, bài học của chỉ tiêu gốc (D7). */
 const variant = (
   id: V3VariantMetricId,
   kind: DashboardChartKind,
   unit: string,
   options: ChartOptions = {},
-) => {
-  const key = V3_VARIANT_METRIC_KEYS[id];
-  return def(id, kind, unit, key, options, { metricKey: key, pending: true });
-};
+) => def(id, kind, unit, null, options, V3_VARIANT_METRIC_KEYS[id]);
 
 const grouped = (unit: string): ChartOptions => ({ sub: [unit, 'grouped'] });
 const stacked = (unit: string): ChartOptions => ({ sub: [unit, 'stacked'] });
@@ -363,7 +344,12 @@ const DEFS: Readonly<Record<string, ChartDef>> = {
   'Cơ cấu lợi nhuận': native('profit_mix', 'B', '%', grouped(T)),
   'Dự phòng nghiệp vụ / VCSH': native('reserves_to_equity', 'B', 'lần', grouped(T)),
   // Mới ở v3 (Chương 13–17): khuôn, đơn vị, mốc và kiểu cột theo MAU và PLAN §6.3
-  'Lợi nhuận ngoài kinh doanh bất động sản / LNTT': fresh('non_core_profit_to_pbt', 'B', '%', grouped(T)),
+  'Lợi nhuận ngoài kinh doanh bất động sản / LNTT': fresh(
+    'non_core_profit_to_pbt',
+    'B',
+    '%',
+    grouped(T),
+  ),
   'Người mua trả tiền trước / Doanh thu': fresh('buyer_prepay_to_revenue', 'B', 'lần', grouped(T)),
   'Tăng trưởng người mua trả tiền trước': fresh('buyer_prepay_growth', 'A', '%', grouped(T)),
   'Doanh thu chưa thực hiện / VCSH': fresh('unearned_to_equity', 'B', '%', grouped(T)),
@@ -390,7 +376,12 @@ const DEFS: Readonly<Record<string, ChartDef>> = {
   'Tài sản cố định / Tổng tài sản': fresh('fixed_assets_to_assets', 'B', '%', grouped(T)),
   'Xây dựng dở dang / Tài sản cố định': fresh('cip_to_fixed_assets', 'B', '%', grouped(T)),
   'Số ngày thu tiền': fresh('receivable_days', 'B', 'ngày', grouped(T)),
-  'Chi phí tài chính ngoài lãi vay / LNTT': fresh('non_interest_fin_cost_to_pbt', 'B', '%', grouped(T)),
+  'Chi phí tài chính ngoài lãi vay / LNTT': fresh(
+    'non_interest_fin_cost_to_pbt',
+    'B',
+    '%',
+    grouped(T),
+  ),
 };
 
 /** Biến thể theo ngành của chỉ tiêu dạy lại (PLAN §6.2). */
@@ -441,8 +432,14 @@ const LAYOUT: Readonly<Record<Nganh, readonly [common: Layout, own: Layout]>> = 
         'Hiệu quả và biên lợi nhuận',
         ['Biên lợi nhuận gộp', 'ROIC', 'ROIC Stability', 'Asset Turnover', 'Cash Conversion Cycle'],
       ],
-      ['Nợ và khả năng thanh toán', ['D/E', 'Current Ratio', 'Interest Coverage', 'Net Debt / EBITDA']],
-      ['Dòng tiền', ['CFO Margin', 'CFO / LNST', 'Capex / Revenue', 'FCF Margin', 'FCF Positive Streak']],
+      [
+        'Nợ và khả năng thanh toán',
+        ['D/E', 'Current Ratio', 'Interest Coverage', 'Net Debt / EBITDA'],
+      ],
+      [
+        'Dòng tiền',
+        ['CFO Margin', 'CFO / LNST', 'Capex / Revenue', 'FCF Margin', 'FCF Positive Streak'],
+      ],
       ['Định giá', ['EV / EBITDA', 'FCF Yield']],
     ],
   ],
@@ -653,7 +650,10 @@ const LAYOUT: Readonly<Record<Nganh, readonly [common: Layout, own: Layout]>> = 
       ['Định giá', ['P/E', 'P/S', 'PEG']],
     ],
     [
-      ['Doanh thu và biên lợi nhuận', ['Tăng trưởng doanh thu', 'Biên lợi nhuận gộp', 'Margin Stability']],
+      [
+        'Doanh thu và biên lợi nhuận',
+        ['Tăng trưởng doanh thu', 'Biên lợi nhuận gộp', 'Margin Stability'],
+      ],
       [
         'Tồn kho',
         ['Số ngày tồn kho', 'Dự phòng giảm giá tồn kho / Tồn kho', 'Vay ngắn hạn / Tồn kho'],
@@ -668,7 +668,12 @@ const LAYOUT: Readonly<Record<Nganh, readonly [common: Layout, own: Layout]>> = 
   ],
 };
 
-function entry(nganh: Nganh, scope: DashboardScope, group: string, name: string): DashboardChartSpec {
+function entry(
+  nganh: Nganh,
+  scope: DashboardScope,
+  group: string,
+  name: string,
+): DashboardChartSpec {
   const base = VARIANTS[nganh]?.[name] ?? DEFS[name];
   if (!base) throw new Error(`Dashboard catalog: '${name}' has no definition`);
   const chapter = DASHBOARD_CHAPTERS[scope];

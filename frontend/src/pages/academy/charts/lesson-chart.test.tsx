@@ -19,7 +19,7 @@ function draw(id: string, width = 760) {
   return render(<LessonChart model={model} label={`Biểu đồ ${id}`} />)
 }
 
-const KINDS = ["series_panels", "category", "segment_bar", "scale", "schematic", "gantt", "milestones", "candle_glyphs", "flow", "diagram", "compare"]
+const KINDS = ["series_panels", "category", "segment_bar", "scale", "schematic", "gantt", "milestones", "candle_glyphs", "flow", "diagram", "compare", "figure"]
 
 describe("LessonChart", () => {
   it("has a fixture for every chart kind of the schema", () => {

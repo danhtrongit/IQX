@@ -70,17 +70,17 @@ const chapterBox = (dialog: ReturnType<typeof within>, no: number) =>
 const lastPreviewBody = () => server.previewBodies.at(-1)
 
 describe("editor: mode and chapter fields", () => {
-  it("lists the 12 original chapters with their original number and lesson count", async () => {
+  it("lists the 17 original chapters with their original number and lesson count", async () => {
     const { dialog } = await openEditor(defaultItem())
     expect(dialog.getByText("Sửa cấu hình: Mặc định")).toBeTruthy()
     const boxes = dialog.getAllByRole("checkbox")
-    expect(boxes).toHaveLength(12)
-    expect(boxes.map((box) => box.getAttribute("aria-checked"))).toEqual(Array(12).fill("true"))
+    expect(boxes).toHaveLength(17)
+    expect(boxes.map((box) => box.getAttribute("aria-checked"))).toEqual(Array(17).fill("true"))
     const rows = boxes.map((box) => box.closest("li")?.textContent)
-    expect(rows[0]).toBe("Chương 1 · Nền tảng12 bài")
-    expect(rows[2]).toBe("Chương 3 · Thương hiệu cá nhânKèm Phòng tập thực chiến10 bài")
-    expect(rows[7]).toBe("Chương 8 · Phân tích cơ bản chungCó bài cho nút Học ở Dashboard12 bài")
-    expect(dialog.getByText("Đã chọn 12/12 chương")).toBeTruthy()
+    expect(rows[0]).toBe("Chương 1 · Nền tảng10 bài")
+    expect(rows[2]).toBe("Chương 3 · Thương hiệu cá nhânKèm Phòng tập thực chiến9 bài")
+    expect(rows[7]).toBe("Chương 8 · Phân tích cơ bản chungCó bài cho nút Học ở Dashboard17 bài")
+    expect(dialog.getByText("Đã chọn 17/17 chương")).toBeTruthy()
     expect(dialog.getByRole("radio", { name: "Học tự do" }).getAttribute("aria-checked")).toBe("true")
     expect(dialog.getByRole("radio", { name: "Học lần lượt" }).getAttribute("aria-checked")).toBe("false")
   })
@@ -90,7 +90,7 @@ describe("editor: mode and chapter fields", () => {
     expect(dialog.getByRole("radio", { name: "Học lần lượt" }).getAttribute("aria-checked")).toBe("true")
     expect(chapterBox(dialog, 2).getAttribute("aria-checked")).toBe("false")
     expect(chapterBox(dialog, 3).getAttribute("aria-checked")).toBe("true")
-    expect(dialog.getByText("Đã chọn 11/12 chương")).toBeTruthy()
+    expect(dialog.getByText("Đã chọn 16/17 chương")).toBeTruthy()
   })
 
   it("keeps Lưu disabled until something changes for an existing config", async () => {
@@ -104,7 +104,7 @@ describe("editor: mode and chapter fields", () => {
   })
 
   it("requires at least one chapter: message, disabled Lưu and no preview call", async () => {
-    const { dialog, user } = await openEditor(leaderOwnItem({ chapter_ids: ["ch01"], chapter_count: 1, required_total: 12 }))
+    const { dialog, user } = await openEditor(leaderOwnItem({ chapter_ids: ["ch01"], chapter_count: 1, required_total: 10 }))
     const save = dialog.getByRole("button", { name: "Lưu" }) as HTMLButtonElement
     await user.click(chapterBox(dialog, 1))
     expect(dialog.getByText("Cần chọn ít nhất một chương.")).toBeTruthy()
@@ -120,7 +120,7 @@ describe("editor: mode and chapter fields", () => {
   it("selects all chapters with Chọn tất cả", async () => {
     const { dialog, user } = await openEditor(leaderOwnItem())
     await user.click(dialog.getByRole("button", { name: "Chọn tất cả" }))
-    expect(dialog.getByText("Đã chọn 12/12 chương")).toBeTruthy()
+    expect(dialog.getByText("Đã chọn 17/17 chương")).toBeTruthy()
     expect((dialog.getByRole("button", { name: "Chọn tất cả" }) as HTMLButtonElement).disabled).toBe(true)
   })
 })
@@ -129,20 +129,20 @@ describe("editor: preview from the server", () => {
   it("asks the server for the preview of the chosen mode and chapters and renders the renumbered result", async () => {
     const { dialog, user } = await openEditor(defaultItem())
     const preview = within(dialog.getByRole("region", { name: "Xem trước" }))
-    expect(await preview.findByText("Chương 12 · Phân tích công ty bảo hiểm")).toBeTruthy()
+    expect(await preview.findByText("Chương 17 · Phân tích vật liệu cơ bản")).toBeTruthy()
     expect(server.previewBodies[0]).toEqual({ mode: "free", chapter_ids: ALL_IDS })
     expect(preview.getByText("Học tự do")).toBeTruthy()
-    expect(preview.getByText("12/12 chương · 116 bài học")).toBeTruthy()
+    expect(preview.getByText("17/17 chương · 203 bài học")).toBeTruthy()
 
     await user.click(chapterBox(dialog, 2))
     await user.click(dialog.getByRole("radio", { name: "Học lần lượt" }))
     await waitFor(() => expect(lastPreviewBody()).toEqual({ mode: "sequential", chapter_ids: IDS_WITHOUT_CH02 }))
     // Chapter 3 is now "Chương 2": the number comes from the server result.
     expect(await preview.findByText("Chương 2 · Thương hiệu cá nhân")).toBeTruthy()
-    expect(preview.queryByText("Chương 12 · Phân tích công ty bảo hiểm")).toBeNull()
-    expect(preview.getByText("Chương 11 · Phân tích công ty bảo hiểm")).toBeTruthy()
+    expect(preview.queryByText("Chương 17 · Phân tích vật liệu cơ bản")).toBeNull()
+    expect(preview.getByText("Chương 16 · Phân tích vật liệu cơ bản")).toBeTruthy()
     expect(preview.getByText("Học lần lượt")).toBeTruthy()
-    expect(preview.getByText("11/12 chương · 106 bài học")).toBeTruthy()
+    expect(preview.getByText("16/17 chương · 193 bài học")).toBeTruthy()
     expect(preview.getByText("Kèm Phòng tập thực chiến")).toBeTruthy()
   })
 
@@ -231,7 +231,7 @@ describe("editor: creating the own config of a team lead", () => {
     const { dialog, user, onClose } = await openEditor(leaderInheritingItem())
     expect(dialog.getByText("Tạo cấu hình riêng: Phạm Bảo")).toBeTruthy()
     expect(dialog.getByRole("radio", { name: "Học tự do" }).getAttribute("aria-checked")).toBe("true")
-    expect(dialog.getByText("Đã chọn 12/12 chương")).toBeTruthy()
+    expect(dialog.getByText("Đã chọn 17/17 chương")).toBeTruthy()
     // A lead that has no own config has no log, no revert and can be created as is.
     expect(dialog.queryByRole("tab", { name: "Nhật ký thay đổi" })).toBeNull()
     expect(dialog.queryByRole("button", { name: "Về mặc định" })).toBeNull()

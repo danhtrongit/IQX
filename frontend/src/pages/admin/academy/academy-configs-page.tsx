@@ -144,7 +144,7 @@ export function AcademyConfigsPage() {
 
       <p className="flex gap-2 text-xs text-muted-foreground">
         <Info aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
-        Quản trị viên luôn thấy đủ 12 chương và học tự do để kiểm tra nội dung. Mọi thay đổi áp dụng ngay và được ghi vào
+        Quản trị viên luôn thấy {catalog.length > 0 ? `đủ ${catalog.length} chương` : "mọi chương"} và học tự do để kiểm tra nội dung. Mọi thay đổi áp dụng ngay và được ghi vào
         nhật ký.
       </p>
 

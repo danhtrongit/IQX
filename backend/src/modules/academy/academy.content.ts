@@ -145,22 +145,22 @@ export function buildAcademyContent(files: AcademyContentFiles): AcademyContent 
   });
 }
 
-const readJson = (...parts: string[]): unknown =>
-  JSON.parse(readFileSync(join(ACADEMY_CONTENT_DIR, ...parts), 'utf8')) as unknown;
+const readJson = (dir: string, ...parts: string[]): unknown =>
+  JSON.parse(readFileSync(join(dir, ...parts), 'utf8')) as unknown;
 
-const jsonFiles = (directory: string, suffix: string): unknown[] =>
-  readdirSync(join(ACADEMY_CONTENT_DIR, directory))
+const jsonFiles = (dir: string, directory: string, suffix: string): unknown[] =>
+  readdirSync(join(dir, directory))
     .filter((name) => name.endsWith(suffix))
     .sort()
-    .map((name) => readJson(directory, name));
+    .map((name) => readJson(dir, directory, name));
 
-/** Reads `content/v5` from disk (no memo). */
-export function readAcademyContentFiles(): AcademyContentFiles {
+/** Reads `content/v5` (or another content folder, for tests of a frozen catalog) from disk (no memo). */
+export function readAcademyContentFiles(dir: string = ACADEMY_CONTENT_DIR): AcademyContentFiles {
   return {
-    catalog: readJson('catalog.json'),
-    lessons: jsonFiles('lessons', '.vi.json'),
-    banks: jsonFiles('questions', '.private.json'),
-    retired: readJson('retired-lessons.json'),
+    catalog: readJson(dir, 'catalog.json'),
+    lessons: jsonFiles(dir, 'lessons', '.vi.json'),
+    banks: jsonFiles(dir, 'questions', '.private.json'),
+    retired: readJson(dir, 'retired-lessons.json'),
   };
 }
 

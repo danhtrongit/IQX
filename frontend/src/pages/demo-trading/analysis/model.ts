@@ -1,5 +1,5 @@
 /**
- * Dashboard phân tích · phép tính thuần (spec Dashboard v2 §3, §5, §6, §8, §10).
+ * Dashboard phân tích · phép tính thuần (spec Dashboard v3 §3, §4.3, §5, §6, §10).
  *
  * Ở đây không có React và không có I/O: bộ mặc định của từng ngành, cách cắt
  * số kỳ, khoảng thời gian của biểu đồ định giá và lọc danh mục theo ô tìm kiếm.
@@ -21,11 +21,12 @@ import type {
 } from "./api"
 
 /**
- * Đường dẫn nút "Học" của một chỉ tiêu: mở đúng bài học của chỉ tiêu trong Học viện
- * (spec §4.3). `metric_key` là khoá ổn định của chỉ tiêu, không phải tên hiển thị.
+ * Đường dẫn nút "Học" của một chỉ tiêu: mở bài học của chỉ tiêu theo ngành của mã đang xem
+ * (spec v3 §4.3, PLAN §9). `metric_key` là khoá ổn định của chỉ tiêu, không phải tên hiển thị;
+ * `nganh` là một trong 9 ngành, Học viện tìm bài ở chương ngành trước rồi Chương 8.
  */
-export function academyMetricHref(metricKey: string): string {
-  return `/academy?metric=${encodeURIComponent(metricKey)}`
+export function academyMetricHref(metricKey: string, nganh: Industry): string {
+  return `/academy?metric=${encodeURIComponent(metricKey)}&nganh=${encodeURIComponent(nganh)}`
 }
 
 /** Số kỳ chọn được theo chế độ (spec §5.2). */

@@ -1,6 +1,9 @@
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+  ACADEMY_CONTENT_DIR,
   buildAcademyContent,
   readAcademyContentFiles,
 } from '../../src/modules/academy/academy.content.js';
@@ -16,7 +19,10 @@ import {
   type LessonFile,
 } from '../../src/modules/academy/content/v4/schema.js';
 
-const files = readAcademyContentFiles();
+/** The frozen v4 files (base of the v5 importer), checked against the v4 schema. */
+const files = readAcademyContentFiles(join(ACADEMY_CONTENT_DIR, '..', 'v4'));
+/** The served catalog (v5), joined by the runtime loader. */
+const served = readAcademyContentFiles();
 const clone = <T>(value: T): T => structuredClone(value);
 const catalog = () => clone(files.catalog) as CatalogFile;
 const lessonOf = (id: string) =>
@@ -141,12 +147,12 @@ describe('content/v4 schema rejections', () => {
 });
 
 describe('buildAcademyContent cross-checks', () => {
-  it('joins the real content: 129 items, 116 required lessons, retired names', () => {
-    const content = buildAcademyContent(files);
-    expect(content.items.size).toBe(129);
-    expect(content.itemsByKey.size).toBe(129);
-    expect(content.requiredTotal).toBe(116);
-    expect(content.sequence).toHaveLength(129);
+  it('joins the served content (v5): 221 items, 203 required lessons, retired names', () => {
+    const content = buildAcademyContent(served);
+    expect(content.items.size).toBe(221);
+    expect(content.itemsByKey.size).toBe(221);
+    expect(content.requiredTotal).toBe(203);
+    expect(content.sequence).toHaveLength(221);
     expect(content.retired.get('concept:hop_luu')).toBe('Hợp lưu');
     const exam = content.items.get('ch04-exam')!;
     expect(exam).toMatchObject({ lesson: null, position: null, metric_key: null });
@@ -156,7 +162,7 @@ describe('buildAcademyContent cross-checks', () => {
       metric_key: null,
       chapter_title: 'Phương pháp kỹ thuật',
     });
-    /* Chương 8-12: mỗi bài là một chỉ tiêu của Dashboard, `metric_key` (spec v4 §5.1). */
+    /* Chương 8-17: mỗi bài là một chỉ tiêu của Dashboard, `metric_key` + `nganh` (spec v5 §5.1). */
     expect(content.items.get('ch08-l01')).toMatchObject({
       lesson_key: 'fundamental:revenue_yoy',
       metric_key: 'revenue_yoy',
@@ -165,6 +171,8 @@ describe('buildAcademyContent cross-checks', () => {
     expect(content.items.get('ch12-l08')).toMatchObject({
       lesson_key: 'fundamental:reserves_to_equity',
       metric_key: 'reserves_to_equity',
+      nganh: 'bh',
+      position: 10,
       chapter_title: 'Phân tích công ty bảo hiểm',
     });
     expect(content.items.get('ch01-l01')!.lesson!.content_version).toMatch(/^[0-9a-f]{16}$/);
@@ -172,9 +180,9 @@ describe('buildAcademyContent cross-checks', () => {
   });
 
   const broken = (
-    mutate: (copy: typeof files & { lessons: unknown[]; banks: unknown[] }) => void,
+    mutate: (copy: typeof served & { lessons: unknown[]; banks: unknown[] }) => void,
   ) => {
-    const copy = clone({ ...files, lessons: [...files.lessons], banks: [...files.banks] });
+    const copy = clone({ ...served, lessons: [...served.lessons], banks: [...served.banks] });
     mutate(copy);
     return () => buildAcademyContent(copy);
   };

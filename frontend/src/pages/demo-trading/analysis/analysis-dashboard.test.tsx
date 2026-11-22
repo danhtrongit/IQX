@@ -14,271 +14,86 @@ import {
   figureTooltip,
 } from "@/components/fundamental-charts"
 
+import { V3_DEFAULTS, V3_ITEMS, V3_SECTIONS } from "./catalog-v3.fixture"
 import { AnalysisDashboard } from "./dashboard"
 import { academyMetricHref, defaultDraftOf, isSameSettings, normalizeSearch, nksSignature } from "./model"
 
-type Industry = "thuong" | "nh" | "ck" | "bh"
-type Item = [name: string, metricKey: string, kind: string]
+type Industry = "thuong" | "nh" | "ck" | "bh" | "bds" | "dk" | "bl" | "dien" | "vl"
 type Draft = { charts: string[]; per: "q" | "y"; nks: Record<string, { q?: number; y?: number }> }
 
-/* 17 chỉ tiêu chung của spec §8.1 (Học viện Chương 8), theo đúng nhóm và thứ tự. */
-const COMMON: [string, Item[]][] = [
-  [
-    "Tăng trưởng",
-    [
-      ["Tăng trưởng doanh thu", "revenue_yoy", "A"],
-      ["Tăng trưởng LNST", "profit_yoy", "A"],
-      ["Tăng trưởng EPS", "eps_yoy", "A"],
-      ["Revenue CAGR 3Y", "revenue_cagr3", "D"],
-      ["Net Profit CAGR 3Y", "profit_cagr3", "D"],
-      ["EPS CAGR 3Y", "eps_cagr3", "D"],
-    ],
-  ],
-  [
-    "Ổn định",
-    [
-      ["Profit Positive Streak", "profit_positive_streak", "E2"],
-      ["Revenue Growth Stability", "revenue_growth_stability", "E1"],
-      ["Margin Stability", "net_margin_stability", "E1"],
-      ["EPS Stability", "eps_growth_stability", "E1"],
-    ],
-  ],
-  [
-    "Hiệu quả",
-    [
-      ["ROE", "roe", "B"],
-      ["ROA", "roa", "B"],
-      ["Biên lợi nhuận ròng", "net_margin", "B"],
-    ],
-  ],
-  [
-    "Định giá",
-    [
-      ["P/E", "pe", "F"],
-      ["P/B", "pb", "F"],
-      ["P/S", "ps", "F"],
-      ["PEG", "peg", "F2"],
-    ],
-  ],
-]
+const INDUSTRIES: Industry[] = ["thuong", "nh", "ck", "bh", "bds", "dk", "bl", "dien", "vl"]
 
-/* Chương riêng của từng ngành: 16 + 11 + 10 + 8 chỉ tiêu (spec §8.2–§8.5). */
-const OWN: Record<Industry, { chapter: string; academy: number; groups: [string, Item[]][] }> = {
-  thuong: {
-    chapter: "Chỉ tiêu doanh nghiệp sản xuất",
-    academy: 9,
-    groups: [
-      [
-        "Hiệu quả và biên lợi nhuận",
-        [
-          ["Biên lợi nhuận gộp", "gross_margin", "B"],
-          ["ROIC", "roic", "B"],
-          ["ROIC Stability", "roic_stability", "E1"],
-          ["Asset Turnover", "asset_turnover", "B"],
-          ["Cash Conversion Cycle", "ccc", "C"],
-        ],
-      ],
-      [
-        "Nợ và khả năng thanh toán",
-        [
-          ["D/E", "debt_equity", "B"],
-          ["Current Ratio", "current_ratio", "B"],
-          ["Interest Coverage", "interest_coverage", "B"],
-          ["Net Debt / EBITDA", "net_debt_ebitda", "B"],
-        ],
-      ],
-      [
-        "Dòng tiền",
-        [
-          ["CFO Margin", "cfo_margin", "B"],
-          ["CFO / LNST", "cfo_profit", "B"],
-          ["Capex / Revenue", "capex_revenue", "B"],
-          ["FCF Margin", "fcf_margin", "B"],
-          ["FCF Positive Streak", "fcf_positive_streak", "E2"],
-        ],
-      ],
-      [
-        "Định giá",
-        [
-          ["EV / EBITDA", "ev_ebitda", "F"],
-          ["FCF Yield", "fcf_yield", "F"],
-        ],
-      ],
-    ],
-  },
-  nh: {
-    chapter: "Chỉ tiêu ngân hàng",
-    academy: 10,
-    groups: [
-      [
-        "Thu nhập và hiệu quả",
-        [
-          ["NIM", "nim", "B"],
-          ["Lợi suất tài sản sinh lãi và chi phí vốn", "yield_cost", "B"],
-          ["CIR", "cir", "B"],
-          ["Tỷ trọng thu nhập ngoài lãi", "non_interest_share", "B"],
-          ["Tăng trưởng lợi nhuận trước dự phòng", "ppop_growth", "A"],
-        ],
-      ],
-      [
-        "Rủi ro tín dụng",
-        [
-          ["Chi phí tín dụng", "credit_cost", "B"],
-          ["Tỷ lệ dự phòng / Dư nợ", "provision_to_loans", "B"],
-          ["Lãi dự thu / Dư nợ", "accrued_to_loans", "B"],
-        ],
-      ],
-      [
-        "Quy mô và vốn",
-        [
-          ["Tăng trưởng tín dụng và huy động", "credit_deposit_growth", "A"],
-          ["LDR", "ldr", "B"],
-          ["VCSH / Tổng tài sản", "equity_to_assets", "B"],
-        ],
-      ],
-    ],
-  },
-  ck: {
-    chapter: "Chỉ tiêu chứng khoán",
-    academy: 11,
-    groups: [
-      [
-        "Doanh thu và chi phí",
-        [
-          ["Cơ cấu doanh thu hoạt động", "revenue_mix", "B"],
-          ["Biên lợi nhuận hoạt động", "operating_margin", "B"],
-          ["Chi phí hoạt động / Doanh thu hoạt động", "opex_to_revenue", "B"],
-        ],
-      ],
-      [
-        "Cho vay margin",
-        [
-          ["Tăng trưởng dư nợ cho vay", "margin_loan_growth", "A"],
-          ["Dư nợ cho vay / VCSH", "margin_loan_to_equity", "B"],
-          ["Lợi suất cho vay", "margin_loan_yield", "B"],
-        ],
-      ],
-      [
-        "Môi giới và tự doanh",
-        [
-          ["Biên lợi nhuận môi giới", "brokerage_margin", "B"],
-          ["Tỷ trọng tài sản tự doanh", "prop_asset_share", "B"],
-          ["Hiệu suất tự doanh", "prop_return", "B"],
-        ],
-      ],
-      ["Đòn bẩy", [["Nợ vay / VCSH", "borrowings_to_equity", "B"]]],
-    ],
-  },
-  bh: {
-    chapter: "Chỉ tiêu bảo hiểm",
-    academy: 12,
-    groups: [
-      [
-        "Doanh thu phí",
-        [
-          ["Tăng trưởng doanh thu phí bảo hiểm gốc", "gwp_growth", "A"],
-          ["Tỷ lệ giữ lại", "retention_ratio", "B"],
-        ],
-      ],
-      [
-        "Hiệu quả nghiệp vụ",
-        [
-          ["Tỷ lệ bồi thường", "loss_ratio", "B"],
-          ["Tỷ lệ chi phí", "expense_ratio", "B"],
-          ["Combined ratio", "combined_ratio", "B"],
-        ],
-      ],
-      [
-        "Đầu tư",
-        [
-          ["Lợi suất đầu tư", "investment_yield", "B"],
-          ["Cơ cấu lợi nhuận", "profit_mix", "B"],
-        ],
-      ],
-      ["Dự phòng", [["Dự phòng nghiệp vụ / VCSH", "reserves_to_equity", "B"]]],
-    ],
-  },
-}
-
+/* Nhãn ngành do máy chủ trả (spec v3 §1.3); giao diện không tự giữ bảng nhãn. */
 const INDUSTRY_LABEL: Record<Industry, string> = {
   thuong: "Doanh nghiệp sản xuất",
   nh: "Ngân hàng",
   ck: "Chứng khoán",
   bh: "Bảo hiểm",
+  bds: "Bất động sản",
+  dk: "Dầu khí",
+  bl: "Bán lẻ và tiêu dùng",
+  dien: "Điện và tiện ích",
+  vl: "Vật liệu cơ bản",
 }
 
 /* Bộ mặc định của từng ngành (spec §6.3). */
-const DEFAULTS: Record<Industry, string[]> = {
-  thuong: ["Tăng trưởng doanh thu", "Tăng trưởng LNST", "Biên lợi nhuận ròng", "ROE", "D/E", "P/E"],
-  nh: ["Tăng trưởng LNST", "NIM", "CIR", "Chi phí tín dụng", "ROE", "P/B"],
-  ck: [
-    "Cơ cấu doanh thu hoạt động",
-    "Tăng trưởng LNST",
-    "Dư nợ cho vay / VCSH",
-    "Biên lợi nhuận hoạt động",
-    "ROE",
-    "P/B",
-  ],
-  bh: [
-    "Tăng trưởng doanh thu phí bảo hiểm gốc",
-    "Combined ratio",
-    "Lợi suất đầu tư",
-    "Tăng trưởng LNST",
-    "ROE",
-    "P/B",
-  ],
-}
+const DEFAULTS = V3_DEFAULTS as Record<Industry, string[]>
 
-const TOTAL: Record<Industry, number> = { thuong: 33, nh: 28, ck: 27, bh: 25 }
+/* Số chỉ tiêu của từng ngành (spec §3.2). */
+const TOTAL: Record<Industry, number> = { thuong: 33, nh: 28, ck: 27, bh: 25, bds: 32, dk: 29, bl: 28, dien: 30, vl: 28 }
 
-/** Ngành của từng mã giả lập (spec §1.3). */
+/** Ngành của từng mã giả lập (spec §1.3, 21 mã thử). */
 const INDUSTRY_OF: Record<string, Industry> = {
   FPT: "thuong",
-  HPG: "thuong",
+  CTD: "thuong",
   VCB: "nh",
   MBB: "nh",
   SSI: "ck",
+  VND: "ck",
   BVH: "bh",
+  PVI: "bh",
+  VHM: "bds",
+  NLG: "bds",
+  KBC: "bds",
+  GAS: "dk",
+  PVS: "dk",
+  PLX: "dk",
+  MWG: "bl",
+  PNJ: "bl",
+  VNM: "bl",
+  POW: "dien",
+  REE: "dien",
+  HPG: "vl",
+  DPM: "vl",
 }
 
-const KIND_OF = new Map<string, string>()
-const KEY_OF = new Map<string, string>()
-const INDUSTRY_NAMES: Record<Industry, string[]> = { thuong: [], nh: [], ck: [], bh: [] }
-for (const industry of Object.keys(OWN) as Industry[]) {
-  for (const [, items] of [...COMMON, ...OWN[industry].groups]) {
-    for (const [name, key, kind] of items) {
-      KIND_OF.set(name, kind)
-      KEY_OF.set(name, key)
-      INDUSTRY_NAMES[industry].push(name)
-    }
-  }
-}
+const KIND_OF = new Map<string, string>(Object.entries(V3_ITEMS).map(([name, [, kind]]) => [name, kind]))
+const KEY_OF = new Map<string, string>(Object.entries(V3_ITEMS).map(([name, [key]]) => [name, key]))
+const INDUSTRY_NAMES = Object.fromEntries(
+  INDUSTRIES.map((industry) => [
+    industry,
+    V3_SECTIONS[industry].flatMap(([, groups]) => groups.flatMap(([, names]) => [...names])),
+  ]),
+) as Record<Industry, string[]>
+
+/* Chương Học viện của nhóm ngành (PLAN §4): chung 8, rồi 9–17 theo thứ tự ngành. */
+const ACADEMY_CHAPTER: Record<Industry, number> = { thuong: 9, nh: 10, ck: 11, bh: 12, bds: 13, dk: 14, bl: 15, dien: 16, vl: 17 }
 
 function catalogOf() {
   return {
-    industries: (Object.keys(OWN) as Industry[]).map((industry) => ({
+    industries: INDUSTRIES.map((industry) => ({
       nganh: industry,
       label: INDUSTRY_LABEL[industry],
       total: TOTAL[industry],
       default_charts: DEFAULTS[industry],
-      chapters: [
-        {
-          chapter: "Chỉ tiêu chung",
-          academy_chapter: 8,
-          groups: COMMON.map(([group, items]) => ({
-            group,
-            items: items.map(([name, metric_key, kind]) => ({ name, metric_key, kind })),
-          })),
-        },
-        {
-          chapter: OWN[industry].chapter,
-          academy_chapter: OWN[industry].academy,
-          groups: OWN[industry].groups.map(([group, items]) => ({
-            group,
-            items: items.map(([name, metric_key, kind]) => ({ name, metric_key, kind })),
-          })),
-        },
-      ],
+      chapters: V3_SECTIONS[industry].map(([chapter, groups], index) => ({
+        chapter,
+        academy_chapter: index === 0 ? 8 : ACADEMY_CHAPTER[industry],
+        groups: groups.map(([group, names]) => ({
+          group,
+          items: names.map((name) => ({ name, metric_key: KEY_OF.get(name), kind: KIND_OF.get(name) })),
+        })),
+      })),
     })),
   }
 }
@@ -316,12 +131,10 @@ type FakeState = {
 
 let state: FakeState
 
-const freshSettings = (): Record<Industry, Draft> => ({
-  thuong: { charts: [...DEFAULTS.thuong], per: "q", nks: {} },
-  nh: { charts: [...DEFAULTS.nh], per: "q", nks: {} },
-  ck: { charts: [...DEFAULTS.ck], per: "q", nks: {} },
-  bh: { charts: [...DEFAULTS.bh], per: "q", nks: {} },
-})
+const freshSettings = (): Record<Industry, Draft> =>
+  Object.fromEntries(
+    INDUSTRIES.map((industry) => [industry, { charts: [...DEFAULTS[industry]], per: "q", nks: {} }]),
+  ) as Record<Industry, Draft>
 
 /** Các chỉ tiêu có hai đường trên tầng trên (spec §9) và đường tham chiếu của khuôn B. */
 const TWO_LINES: Record<string, [string, string]> = {
@@ -335,8 +148,22 @@ const STACKS: Record<string, string[]> = {
   "Cơ cấu doanh thu hoạt động": ["Môi giới", "Cho vay margin", "Tự doanh", "Khác"],
 }
 
+/** Chỉ tiêu mới chưa có công thức ở máy chủ: trả trống `definition_pending` kèm lời báo. */
+const PENDING_CHARTS = new Set(["Lãi vay đã trả / Chi phí lãi vay"])
+
 function chartEntry(name: string) {
   const kind = KIND_OF.get(name) ?? "B"
+  if (PENDING_CHARTS.has(name)) {
+    return {
+      name,
+      kind,
+      unit: "lần",
+      decimals: 2,
+      status: "definition_pending",
+      note: "Chỉ tiêu đang được hoàn thiện công thức",
+      ref: 1,
+    }
+  }
   if (kind === "D" || kind === "E1" || kind === "E2") {
     return {
       name,
@@ -405,7 +232,8 @@ function install() {
       if (key === "GET /api/v2/dashboard/industry/{symbol}") {
         const symbol = request.path?.symbol ?? ""
         const nganh = INDUSTRY_OF[symbol] ?? "thuong"
-        return Promise.resolve({ symbol, nganh, label: INDUSTRY_LABEL[nganh] })
+        const template = nganh === "nh" || nganh === "ck" || nganh === "bh" ? nganh : "thuong"
+        return Promise.resolve({ symbol, nganh, label: INDUSTRY_LABEL[nganh], template })
       }
       if (key === "GET /api/v2/dashboard/settings") {
         return Promise.resolve(structuredClone(state.saved))
@@ -511,6 +339,9 @@ beforeEach(() => {
 })
 
 afterEach(() => vi.unstubAllGlobals())
+
+// Mỗi phép thử dựng cả dashboard, có phép đổi qua nhiều mã: chừa thời gian khi máy bận.
+vi.setConfig({ testTimeout: 20_000 })
 
 describe("Dashboard phân tích v2 · thiết lập biểu đồ", () => {
   it("tick thêm biểu đồ vào cuối dashboard và bỏ tick thì biểu đồ mất", async () => {
@@ -805,12 +636,13 @@ describe("Dashboard phân tích v2 · ngành của mã", () => {
     // Spec Học viện v4.1 §6.2: the first level groups are never the name of a Học viện chapter.
     expect(document.body.textContent).not.toMatch(/Phân tích cơ bản chung|Phân tích ngân hàng|Chương \d/)
     // Mặc định ngân hàng: chung có Tăng trưởng LNST, ROE, P/B; riêng có NIM, CIR, Chi phí tín dụng.
-    expect(chapterHeading("Chỉ tiêu chung")).toContain("3/17")
-    expect(chapterHeading("Chỉ tiêu ngân hàng")).toContain("3/11")
-    expect(groupHeading("Tăng trưởng")).toContain("1/6")
-    expect(groupHeading("Hiệu quả")).toContain("1/3")
-    expect(groupHeading("Định giá")).toContain("1/4")
-    expect(groupHeading("Thu nhập và hiệu quả")).toContain("2/5")
+    // v3: ROE, ROA, Tăng trưởng doanh thu, P/B được dạy lại ở ngân hàng nên rời "Chỉ tiêu chung".
+    expect(chapterHeading("Chỉ tiêu chung")).toContain("1/13")
+    expect(chapterHeading("Chỉ tiêu ngân hàng")).toContain("5/15")
+    expect(groupHeading("Tăng trưởng")).toContain("1/5")
+    expect(groupHeading("Hiệu quả")).toContain("0/1")
+    expect(groupHeading("Định giá")).toContain("0/3")
+    expect(groupHeading("Thu nhập và hiệu quả")).toContain("3/8")
     expect(groupHeading("Rủi ro tín dụng")).toContain("1/3")
     expect(groupHeading("Quy mô và vốn")).toContain("0/3")
   })
@@ -823,7 +655,7 @@ describe("Dashboard phân tích v2 · ngành của mã", () => {
     await user.type(screen.getByLabelText("Tìm chỉ tiêu"), "nim")
     await waitFor(() => expect(pickerNames()).toEqual(["NIM"]))
     expect(document.querySelectorAll("[data-chapter]")).toHaveLength(1)
-    expect(chapterHeading("Chỉ tiêu ngân hàng")).toContain("3/11")
+    expect(chapterHeading("Chỉ tiêu ngân hàng")).toContain("5/15")
 
     await user.clear(screen.getByLabelText("Tìm chỉ tiêu"))
     await user.type(screen.getByLabelText("Tìm chỉ tiêu"), "khong-co-chi-tieu")
@@ -853,8 +685,8 @@ describe("Dashboard phân tích v2 · ngành của mã", () => {
     const edited = DEFAULTS.thuong.filter((name) => name !== "ROE")
     await waitFor(() => expect(cardNames()).toEqual(edited))
 
-    // Cùng ngành (FPT → HPG): thiết lập giữ nguyên.
-    view.setSymbol("HPG")
+    // Cùng ngành (FPT → CTD): thiết lập giữ nguyên.
+    view.setSymbol("CTD")
     await waitFor(() => expect(industryChip()).toBe("Doanh nghiệp sản xuất"))
     await waitFor(() => expect(cardNames()).toEqual(edited))
 
@@ -910,7 +742,144 @@ describe("Dashboard phân tích v2 · ngành của mã", () => {
   })
 })
 
-describe("Dashboard phân tích v2 · nút Học", () => {
+describe("Dashboard phân tích v3 · 9 ngành", () => {
+  it("nhãn ngành cạnh mã lấy từ máy chủ cho cả 5 ngành mới", { timeout: 20_000 }, async () => {
+    const view = renderDashboard("VHM")
+    await ready("VHM")
+    expect(industryChip()).toBe("Bất động sản")
+    for (const [symbol, label] of [
+      ["GAS", "Dầu khí"],
+      ["MWG", "Bán lẻ và tiêu dùng"],
+      ["REE", "Điện và tiện ích"],
+      ["HPG", "Vật liệu cơ bản"],
+    ] as const) {
+      view.setSymbol(symbol)
+      await waitFor(() => expect(industryChip()).toBe(label))
+      await ready(symbol)
+    }
+  })
+
+  it("mỗi ngành có đúng số chỉ tiêu của spec §3.2 và mỗi chỉ tiêu hiện một lần", { timeout: 20_000 }, async () => {
+    const view = renderDashboard("FPT")
+    for (const [symbol, industry] of [
+      ["FPT", "thuong"],
+      ["VCB", "nh"],
+      ["SSI", "ck"],
+      ["BVH", "bh"],
+      ["VHM", "bds"],
+      ["GAS", "dk"],
+      ["MWG", "bl"],
+      ["REE", "dien"],
+      ["HPG", "vl"],
+    ] as const) {
+      view.setSymbol(symbol)
+      await ready(symbol)
+      const names = pickerNames()
+      expect(names).toHaveLength(TOTAL[industry])
+      expect(new Set(names).size).toBe(names.length)
+      expect(screen.getByText(`Đã chọn 6/${TOTAL[industry]}`)).toBeTruthy()
+    }
+  })
+
+  it("mã bất động sản: Đã chọn n/32, Chỉ tiêu chung 13, Chỉ tiêu bất động sản 19, không có chỉ tiêu sản xuất không dạy lại", async () => {
+    renderDashboard("VHM")
+    await ready("VHM")
+    expect(screen.getByText("Đã chọn 6/32")).toBeTruthy()
+    const chapters = [...document.querySelectorAll<HTMLElement>("[data-chapter]")].map(
+      (element) => element.dataset.chapter,
+    )
+    expect(chapters).toEqual(["Chỉ tiêu chung", "Chỉ tiêu bất động sản"])
+    expect(chapterHeading("Chỉ tiêu chung")).toMatch(/\/13$/)
+    expect(chapterHeading("Chỉ tiêu bất động sản")).toMatch(/\/19$/)
+    const names = pickerNames()
+    for (const name of ["Asset Turnover", "Cash Conversion Cycle", "ROIC", "Current Ratio"]) {
+      expect(names).not.toContain(name)
+    }
+    // Chỉ tiêu dạy lại chỉ hiện trong nhóm của ngành.
+    const common = document.querySelector('[data-chapter="Chỉ tiêu chung"]')?.textContent ?? ""
+    expect(common).not.toContain("Tăng trưởng doanh thu")
+    expect(common).not.toContain("P/B")
+    const own = document.querySelector('[data-chapter="Chỉ tiêu bất động sản"]')?.textContent ?? ""
+    expect(own).toContain("Tăng trưởng doanh thu")
+    expect(own).toContain("Số năm bán hết tồn kho")
+  })
+
+  it("mã ngân hàng không có ROE trong Chỉ tiêu chung", async () => {
+    renderDashboard("VCB")
+    await ready("VCB")
+    const labels = (chapter: string) =>
+      [...document.querySelectorAll<HTMLElement>(`[data-chapter="${chapter}"] [role="checkbox"]`)].map((box) =>
+        box.getAttribute("aria-label"),
+      )
+    expect(labels("Chỉ tiêu chung")).not.toContain("Hiện biểu đồ ROE")
+    expect(labels("Chỉ tiêu ngân hàng")).toContain("Hiện biểu đồ ROE")
+  })
+
+  it("VHM → NLG giữ thiết lập, VHM → GAS chuyển sang thiết lập dầu khí, quay lại VHM còn bản nháp", { timeout: 20_000 }, async () => {
+    const user = userEvent.setup()
+    const view = renderDashboard("VHM")
+    await ready("VHM")
+
+    await user.click(screen.getByRole("button", { name: "Bỏ D/E khỏi dashboard" }))
+    await user.click(screen.getByRole("checkbox", { name: "Hiện biểu đồ Tiền / Nợ vay ngắn hạn" }))
+    const edited = [...DEFAULTS.bds.filter((name) => name !== "D/E"), "Tiền / Nợ vay ngắn hạn"]
+    await waitFor(() => expect(cardNames()).toEqual(edited))
+
+    view.setSymbol("NLG")
+    await waitFor(() => expect(industryChip()).toBe("Bất động sản"))
+    await waitFor(() => expect(cardNames()).toEqual(edited))
+    expect(screen.getByRole("button", { name: "Lưu thiết lập" })).toHaveProperty("disabled", false)
+
+    view.setSymbol("GAS")
+    await ready("GAS")
+    expect(industryChip()).toBe("Dầu khí")
+    expect(screen.getByText("Đã chọn 6/29")).toBeTruthy()
+    expect(screen.getByRole("button", { name: "✓ Đã lưu" })).toHaveProperty("disabled", true)
+
+    view.setSymbol("VHM")
+    await waitFor(() => expect(cardNames()).toEqual(edited))
+    expect(state.puts).toHaveLength(0)
+
+    // Lưu ở bất động sản chỉ ghi ngành bds.
+    await user.click(screen.getByRole("button", { name: "Lưu thiết lập" }))
+    await waitFor(() => expect(state.puts).toHaveLength(1))
+    expect(state.puts[0]?.nganh).toBe("bds")
+    expect(state.puts[0]?.body.charts).toEqual(edited)
+    expect(state.saved.dk.charts).toEqual(DEFAULTS.dk)
+  })
+
+  it("chỉ tiêu chưa có công thức (definition_pending) hiện thẻ trống có lời báo, không vẽ biểu đồ", async () => {
+    renderDashboard("VHM")
+    await ready("VHM")
+    await chartCard("D/E")
+    const card = await waitFor(() => {
+      const element = document.querySelector<HTMLElement>('[data-chart="Lãi vay đã trả / Chi phí lãi vay"]')
+      expect(element?.textContent).toContain("Chỉ tiêu đang được hoàn thiện công thức")
+      return element as HTMLElement
+    })
+    expect(card.querySelector("[data-fundamental-chart]")).toBeNull()
+    expect(within(card).getByRole("link", { name: "Học bài Lãi vay đã trả / Chi phí lãi vay" })).toBeTruthy()
+  })
+
+  it("máy chủ chưa trả thiết lập của một ngành thì dùng bộ mặc định của ngành đó", async () => {
+    const partial: Partial<Record<Industry, Draft>> = { ...state.saved }
+    delete partial.dien
+    state.saved = partial as Record<Industry, Draft>
+    renderDashboard("REE")
+    await ready("REE", DEFAULTS.dien)
+    expect(industryChip()).toBe("Điện và tiện ích")
+  })
+
+  it("thiết lập đã lưu có tên ngoài danh mục ngành thì bỏ tên đó, không xin số liệu ngoài ngành", async () => {
+    state.saved.vl.charts = ["Tăng trưởng doanh thu", "Asset Turnover", "Số ngày tồn kho"]
+    renderDashboard("HPG")
+    await ready("HPG", ["Tăng trưởng doanh thu", "Số ngày tồn kho"])
+    expect(screen.queryByText("Không tải được số liệu dashboard")).toBeNull()
+    expect(screen.getByText("Đã chọn 2/28")).toBeTruthy()
+  })
+})
+
+describe("Dashboard phân tích v3 · nút Học", () => {
   it("mỗi dòng của khung Biểu đồ có nút Học mở bài học của chỉ tiêu, không làm tick hay bỏ tick", async () => {
     const user = userEvent.setup()
     renderDashboard("VCB")
@@ -922,7 +891,7 @@ describe("Dashboard phân tích v2 · nút Học", () => {
     expect(document.querySelectorAll("[data-chapter] a[data-learn]")).toHaveLength(28)
 
     const learn = pickerLearn("provision_to_loans")
-    expect(learn.getAttribute("href")).toBe("/academy?metric=provision_to_loans")
+    expect(learn.getAttribute("href")).toBe("/academy?metric=provision_to_loans&nganh=nh")
     expect(learn.getAttribute("aria-label")).toBe("Học bài Tỷ lệ dự phòng / Dư nợ")
 
     const checkbox = screen.getByRole("checkbox", { name: "Hiện biểu đồ Tỷ lệ dự phòng / Dư nợ" })
@@ -930,7 +899,7 @@ describe("Dashboard phân tích v2 · nút Học", () => {
     const before = cardNames()
 
     await user.click(learn)
-    expect(screen.getByTestId("location").textContent).toBe("/academy?metric=provision_to_loans")
+    expect(screen.getByTestId("location").textContent).toBe("/academy?metric=provision_to_loans&nganh=nh")
     // Bấm Học không đổi ô tick cũng không thêm biểu đồ.
     expect(
       screen.getByRole("checkbox", { name: "Hiện biểu đồ Tỷ lệ dự phòng / Dư nợ" }).getAttribute("aria-checked"),
@@ -939,7 +908,7 @@ describe("Dashboard phân tích v2 · nút Học", () => {
 
     // Với chỉ tiêu đang được chọn cũng vậy: ô tick vẫn bật.
     await user.click(pickerLearn("nim"))
-    expect(screen.getByTestId("location").textContent).toBe("/academy?metric=nim")
+    expect(screen.getByTestId("location").textContent).toBe("/academy?metric=nim&nganh=nh")
     expect(screen.getByRole("checkbox", { name: "Hiện biểu đồ NIM" }).getAttribute("aria-checked")).toBe("true")
     expect(cardNames()).toEqual(before)
   })
@@ -952,20 +921,62 @@ describe("Dashboard phân tích v2 · nút Học", () => {
     const card = document.querySelector<HTMLElement>('[data-chart="CIR"]') as HTMLElement
     const learn = within(card).getByRole("link", { name: "Học bài CIR" })
     expect(learn.textContent).toBe("Học")
-    expect(learn.getAttribute("href")).toBe("/academy?metric=cir")
+    expect(learn.getAttribute("href")).toBe("/academy?metric=cir&nganh=nh")
     for (const name of cardNames()) {
       const link = document.querySelector<HTMLElement>(`[data-chart="${name}"] a[data-learn]`)
       expect(link?.getAttribute("data-learn")).toBe(KEY_OF.get(name))
     }
 
     await user.click(learn)
-    expect(screen.getByTestId("location").textContent).toBe("/academy?metric=cir")
+    expect(screen.getByTestId("location").textContent).toBe("/academy?metric=cir&nganh=nh")
     expect(cardNames()).toEqual(DEFAULTS.nh)
   })
 
-  it("dựng đường dẫn Học từ khoá chỉ tiêu", () => {
-    expect(academyMetricHref("roe")).toBe("/academy?metric=roe")
-    expect(academyMetricHref("combined_ratio")).toBe("/academy?metric=combined_ratio")
+  it("dựng đường dẫn Học từ khoá chỉ tiêu và ngành", () => {
+    expect(academyMetricHref("roe", "nh")).toBe("/academy?metric=roe&nganh=nh")
+    expect(academyMetricHref("combined_ratio", "bh")).toBe("/academy?metric=combined_ratio&nganh=bh")
+    expect(academyMetricHref("inventory_years", "bds")).toBe("/academy?metric=inventory_years&nganh=bds")
+  })
+
+  it("nút Học gửi ngành của mã đang xem (spec v3 §12.5, PLAN §9)", { timeout: 20_000 }, async () => {
+    const user = userEvent.setup()
+    const pickerHref = (key: string) =>
+      document.querySelector<HTMLElement>(`[data-chapter] a[data-learn="${key}"]`)?.getAttribute("href")
+    const cardHref = (name: string) =>
+      document.querySelector<HTMLElement>(`[data-chart="${name}"] a[data-learn]`)?.getAttribute("href")
+    const view = renderDashboard("VCB")
+    await ready("VCB")
+    expect(pickerHref("roe")).toBe("/academy?metric=roe&nganh=nh")
+    expect(cardHref("ROE")).toBe("/academy?metric=roe&nganh=nh")
+
+    view.setSymbol("FPT")
+    await ready("FPT")
+    expect(pickerHref("roe")).toBe("/academy?metric=roe&nganh=thuong")
+    expect(cardHref("ROE")).toBe("/academy?metric=roe&nganh=thuong")
+
+    view.setSymbol("VHM")
+    await ready("VHM")
+    expect(pickerHref("revenue_yoy")).toBe("/academy?metric=revenue_yoy&nganh=bds")
+
+    view.setSymbol("HPG")
+    await ready("HPG")
+    expect(pickerHref("revenue_cagr3")).toBe("/academy?metric=revenue_cagr3&nganh=vl")
+    // Mọi nút Học của mã vật liệu đều gửi nganh=vl, không bao giờ "chung".
+    const all = [...document.querySelectorAll<HTMLElement>("a[data-learn]")]
+    expect(all.length).toBeGreaterThan(28)
+    for (const link of all) expect(link.getAttribute("href")).toMatch(/&nganh=vl$/)
+
+    // Bấm Học không đổi ô tick.
+    const before = cardNames()
+    const box = () =>
+      screen.getByRole("checkbox", { name: "Hiện biểu đồ Revenue CAGR 3Y" }).getAttribute("aria-checked")
+    expect(box()).toBe("false")
+    await user.click(
+      document.querySelector<HTMLElement>('[data-chapter] a[data-learn="revenue_cagr3"]') as HTMLElement,
+    )
+    expect(screen.getByTestId("location").textContent).toBe("/academy?metric=revenue_cagr3&nganh=vl")
+    expect(box()).toBe("false")
+    expect(cardNames()).toEqual(before)
   })
 })
 

@@ -249,3 +249,15 @@ Regenerate contracts; `cd backend && npm run verify`; `cd frontend && npm run ve
 - New env: `BOT_SESSION_CUTOFF=19:00`, `JOB_STRATEGY_PRICE_STORE_REFRESH_ENABLED` (default true), `JOB_NOTIFICATIONS_EMAIL_DISPATCH_ENABLED` (default true; no-op while `EMAIL_ENABLED=false`), `EMAIL_SENDER_BULLETIN`, `EMAIL_SENDER_BOT`, `NOTIFICATION_TOKEN_SECRET` (required in prod).
 - Services restarted: API, worker (jobs + backtest worker threads), market-ingest (same code version). Frontend dist + app shell as usual.
 - Post-deploy checks: `/api/v2/strategy/store/meta` `data_as_of`; one manual Backtest VN100×10y timing; first P session journal for 3 sample accounts per conversion group; notifications count for P = accounts with ≥1 execution.
+
+## W1 notes
+
+- Bench (`STRATEGY_RULES_BENCH=1 npx vitest run test/unit/strategy-rules-bench`, synthetic VN100 = 100 symbols × 3 700 sessions, range 2 520 sessions ≈ 10 y, one thread, machine load ≈ 11–25): RSI-only cold 788 ms (CPU 874 ms), 194 trades; RSI+MACD+MA+BB cold 3 699 ms (CPU 3 447 ms); warm with cached signals ≈ 110 ms; heap 110 MB. Under the 10 s target (D8).
+- Perf choices: `createFastSeriesCache` (same `calc`, cheaper memo key than `createSeriesCache`), signals evaluated only from the range start (indicators still run from the first bar, D7), Backtest passes only Buy-true candidates to `stepSession` (identical result), GTGD20 computed only for Buy-true symbols.
+- Indicator card with no enabled row on a side is neutral (ignored) for that side; a side with no active card is false (v1 made the whole side false on any empty card).
+- `sell_issue` on a held symbol: Sell signal treated as unknown, so a due position is still sold by `max_holding` (R05) and the issue is journaled.
+- Store: VNINDEX price columns hold points × 100, exact points in `close_idx`; VNINDEX is written last so `data_as_of` never runs ahead of stock bars; refresh status `up_to_date | refreshed | partial | failed` (`partial` = failures above `maxFailures`, VNINDEX not advanced). A vendor answer with no bars is a recorded failure, never a delete.
+- 30 % NAV cap is kept and tested in `sizeBuy`, but with 12 % budget + 2 buys/session it is only reachable through price moves of held positions.
+- R17 is asserted on the Bot replay path (stepSession per session on the store-as-of-D); Backtest equality is covered by R15.
+- `app.ts` untouched: W2/W3 import `PriceStoreModule` (exports `PriceStoreService` and `PRICE_STORE`). The scheduled refresh job (`JOB_STRATEGY_PRICE_STORE_REFRESH_ENABLED`) is not in W1 scope; it calls `PriceStoreService.refresh()`.
+- Integration test ran on Testcontainers (Colima) with its own throwaway database.

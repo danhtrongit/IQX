@@ -10,7 +10,7 @@ import {
   DASHBOARD_INDUSTRY_CHARTS,
   DASHBOARD_INDUSTRY_COUNTS,
   NATIVE_METRIC_IDS,
-  PENDING_V3_METRIC_IDS,
+  V2_NATIVE_METRIC_IDS,
   V3_NEW_METRIC_IDS,
   V3_VARIANT_METRIC_KEYS,
   chartFor,
@@ -299,17 +299,18 @@ describe('dashboard catalog v3 (9 ngành, 90 tên, 260 cặp)', () => {
     expect(chartFor('bds', 'PEG')?.ref).toBe(1);
   });
 
-  it('declares the 28 new metric keys and the 3 variants as pending, keyed for the Academy', () => {
+  it('declares the 28 new metric keys and the 3 variants as native formulas, keyed for the Academy', () => {
     expect(V3_NEW_METRIC_IDS).toHaveLength(28);
-    expect(PENDING_V3_METRIC_IDS).toHaveLength(31);
-    const pending = DASHBOARD_CHARTS.filter((chart) => chart.pending);
-    expect(new Set(pending.map((chart) => chart.metric_id))).toEqual(
-      new Set(PENDING_V3_METRIC_IDS),
-    );
-    // Every new key is used by at least one pair; none collides with an existing id.
+    expect(NATIVE_METRIC_IDS).toHaveLength(29 + 28 + 3);
+    const native = DASHBOARD_CHARTS.filter((chart) => chart.registry_id === null);
+    expect(new Set(native.map((chart) => chart.metric_id))).toEqual(new Set(NATIVE_METRIC_IDS));
+    // Every new key is used by at least one pair; none collides with a v2 id.
     for (const id of V3_NEW_METRIC_IDS) {
-      expect(DASHBOARD_CHARTS.some((chart) => chart.metric_key === id), id).toBe(true);
-      expect((NATIVE_METRIC_IDS as readonly string[]).includes(id), id).toBe(false);
+      expect(
+        DASHBOARD_CHARTS.some((chart) => chart.metric_key === id),
+        id,
+      ).toBe(true);
+      expect((V2_NATIVE_METRIC_IDS as readonly string[]).includes(id), id).toBe(false);
     }
     expect(V3_NEW_METRIC_IDS).not.toContain('payout_ratio');
     // Variants: their own formula id, the lesson key of the chart they re-teach (D7).
@@ -329,16 +330,22 @@ describe('dashboard catalog v3 (9 ngành, 90 tên, 260 cặp)', () => {
     for (const nganh of ['thuong', 'bds', 'bl', 'dien'] as const)
       expect(chartFor(nganh, 'Biên lợi nhuận gộp')).toMatchObject({
         metric_id: 'gross_margin',
-        pending: false,
+        registry_id: 'gross_margin',
       });
-    expect(chartFor('thuong', 'ROE')).toMatchObject({ metric_id: 'roe', pending: false });
+    expect(chartFor('thuong', 'ROE')).toMatchObject({ metric_id: 'roe', registry_id: 'roe' });
     // Outside the variants, the lesson key equals the formula id.
     for (const chart of DASHBOARD_CHARTS)
-      if (!(chart.metric_id in V3_VARIANT_METRIC_KEYS)) expect(chart.metric_key).toBe(chart.metric_id);
+      if (!(chart.metric_id in V3_VARIANT_METRIC_KEYS))
+        expect(chart.metric_key).toBe(chart.metric_id);
   });
 
   it('keeps the v2 names of the 4 old industries (no settings migration, D9)', () => {
-    const V2: Record<'thuong' | 'nh' | 'ck' | 'bh', number> = { thuong: 33, nh: 28, ck: 27, bh: 25 };
+    const V2: Record<'thuong' | 'nh' | 'ck' | 'bh', number> = {
+      thuong: 33,
+      nh: 28,
+      ck: 27,
+      bh: 25,
+    };
     for (const nganh of Object.keys(V2) as (keyof typeof V2)[])
       expect(DASHBOARD_INDUSTRY_CHARTS[nganh]).toHaveLength(V2[nganh]);
     // ck/bh renamed groups.
@@ -354,7 +361,8 @@ describe('dashboard catalog v3 (9 ngành, 90 tên, 260 cặp)', () => {
       const defaults = DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[nganh];
       expect(defaults).toHaveLength(6);
       expect(new Set(defaults).size).toBe(6);
-      for (const name of defaults) expect(chartFor(nganh, name), `${nganh}: ${name}`).not.toBeNull();
+      for (const name of defaults)
+        expect(chartFor(nganh, name), `${nganh}: ${name}`).not.toBeNull();
     }
     expect(DASHBOARD_DEFAULT_CHARTS).toEqual(DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.thuong);
     expect(DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.bds).toEqual([
@@ -504,7 +512,7 @@ describe('dashboard settings (theo tài khoản và 9 ngành, trên server)', ()
       dashboard.saveSettings(
         USER,
         'thuong',
-        dashboardSettingsInputSchema.parse({ charts: ['D/E'], per: 'q', nks: { 'NIM': { q: 8 } } }),
+        dashboardSettingsInputSchema.parse({ charts: ['D/E'], per: 'q', nks: { NIM: { q: 8 } } }),
       ),
     ).rejects.toThrow(BadRequestException);
     // The same set is fine for the industry that owns it.
@@ -531,7 +539,9 @@ describe('dashboard settings (theo tài khoản và 9 ngành, trên server)', ()
   it('rejects a chart outside the catalogue and a period outside the allowed ones', () => {
     const base = { charts: ['ROE'], per: 'q', nks: {} };
     expect(dashboardSettingsInputSchema.safeParse(base).success).toBe(true);
-    expect(dashboardSettingsInputSchema.safeParse({ ...base, charts: ['RSI'] }).success).toBe(false);
+    expect(dashboardSettingsInputSchema.safeParse({ ...base, charts: ['RSI'] }).success).toBe(
+      false,
+    );
     expect(dashboardSettingsInputSchema.safeParse({ ...base, per: 'm' }).success).toBe(false);
     expect(
       dashboardSettingsInputSchema.safeParse({ ...base, nks: { ROE: { q: 7 } } }).success,
@@ -629,7 +639,12 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
     expect(response.symbol).toBe('FPT');
     expect(response.nganh).toBe('thuong');
     expect(response.dates).toEqual(['2024-01-02', '2024-01-03']);
-    const pe = response.charts['P/E'] as { name: string; kind: string; unit: string; v: (number | null)[] };
+    const pe = response.charts['P/E'] as {
+      name: string;
+      kind: string;
+      unit: string;
+      v: (number | null)[];
+    };
     expect(pe.kind).toBe('F');
     expect(pe.unit).toBe('lần');
     expect(pe.v).toHaveLength(response.dates.length);
@@ -663,9 +678,7 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
       'TOI quý này',
       'Cùng kỳ năm trước',
     ]);
-    expect(chartOf(response, 'Biên lợi nhuận ròng').q?.main[0]?.name).toBe(
-      'LNST / TOI (4 quý)',
-    );
+    expect(chartOf(response, 'Biên lợi nhuận ròng').q?.main[0]?.name).toBe('LNST / TOI (4 quý)');
     await expect(
       dashboard.fundamental('VCB', { charts: 'ROE,Biên lợi nhuận gộp', per: 'q' }),
     ).rejects.toThrow(BadRequestException);

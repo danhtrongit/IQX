@@ -8,9 +8,9 @@ import { LearnLink } from "./learn-link"
 import { chapterSize, chosenCount, industryItems, normalizeSearch } from "./model"
 
 /**
- * Khung "Biểu đồ" bên phải (spec Dashboard v2 §3): chỉ gồm chỉ tiêu của ngành đang xem, chia hai
- * cấp là nhóm cấp 1 (Chỉ tiêu chung và chỉ tiêu riêng của ngành, tên theo spec Học viện v4.1 §6.2, không
- * mang tên chương Học viện) rồi nhóm cấp 2, mỗi cấp kèm số đã chọn. Mỗi dòng có ô tick để thêm hoặc bỏ biểu đồ khỏi dashboard và nút "Học" mở bài học của chỉ
+ * Khung "Biểu đồ" bên phải (spec Dashboard v3 §3): chỉ gồm chỉ tiêu của ngành đang xem (9 ngành),
+ * chia hai cấp là nhóm cấp 1 ("Chỉ tiêu chung" đã bỏ chỉ tiêu ngành dạy lại, và "Chỉ tiêu <ngành>")
+ * rồi nhóm cấp 2, mỗi cấp kèm số đã chọn; mỗi chỉ tiêu chỉ hiện một lần. Mỗi dòng có ô tick để thêm hoặc bỏ biểu đồ khỏi dashboard và nút "Học" mở bài học của chỉ
  * tiêu; nút "Học" đứng ngoài nhãn của ô tick nên không làm tick hay bỏ tick.
  */
 export function ChartPicker({
@@ -25,7 +25,8 @@ export function ChartPicker({
 }) {
   const [query, setQuery] = useState("")
   const needle = normalizeSearch(query)
-  const total = industry?.total ?? industryItems(industry).length
+  const items = industryItems(industry)
+  const total = industry?.total ?? items.length
 
   const chapters = useMemo(
     () =>
@@ -49,7 +50,7 @@ export function ChartPicker({
         <div className="mb-2 flex items-baseline justify-between gap-2">
           <h2 className="font-heading text-sm font-bold">Biểu đồ</h2>
           <span className="text-xs font-semibold text-text-secondary">
-            Đã chọn {selected.length}/{total}
+            Đã chọn {chosenCount(items, selected)}/{total}
           </span>
         </div>
         <Input
@@ -99,7 +100,14 @@ export function ChartPicker({
                           />
                           <span className="min-w-0 flex-1 break-words">{item.name}</span>
                         </label>
-                        <LearnLink metricKey={item.metric_key} name={item.name} className="mr-1" />
+                        {industry && (
+                          <LearnLink
+                            metricKey={item.metric_key}
+                            nganh={industry.nganh}
+                            name={item.name}
+                            className="mr-1"
+                          />
+                        )}
                       </li>
                     )
                   })}
