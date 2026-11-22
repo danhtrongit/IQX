@@ -103,11 +103,13 @@ export type BotTradeV2 = BotTrade & {
 }
 
 export type SessionCounters = {
+  buys?: number
+  sells?: number
+  skipped_buys?: number
   time_exits?: number
   t2_blocked?: number
   due_unfilled?: number
-  universe_empty?: number
-  [key: string]: number | undefined
+  universe_empty?: boolean
 }
 
 /** `GET /bot/journal/sessions` item with the §6.2 fields. */

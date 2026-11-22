@@ -420,7 +420,7 @@ export function tradeFixture(partial: Partial<BotTrade> & Pick<BotTrade, "id">):
     holding_days: 6,
     legacy_amplitude_at_entry_vnd: null, legacy_amplitude_source_ref: null, legacy_filter_ids: [], legacy_stop_loss_vnd: null, legacy_take_profit_vnd: null,
     ...partial,
-  }
+  } as BotTrade
 }
 
 /** One session row: a normal VN30 run on config revision 3 with nothing traded. */
@@ -430,7 +430,7 @@ export function sessionFixture(partial: Partial<BotSession> & Pick<BotSession, "
     policy_version: "iqx-bot-v1.1", universe: { kind: "vn30", name: "VN30", revision: 0 }, config_revision: 3,
     counts: { buy: 0, sell: 0, hold: 0, skip: 0, total: 0 }, reasons: [], nav_end_vnd: "100000000", cash_end_vnd: "100000000", valuation_complete: true, issues: [],
     ...partial,
-  }
+  } as BotSession
 }
 
 /** One decision of a session. */

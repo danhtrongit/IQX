@@ -17,8 +17,6 @@ import type {
   BotTradesPage,
   InvalidSymbol,
   SavedList,
-  UniverseMutationResult,
-  UniverseState,
 } from "./types"
 
 /** The v2 API answers with the bare object; a `{ data }` envelope is tolerated. */
@@ -77,41 +75,11 @@ export async function fetchSessionDecisions(session: string, cursor: string | nu
   )
 }
 
-export async function fetchUniverse(signal?: AbortSignal): Promise<UniverseState> {
-  return unwrap<UniverseState>(await requestOperation("GET /api/v2/bot/universe", {}, { signal }))
-}
-
 export async function fetchSavedLists(signal?: AbortSignal): Promise<SavedList[]> {
   const payload = unwrap<{ items?: SavedList[] }>(
     await requestOperation("GET /api/v2/strategy/lists", {}, { signal }),
   )
   return payload.items ?? []
-}
-
-export function applyUniverseList(body: {
-  list_id: string
-  symbols: string[]
-  expected_revision: number
-  idempotency_key: string
-}): Promise<UniverseMutationResult> {
-  return requestOperation("POST /api/v2/bot/universe/apply-list", { body }).then((payload) =>
-    unwrap<UniverseMutationResult>(payload),
-  )
-}
-
-export function revertUniverseToVn30(body: {
-  expected_revision: number
-  idempotency_key: string
-}): Promise<UniverseMutationResult> {
-  return requestOperation("POST /api/v2/bot/universe/revert-vn30", { body }).then((payload) =>
-    unwrap<UniverseMutationResult>(payload),
-  )
-}
-
-export function cancelUniversePending(body: { expected_revision: number }): Promise<UniverseMutationResult> {
-  return requestOperation("POST /api/v2/bot/universe/pending/cancel", { body }).then((payload) =>
-    unwrap<UniverseMutationResult>(payload),
-  )
 }
 
 export function newIdempotencyKey(): string {

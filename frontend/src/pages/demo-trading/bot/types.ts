@@ -3,7 +3,6 @@
  * contract; the shared-config types live in `config/types.ts`.
  */
 import type {
-  ApplyBotUniverseListResponses,
   BotConditions,
   BotIssue,
   BotOverview,
@@ -11,7 +10,6 @@ import type {
   BotPositions,
   GetBotJournalSessionResponses,
   GetBotTradesResponses,
-  GetBotUniverseResponses,
   ListBotJournalSessionsResponses,
   ListStrategySavedListsResponses,
 } from "@/lib/generated"
@@ -32,11 +30,22 @@ export type BotSessionDecision = BotSessionDecisionsPage["items"][number]
 
 export type BotConfigState = BotConditions["state"]
 
-/** Effective buy source with its symbols, the pending request and the revision token. */
-export type UniverseState = GetBotUniverseResponses[200]
-export type UniverseEffective = UniverseState["effective"]
-export type UniverseRequest = NonNullable<UniverseState["pending"]>
-export type UniverseMutationResult = ApplyBotUniverseListResponses[201]
+/**
+ * Legacy buy-source shapes. The `/bot/universe` endpoints were removed by Bot v2.0 (spec §5.1);
+ * these loose types only keep the old test fake compiling.
+ */
+export type UniverseRequest = {
+  kind: string
+  name: string
+  revision: number
+  status?: string
+  symbol_count?: number
+  saved_list_id?: string | null
+  [key: string]: unknown
+}
+export type UniverseEffective = UniverseRequest
+export type UniverseState = { revision: number; effective: UniverseEffective; pending: UniverseRequest | null; [key: string]: unknown }
+export type UniverseMutationResult = { request: UniverseRequest; state: UniverseState }
 
 export type SavedList = ListStrategySavedListsResponses[200]["items"][number]
 
