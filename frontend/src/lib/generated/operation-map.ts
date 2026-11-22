@@ -265,6 +265,9 @@ export interface OperationMap {
   "GET /api/v2/market/bulletins/archive": { request: T.ListMarketBulletinArchiveData; response: T.ListMarketBulletinArchiveResponses[keyof T.ListMarketBulletinArchiveResponses] }
   "GET /api/v2/market/bulletins/latest": { request: T.GetLatestMarketBulletinData; response: T.GetLatestMarketBulletinResponses[keyof T.GetLatestMarketBulletinResponses] }
   "GET /api/v2/market/tracking": { request: T.GetMarketTrackingData; response: T.GetMarketTrackingResponses[keyof T.GetMarketTrackingResponses] }
+  "GET /api/v2/me/notification-settings": { request: T.NotificationSettingsData; response: T.NotificationSettingsResponses[keyof T.NotificationSettingsResponses] }
+  "GET /api/v2/me/notifications": { request: T.NotificationListData; response: T.NotificationListResponses[keyof T.NotificationListResponses] }
+  "GET /api/v2/me/notifications/unread-count": { request: T.NotificationUnreadCountData; response: T.NotificationUnreadCountResponses[keyof T.NotificationUnreadCountResponses] }
   "GET /api/v2/media/{token}": { request: T.MediaControllerDownloadData; response: T.MediaControllerDownloadResponses[keyof T.MediaControllerDownloadResponses] }
   "GET /api/v2/portfolio-manager/report": { request: T.GetPortfolioReportV2Data; response: T.GetPortfolioReportV2Responses[keyof T.GetPortfolioReportV2Responses] }
   "GET /api/v2/practice/{indicatorId}/history": { request: T.PracticeHistoryData; response: T.PracticeHistoryResponses[keyof T.PracticeHistoryResponses] }
@@ -502,6 +505,8 @@ export interface OperationMap {
   "POST /api/v2/market-data/screening/search": { request: T.MarketExtendedControllerScreeningSearch1Data; response: T.MarketExtendedControllerScreeningSearch1Responses[keyof T.MarketExtendedControllerScreeningSearch1Responses] }
   "POST /api/v2/market-data/trading/price-board": { request: T.MarketDataControllerPriceBoard1Data; response: T.MarketDataControllerPriceBoard1Responses[keyof T.MarketDataControllerPriceBoard1Responses] }
   "POST /api/v2/market/bulletins/{date}/slots/{slot}": { request: T.PushMarketBulletinSlotData; response: T.PushMarketBulletinSlotResponses[keyof T.PushMarketBulletinSlotResponses] }
+  "POST /api/v2/me/notifications/read": { request: T.NotificationMarkReadData; response: T.NotificationMarkReadResponses[keyof T.NotificationMarkReadResponses] }
+  "POST /api/v2/notifications/unsubscribe": { request: T.NotificationUnsubscribeData; response: T.NotificationUnsubscribeResponses[keyof T.NotificationUnsubscribeResponses] }
   "POST /api/v2/portfolio-manager/analyze": { request: T.AnalyzePortfolioV2Data; response: T.AnalyzePortfolioV2Responses[keyof T.AnalyzePortfolioV2Responses] }
   "POST /api/v2/practice/{indicatorId}/next": { request: T.PracticeNextData; response: T.PracticeNextResponses[keyof T.PracticeNextResponses] }
   "POST /api/v2/practice/{indicatorId}/preview": { request: T.PracticePreviewData; response: T.PracticePreviewResponses[keyof T.PracticePreviewResponses] }
@@ -580,6 +585,7 @@ export interface OperationMap {
   "PUT /api/v2/chart-drawings/{symbol}": { request: T.SaveChartDrawingV2Data; response: T.SaveChartDrawingV2Responses[keyof T.SaveChartDrawingV2Responses] }
   "PUT /api/v2/dashboard/settings/{nganh}": { request: T.DashboardSaveSettingsData; response: T.DashboardSaveSettingsResponses[keyof T.DashboardSaveSettingsResponses] }
   "PUT /api/v2/flashback/entries/{id}/indicators": { request: T.FlashbackSaveIndicatorsData; response: T.FlashbackSaveIndicatorsResponses[keyof T.FlashbackSaveIndicatorsResponses] }
+  "PUT /api/v2/me/notification-settings": { request: T.NotificationSaveSettingsData; response: T.NotificationSaveSettingsResponses[keyof T.NotificationSaveSettingsResponses] }
   "PUT /api/v2/practice/{indicatorId}/draft": { request: T.PracticeSaveDraftData; response: T.PracticeSaveDraftResponses[keyof T.PracticeSaveDraftResponses] }
   "PUT /api/v2/shop/active-mascot": { request: T.SetShopActiveMascotData; response: T.SetShopActiveMascotResponses[keyof T.SetShopActiveMascotResponses] }
   "PUT /api/v2/strategy/filters/{filterId}": { request: T.UpdateStrategySavedFilterData; response: T.UpdateStrategySavedFilterResponses[keyof T.UpdateStrategySavedFilterResponses] }
@@ -855,6 +861,9 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/market/bulletins/archive": { request: "ListMarketBulletinArchiveData", response: "ListMarketBulletinArchiveResponses" },
   "GET /api/v2/market/bulletins/latest": { request: "GetLatestMarketBulletinData", response: "GetLatestMarketBulletinResponses" },
   "GET /api/v2/market/tracking": { request: "GetMarketTrackingData", response: "GetMarketTrackingResponses" },
+  "GET /api/v2/me/notification-settings": { request: "NotificationSettingsData", response: "NotificationSettingsResponses" },
+  "GET /api/v2/me/notifications": { request: "NotificationListData", response: "NotificationListResponses" },
+  "GET /api/v2/me/notifications/unread-count": { request: "NotificationUnreadCountData", response: "NotificationUnreadCountResponses" },
   "GET /api/v2/media/{token}": { request: "MediaControllerDownloadData", response: "MediaControllerDownloadResponses" },
   "GET /api/v2/portfolio-manager/report": { request: "GetPortfolioReportV2Data", response: "GetPortfolioReportV2Responses" },
   "GET /api/v2/practice/{indicatorId}/history": { request: "PracticeHistoryData", response: "PracticeHistoryResponses" },
@@ -1092,6 +1101,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/market-data/screening/search": { request: "MarketExtendedControllerScreeningSearch1Data", response: "MarketExtendedControllerScreeningSearch1Responses" },
   "POST /api/v2/market-data/trading/price-board": { request: "MarketDataControllerPriceBoard1Data", response: "MarketDataControllerPriceBoard1Responses" },
   "POST /api/v2/market/bulletins/{date}/slots/{slot}": { request: "PushMarketBulletinSlotData", response: "PushMarketBulletinSlotResponses" },
+  "POST /api/v2/me/notifications/read": { request: "NotificationMarkReadData", response: "NotificationMarkReadResponses" },
+  "POST /api/v2/notifications/unsubscribe": { request: "NotificationUnsubscribeData", response: "NotificationUnsubscribeResponses" },
   "POST /api/v2/portfolio-manager/analyze": { request: "AnalyzePortfolioV2Data", response: "AnalyzePortfolioV2Responses" },
   "POST /api/v2/practice/{indicatorId}/next": { request: "PracticeNextData", response: "PracticeNextResponses" },
   "POST /api/v2/practice/{indicatorId}/preview": { request: "PracticePreviewData", response: "PracticePreviewResponses" },
@@ -1170,6 +1181,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PUT /api/v2/chart-drawings/{symbol}": { request: "SaveChartDrawingV2Data", response: "SaveChartDrawingV2Responses" },
   "PUT /api/v2/dashboard/settings/{nganh}": { request: "DashboardSaveSettingsData", response: "DashboardSaveSettingsResponses" },
   "PUT /api/v2/flashback/entries/{id}/indicators": { request: "FlashbackSaveIndicatorsData", response: "FlashbackSaveIndicatorsResponses" },
+  "PUT /api/v2/me/notification-settings": { request: "NotificationSaveSettingsData", response: "NotificationSaveSettingsResponses" },
   "PUT /api/v2/practice/{indicatorId}/draft": { request: "PracticeSaveDraftData", response: "PracticeSaveDraftResponses" },
   "PUT /api/v2/shop/active-mascot": { request: "SetShopActiveMascotData", response: "SetShopActiveMascotResponses" },
   "PUT /api/v2/strategy/filters/{filterId}": { request: "UpdateStrategySavedFilterData", response: "UpdateStrategySavedFilterResponses" },

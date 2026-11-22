@@ -52669,6 +52669,264 @@ export type GetMarketTrackingResponses = {
 export type GetMarketTrackingResponse =
   GetMarketTrackingResponses[keyof GetMarketTrackingResponses];
 
+export type NotificationSettingsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/me/notification-settings";
+};
+
+export type NotificationSettingsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationSettingsError =
+  NotificationSettingsErrors[keyof NotificationSettingsErrors];
+
+export type NotificationSettingsResponses = {
+  200: {
+    channels: {
+      email: boolean;
+      web: true;
+    };
+    email_available: boolean;
+    enabled: boolean;
+    types: {
+      bot_trades: boolean;
+      bulletin: boolean;
+    };
+    updated_at: string | null;
+  };
+};
+
+export type NotificationSettingsResponse =
+  NotificationSettingsResponses[keyof NotificationSettingsResponses];
+
+export type NotificationSaveSettingsData = {
+  body: {
+    channels: {
+      email: boolean;
+      web?: true;
+    };
+    enabled: boolean;
+    types: {
+      bot_trades: boolean;
+      bulletin: boolean;
+    };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/me/notification-settings";
+};
+
+export type NotificationSaveSettingsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationSaveSettingsError =
+  NotificationSaveSettingsErrors[keyof NotificationSaveSettingsErrors];
+
+export type NotificationSaveSettingsResponses = {
+  200: {
+    channels: {
+      email: boolean;
+      web: true;
+    };
+    email_available: boolean;
+    enabled: boolean;
+    types: {
+      bot_trades: boolean;
+      bulletin: boolean;
+    };
+    updated_at: string | null;
+  };
+};
+
+export type NotificationSaveSettingsResponse =
+  NotificationSaveSettingsResponses[keyof NotificationSaveSettingsResponses];
+
+export type NotificationListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/me/notifications";
+};
+
+export type NotificationListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationListError =
+  NotificationListErrors[keyof NotificationListErrors];
+
+export type NotificationListResponses = {
+  200: {
+    items: Array<{
+      body: string;
+      created_at: string;
+      id: string;
+      link: string;
+      read_at: string | null;
+      title: string;
+      trade_date: string;
+      type: "bulletin" | "bot_trades";
+    }>;
+    unread_count: number;
+  };
+};
+
+export type NotificationListResponse =
+  NotificationListResponses[keyof NotificationListResponses];
+
+export type NotificationMarkReadData = {
+  body:
+    | {
+        id: string;
+      }
+    | {
+        all: true;
+      };
+  path?: never;
+  query?: never;
+  url: "/api/v2/me/notifications/read";
+};
+
+export type NotificationMarkReadErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationMarkReadError =
+  NotificationMarkReadErrors[keyof NotificationMarkReadErrors];
+
+export type NotificationMarkReadResponses = {
+  200: {
+    unread_count: number;
+  };
+};
+
+export type NotificationMarkReadResponse =
+  NotificationMarkReadResponses[keyof NotificationMarkReadResponses];
+
+export type NotificationUnreadCountData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/me/notifications/unread-count";
+};
+
+export type NotificationUnreadCountErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationUnreadCountError =
+  NotificationUnreadCountErrors[keyof NotificationUnreadCountErrors];
+
+export type NotificationUnreadCountResponses = {
+  200: {
+    unread_count: number;
+  };
+};
+
+export type NotificationUnreadCountResponse =
+  NotificationUnreadCountResponses[keyof NotificationUnreadCountResponses];
+
 export type MediaControllerDownloadData = {
   body?: never;
   path: {
@@ -52714,6 +52972,47 @@ export type MediaControllerDownloadResponses = {
 
 export type MediaControllerDownloadResponse =
   MediaControllerDownloadResponses[keyof MediaControllerDownloadResponses];
+
+export type NotificationUnsubscribeData = {
+  body: {
+    token: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/notifications/unsubscribe";
+};
+
+export type NotificationUnsubscribeErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type NotificationUnsubscribeError =
+  NotificationUnsubscribeErrors[keyof NotificationUnsubscribeErrors];
+
+export type NotificationUnsubscribeResponses = {
+  200: {
+    status: "unsubscribed" | "already_used";
+    type: "bulletin" | "bot_trades";
+  };
+};
+
+export type NotificationUnsubscribeResponse =
+  NotificationUnsubscribeResponses[keyof NotificationUnsubscribeResponses];
 
 export type AnalyzePortfolioV2Data = {
   body?: never;
