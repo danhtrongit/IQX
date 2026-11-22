@@ -1,121 +1,90 @@
 /**
- * Result of one stored run (immutable): exactly six KPIs, the "Lợi nhuận danh mục (%)" chart, the
- * assumptions of the run, the full closed-trade history (paged by the server) and, apart from it,
- * the open position and the orders left unfilled at the end of the range. Editing the form never
- * edits a result: a result that no longer matches the form is flagged "cần chạy lại".
+ * Kết quả of one stored basket run (spec v2.0 §4.7, §4.8): title + caption, 7 KPIs, the 3-line chart
+ * (Chiến lược, Mua và giữ rổ, VN-Index), 5 tabs and the per-symbol chart. A stored run never changes; a
+ * result that no longer matches the form is flagged "Cấu hình đã đổi sau lần chạy này · cần chạy lại".
  */
-import { useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts"
+import { useState } from "react"
+import { ChevronLeft, ChevronRight, TriangleAlert } from "lucide-react"
+import { CartesianGrid, ComposedChart, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { ErrorLine } from "../shared/controls"
 import { DialogShell } from "../shared/dialog-shell"
 import { errorMessage } from "../shared/errors"
-import { EvidenceTable } from "../shared/evidence-table"
-import { fmtDate, fmtInt, fmtNumber, fmtPercent, fmtSignedPercent, fmtSignedVnd, fmtVnd, shortHash, toneClass } from "../shared/format"
-import { TRADES_PAGE_SIZE, type ClosedTrade, type OpenPosition, type PendingOrder, type RunResponse, type RunResult } from "./api"
-import { useTradesPage } from "./hooks"
-import {
-  buyAndHoldOf,
-  chartPoints,
-  conditionNames,
-  configCaption,
-  exitConditionText,
-  exitReasonText,
-  OUTCOME_LABEL,
-  snapshotParams,
-  thinPoints,
-  tradesPageFromRun,
-} from "./results-model"
+import { fmtDate, fmtInt, fmtNumber, fmtPercent, fmtSignedPercent, fmtSignedVnd, fmtVnd, toneClass } from "../shared/format"
+import { TRADES_PAGE_SIZE, type ClosedTrade, type RunView } from "./api"
+import { universeLabel } from "./draft"
+import { useSymbolChart, useTradesPage } from "./hooks"
+import { exitReasonText, thinPoints, warningText } from "./results-model"
+import { CLOSE_FILL, LABEL, PAST_RESULTS, SUB_TEXT } from "./ui"
 
-const TH = "px-3 py-2.5 text-[10.5px] font-semibold tracking-wide text-muted-foreground uppercase"
+const TH = `px-3 py-2 text-left text-[10.5px] font-semibold tracking-wide uppercase whitespace-nowrap ${SUB_TEXT}`
+const TD = "px-3 py-2 whitespace-nowrap tabular-nums"
 
-function Kpi({ label, value, caption, tone }: { label: string; value: string; caption: string; tone?: string }) {
+function Kpi({ label, value, tone, compare }: { label: string; value: string; tone?: string; compare?: boolean }) {
   return (
-    <div className="px-4 py-3.5" data-testid="kpi">
-      <div className="text-[10.5px] font-semibold tracking-wide text-muted-foreground uppercase">{label}</div>
-      <div className={`mt-2 font-heading text-xl font-bold tabular-nums ${tone ?? ""}`}>{value}</div>
-      <div className="mt-1 text-[11px] text-muted-foreground">{caption}</div>
+    <div className={`min-w-0 px-3 py-3 ${compare ? "bg-muted/40" : ""}`} data-testid="kpi">
+      <div className={LABEL}>{label}</div>
+      <div className={`mt-1.5 font-heading text-lg font-bold tabular-nums ${tone ?? ""}`}>{value}</div>
     </div>
   )
 }
 
-/**
- * Six KPIs. "Mua và giữ {mã}" sits next to the strategy profit (tab IQX §3.5): the stored buy-once-and-hold of
- * the same symbol, range, capital, fill mode, lot and buy fee; "—" for a run stored before it.
- */
-export function KpiStrip({ result }: { result: RunResult }) {
-  const { kpis, supplementary } = result
-  const wins = supplementary.winning_trade_count
-  const hold = buyAndHoldOf(result)
+export function KpiStrip({ run }: { run: RunView }) {
+  const k = run.kpis
   return (
-    <div className="grid grid-cols-2 divide-x divide-y divide-border border-y border-border sm:grid-cols-3 xl:grid-cols-6 xl:divide-y-0" role="group" aria-label="Sáu chỉ số kết quả">
-      <Kpi label="Tổng lợi nhuận" value={fmtSignedPercent(kpis.total_return_pct, 1)} caption="Gồm tiền mặt và vị thế cuối kỳ" tone={toneClass(kpis.total_return_pct)} />
-      <Kpi
-        label={`Mua và giữ ${result.snapshot.symbol}`}
-        value={hold ? fmtSignedPercent(hold.return_pct, 1) : "—"}
-        caption={hold ? "Mua một lần đầu kỳ, cùng vốn, lô và phí mua; chưa trừ phí bán" : "Lần chạy cũ chưa có số liệu này"}
-      />
-      <Kpi label="Lợi nhuận năm hóa" value={fmtSignedPercent(kpis.annualized_return_pct, 1)} caption="CAGR, quy ước 252 phiên/năm" tone={toneClass(kpis.annualized_return_pct)} />
-      <Kpi label="Sụt giảm lớn nhất" value={fmtSignedPercent(kpis.max_drawdown_pct, 1)} caption="Từ đỉnh trước đó" tone={toneClass(kpis.max_drawdown_pct)} />
-      <Kpi label="Số giao dịch" value={fmtInt(kpis.closed_trade_count)} caption="Vòng mua và bán đã đóng" />
-      <Kpi
-        label="Tỷ lệ thắng"
-        value={fmtPercent(kpis.win_rate_pct, 1)}
-        caption={kpis.closed_trade_count > 0 ? `${wins} / ${kpis.closed_trade_count} giao dịch` : "Chưa có giao dịch đã đóng"}
-      />
+    <div className="grid grid-cols-2 divide-x divide-y divide-border border-y border-border sm:grid-cols-4 xl:grid-cols-7 xl:divide-y-0" role="group" aria-label="Bảy chỉ số kết quả">
+      <Kpi label="Tổng lợi nhuận" value={fmtSignedPercent(k.total_return, 1)} tone={toneClass(k.total_return)} />
+      <Kpi label="Lợi nhuận năm hóa" value={k.annualized_return === null ? "—" : fmtSignedPercent(k.annualized_return, 1)} tone={toneClass(k.annualized_return)} />
+      <Kpi label="Sụt giảm lớn nhất" value={fmtSignedPercent(k.max_drawdown, 1)} tone={toneClass(k.max_drawdown)} />
+      <Kpi label="Giao dịch đã đóng" value={fmtInt(k.closed_trades)} />
+      <Kpi label="Tỷ lệ thắng" value={k.win_rate === null ? "—" : fmtPercent(k.win_rate, 1)} />
+      <Kpi label="Mua và giữ rổ" value={k.basket_buy_hold === null ? "—" : fmtSignedPercent(k.basket_buy_hold, 1)} tone={toneClass(k.basket_buy_hold)} compare />
+      <Kpi label="VN-Index" value={k.vnindex === null ? "—" : fmtSignedPercent(k.vnindex, 1)} tone={toneClass(k.vnindex)} compare />
     </div>
   )
 }
 
 const CHART_CONFIG = {
-  strategy: { label: "Danh mục chiến lược", color: "var(--primary)" },
-  buyHold: { label: "Mua và giữ", color: "var(--chart-7)" },
-  market: { label: "VN-Index", color: "var(--price-ref)" },
+  strategy: { label: "Chiến lược", color: "var(--primary)" },
+  basket: { label: "Mua và giữ rổ", color: "var(--chart-7)" },
+  vnindex: { label: "VN-Index", color: "var(--price-ref)" },
 } satisfies ChartConfig
 
 const pctTick = (value: number) => `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toFixed(0)}%`
 
-export function ReturnChart({ result, symbol }: { result: RunResult; symbol: string }) {
-  const points = thinPoints(chartPoints(result))
-  const market = result.chart.series.find((series) => series.id === "market")
-  const showMarket = !!market?.available && points.some((point) => point.market !== null)
-  const showHold = buyAndHoldOf(result) !== null
+export function ReturnChart({ run }: { run: RunView }) {
+  const points = thinPoints(run.curve)
   if (points.length < 2) {
-    return <div className="flex h-[200px] items-center justify-center p-4 text-xs text-muted-foreground italic">Không có dữ liệu giá trong khoảng thời gian đã chọn.</div>
+    return <div className={`flex h-[200px] items-center justify-center p-4 text-xs ${SUB_TEXT}`}>Không có dữ liệu giá trong khoảng thời gian đã chọn.</div>
   }
-  const names = { strategy: "Danh mục chiến lược", buyHold: `Mua và giữ ${symbol}`, market: "VN-Index" } as const
-  const legend: { key: keyof typeof names; dash: string; color: string }[] = [
-    { key: "strategy", dash: "", color: "var(--primary)" },
-    ...(showHold ? [{ key: "buyHold" as const, dash: "6 4", color: "var(--chart-7)" }] : []),
-    ...(showMarket ? [{ key: "market" as const, dash: "2 3", color: "var(--price-ref)" }] : []),
+  const names = { strategy: "Chiến lược", basket: "Mua và giữ rổ", vnindex: "VN-Index" } as const
+  const legend = [
+    { key: "strategy" as const, dash: "", color: "var(--primary)" },
+    { key: "basket" as const, dash: "6 4", color: "var(--chart-7)" },
+    { key: "vnindex" as const, dash: "2 3", color: "var(--price-ref)" },
   ]
   return (
-    <div className="px-2 pb-2 sm:px-4">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-2 pt-4">
-        <h3 className="text-[11px] font-bold tracking-wide uppercase">{result.chart.title}</h3>
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label="Chú giải biểu đồ">
-          {legend.map((item) => (
-            <li key={item.key} className="flex items-center gap-1.5">
-              <svg aria-hidden="true" width="22" height="6" viewBox="0 0 22 6">
-                <line x1="0" y1="3" x2="22" y2="3" stroke={item.color} strokeWidth="2" strokeDasharray={item.dash || undefined} />
-              </svg>
-              {names[item.key]}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <ChartContainer config={CHART_CONFIG} className="aspect-auto h-[280px] w-full sm:h-[320px]">
+    <div className="px-1 pb-2 sm:px-3" data-testid="return-chart">
+      <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 px-2 pt-3 text-xs" aria-label="Chú giải biểu đồ">
+        {legend.map((item) => (
+          <li key={item.key} className="flex items-center gap-1.5">
+            <svg aria-hidden="true" width="22" height="6" viewBox="0 0 22 6">
+              <line x1="0" y1="3" x2="22" y2="3" stroke={item.color} strokeWidth="2" strokeDasharray={item.dash || undefined} />
+            </svg>
+            {item.key === "basket" ? "Mua và giữ rổ (chia đều vốn)" : names[item.key]}
+          </li>
+        ))}
+      </ul>
+      <ChartContainer config={CHART_CONFIG} className="aspect-auto h-[260px] w-full sm:h-[300px]">
         <LineChart data={points} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
           <CartesianGrid stroke="var(--border)" strokeOpacity={0.5} vertical={false} />
           <XAxis dataKey="date" tickLine={false} axisLine={false} minTickGap={56} tickFormatter={(value: string) => fmtDate(value)} />
-          <YAxis type="number" scale="linear" tickLine={false} axisLine={false} width={56} tickFormatter={pctTick} domain={["auto", "auto"]} />
+          <YAxis type="number" tickLine={false} axisLine={false} width={52} tickFormatter={pctTick} domain={["auto", "auto"]} />
           <ReferenceLine y={0} stroke="var(--border)" />
           <ChartTooltip
             content={
@@ -124,254 +93,289 @@ export function ReturnChart({ result, symbol }: { result: RunResult; symbol: str
                 labelFormatter={(_label, payload) => fmtDate(String((payload?.[0]?.payload as { date?: string } | undefined)?.date ?? ""))}
                 formatter={(value, name) => (
                   <div className="flex w-full items-center justify-between gap-3">
-                    <span className="text-muted-foreground">{names[name as keyof typeof names] ?? String(name)}</span>
-                    <span className="font-mono font-medium tabular-nums">{fmtSignedPercent(Number(value))}</span>
+                    <span>{names[name as keyof typeof names] ?? String(name)}</span>
+                    <span className="font-mono font-medium tabular-nums">{fmtSignedPercent(Number(value), 1)}</span>
                   </div>
                 )}
               />
             }
           />
+          <Line type="linear" dataKey="vnindex" stroke="var(--color-vnindex)" strokeWidth={1.5} strokeDasharray="2 3" dot={false} connectNulls isAnimationActive={false} />
+          <Line type="linear" dataKey="basket" stroke="var(--color-basket)" strokeWidth={1.7} strokeDasharray="6 4" dot={false} connectNulls isAnimationActive={false} />
           <Line type="linear" dataKey="strategy" stroke="var(--color-strategy)" strokeWidth={2.2} dot={false} isAnimationActive={false} />
-          {showHold && <Line type="linear" dataKey="buyHold" stroke="var(--color-buyHold)" strokeWidth={1.8} strokeDasharray="6 4" dot={false} connectNulls isAnimationActive={false} />}
-          {showMarket && <Line type="linear" dataKey="market" stroke="var(--color-market)" strokeWidth={1.5} strokeDasharray="2 3" dot={false} connectNulls={false} isAnimationActive={false} />}
         </LineChart>
       </ChartContainer>
-      {!showMarket && (
-        <p className="mt-1 text-[11px] text-muted-foreground">VN-Index: {market?.unavailable_reason ?? "chưa đủ dữ liệu cùng ngày gốc"}. Không vẽ chuỗi 0% thay thế.</p>
-      )}
     </div>
   )
 }
 
-function Assumptions({ run, result }: { run: RunResponse; result: RunResult }) {
-  const snapshot = result.snapshot
-  const simulation = snapshot.simulation
-  const warnings = snapshot.data_warnings
+function Pager({ page, pages, onPage, children }: { page: number; pages: number; onPage: (page: number) => void; children?: React.ReactNode }) {
   return (
-    <details className="border-t border-border px-4 py-3 text-xs" data-testid="assumptions">
-      <summary className="cursor-pointer font-medium">Giả định của lần kiểm thử</summary>
-      <div className="mt-2 space-y-2 leading-5 text-muted-foreground">
-        <p>
-          <strong className="text-foreground">{simulation?.execution_label ?? (snapshot.execution === "same_close" ? "Đóng cửa cùng phiên" : "Mở cửa phiên kế tiếp")}</strong>
-          {simulation ? `. ${simulation.fill_price}. ${simulation.caveat}` : ""}
-        </p>
-        <p>
-          Một mã, tối đa một vị thế. Mỗi lần mua dùng tối đa tiền khả dụng gồm phí, làm tròn xuống lô {fmtInt(snapshot.lot_size)} cổ phiếu. Phí: mua {fmtNumber(snapshot.fees.buy * 100)}%, bán gồm thuế {fmtNumber(snapshot.fees.sell * 100)}%
-          {snapshot.fee_preset === "none" ? " (không tính phí)" : ""}.{" "}
-          {snapshot.profile.max_holding == null
-            ? "Không có stop, chốt lời, trailing hay giới hạn thời gian giữ."
-            : `Không có stop, chốt lời hay trailing. Giữ tối đa ${fmtInt(snapshot.profile.max_holding)} phiên: hết thời gian giữ thì bán dù điều kiện Bán chưa đạt.`}{" "}
-          Không ép bán cuối kỳ.
-        </p>
-        {simulation && (
-          <p>
-            Khóa bán tối thiểu {fmtInt(simulation.min_held_bars)} phiên giữ là quy ước kế thừa từ engine tham chiếu, đang chờ chủ sản phẩm chốt. Thanh toán, thanh khoản và trượt giá chưa được mô phỏng. {snapshot.buy_and_hold ? "Mua và giữ: mua một lần ở phiên khớp đầu tiên, cùng vốn, phí mua, lô và chế độ khớp; không trừ phí bán, chưa tính cổ tức." : "Lần chạy cũ chưa lưu Mua và giữ."} Năm hóa theo {simulation.annualization_sessions} phiên/năm.
-          </p>
-        )}
-        <p>
-          Cấu hình chung bản {snapshot.shared_revision} · {shortHash(snapshot.config_hash)} · dữ liệu {snapshot.data_source}{snapshot.adjusted ? " (giá điều chỉnh)" : ""} · {shortHash(snapshot.data_hash)}
-          {" "}· phiên bản {snapshot.versions.engine_version}, {snapshot.versions.calculation_version}, {snapshot.versions.rule_version}. Chạy kiểm thử không ghi cấu hình của Bot và không đổi vốn tài khoản.
-        </p>
-        <p>Vốn ban đầu {fmtVnd(snapshot.capital)} · khoảng yêu cầu {fmtDate(snapshot.requested_start)} đến {fmtDate(snapshot.requested_end)} · mã lần chạy {shortHash(run.run_id, 8)}.</p>
-        {warnings.length > 0 && (
-          <ul className="list-disc space-y-0.5 pl-4 text-price-ref" aria-label="Cảnh báo dữ liệu">
-            {warnings.map((warning) => <li key={warning.code}>{warning.message}</li>)}
-          </ul>
-        )}
-      </div>
-    </details>
-  )
-}
-
-function TradeDetail({ trade, run, indicators, onClose }: { trade: ClosedTrade; run: RunResponse; indicators: readonly TechnicalIndicator[]; onClose: () => void }) {
-  const config = run.result?.snapshot.config as Record<string, unknown> | undefined
-  const paramsFor = (rule: { indicator: string; side: "buy" | "sell" }) => snapshotParams(config, rule.indicator, rule.side)
-  return (
-    <DialogShell
-      title={`Giao dịch #${trade.number} · ${run.result?.snapshot.symbol ?? ""}`}
-      badge={<Badge variant="outline" className={toneClass(trade.pnl) || undefined}>{OUTCOME_LABEL[trade.outcome]}</Badge>}
-      description="Ngày tín hiệu khác ngày khớp. Các giá trị bên dưới là đúng lúc tín hiệu được ghi nhận."
-      size="lg"
-      onClose={onClose}
-      footer={<Button type="button" variant="outline" onClick={onClose}>Đóng</Button>}
-    >
-      <dl className="grid gap-x-8 gap-y-3 text-xs sm:grid-cols-2">
-        <div className="space-y-1">
-          <dt className="font-semibold text-price-up">Mua</dt>
-          <dd>Tín hiệu {fmtDate(trade.entry_signal_date)} · khớp {fmtDate(trade.entry_date)}</dd>
-          <dd>{fmtInt(trade.qty)} cổ phiếu × {fmtNumber(trade.entry_price, 0)} đ · phí {fmtVnd(trade.entry_fee)}</dd>
-          <dd>Tổng chi <strong className="tabular-nums">{fmtVnd(trade.entry_total)}</strong></dd>
-        </div>
-        <div className="space-y-1">
-          <dt className="font-semibold text-price-down">Bán</dt>
-          <dd>Tín hiệu {fmtDate(trade.exit_signal_date)} · khớp {fmtDate(trade.exit_date)}</dd>
-          <dd>{fmtInt(trade.qty)} cổ phiếu × {fmtNumber(trade.exit_price, 0)} đ · phí và thuế {fmtVnd(trade.exit_fee_tax)}</dd>
-          <dd>Thực nhận <strong className="tabular-nums">{fmtVnd(trade.exit_net)}</strong> ({exitReasonText(trade)})</dd>
-        </div>
-        <div className="sm:col-span-2">
-          <dt className="text-muted-foreground">Giữ {fmtInt(trade.hold)} phiên · lãi/lỗ thuần</dt>
-          <dd className={`text-sm font-bold tabular-nums ${toneClass(trade.pnl)}`}>{fmtSignedVnd(trade.pnl)} ({fmtSignedPercent(trade.pnl_pct)})</dd>
-        </div>
-      </dl>
-      <section className="space-y-1.5">
-        <h3 className="text-[10.5px] font-semibold tracking-wide text-muted-foreground uppercase">Điều kiện Mua tại tín hiệu</h3>
-        {trade.entry_conditions ? <EvidenceTable rules={trade.entry_conditions.rules} indicators={indicators} paramsFor={paramsFor} label="Điều kiện Mua tại tín hiệu" /> : <p className="text-xs text-muted-foreground">Không có bằng chứng điều kiện được lưu.</p>}
-      </section>
-      <section className="space-y-1.5">
-        <h3 className="text-[10.5px] font-semibold tracking-wide text-muted-foreground uppercase">Điều kiện Bán tại tín hiệu</h3>
-        {trade.exit_conditions ? <EvidenceTable rules={trade.exit_conditions.rules} indicators={indicators} paramsFor={paramsFor} label="Điều kiện Bán tại tín hiệu" /> : <p className="text-xs text-muted-foreground">Không có bằng chứng điều kiện được lưu.</p>}
-      </section>
-    </DialogShell>
-  )
-}
-
-function OpenPositionStrip({ position, symbol }: { position: OpenPosition; symbol: string }) {
-  return (
-    <section className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border bg-muted/20 px-4 py-3 text-xs" data-testid="open-position" aria-label="Vị thế đang mở">
-      <Badge variant="secondary">Vị thế đang mở</Badge>
-      <b>{symbol} · {fmtInt(position.qty)} CP</b>
-      <span className="text-muted-foreground">Mua {fmtDate(position.date)} (tín hiệu {fmtDate(position.signal_date)})</span>
-      <span className="text-muted-foreground">Giá vốn {fmtNumber(position.price, 0)} đ</span>
-      <span className="text-muted-foreground">Giá cuối {fmtNumber(position.last_price, 0)} đ · giá trị {fmtVnd(position.market_value)}</span>
-      <span className={toneClass(position.unrealized_pnl)}>Tạm tính {fmtSignedVnd(position.unrealized_pnl)}</span>
-      <span className="basis-full text-[11px] text-muted-foreground">
-        Chỉ tính tạm: giá trị tại giá đóng cửa cuối trừ tổng chi mua, chưa trừ phí và thuế bán. Chưa là giao dịch đã đóng, không vào số giao dịch hay tỷ lệ thắng.
+    <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-2 text-xs">
+      <span>Trang {page + 1}/{pages}{children}</span>
+      <span className="flex gap-1">
+        <Button type="button" variant="outline" size="icon-sm" aria-label="Trang trước" disabled={page === 0} onClick={() => onPage(page - 1)}><ChevronLeft aria-hidden="true" /></Button>
+        <Button type="button" variant="outline" size="icon-sm" aria-label="Trang sau" disabled={page >= pages - 1} onClick={() => onPage(page + 1)}><ChevronRight aria-hidden="true" /></Button>
       </span>
-    </section>
+    </div>
   )
 }
 
-function PendingOrders({ orders }: { orders: readonly PendingOrder[] }) {
-  if (orders.length === 0) return null
-  return (
-    <section className="space-y-1 border-t border-border px-4 py-3 text-xs" data-testid="pending-orders" aria-label="Lệnh chưa khớp cuối kỳ">
-      <Badge variant="outline">Lệnh chưa khớp cuối kỳ</Badge>
-      <ul className="space-y-1 text-muted-foreground">
-        {orders.map((order) => (
-          <li key={`${order.action}-${order.signal_date}`}>
-            Tín hiệu {order.action === "buy" ? "Mua" : "Bán"} cuối kỳ {fmtDate(order.signal_date)} chưa có phiên khớp tiếp theo trong khoảng đã chọn. {order.note}
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
-}
-
-function TradeHistory({ run, result, indicators }: { run: RunResponse; result: RunResult; indicators: readonly TechnicalIndicator[] }) {
+function TradesTab({ run, onSymbol }: { run: RunView; onSymbol: (symbol: string) => void }) {
   const [page, setPage] = useState(0)
-  const [selected, setSelected] = useState<ClosedTrade | null>(null)
-  const seed = useMemo(() => tradesPageFromRun(run), [run])
-  const trades = useTradesPage(run.run_id, page, seed)
-  const view = trades.data
-  const total = view?.total ?? result.counts.closed_trade_count
+  const query = useTradesPage(run.run_id, page)
+  const total = query.data?.total ?? run.trades_total
   const pages = Math.max(1, Math.ceil(total / TRADES_PAGE_SIZE))
-  const symbol = result.snapshot.symbol
-
+  if (total === 0) return <p className={`p-4 text-center text-xs ${SUB_TEXT}`}>Chưa có giao dịch nào được đóng trong khoảng thời gian này.</p>
+  if (query.isError) return <div className="p-3"><ErrorLine>{errorMessage(query.error)}</ErrorLine></div>
+  if (!query.data) return <Skeleton className="m-3 h-40" aria-label="Đang tải giao dịch" />
   return (
-    <section aria-label="Lịch sử giao dịch" className="border-t border-border">
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-        <h3 className="font-heading text-sm font-bold">Lịch sử giao dịch</h3>
-        <span className="text-xs text-muted-foreground" data-testid="trade-total">Toàn bộ {fmtInt(total)} giao dịch đã đóng</span>
-      </div>
+    <div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] border-collapse text-xs" aria-label="Giao dịch đã đóng">
-          <thead className="border-y border-border bg-muted/30">
-            <tr>
-              <th scope="col" className={`${TH} text-left`}>#</th>
-              <th scope="col" className={`${TH} text-left`}>Ngày mua</th>
-              <th scope="col" className={`${TH} text-left`}>Điều kiện mua</th>
-              <th scope="col" className={`${TH} text-right`}>Giá mua (đ)</th>
-              <th scope="col" className={`${TH} text-right`}>Số CP</th>
-              <th scope="col" className={`${TH} text-left`}>Ngày bán</th>
-              <th scope="col" className={`${TH} text-left`}>Điều kiện bán</th>
-              <th scope="col" className={`${TH} text-right`}>Giá bán (đ)</th>
-              <th scope="col" className={`${TH} text-right`}>Giữ (phiên)</th>
-              <th scope="col" className={`${TH} text-right`}>Lãi/lỗ</th>
-              <th scope="col" className="w-10 px-2"><span className="sr-only">Chi tiết</span></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border tabular-nums">
-            {trades.isPending && !view ? (
-              [0, 1, 2].map((row) => <tr key={row}><td colSpan={11} className="p-3"><Skeleton className="h-6 w-full" /></td></tr>)
-            ) : trades.isError && !view ? (
-              <tr><td colSpan={11} className="space-y-2 p-4">
-                <ErrorLine>{errorMessage(trades.error)}</ErrorLine>
-                <Button type="button" variant="outline" size="sm" onClick={() => void trades.refetch()}>Thử lại</Button>
-              </td></tr>
-            ) : !view || view.items.length === 0 ? (
-              <tr><td colSpan={11} className="px-4 py-8 text-center text-muted-foreground">Chưa có giao dịch đã đóng trong khoảng kiểm thử này.</td></tr>
+        <table className="w-full text-xs" aria-label="Giao dịch đã đóng">
+          <thead className="border-b border-border"><tr>{["Mã", "Ngày mua", "Giá mua", "KL", "Ngày bán", "Giá bán", "Số phiên giữ", "Lý do bán", "Lãi/lỗ", "%"].map((head) => <th key={head} className={TH}>{head}</th>)}</tr></thead>
+          <tbody className="divide-y divide-border">
+            {query.data.items.map((trade, index) => (
+              <tr key={`${trade.symbol}-${trade.entry_date}-${index}`} className="cursor-pointer hover:bg-muted/50" onClick={() => onSymbol(trade.symbol)}>
+                <td className={TD}><button type="button" className="font-semibold text-primary hover:underline" onClick={(event) => { event.stopPropagation(); onSymbol(trade.symbol) }}>{trade.symbol}</button></td>
+                <td className={TD}>{fmtDate(trade.entry_date)}</td>
+                <td className={TD}>{fmtInt(trade.entry_price)}</td>
+                <td className={TD}>{fmtInt(trade.quantity)}</td>
+                <td className={TD}>{fmtDate(trade.exit_date)}</td>
+                <td className={TD}>{fmtInt(trade.exit_price)}</td>
+                <td className={TD}>{trade.holding_sessions}</td>
+                <td className={`${TD} ${trade.exit_reason === "max_holding" ? "text-status-warning" : ""}`}>{exitReasonText(trade)}</td>
+                <td className={`${TD} ${toneClass(trade.pnl)}`}>{fmtSignedVnd(trade.pnl)}</td>
+                <td className={`${TD} ${toneClass(trade.pnl_pct)}`}>{fmtSignedPercent(trade.pnl_pct, 1)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Pager page={page} pages={pages} onPage={setPage}>
+        {" "}· {fmtInt(query.data.time_exit_count ?? run.time_exit_count)} lệnh bán do hết thời gian giữ
+      </Pager>
+    </div>
+  )
+}
+
+function PerSymbolTab({ run, onSymbol }: { run: RunView; onSymbol: (symbol: string) => void }) {
+  const rows = run.per_symbol.filter((row) => row.closed_trades > 0 || (row.unrealized_pnl ?? 0) !== 0)
+  return (
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs" aria-label="Theo mã">
+          <thead className="border-b border-border"><tr>{["Mã", "Lệnh đã đóng", "Thắng", "Lãi/lỗ đã chốt", "Tạm tính", "Đóng góp vào vốn (%)"].map((head) => <th key={head} className={TH}>{head}</th>)}</tr></thead>
+          <tbody className="divide-y divide-border">
+            {rows.length === 0 ? (
+              <tr><td colSpan={6} className={`${TD} ${SUB_TEXT}`}>Không có mã nào được giao dịch.</td></tr>
             ) : (
-              view.items.map((trade) => (
-                <tr key={trade.number} data-testid="trade-row">
-                  <td className="px-3 py-2.5 text-muted-foreground">{trade.number}</td>
-                  <td className="px-3 py-2.5">{fmtDate(trade.entry_date)}</td>
-                  <td className="max-w-[180px] px-3 py-2.5 font-sans break-words">{conditionNames(trade.entry_conditions, indicators)}</td>
-                  <td className="px-3 py-2.5 text-right">{fmtNumber(trade.entry_price, 0)}</td>
-                  <td className="px-3 py-2.5 text-right">{fmtInt(trade.qty)}</td>
-                  <td className="px-3 py-2.5">{fmtDate(trade.exit_date)}</td>
-                  <td className="max-w-[180px] px-3 py-2.5 font-sans break-words">{exitConditionText(trade, indicators)}</td>
-                  <td className="px-3 py-2.5 text-right">{fmtNumber(trade.exit_price, 0)}</td>
-                  <td className="px-3 py-2.5 text-right">{fmtInt(trade.hold)}</td>
-                  <td className={`px-3 py-2.5 text-right font-semibold ${toneClass(trade.pnl)}`}>{fmtSignedPercent(trade.pnl_pct, 1)}</td>
-                  <td className="px-2 py-1.5">
-                    <Button type="button" variant="ghost" size="icon-sm" aria-label={`Chi tiết giao dịch ${trade.number}`} onClick={() => setSelected(trade)}>
-                      <ChevronRight aria-hidden="true" />
-                    </Button>
-                  </td>
+              rows.map((row) => (
+                <tr key={row.symbol} className="cursor-pointer hover:bg-muted/50" onClick={() => onSymbol(row.symbol)}>
+                  <td className={TD}><b>{row.symbol}</b></td>
+                  <td className={TD}>{row.closed_trades}</td>
+                  <td className={TD}>{row.wins}</td>
+                  <td className={`${TD} ${toneClass(row.realized_pnl)}`}>{fmtSignedVnd(row.realized_pnl)}</td>
+                  <td className={`${TD} ${toneClass(row.unrealized_pnl)}`}>{row.unrealized_pnl ? fmtSignedVnd(row.unrealized_pnl) : "—"}</td>
+                  <td className={`${TD} ${toneClass(row.contribution_pct)}`}>{fmtSignedPercent(row.contribution_pct, 1)}</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
-      {pages > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
-          <span>Hiển thị từ {page * TRADES_PAGE_SIZE + 1} đến {Math.min(total, (page + 1) * TRADES_PAGE_SIZE)} trên {fmtInt(total)} giao dịch</span>
-          <span className="flex items-center gap-1">
-            <Button type="button" variant="outline" size="icon-sm" aria-label="Trang trước" disabled={page === 0} onClick={() => setPage(page - 1)}><ChevronLeft aria-hidden="true" /></Button>
-            <span className="px-1 tabular-nums">Trang {page + 1}/{pages}</span>
-            <Button type="button" variant="outline" size="icon-sm" aria-label="Trang sau" disabled={page + 1 >= pages} onClick={() => setPage(page + 1)}><ChevronRight aria-hidden="true" /></Button>
-          </span>
-        </div>
-      )}
-      {view?.open_position && <OpenPositionStrip position={view.open_position} symbol={symbol} />}
-      <PendingOrders orders={view?.pending_orders ?? result.pending_orders} />
-      {selected && <TradeDetail trade={selected} run={run} indicators={indicators} onClose={() => setSelected(null)} />}
-    </section>
+      <p className={`px-1 pt-2 text-xs ${SUB_TEXT}`}>Bấm một mã để xem biểu đồ giá với điểm mua, bán. Các mã trong rổ chưa từng được mua không hiện ở đây.</p>
+    </div>
   )
 }
 
-export function BacktestResults({
-  run,
-  indicators,
-  stale,
-}: {
-  run: RunResponse
-  indicators: readonly TechnicalIndicator[]
-  /** The form or the saved config no longer matches the inputs of this run. */
-  stale: boolean
-}) {
-  const result = run.result
-  if (!result) return null
-  const snapshot = result.snapshot
+function OpenTab({ run, onSymbol }: { run: RunView; onSymbol: (symbol: string) => void }) {
+  if (run.open_positions.length === 0) return <p className={`p-4 text-center text-xs ${SUB_TEXT}`}>Không còn vị thế mở cuối kỳ. Tiền mặt cuối kỳ: {fmtVnd(run.final_cash)}.</p>
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card" aria-label="Kết quả backtest" data-testid="backtest-results">
-      <div className="flex flex-wrap items-start justify-between gap-3 p-4">
-        <div className="min-w-0">
-          <h2 className="font-heading text-sm font-bold tracking-wide uppercase">Kết quả backtest</h2>
-          <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
-            {snapshot.symbol} · {fmtDate(snapshot.actual_start)} đến {fmtDate(snapshot.actual_end)} · {fmtInt(snapshot.bar_count)} phiên · <span data-testid="run-source">{snapshot.source?.label ?? `cấu hình bản ${snapshot.shared_revision}`}</span> · {result.snapshot.simulation?.execution_label ?? (snapshot.execution === "same_close" ? "Đóng cửa cùng phiên" : "Mở cửa phiên kế tiếp")}
-            <br />
-            {configCaption(snapshot.config as Record<string, unknown>, indicators)}
-          </p>
-          <p className="mt-1 text-[11px] text-muted-foreground">Mỗi lần chạy được lưu bất biến; xem lại ở mục Đã lưu.</p>
-        </div>
-        {stale && <Badge variant="outline" className="border-price-ref/50 text-price-ref" data-testid="stale-badge">Cấu hình đã đổi · cần chạy lại</Badge>}
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs" aria-label="Vị thế còn mở">
+          <thead className="border-b border-border"><tr>{["Mã", "Ngày mua", "Giá mua", "KL", "Giá cuối kỳ", "Đã giữ", "Tạm tính", "%"].map((head) => <th key={head} className={TH}>{head}</th>)}</tr></thead>
+          <tbody className="divide-y divide-border">
+            {run.open_positions.map((row) => (
+              <tr key={row.symbol} className="cursor-pointer hover:bg-muted/50" onClick={() => onSymbol(row.symbol)}>
+                <td className={TD}><b>{row.symbol}</b></td>
+                <td className={TD}>{fmtDate(row.entry_date)}</td>
+                <td className={TD}>{fmtInt(row.entry_price)}</td>
+                <td className={TD}>{fmtInt(row.quantity)}</td>
+                <td className={TD}>{fmtInt(row.last_price)}</td>
+                <td className={TD}>{row.held_sessions}/{row.max_holding} phiên</td>
+                <td className={`${TD} ${toneClass(row.unrealized_pnl)}`}>{fmtSignedVnd(row.unrealized_pnl)}</td>
+                <td className={`${TD} ${toneClass(row.unrealized_pct)}`}>{fmtSignedPercent(row.unrealized_pct, 1)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <KpiStrip result={result} />
-      <ReturnChart result={result} symbol={snapshot.symbol} />
-      <Assumptions run={run} result={result} />
-      <TradeHistory run={run} result={result} indicators={indicators} />
+      <p className={`px-1 pt-2 text-xs ${SUB_TEXT}`}>Tạm tính theo giá đóng cửa phiên cuối, chưa trừ phí bán. Tiền mặt cuối kỳ: {fmtVnd(run.final_cash)}.</p>
+    </div>
+  )
+}
+
+function SkippedTab({ run }: { run: RunView }) {
+  const counts = Object.entries(run.skipped_orders.counts)
+  const total = run.skipped_orders.total ?? counts.reduce((sum, [, value]) => sum + value, 0)
+  if (total === 0) return <p className={`p-4 text-center text-xs ${SUB_TEXT}`}>Không có lệnh mua nào bị bỏ qua.</p>
+  return (
+    <div className="space-y-2">
+      <ul className="flex flex-wrap gap-1.5 pt-2 text-xs" aria-label="Đếm theo lý do">
+        {counts.map(([reason, value]) => <li key={reason} className="rounded-sm border border-border bg-muted/40 px-2 py-0.5">{reason}: <b>{fmtInt(value)}</b></li>)}
+      </ul>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs" aria-label="Lệnh mua bị bỏ qua">
+          <thead className="border-b border-border"><tr>{["Ngày", "Mã", "Lý do"].map((head) => <th key={head} className={TH}>{head}</th>)}</tr></thead>
+          <tbody className="divide-y divide-border">
+            {run.skipped_orders.items.slice(0, 60).map((row, index) => (
+              <tr key={`${row.date}-${row.symbol}-${index}`}>
+                <td className={TD}>{fmtDate(row.date)}</td>
+                <td className={TD}><b>{row.symbol}</b></td>
+                <td className="px-3 py-2">{row.reason}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {total > 60 && <p className={`text-xs ${SUB_TEXT}`}>Hiện 60 dòng gần nhất / {fmtInt(total)}.</p>}
+      <p className={`text-xs ${SUB_TEXT}`}>Khi có hơn 2 mã đạt điều kiện Mua trong cùng phiên, ưu tiên mã có GTGD trung bình 20 phiên cao hơn.</p>
+    </div>
+  )
+}
+
+function AssumptionsTab({ run }: { run: RunView }) {
+  const snapshot = run.snapshot
+  const hold = snapshot.content.max_holding
+  return (
+    <div className="space-y-3 pt-2 text-xs leading-6" data-testid="assumptions">
+      <ul className="list-disc space-y-0.5 pl-5">
+        <li>Vốn ban đầu cố định <b>{fmtVnd(snapshot.capital)}</b>, bằng vốn Bot.</li>
+        <li>Tín hiệu tính khi có giá đóng cửa phiên T, chỉ dùng nến đến phiên T. Lệnh <b>khớp giá đóng cửa cùng phiên T</b>.</li>
+        <li>Phiên khớp Mua là <b>phiên 0</b>. Mỗi phiên: <b>bán trước, mua sau</b>; tiền bán dùng mua được ngay trong phiên.</li>
+        <li>Bán khi điều kiện Bán đạt <b>hoặc</b> đã giữ đủ {hold} phiên. <b>T+2</b>: mua phiên T, bán sớm nhất phiên T+2.</li>
+        <li>Mua tối đa 2 mã mỗi phiên, mỗi lệnh 12% NAV, làm tròn xuống lô 100, mỗi mã tối đa 30% NAV; không mua thêm mã đang giữ, không mua lại mã vừa bán trong phiên.</li>
+        <li>Phí mua 0,15%, bán 0,25% (đã gồm thuế). Cuối kỳ không ép bán; vị thế mở tạm tính theo giá đóng cửa.</li>
+        <li>
+          Dữ liệu giá: kho VN100 ({snapshot.data_store}), đơn vị {snapshot.price_unit === "VND" ? "đồng" : snapshot.price_unit}, {snapshot.adjusted ? "giá đã điều chỉnh" : "giá chưa điều chỉnh"}, tới phiên {fmtDate(snapshot.data_as_of)}. Luật {snapshot.rules_version}.
+        </li>
+        <li>Mua và giữ rổ: chia đều vốn cho các mã trong rổ ở phiên đầu, tính theo tỷ lệ, có phí mua, không bán.</li>
+      </ul>
+      <p className="font-bold">{CLOSE_FILL}</p>
+      {snapshot.warnings.length > 0 && (
+        <ul className="space-y-1.5" aria-label="Cảnh báo dữ liệu">
+          {snapshot.warnings.map((warning, index) => (
+            <li key={`${warning.code}-${index}`} className="flex items-start gap-1.5 rounded-md border border-status-warning/50 bg-status-warning/10 px-2.5 py-1.5">
+              <TriangleAlert aria-hidden="true" className="mt-1 size-3.5 shrink-0 text-status-warning" />
+              <span>{warningText(warning)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+type Marker = { date: string; close: number | null; buy: number | null; sellInd: number | null; sellMax: number | null }
+
+function Triangle({ cx, cy, value, color, down }: { cx?: number; cy?: number; value?: number | null; color: string; down?: boolean }) {
+  if (value == null || cx == null || cy == null) return <g />
+  const d = down ? `M${cx} ${cy - 3} l-5 -9 h10z` : `M${cx} ${cy + 3} l-5 9 h10z`
+  return <path d={d} fill={color} />
+}
+
+function SymbolChartDialog({ run, symbol, onClose }: { run: RunView; symbol: string; onClose: () => void }) {
+  const query = useSymbolChart(run, symbol)
+  const data = query.data
+  const at = new Map<string, Marker>((data?.closes ?? []).map((bar) => [bar.date, { date: bar.date, close: bar.close, buy: null, sellInd: null, sellMax: null }]))
+  // A trade session missing from the market closes still gets its marker (at the fill price).
+  const rowAt = (date: string) => {
+    const found = at.get(date)
+    if (found) return found
+    const created: Marker = { date, close: null, buy: null, sellInd: null, sellMax: null }
+    at.set(date, created)
+    return created
+  }
+  const trades: ClosedTrade[] = data?.trades ?? []
+  for (const trade of trades) {
+    rowAt(trade.entry_date).buy = trade.entry_price
+    const exit = rowAt(trade.exit_date)
+    if (trade.exit_reason === "max_holding") exit.sellMax = trade.exit_price
+    else exit.sellInd = trade.exit_price
+  }
+  if (data?.open_position) rowAt(data.open_position.entry_date).buy = data.open_position.entry_price
+  const rows = [...at.values()].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+  return (
+    <DialogShell title={`${symbol} · giá đóng cửa và điểm giao dịch`} size="lg" onClose={onClose} footer={<Button type="button" variant="outline" onClick={onClose}>Đóng</Button>}>
+      {query.isError ? (
+        <ErrorLine>{errorMessage(query.error)}</ErrorLine>
+      ) : !data ? (
+        <Skeleton className="h-[240px] w-full" aria-label="Đang tải biểu đồ mã" />
+      ) : (
+        <div data-testid="symbol-chart">
+          <ChartContainer config={{ close: { label: "Giá đóng cửa", color: "var(--primary)" } }} className="aspect-auto h-[240px] w-full">
+            <ComposedChart data={rows} margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
+              <CartesianGrid stroke="var(--border)" strokeOpacity={0.5} vertical={false} />
+              <XAxis dataKey="date" tickLine={false} axisLine={false} minTickGap={56} tickFormatter={(value: string) => fmtDate(value)} />
+              <YAxis tickLine={false} axisLine={false} width={60} domain={["auto", "auto"]} tickFormatter={(value: number) => fmtNumber(value, 0)} />
+              <Line type="linear" dataKey="close" stroke="var(--color-close)" strokeWidth={1.5} dot={false} connectNulls isAnimationActive={false} />
+              <Line dataKey="buy" stroke="none" isAnimationActive={false} dot={(props: { cx?: number; cy?: number; value?: number | null; index?: number }) => <Triangle key={`b${props.index}`} {...props} color="var(--price-up)" />} activeDot={false} />
+              <Line dataKey="sellInd" stroke="none" isAnimationActive={false} dot={(props: { cx?: number; cy?: number; value?: number | null; index?: number }) => <Triangle key={`s${props.index}`} {...props} color="var(--price-down)" down />} activeDot={false} />
+              <Line dataKey="sellMax" stroke="none" isAnimationActive={false} dot={(props: { cx?: number; cy?: number; value?: number | null; index?: number }) => <Triangle key={`m${props.index}`} {...props} color="var(--status-warning)" down />} activeDot={false} />
+            </ComposedChart>
+          </ChartContainer>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-xs" aria-label="Chú giải điểm giao dịch">
+            <li><span className="text-price-up" aria-hidden="true">▲</span> Mua</li>
+            <li><span className="text-price-down" aria-hidden="true">▼</span> Bán · Điều kiện Bán</li>
+            <li><span className="text-status-warning" aria-hidden="true">▼</span> Bán · Hết thời gian giữ</li>
+          </ul>
+          <p className={`pt-1 text-xs ${SUB_TEXT}`}>{trades.length} giao dịch đã đóng{data.open_position ? " · đang giữ cuối kỳ" : ""}.</p>
+        </div>
+      )}
+    </DialogShell>
+  )
+}
+
+export function BacktestResults({ run, label, stale }: { run: RunView; label: string; stale: boolean }) {
+  const [symbol, setSymbol] = useState<string | null>(null)
+  const snapshot = run.snapshot
+  const triggers = "h-8 flex-none rounded-none px-3 text-xs font-medium after:bottom-0 after:bg-primary data-active:text-primary"
+  return (
+    <section aria-label="Kết quả backtest" className="min-w-0 overflow-hidden rounded-lg border border-border bg-card" data-testid="backtest-results">
+      <div className="space-y-1.5 p-4">
+        {stale && (
+          <p className="inline-flex items-center gap-1.5 rounded-md border border-status-warning/50 bg-status-warning/10 px-2 py-1 text-xs font-semibold" data-testid="stale-label">
+            <TriangleAlert aria-hidden="true" className="size-3.5 text-status-warning" />
+            Cấu hình đã đổi sau lần chạy này · cần chạy lại
+          </p>
+        )}
+        <h2 className="font-heading text-base font-bold break-words">Kết quả · {label}</h2>
+        <p className={`text-xs leading-5 break-words ${SUB_TEXT}`} data-testid="result-caption">
+          Rổ {universeLabel(snapshot.content.universe)} ({snapshot.universe_resolved.length} mã) · {fmtDate(snapshot.start)} – {fmtDate(snapshot.end)} · {fmtInt(snapshot.sessions)} phiên · giữ tối đa {snapshot.content.max_holding} phiên · khớp giá đóng cửa cùng phiên
+        </p>
+      </div>
+      <KpiStrip run={run} />
+      <ReturnChart run={run} />
+      <Tabs defaultValue="trades" className="gap-0 border-t border-border">
+        <TabsList variant="line" aria-label="Chi tiết kết quả" className="h-9 w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-border px-2">
+          <TabsTrigger value="trades" className={triggers}>Giao dịch ({fmtInt(run.trades_total)})</TabsTrigger>
+          <TabsTrigger value="symbols" className={triggers}>Theo mã</TabsTrigger>
+          <TabsTrigger value="open" className={triggers}>Vị thế còn mở ({run.open_positions.length})</TabsTrigger>
+          <TabsTrigger value="skipped" className={triggers}>Lệnh mua bị bỏ qua ({fmtInt(run.skipped_orders.total ?? Object.values(run.skipped_orders.counts).reduce((sum, value) => sum + value, 0))})</TabsTrigger>
+          <TabsTrigger value="assumptions" className={triggers}>Giả định</TabsTrigger>
+        </TabsList>
+        <div className="p-3">
+          <TabsContent value="trades"><TradesTab run={run} onSymbol={setSymbol} /></TabsContent>
+          <TabsContent value="symbols"><PerSymbolTab run={run} onSymbol={setSymbol} /></TabsContent>
+          <TabsContent value="open"><OpenTab run={run} onSymbol={setSymbol} /></TabsContent>
+          <TabsContent value="skipped"><SkippedTab run={run} /></TabsContent>
+          <TabsContent value="assumptions"><AssumptionsTab run={run} /></TabsContent>
+        </div>
+      </Tabs>
+      <p className="border-t border-border px-4 py-2.5 text-xs" data-testid="past-results">{PAST_RESULTS}</p>
+      {symbol && <SymbolChartDialog run={run} symbol={symbol} onClose={() => setSymbol(null)} />}
     </section>
   )
 }

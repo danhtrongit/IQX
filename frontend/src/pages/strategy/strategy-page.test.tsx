@@ -64,7 +64,7 @@ function renderPage(route: string) {
 const selectedTab = () => screen.getAllByRole("tab").find((tab) => tab.getAttribute("aria-selected") === "true")?.textContent
 const location = () => screen.getByTestId("location").textContent
 /** The tool mounted by the page tabs: the Bộ lọc library has tab panels of its own, which are not tools. */
-const toolPanels = () => screen.getAllByRole("tabpanel").filter((panel) => !panel.closest("aside"))
+const toolPanels = () => screen.getAllByRole("tabpanel").filter((panel) => !panel.closest("aside") && !panel.closest("[data-testid=backtest-results]"))
 
 describe("routing", () => {
   it("offers Cảnh báo, Backtest and Bộ lọc and opens Cảnh báo by default", async () => {
@@ -95,13 +95,11 @@ describe("routing", () => {
     expect(selectedTab()).toBe("Backtest")
   })
 
-  it("opens the Backtest of the symbol in an old link (?symbol=) and runs on exactly that symbol", async () => {
-    const user = userEvent.setup()
+  it("an old link with ?symbol= still opens tab Backtest (a basket form, the symbol is ignored) and runs nothing", async () => {
     renderPage("/chien-luoc?tab=backtest&symbol=vnm")
     await screen.findByRole("heading", { name: "Điều kiện Mua" })
-    await user.click(await screen.findByRole("button", { name: "Chạy backtest" }))
-    await screen.findByTestId("backtest-results")
-    expect((callsTo(world, "POST", "/strategy/backtests")[0]!.body as { symbol: string }).symbol).toBe("VNM")
+    expect(selectedTab()).toBe("Backtest")
+    expect(callsTo(world, "POST", "/strategy/backtests")).toHaveLength(0)
   })
 
   it("changing tab replaces the history entry instead of adding one", async () => {
@@ -116,10 +114,12 @@ describe("routing", () => {
 describe("state across tabs", () => {
   it("keeps the Backtest form and result, and the filter draft, when going to another tab and back, without re-running anything", async () => {
     const user = userEvent.setup()
-    renderPage("/chien-luoc?tab=backtest&symbol=FPT")
+    renderPage("/chien-luoc?tab=backtest")
     await screen.findByRole("heading", { name: "Điều kiện Mua" })
-    await user.selectOptions(screen.getByLabelText("Khớp lệnh"), "same_close")
-    await user.click(screen.getByRole("button", { name: "Chạy backtest" }))
+    await user.click(screen.getAllByRole("tab", { name: "IQX" })[0]!)
+    await screen.findByTestId("iqx-strategy-strip")
+    await waitFor(() => expect((screen.getByTestId("run-button") as HTMLButtonElement).disabled).toBe(false))
+    await user.click(screen.getByTestId("run-button"))
     await screen.findByTestId("backtest-results")
 
     await user.click(screen.getByRole("tab", { name: "Bộ lọc" }))
@@ -129,7 +129,7 @@ describe("state across tabs", () => {
     await user.click(screen.getByRole("tab", { name: "Cảnh báo" }))
     expect(await screen.findByRole("heading", { name: "Cảnh báo đang theo dõi" })).toBeTruthy()
     await user.click(screen.getByRole("tab", { name: "Backtest" }))
-    expect((screen.getByLabelText("Khớp lệnh") as HTMLSelectElement).value).toBe("same_close")
+    expect(screen.getByTestId("iqx-strategy-strip")).toBeTruthy()
     expect(screen.getByTestId("backtest-results")).toBeTruthy()
     await user.click(screen.getByRole("tab", { name: "Bộ lọc" }))
     expect(screen.getByTestId("rule-roe")).toBeTruthy()

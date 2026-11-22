@@ -7,6 +7,11 @@ export const IQX_KIND_LABEL: Record<IqxKind, string> = { filter: "Bộ lọc IQX
 
 export const HIDE_BODY =
   "Mục này biến mất khỏi tab IQX của người dùng. Bộ lọc, bản nháp và cấu hình Bot người dùng đã tạo từ mục này không bị ảnh hưởng."
+/** Ẩn a Chiến lược IQX (spec Bot và Chiến lược v2.0 §7.2). */
+export const HIDE_STRATEGY_BODY =
+  'Mục này biến mất khỏi tab IQX của Backtest và danh sách chọn của Bot. Bot đang chạy chiến lược này vẫn chạy tiếp phiên bản đã chọn, có nhãn "IQX đã ngừng cung cấp"; người dùng không chọn mới được.'
+/** Always added to the publish dialog of a Chiến lược IQX (§7.2). */
+export const PUBLISH_STRATEGY_BOT = "Bot của người dùng đang dùng phiên bản cũ không đổi theo; người dùng thấy thông báo có bản mới ở Lịch phiên."
 export const SHOW_BODY = "Hiện lại với phiên bản hiện hành."
 
 export const CONFLICT_MESSAGE = "Mục này vừa được người khác thay đổi. Tải lại để xem bản mới nhất."

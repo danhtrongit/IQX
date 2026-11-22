@@ -1,30 +1,4 @@
-import type { SharedConfig, TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
-
-import { TRADES_PAGE_SIZE, type ClosedTrade, type ConditionEvidence, type RunResponse, type RunResult, type TradesPage } from "./api"
-
-export type ChartPoint = { date: string; strategy: number; buyHold: number | null; market: number | null }
-
-/** "Mua và giữ {mã}" stored with the run (tab IQX §3.5); `null` for a run stored before it (never recomputed). */
-export type BuyAndHold = NonNullable<RunResult["snapshot"]["buy_and_hold"]>
-
-export function buyAndHoldOf(result: Pick<RunResult, "snapshot">): BuyAndHold | null {
-  return result.snapshot.buy_and_hold ?? null
-}
-
-/**
- * The 0% starting point (before the first fee) followed by the complete curve, never down-sampled by KPIs.
- * The "Mua và giữ" line is the stored one of the run, matched by session; an old run has none.
- */
-export function chartPoints(result: Pick<RunResult, "initial" | "curve" | "snapshot">): ChartPoint[] {
-  const hold = buyAndHoldOf(result)
-  const byDate = new Map((hold?.curve ?? []).map((point) => [point.date, point.return_pct]))
-  return [result.initial, ...result.curve].map((point, index) => ({
-    date: point.date,
-    strategy: point.return_pct,
-    buyHold: hold ? (index === 0 ? 0 : (byDate.get(point.date) ?? null)) : null,
-    market: typeof point.market_pct === "number" && Number.isFinite(point.market_pct) ? point.market_pct : null,
-  }))
-}
+import type { ClosedTrade, RunWarning } from "./api"
 
 /** Thin a long curve for drawing only; the first and the last point (which match the KPIs) are always kept. */
 export function thinPoints<T>(points: readonly T[], max = 600): T[] {
@@ -36,77 +10,27 @@ export function thinPoints<T>(points: readonly T[], max = 600): T[] {
   return out
 }
 
-/** First page of the trade history taken from the run itself, so opening a run costs no extra request. */
-export function tradesPageFromRun(run: RunResponse): TradesPage | undefined {
-  const result = run.result
-  if (!result) return undefined
-  return {
-    run_id: run.run_id,
-    total: result.counts.closed_trade_count,
-    offset: 0,
-    limit: TRADES_PAGE_SIZE,
-    counts: result.counts,
-    items: result.trades.slice(0, TRADES_PAGE_SIZE),
-    open_position: result.open_position,
-    pending_orders: result.pending_orders,
+/** `Điều kiện Bán` / `Hết thời gian giữ`, plus `(cùng đến hạn)` when both were true on the exit bar (§4.7). */
+export function exitReasonText(trade: Pick<ClosedTrade, "exit_reason" | "exit_reasons">): string {
+  const label = trade.exit_reason === "max_holding" ? "Hết thời gian giữ" : "Điều kiện Bán"
+  const both = trade.exit_reasons?.includes("indicator") && trade.exit_reasons.includes("max_holding")
+  return both ? `${label} (cùng đến hạn)` : label
+}
+
+/** Sentences of §4.8 by code; the server's own message wins when it sends one. */
+export function warningText(warning: RunWarning): string {
+  if (warning.message) return warning.message
+  const symbols = warning.symbols ?? []
+  switch (warning.code) {
+    case "UNIVERSE_CURRENT_MEMBERS":
+      return "Rổ dùng thành phần hiện tại cho cả quá khứ (chưa có dữ liệu thành phần rổ theo thời điểm). Kết quả có thể đẹp hơn thực tế."
+    case "UNIVERSE_SNAPSHOT":
+      return "Danh mục đã lưu: danh sách mã được chép vào chiến lược khi lưu và dùng cho cả quá khứ."
+    case "SYMBOLS_EXCLUDED":
+      return `Bỏ ${symbols.length} mã ngoài VN100: ${symbols.join(", ")}`
+    case "MARKET_CONTEXT_UNAVAILABLE":
+      return "Chưa có dữ liệu VN-Index trong kho cho khoảng này."
+    default:
+      return warning.code
   }
-}
-
-type SideParams = Record<string, number>
-
-/**
- * Side-level params of one indicator as pinned in the run's own config snapshot: Volume, and every
- * indicator of a run made before SPEC V3. Condition rows keep their own values in the evidence.
- */
-export function snapshotParams(config: Record<string, unknown> | undefined, indicatorId: string, side: "buy" | "sell"): SideParams | undefined {
-  const indicators = config?.indicators
-  if (!indicators || typeof indicators !== "object") return undefined
-  const entry = (indicators as Record<string, unknown>)[indicatorId]
-  if (!entry || typeof entry !== "object") return undefined
-  const sideConfig = (entry as Record<string, unknown>)[side]
-  const params = sideConfig && typeof sideConfig === "object" ? (sideConfig as { params?: unknown }).params : undefined
-  return params && typeof params === "object" ? (params as SideParams) : undefined
-}
-
-/** "Mua: MACD + MA / SMA · Bán: MACD" of the config a run pinned. */
-export function configCaption(config: Record<string, unknown> | undefined, indicators: readonly TechnicalIndicator[]): string {
-  const saved = (config as Partial<SharedConfig> | undefined)?.indicators
-  if (!saved) return "Không có cấu hình đã ghim"
-  const names = (side: "buy" | "sell") => {
-    const used = indicators.filter((indicator) => saved[indicator.id]?.master_enabled && saved[indicator.id]?.[side]?.enabled).map((indicator) => indicator.name)
-    return used.length > 0 ? used.join(" + ") : "không có"
-  }
-  return `Mua: ${names("buy")} · Bán: ${names("sell")}`
-}
-
-export function conditionNames(evidence: ConditionEvidence | null, indicators: readonly TechnicalIndicator[]): string {
-  if (!evidence || evidence.indicator_ids.length === 0) return "—"
-  return evidence.indicator_ids.map((id) => indicators.find((indicator) => indicator.id === id)?.name ?? id.toUpperCase()).join(" + ")
-}
-
-export const OUTCOME_LABEL: Record<ClosedTrade["outcome"], string> = { win: "Lãi", loss: "Lỗ", flat: "Hòa vốn" }
-
-const EXIT_REASONS: Record<string, string> = {
-  sell_signal: "Điều kiện Bán đạt",
-  sell_consensus: "Điều kiện Bán đạt",
-  max_holding: "Hết thời gian giữ",
-}
-
-export function exitReasonLabel(reason: string): string {
-  return EXIT_REASONS[reason] ?? reason
-}
-
-type ExitFields = Pick<ClosedTrade, "exit_reason" | "concurrent_reasons">
-
-/** Primary reason, plus Giữ tối đa when it was due on the same bar (one sell, Bot spec P15). */
-export function exitReasonText(trade: ExitFields): string {
-  const label = exitReasonLabel(trade.exit_reason)
-  return trade.exit_reason !== "max_holding" && trade.concurrent_reasons?.includes("max_holding") ? `${label}, cùng lúc hết thời gian giữ` : label
-}
-
-/** "Điều kiện bán" cell: the Sell indicators met, or "Hết thời gian giữ" for a time exit. */
-export function exitConditionText(trade: ExitFields & Pick<ClosedTrade, "exit_conditions">, indicators: readonly TechnicalIndicator[]): string {
-  if (trade.exit_reason === "max_holding") return exitReasonLabel("max_holding")
-  const names = conditionNames(trade.exit_conditions, indicators)
-  return trade.concurrent_reasons?.includes("max_holding") ? `${names} · hết thời gian giữ` : names
 }

@@ -1,11 +1,17 @@
-import { screen, waitFor, within } from "@testing-library/react"
+/** Tab Backtest v2.0 (spec Bot và Chiến lược §4): basket runs, Lưu ▾, strategy menu, tab IQX, saved runs, Bộ lọc basket. */
+import type { ReactElement } from "react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { render as rtlRender, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { MemoryRouter } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { renderBot as render, stubBrowser } from "../../demo-trading/bot/test-render"
-import { callsTo, registryFor } from "../../demo-trading/bot/test-support"
-import { createStrategyApi, createStrategyWorld, FakeApiError, runSummary, type StrategyWorld } from "../test-support"
+import { stubBrowser } from "../../demo-trading/bot/test-render"
+import { buildRegistry, callsTo } from "../../demo-trading/bot/test-support"
+import { createStrategyApi, createStrategyWorld, type StrategyWorld } from "../test-support"
 import { BacktestTab } from "./backtest-tab"
+import { contentOf, emptyDraft } from "./draft"
+import { V2_T0 } from "./test-fake"
 
 const mocks = vi.hoisted(() => ({ api: vi.fn(), toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }))
 
@@ -18,23 +24,10 @@ vi.mock("@/lib/api", async () => {
 })
 vi.mock("sonner", () => ({ toast: mocks.toast }))
 
-const ALL_16 = ["rsi", "macd", "ma", "bollinger", "volume", "ema", "ma_cross", "dmi", "stochastic", "cci", "obv", "mfi", "cmf", "donchian", "roc", "williams_r"]
 let world: StrategyWorld
-
-function useIndicators(ids: string[]) {
-  for (const id of ids) {
-    const config = world.indicators[id]
-    if (config) {
-      config.master_enabled = true
-      config.buy.enabled = true
-      config.sell.enabled = true
-    }
-  }
-}
 
 beforeEach(() => {
   world = createStrategyWorld()
-  useIndicators(["macd", "ma"])
   mocks.api.mockReset()
   mocks.api.mockImplementation(createStrategyApi(world))
   Object.values(mocks.toast).forEach((fn) => fn.mockClear())
@@ -42,385 +35,225 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
-const posts = (path: string) => callsTo(world, "POST", path)
-const patches = () => callsTo(world, "PATCH", "/strategy/shared-config")
-
-async function renderTab() {
-  render(<BacktestTab initialSymbol="fpt" />, "/chien-luoc?tab=backtest&symbol=FPT")
-  await screen.findByRole("heading", { name: "Điều kiện Mua" })
+function render(ui: ReactElement, entry: string | { pathname: string; search?: string; state?: unknown } = "/chien-luoc?tab=backtest") {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } })
+  return rtlRender(
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[entry]}>{ui}</MemoryRouter>
+    </QueryClientProvider>,
+  )
 }
 
-async function run(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(await screen.findByRole("button", { name: "Chạy backtest" }))
+const posts = (path: string) => callsTo(world, "POST", path)
+const runButton = () => screen.getByTestId("run-button")
+
+async function renderTab(entry?: Parameters<typeof render>[1]) {
+  render(<BacktestTab />, entry)
+  await screen.findByRole("heading", { name: "Điều kiện Mua" })
+  await waitFor(() => expect(screen.getByLabelText("Từ ngày")).toBeTruthy())
+}
+
+/** "+ Mua" / "+ Bán" of the library, then "Lưu vào bản nháp" with the template rows. */
+async function addSide(user: ReturnType<typeof userEvent.setup>, name: string, side: "Mua" | "Bán") {
+  const library = screen.getByRole("complementary", { name: "Thư viện chỉ báo" })
+  await user.click(within(library).getByRole("button", { name: `Thêm ${name} vào ${side}` }))
+  await user.click(await screen.findByRole("button", { name: "Lưu vào bản nháp" }))
+}
+
+async function runNow(user: ReturnType<typeof userEvent.setup>) {
+  await waitFor(() => expect((runButton() as HTMLButtonElement).disabled).toBe(false))
+  await user.click(runButton())
   return screen.findByTestId("backtest-results")
 }
 
-describe("library", () => {
-  it("lists only the granted indicators of the catalog (here 5) and counts them", async () => {
+function savedStrategy(id: string, name: string) {
+  const registry = buildRegistry()
+  const draft = emptyDraft(registry)
+  draft.indicators.macd!.master_enabled = true
+  draft.indicators.macd!.buy.enabled = true
+  draft.indicators.macd!.sell.enabled = true
+  const content = contentOf(draft)
+  return {
+    item: { id, name, latest_version: 1, latest_saved_at: V2_T0, universe_label: "VN30", universe_count: 30, sell_only: false, on_bot: { last: false, next: false } },
+    versions: [{ strategy_id: id, name, version: 1, version_label: "bản 08/10 10:00", content, config_hash: "h1", created_at: V2_T0, note: null, from_run_id: null, universe_label: "VN30", max_holding: 30 }],
+  }
+}
+
+describe("tab Chỉ báo", () => {
+  it("a new strategy: rổ VN30, giữ 30, locked capital, Run waits for a Mua row, the rules line is shown", async () => {
     await renderTab()
-    const library = screen.getByRole("complementary", { name: "Thư viện chỉ báo" })
-    expect(within(library).getAllByTestId(/^library-/)).toHaveLength(5)
-    for (const name of ["RSI", "MACD", "MA / SMA", "Bollinger Bands"]) expect(within(library).getByText(name)).toBeTruthy()
-    // "Khối lượng" is also the name of a group: the indicator is found by its row.
-    expect(within(within(library).getByTestId("library-volume")).getByText("Khối lượng")).toBeTruthy()
-    expect(within(library).queryByText("EMA")).toBeNull()
-    expect(within(library).getByLabelText("5 mục")).toBeTruthy()
+    expect(screen.getByTestId("strategy-picker").textContent).toContain("Chiến lược mới")
+    expect((screen.getByLabelText("Rổ mã") as HTMLSelectElement).value).toBe("vn30")
+    expect((screen.getByLabelText("Giữ tối đa") as HTMLInputElement).value).toBe("30")
+    const capital = screen.getByLabelText("Vốn ban đầu (VND)") as HTMLInputElement
+    expect(capital.disabled).toBe(true)
+    expect(capital.value).toBe("100.000.000")
+    expect((runButton() as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.getByTestId("run-hint").textContent).toBe("Cần ít nhất một dòng Mua đang bật để chạy.")
+    expect(screen.getByTestId("rules-line").textContent).toContain("khớp giá đóng cửa cùng phiên")
   })
 
-  it("shows exactly the 16 indicators once all 16 are granted, grouped by type and never by chapter (spec Học viện v4.1 §6.1)", async () => {
-    world.granted = ALL_16
-    await renderTab()
-    const library = screen.getByRole("complementary", { name: "Thư viện chỉ báo" })
-    expect(within(library).getAllByTestId(/^library-/)).toHaveLength(16)
-    expect(within(library).getByLabelText("16 mục")).toBeTruthy()
-    const groups = ["Đường trung bình", "Động lượng", "Biến động", "Kênh giá", "Xu hướng", "Khối lượng", "Dòng tiền"]
-    expect(within(library).getAllByRole("region").map((region) => region.getAttribute("aria-label"))).toEqual(groups)
-    expect(within(library).getByRole("heading", { name: "Chỉ báo" })).toBeTruthy()
-    expect(library.textContent).not.toMatch(/Chương|đã mở|Phương pháp kỹ thuật|Chỉ báo xu hướng|Chỉ báo động lượng/)
-  })
-
-  it("never lists ADX, ATR or any id outside the 16, even when the server sends one as granted", async () => {
-    world.granted = [...ALL_16, "adx", "atr"]
-    const registry = registryFor(world.granted)
-    const extras = ["adx", "atr"].map((id) => ({ ...registry.indicators[0]!, id, name: id.toUpperCase(), learned: true }))
-    world.override["GET /strategy/registry/technical"] = () => ({ ...registry, indicators: [...registry.indicators, ...extras] })
-    await renderTab()
-    const library = screen.getByRole("complementary", { name: "Thư viện chỉ báo" })
-    expect(within(library).getAllByTestId(/^library-/)).toHaveLength(16)
-    expect(screen.queryByText("ADX")).toBeNull()
-    expect(screen.queryByText("ATR")).toBeNull()
-  })
-
-  it("has no copy about the old Bot rules, the legacy lab or Academy-side configuration", async () => {
-    await renderTab()
-    const text = document.body.textContent ?? ""
-    for (const banned of ["Học viện chỉnh", "stop L1", "Săn mã là nguồn", "Mô phỏng Bot", "ATR", "ADX", "Từ Bot", "Từ Học viện"]) expect(text).not.toContain(banned)
-  })
-
-  it("is a graceful state, not a legacy fallback, when the strategy routes are switched off", async () => {
-    world.override["GET /strategy/shared-config"] = () => {
-      throw new FakeApiError("Tính năng chiến lược v2 chưa được bật.", 404, { code: "FEATURE_DISABLED" })
-    }
-    render(<BacktestTab />, "/chien-luoc?tab=backtest")
-    expect(await screen.findByText("Tính năng chưa được bật")).toBeTruthy()
-    expect(screen.queryByRole("button", { name: "Chạy backtest" })).toBeNull()
-  })
-})
-
-describe("run", () => {
-  it("runs the saved revision once with the next-open profile and shows exactly six KPIs, the chart title and its legend", async () => {
+  it("Giữ tối đa outside 3–250 blocks the run with its sentence", async () => {
     const user = userEvent.setup()
     await renderTab()
-    expect(screen.getByTestId("run-hint").textContent).toMatch(/cấu hình chung đã lưu bản 3/)
-    const results = await run(user)
-
-    const body = posts("/strategy/backtests")[0]!.body as Record<string, unknown>
-    expect(Object.keys(body).sort()).toEqual(["assumptions", "end", "idempotency_key", "shared_revision", "start", "symbol"])
-    expect(body).toMatchObject({ shared_revision: 3, symbol: "FPT", assumptions: { capital: 100_000_000, fee_preset: "standard", execution: "next_open" } })
-
-    const tiles = within(results).getAllByTestId("kpi")
-    expect(tiles).toHaveLength(6)
-    expect(tiles.map((tile) => tile.querySelector("div")?.textContent)).toEqual([
-      "Tổng lợi nhuận",
-      "Mua và giữ FPT",
-      "Lợi nhuận năm hóa",
-      "Sụt giảm lớn nhất",
-      "Số giao dịch",
-      "Tỷ lệ thắng",
-    ])
-    expect(tiles[0]!.textContent).toContain("+74,2%")
-    expect(tiles[1]!.textContent).toContain("+17,9%")
-    expect(tiles[3]!.textContent).toContain("−10,6%")
-    expect(tiles[4]!.textContent).toContain("3")
-    expect(tiles[5]!.textContent).toContain("66,7%")
-    expect(within(results).getByRole("heading", { name: "Lợi nhuận danh mục (%)" })).toBeTruthy()
-    const legend = within(results).getByRole("list", { name: "Chú giải biểu đồ" })
-    expect(within(legend).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Danh mục chiến lược", "Mua và giữ FPT", "VN-Index"])
-    expect(screen.queryByTestId("stale-badge")).toBeNull()
+    await addSide(user, "MACD", "Mua")
+    const input = screen.getByLabelText("Giữ tối đa")
+    await user.clear(input)
+    await user.type(input, "2")
+    expect(screen.getByRole("alert").textContent).toBe("Giữ tối đa phải từ 3 đến 250 phiên, số nguyên.")
+    expect((runButton() as HTMLButtonElement).disabled).toBe(true)
   })
 
-  it("offers the two execution profiles with their caveat and sends the chosen one", async () => {
+  it("runs the draft on the basket: 7 KPIs, caption, 5 tabs, close-fill and past-results lines; an edit marks it stale", async () => {
     const user = userEvent.setup()
     await renderTab()
-    const select = screen.getByLabelText("Khớp lệnh") as HTMLSelectElement
-    expect([...select.options].map((option) => option.textContent)).toEqual(["Đóng cửa cùng phiên", "Mở cửa phiên kế tiếp"])
-    expect(screen.getByTestId("execution-caveat").textContent).toMatch(/giá mở cửa của phiên giao dịch kế tiếp/)
-    await user.selectOptions(select, "same_close")
-    expect(screen.getByTestId("execution-caveat").textContent).toMatch(/Thực tế không thể biết đủ giá đóng cửa/)
-    await run(user)
-    expect((posts("/strategy/backtests")[0]!.body as { assumptions: { execution: string } }).assumptions.execution).toBe("same_close")
-    const assumptions = screen.getByTestId("assumptions")
-    expect(assumptions.textContent).toMatch(/Đóng cửa cùng phiên/)
-    expect(assumptions.textContent).toMatch(/không có stop, chốt lời, trailing hay giới hạn thời gian giữ/i)
+    await addSide(user, "MACD", "Mua")
+    await addSide(user, "MACD", "Bán")
+    const results = await runNow(user)
+    const body = posts("/strategy/backtests").at(-1)!.body as { strategy: { source: string; content: { universe: unknown; max_holding: number } }; start: string; end: string }
+    expect(body.strategy.source).toBe("draft")
+    expect(body.strategy.content.universe).toEqual({ type: "vn30" })
+    expect(body.strategy.content.max_holding).toBe(30)
+    expect(body.end).toBe(world.storeMeta.data_as_of)
+    expect(within(results).getAllByTestId("kpi")).toHaveLength(7)
+    expect(within(results).getByTestId("result-caption").textContent).toMatch(/^Rổ VN30 \(30 mã\) · .* · giữ tối đa 30 phiên · khớp giá đóng cửa cùng phiên$/)
+    expect(within(results).getAllByRole("tab")).toHaveLength(5)
+    expect(within(results).getByTestId("past-results").textContent).toBe("Kết quả quá khứ không bảo đảm kết quả tương lai.")
+    expect(await within(results).findByText(/lệnh bán do hết thời gian giữ/)).toBeTruthy()
+    await user.click(within(results).getByRole("tab", { name: "Giả định" }))
+    expect(within(results).getByText("Giả định khớp đúng giá đóng cửa; thực tế có thể khác.")).toBeTruthy()
+    expect(screen.queryByTestId("stale-label")).toBeNull()
+
+    const input = screen.getByLabelText("Giữ tối đa")
+    await user.clear(input)
+    await user.type(input, "40")
+    expect(screen.getByTestId("stale-label").textContent).toContain("Cấu hình đã đổi sau lần chạy này · cần chạy lại")
   })
 
-  it("sends no run until a Buy condition is in use, and explains why", async () => {
-    for (const config of Object.values(world.indicators)) config.master_enabled = false
-    await renderTab()
-    expect(screen.getByRole("button", { name: "Chạy backtest" }).hasAttribute("disabled")).toBe(true)
-    expect(screen.getByTestId("run-hint").textContent).toMatch(/Chưa có điều kiện Mua đang dùng/)
-    expect(posts("/strategy/backtests")).toHaveLength(0)
-  })
-
-  it("does not send a second request while one is pending, and never re-runs by itself", async () => {
-    const user = userEvent.setup()
-    let release: () => void = () => {}
-    const base = createStrategyApi(world)
-    mocks.api.mockImplementation(async (path: string, init?: RequestInit) => {
-      if ((init?.method ?? "GET") === "POST" && path.startsWith("/strategy/backtests")) await new Promise<void>((resolve) => { release = resolve })
-      return base(path, init)
-    })
-    await renderTab()
-    const button = screen.getByRole("button", { name: "Chạy backtest" })
-    await user.click(button)
-    await user.click(screen.getByRole("button", { name: "Đang chạy…" }))
-    release()
-    await screen.findByTestId("backtest-results")
-    expect(posts("/strategy/backtests")).toHaveLength(1)
-    await user.selectOptions(screen.getByLabelText("Khớp lệnh"), "same_close")
-    await user.click(screen.getByLabelText("Phí giao dịch"))
-    expect(posts("/strategy/backtests")).toHaveLength(1)
-  })
-
-  it("keeps the result and flags it as needing a re-run once the assumptions on the form differ", async () => {
+  it("Lưu ▾ is locked until the draft ran; then Lưu thành chiến lược mới saves with from_run_id", async () => {
     const user = userEvent.setup()
     await renderTab()
-    await run(user)
-    expect(screen.queryByTestId("stale-badge")).toBeNull()
-    await user.selectOptions(screen.getByLabelText("Khớp lệnh"), "same_close")
-    expect(screen.getByTestId("stale-badge").textContent).toBe("Cấu hình đã đổi · cần chạy lại")
-    expect(screen.getAllByTestId("kpi")).toHaveLength(6)
-    await user.selectOptions(screen.getByLabelText("Khớp lệnh"), "next_open")
-    expect(screen.queryByTestId("stale-badge")).toBeNull()
-  })
-
-  it("shows an error from the server and keeps the previous result untouched", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    await run(user)
-    world.override["POST /strategy/backtests"] = () => {
-      throw new FakeApiError("Chưa đủ dữ liệu khởi tạo cho chỉ báo.", 422, { code: "INSUFFICIENT_DATA" })
-    }
-    await user.click(screen.getByRole("button", { name: "Chạy backtest" }))
-    expect((await screen.findAllByRole("alert")).some((alert) => /Chưa đủ dữ liệu khởi tạo/.test(alert.textContent ?? ""))).toBe(true)
-    expect(screen.getByTestId("backtest-results")).toBeTruthy()
-  })
-
-  it("draws no VN-Index series and says why when the benchmark has no data", async () => {
-    const user = userEvent.setup()
-    world.marketAvailable = false
-    await renderTab()
-    const results = await run(user)
-    const legend = within(results).getByRole("list", { name: "Chú giải biểu đồ" })
-    expect(within(legend).queryByText("VN-Index")).toBeNull()
-    expect(results.textContent).toMatch(/VN-Index: Thiếu dữ liệu VN-Index cùng ngày gốc/)
-  })
-})
-
-describe("trade history", () => {
-  it("reaches every closed trade through the trades endpoint, 25 per page, with open position and pending orders apart", async () => {
-    const user = userEvent.setup()
-    world.nextTrades = 60
-    world.nextOpen = true
-    world.nextPending = true
-    await renderTab()
-    const results = await run(user)
-
-    expect(within(results).getByTestId("trade-total").textContent).toBe("Toàn bộ 60 giao dịch đã đóng")
-    expect(within(results).getAllByTestId("trade-row")).toHaveLength(25)
-    expect(callsTo(world, "GET", "/strategy/backtests/bbbbbbbb-bbbb-4bbb-8bbb-000000000001/trades")).toHaveLength(0)
-
-    await user.click(within(results).getByRole("button", { name: "Trang sau" }))
-    await waitFor(() => expect(within(results).getAllByTestId("trade-row")[0]!.textContent).toContain("26"))
-    const second = callsTo(world, "GET", "/strategy/backtests/bbbbbbbb-bbbb-4bbb-8bbb-000000000001/trades")
-    expect(second).toHaveLength(1)
-    await user.click(within(results).getByRole("button", { name: "Trang sau" }))
-    await waitFor(() => expect(within(results).getAllByTestId("trade-row")).toHaveLength(10))
-    expect(within(results).getByText(/Hiển thị từ 51 đến 60 trên 60 giao dịch/)).toBeTruthy()
-    expect(within(results).getByRole("button", { name: "Trang sau" }).hasAttribute("disabled")).toBe(true)
-
-    const open = within(results).getByTestId("open-position")
-    expect(open.textContent).toMatch(/Vị thế đang mở/)
-    expect(open.textContent).toMatch(/chưa trừ phí và thuế bán/)
-    expect(open.closest("table")).toBeNull()
-    const pending = within(results).getByTestId("pending-orders")
-    expect(pending.textContent).toMatch(/Tín hiệu Mua cuối kỳ 31\/12\/2025 chưa có phiên khớp/)
-    expect(within(results).getByTestId("trade-total").textContent).not.toMatch(/61|62/)
-  })
-
-  it("opens the detail of a trade: signal date apart from fill date, fees, net cash and the condition values", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    const results = await run(user)
-    await user.click(within(results).getByRole("button", { name: "Chi tiết giao dịch 2" }))
-    const dialog = await screen.findByRole("dialog", { name: /Giao dịch #2/ })
-    expect(dialog.textContent).toMatch(/Tín hiệu 09\/03\/2025/)
-    expect(dialog.textContent).toMatch(/khớp 10\/03\/2025/)
-    expect(dialog.textContent).toMatch(/phí 30\.000 đ/)
-    expect(within(dialog).getByRole("table", { name: "Điều kiện Mua tại tín hiệu" })).toBeTruthy()
-    expect(within(dialog).getByRole("table", { name: "Điều kiện Bán tại tín hiệu" })).toBeTruthy()
-    expect(dialog.textContent).toMatch(/0,4/)
-  })
-
-  it("shows an empty history, a dash instead of 0% for the win rate, when nothing was closed", async () => {
-    const user = userEvent.setup()
-    world.nextTrades = 0
-    await renderTab()
-    const results = await run(user)
-    expect(within(results).getByText("Chưa có giao dịch đã đóng trong khoảng kiểm thử này.")).toBeTruthy()
-    const winRate = within(results).getAllByTestId("kpi")[5]!
-    expect(winRate.textContent).toContain("—")
-    expect(winRate.textContent).not.toContain("0%")
-  })
-
-  it("opens a stored run from Đã lưu without writing the shared configuration and loads its inputs", async () => {
-    const user = userEvent.setup()
-    const stored = (await createStrategyApi(world)("/strategy/backtests", { method: "POST", body: JSON.stringify({ shared_revision: 3, symbol: "VNM", start: "2023-01-02", end: "2024-12-31", assumptions: { capital: 200_000_000, execution: "same_close", fee_preset: "none" } }) })) as { run_id: string }
-    world.calls.length = 0
-    world.runs = [runSummary({ run_id: stored.run_id, symbol: "VNM", start: "2023-01-02", end: "2024-12-31" })]
-    await renderTab()
-    await user.click(screen.getByRole("button", { name: "Đã lưu" }))
-    const dialog = await screen.findByRole("dialog", { name: "Kết quả kiểm thử đã lưu" })
-    expect(dialog.textContent).toMatch(/Mở kết quả không thay cấu hình chung của Bot và Backtest/)
-    await user.click(within(dialog).getByRole("button", { name: /Xem VNM/ }))
-    const results = await screen.findByTestId("backtest-results")
-    expect(results.textContent).toContain("VNM")
-    expect((screen.getByLabelText("Khớp lệnh") as HTMLSelectElement).value).toBe("same_close")
-    expect((screen.getByLabelText("Vốn ban đầu (VND)") as HTMLInputElement).value).toBe("200.000.000")
-    expect(patches()).toHaveLength(0)
-    expect(posts("/strategy/backtests")).toHaveLength(0)
-    expect(screen.queryByTestId("stale-badge")).toBeNull()
-  })
-})
-
-describe("shared configuration", () => {
-  it("states that the shared config is the Bot's and when it takes effect (saved, Bot revision, pending)", async () => {
-    await renderTab()
-    expect(screen.getByTestId("config-effective").textContent).toMatch(/Bot đang dùng bản 2/)
-    expect(screen.getByTestId("config-effective").textContent).toMatch(/bản 3/)
-    expect(screen.getByTestId("config-effective").textContent).toMatch(/09\/10\/2026/)
-  })
-
-  it("opens the chosen side from the library and saves it to the shared config, saying the Bot uses it too", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    await user.click(screen.getByRole("button", { name: "Thêm RSI vào Bán" }))
-    const dialog = await screen.findByRole("dialog", { name: "Cấu hình chung · RSI" })
-    expect(within(dialog).getByTestId("shared-config-note").textContent).toMatch(/dùng chung với Bot/)
-    expect(within(dialog).getByTestId("shared-config-note").textContent).toMatch(/từ phiên giao dịch hợp lệ kế tiếp/)
-    expect(within(dialog).getByRole("tab", { name: "Điều kiện Bán" }).getAttribute("aria-selected")).toBe("true")
-    expect((within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Bán" }) as HTMLElement).getAttribute("aria-checked")).toBe("true")
-    // Nothing is in the saved config until Lưu.
-    expect(patches()).toHaveLength(0)
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
-    await waitFor(() => expect(patches()).toHaveLength(1))
-    const sent = patches()[0]!.body as { expected_revision: number; indicators: Record<string, { master_enabled: boolean; buy: { enabled: boolean }; sell: { enabled: boolean } }> }
-    expect(sent.expected_revision).toBe(3)
-    expect(Object.keys(sent.indicators)).toEqual(["rsi"])
-    expect(sent.indicators.rsi).toMatchObject({ master_enabled: true, buy: { enabled: false }, sell: { enabled: true } })
-    await waitFor(() => expect(mocks.toast.success).toHaveBeenCalled())
-    expect(String(mocks.toast.success.mock.calls[0]![0])).toMatch(/Bot cũng dùng bản này/)
-    expect(screen.getByTestId("panel-sell").textContent).toContain("RSI")
-    expect(screen.getByTestId("panel-buy").textContent).not.toContain("RSI")
-  })
-
-  it("shows each used indicator's enabled rows as sentences, and edits them per row in the dialog", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    const card = within(screen.getByTestId("panel-buy")).getByTestId("card-buy-macd")
-    expect(within(card).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["MACD 12 / 26 cắt lên Signal 9"])
-
-    await user.click(within(card).getByRole("button", { name: /Chỉnh MACD/ }))
-    const dialog = await screen.findByRole("dialog", { name: "Cấu hình chung · MACD" })
-    expect(within(within(dialog).getByRole("list", { name: "Điều kiện Mua" })).getAllByRole("listitem")).toHaveLength(3)
-    const signal = within(dialog).getByLabelText("Chu kỳ Signal (dòng 1, Mua)")
-    await user.clear(signal)
-    await user.type(signal, "1")
-    expect(within(dialog).getByTestId("row-errors-buy").textContent).toBe("Mua · dòng 1: Chu kỳ Signal phải từ 2 đến 200, số nguyên.")
-    expect(within(dialog).getByRole("button", { name: "Lưu" }).hasAttribute("disabled")).toBe(true)
-    await user.type(signal, "2")
-    await user.click(within(dialog).getByRole("switch", { name: "Bật điều kiện 3 (Mua)" }))
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
-    await waitFor(() => expect(patches()).toHaveLength(1))
-    const sent = patches()[0]!.body as { indicators: Record<string, { buy: { rules: Record<string, unknown>[] } }> }
-    expect(sent.indicators.macd!.buy.rules).toEqual([
-      { id: "macd.signal", enabled: true, fast: 12, slow: 26, op: "cross_up", signal: 12 },
-      { id: "macd.zero", enabled: false, fast: 12, slow: 26, op: ">" },
-      { id: "macd.hist", enabled: true, fast: 12, slow: 26, signal: 9, dir: "up" },
-    ])
-    await waitFor(() => expect(within(screen.getByTestId("card-buy-macd")).getAllByRole("listitem").map((item) => item.textContent)).toEqual([
-      "MACD 12 / 26 cắt lên Signal 12",
-      "Histogram MACD 12 / 26 / 9 tăng so với phiên trước",
-    ]))
-  })
-
-  it("adds nothing when the dialog is cancelled, and asks before throwing a changed draft away", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    await user.click(screen.getByRole("button", { name: "Thêm RSI vào Mua" }))
-    const dialog = await screen.findByRole("dialog", { name: "Cấu hình chung · RSI" })
-    await user.click(within(dialog).getByRole("button", { name: "Hủy" }))
-    expect(screen.queryByRole("dialog", { name: "Cấu hình chung · RSI" })).toBeNull()
-
-    await user.click(screen.getByRole("button", { name: "Thêm RSI vào Mua" }))
-    const again = await screen.findByRole("dialog", { name: "Cấu hình chung · RSI" })
-    const period = within(again).getByLabelText("Chu kỳ RSI (dòng 1, Mua)")
-    await user.clear(period)
-    await user.type(period, "20")
+    await addSide(user, "MACD", "Mua")
+    await user.click(screen.getByTestId("save-menu-trigger"))
+    const locked = await screen.findByTestId("save-new")
+    expect(locked.getAttribute("aria-disabled")).toBe("true")
+    expect(locked.textContent).toContain("Bấm Chạy trước khi Lưu.")
     await user.keyboard("{Escape}")
-    expect(await screen.findByRole("dialog", { name: "Bỏ thay đổi chưa lưu?" })).toBeTruthy()
-    await user.click(screen.getByRole("button", { name: "Tiếp tục chỉnh sửa" }))
-    expect((within(again).getByLabelText("Chu kỳ RSI (dòng 1, Mua)") as HTMLInputElement).value).toBe("20")
-    await user.click(within(again).getByRole("button", { name: "Hủy" }))
-    await user.click(await screen.findByRole("button", { name: "Bỏ thay đổi" }))
-    expect(patches()).toHaveLength(0)
-    expect(screen.getByTestId("panel-buy").textContent).not.toContain("RSI")
+
+    await runNow(user)
+    await user.click(screen.getByTestId("save-menu-trigger"))
+    await user.click(await screen.findByTestId("save-new"))
+    const name = await screen.findByLabelText("Tên chiến lược (tối đa 40 ký tự)")
+    await user.type(name, "Xu hướng của tôi")
+    await user.click(screen.getByRole("button", { name: "Lưu" }))
+    await waitFor(() => expect(posts("/strategy/strategies")).toHaveLength(1))
+    const sent = posts("/strategy/strategies")[0]!.body as { name: string; from_run_id: string; apply_next?: boolean }
+    expect(sent.name).toBe("Xu hướng của tôi")
+    expect(sent.from_run_id).toMatch(/^b2000000/)
+    expect(sent.apply_next).toBeUndefined()
+    await waitFor(() => expect(screen.getByTestId("strategy-picker").textContent).toContain("Xu hướng của tôi"))
+    expect(world.schedule.next.source).toBe("iqx")
   })
 
-  it("removes an indicator from ONE side as a confirmed save: that side OFF, params and the other side kept", async () => {
+  it("Lưu và dùng cho Bot asks to confirm the due positions and resends them", async () => {
+    world.dueImpact = { next_session: "2026-10-08", n_current: 30, n_new: 10, positions: [{ symbol: "HPG", counted: 12, sell_session: "2026-10-08" }] }
     const user = userEvent.setup()
     await renderTab()
-    await user.click(screen.getByRole("button", { name: "Bỏ MACD khỏi Mua" }))
-    const confirm = await screen.findByRole("dialog", { name: "Bỏ MACD khỏi Mua?" })
-    expect(confirm.textContent).toMatch(/Bot cũng không dùng MACD cho phía Mua/)
-    expect(patches()).toHaveLength(0)
-    await user.click(within(confirm).getByRole("button", { name: "Bỏ và lưu" }))
-    await waitFor(() => expect(patches()).toHaveLength(1))
-    const sent = patches()[0]!.body as { indicators: Record<string, { master_enabled: boolean; buy: { enabled: boolean; rules: unknown[] }; sell: { enabled: boolean } }> }
-    expect(sent.indicators.macd).toMatchObject({ master_enabled: true, buy: { enabled: false, rules: [{ id: "macd.signal", fast: 12, slow: 26, signal: 9 }, {}, {}] }, sell: { enabled: true } })
-    await waitFor(() => expect(screen.getByTestId("panel-buy").textContent).not.toContain("MACD"))
-    expect(screen.getByTestId("panel-sell").textContent).toContain("MACD")
-  })
-
-  it("keeps the draft and offers a reload when another device saved first (409)", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    await user.click(screen.getByRole("button", { name: "Thêm RSI vào Mua" }))
-    const dialog = await screen.findByRole("dialog", { name: "Cấu hình chung · RSI" })
-    world.savedRevision = 4
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
-    expect(await within(dialog).findByText("Cấu hình đã thay đổi ở nơi khác")).toBeTruthy()
-    expect(within(dialog).getByRole("button", { name: "Lưu" }).hasAttribute("disabled")).toBe(true)
-    await user.click(within(dialog).getByRole("button", { name: "Tải lại" }))
-    expect(await within(dialog).findByText(/Đã tải bản #4/)).toBeTruthy()
-    expect(within(dialog).getByRole("button", { name: "Lưu" }).hasAttribute("disabled")).toBe(false)
+    await addSide(user, "MACD", "Mua")
+    await runNow(user)
+    await user.click(screen.getByTestId("save-menu-trigger"))
+    await user.click(await screen.findByTestId("save-use"))
+    await user.type(await screen.findByLabelText("Tên chiến lược (tối đa 40 ký tự)"), "Cho Bot")
+    await user.click(screen.getByRole("button", { name: "Lưu" }))
+    const tick = await screen.findByRole("checkbox", { name: "Tôi hiểu các vị thế trên sẽ được bán." })
+    const confirm = screen.getByRole("button", { name: "Lưu và dùng cho Bot" })
+    expect((confirm as HTMLButtonElement).disabled).toBe(true)
+    await user.click(tick)
+    await user.click(confirm)
+    await waitFor(() => expect(world.strategies).toHaveLength(1))
+    const sent = posts("/strategy/strategies").at(-1)!.body as { apply_next: boolean; confirm_due_positions: string[] }
+    expect(sent.apply_next).toBe(true)
+    expect(sent.confirm_due_positions).toEqual(["HPG"])
+    expect(world.schedule.next).toMatchObject({ source: "user", id: world.strategies[0]!.item.id })
   })
 })
 
-describe("alert from a result", () => {
-  it("pins the snapshot of the run itself (backtest_run), not the form", async () => {
+describe("strategy menu", () => {
+  it("lists n/20, locks delete of the strategy the Bot runs next, deletes another", async () => {
+    world.strategies = [savedStrategy("a2000000-0000-4000-8000-000000000001", "Đang chạy"), savedStrategy("a2000000-0000-4000-8000-000000000002", "Cũ")]
+    world.schedule = { ...world.schedule, next: { ...world.schedule.next, source: "user", id: "a2000000-0000-4000-8000-000000000001", version: 1, name: "Đang chạy", version_label: "bản 07/10 09:00", hidden: false, content: { universe: { type: "vn30" }, indicators: {}, max_holding: 30 } } }
     const user = userEvent.setup()
     await renderTab()
-    expect(screen.getByRole("button", { name: "Tạo cảnh báo" }).hasAttribute("disabled")).toBe(true)
-    const results = await run(user)
-    await user.click(screen.getByRole("button", { name: "Tạo cảnh báo" }))
-    const dialog = await screen.findByRole("dialog", { name: "Tạo cảnh báo" })
-    expect((within(dialog).getByLabelText("Nguồn cấu hình") as HTMLSelectElement).value).toBe("run")
-    await within(dialog).findByText(/Cấu hình của kết quả kiểm thử FPT/)
-    expect((within(dialog).getByLabelText("Tên cảnh báo") as HTMLInputElement).value).toBe("FPT · Theo dõi tín hiệu")
-    await user.click(within(dialog).getByRole("button", { name: "Lưu cảnh báo" }))
-    await waitFor(() => expect(posts("/strategy/alerts")).toHaveLength(1))
-    expect(posts("/strategy/alerts")[0]!.body).toMatchObject({ source: { kind: "backtest_run", run_id: "bbbbbbbb-bbbb-4bbb-8bbb-000000000001" }, scope: { kind: "symbols", symbols: ["FPT"] }, sides: ["buy", "sell"] })
-    expect(results).toBeTruthy()
+    await user.click(screen.getByTestId("strategy-picker"))
+    const menu = await screen.findByTestId("strategy-menu")
+    expect(await within(menu).findByText("Chiến lược đã lưu (2/20)")).toBeTruthy()
+    expect((within(menu).getByRole("button", { name: /Không xóa được Đang chạy/ }) as HTMLButtonElement).disabled).toBe(true)
+    await user.click(within(menu).getByRole("button", { name: "Xóa Cũ" }))
+    await user.click(await screen.findByRole("button", { name: "Xóa chiến lược" }))
+    await waitFor(() => expect(world.strategies).toHaveLength(1))
+    expect(mocks.toast.success).toHaveBeenCalledWith('Đã xóa "Cũ".')
+  })
+
+  it("locks Tạo chiến lược mới at the limit", async () => {
+    world.strategies = [savedStrategy("a2000000-0000-4000-8000-000000000001", "Một")]
+    world.strategyLimit = 1
+    const user = userEvent.setup()
+    await renderTab()
+    await user.click(screen.getByTestId("strategy-picker"))
+    const menu = await screen.findByTestId("strategy-menu")
+    await within(menu).findByText("Chiến lược đã lưu (1/1)")
+    expect((within(menu).getByRole("button", { name: "Tạo chiến lược mới" }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it("opening a saved strategy over an edited draft asks first", async () => {
+    world.strategies = [savedStrategy("a2000000-0000-4000-8000-000000000001", "Một")]
+    const user = userEvent.setup()
+    await renderTab()
+    await addSide(user, "RSI", "Mua")
+    await user.click(screen.getByTestId("strategy-picker"))
+    await user.click(await within(await screen.findByTestId("strategy-menu")).findByRole("button", { name: /^Một/ }))
+    expect(await screen.findByText("Thay bản nháp đang chỉnh?")).toBeTruthy()
+    await user.click(screen.getByRole("button", { name: "Thay" }))
+    await waitFor(() => expect(screen.getByTestId("strategy-picker").textContent).toContain("Một"))
+  })
+})
+
+describe("tab IQX", () => {
+  it("shows a Chiến lược IQX read only and trial-runs it by reference", async () => {
+    const user = userEvent.setup()
+    await renderTab()
+    await user.click(screen.getAllByRole("tab", { name: "IQX" })[0]!)
+    expect(await screen.findByTestId("iqx-strategy-strip")).toBeTruthy()
+    expect((screen.getByLabelText("Giữ tối đa") as HTMLInputElement).disabled).toBe(true)
+    expect(screen.queryByTestId("save-menu-trigger")).toBeNull()
+    await runNow(user)
+    const body = posts("/strategy/backtests").at(-1)!.body as { strategy: { source: string; id: string; version: number } }
+    expect(body.strategy).toEqual({ source: "iqx", id: world.iqx.strategy[0]!.id, version: world.iqx.strategy[0]!.version })
+    expect(screen.getAllByText(/Tham khảo để học, không phải khuyến nghị đầu tư\./).length).toBeGreaterThan(0)
+  })
+})
+
+describe("Lần chạy đã lưu", () => {
+  it("a legacy run only shows its three numbers", async () => {
+    world.v2RunList = [
+      { run_id: "b1000000-0000-4000-8000-000000000001", created_at: V2_T0, legacy: true, strategy_label: "FPT · cấu hình chung", version_label: null, universe_label: "FPT", start: "2024-01-02", end: "2025-12-31", kpis: { total_return: 12.3, max_drawdown: -4.5, closed_trades: 6 } },
+    ]
+    const user = userEvent.setup()
+    await renderTab()
+    await user.click(screen.getByRole("button", { name: "Lần chạy đã lưu" }))
+    await user.click(await screen.findByRole("button", { name: "Tất cả" }))
+    expect(await screen.findByText("Cấu hình cũ")).toBeTruthy()
+    await user.click(screen.getByRole("button", { name: "Xem số liệu" }))
+    expect(await screen.findByText("Chạy trên 1 mã theo cấu hình chung trước đây. Chỉ xem, không chạy lại.")).toBeTruthy()
+    expect(screen.getByTestId("legacy-kpis").textContent).toContain("12,3")
+  })
+})
+
+describe("Bộ lọc → Backtest với rổ là kết quả này (§13)", () => {
+  it("opens a new strategy with the VN100 symbols of the result and names the dropped ones; nothing runs", async () => {
+    await renderTab({ pathname: "/chien-luoc", search: "?tab=backtest", state: { backtestBasket: { name: "Kết quả bộ lọc chưa lưu · 07/10", symbols: ["FPT", "HPG", "XYZ"] } } })
+    expect(await screen.findByText(/Bỏ 1 mã ngoài VN100 \(không có trong kho dữ liệu\): XYZ/)).toBeTruthy()
+    expect(screen.getByTestId("universe-line").textContent).toContain("Kết quả bộ lọc chưa lưu · 07/10")
+    expect(posts("/strategy/backtests")).toHaveLength(0)
   })
 })

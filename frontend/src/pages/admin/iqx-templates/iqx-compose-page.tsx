@@ -13,7 +13,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
@@ -35,11 +34,9 @@ import {
 import {
   useCreateIqxTemplate,
   useIqxAdminDetail,
-  useIqxAdminList,
   usePublishIqxTemplate,
   useSaveIqxDraft,
   type IqxAdminDetail,
-  type IqxAdminItem,
   type IqxDraftInput,
 } from "./api"
 import {
@@ -52,10 +49,9 @@ import {
   type InfoField,
   type ServerProblem,
 } from "./compose-checks"
-import { DRAFT_SAVED_TOAST, IQX_KIND_LABEL, PUBLISH_ALWAYS, PUBLISH_BODY, iqxListPath } from "./copy"
+import { DRAFT_SAVED_TOAST, IQX_KIND_LABEL, PUBLISH_ALWAYS, PUBLISH_BODY, PUBLISH_STRATEGY_BOT, iqxListPath } from "./copy"
 
-const NO_PAIR = "__none__"
-
+/** `pair_slug` is no longer shown (spec v2.0 §13) but a loaded value is sent back unchanged (the DB column stays). */
 type Info = IqxInfo & { pair_slug: string | null }
 type Base = { id: string | null; current_version: number | null; draft_updated_at: string | null }
 
@@ -67,12 +63,10 @@ export function IqxComposePage() {
   const id = params.id ?? "new"
   const isNew = id === "new"
   const detail = useIqxAdminDetail(kind && !isNew ? id : null)
-  const strategies = useIqxAdminList("strategy", kind === "filter")
   const [reload, setReload] = useState(0)
 
   async function reloadLatest() {
     if (!isNew) await detail.refetch()
-    if (kind === "filter") void strategies.refetch()
     setReload((value) => value + 1)
   }
 
@@ -122,7 +116,6 @@ export function IqxComposePage() {
         key={`${id}:${reload}`}
         kind={detail.data?.kind ?? kind}
         detail={isNew ? null : (detail.data ?? null)}
-        strategies={strategies.data?.items ?? []}
         onReload={() => void reloadLatest()}
       />
     </WorkspacePage>
@@ -132,12 +125,10 @@ export function IqxComposePage() {
 function ComposeEditor({
   kind,
   detail,
-  strategies,
   onReload,
 }: {
   kind: IqxKind
   detail: IqxAdminDetail | null
-  strategies: IqxAdminItem[]
   onReload: () => void
 }) {
   const navigate = useNavigate()
@@ -308,10 +299,6 @@ function ComposeEditor({
     }
   }
 
-  const pairOptions = strategies
-    .filter((item) => item.current_version !== null)
-    .sort((a, b) => a.sort_order - b.sort_order)
-  const pairMissing = info.pair_slug !== null && !pairOptions.some((item) => item.slug === info.pair_slug)
   const listErrors = [...definitionErrors, ...(problem?.other ?? [])]
 
   return (
@@ -333,25 +320,6 @@ function ComposeEditor({
           <InfoInput field="idea" label="Ý tưởng" hint="1 câu" value={info.idea} errors={fieldMessages("idea")} onChange={(value) => setField("idea", value)} />
           <InfoInput field="origin" label="Nguồn gốc" multiline value={info.origin} errors={fieldMessages("origin")} onChange={(value) => setField("origin", value)} />
           <InfoInput field="when_wrong" label="Khi nào dễ sai" multiline value={info.when_wrong} errors={fieldMessages("when_wrong")} onChange={(value) => setField("when_wrong", value)} />
-          {kind === "filter" && (
-            <FieldShell id="iqx-pair" label="Đi cặp với Chiến lược IQX" errors={problem?.fields.pair_slug ?? []}>
-              <Select value={info.pair_slug ?? NO_PAIR} onValueChange={(value) => setField("pair_slug", value === NO_PAIR ? null : value)}>
-                <SelectTrigger id="iqx-pair" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_PAIR}>Không đi cặp</SelectItem>
-                  {pairOptions.map((item) => (
-                    <SelectItem key={item.id} value={item.slug}>
-                      {item.name}
-                      {item.status === "hidden" ? " (đã ẩn)" : ""}
-                    </SelectItem>
-                  ))}
-                  {pairMissing && <SelectItem value={info.pair_slug as string}>{info.pair_slug}</SelectItem>}
-                </SelectContent>
-              </Select>
-            </FieldShell>
-          )}
         </div>
 
         <p className="text-xs leading-5 text-muted-foreground">
@@ -413,7 +381,8 @@ function ComposeEditor({
           onClose={() => setPublishing(false)}
           onSubmit={(reason) => void confirmPublish(reason)}
         >
-          <p className="text-sm text-muted-foreground">{PUBLISH_ALWAYS}</p>
+          <p className="text-sm">{PUBLISH_ALWAYS}</p>
+          {kind === "strategy" && <p className="text-sm">{PUBLISH_STRATEGY_BOT}</p>}
         </ReasonDialog>
       )}
     </div>

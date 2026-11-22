@@ -5,8 +5,7 @@
  * individual selection, the actions cover every company that passed, on every page.
  */
 import { useId } from "react"
-import { Link } from "react-router"
-import { ChevronLeft, ChevronRight, Info } from "lucide-react"
+import { ChartLine, ChevronLeft, ChevronRight, Info, LoaderCircle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -119,13 +118,13 @@ export function ResultsPanel({
   busy,
   onSaveList,
   onSaveResult,
-  onApply,
+  onBacktest,
+  backtestPending = false,
   onPushBulletin,
   onCell,
   onTechnicalCell,
   onQuality,
   readOnly = false,
-  backtestHref,
 }: {
   header: ResultHeader
   page: ResultPage | undefined
@@ -147,7 +146,9 @@ export function ResultsPanel({
   busy: boolean
   onSaveList: () => void
   onSaveResult: () => void
-  onApply: () => void
+  /** "Backtest với rổ là kết quả này" (spec v2.0 §13): every passed symbol, on every page. */
+  onBacktest: () => void
+  backtestPending?: boolean
   /** Only passed for an admin: opens "Đẩy vào bản tin". Not disabled by an empty result (0 passed is pushed as such). */
   onPushBulletin?: () => void
   onCell: (row: ResultRow, metric: ScreenerMetric) => void
@@ -155,8 +156,6 @@ export function ResultsPanel({
   onQuality: () => void
   /** Compose mode of Mẫu IQX: a trial run, nothing of it can be saved or applied. */
   readOnly?: boolean
-  /** Target of a symbol (Backtest that symbol); the tab IQX adds the paired Chiến lược IQX. */
-  backtestHref?: (symbol: string) => string
 }) {
   const baseId = useId()
   const columns = columnsOf(header, metrics)
@@ -226,7 +225,10 @@ export function ResultsPanel({
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="outline" disabled={busy || noneToSave} onClick={onSaveList}>Lưu danh mục</Button>
             <Button type="button" variant="outline" disabled={busy || noneToSave} onClick={onSaveResult}>Lưu kết quả</Button>
-            <Button type="button" disabled={busy || noneToSave} onClick={onApply}>Áp dụng cho Bot</Button>
+            <Button type="button" disabled={busy || noneToSave || backtestPending} onClick={onBacktest} data-testid="backtest-basket">
+              {backtestPending ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <ChartLine aria-hidden="true" />}
+              Backtest với rổ là kết quả này
+            </Button>
             {onPushBulletin && (
               <Button type="button" variant="outline" disabled={busy} onClick={onPushBulletin} data-testid="push-bulletin">Đẩy vào bản tin</Button>
             )}
@@ -325,13 +327,7 @@ export function ResultsPanel({
                       />
                     </td>
                     <td className="px-3 py-2.5 font-bold">
-                      <Link
-                        to={backtestHref ? backtestHref(row.symbol) : `/chien-luoc?tab=backtest&symbol=${encodeURIComponent(row.symbol)}`}
-                        className="text-primary hover:underline"
-                        aria-label={`Backtest ${row.symbol}`}
-                      >
-                        {row.symbol}
-                      </Link>
+                      {row.symbol}
                     </td>
                     <td className="max-w-[220px] px-3 py-2.5 break-words">{row.name ?? "—"}</td>
                     <td className="px-3 py-2.5 text-muted-foreground">{row.exchange ?? "—"}</td>

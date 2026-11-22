@@ -6,31 +6,26 @@
  * - Lưu bộ lọc: the criteria (filter 4.0). Opening it later re-resolves "latest published" and the latest session.
  * - Lưu danh mục: the symbols and evidence of ONE stored result (a list).
  * - Lưu kết quả: the rows of that result frozen (a snapshot).
- * - Áp dụng cho Bot: replaces the buy universe of NEW buys from the next session (pending until
- *   then). It never sells what the Bot holds and VN30 stays the default.
+ * - Backtest với rổ là kết quả này (spec v2.0 §13): opens Backtest › Chỉ báo with a new strategy whose basket is
+ *   the passed symbols that belong to VN100; nothing runs by itself.
  * Filtering, sorting, paging and saving never change the Bot.
  */
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { FileCheck, Filter, FolderOpen, List, LoaderCircle, Play, Save, SlidersHorizontal } from "lucide-react"
-import { useSearchParams } from "react-router"
+import { useNavigate, useSearchParams } from "react-router"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/use-auth"
-import { useUniverseActions, useBotUniverse } from "@/pages/demo-trading/bot/universe/use-universe"
-import { sourceName } from "@/pages/demo-trading/bot/universe/labels"
 
 import { AlertForm } from "../alerts/alert-form"
-import { ErrorLine, FeatureState } from "../shared/controls"
+import { FeatureState } from "../shared/controls"
 import { FEATURE_DISABLED_COPY } from "../shared/ui-text"
-import { DialogShell } from "../shared/dialog-shell"
 import { errorDetails, errorMessage, isApiError, isCapabilityLocked, isFeatureDisabled, newKey } from "../shared/errors"
 import { RESULT_PAGE_SIZE, getAllPassedSymbols, getFilter, runScreener } from "./api"
-import { ApplyBotDialog, type ApplySource } from "./apply-bot-dialog"
-import { BotSourceCard } from "./bot-source"
 import { CatalogDialog } from "./catalog-dialog"
 import { PushBulletinDialog } from "./push-bulletin-dialog"
 import { BasicSection, MarketSection, RulesEditor, TechnicalSection } from "./conditions"
@@ -72,17 +67,16 @@ import type {
   TechnicalQuality,
 } from "./types"
 import { ConfirmDialog } from "../confirm-dialog"
-import { iqxTitle, recordIqxUsed, useIqxFilters, type FilterComposeBinding, type IqxFilterItem, type IqxFilterOrigin } from "../shared/iqx"
+import { iqxTitle, recordIqxUsed, type FilterComposeBinding, type IqxFilterItem, type IqxFilterOrigin } from "../shared/iqx"
 import { IqxStrip } from "../shared/iqx-ui"
 import { filterDraftFromIqx, iqxSaveName, isFilterDraftEmpty, withOrigin } from "./iqx"
 import { IqxFilterLibrary } from "./iqx-library"
 
 type Dialog =
-  | { kind: "saved-filters" | "saved-lists" | "saved-results" | "catalog" | "save-filter" | "quality" | "apply-result" | "push-bulletin" }
+  | { kind: "saved-filters" | "saved-lists" | "saved-results" | "catalog" | "save-filter" | "quality" | "push-bulletin" }
   | { kind: "save-result"; save: ResultSaveKind }
   | { kind: "cell"; row: ResultRow; metric: ScreenerMetric }
   | { kind: "technical-cell"; row: ResultRow; column: TechnicalQuality }
-  | { kind: "apply-list"; list: SavedList }
   | { kind: "alert-list"; list: SavedList }
   | null
 
@@ -108,64 +102,10 @@ function runErrorText(error: unknown): string {
   return errorMessage(error)
 }
 
-/** Every company that passed, on every page of the stored result, for the confirmation of "Áp dụng cho Bot". */
-function ApplyFromResult({
-  run,
-  selection,
-  criteria,
-  linked,
-  savedList,
-  currentSource,
-  actions,
-  onApplied,
-  onClose,
-}: {
-  run: StoredRun
-  selection: ReadonlySet<string>
-  criteria: string
-  linked: Loaded | null
-  savedList: SavedList | null
-  currentSource: string
-  actions: ReturnType<typeof useUniverseActions>
-  onApplied: (count: number, session: string) => void
-  onClose: () => void
-}) {
-  const { user } = useAuth()
-  const passed = useQuery({
-    queryKey: [...filterKeys.all, "passed", user?.id, run.resultId],
-    queryFn: ({ signal }) => getAllPassedSymbols(run.resultId, signal),
-    staleTime: Infinity,
-    retry: false,
-  })
-  if (passed.isPending || passed.isError) {
-    return (
-      <DialogShell
-        title="Áp dụng danh mục cho Bot"
-        size="sm"
-        onClose={onClose}
-        footer={<Button type="button" variant="outline" onClick={onClose}>Đóng</Button>}
-      >
-        {passed.isError ? (
-          <div className="space-y-2">
-            <ErrorLine>{errorMessage(passed.error)}</ErrorLine>
-            <Button type="button" variant="outline" size="sm" onClick={() => void passed.refetch()}>Thử lại</Button>
-          </div>
-        ) : (
-          <Skeleton className="h-24 w-full" aria-label="Đang tải danh sách mã đạt" />
-        )}
-      </DialogShell>
-    )
-  }
-  const candidates = passed.data
-  const source: ApplySource = {
-    kind: "result",
-    runId: run.resultId,
-    criteria,
-    asOf: run.header.as_of,
-    ...(linked ? { filterId: linked.id, filterVersion: linked.version } : {}),
-    savedList,
-  }
-  return <ApplyBotDialog source={source} candidates={candidates} defaultSelected={selection} currentSource={currentSource} actions={actions} onApplied={onApplied} onClose={onClose} />
+/** `dd/mm` of an ISO date, for the basket name "Kết quả bộ lọc … · dd/mm". */
+function dayMonth(iso: string): string {
+  const [, month, day] = iso.slice(0, 10).split("-")
+  return `${day}/${month}`
 }
 
 /**
@@ -209,8 +149,7 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const metricsQuery = useScreenerMetrics()
-  const universe = useBotUniverse()
-  const actions = useUniverseActions()
+  const navigate = useNavigate()
   const saveFilter = useSaveFilter()
   const createList = useCreateList()
   const createSnapshot = useCreateSnapshot()
@@ -227,7 +166,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
   const [iqx, setIqx] = useState<IqxFilterItem | null>(null)
   const [origin, setOrigin] = useState<IqxFilterOrigin | null>(null)
   const [confirmIqx, setConfirmIqx] = useState<IqxFilterItem | null>(null)
-  const iqxFilters = useIqxFilters(!compose)
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [run, setRun] = useState<StoredRun | null>(null)
   const [runError, setRunError] = useState<string | null>(null)
@@ -238,7 +176,7 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
   const [dialog, setDialog] = useState<Dialog>(null)
   const [dialogError, setDialogError] = useState<string | null>(null)
   const [libraryOpen, setLibraryOpen] = useState(false)
-  const [savedList, setSavedList] = useState<{ runId: string; list: SavedList } | null>(null)
+  const [basketPending, setBasketPending] = useState(false)
   // One idempotency key per distinct save request: a retry of the same request reuses it, a changed name or selection does not.
   const saveKeys = useRef<{ fingerprint: string; key: string } | null>(null)
   const keyFor = (fingerprint: string): string => {
@@ -295,7 +233,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
     )
   }
 
-  const effectiveSource = universe.data ? sourceName(universe.data.pending ?? universe.data.effective) : "VN30"
   const closeDialog = () => { setDialog(null); setDialogError(null) }
   const openDialog = (next: Dialog) => { setDialogError(null); setDialog(next) }
 
@@ -347,7 +284,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
           setSort(DEFAULT_SORT)
           setShowAll(false)
           setSelection(new Set())
-          setSavedList(null)
         },
         onError: (error) => {
           if (abort.current !== controller || (error instanceof DOMException && error.name === "AbortError")) return
@@ -371,7 +307,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
     setSort(DEFAULT_SORT)
     setShowAll(false)
     setSelection(new Set())
-    setSavedList(null)
     setIqx(item)
     setOrigin({ type: "iqx_filter", id: item.id, version: item.version })
     setConfirmIqx(null)
@@ -443,9 +378,8 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
         { ...common, visibility: "saved" },
         {
           onSuccess: (list) => {
-            setSavedList({ runId: run.resultId, list })
             closeDialog()
-            toast.success(`Đã lưu danh mục “${list.name}” (${list.tickers.length} mã, mốc dữ liệu ${list.as_of}). Bot không đổi; áp dụng cho Bot là thao tác riêng.`)
+            toast.success(`Đã lưu danh mục “${list.name}” (${list.tickers.length} mã, mốc dữ liệu ${list.as_of}). Bot không đổi.`)
           },
           onError: (error) => setDialogError(errorMessage(error)),
         },
@@ -461,15 +395,19 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
     })
   }
 
-  // The pair as it is NOW: a hidden Chiến lược IQX drops "Đi cặp với" and the symbol link keeps its usual target (§5.5).
-  const livePair = iqx ? (iqxFilters.data ? (iqxFilters.data.find((item) => item.id === iqx.id)?.pair ?? null) : iqx.pair) : null
-  const backtestHref = livePair
-    ? (symbol: string) => `/chien-luoc?tab=backtest&symbol=${encodeURIComponent(symbol)}&iqx=${encodeURIComponent(livePair.id)}`
-    : undefined
-
-  const applied = (count: number, session: string) => {
-    closeDialog()
-    toast.success(`Đã nhận danh mục ${count} mã, chờ hiệu lực ${session}. Không có lệnh nào được tạo và cổ phiếu đang giữ không bị bán.`)
+  /** §13: every passed symbol of the stored result goes to Backtest; the tab keeps only VN100 and says which were dropped. */
+  async function backtestBasket() {
+    if (!run || basketPending) return
+    setBasketPending(true)
+    try {
+      const symbols = await getAllPassedSymbols(run.resultId)
+      const name = `Kết quả bộ lọc ${loaded?.name ?? "chưa lưu"} · ${dayMonth(run.header.session_date ?? run.header.as_of)}`
+      navigate("/chien-luoc?tab=backtest", { state: { backtestBasket: { name, symbols } } })
+    } catch (error) {
+      toast.error(errorMessage(error))
+    } finally {
+      setBasketPending(false)
+    }
   }
 
   return (
@@ -513,8 +451,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
             )}
           </div>
 
-          {!compose && <BotSourceCard actions={actions} />}
-
           {iqx && !compose && (
             <IqxStrip
               key={iqx.id}
@@ -522,16 +458,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
               lead={<>Bắt đầu từ <b>{iqxTitle("filter", iqx.content.name)}</b>. {iqx.content.idea}</>}
               origin={iqx.content.origin}
               whenWrong={iqx.content.when_wrong}
-              extra={
-                livePair && (
-                  <>
-                    <dt className="font-semibold">Đi cặp với</dt>
-                    <dd className="text-muted-foreground">
-                      Chiến lược IQX · <b className="text-foreground">{livePair.name}</b>. Bấm một mã trong kết quả để Backtest mã đó với chiến lược này.
-                    </dd>
-                  </>
-                )
-              }
             />
           )}
 
@@ -578,10 +504,10 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
               stale={stale}
               busy={createList.isPending || createSnapshot.isPending}
               readOnly={!!compose}
-              backtestHref={backtestHref}
               onSaveList={() => openDialog({ kind: "save-result", save: "list" })}
               onSaveResult={() => openDialog({ kind: "save-result", save: "snapshot" })}
-              onApply={() => openDialog({ kind: "apply-result" })}
+              onBacktest={() => void backtestBasket()}
+              backtestPending={basketPending}
               onPushBulletin={user?.role === "admin" && !compose ? () => openDialog({ kind: "push-bulletin" }) : undefined}
               onCell={(row, metric) => openDialog({ kind: "cell", row, metric })}
               onTechnicalCell={(row, column) => openDialog({ kind: "technical-cell", row, column })}
@@ -604,8 +530,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
       {dialog?.kind === "saved-lists" && (
         <SavedListsDialog
           metrics={metrics}
-          actions={actions}
-          onApply={(list) => openDialog({ kind: "apply-list", list })}
           onAlert={(list) => openDialog({ kind: "alert-list", list })}
           onClose={closeDialog}
         />
@@ -639,19 +563,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
       {dialog?.kind === "technical-cell" && run && (
         <TechnicalDetailDialog header={run.header} row={dialog.row} column={dialog.column} registry={registry} onClose={closeDialog} />
       )}
-      {dialog?.kind === "apply-result" && run && (
-        <ApplyFromResult
-          run={run}
-          selection={selection}
-          criteria={criteriaText}
-          linked={linked}
-          savedList={savedList && savedList.runId === run.resultId ? savedList.list : null}
-          currentSource={effectiveSource}
-          actions={actions}
-          onApplied={applied}
-          onClose={closeDialog}
-        />
-      )}
       {dialog?.kind === "push-bulletin" && run && (
         <PushBulletinDialog
           resultId={run.resultId}
@@ -661,18 +572,6 @@ export function FilterTab({ compose }: { compose?: FilterComposeBinding } = {}) 
           draftSignature={currentSignature}
           tableSelection={selection}
           criteriaParts={criteriaParts(run.header.definition, metrics, registry)}
-          onClose={closeDialog}
-        />
-      )}
-      {dialog?.kind === "apply-list" && (
-        <ApplyBotDialog
-          source={{ kind: "list", list: dialog.list, criteria: null }}
-          candidates={dialog.list.tickers}
-          defaultSelected={new Set()}
-          currentSource={effectiveSource}
-          actions={actions}
-          onApplied={applied}
-          onBack={() => openDialog({ kind: "saved-lists" })}
           onClose={closeDialog}
         />
       )}

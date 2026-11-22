@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { renderBot as render, stubBrowser } from "../../demo-trading/bot/test-render"
-import { callsTo, request, savedList, universeState } from "../../demo-trading/bot/test-support"
+import { callsTo, savedList } from "../../demo-trading/bot/test-support"
 import { createStrategyApi, createStrategyWorld, FakeApiError, LIST_ID, T0, type StrategyWorld } from "../test-support"
 import { FilterTab } from "./filter-tab"
 import { emptyMarket } from "./market"
@@ -380,251 +380,22 @@ describe("saved filters", () => {
   })
 })
 
-describe("áp dụng cho Bot", () => {
-  it("confirms first, then records an internal list from the stored result and applies THAT list with the chosen symbols", async () => {
+describe("Backtest với rổ là kết quả này (spec v2.0 §13)", () => {
+  it("collects every passed symbol and opens tab Backtest with them as the basket; no Bot write, no run", async () => {
     const user = userEvent.setup()
     await renderTab()
     const results = await runSample(user)
-    await user.click(within(results).getByRole("button", { name: "Áp dụng cho Bot" }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    expect(await within(dialog).findByTestId("apply-count")).toBeTruthy()
-    await waitFor(() => expect(within(dialog).getByTestId("apply-count").textContent).toBe("2 / 2 mã"))
-    expect(dialog.textContent).toMatch(/Có hiệu lực từ phiên giao dịch tiếp theo/)
-    expect(dialog.textContent).toMatch(/Không bán cổ phiếu Bot đang giữ/)
-    expect(dialog.textContent).toMatch(/VN30 là nguồn mặc định/)
-    // Nothing is sent before the confirmation.
-    expect(posts("/strategy/lists/from-result")).toHaveLength(0)
+    expect(within(results).queryByRole("button", { name: "Áp dụng cho Bot" })).toBeNull()
+    expect(within(results).queryByRole("link", { name: /^Backtest / })).toBeNull()
+    await user.click(within(results).getByRole("button", { name: "Backtest với rổ là kết quả này" }))
+    await waitFor(() => expect(screen.getByTestId("location").textContent).toBe("/chien-luoc?tab=backtest"))
     expect(posts("/bot/universe/apply-list")).toHaveLength(0)
-
-    await user.click(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }))
-    await waitFor(() => expect(posts("/bot/universe/apply-list")).toHaveLength(1))
-    const fromResult = posts("/strategy/lists/from-result")
-    expect(fromResult).toHaveLength(1)
-    expect(fromResult[0]!.body).toMatchObject({ run_id: "dddddddd-dddd-4ddd-8ddd-000000000001", selection: { mode: "all" }, visibility: "internal" })
-    const internalList = world.lists.at(-1)!
-    expect(internalList.visibility).toBe("internal")
-    const apply = posts("/bot/universe/apply-list")[0]!.body as { list_id: string; symbols: string[]; expected_revision: number; idempotency_key: string }
-    expect(apply.list_id).toBe(internalList.id)
-    expect(apply.symbols).toEqual(["FPT", "MBB"])
-    expect(apply.expected_revision).toBe(0)
-    expect(apply.idempotency_key.length).toBeGreaterThanOrEqual(8)
-    expect(world.calls.indexOf(fromResult[0]!)).toBeLessThan(world.calls.indexOf(posts("/bot/universe/apply-list")[0]!))
-
-    await waitFor(() => expect(mocks.toast.success).toHaveBeenCalled())
-    expect(String(mocks.toast.success.mock.calls[0]![0])).toMatch(/chờ hiệu lực/)
-    expect(String(mocks.toast.success.mock.calls[0]![0])).toMatch(/không bị bán/)
-    // The new source is pending; the one in use is still VN30. The internal list is not a saved list.
-    const source = await screen.findByRole("region", { name: "Danh mục mua mới của Bot" })
-    await waitFor(() => expect(source.textContent).toMatch(/Chờ hiệu lực:.*2 mã/))
-    expect(within(source).getByRole("heading").textContent).toContain("VN30")
-    expect(world.lists.filter((list) => list.visibility === "saved")).toHaveLength(0)
-  })
-
-  it("applies only the symbols kept in the confirmation, and records a list of exactly those", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    const results = await runSample(user)
-    await user.click(within(results).getByRole("button", { name: "Áp dụng cho Bot" }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    await waitFor(() => expect(within(dialog).getByTestId("apply-count").textContent).toBe("2 / 2 mã"))
-    await user.click(within(dialog).getByRole("checkbox", { name: "Chọn MBB" }))
-    expect(within(dialog).getByTestId("apply-count").textContent).toBe("1 / 2 mã")
-    await user.click(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }))
-    await waitFor(() => expect(posts("/bot/universe/apply-list")).toHaveLength(1))
-    expect(posts("/strategy/lists/from-result")[0]!.body).toMatchObject({ selection: { mode: "subset", symbols: ["FPT"] }, visibility: "internal" })
-    expect((posts("/bot/universe/apply-list")[0]!.body as { symbols: string[] }).symbols).toEqual(["FPT"])
-  })
-
-  it("starts from the symbols ticked in the table and cannot be confirmed with none", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    const results = await runSample(user)
-    await user.click(within(results).getByRole("checkbox", { name: "Chọn MBB" }))
-    await user.click(within(results).getByRole("button", { name: "Áp dụng cho Bot" }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    await waitFor(() => expect(within(dialog).getByTestId("apply-count").textContent).toBe("1 / 2 mã"))
-    await user.click(within(dialog).getByRole("button", { name: "Chọn tất cả" }))
-    await user.click(within(dialog).getByRole("button", { name: "Bỏ chọn tất cả" }))
-    expect(within(dialog).getByTestId("apply-count").textContent).toBe("Chọn ít nhất một mã để áp dụng.")
-    expect(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }).hasAttribute("disabled")).toBe(true)
-    expect(posts("/bot/universe/apply-list")).toHaveLength(0)
-  })
-
-  it("reuses the list the user already saved for the same result instead of creating another one", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    const results = await runSample(user)
-    await user.click(within(results).getByRole("button", { name: "Lưu danh mục" }))
-    await user.click(within(await screen.findByRole("dialog", { name: "Lưu danh mục" })).getByRole("button", { name: "Lưu danh mục" }))
-    await waitFor(() => expect(posts("/strategy/lists/from-result")).toHaveLength(1))
-    const saved = world.lists.at(-1)!
-    await user.click(within(results).getByRole("button", { name: "Áp dụng cho Bot" }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    await waitFor(() => expect(within(dialog).getByTestId("apply-count").textContent).toBe("2 / 2 mã"))
-    await user.click(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }))
-    await waitFor(() => expect(posts("/bot/universe/apply-list")).toHaveLength(1))
-    expect(posts("/strategy/lists/from-result")).toHaveLength(1)
-    expect((posts("/bot/universe/apply-list")[0]!.body as { list_id: string }).list_id).toBe(saved.id)
-  })
-
-  it("sends nothing when the confirmation is cancelled", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    const results = await runSample(user)
-    await user.click(within(results).getByRole("button", { name: "Áp dụng cho Bot" }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    await user.click(within(dialog).getByRole("button", { name: "Hủy" }))
-    expect(screen.queryByRole("dialog", { name: "Áp dụng danh mục cho Bot" })).toBeNull()
-    expect(posts("/strategy/lists/from-result")).toHaveLength(0)
-    expect(posts("/bot/universe/apply-list")).toHaveLength(0)
-    expect(world.universe.pending).toBeNull()
-  })
-
-  it("lists the symbols the server refuses and changes nothing; a revision conflict keeps the draft", async () => {
-    const user = userEvent.setup()
-    world.invalidSymbols = [{ symbol: "MBB", reason: "not_tradable" }]
-    await renderTab()
-    const results = await runSample(user)
-    await user.click(within(results).getByRole("button", { name: "Áp dụng cho Bot" }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    await waitFor(() => expect(within(dialog).getByTestId("apply-count").textContent).toBe("2 / 2 mã"))
-    await user.click(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }))
-    expect(await within(dialog).findByText("Một số mã không hợp lệ cho nguồn mua của Bot")).toBeTruthy()
-    expect(within(dialog).getByText(/Bot chỉ mua cổ phiếu đang niêm yết trên HOSE/)).toBeTruthy()
-    expect(world.universe.pending).toBeNull()
-    expect(mocks.toast.success).not.toHaveBeenCalled()
-    world.invalidSymbols = null
-    world.universe = { ...world.universe, revision: 5 }
-    await user.click(within(dialog).getByRole("button", { name: "Bỏ chọn các mã không hợp lệ" }))
-    await user.click(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }))
-    await waitFor(() => expect(posts("/bot/universe/apply-list").length).toBeGreaterThanOrEqual(1))
-    expect(await within(dialog).findByText(/đã được thay đổi ở nơi khác/)).toBeTruthy()
-    expect(screen.getByRole("dialog", { name: "Áp dụng danh mục cho Bot" })).toBeTruthy()
-  })
-
-  it("applies a saved list whole or in part, from Danh mục đã lưu", async () => {
-    const user = userEvent.setup()
-    world.lists = [savedList(LIST_ID, "Cổ phiếu tăng trưởng", ["FPT", "HPG", "CMG"])]
-    await renderTab()
-    await user.click(screen.getByRole("button", { name: "Danh mục đã lưu" }))
-    const lists = await screen.findByRole("dialog", { name: "Danh mục đã lưu" })
-    await user.click(await within(lists).findByRole("button", { name: /Áp dụng cho Bot Cổ phiếu tăng trưởng/ }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    await user.click(within(dialog).getByRole("checkbox", { name: "Chọn CMG" }))
-    await user.click(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }))
-    await waitFor(() => expect(posts("/bot/universe/apply-list")).toHaveLength(1))
-    expect(posts("/bot/universe/apply-list")[0]!.body).toMatchObject({ list_id: LIST_ID, symbols: ["FPT", "HPG"], expected_revision: 0 })
-    expect(posts("/strategy/lists/from-result")).toHaveLength(0)
-  })
-
-  it("does not offer a list without a stored result to the Bot: disabled action, short note, also in the detail", async () => {
-    const user = userEvent.setup()
-    world.lists = [
-      savedList(LIST_ID, "Cổ phiếu tăng trưởng", ["FPT", "HPG"]),
-      savedList("44444444-4444-4444-8444-444444444444", "Tự nhập", ["VCB", "BID"], { declared: true }),
-    ]
-    await renderTab()
-    await user.click(screen.getByRole("button", { name: "Danh mục đã lưu" }))
-    const lists = await screen.findByRole("dialog", { name: "Danh mục đã lưu" })
-    const declared = await within(lists).findByRole("button", { name: /Áp dụng cho Bot Tự nhập/ })
-    const verified = within(lists).getByRole("button", { name: /Áp dụng cho Bot Cổ phiếu tăng trưởng/ })
-    expect((declared as HTMLButtonElement).disabled).toBe(true)
-    expect((verified as HTMLButtonElement).disabled).toBe(false)
-    expect(within(lists).getAllByText(/không lưu từ kết quả Bộ lọc/)).toHaveLength(1)
-    // The detail dialog offers the same action with the same rule.
-    await user.click(within(lists).getByRole("button", { name: /Xem Tự nhập/ }))
-    const detail = await screen.findByRole("dialog", { name: "Tự nhập" })
-    expect((within(detail).getByRole("button", { name: "Áp dụng cho Bot" }) as HTMLButtonElement).disabled).toBe(true)
-    expect(detail.textContent).toMatch(/không lưu từ kết quả Bộ lọc/)
-    expect(posts("/bot/universe/apply-list")).toHaveLength(0)
-  })
-})
-
-describe("Bot source block", () => {
-  it("shows the source in use apart from the pending one and never calls a pending source 'in use'", async () => {
-    world.universe = universeState({ revision: 2, pending: request({ kind: "custom", name: "Danh mục chờ", revision: 2, symbol_count: 4 }) })
-    await renderTab()
-    const source = await screen.findByRole("region", { name: "Danh mục mua mới của Bot" })
-    await within(source).findByRole("heading", { name: /VN30/ })
-    expect(within(source).getByRole("heading").textContent).toContain("30 mã")
-    expect(source.textContent).toMatch(/Chờ hiệu lực: Danh mục chờ · 4 mã · từ phiên 09\/10\/2026/)
-    expect(within(source).getByRole("link", { name: "Xem Bot" }).getAttribute("href")).toBe("/luyen-tap?tool=bot")
-  })
-
-  it("goes back to VN30 only after a confirmation that says nothing is sold", async () => {
-    const user = userEvent.setup()
-    world.universe = universeState({
-      revision: 1,
-      effective: { ...universeState().effective, kind: "custom", name: "Ngân hàng", revision: 1, status: "effective", symbol_count: 2, effective_session: "2026-10-02", saved_list_id: LIST_ID, symbols: [{ symbol: "VCB", name: null, exchange: "HOSE" }, { symbol: "BID", name: null, exchange: "HOSE" }] },
-    })
-    await renderTab()
-    const source = await screen.findByRole("region", { name: "Danh mục mua mới của Bot" })
-    await user.click(await within(source).findByRole("button", { name: "Về VN30" }))
-    const dialog = await screen.findByRole("dialog", { name: "Quay về VN30" })
-    expect(dialog.textContent).toMatch(/không bị bán do thay danh mục/)
-    expect(posts("/bot/universe/revert-vn30")).toHaveLength(0)
-    await user.click(within(dialog).getByRole("button", { name: "Xác nhận" }))
-    await waitFor(() => expect(posts("/bot/universe/revert-vn30")).toHaveLength(1))
-    expect(posts("/bot/universe/revert-vn30")[0]!.body).toMatchObject({ expected_revision: 1 })
-    await waitFor(() => expect(mocks.toast.success).toHaveBeenCalled())
-  })
-
-  it("cancels only the pending change, after a confirmation", async () => {
-    const user = userEvent.setup()
-    world.universe = universeState({ revision: 2, pending: request({ kind: "custom", name: "Danh mục chờ", revision: 2, symbol_count: 4 }) })
-    await renderTab()
-    const source = await screen.findByRole("region", { name: "Danh mục mua mới của Bot" })
-    await user.click(await within(source).findByRole("button", { name: "Hủy thay đổi" }))
-    const dialog = await screen.findByRole("dialog", { name: "Hủy thay đổi chờ hiệu lực?" })
-    expect(callsTo(world, "POST", "/bot/universe/pending/cancel")).toHaveLength(0)
-    await user.click(within(dialog).getByRole("button", { name: "Hủy thay đổi" }))
-    await waitFor(() => expect(callsTo(world, "POST", "/bot/universe/pending/cancel")).toHaveLength(1))
-    expect(callsTo(world, "POST", "/bot/universe/pending/cancel")[0]!.body).toEqual({ expected_revision: 2 })
+    expect(posts("/strategy/backtests")).toHaveLength(0)
   })
 })
 
 describe("deleting a list", () => {
-  it("explains the 409 LIST_IN_USE_BY_BOT instead of deleting, and offers VN30 or cancelling the pending change", async () => {
-    const user = userEvent.setup()
-    world.lists = [savedList(LIST_ID, "Cổ phiếu tăng trưởng", ["FPT", "HPG"])]
-    world.universe = universeState({ revision: 3, pending: request({ kind: "custom", name: "Cổ phiếu tăng trưởng", revision: 3, symbol_count: 2, saved_list_id: LIST_ID }) })
-    await renderTab()
-    await user.click(screen.getByRole("button", { name: "Danh mục đã lưu" }))
-    const lists = await screen.findByRole("dialog", { name: "Danh mục đã lưu" })
-    expect(await within(lists).findByText("Chờ hiệu lực")).toBeTruthy()
-    await user.click(within(lists).getByRole("button", { name: "Xóa danh mục Cổ phiếu tăng trưởng" }))
-    const confirm = await screen.findByRole("dialog", { name: "Xóa danh mục?" })
-    await user.click(within(confirm).getByRole("button", { name: "Xóa danh mục" }))
-    const explain = await screen.findByRole("dialog", { name: "Danh mục đang được Bot sử dụng" })
-    expect(explain.textContent).toMatch(/đang chờ hiệu lực làm nguồn mua mới của Bot, nên chưa thể xóa/)
-    expect(explain.textContent).toMatch(/chuyển Bot sang danh mục khác hoặc về VN30/)
-    expect(explain.textContent).toMatch(/Bot không tự bán và không tự đổi nguồn/)
-    expect(within(explain).getByRole("button", { name: "Hủy thay đổi chờ" })).toBeTruthy()
-    expect(world.lists).toHaveLength(1)
-    expect(callsTo(world, "DELETE", `/strategy/lists/${LIST_ID}`)).toHaveLength(1)
-  })
-
-  it("lets the user go back to VN30 from that explanation (with its own confirmation)", async () => {
-    const user = userEvent.setup()
-    world.lists = [savedList(LIST_ID, "Cổ phiếu tăng trưởng", ["FPT", "HPG"])]
-    world.universe = universeState({
-      revision: 1,
-      effective: { ...universeState().effective, kind: "custom", name: "Cổ phiếu tăng trưởng", revision: 1, status: "effective", symbol_count: 2, effective_session: "2026-10-02", saved_list_id: LIST_ID, symbols: [{ symbol: "FPT", name: null, exchange: "HOSE" }] },
-    })
-    await renderTab()
-    await user.click(screen.getByRole("button", { name: "Danh mục đã lưu" }))
-    const lists = await screen.findByRole("dialog", { name: "Danh mục đã lưu" })
-    expect(await within(lists).findByText("Bot đang dùng")).toBeTruthy()
-    await user.click(within(lists).getByRole("button", { name: "Xóa danh mục Cổ phiếu tăng trưởng" }))
-    await user.click(within(await screen.findByRole("dialog", { name: "Xóa danh mục?" })).getByRole("button", { name: "Xóa danh mục" }))
-    const explain = await screen.findByRole("dialog", { name: "Danh mục đang được Bot sử dụng" })
-    await user.click(within(explain).getByRole("button", { name: "Về VN30" }))
-    await user.click(within(await screen.findByRole("dialog", { name: "Quay về VN30" })).getByRole("button", { name: "Xác nhận" }))
-    await waitFor(() => expect(posts("/bot/universe/revert-vn30")).toHaveLength(1))
-    expect(world.lists).toHaveLength(1)
-  })
-
-  it("deletes a list the Bot does not use", async () => {
+  it("deletes a list, also one the Bot once used (no lock any more)", async () => {
     const user = userEvent.setup()
     world.lists = [savedList(LIST_ID, "Cổ phiếu tăng trưởng", ["FPT"])]
     await renderTab()

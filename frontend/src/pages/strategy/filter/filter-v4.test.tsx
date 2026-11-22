@@ -739,30 +739,14 @@ describe("saving", () => {
   })
 })
 
-describe("apply to Bot", () => {
-  it("keeps the rule of the Bot for a result with technical conditions: confirm first, then the list of the stored result", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    await addRsiAbove60(user)
-    const panel = await runFilter(user)
-    await user.click(within(panel).getByRole("button", { name: "Áp dụng cho Bot" }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    await waitFor(() => expect(within(dialog).getByTestId("apply-count").textContent).toBe("2 / 2 mã"))
-    expect(posts("/bot/universe/apply-list")).toHaveLength(0)
-    await user.click(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }))
-    await waitFor(() => expect(posts("/bot/universe/apply-list")).toHaveLength(1))
-    expect(posts("/strategy/lists/from-result")[0]!.body).toMatchObject({ selection: { mode: "all" }, visibility: "internal" })
-    expect((posts("/bot/universe/apply-list")[0]!.body as { symbols: string[] }).symbols).toEqual(["CMG", "FPT"])
-  })
-
+describe("Backtest với rổ là kết quả này", () => {
   it("collects every page of the companies that passed (the server answers at most 500 at a time)", async () => {
     const user = userEvent.setup()
     world.extraCompanies = 600
     await renderTab()
     const panel = await runFilter(user)
-    await user.click(within(panel).getByRole("button", { name: "Áp dụng cho Bot" }))
-    const dialog = await screen.findByRole("dialog", { name: "Áp dụng danh mục cho Bot" })
-    await waitFor(() => expect(within(dialog).getByTestId("apply-count").textContent).toBe("606 / 606 mã"))
+    await user.click(within(panel).getByRole("button", { name: "Backtest với rổ là kết quả này" }))
+    await waitFor(() => expect(screen.getByTestId("location").textContent).toBe("/chien-luoc?tab=backtest"))
     const pages = world.calls.filter((call) => call.method === "GET" && call.path.startsWith("/strategy/screener/results/") && call.query?.includes("limit=500"))
     expect(pages).toHaveLength(2)
   })

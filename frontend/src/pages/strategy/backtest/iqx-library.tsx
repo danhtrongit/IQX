@@ -1,35 +1,83 @@
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
+import { cn } from "@/lib/utils"
 
-import { useIqxStrategies, type IqxStrategyItem } from "../shared/iqx"
-import { IqxCard, IqxCardList } from "../shared/iqx-ui"
-import { strategySummary } from "./draft"
+import { ErrorLine } from "../shared/controls"
+import { errorMessage } from "../shared/errors"
+import type { IqxStrategyItem } from "../shared/iqx"
+import { IqxBadge } from "../shared/iqx-ui"
+import { BotTags } from "./bot-tags"
+import type { BotSchedule } from "../shared/bot-schedule"
+import { contentFromDefinition, strategySummary } from "./draft"
+import { SUB_TEXT } from "./ui"
 
-export const STRATEGY_IQX_FOOTER =
-  "Chiến lược dựng sẵn bởi IQX. Bấm Dùng để điền sẵn các thẻ chỉ báo vào Điều kiện Mua và Bán của bản nháp. Bot không đổi."
-
-/** Tab IQX of the Backtest library: the shown Chiến lược IQX, in the admin's order (§3.2). */
+/**
+ * Tab IQX of the Backtest (§4.2): the shown Chiến lược IQX in the admin's order. A click on the whole card
+ * selects it (accent border); there is no "Dùng" (choosing for the Bot happens on the Bot page).
+ */
 export function IqxStrategyLibrary({
-  indicators,
+  items,
+  loading,
+  error,
+  onRetry,
+  registry,
   activeId,
-  onUse,
+  schedule,
+  onSelect,
 }: {
-  indicators: readonly TechnicalIndicator[]
+  items: IqxStrategyItem[]
+  loading: boolean
+  error: unknown
+  onRetry: () => void
+  registry: readonly TechnicalIndicator[]
   activeId: string | null
-  onUse: (item: IqxStrategyItem) => void
+  schedule: BotSchedule | undefined
+  onSelect: (item: IqxStrategyItem) => void
 }) {
-  const query = useIqxStrategies()
-  const items = query.data ?? []
+  if (error) {
+    return (
+      <div className="space-y-2">
+        <ErrorLine>{errorMessage(error)}</ErrorLine>
+        <Button type="button" variant="outline" size="sm" onClick={onRetry}>Thử lại</Button>
+      </div>
+    )
+  }
+  if (loading) return <Skeleton className="h-28 w-full" aria-label="Đang tải chiến lược IQX" />
+  if (items.length === 0) return <p className={`text-xs ${SUB_TEXT}`}>Chưa có chiến lược IQX nào.</p>
   return (
-    <IqxCardList loading={query.isPending} error={query.isError ? query.error : null} onRetry={() => void query.refetch()} empty={items.length === 0} footer={STRATEGY_IQX_FOOTER}>
+    <ul className="space-y-2">
       {items.map((item) => {
-        const summary = strategySummary(item.content.definition, indicators)
+        const summary = strategySummary(contentFromDefinition(item.content.definition), registry)
+        const active = activeId === item.id
         return (
-          <IqxCard key={item.id} testId={`iqx-strategy-${item.slug}`} name={item.content.name} idea={item.content.idea} active={activeId === item.id} onUse={() => onUse(item)}>
-            <span className="block w-full text-price-up">{summary.buy}</span>
-            <span className="block w-full text-price-down">{summary.sell}</span>
-          </IqxCard>
+          <li key={item.id}>
+            <button
+              type="button"
+              data-testid={`iqx-strategy-${item.slug}`}
+              data-active={active || undefined}
+              aria-pressed={active}
+              onClick={() => onSelect(item)}
+              className={cn(
+                "w-full space-y-1.5 rounded-md border bg-background/40 px-3 py-2.5 text-left transition-colors hover:bg-muted",
+                active ? "border-primary ring-1 ring-primary" : "border-border",
+              )}
+            >
+              <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-semibold break-words">
+                <IqxBadge />
+                <span className="min-w-0">{item.content.name}</span>
+              </span>
+              <span className={`block text-[11.5px] leading-4 ${SUB_TEXT}`}>{item.content.idea}</span>
+              <span className="block text-[11px] leading-4">
+                <span className="block text-price-up">{summary.buy}</span>
+                <span className="block text-price-down">{summary.sell}</span>
+                <span className="block">{summary.universe}</span>
+              </span>
+              <BotTags schedule={schedule} source="iqx" id={item.id} />
+            </button>
+          </li>
         )
       })}
-    </IqxCardList>
+    </ul>
   )
 }

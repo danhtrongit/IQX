@@ -3,7 +3,7 @@ import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes } from "react-router"
 import { toast } from "sonner"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, onTestFinished, vi } from "vitest"
 
 import { ApiError } from "@/lib/api"
 import { requestOperation } from "@/lib/contract-client"
@@ -57,6 +57,10 @@ function item(overrides: Partial<IqxAdminItem>): IqxAdminItem {
     updated_at: "2026-11-18T03:00:00.000Z",
     updated_by: ACTOR,
     used_30d: 17,
+    universe: null,
+    max_holding: null,
+    bots_using: null,
+    trial_runs_30d: null,
     ...overrides,
   }
 }
@@ -159,6 +163,23 @@ describe("danh sách Mẫu IQX", () => {
     await user.click(screen.getByRole("button", { name: "Đưa Tăng trưởng lên" }))
     await waitFor(() => expect(calls("PUT /api/v2/admin/iqx-templates/order")).toHaveLength(1))
     expect(calls("PUT /api/v2/admin/iqx-templates/order")[0][1]).toEqual({ body: { kind: "filter", ids: [B, A, C] } })
+  })
+
+  it("tab Chiến lược IQX: cột Rổ mã, Giữ tối đa, Bot đang dùng, Lần chạy thử · 30 ngày và lời Ẩn riêng (spec v2.0 §7.2)", async () => {
+    const user = userEvent.setup()
+    const original = ROWS[0]!
+    ROWS[0] = { ...original, ...({ universe: { type: "vn100" }, max_holding: 45, bots_using: 12, trial_runs_30d: 340 } as object) }
+    onTestFinished(() => { ROWS[0] = original })
+    renderAt("/admin/iqx-templates?tab=strategy")
+    await screen.findByText("Cổ phiếu giá trị")
+    for (const header of ["Rổ mã", "Giữ tối đa", "Bot đang dùng", "Lần chạy thử · 30 ngày"]) expect(screen.getByText(header)).toBeTruthy()
+    expect(screen.queryByText("Người dùng bấm Dùng · 30 ngày")).toBeNull()
+    expect(screen.getByText("VN100")).toBeTruthy()
+    expect(screen.getByText("45 phiên")).toBeTruthy()
+    expect(screen.getByText("340")).toBeTruthy()
+    await user.click(screen.getByRole("button", { name: "Ẩn" }))
+    const dialog = await screen.findByRole("dialog")
+    expect(dialog.textContent).toContain('Bot đang chạy chiến lược này vẫn chạy tiếp phiên bản đã chọn, có nhãn "IQX đã ngừng cung cấp"; người dùng không chọn mới được.')
   })
 
   it("Ẩn cần lý do thay đổi", async () => {

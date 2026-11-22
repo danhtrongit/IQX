@@ -83,7 +83,8 @@ export function AlertForm({ alert, initialRunId, initialSymbols, initialListId, 
 
   const savedLists = lists.data ?? []
   const revisionRows = useMemo(() => [...(revisions.data ?? [])].sort((a, b) => b.revision - a.revision), [revisions.data])
-  const runRows = useMemo(() => (runs.data?.items ?? []).filter((run) => run.status === "succeeded" && run.kind === "single"), [runs.data])
+  // Single-symbol runs (one mã, shared config) are the pre-22-11 legacy runs; their universe_label is the mã.
+  const runRows = useMemo(() => (runs.data?.items ?? []).filter((run) => run.status === "succeeded" && run.legacy).map((run) => ({ ...run, symbol: run.universe_label })), [runs.data])
 
   const selectedRevision = revision ?? revisionRows[0]?.revision ?? null
   const selectedRunId = runId ?? (sourceMode === "run" ? (runRows[0]?.run_id ?? null) : null)
@@ -301,7 +302,7 @@ export function AlertForm({ alert, initialRunId, initialSymbols, initialListId, 
             {runRows.length === 0 && <option value="">Chưa có kết quả kiểm thử nào</option>}
             {runRows.map((run) => (
               <option key={run.run_id} value={run.run_id}>
-                {run.symbol} · {fmtDate(run.start)} đến {fmtDate(run.end)} · bản {run.shared_revision} · chạy {fmtDate(run.created_at)}
+                {run.symbol} · {fmtDate(run.start)} đến {fmtDate(run.end)} · chạy {fmtDate(run.created_at)}
               </option>
             ))}
           </NativeSelect>

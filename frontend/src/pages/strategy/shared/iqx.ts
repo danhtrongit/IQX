@@ -17,13 +17,26 @@ export type IqxKind = "filter" | "strategy"
 export type IqxInfo = { name: string; idea: string; origin: string; when_wrong: string }
 
 export type IqxFilterContent = IqxInfo & { pair_slug: string | null; definition: FilterDefinition }
-export type IqxStrategyDefinition = { max_holding: number; indicators: Record<string, IndicatorConfig> }
+/**
+ * Definition of a Chiến lược IQX (update 22-11 §7, §10.2): rổ VN30/VN100, the V3 indicator map and Giữ tối đa.
+ * Versions published before 22-11 have no `universe` (read as VN30).
+ */
+export type IqxStrategyDefinition = { universe?: { type: "vn30" | "vn100" } | null; max_holding: number; indicators: Record<string, IndicatorConfig> }
 export type IqxStrategyContent = IqxInfo & { definition: IqxStrategyDefinition }
 
 export type IqxPair = { id: string; slug: string; name: string; version: number }
 
 export type IqxFilterItem = { id: string; kind: "filter"; slug: string; version: number; content: IqxFilterContent; pair: IqxPair | null }
-export type IqxStrategyItem = { id: string; kind: "strategy"; slug: string; version: number; content: IqxStrategyContent }
+export type IqxStrategyItem = {
+  id: string
+  kind: "strategy"
+  slug: string
+  version: number
+  content: IqxStrategyContent
+  /** Added by update 22-11 (PLAN §6.1); optional until every server sends them. */
+  current_version?: number
+  hidden?: boolean
+}
 
 /** `{ type, id, version }` kept with what the user made from an item (display and statistics only). */
 export type IqxFilterOrigin = { type: "iqx_filter"; id: string; version: number }

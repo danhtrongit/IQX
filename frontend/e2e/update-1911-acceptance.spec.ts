@@ -414,7 +414,7 @@ async function openFilter(page: Page) {
 }
 
 async function openBacktest(page: Page) {
-  await page.goto("/chien-luoc?tab=backtest&symbol=FPT")
+  await page.goto("/chien-luoc?tab=backtest")
   await expect(page.getByRole("heading", { name: "Điều kiện Mua" })).toBeVisible()
 }
 
@@ -498,7 +498,9 @@ test.describe("Tab IQX · Bộ lọc", () => {
 })
 
 test.describe("Tab IQX · Backtest", () => {
-  test("§7.2 item 9, 10, 12, 14 và §7.3 item 15: 2 tab, Dùng điền thẻ thật, không đổi mã/ngày/vốn/Bot, Về cấu hình đã lưu, Mua và giữ", async ({ page }) => {
+  // Superseded by Bot và Chiến lược v2.0 (update 22-11): tab Backtest is basket-based, Chiến lược IQX are read only
+  // (no Dùng), the pair line and per-symbol links are gone. Covered by e2e/update-2211-backtest.spec.ts.
+  test.skip("§7.2 item 9, 10, 12, 14 và §7.3 item 15: 2 tab, Dùng điền thẻ thật, không đổi mã/ngày/vốn/Bot, Về cấu hình đã lưu, Mua và giữ", async ({ page }) => {
     const calls: NonNullable<MemberOptions["calls"]> = []
     await member(page, { premium: true, calls })
     await desktop(page)
@@ -563,7 +565,9 @@ test.describe("Tab IQX · Backtest", () => {
     await expect(page.getByTestId("iqx-strategy-strip")).toHaveCount(0)
   })
 
-  test("§7.3 item 17: kết quả cũ chưa có Mua và giữ hiện —, không vẽ đường", async ({ page }) => {
+  // Superseded by Bot và Chiến lược v2.0 (update 22-11): tab Backtest is basket-based, Chiến lược IQX are read only
+  // (no Dùng), the pair line and per-symbol links are gone. Covered by e2e/update-2211-backtest.spec.ts.
+  test.skip("§7.3 item 17: kết quả cũ chưa có Mua và giữ hiện —, không vẽ đường", async ({ page }) => {
     await member(page, { premium: true })
     await desktop(page)
     await openBacktest(page)
@@ -656,7 +660,9 @@ test.describe("Tab IQX · 390px (§7.5 item 29)", () => {
     await shot(page, "IQX-29-bo-loc-390-sau-dung")
   })
 
-  test("Backtest 390px: tab IQX trong ngăn kéo Chỉ báo, Dùng điền được, không cuộn ngang", async ({ page }) => {
+  // Superseded by Bot và Chiến lược v2.0 (update 22-11): tab Backtest is basket-based, Chiến lược IQX are read only
+  // (no Dùng), the pair line and per-symbol links are gone. Covered by e2e/update-2211-backtest.spec.ts.
+  test.skip("Backtest 390px: tab IQX trong ngăn kéo Chỉ báo, Dùng điền được, không cuộn ngang", async ({ page }) => {
     await openBacktest(page)
     expect(await overflows(page)).toBe(false)
     await page.getByRole("button", { name: "Chỉ báo", exact: true }).click()
@@ -794,7 +800,9 @@ test.describe("Tab IQX · §7.1 item 5, 7, 8 và §7.4 item 21", () => {
     })
   }
 
-  test("§7.1 item 7: bấm mã trong kết quả có dải IQX mở Backtest mã đó với Chiến lược IQX đi cặp; hỏi khi bản nháp khác", async ({ page }) => {
+  // Superseded by Bot và Chiến lược v2.0 (update 22-11): tab Backtest is basket-based, Chiến lược IQX are read only
+  // (no Dùng), the pair line and per-symbol links are gone. Covered by e2e/update-2211-backtest.spec.ts.
+  test.skip("§7.1 item 7: bấm mã trong kết quả có dải IQX mở Backtest mã đó với Chiến lược IQX đi cặp; hỏi khi bản nháp khác", async ({ page }) => {
     const calls: Calls = []
     await member(page, { premium: true, calls })
     await desktop(page)
@@ -841,7 +849,9 @@ test.describe("Tab IQX · §7.1 item 5, 7, 8 và §7.4 item 21", () => {
     await shot(page, "IQX-7-backtest-di-cap-1440")
   })
 
-  test("§7.1 item 7: không có bản nháp thì bấm mã điền ngay Chiến lược IQX đi cặp, không hỏi", async ({ page }) => {
+  // Superseded by Bot và Chiến lược v2.0 (update 22-11): tab Backtest is basket-based, Chiến lược IQX are read only
+  // (no Dùng), the pair line and per-symbol links are gone. Covered by e2e/update-2211-backtest.spec.ts.
+  test.skip("§7.1 item 7: không có bản nháp thì bấm mã điền ngay Chiến lược IQX đi cặp, không hỏi", async ({ page }) => {
     const calls: Calls = []
     await member(page, { premium: true, calls })
     await desktop(page)
@@ -884,9 +894,9 @@ test.describe("Tab IQX · §7.1 item 5, 7, 8 và §7.4 item 21", () => {
     await page.getByRole("tab", { name: "Backtest" }).click()
     await expect(page.getByRole("heading", { name: "Điều kiện Mua" })).toBeVisible()
     await backtestLibrary(page).getByRole("tab", { name: "IQX" }).click()
-    for (const toggle of await backtestLibrary(page).locator('[aria-expanded="false"]').all()) await toggle.click().catch(() => undefined)
-    await check("Backtest · tab IQX", backtestLibrary(page).getByRole("tabpanel"))
-    await backtestLibrary(page).getByRole("button", { name: `Dùng ${IQX_STRATEGIES[0]!.content.name}` }).click()
+    // v2.0 (update 22-11): a Chiến lược IQX card is selected by a click, read only, no Dùng.
+    await check("Backtest · tab IQX", backtestLibrary(page).getByTestId(`iqx-strategy-${IQX_STRATEGIES[0]!.slug}`))
+    await backtestLibrary(page).getByTestId(`iqx-strategy-${IQX_STRATEGIES[0]!.slug}`).click()
     await check("Backtest · dải IQX", page.getByTestId("iqx-strategy-strip"))
     await shot(page, "IQX-8-backtest-tab-iqx-mo-rong-1440")
   })

@@ -72,9 +72,9 @@ describe("tab IQX of the Bộ lọc", () => {
     expect(body.market.baskets).toEqual(["VN100"])
     expect(body.technical).toEqual(item.content.definition.technical)
     expect(body.rules).toEqual([])
-    // A symbol opens the Backtest with the paired Chiến lược IQX.
-    const link = (await screen.findAllByRole("link", { name: /^Backtest / }))[0]!
-    expect(link.getAttribute("href")).toContain(`&iqx=${item.pair!.id}`)
+    // No "Đi cặp với" line and no per-symbol Backtest link any more (spec v2.0 §13).
+    expect(strip.textContent).not.toContain("Đi cặp với")
+    expect(screen.queryAllByRole("link", { name: /^Backtest / })).toHaveLength(0)
   })
 
   it("asks before replacing a form that already has conditions; Hủy keeps it", async () => {

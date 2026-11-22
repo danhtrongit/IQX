@@ -8,16 +8,22 @@ import type { ApiRequestFor, ApiResponseFor } from "@/lib/contract-types"
 import { createFakeApi as createBotApi, createWorld as createBotWorld, FakeApiError, registryFor, VN30, type World as BotWorld } from "../demo-trading/bot/test-support"
 import type { IndicatorConfig } from "../demo-trading/bot/config/types"
 import type { IqxFilterItem, IqxStrategyItem } from "./shared/iqx"
+import { createBacktestV2World, handleBacktestV2, type BacktestV2World } from "./backtest/test-fake"
 
 export { FakeApiError }
 
 type Alert = ApiResponseFor<"GET /api/v2/strategy/alerts">["items"][number]
 type AlertDetailView = ApiResponseFor<"GET /api/v2/strategy/alerts/{alertId}">
 type AlertEventView = ApiResponseFor<"GET /api/v2/strategy/alerts/events">["items"][number]
-type RunView = ApiResponseFor<"GET /api/v2/strategy/backtests/{id}">
+/*
+ * Pre-22-11 single-symbol runs (alerts "backtest_run" source, old fakes): the regenerated contract only types
+ * basket runs now, so these fixtures keep their own loose shapes. Basket runs are faked in ./backtest/test-fake.
+ */
+type LegacyResult = { snapshot: Record<string, unknown>; counts: { closed_trade_count: number }; open_position: unknown; pending_orders: unknown[] } & Record<string, unknown>
+type RunView = { run_id: string; result: LegacyResult | null } & Record<string, unknown>
 type RunSummaryView = ApiResponseFor<"GET /api/v2/strategy/backtests">["items"][number]
-type TradesView = ApiResponseFor<"GET /api/v2/strategy/backtests/{id}/trades">
-type TradeView = TradesView["items"][number]
+type TradeView = Record<string, unknown>
+type TradesView = { run_id: string; total: number; offset: number; limit: number; items: TradeView[] } & Record<string, unknown>
 export type MetricView = ApiResponseFor<"GET /api/v2/strategy/screener/metrics">[number]
 type RunBody = ApiRequestFor<"POST /api/v2/strategy/screener/run">["body"]
 type Definition = Extract<RunBody, { schema_version: "4.0" }>
@@ -221,10 +227,13 @@ export function tradesPage(run: RunView, page: number, limit: number, total: num
   }
 }
 
+/** A stored pre-22-11 run as `GET /strategy/backtests` lists it (legacy; `universe_label` is its mã). */
 export function runSummary(partial: Partial<RunSummaryView> = {}): RunSummaryView {
   return {
-    run_id: RUN_ID, kind: "single", status: "succeeded", shared_revision: 3, symbol: "FPT", start: "2024-01-02", end: "2025-12-31", created_at: T0, config_hash: "c".repeat(64),
-    kpis: { total_return_pct: 74.2, annualized_return_pct: 30.7, max_drawdown_pct: -10.6, closed_trade_count: 13, win_rate_pct: 53.8, buy_hold_return_pct: 15.3 }, error_code: null, ...partial,
+    // The server sends `strategy_source: null` for a legacy run (zod `.nullable()`); the generated type drops the null.
+    run_id: RUN_ID, created_at: T0, legacy: true, status: "succeeded", strategy_source: null as unknown as RunSummaryView["strategy_source"], strategy_id: null, strategy_version: null,
+    strategy_label: "Cấu hình cũ", version_label: null, universe_label: "FPT", start: "2024-01-02", end: "2025-12-31", config_hash: "c".repeat(64),
+    kpis: { total_return_pct: 74.2, max_drawdown_pct: -10.6, closed_trades: 13 }, ...partial,
   }
 }
 
@@ -432,7 +441,7 @@ export const SYMBOLS = ["CMG", "FPT", "HPG", "MBB", "NEG", "XYZ"]
 
 /* ── World ──────────────────────────────────────────────────────────────── */
 
-export type StrategyWorld = BotWorld & {
+export type StrategyWorld = BotWorld & BacktestV2World & {
   alerts: Alert[]
   events: AlertEventView[]
   revisions: RevisionView[]
@@ -491,6 +500,7 @@ export function createStrategyWorld(partial: Partial<StrategyWorld> = {}): Strat
     runs: [], runResponses: new Map(), nextTrades: 3, nextOpen: false, nextPending: false, marketAvailable: true,
     metrics: metricsFixture(), screenerRuns: new Map(), filters: [], snapshots: [], extraCompanies: 0, marketDataUnavailable: false, truncated: false, basketsUnavailable: [], runDelay: () => 0, runCount: 0,
     iqx: iqxSeed(),
+    ...createBacktestV2World(),
     ...partial,
   }
 }
@@ -523,6 +533,9 @@ export function createStrategyApi(world: StrategyWorld) {
       return structuredClone(value)
     }
     const segments = target.pathname.split("/").filter(Boolean)
+    // Bot và Chiến lược v2.0 (tab Backtest, Lịch phiên of the Bot) first; the older routes below otherwise.
+    const v2 = handleBacktestV2(world, { method, segments, search: target.searchParams, body }, FakeApiError as never)
+    if (v2) return done(v2.value)
 
     switch (key) {
       case "GET /instruments": {
@@ -586,7 +599,7 @@ export function createStrategyApi(world: StrategyWorld) {
         }
         if (body?.trial) return done(run)
         world.runResponses.set(run.run_id, run)
-        world.runs.unshift(runSummary({ run_id: run.run_id, symbol: String(body?.symbol) }))
+        world.runs.unshift(runSummary({ run_id: run.run_id, universe_label: String(body?.symbol) }))
         return done(run)
       }
       case "GET /strategy/shared-config/revisions": return done(world.revisions)

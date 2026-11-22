@@ -20,8 +20,9 @@ import {
   useReorderIqxTemplates,
   useSetIqxVisibility,
   type IqxAdminItem,
+  type IqxStrategyStats,
 } from "./api"
-import { HIDE_BODY, IQX_KIND_LABEL, SHOW_BODY } from "./copy"
+import { HIDE_BODY, HIDE_STRATEGY_BODY, IQX_KIND_LABEL, SHOW_BODY } from "./copy"
 import { HistoryDialog } from "./history-dialog"
 import { IqxBadge } from "./iqx-badge"
 
@@ -31,6 +32,9 @@ const STATUS_LABEL: Record<IqxAdminItem["status"], string> = {
   hidden: "Đã ẩn",
   unpublished: "Chưa xuất bản",
 }
+
+const stats = (row: IqxAdminItem) => row as IqxAdminItem & IqxStrategyStats
+const count = (value: number | null | undefined) => (value == null ? "—" : value.toLocaleString("vi-VN"))
 
 type Pending = { type: "visibility"; item: IqxAdminItem } | { type: "delete"; item: IqxAdminItem } | { type: "history"; item: IqxAdminItem }
 
@@ -132,12 +136,46 @@ export function IqxTemplatesPage() {
         </span>
       ),
     },
-    {
-      id: "used",
-      header: "Người dùng bấm Dùng · 30 ngày",
-      align: "right",
-      cell: (row) => row.used_30d.toLocaleString("vi-VN"),
-    },
+    ...(kind === "strategy"
+      ? ([
+          {
+            id: "universe",
+            header: "Rổ mã",
+            cell: (row) => {
+              const type = stats(row).universe?.type ?? "vn30"
+              return type === "vn100" ? "VN100" : "VN30"
+            },
+          },
+          {
+            id: "max_holding",
+            header: "Giữ tối đa",
+            align: "right",
+            cell: (row) => {
+              const value = stats(row).max_holding
+              return value == null ? "—" : `${value} phiên`
+            },
+          },
+          {
+            id: "bots_using",
+            header: "Bot đang dùng",
+            align: "right",
+            cell: (row) => count(stats(row).bots_using),
+          },
+          {
+            id: "trial_runs",
+            header: "Lần chạy thử · 30 ngày",
+            align: "right",
+            cell: (row) => count(stats(row).trial_runs_30d),
+          },
+        ] satisfies AdminColumn<IqxAdminItem>[])
+      : ([
+          {
+            id: "used",
+            header: "Người dùng bấm Dùng · 30 ngày",
+            align: "right",
+            cell: (row) => row.used_30d.toLocaleString("vi-VN"),
+          },
+        ] satisfies AdminColumn<IqxAdminItem>[])),
     {
       id: "actions",
       header: "Thao tác",
@@ -212,7 +250,7 @@ export function IqxTemplatesPage() {
       {pending?.type === "visibility" && (
         <ReasonDialog
           title={`${hiding ? "Ẩn" : "Hiện"} ${iqxTitle(kind, pending.item.name)}?`}
-          description={hiding ? HIDE_BODY : SHOW_BODY}
+          description={hiding ? (kind === "strategy" ? HIDE_STRATEGY_BODY : HIDE_BODY) : SHOW_BODY}
           confirmLabel={hiding ? "Ẩn" : "Hiện"}
           reasonLabel="Lý do thay đổi"
           pending={visibility.isPending}

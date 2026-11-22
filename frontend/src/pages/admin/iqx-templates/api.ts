@@ -11,6 +11,16 @@ import type { IqxKind } from "@/pages/strategy/shared/iqx"
 
 export type IqxAdminList = ApiResponseFor<"GET /api/v2/admin/iqx-templates">
 export type IqxAdminItem = IqxAdminList["items"][number]
+/**
+ * Strategy columns of spec Bot và Chiến lược v2.0 §7.2. Hand-typed per PLAN §6; switch to generated types after
+ * contracts regen. Absent on a server that does not send them yet (the cells show "—").
+ */
+export type IqxStrategyStats = {
+  universe?: { type: "vn30" | "vn100" } | null
+  max_holding?: number | null
+  bots_using?: number | null
+  trial_runs_30d?: number | null
+}
 export type IqxAdminDetail = ApiResponseFor<"GET /api/v2/admin/iqx-templates/{id}">
 export type IqxHistoryEntry = IqxAdminDetail["history"][number]
 export type IqxVersion = IqxAdminDetail["versions"][number]
