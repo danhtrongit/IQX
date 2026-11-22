@@ -422,12 +422,12 @@ export class BotScheduleService implements BotSchedulePort {
     );
     const due: DuePosition[] = [];
     for (const position of positions) {
+      // A v1.x position without anchor is not converted: the runner never trades it
+      // (`not_converted`), so it is never reported as due from its opened_session (Q20).
+      if (position.anchor_session === null) continue;
       const held = calendar.countSessions(position.opened_session, nextSession);
       if (held < STRATEGY_RULES.settlement_sessions) continue;
-      const counted = calendar.countSessions(
-        position.anchor_session ?? position.opened_session,
-        nextSession,
-      );
+      const counted = calendar.countSessions(position.anchor_session, nextSession);
       if (counted >= nNew && counted < nCurrent) {
         due.push({ symbol: position.symbol, counted, sell_session: nextSession });
       }

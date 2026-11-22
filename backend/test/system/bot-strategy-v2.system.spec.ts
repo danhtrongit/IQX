@@ -6,12 +6,20 @@
  *  - R14: a retried session writes nothing new (no resell, no duplicate rows, same version);
  *  - B04/B05/T12: the next-session guard and the due-positions confirmation;
  *  - M02 / no mass sell at deploy: positions anchored at P (policy_cutover) are not sold at P and
- *    become due exactly at P+30.
+ *    become due exactly at P+30;
+ *  - not_converted: an account holding a v1.x position without anchor never trades (no fallback
+ *    to opened_session), and is never listed as due;
+ *  - session tick: one price load for every Bot; a partial store refresh defers the capture until
+ *    the give-up time.
  */
 import { Pool } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { formatSummary, runConversion } from '../../scripts/bot-strategy-v2-convert.js';
+import {
+  formatSummary,
+  runConversion,
+  STRATEGY_NAME,
+} from '../../scripts/bot-strategy-v2-convert.js';
 import { runRollback } from '../../scripts/bot-strategy-v2-rollback.js';
 import {
   CALCULATION_VERSION,
@@ -175,6 +183,9 @@ const reader: StrategyReaderPort = {
   },
 };
 
+/** Counters and the simulated partial refresh of the fake store. */
+const storeState = { loads: 0, pending: [] as string[] };
+
 const store: PriceStorePort = {
   async meta() {
     return {
@@ -197,7 +208,11 @@ const store: PriceStorePort = {
     return [...SYMBOLS];
   },
   async loadSeries(symbols, options) {
+    storeState.loads += 1;
     return sliceBundle(BUNDLE, symbols, options?.until ?? CAL.at(-1)!);
+  },
+  async pendingSymbols(_session, symbols) {
+    return storeState.pending.filter((symbol) => symbols.includes(symbol));
   },
 };
 
@@ -252,6 +267,16 @@ describe('system acceptance: Bot v2.0 runs the shared strategy rules', () => {
           `select count(*)::int as n from bot_decisions d
              join bot_run_receipts r on r.id = d.bot_run_id where r.bot_account_id = $1`,
           [accountId],
+        )
+      )[0]!.n,
+    );
+
+  const countRowsOf = async (account: string, table: string) =>
+    Number(
+      (
+        await stack.query<{ n: number }>(
+          `select count(*)::int as n from ${table} where bot_account_id = $1`,
+          [account],
         )
       )[0]!.n,
     );
@@ -573,6 +598,11 @@ describe('system acceptance: Bot v2.0 runs the shared strategy rules', () => {
        values ($1, 1, '2024-01-02', 'effective')`,
       [legacy.id],
     );
+    // The user already owns a strategy with the conversion name (any case): " (2)" is appended.
+    await stack.query(
+      `insert into user_strategies (user_id, name, latest_version) values ($1, $2, 1)`,
+      [legacy.id, STRATEGY_NAME.toUpperCase()],
+    );
     const pool = new Pool({ connectionString: stack.databaseUrl, max: 3 });
     const now = new Date('2026-11-20T03:00:00Z'); // Friday 10:00 ICT → P = Monday 2026-11-23
     const notificationsBefore = (
@@ -590,6 +620,12 @@ describe('system acceptance: Bot v2.0 runs the shared strategy rules', () => {
         open_positions: held.length,
         positions_held_ge_30_real: held.length,
         failed: [],
+        reconciliation: {
+          kind: 'expected',
+          unanchored_positions: 0,
+          unconverted_accounts: 0,
+          due_at_p: 0,
+        },
       });
       expect(dry.fee_config).toMatchObject({ buy_fee_rate_bps: 15, board_lot_size: 100 });
       expect(formatSummary(dry)).toContain('positions due at P (must be 0)');
@@ -598,7 +634,18 @@ describe('system acceptance: Bot v2.0 runs the shared strategy rules', () => {
       ).toEqual([]);
 
       const applied = await runConversion(pool, { apply: true, userId: legacy.id, now });
-      expect(applied).toMatchObject({ mode: 'apply', converted: 1, failed: [] });
+      expect(applied).toMatchObject({
+        mode: 'apply',
+        converted: 1,
+        failed: [],
+        reconciliation: {
+          kind: 'after-apply',
+          unanchored_positions: 0,
+          unconverted_accounts: 0,
+          due_at_p: 0,
+          details: [],
+        },
+      });
       const rows = await stack.query<Json>(
         `select to_char(session_date, 'YYYY-MM-DD') as d, strategy_source, version, follow_latest,
                 locked_at is not null as locked, run_status
@@ -623,7 +670,7 @@ describe('system acceptance: Bot v2.0 runs the shared strategy rules', () => {
       );
       expect(strategy).toEqual([
         {
-          name: 'Chiến lược của tôi (từ thiết lập cũ)',
+          name: 'Chiến lược của tôi (từ thiết lập cũ) (2)',
           latest_version: 1,
           max_holding: '12',
           note: 'Chuyển từ thiết lập Bot cũ',
@@ -651,5 +698,111 @@ describe('system acceptance: Bot v2.0 runs the shared strategy rules', () => {
     } finally {
       await pool.end();
     }
+  });
+
+  describe('not converted accounts and the session tick', () => {
+    let unconverted: Awaited<ReturnType<typeof registerAndLogin>>;
+    let unconvertedAccount: string;
+
+    it('not_converted: a v1.x position held 80 sessions without anchor is never sold, never due', async () => {
+      unconverted = await registerAndLogin(stack.app, 'botv2unconv');
+      await bots.initializeAccount(unconverted.id);
+      unconvertedAccount = (
+        await stack.query<{ id: string }>('select id from bot_accounts where user_id = $1', [
+          unconverted.id,
+        ])
+      )[0]!.id;
+      const D = CAL[200]!;
+      await schedule.putNext(
+        unconverted.id,
+        { source: 'user', id: 'quiet', expected_next_session: D },
+        morning(D),
+      );
+      // Positions of the old engine: no anchor (no conversion, failed conversion or rollback).
+      for (const [symbol, opened] of [
+        ['AAA', CAL[120]!], // 80 sessions: sold at once by a fallback to opened_session (N = 30)
+        ['BBB', CAL[180]!], // 20 sessions: listed as due by a fallback when N drops to 3
+      ] as const) {
+        await stack.query(
+          `insert into bot_positions
+             (id, bot_account_id, symbol, qty_open, entry_price_vnd, entry_value_vnd, entry_fee_vnd,
+              opened_session, opened_at, status, filter_ids, source_refs, entry_source_snapshot,
+              created_at, updated_at)
+           values (gen_random_uuid(), $1, $2, 100, 10000, 1000000, 1500, $3::date, now(), 'open',
+                   '[]'::jsonb, '{}'::jsonb, '{}'::jsonb, now(), now())`,
+          [unconvertedAccount, symbol, opened],
+        );
+      }
+      const impact = await schedule.impact(
+        unconverted.id,
+        { source: 'user', id: 'short' },
+        morning(D),
+      );
+      expect(impact).toMatchObject({ n_current: 30, n_new: 3, positions: [] });
+
+      const run = await bots.runAccountSession(unconverted.id, D, afterCutoff(D));
+      expect(run.status).toBe('failed');
+      expect(run.issues).toEqual([
+        expect.objectContaining({ code: 'not_converted', symbol: null }),
+      ]);
+      expect(await countRowsOf(unconvertedAccount, 'bot_executions')).toBe(0);
+      expect(await countRowsOf(unconvertedAccount, 'bot_cash_ledger')).toBe(1); // initial funding
+      const open = await stack.query<{ symbol: string }>(
+        `select symbol from bot_positions where bot_account_id = $1 and status = 'open' order by symbol`,
+        [unconvertedAccount],
+      );
+      expect(open.map((row) => row.symbol)).toEqual(['AAA', 'BBB']);
+      const scheduleRow = await stack.query<{ run_status: string }>(
+        `select s.run_status from bot_strategy_schedule s join bot_instances i on i.id = s.bot_id
+          where i.user_id = $1 and s.session_date = $2::date`,
+        [unconverted.id, D],
+      );
+      expect(scheduleRow).toEqual([{ run_status: 'failed' }]);
+      // A retry stays refused and still writes nothing.
+      const again = await bots.runAccountSession(unconverted.id, D, afterCutoff(D));
+      expect(again).toMatchObject({
+        status: 'failed',
+        issues: [expect.objectContaining({ code: 'not_converted' })],
+      });
+      expect(await countRowsOf(unconvertedAccount, 'bot_executions')).toBe(0);
+    });
+
+    it('tick: a partial store refresh defers the capture; at give-up one shared load serves every Bot', async () => {
+      const S = CAL.at(-1)!;
+      const receiptsAt = async () =>
+        Number(
+          (
+            await stack.query<{ n: number }>(
+              'select count(*)::int as n from bot_run_receipts where trading_date = $1::date',
+              [S],
+            )
+          )[0]!.n,
+        );
+      storeState.pending = ['AAA'];
+      const loadsBefore = storeState.loads;
+      const deferred = await bots.runSession(S, afterCutoff(S));
+      expect(deferred).toMatchObject({ ready: false, pendingSymbols: ['AAA'], processed: 0 });
+      expect(storeState.loads).toBe(loadsBefore);
+      expect(await receiptsAt()).toBe(0);
+
+      const giveUp = new Date(`${S}T16:55:00Z`); // 23:55 ICT
+      const ran = await bots.runSession(S, giveUp);
+      storeState.pending = [];
+      expect(ran).toMatchObject({ ready: true, pendingSymbols: ['AAA'] });
+      expect(ran.processed).toBeGreaterThanOrEqual(2);
+      expect(storeState.loads).toBe(loadsBefore + 1);
+      const statuses = await stack.query<{ user_id: string; status: string; code: string | null }>(
+        `select user_id::text as user_id, status, issues->0->>'code' as code
+           from bot_run_receipts where trading_date = $1::date`,
+        [S],
+      );
+      // Accounts whose Lịch phiên is not locked for S are skipped; the others share the one load.
+      expect(statuses.some((row) => row.status === 'succeeded')).toBe(true);
+      expect(statuses.find((row) => row.user_id === unconverted.id)).toMatchObject({
+        status: 'failed',
+        code: 'not_converted',
+      });
+      expect(await countRowsOf(unconvertedAccount, 'bot_executions')).toBe(0);
+    });
   });
 });

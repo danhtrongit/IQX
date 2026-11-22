@@ -21,13 +21,18 @@ import {
 import {
   addTradingSessions,
   contentFrom,
+  conversionAnchor,
   convertedMaxHolding,
   countTradingSessions,
+  dueAt,
   firstSessionAfter,
   inBotWindow,
   isOutdatedConfig,
   parseArgs,
   requireSafeTarget,
+  STRATEGY_NAME,
+  STRATEGY_NAME_MAX,
+  uniqueStrategyName,
 } from '../../scripts/bot-strategy-v2-convert.js';
 import { defaultConfig } from '../../src/modules/quant/v2/config.js';
 import { RULE_VERSION, SCHEMA_VERSION } from '../../src/modules/quant/v2/index.js';
@@ -163,6 +168,46 @@ describe('conversion planning (§11, PLAN §5.2)', () => {
     const due = addTradingSessions(p, 30, trading);
     expect(countTradingSessions(p, due, trading)).toBe(30);
     expect(addTradingSessions('2026-11-20', 2, trading)).toBe('2026-11-24');
+  });
+
+  it('M02: due at P follows the session rule from the conversion anchor, not from the entry', () => {
+    const trading = (date: string) => ![0, 6].includes(new Date(`${date}T00:00:00Z`).getUTCDay());
+    const p = '2026-11-23';
+    const entry = '2026-07-01';
+    const anchor = conversionAnchor(entry, p);
+    expect(anchor).toEqual({ anchor_session: p, anchor_reason: 'policy_cutover' });
+    expect(
+      dueAt({ opened_session: entry, anchor_session: anchor.anchor_session }, p, 3, trading),
+    ).toMatchObject({
+      counted: 0,
+      due: false,
+    });
+    // Without the anchor (entry as anchor) the same position is due at P: what the check catches.
+    expect(dueAt({ opened_session: entry, anchor_session: entry }, p, 30, trading).due).toBe(true);
+    // T+2 first: a 1-session-old position is never due, even with N reached.
+    expect(
+      dueAt({ opened_session: '2026-11-20', anchor_session: '2026-11-20' }, p, 1, trading).due,
+    ).toBe(false);
+    expect(conversionAnchor(p, p)).toEqual({ anchor_session: p, anchor_reason: 'entry' });
+  });
+
+  it('strategy name collision: " (2)", " (3)"… case-insensitive, within 40 characters', () => {
+    expect(uniqueStrategyName(STRATEGY_NAME, [])).toBe(STRATEGY_NAME);
+    expect(uniqueStrategyName(STRATEGY_NAME, ['Khác'])).toBe(STRATEGY_NAME);
+    expect(uniqueStrategyName(STRATEGY_NAME, [STRATEGY_NAME.toUpperCase()])).toBe(
+      `${STRATEGY_NAME} (2)`,
+    );
+    expect(uniqueStrategyName(STRATEGY_NAME, [STRATEGY_NAME, `${STRATEGY_NAME} (2)`])).toBe(
+      `${STRATEGY_NAME} (3)`,
+    );
+    const taken = [
+      STRATEGY_NAME,
+      ...Array.from({ length: 8 }, (_, i) => `${STRATEGY_NAME} (${i + 2})`),
+    ];
+    const tenth = uniqueStrategyName(STRATEGY_NAME, taken);
+    expect(tenth.endsWith(' (10)')).toBe(true);
+    expect(tenth.length).toBeLessThanOrEqual(STRATEGY_NAME_MAX);
+    expect(taken.every((name) => name.length <= STRATEGY_NAME_MAX)).toBe(true);
   });
 
   it('M05 safety: dry-run by default, --apply needs approval and the Bot job off', () => {

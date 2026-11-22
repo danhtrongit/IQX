@@ -19,10 +19,12 @@ import {
   type JournalEntry,
   type PortfolioState,
   type PositionState,
+  type PriceSeriesBundle,
   type PriceStorePort,
   type ResolvedStrategy,
   type SessionInput,
   type SessionResult,
+  type SignalCache,
   type SymbolSessionInput,
 } from '../strategy-rules/index.js';
 import { botCalendar, isGiveUpTime, loadHolidays } from './bot-calendar.js';
@@ -55,6 +57,28 @@ export class BotSessionNotReadyError extends Error {
     this.name = 'BotSessionNotReady';
   }
 }
+
+/**
+ * Price data shared by every Bot of one session tick: the series of VN30 ∪ VN100 ∪ held symbols
+ * are loaded once and one signal cache (key config_hash + symbol + series_rev + bars) is reused by
+ * every Bot running the same strategy configuration.
+ */
+export type SessionShared = {
+  session: string;
+  symbols: ReadonlySet<string>;
+  bundle: PriceSeriesBundle;
+  signalCache: SignalCache;
+};
+
+export type BotSessionBatchResult = BotBatchResult & {
+  ready: boolean;
+  skippedNoSession: number;
+  /** Symbols whose price-store refresh does not hold D yet (capture waits for them). */
+  pendingSymbols: string[];
+};
+
+/** Receipt issue of an account still holding v1.x positions without a holding anchor (§11, Q20). */
+export const NOT_CONVERTED = 'not_converted';
 
 type ContextRow = {
   bot_id: string;
@@ -217,11 +241,8 @@ export class BotSessionRunner {
    * written and the caller retries (`ready: false`). At the give-up time the session is marked
    * `skipped_no_session` on every locked row (D25).
    */
-  async runSession(
-    session: string,
-    now = new Date(),
-  ): Promise<BotBatchResult & { ready: boolean; skippedNoSession: number }> {
-    const result = {
+  async runSession(session: string, now = new Date()): Promise<BotSessionBatchResult> {
+    const result: BotSessionBatchResult = {
       initialized: 0,
       processed: 0,
       succeeded: 0,
@@ -230,6 +251,7 @@ export class BotSessionRunner {
       skippedPaused: 0,
       ready: true,
       skippedNoSession: 0,
+      pendingSymbols: [],
     };
     const owners = await this.database.query<{ user_id: string; bot_id: string }>(
       `select i.user_id, i.id as bot_id from bot_instances i
@@ -254,9 +276,50 @@ export class BotSessionRunner {
       }
       return result;
     }
+    // Accounts still to capture D; when every account already has its receipt (a retry tick),
+    // nothing is loaded and the frozen receipts are reused.
+    const uncaptured = (
+      await this.database.query<{ n: number }>(
+        `select count(*)::int as n from bot_instances i
+           join bot_accounts a on a.id = i.bot_account_id
+          where a.status = 'active' and not exists (
+            select 1 from bot_run_receipts r where r.user_id = i.user_id and r.trading_date = $1::date)`,
+        [session],
+      )
+    )[0]?.n;
+    let shared: SessionShared | undefined;
+    if ((uncaptured ?? 0) > 0) {
+      const symbols = await this.tickSymbols(session);
+      // A refresh that published D with some stock failures (`partial`): wait for a later refresh
+      // instead of freezing D without those symbols; at the give-up time capture with what exists.
+      const store = this.store();
+      if (session === calendar.at(-1) && store.pendingSymbols) {
+        const pending = await store.pendingSymbols(session, symbols);
+        if (pending.length > 0) {
+          result.pendingSymbols = pending;
+          const list = pending.slice(0, 10).join(', ');
+          if (!isGiveUpTime(now)) {
+            this.logger.warn(
+              `Bot session ${session}: price store incomplete (${pending.length} symbols: ${list}); retry later`,
+            );
+            result.ready = false;
+            return result;
+          }
+          this.logger.warn(
+            `Bot session ${session}: give-up time, capturing without ${pending.length} symbols (${list})`,
+          );
+        }
+      }
+      shared = {
+        session,
+        symbols: new Set(symbols),
+        bundle: await store.loadSeries(symbols, { until: session }),
+        signalCache: new Map(),
+      };
+    }
     for (const owner of owners) {
       try {
-        const run = await this.runAccountSession(owner.user_id, session, now);
+        const run = await this.runAccountSession(owner.user_id, session, now, shared);
         result.processed += 1;
         if (run.status === 'succeeded') result.succeeded += 1;
         else result.failed += 1;
@@ -271,6 +334,21 @@ export class BotSessionRunner {
       }
     }
     return result;
+  }
+
+  /** VN30 ∪ VN100 members at D and every symbol held by an active Bot (sorted). */
+  private async tickSymbols(session: string): Promise<string[]> {
+    const store = this.store();
+    const [vn30, vn100, held] = await Promise.all([
+      store.membersAt('VN30', session),
+      store.membersAt('VN100', session),
+      this.database.query<{ symbol: string }>(
+        `select distinct p.symbol from bot_positions p
+           join bot_accounts a on a.id = p.bot_account_id
+          where a.status = 'active' and p.status = 'open'`,
+      ),
+    ]);
+    return [...new Set([...vn30, ...vn100, ...held.map((row) => row.symbol)])].sort();
   }
 
   private async context(client: SqlClient, userId: string, lock = false): Promise<ContextRow | null> {
@@ -317,7 +395,12 @@ export class BotSessionRunner {
     };
   }
 
-  async runAccountSession(userId: string, session: string, now = new Date()): Promise<BotRunResult> {
+  async runAccountSession(
+    userId: string,
+    session: string,
+    now = new Date(),
+    shared?: SessionShared,
+  ): Promise<BotRunResult> {
     const existing = (
       await this.database.query<BotRunRow>(
         `select * from bot_run_receipts where user_id = $1 and trading_date = $2::date
@@ -341,7 +424,7 @@ export class BotSessionRunner {
       }
       return this.execute(existing.id, userId, session);
     }
-    const runId = await this.capture(userId, session, now);
+    const runId = await this.capture(userId, session, now, shared);
     return this.execute(runId, userId, session);
   }
 
@@ -382,7 +465,12 @@ export class BotSessionRunner {
     };
   }
 
-  private async capture(userId: string, session: string, now: Date): Promise<string> {
+  private async capture(
+    userId: string,
+    session: string,
+    now: Date,
+    shared?: SessionShared,
+  ): Promise<string> {
     const store = this.store();
     const context = await this.context(this.database, userId);
     if (!context) throw new Error('Bot chưa được khởi tạo');
@@ -407,14 +495,35 @@ export class BotSessionRunner {
         : null;
     const held = (await this.openPositions(this.database, context.account_id)).map((p) => p.symbol);
     const universe = await this.resolveUniverseAt(strategyPin ? resolved : null, session);
-    const bundle = await store.loadSeries([...new Set([...universe.symbols, ...held])].sort(), {
-      until: session,
-    });
+    const needed = [...new Set([...universe.symbols, ...held])].sort();
+    const useShared =
+      shared !== undefined &&
+      shared.session === session &&
+      needed.every((symbol) => shared.symbols.has(symbol));
+    if (
+      !useShared &&
+      session === calendarDates.at(-1) &&
+      store.pendingSymbols &&
+      !isGiveUpTime(now)
+    ) {
+      const pending = await store.pendingSymbols(session, needed);
+      if (pending.length > 0) {
+        throw new BotSessionNotReadyError(
+          `Kho giá chưa cập nhật đủ phiên ${session} (${pending.slice(0, 10).join(', ')})`,
+        );
+      }
+    }
+    const bundle = useShared ? shared.bundle : await store.loadSeries(needed, { until: session });
     const sessionIdx = bundle.calendar.indexOf(session);
     if (sessionIdx < 0) throw new BotSessionNotReadyError(`Kho giá chưa có phiên ${session}`);
     const content = strategyPin ? resolved!.content : null;
     const signals = content
-      ? createSignalProvider(content, bundle, { config_hash: resolved!.config_hash })
+      ? createSignalProvider(content, bundle, {
+          config_hash: resolved!.config_hash,
+          cache: useShared ? shared.signalCache : undefined,
+          // Signals are read at D only; values are identical for any start (indicators run from bar 0).
+          from_session_idx: sessionIdx,
+        })
       : null;
     const input = buildSessionInput({
       bundle,
@@ -584,6 +693,26 @@ export class BotSessionRunner {
             ]),
           );
         }
+        // Never fall back to opened_session: a v1.x position without anchor (no conversion, failed
+        // conversion, rollback) would be sold at once when held >= N real sessions (Q20).
+        const unanchored = positions.filter(
+          (p) => p.anchor_session === null || p.anchor_reason === null,
+        );
+        if (unanchored.length > 0) {
+          const symbols = unanchored.map((p) => p.symbol).join(', ');
+          this.logger.error(
+            `Bot ${userId} session ${session}: ${unanchored.length} position(s) not converted to v2.0 (${symbols}); no trade`,
+          );
+          const failed = await this.markFailed(tx, run.id, [
+            {
+              code: NOT_CONVERTED,
+              detail: `Tài khoản Bot chưa chuyển đổi sang v2.0: ${unanchored.length} vị thế chưa có mốc giữ (${symbols}); không giao dịch.`,
+              symbol: null,
+            },
+          ]);
+          await this.schedule.markRun(tx, context.bot_id, session, 'failed');
+          return this.runResult(failed);
+        }
         const result = await this.applySession(
           tx,
           context,
@@ -633,17 +762,20 @@ export class BotSessionRunner {
     const cashStart = parseInteger(context.cash_vnd, 'cash_vnd');
     const state: PortfolioState = {
       cash_vnd: cashStart,
-      positions: positions.map(
-        (row): PositionState => ({
+      positions: positions.map((row): PositionState => {
+        if (row.anchor_session === null || row.anchor_reason === null) {
+          throw new Error(`Vị thế ${row.symbol} chưa có mốc giữ (chưa chuyển đổi v2.0)`);
+        }
+        return {
           symbol: row.symbol,
           qty: Number(row.qty_open),
           entry_session: row.opened_session,
           entry_price_vnd: BigInt(row.entry_price_vnd),
           entry_cost_vnd: BigInt(row.entry_value_vnd) + BigInt(row.entry_fee_vnd),
-          anchor_session: row.anchor_session ?? row.opened_session,
-          anchor_reason: row.anchor_reason ?? 'entry',
-        }),
-      ),
+          anchor_session: row.anchor_session,
+          anchor_reason: row.anchor_reason,
+        };
+      }),
       last_session: null,
     };
     const calendar = botCalendar(await this.store().calendar(), await loadHolidays(tx));

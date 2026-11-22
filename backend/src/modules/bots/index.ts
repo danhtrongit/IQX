@@ -2,7 +2,14 @@ export { BotService } from './bot.service.js';
 export { BotsModule } from './bots.module.js';
 export { BotHistoryService } from './bot-history.service.js';
 export { BotScheduleService } from './bot-schedule.service.js';
-export { BotSessionRunner, BotSessionNotReadyError, sessionSummary } from './bot-session-runner.js';
+export {
+  BotSessionRunner,
+  BotSessionNotReadyError,
+  NOT_CONVERTED,
+  sessionSummary,
+  type BotSessionBatchResult,
+  type SessionShared,
+} from './bot-session-runner.js';
 export * from './bot-calendar.js';
 export * from './bot.policy-v2.js';
 export * from './bot.domain.js';

@@ -340,6 +340,12 @@ export interface PriceStorePort {
   membersAt(index: 'VN30' | 'VN100', session: string): Promise<string[]>;
   /** Full series (from the first stored bar) of `symbols` up to `until` (default data_as_of). */
   loadSeries(symbols: readonly string[], options?: { until?: string }): Promise<PriceSeriesBundle>;
+  /**
+   * Symbols of `symbols` whose latest refresh does not hold session `session` yet: a refresh that
+   * advanced VNINDEX with some stock failures (`partial`) leaves them with an error or refreshed
+   * before 15:15 ICT of `session`. Empty = complete. Optional: fakes without it are complete.
+   */
+  pendingSymbols?(session: string, symbols: readonly string[]): Promise<string[]>;
 }
 
 // ---------------------------------------------------------------------------------------------

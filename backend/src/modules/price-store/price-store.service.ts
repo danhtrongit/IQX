@@ -124,6 +124,22 @@ export class PriceStoreService implements PriceStorePort {
     return this.repository.calendar();
   }
 
+  async pendingSymbols(session: string, symbols: readonly string[]): Promise<string[]> {
+    if (symbols.length === 0) return [];
+    const ready = readyInstant(session);
+    const rows = new Map((await this.repository.symbols()).map((row) => [row.symbol, row]));
+    return [...new Set(symbols)].sort().filter((symbol) => {
+      const row = rows.get(symbol);
+      return (
+        !row ||
+        row.bars_count === 0 ||
+        row.last_error !== null ||
+        !row.refreshed_at ||
+        row.refreshed_at < ready
+      );
+    });
+  }
+
   private async storedStocks(): Promise<Set<string>> {
     const rows = await this.repository.symbols();
     return new Set(

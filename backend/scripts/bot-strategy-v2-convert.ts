@@ -51,6 +51,8 @@ export const STRATEGY_NAME = 'Chiến lược của tôi (từ thiết lập cũ
 export const NOTE_V1 = 'Chuyển từ thiết lập Bot cũ';
 export const NOTE_V2 = 'Chuyển từ cấu hình chung chưa áp dụng';
 export const ORIGIN = { kind: 'bot_v2_conversion' } as const;
+/** user_strategies.name is varchar(40), unique per user (case-insensitive) among not deleted. */
+export const STRATEGY_NAME_MAX = 40;
 /** Bot session job window (cutoff 19:00 with margins), ICT minutes. */
 export const BOT_WINDOW = { from: 18 * 60 + 30, to: 19 * 60 + 40 } as const;
 
@@ -219,6 +221,49 @@ export function countTradingSessions(from: string, to: string, isTradingDay: IsT
   return count;
 }
 
+/**
+ * First free strategy name of the user: `base`, else `base (2)`, `base (3)`… compared without case
+ * (unique index on (user_id, lower(name))); the base is shortened to keep the 40-character limit.
+ */
+export function uniqueStrategyName(base: string, taken: Iterable<string>): string {
+  const used = new Set([...taken].map((name) => name.toLowerCase()));
+  if (!used.has(base.toLowerCase())) return base;
+  for (let n = 2; ; n += 1) {
+    const suffix = ` (${n})`;
+    const candidate = `${base.slice(0, STRATEGY_NAME_MAX - suffix.length).trimEnd()}${suffix}`;
+    if (!used.has(candidate.toLowerCase())) return candidate;
+  }
+}
+
+/**
+ * Holding anchor written by the conversion (Q20): positions opened before P count from P
+ * (`policy_cutover`); a position opened at or after P keeps its entry.
+ */
+export function conversionAnchor(
+  openedSession: string,
+  pSession: string,
+): { anchor_session: string; anchor_reason: 'entry' | 'policy_cutover' } {
+  return openedSession >= pSession
+    ? { anchor_session: openedSession, anchor_reason: 'entry' }
+    : { anchor_session: pSession, anchor_reason: 'policy_cutover' };
+}
+
+/** The session rule (stepSession): due at D when T+2 has passed and counted(anchor, D) >= N. */
+export function dueAt(
+  position: { opened_session: string; anchor_session: string },
+  session: string,
+  maxHolding: number,
+  isTradingDay: IsTradingDay,
+): { held: number; counted: number; due: boolean } {
+  const held = countTradingSessions(position.opened_session, session, isTradingDay);
+  const counted = countTradingSessions(position.anchor_session, session, isTradingDay);
+  return {
+    held,
+    counted,
+    due: held >= STRATEGY_RULES.settlement_sessions && counted >= maxHolding,
+  };
+}
+
 export type UserPlan = {
   user_id: string;
   bot_id: string;
@@ -237,6 +282,8 @@ export type UserPlan = {
     symbol: string;
     entry_session: string;
     sellable_from: string;
+    anchor_session: string;
+    anchor_reason: 'entry' | 'policy_cutover';
     held_at_p: number;
     counted_at_p: number;
     due_at_p: boolean;
@@ -402,16 +449,27 @@ export async function planUser(
       [bot.account_id],
     )
   ).map((row) => {
-    const counted = countTradingSessions(pSession, pSession, isTradingDay); // anchor = P → 0
+    const anchor = conversionAnchor(row.opened_session, pSession);
     const n = maxHolding ?? STRATEGY_RULES.default_max_holding;
+    const at = dueAt(
+      { opened_session: row.opened_session, anchor_session: anchor.anchor_session },
+      pSession,
+      n,
+      isTradingDay,
+    );
     return {
       id: row.id,
       symbol: row.symbol,
       entry_session: row.opened_session,
-      sellable_from: addTradingSessions(row.opened_session, STRATEGY_RULES.settlement_sessions, isTradingDay),
-      held_at_p: countTradingSessions(row.opened_session, pSession, isTradingDay),
-      counted_at_p: counted,
-      due_at_p: counted >= n,
+      sellable_from: addTradingSessions(
+        row.opened_session,
+        STRATEGY_RULES.settlement_sessions,
+        isTradingDay,
+      ),
+      ...anchor,
+      held_at_p: at.held,
+      counted_at_p: at.counted,
+      due_at_p: at.due,
     };
   });
   const pause = (
@@ -452,9 +510,9 @@ async function applyPlan(tx: SqlClient, plan: UserPlan): Promise<'converted' | '
     const existing = (
       await tx.query<{ id: string; latest_version: number }>(
         `select id::text as id, latest_version from user_strategies
-          where user_id = $1 and lower(name) = lower($2) and deleted_at is null
-            and origin @> $3::jsonb`,
-        [plan.user_id, STRATEGY_NAME, JSON.stringify(ORIGIN)],
+          where user_id = $1 and deleted_at is null and origin @> $2::jsonb
+          order by created_at limit 1`,
+        [plan.user_id, JSON.stringify(ORIGIN)],
       )
     )[0];
     if (existing) {
@@ -462,6 +520,14 @@ async function applyPlan(tx: SqlClient, plan: UserPlan): Promise<'converted' | '
       strategyId = existing.id;
     } else {
       const latest = plan.versions.at(-1)!;
+      const taken = await tx.query<{ name: string }>(
+        'select name from user_strategies where user_id = $1 and deleted_at is null',
+        [plan.user_id],
+      );
+      const name = uniqueStrategyName(
+        STRATEGY_NAME,
+        taken.map((row) => row.name),
+      );
       strategyId = (
         await tx.query<{ id: string }>(
           `insert into user_strategies
@@ -470,7 +536,7 @@ async function applyPlan(tx: SqlClient, plan: UserPlan): Promise<'converted' | '
            returning id::text as id`,
           [
             plan.user_id,
-            STRATEGY_NAME,
+            name,
             plan.versions.length,
             JSON.stringify(ORIGIN),
             latest.content.sell_only === true,
@@ -517,10 +583,10 @@ async function applyPlan(tx: SqlClient, plan: UserPlan): Promise<'converted' | '
   for (const position of plan.positions) {
     await tx.query(
       `update bot_positions
-          set anchor_session = $2::date, anchor_reason = 'policy_cutover',
+          set anchor_session = $2::date, anchor_reason = $4,
               sellable_from_session = $3::date
         where id = $1 and status = 'open'`,
-      [position.id, plan.p_session, position.sellable_from],
+      [position.id, position.anchor_session, position.sellable_from, position.anchor_reason],
     );
   }
   if (plan.pause_resolved) {
@@ -558,7 +624,115 @@ async function applyPlan(tx: SqlClient, plan: UserPlan): Promise<'converted' | '
   return 'converted';
 }
 
+// ------------------------------------------------------------------ reconciliation
+
+export type Reconciliation = {
+  /** 'after-apply' = read back from the database; 'expected' = dry-run, planned accounts simulated. */
+  kind: 'after-apply' | 'expected';
+  /** Open positions with anchor_session IS NULL: the runner refuses these accounts (not_converted). */
+  unanchored_positions: number;
+  /** Accounts holding positions not bought by v2.0 (no anchor or a non-entry anchor) without log row. */
+  unconverted_accounts: number;
+  /** Open positions due at P under the session rule (counted from the anchor). Must be 0. */
+  due_at_p: number;
+  details: Array<{
+    user_id: string;
+    symbol: string | null;
+    issue: 'unanchored' | 'unconverted' | 'due_at_p';
+  }>;
+};
+
+export const reconciliationFailures = (r: Reconciliation): number =>
+  r.unanchored_positions + r.unconverted_accounts + r.due_at_p;
+
+export async function reconcileConversion(
+  db: SqlClient,
+  options: {
+    userId: string | null;
+    pSession: string;
+    isTradingDay: IsTradingDay;
+    /** Dry-run: plans of accounts that the apply would convert (their rows are simulated). */
+    planned?: ReadonlyMap<string, UserPlan>;
+  },
+): Promise<Reconciliation> {
+  const rows = await db.query<{
+    user_id: string;
+    position_id: string;
+    symbol: string;
+    opened_session: string;
+    anchor_session: string | null;
+    anchor_reason: string | null;
+    converted: boolean;
+    max_holding: number | null;
+  }>(
+    `select i.user_id::text as user_id, p.id::text as position_id, p.symbol,
+            to_char(p.opened_session, 'YYYY-MM-DD') as opened_session,
+            to_char(p.anchor_session, 'YYYY-MM-DD') as anchor_session, p.anchor_reason,
+            exists(select 1 from bot_strategy_conversion_log l where l.user_id = i.user_id) as converted,
+            (select (v.content->>'max_holding')::int
+               from bot_strategy_schedule s
+               join user_strategy_versions v
+                 on s.strategy_source = 'user' and v.strategy_id::text = s.strategy_id
+                and v.version = s.version
+              where s.bot_id = i.id and s.session_date = $2::date) as max_holding
+       from bot_positions p
+       join bot_instances i on i.bot_account_id = p.bot_account_id
+      where p.status = 'open' and ($1::uuid is null or i.user_id = $1::uuid)
+      order by i.user_id, p.symbol`,
+    [options.userId, options.pSession],
+  );
+  const result: Reconciliation = {
+    kind: options.planned ? 'expected' : 'after-apply',
+    unanchored_positions: 0,
+    unconverted_accounts: 0,
+    due_at_p: 0,
+    details: [],
+  };
+  const unconverted = new Set<string>();
+  for (const row of rows) {
+    const plan = options.planned?.get(row.user_id);
+    const planned = plan?.positions.find((position) => position.id === row.position_id);
+    const anchor = planned ? planned.anchor_session : row.anchor_session;
+    const reason = planned ? planned.anchor_reason : row.anchor_reason;
+    const converted = plan !== undefined || row.converted;
+    if (anchor === null) {
+      result.unanchored_positions += 1;
+      result.details.push({ user_id: row.user_id, symbol: row.symbol, issue: 'unanchored' });
+    }
+    if (!converted && (anchor === null || reason !== 'entry') && !unconverted.has(row.user_id)) {
+      unconverted.add(row.user_id);
+      result.details.push({ user_id: row.user_id, symbol: null, issue: 'unconverted' });
+    }
+    if (anchor !== null) {
+      const n = (plan ? plan.max_holding : row.max_holding) ?? STRATEGY_RULES.default_max_holding;
+      const at = dueAt(
+        { opened_session: row.opened_session, anchor_session: anchor },
+        options.pSession,
+        n,
+        options.isTradingDay,
+      );
+      if (at.due) {
+        result.due_at_p += 1;
+        result.details.push({ user_id: row.user_id, symbol: row.symbol, issue: 'due_at_p' });
+      }
+    }
+  }
+  result.unconverted_accounts = unconverted.size;
+  return result;
+}
+
 // ------------------------------------------------------------------ run
+
+class DueAtPError extends Error {
+  constructor(
+    readonly due: number,
+    symbols: string[],
+  ) {
+    super(
+      `Safety check failed: ${due} position(s) due at P (${symbols.join(', ')}); not converted`,
+    );
+  }
+}
 
 export type ConversionSummary = {
   mode: 'dry-run' | 'apply';
@@ -576,6 +750,7 @@ export type ConversionSummary = {
   fee_config: Record<string, unknown> | null;
   converted: number;
   failed: Array<{ user_id: string; error: string }>;
+  reconciliation: Reconciliation;
 };
 
 export async function runConversion(
@@ -641,13 +816,28 @@ export async function runConversion(
       fee_config: fee ?? null,
       converted: 0,
       failed: [],
+      reconciliation: {
+        kind: options.apply ? 'after-apply' : 'expected',
+        unanchored_positions: 0,
+        unconverted_accounts: 0,
+        due_at_p: 0,
+        details: [],
+      },
     };
     const run = transactionOn(pool, !options.apply);
+    const planned = new Map<string, UserPlan>();
     for (const bot of bots) {
       if (bot.converted) continue;
       try {
         const outcome = await run(async (tx) => {
           const plan = await planUser(tx, bot, { today, pSession, isTradingDay, vn100 });
+          // Safety check BEFORE anything is written: this account's transaction rolls back.
+          const due = plan.positions.filter((position) => position.due_at_p);
+          if (due.length > 0)
+            throw new DueAtPError(
+              due.length,
+              due.map((position) => position.symbol),
+            );
           const applied = options.apply ? await applyPlan(tx, plan) : 'planned';
           return { plan, applied };
         });
@@ -671,16 +861,22 @@ export async function runConversion(
           } else summary.max_holding.default_30 += 1;
         }
         if (outcome.applied === 'converted') summary.converted += 1;
+        if (outcome.applied === 'planned') planned.set(plan.user_id, plan);
       } catch (error) {
+        if (error instanceof DueAtPError) summary.positions_due_at_p += error.due;
         summary.failed.push({
           user_id: bot.user_id,
           error: error instanceof Error ? error.message : String(error),
         });
       }
     }
-    if (summary.positions_due_at_p > 0) {
-      throw new Error(`Safety check failed: ${summary.positions_due_at_p} position(s) due at P`);
-    }
+    // After --apply: read the result back. Dry-run: the same counts with planned rows simulated.
+    summary.reconciliation = await reconcileConversion(lockDb, {
+      userId: options.userId ?? null,
+      pSession,
+      isTradingDay,
+      ...(options.apply ? {} : { planned }),
+    });
     return summary;
   } finally {
     if (locked) await lockClient.query('select pg_advisory_unlock(hashtext($1))', [SCRIPT_LOCK]);
@@ -719,6 +915,14 @@ export function formatSummary(summary: ConversionSummary): string {
     lines.push(`  max_holding kept ${row.user_id}: ${row.value}`);
   }
   for (const row of summary.failed) lines.push(`  FAILED ${row.user_id}: ${row.error}`);
+  const r = summary.reconciliation;
+  lines.push(
+    `reconciliation (${r.kind}): unanchored positions ${r.unanchored_positions}, ` +
+      `unconverted accounts with positions ${r.unconverted_accounts}, due at P ${r.due_at_p} (all must be 0)`,
+  );
+  for (const row of r.details) {
+    lines.push(`  ${row.issue.toUpperCase()} ${row.user_id}${row.symbol ? ` ${row.symbol}` : ''}`);
+  }
   return lines.join('\n');
 }
 
@@ -734,7 +938,9 @@ async function main(): Promise<void> {
     process.stdout.write(
       options.json ? `${JSON.stringify(summary, null, 2)}\n` : `${formatSummary(summary)}\n`,
     );
-    if (summary.failed.length) process.exitCode = 1;
+    if (summary.failed.length || reconciliationFailures(summary.reconciliation) > 0) {
+      process.exitCode = 1;
+    }
   } finally {
     await pool.end();
   }

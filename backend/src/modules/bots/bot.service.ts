@@ -11,12 +11,11 @@ import {
 } from '../market-integration/index-membership.service.js';
 import { STRATEGY_RULES } from '../strategy-rules/index.js';
 import { BotScheduleService } from './bot-schedule.service.js';
-import { BotSessionRunner } from './bot-session-runner.js';
+import { BotSessionRunner, type BotSessionBatchResult } from './bot-session-runner.js';
 import { BOT_POLICY, BOT_REASON_LABELS, parseInteger, ratioString } from './bot.domain.js';
 import { BOT_POLICY_V2, BOT_POLICY_V2_VERSION } from './bot.policy-v2.js';
 import type {
   BotAccountRow,
-  BotBatchResult,
   BotInstanceRow,
   BotIssue,
   BotRunResult,
@@ -247,10 +246,7 @@ export class BotService {
   }
 
   /** Job `bot.session-eod`: every active Bot for session D (no-op until the store has D). */
-  runSession(
-    tradingDate: string,
-    now = new Date(),
-  ): Promise<BotBatchResult & { ready: boolean; skippedNoSession: number }> {
+  runSession(tradingDate: string, now = new Date()): Promise<BotSessionBatchResult> {
     validateTradingDate(tradingDate);
     return this.runner.runSession(tradingDate, now);
   }

@@ -347,6 +347,35 @@ describe('price store · refresh service', () => {
     expect(retry).toMatchObject({ status: 'refreshed', data_as_of: next });
   });
 
+  it('partial refresh that advances VNINDEX: pendingSymbols lists the failed symbols until retried', async () => {
+    const { service, source } = world();
+    await service.refresh({ now: NOW });
+    expect(await service.pendingSymbols(LAST, ['AAA', 'BBB', 'OLD'])).toEqual([]);
+    const next = weekdays(LAST, 2)[1]!;
+    source.index = [...DATES, next].map((date, i) => ({
+      ...vendorRow(date, 1_250 + i),
+      volume: 1,
+    }));
+    for (const symbol of ['AAA', 'BBB', 'CCC', 'OLD']) {
+      source.stocks.set(
+        symbol,
+        [...DATES, next].map((date, i) => vendorRow(date, 20 + i * 0.1)),
+      );
+    }
+    source.failing = new Set(['BBB']);
+    const at = new Date(Date.parse(`${next}T16:00:00Z`) - VN);
+    const result = await service.refresh({ now: at, maxFailures: 2 });
+    expect(result).toMatchObject({ status: 'partial', data_as_of: next });
+    expect(await service.pendingSymbols(next, ['AAA', 'BBB', 'ZZZ', 'OLD'])).toEqual([
+      'BBB',
+      'ZZZ',
+    ]);
+    expect(await service.pendingSymbols(next, [])).toEqual([]);
+    source.failing.clear();
+    await service.refresh({ now: new Date(at.getTime() + 600_000) });
+    expect(await service.pendingSymbols(next, ['AAA', 'BBB', 'OLD'])).toEqual([]);
+  });
+
   it('VNINDEX failure: nothing is published', async () => {
     const { service, source } = world();
     source.index = [];
