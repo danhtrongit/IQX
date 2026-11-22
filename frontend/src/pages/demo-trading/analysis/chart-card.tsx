@@ -14,6 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
+import type { Industry } from "./api"
 import { LearnLink } from "./learn-link"
 import type { ChartView } from "./model"
 
@@ -21,6 +22,8 @@ export type ChartCardProps = {
   view: ChartView
   /** Khoá bài học của chỉ tiêu (`metric_key` của danh mục), cho nút "Học"; bỏ trống thì không có nút. */
   metricKey?: string
+  /** Ngành của mã đang xem, gửi kèm nút "Học" (spec v3 §4.3). */
+  nganh: Industry
   /** Khuôn cố định theo năm (D, E1, E2): có nhãn "Theo năm, cố định", không có ô số kỳ (spec §4.1). */
   fixedYear: boolean
   /** Ô số kỳ; null khi thẻ không có ô này (khuôn cố định). */
@@ -64,6 +67,7 @@ function EmptyNote({ children }: { children: ReactNode }) {
 export function ChartCard({
   view,
   metricKey,
+  nganh,
   fixedYear,
   period,
   onPeriodChange,
@@ -100,7 +104,7 @@ export function ChartCard({
             <GripVertical aria-hidden="true" className="size-4" />
           </button>
           <h3 className="min-w-0 text-sm leading-snug font-semibold break-words">{view.name}</h3>
-          {metricKey && <LearnLink metricKey={metricKey} name={view.name} className="mt-px" />}
+          {metricKey && <LearnLink metricKey={metricKey} nganh={nganh} name={view.name} className="mt-px" />}
           {fixedYear && <WarningPill>Theo năm, cố định</WarningPill>}
         </div>
         <div className="flex shrink-0 items-center">

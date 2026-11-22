@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/use-auth"
 import { errorMessage } from "@/lib/api"
 
-import { INDUSTRY_LABEL, type ChartKind, type ChartName, type Industry } from "./api"
+import type { ChartKind, ChartName, Industry } from "./api"
 import { ChartCard } from "./chart-card"
 import { ChartPicker } from "./chart-picker"
 import {
@@ -64,16 +64,16 @@ type CardModel = {
   period: { count: number; options: readonly number[]; unit: string } | null
 }
 
-/** Các bản chỉnh chưa lưu của phiên, mỗi ngành một bản (spec §6.4). */
+/** Các bản chỉnh chưa lưu của phiên, mỗi ngành một bản (spec v3 §6.2). */
 type Drafts = Partial<Record<Industry, DashboardDraft>>
 
 /**
- * Dashboard phân tích v2 (spec §1–§13): lưới biểu đồ của các chỉ tiêu đã học, khung chọn biểu
+ * Dashboard phân tích v3 (spec §1–§6, §12): lưới biểu đồ của các chỉ tiêu đã học, khung chọn biểu
  * đồ bên phải và thiết lập lưu theo tài khoản và theo ngành.
  *
  * Mã đang xem là trạng thái chung của trang: dashboard chỉ hiện mã, không đổi mã. Ngành của mã
- * (doanh nghiệp sản xuất, ngân hàng, chứng khoán, bảo hiểm) lấy từ mẫu báo cáo tài chính và
- * quyết định danh mục chỉ tiêu cùng thiết lập đang dùng. Đổi sang mã cùng ngành thì thiết lập
+ * (một trong 9 ngành, máy chủ xếp theo mẫu báo cáo tài chính rồi phân ngành ICB) và nhãn ngành do
+ * máy chủ trả; ngành quyết định danh mục chỉ tiêu, thiết lập đang dùng và bài học của nút "Học". Đổi sang mã cùng ngành thì thiết lập
  * giữ nguyên; đổi sang mã khác ngành thì chuyển sang thiết lập của ngành đó, và quay lại thấy
  * lại thay đổi chưa lưu trong phiên của ngành cũ.
  *
@@ -101,18 +101,32 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
 
   /** Khách: bộ mặc định của ngành. Thành viên: bản đã lưu của ngành cho tới khi người dùng đổi gì. */
   const guest = !isAuthenticated && !authLoading
+  /** Nhãn ngành cạnh mã (spec §1.2): máy chủ trả cùng ngành của mã, dự phòng nhãn trong danh mục. */
+  const industryLabel = industryQuery.data?.label ?? catalogIndustry?.label
   const saved: DashboardDraft | undefined =
-    industry === undefined ? undefined : isAuthenticated ? settings.data?.[industry] : guest ? defaults : undefined
+    industry === undefined
+      ? undefined
+      : isAuthenticated
+        ? settings.data
+          ? (settings.data[industry] ?? defaults)
+          : undefined
+        : guest
+          ? defaults
+          : undefined
   const draft: DashboardDraft | undefined = industry === undefined ? undefined : (drafts[industry] ?? saved)
-  const selected = useMemo<ChartName[]>(() => draft?.charts ?? [], [draft])
-  const per = draft?.per ?? "q"
-  const ready = !!draft && !!catalogIndustry
 
   /** Khuôn và khoá bài học của từng chỉ tiêu theo danh mục: biết ngay thẻ nào có ô số kỳ (DB-05e). */
   const itemByName = useMemo(
     () => new Map(industryItems(catalogIndustry).map((item) => [item.name, item] as const)),
     [catalogIndustry],
   )
+  /** Chỉ tiêu đang chọn, chỉ giữ tên thuộc danh mục của ngành (không bao giờ xin chỉ tiêu ngoài ngành). */
+  const selected = useMemo<ChartName[]>(
+    () => (draft?.charts ?? []).filter((name) => itemByName.has(name)),
+    [draft, itemByName],
+  )
+  const per = draft?.per ?? "q"
+  const ready = !!draft && !!catalogIndustry
 
   const fundamental = useFundamental(symbol, selected, per, ready)
   const fundamentalData = fundamental.data
@@ -259,7 +273,7 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
     if (!industry || !draft) return
     const target = industry
     const next: DashboardDraft = {
-      charts: draft.charts,
+      charts: selected,
       per: draft.per,
       nks: normalizedPeriodCounts(draft.nks),
     }
@@ -296,12 +310,12 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
               <span className="rounded-sm border border-border bg-card px-2 py-1 text-sm font-bold tabular-nums">
                 {symbol}
               </span>
-              {industry && (
+              {industry && industryLabel && (
                 <span
                   data-industry={industry}
                   className="rounded-full border border-border px-2 py-0.5 text-xs font-semibold text-text-secondary"
                 >
-                  {INDUSTRY_LABEL[industry]}
+                  {industryLabel}
                 </span>
               )}
               <div
@@ -400,7 +414,7 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
                 Chưa có biểu đồ nào. Tick chọn chỉ tiêu ở khung bên phải để thêm biểu đồ.
               </p>
             )}
-            {ready && !fundamental.isError && selected.length > 0 && (
+            {ready && industry && !fundamental.isError && selected.length > 0 && (
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={selected} strategy={rectSortingStrategy}>
                   <div className="grid grid-cols-1 gap-3 min-[1250px]:grid-cols-2">
@@ -409,6 +423,7 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
                         key={card.name}
                         view={card.view}
                         {...(card.metricKey ? { metricKey: card.metricKey } : {})}
+                        nganh={industry}
                         fixedYear={card.fixedYear}
                         period={card.period}
                         onPeriodChange={(count) => changePeriod(card.name, count)}
