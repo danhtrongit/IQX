@@ -456,7 +456,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 77,
+      "line": 79,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/link",
       "method": "GET",
@@ -469,7 +469,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 86,
+      "line": 88,
       "callee": "requestOperation",
       "raw": "POST /api/v2/academy/lessons/{lessonId}/scenario",
       "method": "POST",
@@ -482,7 +482,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 96,
+      "line": 98,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}/notes",
       "method": "GET",
@@ -495,7 +495,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 102,
+      "line": 104,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/academy/lessons/{lessonId}/notes",
       "method": "PUT",
@@ -508,7 +508,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 108,
+      "line": 110,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}/attempt",
       "method": "GET",
@@ -521,7 +521,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 114,
+      "line": 116,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}/attempts",
       "method": "GET",
@@ -534,7 +534,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 126,
+      "line": 128,
       "callee": "requestOperation",
       "raw": "POST /api/v2/academy/attempts",
       "method": "POST",
@@ -547,7 +547,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 135,
+      "line": 137,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/academy/attempts/{attemptId}/answers",
       "method": "PUT",
@@ -560,7 +560,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 151,
+      "line": 153,
       "callee": "requestOperation",
       "raw": "POST /api/v2/academy/attempts/{attemptId}/submit",
       "method": "POST",
