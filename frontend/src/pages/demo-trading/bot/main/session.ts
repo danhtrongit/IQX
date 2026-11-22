@@ -1,3 +1,4 @@
+import type { BotSessionV2 } from "../api-v2"
 import type { BotSession, BotSessionDecision } from "../types"
 import { sourceText } from "./source"
 
@@ -41,4 +42,29 @@ export function sessionSummary(session: Pick<BotSession, "counts" | "reasons">, 
   const rest = groups.length - maxReasons
   if (rest > 0) parts.push(`+${rest} lý do khác`)
   return parts.length > 0 ? parts.join(" · ") : "Không có quyết định"
+}
+
+/** `RSI + SMA20 · bản 05/11 20:02`; `Chưa chọn chiến lược` for a v2 session without one; `—` before v2. */
+export function sessionStrategy(session: BotSessionV2): string {
+  if (session.strategy_label) return [session.strategy_label, session.version_label].filter(Boolean).join(" · ")
+  if (session.strategy_label === null && session.counters) return "Chưa chọn chiến lược"
+  return "—"
+}
+
+/** `VN30 · 30 mã`; the legacy buy source before v2. */
+export function sessionUniverse(session: BotSessionV2): string {
+  if (session.universe_label) return session.universe_count == null ? session.universe_label : `${session.universe_label} · ${session.universe_count} mã`
+  return sessionSource(session)
+}
+
+/** Separate counts of §5.5: time exits, positions waiting for T+2, due but unfilled, empty buy basket. */
+export function sessionCounterChips(session: BotSessionV2): string[] {
+  const counters = session.counters
+  if (!counters) return []
+  const chips: string[] = []
+  if (counters.time_exits) chips.push(`${counters.time_exits} bán do hết hạn`)
+  if (counters.t2_blocked) chips.push(`${counters.t2_blocked} chờ T+2`)
+  if (counters.due_unfilled) chips.push(`${counters.due_unfilled} đến hạn chưa khớp`)
+  if (counters.universe_empty) chips.push("Rổ mua không có mã")
+  return chips
 }

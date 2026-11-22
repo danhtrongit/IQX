@@ -14,6 +14,10 @@ import type {
   UniverseState,
 } from "./types"
 import { templateConfig } from "./config/draft"
+import type { StrategyOptions } from "./api-v2"
+import type { BotSchedule, DuePosition, ScheduleStrategy } from "@/pages/strategy/shared/bot-schedule"
+import type { StrategyContent } from "@/pages/strategy/shared/strategy-diff"
+import type { NotificationItem, NotificationSettings } from "@/pages/notifications/api"
 import type {
   CrossField,
   IndicatorConfig,
@@ -134,6 +138,13 @@ export type World = {
   invalidSymbols: { symbol: string; reason: string }[] | null
   /** `bot.new_buys_enabled` of the overview; `null` leaves it out like an older API. */
   newBuysEnabled: boolean | null
+  /* v2.0 (hand-typed per PLAN §6) */
+  schedule: BotSchedule
+  strategyOptions: StrategyOptions
+  /** Positions the impact read reports as due at the next session (only when Giữ tối đa drops). */
+  impactPositions: DuePosition[]
+  notificationSettings: NotificationSettings
+  notifications: NotificationItem[]
   /** Per-route replacements: `"PATCH /strategy/shared-config"` -> handler (may throw). */
   override: Record<string, (body: Record<string, unknown> | null) => unknown>
   calls: Call[]
@@ -184,6 +195,9 @@ export function createWorld(partial: Partial<World> = {}): World {
     savedRevision: 0, effectiveRevision: null, effectiveSession: null, status: "pending",
     indicators, effectiveIndicators: null, omitEffective: false, outdated: false, universe: universeState(), lists: [], positions: [],
     trades: [], sessions: [], decisions: {}, conditions: null, invalidSymbols: null, newBuysEnabled: true,
+    schedule: scheduleFixture(), strategyOptions: { iqx: [], mine: [] }, impactPositions: [],
+    notificationSettings: { enabled: true, types: { bulletin: true, bot_trades: true }, channels: { web: true, email: false }, email_available: true, updated_at: null },
+    notifications: [],
     override: {}, calls: [], ...partial,
   }
 }
@@ -321,6 +335,36 @@ function route(world: World) {
         world.universe = { ...world.universe, pending: null }
         return { request: { ...pending, status: "cancelled" }, state: world.universe }
       }
+      case "GET /bot/schedule": return world.schedule
+      case "GET /bot/strategy-options": return world.strategyOptions
+      case "GET /bot/schedule/next/impact": {
+        const next = world.schedule.next
+        return { next_session: next.session_date, n_current: next.source ? next.content.max_holding : 30, n_new: 10, positions: world.impactPositions }
+      }
+      case "PUT /bot/schedule/next":
+      case "POST /bot/schedule/next/keep-last": {
+        guardSchedule(world, body)
+        const last = world.schedule.last
+        const target: ScheduleStrategy | null = key === "PUT /bot/schedule/next"
+          ? strategyFromOptions(world, body as { source: "iqx" | "user"; id: string; version?: number })
+          : last && last.source ? { ...last } : null
+        if (!target) throw new FakeApiError("Không có chiến lược.", 404, { code: "STRATEGY_NOT_FOUND" })
+        world.schedule = { ...world.schedule, next: { ...target, session_date: world.schedule.next.session_date, follow_latest: target.source === "user" && key === "PUT /bot/schedule/next", cutoff_at: world.schedule.next.cutoff_at }, iqx_update: null }
+        for (const item of [...world.strategyOptions.iqx, ...world.strategyOptions.mine]) item.on_bot = { ...item.on_bot, next: item.id === target.id }
+        return world.schedule
+      }
+      case "GET /me/notification-settings": return world.notificationSettings
+      case "PUT /me/notification-settings": {
+        const input = body as unknown as Pick<NotificationSettings, "enabled" | "types"> & { channels: { email: boolean } }
+        world.notificationSettings = { ...world.notificationSettings, ...input, channels: { web: true, email: input.channels.email }, updated_at: "2026-11-22T07:00:00Z" }
+        return world.notificationSettings
+      }
+      case "GET /me/notifications": return { items: world.notifications, unread_count: world.notifications.filter((item) => !item.read_at).length }
+      case "GET /me/notifications/unread-count": return { unread_count: world.notifications.filter((item) => !item.read_at).length }
+      case "POST /me/notifications/read": {
+        world.notifications = world.notifications.map((item) => (body?.all === true || item.id === body?.id) && !item.read_at ? { ...item, read_at: "2026-11-22T07:00:00Z" } : item)
+        return { unread_count: world.notifications.filter((item) => !item.read_at).length }
+      }
       default: throw new FakeApiError(`unhandled ${key}`, 404)
     }
   }
@@ -396,5 +440,57 @@ export function decisionFixture(partial: Partial<BotSessionDecision> & Pick<BotS
     in_universe: true, universe_kind: "vn30", universe_revision: 0, policy_version: "iqx-bot-v1.1", decision_config_revision: 3, condition_snapshot: null,
     rank_tuple: null, legacy_filter_ids: [], legacy_threshold_vnd: null, source_refs: {}, created_at: `${partial.trading_date}T10:00:00Z`,
     ...partial,
+  }
+}
+
+/* ── v2.0 fixtures ──────────────────────────────────────────────────────── */
+
+/** A strategy content with RSI on the Buy side (Sell side empty). */
+export function strategyContentFixture(partial: Partial<StrategyContent> = {}): StrategyContent {
+  return {
+    universe: { type: "vn30" },
+    max_holding: 30,
+    indicators: { rsi: { master_enabled: true, buy: { enabled: true, rules: [{ id: "rsi.level", enabled: true }] }, sell: { enabled: false, rules: [] } } },
+    ...partial,
+  }
+}
+
+export function scheduledFixture(partial: Partial<ScheduleStrategy> & Pick<ScheduleStrategy, "id" | "name">): ScheduleStrategy {
+  return { session_date: "2026-11-06", source: "user", version: 2, version_label: "bản 05/11 20:02", hidden: false, content: strategyContentFixture(), ...partial }
+}
+
+/** Default schedule: last session Thứ 6 06/11, next session Thứ 2 09/11, no strategy chosen. */
+export function scheduleFixture(partial: Partial<BotSchedule> = {}): BotSchedule {
+  return {
+    last: { session_date: "2026-11-06", source: null },
+    next: { session_date: "2026-11-09", source: null, follow_latest: false, cutoff_at: "2026-11-09T12:00:00Z" },
+    iqx_update: null,
+    ...partial,
+  }
+}
+
+function strategyFromOptions(world: World, target: { source: "iqx" | "user"; id: string; version?: number }): ScheduleStrategy {
+  if (target.source === "iqx") {
+    const item = world.strategyOptions.iqx.find((option) => option.id === target.id)
+    if (!item) throw new FakeApiError("Không có chiến lược.", 404, { code: "STRATEGY_NOT_FOUND" })
+    const version = target.version ?? item.version
+    return { session_date: "", source: "iqx", id: item.id, name: item.name, version, version_label: `v${version}`, hidden: item.hidden, content: strategyContentFixture({ max_holding: item.max_holding }) }
+  }
+  const item = world.strategyOptions.mine.find((option) => option.id === target.id)
+  if (!item) throw new FakeApiError("Không có chiến lược.", 404, { code: "STRATEGY_NOT_FOUND" })
+  return { session_date: "", source: "user", id: item.id, name: item.name, version: item.latest_version, version_label: "bản 08/11 13:47", hidden: false, content: strategyContentFixture() }
+}
+
+/** The §6.4/§6.5 guards of a schedule write, like the server's. */
+function guardSchedule(world: World, body: Record<string, unknown> | null) {
+  if (body?.expected_next_session !== world.schedule.next.session_date) {
+    throw new FakeApiError("Phiên vừa chốt.", 409, { code: "SCHEDULE_SESSION_LOCKED", details: { next_session: world.schedule.next.session_date } })
+  }
+  if (world.impactPositions.length === 0) return
+  const confirm = body?.confirm_due_positions as string[] | undefined
+  if (!confirm) throw new FakeApiError("Cần xác nhận vị thế đến hạn.", 422, { code: "DUE_CONFIRM_REQUIRED", details: { positions: world.impactPositions } })
+  const expected = world.impactPositions.map((position) => position.symbol).sort().join(",")
+  if ([...confirm].sort().join(",") !== expected) {
+    throw new FakeApiError("Danh sách vị thế đến hạn đã đổi.", 409, { code: "DUE_POSITIONS_CHANGED", details: { positions: world.impactPositions } })
   }
 }

@@ -1,16 +1,15 @@
 /**
- * The Bot overview's mascot card: the account's active mascot on its stage, the
- * configuration state chip and the source / holdings chips. Drawn with the same 2D
+ * The Bot overview's mascot card: the account's active mascot on its stage and the
+ * strategy / holdings chips (spec v2.0 §5.2; no state chip, no on/off switch). Drawn with the same 2D
  * renderer as the workspace's `MascotStage`; no hatch, no UI milestone is written.
  */
-import { useRef, useState } from "react"
+import { useRef, useState, type ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
 import { MASCOT_MANIFEST } from "../../journey/config"
 import { Mascot2DStage } from "../../journey/mascot-2d/Mascot2DStage"
 import type { MascotId } from "../../journey/types"
 import { useReducedMotion, useStageVisibility } from "../../journey/visibility"
-import type { StateChip } from "./state"
 
 const TAP_COOLDOWN_MS = 1800
 
@@ -19,36 +18,13 @@ function prefersSavedData(): boolean {
   return !!(connection && typeof connection === "object" && "saveData" in connection && connection.saveData)
 }
 
-const CHIP_TONE: Record<StateChip["tone"], string> = {
-  good: "border-price-up/40 bg-price-up/10 text-price-up",
-  info: "border-primary/40 bg-primary/10 text-primary",
-  danger: "border-destructive/40 bg-destructive/10 text-destructive",
-  muted: "border-border bg-muted text-muted-foreground",
-}
-
-export function StateChipView({ chip }: { chip: StateChip }) {
-  return (
-    <span
-      role="status"
-      data-testid="bot-state-chip"
-      title={chip.detail ?? undefined}
-      className={cn("inline-flex max-w-full items-center gap-1.5 rounded-sm border px-2 py-0.5 text-[11px] font-medium", CHIP_TONE[chip.tone])}
-    >
-      <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-current" />
-      <span className="min-w-0 truncate">{chip.label}</span>
-    </span>
-  )
-}
-
 export function MascotCard({
   mascotId,
-  chip,
   chips,
-  tagline = "Học kiến thức. Tự thiết lập điều kiện cho Bot.",
+  tagline = "Học kiến thức. Chọn chiến lược cho Bot.",
 }: {
   mascotId: MascotId
-  chip: StateChip
-  chips: { key: string; label: string; tone?: "warn" }[]
+  chips: { key: string; label: ReactNode; tone?: "warn" }[]
   tagline?: string
 }) {
   const stage = useRef<HTMLDivElement>(null)
@@ -60,12 +36,9 @@ export function MascotCard({
 
   return (
     <section aria-label="Linh thú của bạn" className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card px-4 py-4 text-center @container">
-      <div className="flex w-full items-center justify-between gap-2">
-        <p className="text-[10px] tracking-wide text-muted-foreground uppercase">Linh thú của bạn</p>
-        <StateChipView chip={chip} />
-      </div>
+      <p className="w-full text-left text-[10px] tracking-wide text-academy-subtle uppercase">Linh thú của bạn</p>
       <h2 className="font-heading text-2xl leading-tight font-bold min-[1750px]:text-3xl">{definition.name}</h2>
-      <p className="-mt-2 max-w-md text-xs text-muted-foreground">{tagline}</p>
+      <p className="-mt-2 max-w-md text-xs text-foreground">{tagline}</p>
       <div
         ref={stage}
         data-testid="mascot-stage"
@@ -93,8 +66,8 @@ export function MascotCard({
           <li
             key={item.key}
             className={cn(
-              "rounded-sm border px-2 py-0.5 text-[10px] font-medium",
-              item.tone === "warn" ? "border-price-ref/40 bg-price-ref/10 text-price-ref" : "border-border bg-muted/40 text-muted-foreground",
+              "inline-flex max-w-full items-center gap-1 rounded-sm border px-2 py-0.5 text-[10px] font-medium",
+              item.tone === "warn" ? "border-price-ref/40 bg-price-ref/10 text-price-ref" : "border-border bg-muted/40 text-foreground",
             )}
           >
             {item.label}

@@ -9,10 +9,11 @@ import { cn } from "@/lib/utils"
 import { messageOf } from "../api"
 import { formatDate, formatDong, formatInt } from "../format"
 import { useSessionDecisions } from "../queries"
-import type { BotSession, BotSessionDecision } from "../types"
+import type { BotSessionDecision } from "../types"
+import type { BotSessionV2 as BotSession } from "../api-v2"
 import { evidenceLines } from "./evidence"
 import { LoadMore } from "./load-more"
-import { ACTION_LABEL, reasonLabel, runStatusNote, sessionSource, sessionSummary } from "./session"
+import { ACTION_LABEL, reasonLabel, runStatusNote, sessionCounterChips, sessionStrategy, sessionSummary, sessionUniverse } from "./session"
 
 function Decision({ decision, names }: { decision: BotSessionDecision; names: Readonly<Record<string, string>> }) {
   const evidence = evidenceLines(decision, names)
@@ -20,20 +21,19 @@ function Decision({ decision, names }: { decision: BotSessionDecision; names: Re
   return (
     <li className="py-1 text-[11px] leading-5">
       <div className="flex flex-wrap items-baseline gap-x-2">
-        <span className={cn("min-w-10 font-semibold", decision.action === "buy" ? "text-price-up" : decision.action === "sell" ? "text-price-down" : "text-muted-foreground")}>
+        <span className={cn("min-w-10 font-semibold", decision.action === "buy" ? "text-price-up" : decision.action === "sell" ? "text-price-down" : "text-foreground")}>
           {ACTION_LABEL[decision.action]}
         </span>
         {decision.symbol && <strong>{decision.symbol}</strong>}
-        <span className="text-muted-foreground">{reasonLabel(decision, decision.reason)}</span>
+        <span className="text-foreground">{reasonLabel(decision, decision.reason)}</span>
         {execution && <span className="tabular-nums">{formatInt(execution.qty)} CP × {formatDong(execution.price_vnd)}</span>}
-        {decision.decision_config_revision !== null && <span className="text-[10px] text-muted-foreground">Bản {decision.decision_config_revision}</span>}
       </div>
       {evidence.length > 0 && (
         <details className="mt-0.5">
           <summary className="w-fit cursor-pointer rounded-sm text-[10px] text-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
             Điều kiện lúc quyết định<span className="sr-only"> {decision.symbol ?? "phiên"}</span>
           </summary>
-          <ul className="mt-1 space-y-0.5 pl-3 text-[10px] leading-4 text-muted-foreground">
+          <ul className="mt-1 space-y-0.5 pl-3 text-[10px] leading-4 text-academy-subtle">
             {evidence.map((line) => <li key={line.key}>{line.text}</li>)}
           </ul>
         </details>
@@ -58,7 +58,7 @@ function SessionDecisions({ session, names }: { session: BotSession; names: Read
       </div>
     )
   }
-  if (decisions.length === 0) return <p className="py-1 text-xs text-muted-foreground">Phiên này không có quyết định nào được ghi.</p>
+  if (decisions.length === 0) return <p className="py-1 text-xs text-academy-subtle">Phiên này không có quyết định nào được ghi.</p>
   return (
     <div>
       <div
@@ -87,7 +87,7 @@ function SessionFacts({ session }: { session: BotSession }) {
     <div className="space-y-1.5">
       <dl className="flex flex-wrap gap-x-6 gap-y-1 text-[11px]">
         {facts.map((fact) => (
-          <div key={fact.label} className="flex gap-1.5"><dt className="text-muted-foreground">{fact.label}:</dt><dd className="font-medium tabular-nums">{fact.value}</dd></div>
+          <div key={fact.label} className="flex gap-1.5"><dt className="text-foreground">{fact.label}:</dt><dd className="font-medium tabular-nums">{fact.value}</dd></div>
         ))}
       </dl>
       {note && <p className="text-[11px] font-medium text-price-ref">Trạng thái xử lý: {note}.</p>}
@@ -129,9 +129,9 @@ export function JournalTable({
     return (
       <div>
         <div className="flex flex-col items-center gap-1.5 px-4 py-10 text-center">
-          <NotebookText aria-hidden="true" className="size-6 text-muted-foreground/60" />
+          <NotebookText aria-hidden="true" className="size-6 text-primary/60" />
           <p className="text-sm font-medium">{loading ? "Đang tải nhật ký…" : "Chưa có phiên xử lý"}</p>
-          {!loading && <p className="max-w-sm text-xs leading-5 text-muted-foreground">Sau mỗi phiên, lý do Bot mua, bán hoặc không hành động sẽ được ghi tại đây.</p>}
+          {!loading && <p className="max-w-sm text-xs leading-5 text-academy-subtle">Mỗi phiên một dòng.</p>}
         </div>
         <LoadMore hasMore={hasMore} loading={loading} onClick={onLoadMore} label="Tải thêm nhật ký" />
       </div>
@@ -149,12 +149,12 @@ export function JournalTable({
 
   return (
     <div className="@container">
-      <Table aria-label="Nhật ký Bot theo phiên" className="min-w-[640px]">
+      <Table aria-label="Nhật ký Bot theo phiên" className="min-w-[760px]">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead>Phiên</TableHead>
-            <TableHead>Danh mục mua mới</TableHead>
-            <TableHead>Cấu hình</TableHead>
+            <TableHead>Chiến lược · bản</TableHead>
+            <TableHead>Rổ</TableHead>
             <TableHead>Kết quả</TableHead>
           </TableRow>
         </TableHeader>
@@ -184,9 +184,18 @@ export function JournalTable({
                       </small>
                     )}
                   </TableCell>
-                  <TableCell className="whitespace-normal">{sessionSource(session)}</TableCell>
-                  <TableCell>{session.config_revision === null ? "—" : `Bản ${session.config_revision}`}</TableCell>
-                  <TableCell className="max-w-[320px] whitespace-normal">{sessionSummary(session)}</TableCell>
+                  <TableCell className="max-w-[220px] whitespace-normal text-[11px]">{sessionStrategy(session)}</TableCell>
+                  <TableCell className="whitespace-normal text-[11px]">{sessionUniverse(session)}</TableCell>
+                  <TableCell className="max-w-[340px] whitespace-normal" data-testid="journal-result">
+                    {session.summary?.trim() || sessionSummary(session)}
+                    {sessionCounterChips(session).length > 0 && (
+                      <span className="mt-1 flex flex-wrap gap-1">
+                        {sessionCounterChips(session).map((chip) => (
+                          <span key={chip} className="rounded-sm border border-status-warning/50 bg-status-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-status-warning">{chip}</span>
+                        ))}
+                      </span>
+                    )}
+                  </TableCell>
                 </TableRow>
                 {open && (
                   <TableRow id={panelId} className="bg-muted/30 hover:bg-muted/30">

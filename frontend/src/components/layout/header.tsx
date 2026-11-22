@@ -17,6 +17,7 @@ import { useWorkspaceMemory } from "@/pages/demo-trading/workspace-sections"
 import { HeaderCoinChip } from "./header-coin-chip"
 import { LoginDialog } from "./login-dialog"
 import { HeaderSearch } from "./header-search"
+import { NotificationBell } from "./notification-bell"
 
 const activeNavClass = "flex shrink-0 items-center bg-primary px-3 text-xs font-semibold tracking-wide whitespace-nowrap text-primary-foreground uppercase transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
 const navClass = "flex shrink-0 items-center px-3 text-xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
@@ -138,6 +139,7 @@ export function Header() {
       <div className={cn("ml-auto flex shrink-0 items-center gap-2", user && "max-sm:gap-1")}>
         <HeaderCoinChip />
         <HeaderSearch />
+        <NotificationBell />
         <Button
           variant="ghost"
           size="icon"

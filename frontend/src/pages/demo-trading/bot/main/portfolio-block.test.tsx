@@ -29,7 +29,7 @@ afterEach(() => vi.unstubAllGlobals())
 
 async function openTab(name: "Lịch sử" | "Nhật ký") {
   const user = userEvent.setup()
-  renderBot(<PortfolioBlock disclosure={null} names={{ rsi: "RSI" }} />)
+  renderBot(<PortfolioBlock disclosure={null} />)
   await user.click(await screen.findByRole("tab", { name }))
   return user
 }
@@ -60,7 +60,7 @@ describe("Lịch sử (GET /bot/trades)", () => {
 
     const first = within(rows[0]!)
     expect(first.getByText("07/10/2026")).toBeTruthy()
-    expect(first.getByText("Mua 01/10/2026")).toBeTruthy()
+    expect(first.getByText("01/10/2026")).toBeTruthy()
     expect(first.getByText("FPT")).toBeTruthy()
     expect(first.getByText("300")).toBeTruthy()
     expect(first.getByText("98.500 đ")).toBeTruthy()
@@ -68,14 +68,13 @@ describe("Lịch sử (GET /bot/trades)", () => {
     expect(first.getByText("+689.775 đ")).toBeTruthy()
     expect(first.getByText("+2,33%")).toBeTruthy()
     expect(first.getByText("4 phiên")).toBeTruthy()
-    expect(first.getByText("VN30")).toBeTruthy()
+    expect(first.getByText("Bán theo điều kiện Bán")).toBeTruthy()
 
     const second = within(rows[1]!)
     expect(second.getByText("HPG")).toBeTruthy()
     expect(second.getByText("−1.337.000 đ")).toBeTruthy()
     expect(second.getByText("−4,91%")).toBeTruthy()
     expect(second.getByText("3 phiên")).toBeTruthy()
-    expect(second.getByText("Cổ phiếu ngân hàng · bản 2")).toBeTruthy()
   })
 
   it("shows the server's P&L as is: nothing is paired or recomputed on the client", async () => {
@@ -102,9 +101,9 @@ describe("Lịch sử (GET /bot/trades)", () => {
     const table = await screen.findByRole("table", { name: "Lịch sử giao dịch Bot" })
     await user.click(within(table).getByRole("button", { name: /Chi tiết/ }))
 
-    const detail = await screen.findByRole("dialog", { name: "Giao dịch FPT" })
+    const detail = await screen.findByRole("dialog", { name: "FPT · chi tiết giao dịch Bán" })
     expect(detail.textContent).toMatch(/Lãi\/lỗ đã chốt \(sau phí, thuế\)\+689\.775 đ \(\+2,33%\)/)
-    expect(detail.textContent).toMatch(/Thời gian giữ4 phiên · 6 ngày/)
+    expect(detail.textContent).toMatch(/Thời gian giữ4 phiên/)
     expect(detail.textContent).toMatch(/Nguồn mua lúc mởCổ phiếu ngân hàng · bản 2/)
 
     const buy = within(within(detail).getByRole("region", { name: "Lệnh mua" }))
@@ -112,7 +111,6 @@ describe("Lịch sử (GET /bot/trades)", () => {
     expect(buy.getByText("29.550.000 đ")).toBeTruthy()
     expect(buy.getByText("44.325 đ")).toBeTruthy()
     expect(buy.getByText("29.594.325 đ")).toBeTruthy()
-    expect(buy.getByText("Bản 3")).toBeTruthy()
     expect(buy.getByText("Mua theo điều kiện Mua")).toBeTruthy()
 
     const sell = within(within(detail).getByRole("region", { name: "Lệnh bán" }))
@@ -121,7 +119,6 @@ describe("Lịch sử (GET /bot/trades)", () => {
     expect(sell.getByText("45.540 đ")).toBeTruthy()
     expect(sell.getByText("30.360 đ")).toBeTruthy()
     expect(sell.getByText("30.284.100 đ")).toBeTruthy()
-    expect(sell.getByText("Bản 4")).toBeTruthy()
     expect(sell.getByText("Bán theo điều kiện Bán")).toBeTruthy()
     expect(within(detail).queryByRole("region", { name: "Dữ liệu chính sách cũ" })).toBeNull()
 
@@ -142,9 +139,8 @@ describe("Lịch sử (GET /bot/trades)", () => {
     const table = await screen.findByRole("table", { name: "Lịch sử giao dịch Bot" })
     expect(within(table).queryByText(/cắt lỗ|cũ/)).toBeNull()
     await user.click(within(table).getByRole("button", { name: /Chi tiết/ }))
-    const detail = await screen.findByRole("dialog", { name: "Giao dịch FPT" })
+    const detail = await screen.findByRole("dialog", { name: "FPT · chi tiết giao dịch Bán" })
     expect(within(detail).getByText("Mua do bộ lọc cũ")).toBeTruthy()
-    expect(within(detail).getByRole("region", { name: "Dữ liệu chính sách cũ" }).textContent).toMatch(/Mốc cắt lỗ cũ.*90\.000 đ/)
     expect(detail.textContent).toMatch(/Nguồn mua lúc mở—/)
   })
 
@@ -166,7 +162,7 @@ describe("Lịch sử (GET /bot/trades)", () => {
 
   it("explains an empty record, pointing to Đang giữ for positions not sold yet", async () => {
     await openTab("Lịch sử")
-    expect(await screen.findByText("Chưa có giao dịch đã chốt")).toBeTruthy()
+    expect(await screen.findByText("Chưa có giao dịch đã bán")).toBeTruthy()
     expect(screen.getByText(/Vị thế chưa bán nằm ở tab Đang giữ/)).toBeTruthy()
   })
 
@@ -185,10 +181,51 @@ describe("Lịch sử (GET /bot/trades)", () => {
   })
 
   it("reads nothing until the tab is opened", async () => {
-    renderBot(<PortfolioBlock disclosure={null} names={{}} />)
+    renderBot(<PortfolioBlock disclosure={null} />)
     await screen.findByRole("tab", { name: "Lịch sử" })
     expect(callsTo(world, "GET", "/bot/trades")).toHaveLength(0)
     expect(callsTo(world, "GET", "/bot/journal/sessions")).toHaveLength(0)
+  })
+})
+
+describe("Lịch sử v2.0 (§5.5, B11)", () => {
+  it("shows Thời gian giữ, Lý do bán with «(cùng đến hạn)», strategy · version, and the sell detail rows", async () => {
+    world.trades = [
+      { ...tradeFixture({ id: "t-9", symbol: "STB" }), exit_reason: "indicator", exit_reasons: ["indicator", "max_holding"], max_holding_at_exit: 30, strategy_label: "RSI + SMA20", version_label: "bản 05/11 20:02", holding_sessions: 30 } as BotTrade,
+      { ...tradeFixture({ id: "t-8", symbol: "ACB" }), exit_reason: "max_holding", exit_reasons: ["max_holding"], max_holding_at_exit: 30, strategy_label: "RSI + SMA20", version_label: "bản 05/11 20:02" } as BotTrade,
+    ]
+    const user = await openTab("Lịch sử")
+    const table = await screen.findByRole("table", { name: "Lịch sử giao dịch Bot" })
+    const rows = within(table).getAllByRole("row").slice(1)
+    expect(within(rows[0]!).getByTestId("exit-reason").textContent).toBe("Điều kiện Bán(cùng đến hạn)")
+    expect(within(rows[0]!).getByText("30 phiên")).toBeTruthy()
+    expect(within(rows[0]!).getByText("RSI + SMA20 · bản 05/11 20:02")).toBeTruthy()
+    expect(within(rows[1]!).getByTestId("exit-reason").textContent).toBe("Hết thời gian giữ")
+    await user.click(within(rows[0]!).getByRole("button", { name: /Chi tiết/ }))
+    const detail = await screen.findByRole("dialog", { name: "STB · chi tiết giao dịch Bán" })
+    for (const text of ["Phiên mua01/10/2026", "Phiên bán07/10/2026", "Thời gian giữ30 phiên", "Lý do bánĐiều kiện Bán (cùng đến hạn)", "Giới hạn khi bán30 phiên", "Chiến lược · bảnRSI + SMA20 · bản 05/11 20:02"]) {
+      expect(detail.textContent).toContain(text)
+    }
+  })
+})
+
+describe("Nhật ký v2.0 (§5.5, B12)", () => {
+  it("one row per session with strategy · version, Rổ (name · count), result and the separate counts", async () => {
+    world.sessions = [
+      { ...sessionFixture({ session: "2026-11-06" }), strategy_label: "RSI + SMA20", version_label: "bản 05/11 20:02", universe_label: "VN30", universe_count: 30, summary: "Mua TCB · 1 đến hạn chưa khớp (KDH tạm ngừng giao dịch)", counters: { time_exits: 1, t2_blocked: 2, due_unfilled: 1, universe_empty: 0 } },
+      { ...sessionFixture({ session: "2026-11-05" }), strategy_label: null, version_label: null, universe_label: null, universe_count: null, summary: "Chưa chọn chiến lược · không mua mới", counters: { time_exits: 0, t2_blocked: 0, due_unfilled: 0, universe_empty: 0 } },
+    ] as never
+    await openTab("Nhật ký")
+    const table = await screen.findByRole("table", { name: "Nhật ký Bot theo phiên" })
+    const rows = within(table).getAllByRole("row").slice(1)
+    expect(within(rows[0]!).getByText("RSI + SMA20 · bản 05/11 20:02")).toBeTruthy()
+    expect(within(rows[0]!).getByText("VN30 · 30 mã")).toBeTruthy()
+    const result = within(rows[0]!).getByTestId("journal-result").textContent
+    expect(result).toContain("Mua TCB · 1 đến hạn chưa khớp (KDH tạm ngừng giao dịch)")
+    expect(result).toContain("1 bán do hết hạn")
+    expect(result).toContain("2 chờ T+2")
+    expect(result).toContain("1 đến hạn chưa khớp")
+    expect(within(rows[1]!).getByText("Chưa chọn chiến lược")).toBeTruthy()
   })
 })
 
@@ -230,7 +267,6 @@ describe("Nhật ký (GET /bot/journal/sessions)", () => {
     const first = within(rows[0]!)
     expect(first.getByText("07/10/2026")).toBeTruthy()
     expect(first.getByText("Cổ phiếu ngân hàng · bản 2")).toBeTruthy()
-    expect(first.getByText("Bản 4")).toBeTruthy()
     expect(first.getByText("Mua 1 · Điều kiện Mua chưa đạt ×28 · no_data")).toBeTruthy()
     const second = within(rows[1]!)
     expect(second.getByText("VN30")).toBeTruthy()

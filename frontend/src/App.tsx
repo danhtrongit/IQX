@@ -1,5 +1,5 @@
 import { lazy, useMemo, useState, type ComponentType } from "react"
-import { createBrowserRouter, Navigate, RouterProvider, useLocation, useParams, type RouteObject } from "react-router"
+import { createBrowserRouter, Navigate, RouterProvider, useLocation, type RouteObject } from "react-router"
 
 import { AdminLayout } from "@/components/layout/admin-layout"
 import { AdminScopeRoute } from "@/components/layout/admin-scope-route"
@@ -77,6 +77,7 @@ const VTAccountDetailPage = lazyPage(() => import("@/pages/admin/trading/vt-acco
 const VTConfigPage = lazyPage(() => import("@/pages/admin/trading/vt-config-page").then(module => ({ default: module.VTConfigPage })))
 const CoursesPage = lazyPage(() => import("@/pages/admin/learning/courses-page").then(module => ({ default: module.CoursesPage })))
 const TradingFloorPage = lazyPage(() => import("@/pages/trading-floor/trading-floor-page").then(module => ({ default: module.TradingFloorPage })))
+const UnsubscribePage = lazyPage(() => import("@/pages/notifications/unsubscribe-page").then(module => ({ default: module.UnsubscribePage })))
 const AboutPage = lazyPage(() => import("@/pages/about/about-page").then(module => ({ default: module.AboutPage })))
 const CourseEditPage = lazyPage(() => import("@/pages/admin/learning/course-edit-page").then(module => ({ default: module.CourseEditPage })))
 const SacoManagePage = lazyPage(() => import("@/pages/admin/saco/saco-manage-page").then(module => ({ default: module.SacoManagePage })))
@@ -91,12 +92,12 @@ function RedirectWithSearch({ to, tab }: { to: string; tab?: string }) {
   return <Navigate replace to={{ pathname: to, search: search.toString() }} />
 }
 
+/** `/backtest/:symbol` (single-symbol Backtest, retired in v2.0 §9): the basket Backtest, symbol dropped. */
 function BacktestSymbolRedirect() {
-  const { symbol = "" } = useParams()
   const location = useLocation()
   const search = new URLSearchParams(location.search)
   search.set("tab", "backtest")
-  search.set("symbol", symbol.toUpperCase())
+  search.delete("symbol")
   return <Navigate replace to={{ pathname: "/chien-luoc", search: `?${search}` }} />
 }
 
@@ -128,6 +129,7 @@ export const routes: RouteObject[] = [
       { path: "canh-bao", element: <RedirectWithSearch to="/chien-luoc" tab="canh-bao" />, handle: { chrome: emptyChrome } },
       { path: "backtest", element: <RedirectWithSearch to="/chien-luoc" tab="backtest" />, handle: { chrome: emptyChrome } },
       { path: "backtest/:symbol", Component: BacktestSymbolRedirect, handle: { chrome: emptyChrome } },
+      { path: "thong-bao/tat", Component: UnsubscribePage, handle: { chrome: emptyChrome } },
       { path: "khu-giao-dich", Component: TradingFloorPage, handle: { chrome: emptyChrome } },
       { path: "van-phong-ao", element: <Navigate to="/khu-giao-dich" replace />, handle: { chrome: emptyChrome } },
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },

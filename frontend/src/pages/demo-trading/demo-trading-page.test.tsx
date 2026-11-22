@@ -85,8 +85,8 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
     return { account, positions: [], total_market_value_vnd: 0, nav_vnd: 100_000_000, total_unrealized_pnl_vnd: 0, return_pct: 0, refresh_warnings: [] }
   }
   if (path === "/virtual-trading/refresh") return { orders_filled: 0, orders_expired: 0, settlements_settled: 0, warnings: [] }
-  if (path === "/bot" || path.startsWith("/bot/") || path.startsWith("/strategy/")) {
-    // The Bot tool's own reads (overview, positions, journal, universe, registry, shared config).
+  if (path === "/bot" || path.startsWith("/bot/") || path.startsWith("/strategy/") || path.startsWith("/me/notification")) {
+    // The Bot tool's own reads (overview, schedule, strategy options, positions, journal, registry, THÔNG BÁO settings).
     return botApi(path, init)
   }
   if (path.startsWith("/cap5/san-ma")) throw new ApiError("Not found", 404)
@@ -294,9 +294,11 @@ describe("LUYỆN TẬP for a brand-new user", () => {
     await renderPage("/luyen-tap?tool=hoc-vien")
     await user.click(within(rail()).getByRole("button", { name: "Bot" }))
     await waitFor(() => expect(within(panel()).getByRole("heading", { name: "Bot" })).toBeTruthy(), { timeout: 5000 })
-    await waitFor(() => expect(within(panel()).getAllByRole("article")).toHaveLength(16))
-    expect(panel().textContent).not.toMatch(/Chương|Đã mở|đã mở/)
-    expect(await screen.findByTestId("bot-state-chip")).toBeTruthy()
+    expect(await within(panel()).findByRole("region", { name: "Chiến lược IQX" })).toBeTruthy()
+    expect(await within(panel()).findByRole("region", { name: "Thông báo" })).toBeTruthy()
+    expect(panel().textContent).not.toMatch(/Chương|Đã mở|đã mở|Luyện tập/)
+    expect(await screen.findByTestId("bot-schedule")).toBeTruthy()
+    expect(screen.queryByTestId("bot-state-chip")).toBeNull()
     expect(screen.getByText("Vốn Bot ban đầu")).toBeTruthy()
   })
 })

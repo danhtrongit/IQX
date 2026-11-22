@@ -29,7 +29,6 @@ import { FlashbackFrame, FlashbackMain, FlashbackPanel, FlashbackProvider } from
 import { HuntPanel } from "./insights/hunt-panel"
 import type { MascotId } from "./journey/types"
 import { PatternsPanel } from "./market/patterns-panel"
-import { PracticeMain, PracticePanel, PracticeProvider, parsePracticeParam } from "./practice"
 import { ShopMain, ShopPanel } from "./shop"
 import { requestCandleCardsFromDojo } from "./shop/candle-cards-store"
 import { TradingRuntime } from "./trading"
@@ -82,18 +81,16 @@ function ContentFallback() {
   return <div className="space-y-4 p-4 sm:p-6"><Skeleton className="h-8 w-48" /><Skeleton className="h-48 w-full" /><Skeleton className="h-24 w-full" /></div>
 }
 
-/** Main area of a tool without tabs (Học viện, Candle Dojo, Bot, Shop, Flashback) or the Bot practice. */
-function ToolSection({ toolId, label, practice, mascotId, onNavigate }: {
+/** Main area of a tool without tabs (Học viện, Candle Dojo, Bot, Shop, Flashback). */
+function ToolSection({ toolId, label, mascotId, onNavigate }: {
   toolId: string
   label: string
-  practice: boolean
   mascotId: MascotId
   onNavigate: (panel: string, symbol?: string) => void
 }) {
   return (
     <section aria-label={label} className="flex min-h-0 min-w-0 flex-1 flex-col">
-      {practice ? <PracticeMain /> : (
-        <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
+      <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
           <div className="min-w-0 space-y-3 p-1.5 min-[901px]:p-3 min-[1750px]:p-5">
             {toolId === PRACTICE_TOOL.bot ? (
               <BotMain mascotId={mascotId} />
@@ -113,8 +110,7 @@ function ToolSection({ toolId, label, practice, mascotId, onNavigate }: {
               <AcademyMain mascotId={mascotId} />
             )}
           </div>
-        </ScrollArea>
-      )}
+      </ScrollArea>
     </section>
   )
 }
@@ -135,8 +131,6 @@ function DemoWorkspace({ section }: { section: WorkspaceSection }) {
   const trading = activeId === PRACTICE_TOOL.trading
   const content = parseDemoContent(params.get("content"))
   const tradingTab = parseTradingTab(params.get(TRADING_TAB_PARAM))
-  // `tool=bot&practice=<indicator_id>` opens the optional mini practice in place of the Bot panel.
-  const practiceId = activeId === PRACTICE_TOOL.bot ? parsePracticeParam(params.get("practice")) : null
   const navigationState = location.state as { workspaceSection?: boolean; openPanel?: boolean } | null
   const sectionMemory = memory[section]
   const lastTab = sectionMemory?.lastTab ?? "chart"
@@ -207,7 +201,6 @@ function DemoWorkspace({ section }: { section: WorkspaceSection }) {
   const panelLess = activeId === PRACTICE_TOOL.dashboard || activeId === PRACTICE_TOOL.dojo
 
   function panel() {
-    if (practiceId) return <PracticePanel />
     switch (activeId) {
       case PRACTICE_TOOL.trading:
         return <TradingToolPanel tab={tradingTab} onTabChange={selectTradingTab} symbol={symbol} onSymbolChange={selectSymbol} onNavigate={navigatePanel} />
@@ -231,7 +224,7 @@ function DemoWorkspace({ section }: { section: WorkspaceSection }) {
               : <MarketWorkspacePage embedded view={content === "insight" ? "stock" : "market"} />}
       </ContentTabs>
     )
-    : <ToolSection toolId={activeId} label={activeItem?.label ?? chrome.items[0].label} practice={practiceId !== null} mascotId={mascotId} onNavigate={navigatePanel} />
+    : <ToolSection toolId={activeId} label={activeItem?.label ?? chrome.items[0].label} mascotId={mascotId} onNavigate={navigatePanel} />
 
   const frameProps: ComponentProps<typeof WorkspaceFrame> = {
     panelLabel: trading ? TRADING_PANEL_TITLE : activeItem?.label ?? chrome.items[0].label,
@@ -257,7 +250,7 @@ function DemoWorkspace({ section }: { section: WorkspaceSection }) {
       : <WorkspaceFrame {...frameProps} panelHidden={panelLess} />
 
   return <>
-    <PracticeProvider indicatorId={practiceId}>{frame}</PracticeProvider>
+    {frame}
     <TradingRuntime />
   </>
 }

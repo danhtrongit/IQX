@@ -3,177 +3,145 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { renderBot, stubBrowser } from "../test-render"
-import { callsTo, createFakeApi, createWorld, FakeApiError, type World } from "../test-support"
+import { callsTo, createFakeApi, createWorld, scheduledFixture, scheduleFixture, type World } from "../test-support"
 import { BotPanel } from "./bot-panel"
 
-const mocks = vi.hoisted(() => ({ api: vi.fn(), toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, openAuth: vi.fn() }))
+const mocks = vi.hoisted(() => ({ api: vi.fn(), toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() } }))
 
 vi.mock("@/hooks/use-auth", () => ({
-  useAuth: () => ({ user: { id: "user-1" }, isAuthenticated: true, isLoading: false, openAuth: mocks.openAuth }),
+  useAuth: () => ({ user: { id: "user-1" }, isAuthenticated: true, isLoading: false, openAuth: vi.fn() }),
 }))
 vi.mock("@/lib/api", async () => {
-  const { FakeApiError } = await import("../test-support")
-  return { api: mocks.api, ApiError: FakeApiError, errorMessage: (error: unknown) => String(error) }
+  const { FakeApiError: ApiError } = await import("../test-support")
+  return { api: mocks.api, ApiError, errorMessage: (error: unknown) => String(error) }
 })
 vi.mock("sonner", () => ({ toast: mocks.toast }))
 
 let world: World
 
+const norm = (element: Element | null | undefined) => (element?.textContent ?? "").replace(/\s+/g, " ").trim()
+
 beforeEach(() => {
   world = createWorld()
+  world.strategyOptions = {
+    iqx: [
+      { id: "iqx-1", slug: "xu-huong", name: "Theo xu hướng", version: 2, universe_label: "VN30", max_holding: 30, hidden: false, on_bot: { last: true, next: false } },
+      { id: "iqx-2", slug: "dao-chieu", name: "Bắt đảo chiều", version: 1, universe_label: "VN30", max_holding: 30, hidden: false, on_bot: { last: false, next: false } },
+      { id: "iqx-3", slug: "an-di", name: "Đã ẩn đang dùng", version: 1, universe_label: "VN30", max_holding: 30, hidden: true, on_bot: { last: false, next: false } },
+      { id: "iqx-4", slug: "an", name: "Đã ẩn không dùng", version: 1, universe_label: "VN30", max_holding: 30, hidden: true, on_bot: { last: false, next: false } },
+    ],
+    mine: [{ id: "u-1", name: "RSI + SMA20", latest_version: 3, latest_saved_at: "2026-11-08T06:47:00Z", on_bot: { last: false, next: true } }],
+  }
+  world.strategyOptions.iqx[2]!.on_bot = { last: true, next: false }
+  world.schedule = scheduleFixture({
+    last: scheduledFixture({ id: "iqx-1", name: "Theo xu hướng", source: "iqx", version: 2, version_label: "v2" }),
+    next: { ...scheduledFixture({ id: "u-1", name: "RSI + SMA20" }), session_date: "2026-11-09", follow_latest: true, cutoff_at: null },
+  })
   mocks.api.mockReset()
   mocks.api.mockImplementation(createFakeApi(world))
-  Object.values(mocks.toast).forEach((fn) => fn.mockClear())
+  Object.values(mocks.toast).forEach((fn) => fn.mockReset())
   stubBrowser()
 })
 afterEach(() => vi.unstubAllGlobals())
 
-/** The 16 indicators by type (spec Học viện v4.1 §6.1), registry order inside a group. */
-const GROUPS = ["Đường trung bình", "Động lượng", "Biến động", "Kênh giá", "Xu hướng", "Khối lượng", "Dòng tiền"]
-const GROUPED_ORDER = ["MA / SMA", "EMA", "MA Cross", "RSI", "MACD", "Stochastic", "CCI", "ROC", "Williams %R", "Bollinger Bands", "Donchian Channel", "DMI", "Khối lượng", "OBV", "MFI", "Chaikin Money Flow"]
+const rowOf = (name: string) => screen.getAllByTestId("strategy-row").find((row) => row.textContent?.includes(name))!
 
-async function renderPanel(route?: string) {
-  const view = renderBot(<BotPanel />, route)
-  await screen.findByRole("article", { name: "RSI" })
-  return view
-}
-const row = (name: string) => screen.getByRole("article", { name })
-const location = () => screen.getByTestId("location").textContent ?? ""
-const patches = () => callsTo(world, "PATCH", "/strategy/shared-config")
+describe("Bot panel (v2.0 §5.4, B01/B02/B08)", () => {
+  it("lists CHIẾN LƯỢC IQX and CHIẾN LƯỢC CỦA TÔI with tags, Chi tiết links and Dùng only where allowed; nothing of the old Bot", async () => {
+    renderBot(<BotPanel />)
+    const iqx = await screen.findByRole("region", { name: "Chiến lược IQX" })
+    expect(within(iqx).getAllByTestId("strategy-row")).toHaveLength(3)
+    expect(norm(iqx)).toContain("Tham khảo để học, không phải khuyến nghị đầu tư.")
+    expect(within(iqx).queryByText("Đã ẩn không dùng")).toBeNull()
 
-describe("Bot panel", () => {
-  it("lists the 16 indicators grouped by type, never by Học viện chapter, with the indicator count in the header (spec Học viện v4.1 §6.1)", async () => {
-    await renderPanel()
+    const running = rowOf("Theo xu hướng")
+    expect(norm(running)).toContain("IQX")
+    expect(norm(running)).toContain("Đang chạy")
+    expect(within(running).getByRole("link", { name: "Chi tiết Theo xu hướng" }).getAttribute("href")).toBe("/chien-luoc?tab=backtest&mode=iqx&iqx=iqx-1")
+    expect(within(running).getByRole("button", { name: "Dùng Theo xu hướng" })).toBeTruthy()
 
-    expect(screen.getByRole("heading", { name: "Bot" })).toBeTruthy()
-    expect(screen.getByText("16 chỉ báo")).toBeTruthy()
-    const groups = screen.getAllByRole("region").filter((region) => GROUPS.includes(region.getAttribute("aria-label") ?? ""))
-    expect(groups.map((group) => group.querySelector("h3")?.textContent)).toEqual(GROUPS)
-    const names = screen.getAllByRole("article").map((article) => article.getAttribute("aria-label"))
-    expect(names).toEqual(GROUPED_ORDER)
-    expect(groups.map((group) => within(group).getAllByRole("article").length)).toEqual([3, 6, 1, 1, 1, 2, 2])
-    // No chapter name, no chapter number and no "Đã mở" / "Chưa mở" label anywhere in the tool.
-    expect(document.body.textContent).not.toMatch(/Chương|Đã mở|đã mở|Chưa mở|Phương pháp kỹ thuật|Chỉ báo xu hướng|Chỉ báo động lượng/)
+    const hidden = rowOf("Đã ẩn đang dùng")
+    expect(norm(hidden)).toContain("IQX đã ngừng cung cấp")
+    expect(within(hidden).queryByRole("button", { name: /Dùng/ })).toBeNull()
+
+    const mine = rowOf("RSI + SMA20")
+    expect(norm(mine)).toContain("Từ phiên Thứ 2 09/11")
+    expect(within(mine).queryByRole("button", { name: /Dùng/ })).toBeNull()
+    expect(within(mine).getByRole("link", { name: "Chi tiết RSI + SMA20" }).getAttribute("href")).toBe("/chien-luoc?tab=backtest&mode=chi-bao&strategy=u-1")
+    expect(screen.getByRole("link", { name: "Tạo chiến lược trong Backtest" }).getAttribute("href")).toBe("/chien-luoc?tab=backtest&mode=chi-bao&strategy=new")
+
+    for (const gone of ["Danh mục mua mới", "Giới hạn nắm giữ", "Luyện tập", "Cấu hình", "Tìm chỉ báo"]) expect(screen.queryByText(new RegExp(gone, "i"))).toBeNull()
   })
 
-  it("renders granted indicators with practice, config and an accessible master switch", async () => {
-    await renderPanel()
-    const rsi = within(row("RSI"))
-    expect(rsi.queryByText("Đã mở")).toBeNull()
-    expect(rsi.getByRole("button", { name: /Luyện tập/ })).toBeTruthy()
-    expect(rsi.getByRole("button", { name: /Cấu hình/ })).toBeTruthy()
-    const toggle = rsi.getByRole("switch", { name: "Bật RSI cho Bot" })
-    expect(toggle.getAttribute("aria-checked")).toBe("false")
-  })
-
-  it("renders locked indicators with only 'Xem bài' to the right lesson: no practice, config or switch", async () => {
-    world.granted = ["rsi"]
-    await renderPanel("/luyen-tap?tool=bot&symbol=FPT&content=overview")
-    const ema = within(row("EMA"))
-    expect(ema.queryByText("Chưa mở")).toBeNull()
-    expect(ema.getByText("Chưa phát hành")).toBeTruthy()
-    expect(ema.queryByRole("link")).toBeNull()
-    expect(ema.queryByRole("button")).toBeNull()
-    expect(ema.queryByRole("switch")).toBeNull()
-    const link = within(row("MACD")).getByRole("link", { name: "Xem bài MACD" })
-    const href = new URL(link.getAttribute("href") ?? "", "http://x")
-    expect(href.searchParams.get("tool")).toBe("hoc-vien")
-    expect(href.searchParams.get("lesson")).toBe("ch04-l07")
-    expect(href.searchParams.get("symbol")).toBe("FPT")
-  })
-
-  it("sends Luyện tập to tool=bot&practice=<indicator> and keeps the other params", async () => {
+  it("Dùng asks «Đổi chiến lược của Bot?», then PUTs the next session with the race guard and toasts (B02)", async () => {
     const user = userEvent.setup()
-    await renderPanel()
-    await user.click(within(row("MACD")).getByRole("button", { name: /Luyện tập/ }))
-    const search = new URLSearchParams(location().split("?")[1])
-    expect(search.get("tool")).toBe("bot")
-    expect(search.get("practice")).toBe("macd")
-    expect(search.get("symbol")).toBe("FPT")
+    renderBot(<BotPanel />)
+    await user.click(await screen.findByRole("button", { name: "Dùng Bắt đảo chiều" }))
+    const dialog = await screen.findByRole("dialog", { name: "Đổi chiến lược của Bot?" })
+    expect(norm(dialog)).toContain("Từ phiên Thứ 2 09/11, Bot dùng Chiến lược IQX · Bắt đảo chiều.")
+    expect(norm(dialog)).toContain("Mã đang giữ bán theo điều kiện Bán và Giữ tối đa của chiến lược mới.")
+    const confirm = within(dialog).getByRole("button", { name: "Dùng cho Bot" })
+    await waitFor(() => expect(confirm).toHaveProperty("disabled", false))
+    expect(callsTo(world, "GET", "/bot/schedule/next/impact")[0]?.query).toBe("?source=iqx&id=iqx-2&version=1")
+    await user.click(confirm)
+    await waitFor(() => expect(callsTo(world, "PUT", "/bot/schedule/next")).toHaveLength(1))
+    expect(callsTo(world, "PUT", "/bot/schedule/next")[0]!.body).toEqual({ source: "iqx", id: "iqx-2", version: 1, expected_next_session: "2026-11-09" })
+    expect(mocks.toast.success).toHaveBeenCalledWith("Bot dùng Chiến lược IQX · Bắt đảo chiều từ phiên Thứ 2 09/11.")
+    await waitFor(() => expect(within(rowOf("Bắt đảo chiều")).queryByRole("button", { name: /Dùng/ })).toBeNull())
   })
 
-  it("filters by name without diacritics and reports no match", async () => {
+  it("Hủy and Escape write nothing (V02)", async () => {
     const user = userEvent.setup()
-    await renderPanel()
-    await user.type(screen.getByRole("searchbox", { name: "Tìm chỉ báo" }), "khoi luong")
-    expect(screen.getAllByRole("article").map((article) => article.getAttribute("aria-label"))).toEqual(["Khối lượng"])
-    await user.clear(screen.getByRole("searchbox", { name: "Tìm chỉ báo" }))
-    await user.type(screen.getByRole("searchbox", { name: "Tìm chỉ báo" }), "zzz")
-    expect(screen.getByText("Không tìm thấy chỉ báo.")).toBeTruthy()
+    renderBot(<BotPanel />)
+    const use = await screen.findByRole("button", { name: "Dùng Bắt đảo chiều" })
+    await user.click(use)
+    await screen.findByRole("dialog", { name: "Đổi chiến lược của Bot?" })
+    await user.keyboard("{Escape}")
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    expect(callsTo(world, "PUT", "/bot/schedule/next")).toHaveLength(0)
+  })
+})
+
+describe("THÔNG BÁO card (v2.0 §8.2, T08)", () => {
+  it("defaults: master on, both types on, Trên web always on, Email off", async () => {
+    renderBot(<BotPanel />)
+    const card = await screen.findByRole("region", { name: "Thông báo" })
+    await waitFor(() => expect(within(card).getByRole("switch", { name: "Bật thông báo" }).getAttribute("aria-checked")).toBe("true"))
+    expect(within(card).getByRole("switch", { name: "Bản tin cuối phiên" }).getAttribute("aria-checked")).toBe("true")
+    expect(within(card).getByRole("switch", { name: "Bot giao dịch" }).getAttribute("aria-checked")).toBe("true")
+    expect(within(card).getByRole("button", { name: "Trên web" })).toHaveProperty("disabled", true)
+    expect(within(card).getByRole("button", { name: "Email" }).getAttribute("aria-pressed")).toBe("false")
   })
 
-  describe("master switch", () => {
-    it("ON while both sides are OFF opens the config and Hủy activates nothing", async () => {
-      const user = userEvent.setup()
-      await renderPanel()
-      await user.click(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }))
+  it("turning both types off turns the master off; turning the master on again turns both on", async () => {
+    const user = userEvent.setup()
+    renderBot(<BotPanel />)
+    const card = await screen.findByRole("region", { name: "Thông báo" })
+    await user.click(await within(card).findByRole("switch", { name: "Bản tin cuối phiên" }))
+    await waitFor(() => expect(callsTo(world, "PUT", "/me/notification-settings")).toHaveLength(1))
+    await user.click(within(card).getByRole("switch", { name: "Bot giao dịch" }))
+    await waitFor(() => expect(callsTo(world, "PUT", "/me/notification-settings")).toHaveLength(2))
+    expect(callsTo(world, "PUT", "/me/notification-settings")[1]!.body).toEqual({ enabled: false, types: { bulletin: false, bot_trades: false }, channels: { email: false } })
+    await waitFor(() => expect(within(card).getByRole("switch", { name: "Bản tin cuối phiên" })).toHaveProperty("disabled", true))
+    await user.click(within(card).getByRole("switch", { name: "Bật thông báo" }))
+    await waitFor(() => expect(callsTo(world, "PUT", "/me/notification-settings")).toHaveLength(3))
+    expect(callsTo(world, "PUT", "/me/notification-settings")[2]!.body).toEqual({ enabled: true, types: { bulletin: true, bot_trades: true }, channels: { email: false } })
+  })
 
-      const dialog = await screen.findByRole("dialog", { name: /Cấu hình Bot · RSI/ })
-      await user.click(within(dialog).getByRole("button", { name: "Hủy" }))
-      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
-      expect(patches()).toHaveLength(0)
-      expect(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }).getAttribute("aria-checked")).toBe("false")
-    })
+  it("without a verified email, Email is locked with «Chưa có email» (T08)", async () => {
+    world.notificationSettings = { ...world.notificationSettings, email_available: false }
+    renderBot(<BotPanel />)
+    const card = await screen.findByRole("region", { name: "Thông báo" })
+    await waitFor(() => expect(within(card).getByRole("button", { name: "Email" })).toHaveProperty("disabled", true))
+    expect(within(card).getByText("Chưa có email")).toBeTruthy()
+  })
 
-    it("ON with a side already ON saves the master ON and keeps the children untouched", async () => {
-      world.indicators.rsi!.buy.enabled = true
-      world.savedRevision = 3
-      const user = userEvent.setup()
-      await renderPanel()
-      await user.click(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }))
-
-      await waitFor(() => expect(patches()).toHaveLength(1))
-      const body = patches()[0]!.body as { expected_revision: number; idempotency_key: string; indicators: Record<string, { master_enabled: boolean; buy: { enabled: boolean }; sell: { enabled: boolean } }> }
-      expect(body.expected_revision).toBe(3)
-      expect(body.idempotency_key.length).toBeGreaterThanOrEqual(8)
-      expect(Object.keys(body.indicators)).toEqual(["rsi"])
-      expect(body.indicators.rsi).toMatchObject({ master_enabled: true, buy: { enabled: true }, sell: { enabled: false } })
-      await waitFor(() => expect(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }).getAttribute("aria-checked")).toBe("true"))
-      expect(mocks.toast.success).toHaveBeenCalledWith(expect.stringContaining("Có hiệu lực từ phiên 09/10/2026"))
-    })
-
-    it("OFF saves the master OFF and keeps the sides ON", async () => {
-      world.indicators.macd!.master_enabled = true
-      world.indicators.macd!.buy.enabled = true
-      world.indicators.macd!.sell.enabled = true
-      world.savedRevision = 1
-      const user = userEvent.setup()
-      await renderPanel()
-      await user.click(within(row("MACD")).getByRole("switch", { name: "Bật MACD cho Bot" }))
-
-      await waitFor(() => expect(patches()).toHaveLength(1))
-      const body = patches()[0]!.body as { indicators: { macd: { master_enabled: boolean; buy: { enabled: boolean }; sell: { enabled: boolean } } } }
-      expect(body.indicators.macd).toMatchObject({ master_enabled: false, buy: { enabled: true }, sell: { enabled: true } })
-    })
-
-    it("reports a conflict without changing the switch and reloads the saved config", async () => {
-      world.indicators.rsi!.buy.enabled = true
-      world.savedRevision = 3
-      world.override["PATCH /strategy/shared-config"] = () => {
-        throw new FakeApiError("Cấu hình đã được lưu ở nơi khác.", 409, { code: "REVISION_CONFLICT", details: [{ field: "expected_revision", current_revision: 4 }] })
-      }
-      const user = userEvent.setup()
-      await renderPanel()
-      await user.click(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }))
-      await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith(expect.stringContaining("Đã tải lại bản mới nhất")))
-      expect(mocks.toast.error).toHaveBeenCalledWith(expect.stringContaining("Bản mới nhất là #4."))
-      expect(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }).getAttribute("aria-checked")).toBe("false")
-      await waitFor(() => expect(callsTo(world, "GET", "/strategy/shared-config").length).toBeGreaterThan(1))
-    })
-
-    it("names the indicator the server refuses to switch on (403 CAPABILITY_LOCKED), without any lesson wording", async () => {
-      world.indicators.rsi!.buy.enabled = true
-      world.override["PATCH /strategy/shared-config"] = () => {
-        throw new FakeApiError("Cần hoàn thành bài học của chỉ báo rsi trước khi bật.", 403, {
-          code: "CAPABILITY_LOCKED",
-          details: [{ capability: "indicator:rsi", reason: "not_learned", indicator: "rsi" }],
-        })
-      }
-      const user = userEvent.setup()
-      await renderPanel()
-      await user.click(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }))
-      await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith("Chưa bật được chỉ báo RSI: tài khoản chưa được cấp quyền dùng."))
-      expect(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }).getAttribute("aria-checked")).toBe("false")
-    })
+  it("`focus=thong-bao` (bell → Cài đặt thông báo) scrolls to the card and drops the parameter (T10)", async () => {
+    const scroll = vi.fn()
+    HTMLElement.prototype.scrollIntoView = scroll
+    renderBot(<BotPanel />, "/luyen-tap?tool=bot&focus=thong-bao")
+    await screen.findByRole("region", { name: "Thông báo" })
+    await waitFor(() => expect(screen.getByTestId("location").textContent).not.toContain("focus"))
+    expect(scroll).toHaveBeenCalled()
   })
 })
