@@ -3,9 +3,13 @@
  * Hàm thuần, không có React.
  */
 
-/** Số chữ số thập phân theo đơn vị (spec §10). */
+/**
+ * Số chữ số thập phân theo đơn vị (spec v3 §10): % và điểm % 1 chữ số, "lần" 2 chữ số,
+ * "năm" 1 chữ số (Số năm bán hết tồn kho; số năm dương liên tục của khuôn E2 vẫn là số nguyên),
+ * tỷ đồng, đồng/CP, ngày 0 chữ số.
+ */
 export function decimalsForUnit(unit: string): number {
-  if (unit === "%" || unit === "điểm %") return 1
+  if (unit === "%" || unit === "điểm %" || unit === "năm") return 1
   if (unit === "lần") return 2
   return 0
 }

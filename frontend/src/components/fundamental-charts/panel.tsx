@@ -33,9 +33,9 @@ export type PanelProps = {
   bars?: PanelBars
   /** Dải trung vị ± độ lệch chuẩn của giai đoạn đang hiện. */
   band?: [number, number]
-  /** Đường tham chiếu cố định nét đứt (khuôn F2: PEG = 1; khuôn B: Combined ratio 100%). Trục luôn chứa mốc này. */
+  /** Đường tham chiếu cố định nét đứt (khuôn F2: PEG = 1; khuôn B: Combined ratio 100%, mốc 1 lần). Trục luôn chứa mốc này. */
   reference?: number
-  /** Trục có mốc 0. */
+  /** Trục có mốc 0 (khuôn F2; khuôn A, B, C khi đường chính có giá trị âm). */
   zero?: boolean
   /** Đường đi qua các điểm ngày thay vì theo ô kỳ (khuôn F). */
   xLine?: boolean
@@ -116,8 +116,9 @@ export function Panel({
     max = Math.max(0, max)
   } else {
     const padding = (max - min) * 0.15 || Math.abs(max) * 0.1 || 1
-    min -= padding
-    max += padding
+    // Lề không đẩy trục qua số 0: chuỗi không âm thì trục không có phần âm, mốc 0 chỉ hiện khi có số âm (spec v3 §9).
+    min = min >= 0 ? Math.max(0, min - padding) : min - padding
+    max = max < 0 ? Math.min(0, max + padding) : max + padding
   }
   const scale = niceScale(min, max, height < 110 ? 2 : 4)
   const y = (value: number) =>
@@ -187,8 +188,10 @@ export function Panel({
         </g>
       ))}
 
-      {scale.lo < 0 && scale.hi > 0 && (
+      {/* Mốc 0 khi có giá trị âm, kể cả khi mọi giá trị đều âm (spec Dashboard v3 §9). */}
+      {scale.lo < 0 && scale.hi >= 0 && (
         <line
+          data-zero-line=""
           x1={PADDING_LEFT}
           x2={width - PADDING_RIGHT}
           y1={y(0)}
