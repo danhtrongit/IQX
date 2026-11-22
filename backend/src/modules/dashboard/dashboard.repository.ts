@@ -1,16 +1,16 @@
 /**
- * Thiết lập Dashboard phân tích theo tài khoản và theo ngành (spec §6): một dòng cho mỗi cặp
+ * Thiết lập Dashboard phân tích theo tài khoản và theo ngành, 9 ngành (spec v3 §6): một dòng cho mỗi cặp
  * (tài khoản, ngành), lưu trên server nên mở trên máy khác vẫn giữ. Mã đang xem KHÔNG nằm trong
  * thiết lập (trạng thái chung của trang, spec §1.2).
  */
 import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
-import { isIndustry, type Industry } from '../financials/financials.industry.js';
+import { isNganh, type Nganh } from './dashboard.nganh.js';
 import { dashboardSettingsSchema, type DashboardSettings } from './dashboard.schemas.js';
 
 export interface StoredDashboardSettings extends DashboardSettings {
-  nganh: Industry;
+  nganh: Nganh;
   revision: number;
   updated_at: string;
 }
@@ -18,11 +18,11 @@ export interface StoredDashboardSettings extends DashboardSettings {
 /** Persistence of the dashboard settings (faked in unit tests). */
 export interface DashboardSettingsStore {
   /** The settings an account saved, per industry; an industry never saved is absent. */
-  findAll(userId: string): Promise<Partial<Record<Industry, StoredDashboardSettings>>>;
+  findAll(userId: string): Promise<Partial<Record<Nganh, StoredDashboardSettings>>>;
   /** Writes the settings of one industry of one account and bumps the revision. */
   save(
     userId: string,
-    industry: Industry,
+    industry: Nganh,
     settings: DashboardSettings,
   ): Promise<StoredDashboardSettings>;
 }
@@ -42,14 +42,14 @@ const COLUMNS = 'nganh, charts, per, nks, revision, updated_at';
 export class DashboardSettingsRepository implements DashboardSettingsStore {
   constructor(private readonly database: DatabaseService) {}
 
-  async findAll(userId: string): Promise<Partial<Record<Industry, StoredDashboardSettings>>> {
+  async findAll(userId: string): Promise<Partial<Record<Nganh, StoredDashboardSettings>>> {
     const rows = await this.database.query<SettingsRow>(
       `SELECT ${COLUMNS} FROM dashboard_settings WHERE user_id = $1`,
       [userId],
     );
-    const result: Partial<Record<Industry, StoredDashboardSettings>> = {};
+    const result: Partial<Record<Nganh, StoredDashboardSettings>> = {};
     for (const row of rows) {
-      if (!isIndustry(row.nganh)) continue;
+      if (!isNganh(row.nganh)) continue;
       const parsed = dashboardSettingsSchema.safeParse({
         charts: row.charts,
         per: row.per,
@@ -69,7 +69,7 @@ export class DashboardSettingsRepository implements DashboardSettingsStore {
 
   async save(
     userId: string,
-    industry: Industry,
+    industry: Nganh,
     settings: DashboardSettings,
   ): Promise<StoredDashboardSettings> {
     const [row] = await this.database.query<SettingsRow>(
