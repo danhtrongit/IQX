@@ -7,13 +7,16 @@
  * (tổ chức tín dụng), SSI, VND (chứng khoán), BVH, BMI, PVI (bảo hiểm). Quy ước dấu của VCI: chi
  * phí, giá vốn, dự phòng báo cáo SỐ ÂM; `negate` đổi thành số dương như mọi khoản mục của Bộ lọc.
  *
- * Doanh nghiệp (`thuong`) dùng đúng bảng của Bộ lọc (`screener.statements.ts`), không có khoản
- * mục riêng. Ba ngành còn lại có:
+ * Mẫu doanh nghiệp (`thuong`) dùng bảng của Bộ lọc (`screener.statements.ts`) cộng các khoản mục
+ * `dn_*` (Thông tư 200) cho 28 chỉ tiêu mới của v3 (spec v3 §7, PLAN §5); 5 ngành mới cộng trái
+ * phiếu chuyển đổi vào nợ vay dài hạn (D5) và mọi mẫu doanh nghiệp xử lý báo cáo lưu chuyển tiền
+ * tệ lập theo phương pháp trực tiếp (D6, `applyDirectMethod`). Ba mẫu tài chính có:
  *  - dòng "Doanh thu" riêng (§8.1): TOI của ngân hàng, doanh thu hoạt động của công ty chứng
  *    khoán, doanh thu phí bảo hiểm thuần của bảo hiểm — ghi đè khoản mục `revenue`;
  *  - các khoản mục riêng (`nh_*`, `ck_*`, `bh_*`) cho 29 chỉ tiêu của ngành.
  */
 import type { Industry } from '../financials/financials.industry.js';
+import { finite } from '../financials/financials.calculations.js';
 import {
   normalizeVciStatements,
   type ConceptFieldMap,
@@ -22,6 +25,7 @@ import {
   type StatementConcept,
   type VciStatementSections,
 } from '../screener/screener.statements.js';
+import type { Nganh } from './dashboard.nganh.js';
 
 /** Dòng chảy cộng 4 quý thành năm; số dư lấy cuối năm (§8.0). */
 export type ConceptKind = 'flow' | 'balance';
@@ -219,10 +223,99 @@ const INSURANCE_CONCEPTS = {
   bh_reserves: { field: 'bsi202', kind: 'balance', label: 'Dự phòng nghiệp vụ bảo hiểm' },
 } as const satisfies Record<string, ConceptDefinition>;
 
+/**
+ * Mẫu doanh nghiệp (Thông tư 200), các dòng thêm của spec v3 §7 (PLAN §5, đã đối chiếu số liệu
+ * VCI của HPG, VHM, KBC, REE). Các dòng 110, 120, 131, 140, 270, 311, 320, 338, 410, B02-10/11/20/
+ * 23/50, B03-02/21 dùng khoản mục chuẩn của Bộ lọc (`cash`, `st_investments`, `receivables`,
+ * `inventory`, …).
+ */
+const ENTERPRISE_CONCEPTS = {
+  dn_supplier_prepay: {
+    fields: ['bsa10', 'bsa161'],
+    kind: 'balance',
+    label: 'Trả trước cho người bán ngắn hạn và dài hạn (B01-132, 212)',
+  },
+  dn_other_receivables: {
+    fields: ['bsa13', 'bsa27'],
+    kind: 'balance',
+    label: 'Phải thu ngắn hạn khác và dài hạn khác (B01-136, 216)',
+  },
+  dn_inventory_gross: { field: 'bsa16', kind: 'balance', label: 'Hàng tồn kho, giá gốc (B01-141)' },
+  dn_inventory_provision: {
+    field: 'bsa17',
+    negate: true,
+    kind: 'balance',
+    label: 'Dự phòng giảm giá hàng tồn kho (B01-149)',
+  },
+  dn_fixed_assets: { field: 'bsa29', kind: 'balance', label: 'Tài sản cố định (B01-220)' },
+  dn_investment_property: {
+    field: 'bsa40',
+    kind: 'balance',
+    label: 'Bất động sản đầu tư (B01-230)',
+  },
+  dn_cip: {
+    // bsa39 là dòng XDCB dở dang của mẫu trước 2015; từ 2015 VCI để ở bsa188.
+    fields: ['bsa188', 'bsa39'],
+    kind: 'balance',
+    label: 'Chi phí xây dựng cơ bản dở dang (B01-242)',
+  },
+  dn_buyer_prepay: {
+    fields: ['bsa58', 'bsa170'],
+    kind: 'balance',
+    label: 'Người mua trả tiền trước ngắn hạn và dài hạn (B01-312, 332)',
+  },
+  dn_unearned_revenue: {
+    fields: ['bsa167', 'bsa76'],
+    kind: 'balance',
+    label: 'Doanh thu chưa thực hiện ngắn hạn và dài hạn (B01-318, 336)',
+  },
+  dn_fin_income: { field: 'isa6', kind: 'flow', label: 'Doanh thu hoạt động tài chính (B02-21)' },
+  dn_fin_expense: {
+    field: 'isa7',
+    negate: true,
+    kind: 'flow',
+    label: 'Chi phí tài chính (B02-22)',
+  },
+  dn_jv_profit: {
+    // isa15 là dòng của mẫu trước 2015 (bằng 0 từ 2015).
+    fields: ['isa102', 'isa15'],
+    kind: 'flow',
+    label: 'Lãi lỗ trong công ty liên doanh, liên kết (B02-24)',
+  },
+  dn_selling_exp: {
+    field: 'isa9',
+    negate: true,
+    kind: 'flow',
+    label: 'Chi phí bán hàng (B02-25)',
+  },
+  dn_admin_exp: {
+    field: 'isa10',
+    negate: true,
+    kind: 'flow',
+    label: 'Chi phí quản lý doanh nghiệp (B02-26)',
+  },
+  dn_other_profit: { field: 'isa14', kind: 'flow', label: 'Lợi nhuận khác (B02-40)' },
+  dn_interest_paid: {
+    // Phương pháp trực tiếp: `applyDirectMethod` đưa dòng 04 (cfa42) vào chỗ của cfa14.
+    field: 'cfa14',
+    negate: true,
+    kind: 'flow',
+    label: 'Tiền lãi vay đã trả (B03-14; phương pháp trực tiếp: B03-04)',
+  },
+  dn_dividends_paid: {
+    field: 'cfa32',
+    negate: true,
+    kind: 'flow',
+    label: 'Cổ tức, lợi nhuận đã trả cho chủ sở hữu (B03-36)',
+  },
+} as const satisfies Record<string, ConceptDefinition>;
+
+export type EnterpriseConcept = keyof typeof ENTERPRISE_CONCEPTS;
 export type BankConcept = keyof typeof BANK_CONCEPTS;
 export type SecuritiesConcept = keyof typeof SECURITIES_CONCEPTS;
 export type InsuranceConcept = keyof typeof INSURANCE_CONCEPTS;
-export type IndustryConcept = BankConcept | SecuritiesConcept | InsuranceConcept;
+export type IndustryConcept =
+  EnterpriseConcept | BankConcept | SecuritiesConcept | InsuranceConcept;
 
 /** Khoản mục của Dashboard: các khoản mục chuẩn của Bộ lọc + khoản mục riêng của ngành. */
 export type DashboardConcept = StatementConcept | IndustryConcept;
@@ -230,14 +323,14 @@ export type DashboardConcept = StatementConcept | IndustryConcept;
 export interface IndustryMapping {
   /** Dòng "Doanh thu" của ngành (§8.1), ghi đè khoản mục `revenue`. */
   revenue: { field: string; label: string };
-  /** Khoản mục riêng của ngành (rỗng với doanh nghiệp). */
+  /** Khoản mục riêng của mẫu báo cáo (`dn_*` của doanh nghiệp, `nh_*`, `ck_*`, `bh_*`). */
   concepts: Readonly<Record<string, ConceptDefinition>>;
 }
 
 export const INDUSTRY_MAPPINGS: Readonly<Record<Industry, IndustryMapping>> = {
   thuong: {
     revenue: { field: 'isa3', label: 'Doanh thu thuần' },
-    concepts: {},
+    concepts: ENTERPRISE_CONCEPTS,
   },
   nh: {
     revenue: { field: 'isb38', label: 'Tổng thu nhập hoạt động (TOI)' },
@@ -253,8 +346,23 @@ export const INDUSTRY_MAPPINGS: Readonly<Record<Industry, IndustryMapping>> = {
   },
 };
 
-/** Bản đồ khoản mục → dòng VCI của một ngành, đưa vào `normalizeVciStatements`. */
-export function industryFieldMap(industry: Industry): ConceptFieldMap {
+/**
+ * Năm ngành mới của v3 tính nợ vay gồm cả trái phiếu chuyển đổi B01-339 (`bsa173`, spec v3 §8.11,
+ * PLAN D5). Mẫu `thuong` giữ đúng định nghĩa của v2 và Bộ lọc (vay ngắn + dài hạn).
+ */
+const CONVERTIBLE_DEBT_NGANH: ReadonlySet<Nganh> = new Set<Nganh>([
+  'bds',
+  'dk',
+  'bl',
+  'dien',
+  'vl',
+]);
+
+/**
+ * Bản đồ khoản mục → dòng VCI của một mẫu báo cáo, đưa vào `normalizeVciStatements`. `nganh` (ngành
+ * dashboard v3) chỉ đổi định nghĩa nợ vay dài hạn của 5 ngành mới (D5).
+ */
+export function industryFieldMap(industry: Industry, nganh?: Nganh): ConceptFieldMap {
   const mapping = INDUSTRY_MAPPINGS[industry];
   const map: Record<string, ConceptFieldSpec> = { revenue: { field: mapping.revenue.field } };
   for (const [concept, definition] of Object.entries(mapping.concepts)) {
@@ -264,6 +372,8 @@ export function industryFieldMap(industry: Industry): ConceptFieldMap {
       ...(definition.negate ? { negate: true } : {}),
     };
   }
+  if (industry === 'thuong' && nganh !== undefined && CONVERTIBLE_DEBT_NGANH.has(nganh))
+    map.lt_debt = { fields: ['bsa71', 'bsa173'] };
   return map;
 }
 
@@ -274,16 +384,69 @@ export function industryConcepts(industry: Industry, kind: ConceptKind): Industr
     .map(([concept]) => concept as IndustryConcept);
 }
 
+type VciRow = Record<string, unknown>;
+
+/**
+ * Kỳ báo cáo lưu chuyển tiền tệ lập theo phương pháp trực tiếp: VCI để mọi dòng của phương pháp
+ * gián tiếp bằng 0, gồm LNTT (`cfa1`) và khấu hao (`cfa2`), trong khi lưu chuyển tiền thuần từ
+ * hoạt động kinh doanh (`cfa18`) khác 0 (đã đối chiếu ANV, DBD, STK).
+ */
+export function isDirectMethodRow(row: VciRow): boolean {
+  const pbt = finite(row.cfa1);
+  const depreciation = finite(row.cfa2);
+  const cfo = finite(row.cfa18);
+  return pbt === 0 && depreciation === 0 && cfo !== undefined && cfo !== 0;
+}
+
+/**
+ * PLAN D6, spec v3 §7, §10: một kỳ lập theo phương pháp trực tiếp KHÔNG có dòng khấu hao, nên
+ * khấu hao (`cfa2`) và phân bổ lợi thế thương mại (`cfa103`) bị bỏ khỏi kỳ đó thay vì để số 0: mọi
+ * cửa sổ 4 quý và năm chứa kỳ đó để trống ở chỉ tiêu cần khấu hao (Khấu hao / Doanh thu, Capex /
+ * Khấu hao, Biên EBITDA, Net Debt / EBITDA, EV / EBITDA). Tiền lãi vay đã trả lấy dòng 04 của
+ * phương pháp trực tiếp (`cfa42`) vào chỗ dòng 14 (`cfa14`); `cfa42 = 0` thì để trống.
+ */
+export function applyDirectMethod(rows: readonly VciRow[] | undefined): VciRow[] | undefined {
+  if (!rows) return rows;
+  return rows.map((row) => {
+    if (!isDirectMethodRow(row)) return row;
+    const { cfa2: _depreciation, cfa103: _goodwill, cfa14: _interest, ...rest } = row;
+    const interestPaid = finite(row.cfa42);
+    return interestPaid !== undefined && interestPaid !== 0
+      ? { ...rest, cfa14: interestPaid }
+      : rest;
+  });
+}
+
 /**
  * Báo cáo đã công bố của một mã theo mẫu của ngành: dòng "Doanh thu" và các khoản mục riêng của
  * ngành (`industryFieldMap`) cùng các khoản mục chuẩn của Bộ lọc. Cờ `financial` của Bộ lọc luôn
- * tắt: nó chặn các chỉ tiêu "không áp dụng cho tổ chức tài chính", còn Dashboard v2 đã có danh
- * mục riêng cho từng ngành và tính "doanh thu" theo ngành.
+ * tắt: nó chặn các chỉ tiêu "không áp dụng cho tổ chức tài chính", còn Dashboard đã có danh mục
+ * riêng cho từng ngành và tính "doanh thu" theo ngành. Mẫu doanh nghiệp xử lý kỳ lập theo phương
+ * pháp trực tiếp (`applyDirectMethod`); Bộ lọc không đổi.
  */
 export function normalizeIndustryStatements(
   sections: VciStatementSections,
   asOf: Date,
   industry: Industry,
+  nganh?: Nganh,
 ): NormalizedStatements {
-  return { ...normalizeVciStatements(sections, asOf, industryFieldMap(industry)), financial: false };
+  const source: VciStatementSections =
+    industry === 'thuong'
+      ? {
+          ...sections,
+          cash_flow: {
+            ...sections.cash_flow,
+            ...(sections.cash_flow.years
+              ? { years: applyDirectMethod(sections.cash_flow.years) }
+              : {}),
+            ...(sections.cash_flow.quarters
+              ? { quarters: applyDirectMethod(sections.cash_flow.quarters) }
+              : {}),
+          },
+        }
+      : sections;
+  return {
+    ...normalizeVciStatements(source, asOf, industryFieldMap(industry, nganh)),
+    financial: false,
+  };
 }

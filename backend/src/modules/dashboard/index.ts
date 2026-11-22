@@ -18,7 +18,7 @@ export {
   DASHBOARD_SCOPES,
   DASHBOARD_YEAR_PERIODS,
   NATIVE_METRIC_IDS,
-  PENDING_V3_METRIC_IDS,
+  V2_NATIVE_METRIC_IDS,
   V3_NEW_METRIC_IDS,
   V3_VARIANT_METRIC_KEYS,
   chartFor,
@@ -35,7 +35,6 @@ export type {
   DashboardScope,
   DashboardSubType,
   NativeMetricId,
-  PendingV3MetricId,
   V3NewMetricId,
   V3VariantMetricId,
 } from './dashboard.catalog.js';

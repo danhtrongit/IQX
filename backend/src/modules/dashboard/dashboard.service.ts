@@ -16,7 +16,11 @@ import {
 
 import { finite } from '../financials/financials.calculations.js';
 import { detectIndustry, type Industry } from '../financials/financials.industry.js';
-import { MarketDataService, MarketTransportError, VciMarketProvider } from '../market-data/index.js';
+import {
+  MarketDataService,
+  MarketTransportError,
+  VciMarketProvider,
+} from '../market-data/index.js';
 import {
   sharesAt,
   shareEventsFromVci,
@@ -35,7 +39,6 @@ import {
   DASHBOARD_INDUSTRY_CHAPTERS,
   DASHBOARD_INDUSTRY_CHARTS,
   DASHBOARD_INDUSTRY_COUNTS,
-  dashboardDecimals,
   dashboardUnit,
   isDashboardChartName,
   type DashboardChartSpec,
@@ -77,14 +80,8 @@ export const DASHBOARD_DEFAULT_SETTINGS: Readonly<Record<Nganh, DashboardSetting
     DashboardSettings
   >;
 
-/**
- * Ngữ cảnh tính biểu đồ của v3: `industry` (= `template`, mẫu báo cáo) như v2, thêm `template` và
- * `nganh` cho các công thức theo ngành (T2 đưa hai trường này vào `DashboardContext`).
- */
-export type DashboardV3Context = DashboardContext & { template: Industry; nganh: Nganh };
-
-/** Lý do trống của chỉ tiêu v3 chưa có công thức. */
-const PENDING_NOTE = 'Chỉ tiêu đang được hoàn thiện công thức';
+/** Ngữ cảnh tính biểu đồ của v3 (mẫu báo cáo `template` và ngành `nganh` đã nằm trong `DashboardContext`). */
+export type DashboardV3Context = DashboardContext;
 
 /** Chuỗi định giá theo ngày dài tối đa 10 năm (spec §11). */
 export const DASHBOARD_MAX_VALUATION_YEARS = 10;
@@ -116,7 +113,8 @@ export function closeOnOrBefore(prices: readonly DailyPrice[], date: string): nu
     } else high = mid - 1;
   }
   if (found < 0) return null;
-  const gap = (Date.parse(`${date}T00:00:00Z`) - Date.parse(`${prices[found]!.date}T00:00:00Z`)) / VN_DAY_MS;
+  const gap =
+    (Date.parse(`${date}T00:00:00Z`) - Date.parse(`${prices[found]!.date}T00:00:00Z`)) / VN_DAY_MS;
   return gap <= PEG_PRICE_MAX_GAP_DAYS ? prices[found]!.close : null;
 }
 
@@ -198,20 +196,6 @@ function lookupCharts(names: readonly string[], nganh: Nganh): DashboardChartSpe
       message: `Chỉ tiêu ${foreign.map((name) => `'${name}'`).join(', ')} không thuộc ngành ${NGANH_LABELS[nganh]} của mã`,
     });
   return names.map((name) => chartFor(nganh, name)!);
-}
-
-/** Biểu đồ trống của chỉ tiêu v3 chưa có công thức (T2 viết công thức rồi bỏ nhánh này). */
-function pendingChart(spec: DashboardChartSpec): DashboardChartPayload {
-  const payload: DashboardChartPayload = {
-    name: spec.name,
-    kind: spec.kind,
-    unit: dashboardUnit(spec),
-    decimals: dashboardDecimals(spec.unit, spec.kind),
-    status: 'definition_pending',
-    note: PENDING_NOTE,
-  };
-  if (spec.ref !== null) payload.ref = spec.ref;
-  return payload;
 }
 
 @Injectable()
@@ -337,7 +321,7 @@ export class DashboardService {
     const nganh = await this.nganhOf(sym, template);
     const specs = names.length ? lookupCharts(names, nganh) : [...DASHBOARD_INDUSTRY_CHARTS[nganh]];
     const statements = withShareHistory(
-      normalizeIndustryStatements(sections, now, template),
+      normalizeIndustryStatements(sections, now, template, nganh),
       events,
     );
     const prices = specs.some((spec) => spec.registry_id === 'peg')
@@ -345,7 +329,6 @@ export class DashboardService {
       : [];
     const context: DashboardV3Context = {
       statements: annualStatements(statements, template),
-      industry: template,
       template,
       nganh,
       market: { price: null, shares: null },
@@ -356,15 +339,9 @@ export class DashboardService {
     return { symbol: sym, nganh, per: query.per, charts };
   }
 
-  /**
-   * Một biểu đồ: chỉ tiêu mới chưa có công thức trả trống `definition_pending`; biến thể đang chờ
-   * tạm tính bằng công thức gốc (registry). Số lẻ theo đơn vị và khuôn (D11).
-   */
+  /** Một biểu đồ (số lẻ theo đơn vị và khuôn, D11, nằm ở `buildDashboardChart`). */
   private chart(spec: DashboardChartSpec, context: DashboardV3Context): DashboardChartPayload {
-    if (spec.pending && spec.registry_id === null) return pendingChart(spec);
-    const payload = buildDashboardChart(spec, context);
-    payload.decimals = dashboardDecimals(spec.unit, spec.kind);
-    return payload;
+    return buildDashboardChart(spec, context);
   }
 
   /**
@@ -387,7 +364,7 @@ export class DashboardService {
     const nganh = await this.nganhOf(sym, template);
     const specs = this.resolveValuationCharts(names, nganh);
     const statements = withShareHistory(
-      normalizeIndustryStatements(sections, now, template),
+      normalizeIndustryStatements(sections, now, template, nganh),
       events,
     );
     // Point-in-time share count (DB-03); without the event history, the current share count.
