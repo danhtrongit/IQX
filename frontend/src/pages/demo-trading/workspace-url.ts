@@ -24,6 +24,13 @@ export const LESSON_PARAM = "lesson"
 export const METRIC_PARAM = "metric"
 /** A metric key or name is free text; the server takes at most this many characters (`linkQuerySchema`). */
 export const METRIC_MAX_LENGTH = 120
+/**
+ * Industry of a metric link (spec Học viện v5 §6), e.g. `?tool=hoc-vien&metric=roe&nganh=nh`: the server
+ * looks in that industry's chapter first, then Chương 8. Only travels with `metric`; an unknown code is
+ * ignored by the server.
+ */
+export const NGANH_PARAM = "nganh"
+const NGANH_CODE = /^[a-z]{1,16}$/
 
 /** The retired DEMO TRADING / HỌC VIỆN route; it only redirects now (layout v1.3 §6). */
 export const LEGACY_WORKSPACE_PATH = "/demo-trading"
@@ -198,10 +205,16 @@ export function parseMetricParam(value: string | null | undefined): string | nul
   return name && name.length <= METRIC_MAX_LENGTH ? name : null
 }
 
+/** A usable industry code (`nh`, `bds`...): lowercase letters, at most 16; otherwise null. */
+export function parseNganhParam(value: string | null | undefined): string | null {
+  const code = value?.trim()
+  return code && NGANH_CODE.test(code) ? code : null
+}
+
 /**
- * Where the `/hoc-vien[/:lessonId]` and `/hoc-vien/bai/:metric` routes live: LUYỆN TẬP → Học viện.
- * A lesson id is kept when it looks like one; a metric (argument, else the `metric` query parameter) is
- * kept when it is usable, and anything else is dropped.
+ * Where the `/hoc-vien[/:lessonId]` (alias `/academy`) and `/hoc-vien/bai/:metric` routes live: LUYỆN TẬP →
+ * Học viện. A lesson id is kept when it looks like one; a metric (argument, else the `metric` query parameter)
+ * is kept when it is usable, with its `nganh` when that is a usable code; anything else is dropped.
  */
 export function academyWorkspaceLocation(lessonId: string | undefined, search = "", hash = "", metric?: string) {
   const params = new URLSearchParams(search)
@@ -211,5 +224,8 @@ export function academyWorkspaceLocation(lessonId: string | undefined, search = 
   const name = parseMetricParam(metric ?? params.get(METRIC_PARAM))
   if (name) params.set(METRIC_PARAM, name)
   else params.delete(METRIC_PARAM)
+  const nganh = name ? parseNganhParam(params.get(NGANH_PARAM)) : null
+  if (nganh) params.set(NGANH_PARAM, nganh)
+  else params.delete(NGANH_PARAM)
   return { pathname: SECTION_PATH.practice, search: `?${params}`, hash }
 }

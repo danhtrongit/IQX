@@ -5,6 +5,7 @@ import { isInteractiveBlock } from "../content-types"
 import { CardsBlock, DefinitionsBlock, StepsBlock } from "./card-blocks"
 import { ChartBlock, ChartGridBlock } from "./chart-block"
 import { FormulaBlock, GaugesBlock, KvCardsBlock, StatsBlock, TilesBlock } from "./data-blocks"
+import { LessonLinksBlock } from "./lesson-links-block"
 import { HeadingBlock, NoteBlock, ParagraphBlock } from "./prose-blocks"
 import { FunnelBlock, ObjectionBlock, QuoteBlock, SamplePostBlock } from "./sales-blocks"
 import { TableBlock } from "./table-block"
@@ -58,6 +59,8 @@ function StaticBlockView({ block, charts }: { block: StaticBlock; charts: BlockR
       return <FunnelBlock block={block} />
     case "sample_post":
       return <SamplePostBlock block={block} />
+    case "lesson_links":
+      return <LessonLinksBlock block={block} />
   }
 }
 

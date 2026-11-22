@@ -11,7 +11,7 @@ import type { ApiResponseFor } from "@/lib/contract-types"
 
 export type AcademyConfigListResponse = ApiResponseFor<"GET /api/v2/admin/academy-configs">
 export type AcademyConfigItem = AcademyConfigListResponse["items"][number]
-/** Một chương của danh mục gốc 12 chương: thứ tự và số gốc (`no`), dùng ở màn sửa. */
+/** Một chương của danh mục gốc (17 chương ở v5, lấy từ máy chủ): thứ tự và số gốc (`no`), dùng ở màn sửa. */
 export type AcademyCatalogChapter = AcademyConfigListResponse["catalog_chapters"][number]
 export type AcademyMode = AcademyConfigItem["mode"]
 

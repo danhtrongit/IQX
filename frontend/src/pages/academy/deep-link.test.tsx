@@ -124,6 +124,20 @@ describe("deep link by metric (spec v4 §6)", () => {
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 7.3" })).toBeTruthy()
   })
 
+  it("sends nganh with the metric (spec v5 §6) and drops both once the lesson is open", async () => {
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&symbol=VCB&metric=nim&nganh=nh")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })).toBeTruthy()
+    expect(router.state.location.search).toBe("?tool=hoc-vien&symbol=VCB&lesson=ch10-l01")
+    expect(linkRequests()).toEqual(["/academy/link?metric=nim&nganh=nh"])
+  })
+
+  it("does not send an unusable nganh, and still drops it", async () => {
+    const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&metric=nim&nganh=NH%2F..")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })).toBeTruthy()
+    expect(router.state.location.search).toBe("?tool=hoc-vien&lesson=ch10-l01")
+    expect(linkRequests()).toEqual(["/academy/link?metric=nim"])
+  })
+
   it("switches at once when the link changes while the tool is open", async () => {
     const { router } = renderAcademy("/luyen-tap?tool=hoc-vien&metric=nim")
     await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })

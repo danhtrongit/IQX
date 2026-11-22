@@ -2,6 +2,7 @@
  * Renderer fixtures: one block of every static type of the v4 schema and one chart model of
  * every kind, shaped like the real content (`backend/src/modules/academy/content/v4/lessons`).
  */
+import { FIGURE_CHARTS } from "../charts/test-figures"
 import type { ChartModel, InteractiveBlock, LessonBlock, StaticBlock } from "../content-types"
 
 const range = (n: number, f: (k: number) => number) => Array.from({ length: n }, (_, k) => Math.round(f(k) * 100) / 100)
@@ -9,6 +10,7 @@ const range = (n: number, f: (k: number) => number) => Array.from({ length: n },
 const closes = range(30, (k) => 50 + Math.sin(k / 3) * 4 + k * 0.2)
 
 export const CHARTS: Record<string, ChartModel> = {
+  ...FIGURE_CHARTS,
   "c4l7-g6": {
     kind: "series_panels",
     alt: "Giá và MACD: histogram chuyển dương thì mua",
@@ -450,6 +452,18 @@ export const STATIC_BLOCKS: StaticBlock[] = [
     body: "Dòng một\n\nDòng hai",
     why: "<b>Vì sao hiệu quả:</b> gợi tò mò.",
   },
+  // v5: "Có bài riêng" of Chương 8 and the five FIG figures of the new lessons.
+  {
+    type: "lesson_links",
+    lead: "<b>Có bài riêng:</b>",
+    links: [
+      { label: "ROE · ở ngân hàng", metric_key: "roe", nganh: "nh" },
+      { label: "ROE · ở công ty chứng khoán", metric_key: "roe", nganh: "ck" },
+      { label: "ROE · ở công ty bảo hiểm", metric_key: "roe", nganh: "bh" },
+    ],
+    tail: "Các bài này nói cách đọc chỉ tiêu ở từng ngành.",
+  },
+  ...Object.keys(FIGURE_CHARTS).map((chart_id): StaticBlock => ({ type: "chart", chart_id })),
 ]
 
 export const INTERACTIVE_BLOCK: InteractiveBlock = {

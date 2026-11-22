@@ -185,7 +185,8 @@ test.describe("QA-06 · 390px · bộ khuôn biểu đồ chỉ tiêu dùng chun
     await page.goto("/luyen-tap?tool=hoc-vien&lesson=ch08-l11")
     const figure = page.locator('[data-chart-id="c8l11-rep"]')
     await expect(figure.locator('[data-fundamental-chart="B"]')).toBeVisible()
-    await expect(figure.getByRole("button", { name: "Bảng số" })).toBeVisible()
+    // Học viện ẩn nút "Bảng số" của bộ khuôn (spec Học viện v5 §2.4, showTable={false}).
+    await expect(figure.getByRole("button", { name: "Bảng số" })).toHaveCount(0)
 
     expect(await overflows(page)).toBe(false)
     expect(await greyTexts(page, '[data-lesson-id="ch08-l11"]')).toEqual([])

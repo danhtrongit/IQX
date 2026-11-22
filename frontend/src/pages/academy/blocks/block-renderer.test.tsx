@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
+import { createMemoryRouter, RouterProvider } from "react-router"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { INTERACTIVE_BLOCK_TYPES, type LessonBlockType } from "../content-types"
+import { INTERACTIVE_BLOCK_TYPES, type LessonBlock, type LessonBlockType } from "../content-types"
 import { BlockRenderer } from "./block-renderer"
 import { InlineText } from "./inline-text"
 import { ALL_BLOCKS, CHARTS, INTERACTIVE_BLOCK, STATIC_BLOCKS, mockReaderWidth, svgOverflows } from "./test-blocks"
@@ -25,6 +26,7 @@ const STATIC_TYPES: LessonBlockType[] = [
   "objection",
   "funnel",
   "sample_post",
+  "lesson_links",
 ]
 
 let restore: (() => void) | null = null
@@ -41,7 +43,7 @@ function renderAll(width = 760) {
 describe("BlockRenderer", () => {
   it("has a fixture for every static block type of the schema", () => {
     expect(new Set(STATIC_BLOCKS.map((block) => block.type))).toEqual(new Set(STATIC_TYPES))
-    expect(STATIC_TYPES.length + INTERACTIVE_BLOCK_TYPES.length).toBe(24)
+    expect(STATIC_TYPES.length + INTERACTIVE_BLOCK_TYPES.length).toBe(25)
   })
 
   it("renders every static block type in order, each in its own wrapper", () => {
@@ -120,6 +122,41 @@ describe("BlockRenderer", () => {
     expect(within(figure).getAllByRole("columnheader").map((cell) => cell.textContent)).toContain("Histogram")
     expect(document.querySelector('[data-chart-id="c4l1-g4"]')).not.toBeNull()
     expect(screen.getByText("Vốn đầu tư linh hoạt")).toBeTruthy()
+  })
+
+  it("renders lesson links (spec v5 §1.3) as deep links with metric and nganh, in one sentence", () => {
+    renderAll()
+    const block = document.querySelector('[data-academy-block="lesson_links"]') as HTMLElement
+    expect(block.textContent).toBe(
+      "Có bài riêng: ROE · ở ngân hàng, ROE · ở công ty chứng khoán, ROE · ở công ty bảo hiểm. Các bài này nói cách đọc chỉ tiêu ở từng ngành.",
+    )
+    const links = within(block).getAllByRole("link")
+    expect(links.map((link) => link.getAttribute("href"))).toEqual([
+      "?tool=hoc-vien&metric=roe&nganh=nh",
+      "?tool=hoc-vien&metric=roe&nganh=ck",
+      "?tool=hoc-vien&metric=roe&nganh=bh",
+    ])
+  })
+
+  it("keeps the workspace parameters in a lesson link inside the router and opens it in place", async () => {
+    const block = STATIC_BLOCKS.find((entry) => entry.type === "lesson_links") as LessonBlock
+    const router = createMemoryRouter(
+      [{ path: "/luyen-tap", element: <BlockRenderer blocks={[block]} charts={{}} /> }],
+      { initialEntries: ["/luyen-tap?tool=hoc-vien&symbol=VCB&lesson=ch08-l11"] },
+    )
+    render(<RouterProvider router={router} />)
+    const link = screen.getByRole("link", { name: "ROE · ở công ty bảo hiểm" })
+    expect(link.getAttribute("href")).toBe("/luyen-tap?tool=hoc-vien&symbol=VCB&lesson=ch08-l11&metric=roe&nganh=bh")
+    fireEvent.click(link)
+    await waitFor(() => expect(router.state.location.search).toBe("?tool=hoc-vien&symbol=VCB&lesson=ch08-l11&metric=roe&nganh=bh"))
+  })
+
+  it("draws every v5 figure kind", () => {
+    renderAll()
+    for (const fig of ["formula", "lines", "hbar", "stack", "wf"]) {
+      const drawing = document.querySelector(`[data-figure="${fig}"] svg[role="img"]`)
+      expect(drawing, fig).not.toBeNull()
+    }
   })
 
   it("shows an empty state for a chart id that has no model", () => {
