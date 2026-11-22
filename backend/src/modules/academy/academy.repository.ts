@@ -176,10 +176,20 @@ export interface AcademyStore {
   deleteDraft(attemptId: string): Promise<void>;
   answers(attemptId: string): Promise<AnswerRow[]>;
   insertAnswers(answers: readonly AnswerRow[]): Promise<void>;
-  /** Best score and number of submitted attempts of the owner's lesson key in one catalog. */
-  attemptStats(userId: string, lessonKey: string, catalogVersion: string): Promise<AttemptStats>;
-  /** `attemptStats` of every lesson key of the owner in one catalog, in one query. */
-  attemptStatsAll(userId: string, catalogVersion: string): Promise<Map<string, AttemptStats>>;
+  /**
+   * Best score and number of submitted attempts of the owner's lesson key over the given catalogs (the current one,
+   * plus the previous one where stats must survive a catalog bump, plan v5 D13).
+   */
+  attemptStats(
+    userId: string,
+    lessonKey: string,
+    catalogVersions: readonly string[],
+  ): Promise<AttemptStats>;
+  /** `attemptStats` of every lesson key of the owner over the given catalogs, in one query. */
+  attemptStatsAll(
+    userId: string,
+    catalogVersions: readonly string[],
+  ): Promise<Map<string, AttemptStats>>;
   /** Serializes the owner's completion writes for the rest of the transaction. */
   lockUser(userId: string): Promise<void>;
   completion(userId: string, lessonKey: string): Promise<CompletionRow | null>;
@@ -389,12 +399,13 @@ export class AcademySqlStore implements AcademyStore {
     );
   }
 
-  async attemptStats(userId: string, lessonKey: string, catalogVersion: string) {
+  async attemptStats(userId: string, lessonKey: string, catalogVersions: readonly string[]) {
     const rows = await this.client.query<{ best_score: number | null; attempts_submitted: number }>(
       `select max(score) as best_score, count(*)::int as attempts_submitted
        from academy_attempts
-       where user_id = $1 and lesson_key = $2 and catalog_version = $3 and status = 'submitted'`,
-      [userId, lessonKey, catalogVersion],
+       where user_id = $1 and lesson_key = $2 and catalog_version = any($3::text[])
+         and status = 'submitted'`,
+      [userId, lessonKey, [...catalogVersions]],
     );
     return {
       best_score: rows[0]?.best_score ?? null,
@@ -402,7 +413,7 @@ export class AcademySqlStore implements AcademyStore {
     };
   }
 
-  async attemptStatsAll(userId: string, catalogVersion: string) {
+  async attemptStatsAll(userId: string, catalogVersions: readonly string[]) {
     const rows = await this.client.query<{
       lesson_key: string;
       best_score: number | null;
@@ -410,10 +421,10 @@ export class AcademySqlStore implements AcademyStore {
     }>(
       `select lesson_key, max(score) as best_score, count(*)::int as attempts_submitted
        from academy_attempts
-       where user_id = $1 and catalog_version = $2 and status = 'submitted'
+       where user_id = $1 and catalog_version = any($2::text[]) and status = 'submitted'
          and lesson_key is not null
        group by lesson_key`,
-      [userId, catalogVersion],
+      [userId, [...catalogVersions]],
     );
     return new Map(
       rows.map((row) => [

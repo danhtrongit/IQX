@@ -14,7 +14,7 @@ import {
   type ResolvedAcademyConfig,
 } from '../../src/modules/academy/academy.config.js';
 import type { AcademyConfigPort } from '../../src/modules/academy/academy.ports.js';
-import type { AcademyAccessMode } from '../../src/modules/academy/content/v4/schema.js';
+import type { AcademyAccessMode } from '../../src/modules/academy/content/v5/schema.js';
 import {
   NOTES_SIZE_LIMIT,
   notesPatchIsNoop,
@@ -159,12 +159,13 @@ export class MemoryAcademy implements AcademyStoreProvider, AcademyStore {
     return rows[0] ? structuredClone(rows[0]) : null;
   }
 
-  private submitted(userId: string, lessonKey: string, catalogVersion: string) {
+  private submitted(userId: string, lessonKey: string, catalogVersions: string | readonly string[]) {
+    const versions = typeof catalogVersions === 'string' ? [catalogVersions] : catalogVersions;
     return this.attempts.filter(
       (row) =>
         row.user_id === userId &&
         row.lesson_key === lessonKey &&
-        row.catalog_version === catalogVersion &&
+        versions.includes(row.catalog_version) &&
         row.status === 'submitted',
     );
   }
@@ -246,22 +247,22 @@ export class MemoryAcademy implements AcademyStoreProvider, AcademyStore {
     }
   }
 
-  async attemptStats(userId: string, lessonKey: string, catalogVersion: string) {
+  async attemptStats(userId: string, lessonKey: string, catalogVersions: readonly string[]) {
     await Promise.resolve();
-    const scores = this.submitted(userId, lessonKey, catalogVersion).map((row) => row.score ?? 0);
+    const scores = this.submitted(userId, lessonKey, catalogVersions).map((row) => row.score ?? 0);
     return {
       best_score: scores.length ? Math.max(...scores) : null,
       attempts_submitted: scores.length,
     };
   }
 
-  async attemptStatsAll(userId: string, catalogVersion: string) {
+  async attemptStatsAll(userId: string, catalogVersions: readonly string[]) {
     await Promise.resolve();
     const out = new Map<string, AttemptStats>();
     for (const row of this.attempts) {
       if (
         row.user_id !== userId ||
-        row.catalog_version !== catalogVersion ||
+        !catalogVersions.includes(row.catalog_version) ||
         row.status !== 'submitted' ||
         row.lesson_key === null
       )

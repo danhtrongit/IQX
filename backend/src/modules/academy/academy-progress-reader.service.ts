@@ -17,13 +17,14 @@ import {
   type AcademyContentSource,
   type AcademyItem,
 } from './academy.content.types.js';
+import { ACADEMY_STATS_CATALOG_VERSIONS } from './academy.constants.js';
 import { ACADEMY_CONFIG, type AcademyConfigPort } from './academy.ports.js';
 import {
   chapterIdOf,
   currentItemId,
   type AcademyAccessMode,
   type ItemKind,
-} from './content/v4/schema.js';
+} from './content/v5/schema.js';
 
 /**
  * Read-only Học viện progress of other users, for the admin and team-lead user views (admin
@@ -226,7 +227,8 @@ export class AcademyProgressReader {
            from academy_completions where user_id = any($1::uuid[])`,
         [userIds],
       ),
-      // lesson_key identifies the item (and so its kind) within the current catalog.
+      // lesson_key identifies the item (and so its kind) within the current catalog. Submitted attempts count over
+      // the current and the v4 catalog (every v4 key is kept, plan v5 D13); an open attempt only in the current one.
       this.database.query<{
         user_id: string;
         lesson_key: string;
@@ -238,11 +240,16 @@ export class AcademyProgressReader {
                 (count(*) filter (where status = 'submitted'))::int as attempts,
                 (array_agg(score order by submitted_at desc, id desc)
                    filter (where status = 'submitted'))[1] as latest_score,
-                max(created_at) filter (where status = 'open') as open_at
+                max(created_at) filter (where status = 'open' and catalog_version = $2) as open_at
            from academy_attempts
-          where user_id = any($1::uuid[]) and lesson_key is not null and catalog_version = $2
+          where user_id = any($1::uuid[]) and lesson_key is not null
+            and catalog_version = any($3::text[])
           group by user_id, lesson_key`,
-        [userIds, content.catalog.catalog_version],
+        [
+          userIds,
+          content.catalog.catalog_version,
+          [...new Set([content.catalog.catalog_version, ...ACADEMY_STATS_CATALOG_VERSIONS])],
+        ],
       ),
       this.database.query<AcademyLastOpenedFact & { user_id: string }>(
         `select user_id, lesson_key, opened_at

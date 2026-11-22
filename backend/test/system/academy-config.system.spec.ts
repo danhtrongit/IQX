@@ -6,9 +6,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { loadAcademyContent } from '../../src/modules/academy/academy.content.js';
 import {
-  ACADEMY_V4_CATALOG_VERSION,
+  ACADEMY_V5_CATALOG_VERSION,
   chapterIdOf,
-} from '../../src/modules/academy/content/v4/schema.js';
+} from '../../src/modules/academy/content/v5/schema.js';
 import {
   authHeader,
   registerAndLogin,
@@ -213,14 +213,14 @@ describe('system acceptance: Học viện v4.1 Academy configs', () => {
            (user_id, lesson_key, catalog_version, lesson_id, completion_method, source)
          values ($1, $2, $3, 'seed', 'legacy_migration', '{}'::jsonb)
          on conflict do nothing`,
-        [session.id, key, ACADEMY_V4_CATALOG_VERSION],
+        [session.id, key, ACADEMY_V5_CATALOG_VERSION],
       );
   }
 
   async function startAttempt(session: Session, itemId: string) {
     const response = await academy(session, 'POST', 'attempts', {
       lesson_id: itemId,
-      catalog_version: ACADEMY_V4_CATALOG_VERSION,
+      catalog_version: ACADEMY_V5_CATALOG_VERSION,
       idempotency_key: randomUUID(),
     });
     expect(response.statusCode, response.body).toBe(201);
@@ -621,13 +621,13 @@ describe('system acceptance: Học viện v4.1 Academy configs', () => {
     expect(open.json()).toMatchObject({ id: 'ch01-l01', chapter_id: 'ch01', chapter_display_no: 1, state: 'open' });
     expect(await academy(memberA, 'POST', 'attempts', {
       lesson_id: 'ch01-l02',
-      catalog_version: ACADEMY_V4_CATALOG_VERSION,
+      catalog_version: ACADEMY_V5_CATALOG_VERSION,
       idempotency_key: randomUUID(),
     }).then((response) => response.statusCode)).toBe(403);
     expect(
       await academy(memberA, 'POST', 'attempts', {
         lesson_id: 'ch02-l01',
-        catalog_version: ACADEMY_V4_CATALOG_VERSION,
+        catalog_version: ACADEMY_V5_CATALOG_VERSION,
         idempotency_key: randomUUID(),
       }).then((response) => response.statusCode),
     ).toBe(404);

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { accessModeSchema, chapterIdSchema } from './content/v4/schema.js';
+import { accessModeSchema, chapterIdSchema } from './content/v5/schema.js';
 
 /**
  * HTTP contract of the Academy configs (supplement v4.1 §1.4, §8.3):
@@ -21,7 +21,7 @@ export const ACADEMY_CONFIG_ERROR_CODES = [
 
 const configFields = {
   mode: accessModeSchema,
-  /** Fixed chapter ids (`ch01`..`ch12`); at least one; any order, stored in catalog order. */
+  /** Fixed chapter ids (`ch01`..`ch17`); at least one; any order, stored in catalog order. */
   chapter_ids: z.array(chapterIdSchema).min(1).max(24),
 };
 
@@ -42,10 +42,10 @@ export type AcademyConfigLogsQuery = z.output<typeof academyConfigLogsQuerySchem
 
 /* --------------------------------------------------------------------------------------------- responses */
 
-/** A chapter of the 12-chapter catalog, as the edit screen lists it (original order and numbers). */
+/** A chapter of the 17-chapter catalog, as the edit screen lists it (original order and numbers). */
 export const academyCatalogChapterSchema = z.object({
   chapter_id: z.string(),
-  /** Position in the original catalog (1..12), shown next to the tick box. */
+  /** Position in the original catalog (1..17), shown next to the tick box. */
   no: z.number().int(),
   title: z.string(),
   lesson_count: z.number().int(),

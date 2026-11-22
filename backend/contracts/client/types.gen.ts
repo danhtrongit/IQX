@@ -296,6 +296,26 @@ export type AcademyBlock =
       why: string;
     }
   | {
+      lead: string;
+      links: Array<{
+        label: string;
+        metric_key: string;
+        nganh:
+          | "chung"
+          | "thuong"
+          | "nh"
+          | "ck"
+          | "bh"
+          | "bds"
+          | "dk"
+          | "bl"
+          | "dien"
+          | "vl";
+      }>;
+      tail?: string;
+      type: "lesson_links";
+    }
+  | {
       best_option: 0 | 1 | 2;
       debrief: string;
       options: [string, string, string];
@@ -1423,6 +1443,129 @@ export type AcademyChartModel =
         unit: string;
       };
       kind: "fundamental";
+    }
+  | {
+      fig: "formula";
+      height: number;
+      items: Array<{
+        hl?: boolean;
+        notes?: Array<string>;
+        size?: number;
+        t: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        v: string;
+      }>;
+      kind: "figure";
+      ops: Array<string>;
+    }
+  | {
+      decimals: number;
+      fig: "hbar";
+      items: Array<{
+        label: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value: number;
+      }>;
+      kind: "figure";
+      label_width?: number;
+      max?: number;
+      note?: string;
+      row_height?: number;
+      title?: string;
+      unit: string;
+    }
+  | {
+      decimals: number;
+      fig: "stack";
+      kind: "figure";
+      note?: string;
+      parts: Array<{
+        label: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value: number;
+      }>;
+      title?: string;
+      unit: string;
+    }
+  | {
+      decimals: number;
+      fig: "wf";
+      height?: number;
+      items: Array<{
+        label: string;
+        step: "base" | "plus" | "minus" | "total";
+        tone?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value: number;
+      }>;
+      kind: "figure";
+      title?: string;
+      unit: string;
+    }
+  | {
+      fig: "lines";
+      kind: "figure";
+      rows: Array<{
+        code?: string;
+        line: string;
+        report: string;
+        tone?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      title?: string;
     };
 
 export type AcademyLeafChartModel =
@@ -29052,6 +29195,7 @@ export type AcademyCatalogResponses = {
         lesson_key: string;
         metric_key: string | null;
         name: string;
+        nganh: string | null;
         optional: boolean;
         order: number;
         position: number | null;
@@ -29128,6 +29272,7 @@ export type AcademyLessonResponses = {
         lesson_key: string;
         metric_key: string | null;
         name: string;
+        nganh: string | null;
         optional: boolean;
         order: number;
         position: number | null;
@@ -29175,6 +29320,7 @@ export type AcademyLessonResponses = {
         lesson_key: string;
         metric_key: string | null;
         name: string;
+        nganh: string | null;
         optional: boolean;
         order: number;
         position: number | null;
@@ -29497,6 +29643,7 @@ export type AcademyLinkData = {
   path?: never;
   query: {
     metric: string;
+    nganh?: string;
   };
   url: "/api/v2/academy/link";
 };
@@ -29537,6 +29684,7 @@ export type AcademyLinkResponses = {
     matched_by: "metric_key" | "title" | "title_prefix";
     metric: string;
     metric_key: string | null;
+    nganh: string | null;
     title: string | null;
     url: string;
   };

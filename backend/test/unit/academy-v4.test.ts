@@ -12,13 +12,15 @@ const content = academyV4Fixture();
 const lessons = [...content.items.values()].filter((entry) => entry.kind === 'lesson');
 const sectorLessons = lessons.filter((entry) => entry.chapter === 8);
 const metricLessons = lessons.filter((entry) => entry.chapter >= 8);
+/** Representative chart id: `c{chapter}l{number of the lesson id}-rep` (ids are kept when v5 reorders, plan v5 D7). */
+const repId = (entry: (typeof lessons)[number]) => `c${entry.chapter}l${Number(entry.id.slice(6))}-rep`;
 
-describe('academy v4 content of chapters 8-12 (spec v4 §3)', () => {
-  it('gives every chapter 8-12 lesson one representative chart (Dashboard chart model) in its own section', () => {
-    expect(metricLessons).toHaveLength(62);
+describe('academy content of chapters 8-17 (spec v4 §3, v5 §2)', () => {
+  it('gives every chapter 8-17 lesson one representative chart (Dashboard chart model) in its own section', () => {
+    expect(metricLessons).toHaveLength(149);
     for (const entry of metricLessons) {
       const file = entry.lesson!.file;
-      const id = `c${entry.chapter}l${entry.order}-rep`;
+      const id = repId(entry);
       expect(file.charts[id]?.kind, entry.id).toBe('fundamental');
       const section = file.sections.find((candidate) => candidate.title === 'Biểu đồ đại diện');
       expect(section, entry.id).toBeDefined();
@@ -29,11 +31,11 @@ describe('academy v4 content of chapters 8-12 (spec v4 §3)', () => {
     }
   });
 
-  it('asks exactly one question about the representative chart in every chapter 8-12 lesson', () => {
+  it('asks exactly one question about the representative chart in every chapter 8-17 lesson', () => {
     for (const entry of metricLessons) {
       const about = entry.bank.questions.filter((question) => question.chart_id);
       expect(about, entry.id).toHaveLength(1);
-      expect(about[0]!.chart_id).toBe(`c${entry.chapter}l${entry.order}-rep`);
+      expect(about[0]!.chart_id).toBe(repId(entry));
       expect(about[0]!.prompt).toMatch(/^Trên biểu đồ đại diện/);
       expect(entry.bank.questions, entry.id).toHaveLength(5);
     }
@@ -46,13 +48,13 @@ describe('academy v4 content of chapters 8-12 (spec v4 §3)', () => {
         ).toHaveLength(0);
   });
 
-  it('ends each chapter 8 lesson with the section for banks, securities and insurance, before the summary', () => {
+  it('ends each chapter 8 lesson with the industries section (banks, securities, insurance), before the summary', () => {
     expect(sectorLessons).toHaveLength(17);
     for (const entry of sectorLessons) {
       const file = entry.lesson!.file;
       const last = file.sections.at(-1)!;
-      expect(last.title, entry.id).toBe('Với ngân hàng, chứng khoán, bảo hiểm');
-      expect(last.blocks, entry.id).toHaveLength(1);
+      // v5 §1.3: the section is renamed "Ở các ngành"; 8 lessons add a "Có bài riêng" links block.
+      expect(last.title, entry.id).toBe('Ở các ngành');
       const block = last.blocks[0]!;
       expect(block.type).toBe('cards');
       if (block.type === 'cards') {
@@ -62,27 +64,40 @@ describe('academy v4 content of chapters 8-12 (spec v4 §3)', () => {
           'Công ty bảo hiểm',
         ]);
       }
+      expect(last.blocks.slice(1).every((other) => other.type === 'lesson_links'), entry.id).toBe(true);
       expect(file.summary.length, entry.id).toBeGreaterThan(0);
     }
-    // Only chapter 8 has it (chapters 9-12 are specific to one industry).
-    for (const entry of lessons.filter((candidate) => candidate.chapter !== 8))
+    expect(
+      sectorLessons.filter((entry) =>
+        entry.lesson!.file.sections.at(-1)!.blocks.some((block) => block.type === 'lesson_links'),
+      ),
+    ).toHaveLength(8);
+    // Chapter 9 adds the section to 9 lessons (v5 §1.4); chapters 1-7 and 10-17 never have it.
+    expect(
+      lessons.filter(
+        (entry) => entry.chapter === 9 && entry.lesson!.file.sections.some((section) => section.title === 'Ở các ngành'),
+      ),
+    ).toHaveLength(9);
+    for (const entry of lessons.filter((candidate) => candidate.chapter !== 8 && candidate.chapter !== 9))
       expect(
-        entry.lesson!.file.sections.some((section) => section.title.startsWith('Với ngân hàng')),
+        entry.lesson!.file.sections.some((section) => section.title === 'Ở các ngành'),
         entry.id,
       ).toBe(false);
   });
 
-  it('serves 30-question exams for chapters 4-12 and the chapter 8-12 exams are new keys', () => {
-    for (const chapter of [8, 9, 10, 11, 12]) {
+  it('serves 30-question exams for chapters 4-17: chapter 8-12 exams keep their v4 keys, 13-17 are new', () => {
+    for (const chapter of [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]) {
       const exam = content.items.get(`ch${String(chapter).padStart(2, '0')}-exam`)!;
       expect(exam.bank.questions, exam.id).toHaveLength(30);
-      expect(exam.lesson_key).toBe(`exam:ch${String(chapter).padStart(2, '0')}-v4`);
+      expect(exam.lesson_key).toBe(
+        `exam:ch${String(chapter).padStart(2, '0')}-${chapter <= 12 ? 'v4' : 'v5'}`,
+      );
     }
     const questions = [...content.items.values()].reduce(
       (sum, entry) => sum + entry.bank.questions.length,
       0,
     );
-    expect(questions).toBe(855);
+    expect(questions).toBe(1440);
   });
 });
 
@@ -97,6 +112,7 @@ describe('academy deep link (spec v4 §6)', () => {
       lesson_id: 'ch10-l01',
       lesson_key: 'fundamental:nim',
       metric_key: 'nim',
+      nganh: 'nh',
       chapter_id: 'ch10',
       chapter_display_no: 10,
       locked: false,
@@ -164,6 +180,7 @@ describe('academy deep link (spec v4 §6)', () => {
       lesson_id: 'ch01-l01',
       lesson_key: null,
       metric_key: null,
+      nganh: null,
       chapter_id: null,
       chapter_display_no: null,
       locked: false,
@@ -188,13 +205,14 @@ describe('academy deep link (spec v4 §6)', () => {
     expect(await service.link(OTHER_USER, 'khong co')).toMatchObject({ lesson_id: 'ch01-l01' });
   });
 
-  it('is found for every one of the 62 metric keys and reaches the right lesson', async () => {
+  it('is found for every one of the 149 (metric key, industry) pairs and reaches the right lesson', async () => {
     const { service } = setup();
     for (const entry of metricLessons) {
-      const hit = await service.link(USER, entry.metric_key!);
+      const hit = await service.link(USER, entry.metric_key!, entry.nganh);
       expect(hit, entry.id).toMatchObject({
         found: true,
         lesson_id: entry.id,
+        nganh: entry.nganh,
         matched_by: 'metric_key',
       });
       // Every lesson title also resolves by its own name (the dashboard sends names, spec §6).
@@ -228,7 +246,7 @@ describe('academy current lesson, "bài đang học" (spec v4 §4.1)', () => {
         user_id: USER,
         lesson_key: 'fundamental:nim',
         lesson_id: 'ch10-l01',
-        catalog_version: 'iqx-academy-v4.0-12ch-116lessons',
+        catalog_version: 'iqx-academy-v5.0-17ch-203lessons',
       }),
     ]);
     expect((await service.progress(USER)).current_item_id).toBe('ch10-l01');
@@ -281,7 +299,7 @@ describe('academy current lesson, "bài đang học" (spec v4 §4.1)', () => {
 describe('academy free learning flow (spec v4 §4.1, §4.3)', () => {
   it('a new learner passes a chapter 12 lesson, then its exam, before anything else, and is paid once', async () => {
     const { service, rewards, memory } = setup();
-    const lesson = await pass(service, 'ch12-l08', 'attempt-key-0001');
+    const lesson = await pass(service, 'ch12-l11', 'attempt-key-0001');
     expect(lesson).toMatchObject({
       passed: true,
       reward: { status: 'credited', delta: 100 },
@@ -292,20 +310,20 @@ describe('academy free learning flow (spec v4 §4.1, §4.3)', () => {
       passed: true,
       reward: null,
       chapter_completed: 12,
-      next_item_id: null,
+      next_item_id: 'ch13-l01',
     });
     expect(rewards!.calls).toHaveLength(1);
     expect(memory.completionRows.map((row) => row.lesson_key).sort()).toEqual([
       'exam:ch12-v4',
-      'fundamental:reserves_to_equity',
+      'fundamental:pb-bh',
     ]);
     const progress = await service.progress(USER);
     expect(progress).toMatchObject({ course_done: 1, access_mode: 'free' });
-    expect(progress.chapters.at(-1)).toMatchObject({
+    expect(progress.chapters.find((chapter) => chapter.chapter_id === 'ch12')).toMatchObject({
       chapter_id: 'ch12',
       display_no: 12,
       done: 1,
-      total: 8,
+      total: 11,
       exam_passed: true,
     });
     expect(progress.items.some((entry) => entry.state === 'locked')).toBe(false);

@@ -17,7 +17,8 @@ import {
   LESSON_REWARD_PORT,
   type LessonRewardPort,
 } from '../../platform/ports/lesson-reward.port.js';
-import { loadAcademyContent } from './academy.content.js';
+import { ACADEMY_STATS_CATALOG_VERSIONS } from './academy.constants.js';
+import { loadAcademyContent, metricNganhKey } from './academy.content.js';
 import type { AcademyContent, AcademyContentSource, AcademyItem } from './academy.content.types.js';
 import {
   attemptQuestionViews,
@@ -75,13 +76,16 @@ import type {
 import {
   currentItemId,
   interactiveKeysOf,
+  NGANH_CHAPTER,
+  parseNganh,
+  type Nganh,
   nextRequiredItemId,
   NOTES_TOTAL_MAX_BYTES,
   scenarioOf,
   type BankQuestion,
   type ItemState,
   type ScenarioBlock,
-} from './content/v4/schema.js';
+} from './content/v5/schema.js';
 
 /**
  * Học viện v4 (spec §3-§6): 12 chapters of lessons, a chapter exam per chapter and the optional
@@ -150,20 +154,21 @@ export class AcademyService implements OnModuleInit {
     const store = this.repository.store();
     const [completions, stats, lastOpened] = await Promise.all([
       store.completions(userId),
-      store.attemptStatsAll(userId, content.catalog.catalog_version),
+      store.attemptStatsAll(userId, ACADEMY_STATS_CATALOG_VERSIONS),
       store.lastOpened(userId),
     ]);
     return buildProgress(content, program, completions, stats, lastOpened);
   }
 
   /**
-   * Deep link (spec §6, v4.1 §4): the lesson of the learner's chapters that teaches a metric, by `metric_key`, else
-   * by exact lesson title, else by a title starting with `name + " ·"`. `locked` is true when the learner's
+   * Deep link (spec v5 §6, v4.1 §4): the lesson of the learner's chapters that teaches a metric for an industry
+   * (`nganh`, optional; unknown codes are ignored), by `metric_key`, else by lesson title (exact or `name + " ·"`),
+   * searching the industry chapter, then Chương 8, then every chapter. `locked` is true when the learner's
    * sequential chain has not reached it (the front-end shows the lock frame, never the lesson). Never an error: when
    * nothing matches (the metric's chapter is not in the learner's config included) the answer is `found: false` with
    * the lesson the learner was last on, so the front-end opens that.
    */
-  async link(userId: string, metric: string): Promise<LinkResponse> {
+  async link(userId: string, metric: string, nganh?: string | null): Promise<LinkResponse> {
     const content = this.content();
     const program = await this.programOf(userId);
     const store = this.repository.store();
@@ -172,7 +177,7 @@ export class AcademyService implements OnModuleInit {
       store.lastOpened(userId),
     ]);
     const states = program.states(new Set(completions.map((row) => row.lesson_key)));
-    const hit = resolveMetricLink(content, program, metric);
+    const hit = resolveMetricLink(content, program, metric, nganh);
     if (hit) {
       const chapter = program.chapterOf(hit.item.id);
       return {
@@ -182,6 +187,7 @@ export class AcademyService implements OnModuleInit {
         locked: states.get(hit.item.id) === 'locked',
         lesson_key: hit.item.lesson_key,
         metric_key: hit.item.metric_key,
+        nganh: hit.item.nganh,
         chapter_id: chapter?.chapter_id ?? null,
         chapter_display_no: chapter?.display_no ?? null,
         title: hit.item.name,
@@ -197,6 +203,7 @@ export class AcademyService implements OnModuleInit {
       locked: false,
       lesson_key: null,
       metric_key: null,
+      nganh: null,
       chapter_id: null,
       chapter_display_no: null,
       title: null,
@@ -221,11 +228,7 @@ export class AcademyService implements OnModuleInit {
     const state = stateOf(program, completions, item);
     await this.rememberOpened(store, userId, content, item);
     const completion = completions.find((row) => row.lesson_key === item.lesson_key) ?? null;
-    const stats = await store.attemptStats(
-      userId,
-      item.lesson_key,
-      content.catalog.catalog_version,
-    );
+    const stats = await store.attemptStats(userId, item.lesson_key, ACADEMY_STATS_CATALOG_VERSIONS);
     const status = {
       catalog_version: content.catalog.catalog_version,
       state,
@@ -527,7 +530,7 @@ export class AcademyService implements OnModuleInit {
     const store = this.repository.store();
     const [rows, stats] = await Promise.all([
       store.submittedAttempts(userId, item.lesson_key, catalogVersion, query.limit, query.offset),
-      store.attemptStats(userId, item.lesson_key, catalogVersion),
+      store.attemptStats(userId, item.lesson_key, [catalogVersion]),
     ]);
     const next = query.offset + rows.length;
     return {
@@ -713,7 +716,7 @@ export class AcademyService implements OnModuleInit {
     const [completions, stats] = await Promise.all([
       store.completions(attempt.user_id),
       lessonKey
-        ? store.attemptStats(attempt.user_id, lessonKey, attempt.catalog_version)
+        ? store.attemptStats(attempt.user_id, lessonKey, [attempt.catalog_version])
         : Promise.resolve<AttemptStats>({ best_score: null, attempts_submitted: 0 }),
     ]);
     const completion = lessonKey
@@ -795,31 +798,52 @@ const itemUrl = (itemId: string) => `${ITEMS_URL}/${itemId}`;
 const nameKey = (text: string) => text.normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase();
 
 /**
- * Finds the lesson of a metric among the learner's own lessons (spec §6, v4.1 §4): `metric_key` first, then a lesson
- * title equal to the name, then a title that starts with `name + " ·"`. The dashboard metric lessons (chapters 8-12)
- * are searched before every other lesson, in the learner's chapter order. A lesson of a chapter that is not in the
- * learner's config never resolves.
+ * Finds the lesson of a metric among the learner's own lessons (spec v5 §6.2, plan v5 §7). A lesson of a chapter that
+ * is not in the learner's config never resolves; the first hit wins:
+ * 1. by key: (`metric_key`, `nganh`), then (`metric_key`, `chung`) = Chương 8, then any lesson with that key in the
+ *    learner's chapter order;
+ * 2. by title (equal to the name, else starting with `name + " ·"`): in the industry chapter, then Chương 8, then every
+ *    chapter (the dashboard metric lessons before every other lesson).
+ * Without (or with an unknown) `nganh` the key step goes Chương 8 first, then program order (ROE: Chương 8, NIM:
+ * Chương 10). A group without the industry chapter falls back to Chương 8 (spec v5 §9).
  */
-function resolveMetricLink(
+export function resolveMetricLink(
   content: AcademyContent,
   program: AcademyProgram,
   metric: string,
+  nganhParam?: string | null,
 ): { item: AcademyItem; matchedBy: LinkResponse['matched_by'] } | null {
   const query = nameKey(metric);
   if (!query) return null;
-  const byKey = content.itemsByMetricKey.get(query);
-  if (byKey && program.chapterOf(byKey.id)) return { item: byKey, matchedBy: 'metric_key' };
+  const nganh = parseNganh(nganhParam);
+  const inProgram = (item: AcademyItem | undefined): item is AcademyItem =>
+    item !== undefined && program.chapterOf(item.id) !== undefined;
+
+  const byPair = (code: Nganh) => content.itemByMetricNganh.get(metricNganhKey(query, code));
+  const keyHit =
+    [nganh ? byPair(nganh) : undefined, byPair('chung')].find(inProgram) ??
+    program.chapters
+      .flatMap((chapter) => chapter.items)
+      .find((item) => item.metric_key === query);
+  if (inProgram(keyHit)) return { item: keyHit, matchedBy: 'metric_key' };
+
   const lessons = program.chapters
     .flatMap((chapter) => chapter.items)
     .filter((item) => item.kind === 'lesson');
-  const ordered = [
+  const scopes: AcademyItem[][] = [];
+  if (nganh) scopes.push(lessons.filter((item) => item.chapter === NGANH_CHAPTER[nganh]));
+  scopes.push(lessons.filter((item) => item.chapter === NGANH_CHAPTER.chung));
+  scopes.push([
     ...lessons.filter((item) => item.metric_key !== null),
     ...lessons.filter((item) => item.metric_key === null),
-  ];
-  const exact = ordered.find((item) => nameKey(item.name) === query);
-  if (exact) return { item: exact, matchedBy: 'title' };
-  const prefixed = ordered.find((item) => nameKey(item.name).startsWith(`${query} ·`));
-  return prefixed ? { item: prefixed, matchedBy: 'title_prefix' } : null;
+  ]);
+  for (const scope of scopes) {
+    const exact = scope.find((item) => nameKey(item.name) === query);
+    if (exact) return { item: exact, matchedBy: 'title' };
+    const prefixed = scope.find((item) => nameKey(item.name).startsWith(`${query} ·`));
+    if (prefixed) return { item: prefixed, matchedBy: 'title_prefix' };
+  }
+  return null;
 }
 
 /**
@@ -874,6 +898,7 @@ export function catalogItemView(
     optional: item.optional,
     question_count: item.question_count,
     metric_key: item.metric_key,
+    nganh: item.nganh,
     has_scenario: item.has_scenario,
     intro: displayIntro(item, chapter.display_no),
     content_version: item.lesson?.content_version ?? null,

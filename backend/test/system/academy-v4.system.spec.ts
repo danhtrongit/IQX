@@ -5,7 +5,7 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { loadAcademyContent } from '../../src/modules/academy/academy.content.js';
-import { ACADEMY_V4_CATALOG_VERSION } from '../../src/modules/academy/content/v4/schema.js';
+import { ACADEMY_V5_CATALOG_VERSION } from '../../src/modules/academy/content/v5/schema.js';
 import {
   authHeader,
   registerAndLogin,
@@ -70,14 +70,14 @@ describe('system acceptance: Học viện v4', () => {
            (user_id, lesson_key, catalog_version, lesson_id, completion_method, source)
          values ($1, $2, $3, 'seed', 'legacy_migration', '{}'::jsonb)
          on conflict do nothing`,
-        [session.id, key, ACADEMY_V4_CATALOG_VERSION],
+        [session.id, key, ACADEMY_V5_CATALOG_VERSION],
       );
   }
 
   async function startAttempt(session: Session, itemId: string, key = randomUUID()) {
     const response = await call(session, 'POST', 'attempts', {
       lesson_id: itemId,
-      catalog_version: ACADEMY_V4_CATALOG_VERSION,
+      catalog_version: ACADEMY_V5_CATALOG_VERSION,
       idempotency_key: key,
     });
     expect(response.statusCode, response.body).toBe(201);
@@ -115,7 +115,7 @@ describe('system acceptance: Học viện v4', () => {
            (user_id, lesson_key, lesson_id, catalog_version, completion_method, completed_at,
             ledger_id, policy_version)
          values ($1, 'exam:ch01', 'ch01-exam', $2, 'quiz', now(), $3, 'test')`,
-        [user.id, ACADEMY_V4_CATALOG_VERSION, randomUUID()],
+        [user.id, ACADEMY_V5_CATALOG_VERSION, randomUUID()],
       ),
     ).rejects.toMatchObject({ code: '23514' });
   });
@@ -318,7 +318,7 @@ describe('system acceptance: Học viện v4', () => {
     // The scenario gate of chapters 2-3 stays.
     const gated = await call(user, 'POST', 'attempts', {
       lesson_id: 'ch02-l05',
-      catalog_version: ACADEMY_V4_CATALOG_VERSION,
+      catalog_version: ACADEMY_V5_CATALOG_VERSION,
       idempotency_key: randomUUID(),
     });
     expect(gated.statusCode).toBe(403);

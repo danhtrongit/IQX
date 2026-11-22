@@ -6,7 +6,7 @@ import {
   type AcademyAccessMode,
   type ItemState,
   type SequenceItem,
-} from './content/v4/schema.js';
+} from './content/v5/schema.js';
 
 /**
  * Học viện v4.1 · Cấu hình Học viện theo trưởng nhóm (supplement §1-§3). This file is pure: it knows the shape of a
@@ -43,7 +43,7 @@ export function fullConfigData(content: AcademyContent): AcademyConfigData {
   return { mode: 'free', chapter_ids: allChapterIds(content) };
 }
 
-/** Administrators see all 12 chapters and learn freely, to check the content (spec §1.1). */
+/** Administrators see all 17 chapters and learn freely, to check the content (spec §1.1). */
 export function adminConfig(content: AcademyContent): ResolvedAcademyConfig {
   return { ...fullConfigData(content), source: 'admin', config_id: null };
 }
@@ -72,7 +72,7 @@ export function normalizeChapterIds(
 export interface ProgramChapter {
   /** Fixed id (`ch03`); never changes with the numbering. */
   readonly chapter_id: string;
-  /** Number in the catalog (1..12). Internal: a learner never sees it. */
+  /** Number in the catalog (1..17). Internal: a learner never sees it. */
   readonly chapter: number;
   /** The number the learner sees: 1..k over his chapters (spec §2.1). Computed here, never by a client. */
   readonly display_no: number;

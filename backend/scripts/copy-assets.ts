@@ -2,11 +2,12 @@ import { cp, mkdir, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 // Versioned, server-only assets that tsc does not emit. Academy question banks
-// (questions.vi.private.json) live here and must never be copied into frontend/.
+// (questions.vi.private.json) live here and must never be copied into frontend/. Only the served Academy catalog
+// (content/v5) ships: content/v4 is the frozen base of the v5 importer, never read at runtime.
 const ASSET_DIRECTORIES = [
   'src/modules/analysis/prompts',
   'src/modules/research/prompts',
-  'src/modules/academy/content',
+  'src/modules/academy/content/v5',
   'src/modules/candle-dojo/content',
   'src/modules/quant/v2/registry',
   'src/modules/screener/registry',

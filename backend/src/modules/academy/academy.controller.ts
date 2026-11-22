@@ -93,14 +93,14 @@ export class AcademyController {
   @ApiOperation({
     operationId: 'academyLink',
     summary:
-      'Deep link to the lesson of a metric among the learner’s chapters (the "Học" button): by metric_key, else exact lesson title, else a title starting with "name ·"; lesson_id and locked (sequential mode, not yet its turn). Never an error: found=false answers with the lesson the learner was last on',
+      'Deep link to the lesson of a metric among the learner’s chapters (the "Học" button), optionally for an industry (nganh, unknown codes ignored): by (metric_key, nganh), then Chương 8, then any chapter; else by lesson title (exact or "name ·") in the industry chapter, Chương 8, then every chapter; lesson_id and locked (sequential mode, not yet its turn). Never an error: found=false answers with the lesson the learner was last on',
   })
   @ApiOkResponse({ schema: openApi(linkResponseSchema) })
   link(
     @CurrentUser() user: AuthenticatedUser,
     @Query({ schema: linkQuerySchema }) query: LinkQuery,
   ) {
-    return this.academy.link(user.id, query.metric);
+    return this.academy.link(user.id, query.metric, query.nganh);
   }
 
   @Get('lessons/:lessonId')
