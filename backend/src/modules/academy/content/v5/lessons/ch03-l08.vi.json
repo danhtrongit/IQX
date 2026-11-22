@@ -1,0 +1,215 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l08",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Livestream cho người xem thấy con người thật của bạn, không cắt ghép. Hội nhóm giúp bạn có mặt ở nơi người mới đang đặt câu hỏi. Cả hai đều xây niềm tin rất nhanh nếu làm đúng, và phá niềm tin cũng rất nhanh nếu làm sai.",
+  "lesson_key": "concept:livestream_hoi_nhom",
+  "order": 8,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Hãy bắt đầu khi bạn đã đăng khoảng <b>30 video</b> và quen nói trước camera. Lần đầu nên livestream cùng trưởng nhóm hoặc một đồng nghiệp đã có kinh nghiệm.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Chủ đề cố định",
+              "text": "Ví dụ: “Tổng kết tuần” tối thứ Sáu, “Hỏi đáp người mới” tối Chủ nhật. Giờ cố định giúp người xem tạo thói quen."
+            },
+            {
+              "term": "Thông báo trước",
+              "text": "Đăng thông báo trước 1 ngày trên Facebook và nhóm Zalo, nhờ mọi người gửi câu hỏi trước."
+            },
+            {
+              "term": "Người hỗ trợ",
+              "text": "Một người đọc và chọn bình luận giúp bạn, để bạn tập trung nói."
+            },
+            {
+              "term": "Thiết bị",
+              "text": "Điện thoại đặt cố định trên giá, mạng ổn định, ánh sáng trước mặt, nơi yên tĩnh."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s1",
+      "title": "Khi nào nên bắt đầu livestream"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Phút"
+            },
+            {
+              "label": "Phần"
+            },
+            {
+              "label": "Nội dung"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Chào",
+                "Chào người xem, giới thiệu bản thân và chủ đề hôm nay"
+              ],
+              "group": {
+                "label": "0-3",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Nội dung chính",
+                "Một chủ đề, tối đa 3 ý. Ví dụ: 3 điều xảy ra trên thị trường tuần này"
+              ],
+              "group": {
+                "label": "3-15",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Hỏi đáp",
+                "Trả lời câu hỏi đã gom trước và câu hỏi trên bình luận"
+              ],
+              "group": {
+                "label": "15-27",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Kết",
+                "Tóm tắt, mời vào nhóm Zalo, hẹn lịch buổi sau"
+              ],
+              "group": {
+                "label": "27-30",
+                "span": 1
+              }
+            }
+          ],
+          "type": "table",
+          "variant": "grouped"
+        },
+        {
+          "label": "Khi bị hỏi mã trên livestream",
+          "text": "“Trên livestream mình không khuyến nghị mã cụ thể, vì mỗi người có số vốn và mục tiêu khác nhau. Mình chia sẻ cách mọi người tự đánh giá một cổ phiếu nhé. Ai cần trao đổi riêng thì nhắn mình sau buổi này.”",
+          "tone": "neutral",
+          "type": "quote"
+        }
+      ],
+      "id": "s2",
+      "title": "Kịch bản livestream 30 phút"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Chọn khoảng <b>5 nhóm</b> có nhiều người mới: nhóm đầu tư cho người mới, nhóm cư dân chung cư, nhóm nghề nghiệp của bạn, nhóm phụ huynh, nhóm khởi nghiệp. Đọc kỹ nội quy từng nhóm trước khi đăng.",
+          "type": "paragraph"
+        },
+        {
+          "label": "Quy tắc 9-1",
+          "text": "9 lần giúp đỡ mới có 1 lần nhắc đến bạn. Trả lời câu hỏi, chia sẻ kiến thức nhiều lần trước khi giới thiệu mình làm gì.",
+          "tone": "neutral",
+          "type": "quote"
+        },
+        {
+          "label": "Bình luận không nên",
+          "text": "“Inbox em mở tài khoản phí ưu đãi nhé chị.”",
+          "tone": "bad",
+          "type": "quote"
+        },
+        {
+          "label": "Bình luận nên",
+          "text": "“Chị ơi, nếu khoản này chị có thể cần dùng trong 6 tháng tới thì nên giữ ở tiết kiệm. Nếu là tiền nhàn rỗi, chị có thể tách một phần nhỏ để học đầu tư trước. Em có bài hướng dẫn cho người mới, chị cần thì em gửi nhé.”",
+          "tone": "good",
+          "type": "quote"
+        },
+        {
+          "text": "Bình luận tốt trả lời đúng câu hỏi, cho thấy bạn hiểu chuyện và để người hỏi tự chọn có liên hệ bạn hay không. Không nhắn tin riêng hàng loạt cho thành viên nhóm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s3",
+      "title": "Hội nhóm: có mặt ở nơi người mới đặt câu hỏi"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 2,
+          "debrief": "<b>Cách tốt nhất: từ chối khuyến nghị, nhắc nguyên tắc, mời trao đổi riêng.</b> Khuyên vào 500 triệu trước hàng trăm người xem là rủi ro rất lớn cho người hỏi và cho uy tín của bạn. Lờ đi khiến người xem thấy bạn né tránh. Trả lời có nguyên tắc ngay trên sóng cho tất cả người xem thấy bạn là người có trách nhiệm.",
+          "options": [
+            "Nói “Mã X đang đẹp, anh vào được đấy”",
+            "Lờ đi câu hỏi, coi như không thấy",
+            "Trả lời rằng không khuyến nghị mã trên livestream, nhắc nguyên tắc không dồn hết vốn vào một mã, và mời anh nhắn riêng để hiểu nhu cầu"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Đang livestream, một người xem bình luận: “Mai mã X có lên không? Anh định vào 500 triệu luôn.”"
+          ],
+          "title": "Câu hỏi khó trên livestream",
+          "type": "scenario"
+        },
+        {
+          "id": "lv1",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Chọn một chủ đề, viết theo khung 30 phút: lời chào, 3 ý chính, 5 câu hỏi dự kiến, lời kết và lịch buổi sau."
+          ],
+          "title": "Bài tự làm: kịch bản livestream đầu tiên",
+          "type": "workpad"
+        },
+        {
+          "id": "lv2",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Tìm 3 câu hỏi của người mới trong các hội nhóm. Viết câu trả lời theo mẫu “bình luận nên”, không có lời mời mở tài khoản."
+          ],
+          "title": "Bài tự làm: 3 bình luận giúp đỡ",
+          "type": "workpad"
+        },
+        {
+          "id": "lv1a",
+          "items": [
+            {
+              "id": "0",
+              "text": "Chọn 5 hội nhóm, đọc nội quy từng nhóm"
+            },
+            {
+              "id": "1",
+              "text": "Viết 9 bình luận giúp đỡ trước khi nhắc đến mình"
+            },
+            {
+              "id": "2",
+              "text": "Xem 2 buổi livestream của trưởng nhóm hoặc đồng nghiệp, ghi lại điều học được"
+            },
+            {
+              "id": "3",
+              "text": "Lên lịch livestream đầu tiên cùng một người hỗ trợ"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s4",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Bắt đầu livestream sau khoảng <b>30 video</b>, có <b>giờ cố định</b> và người hỗ trợ.",
+    "Kịch bản <b>30 phút</b>: chào, nội dung chính, hỏi đáp, kết.",
+    "Bị hỏi mã trên sóng: <b>không khuyến nghị</b>, nhắc nguyên tắc, mời nhắn riêng.",
+    "Hội nhóm theo quy tắc <b>9-1</b>: giúp 9 lần mới nhắc đến mình 1 lần."
+  ],
+  "title": "Livestream và hội nhóm"
+}

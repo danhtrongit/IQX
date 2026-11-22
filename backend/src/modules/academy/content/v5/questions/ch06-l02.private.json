@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch06-l02",
+  "questions": [
+    {
+      "correct_option_id": "e64a40fe83",
+      "id": "ch06-l02-q01",
+      "options": [
+        {
+          "id": "e64a40fe83",
+          "text": "SMA nhanh cắt lên trên SMA chậm"
+        },
+        {
+          "id": "78c311a9b6",
+          "text": "SMA chậm cắt lên trên SMA nhanh"
+        },
+        {
+          "id": "4b36991f16",
+          "text": "Hai đường chạy song song với nhau"
+        }
+      ],
+      "prompt": "Tín hiệu Mua của MA Cross xuất hiện khi nào?"
+    },
+    {
+      "correct_option_id": "7161c1ae36",
+      "id": "ch06-l02-q02",
+      "options": [
+        {
+          "id": "7161c1ae36",
+          "text": "MA 50 cắt lên MA 200"
+        },
+        {
+          "id": "d59d96e31d",
+          "text": "MA 20 cắt xuống MA 50"
+        },
+        {
+          "id": "91f702ea16",
+          "text": "Giá đóng cửa chạm MA 200"
+        }
+      ],
+      "prompt": "Giao cắt vàng (Golden Cross) là trường hợp nào?"
+    },
+    {
+      "correct_option_id": "767799453f",
+      "id": "ch06-l02-q03",
+      "options": [
+        {
+          "id": "767799453f",
+          "text": "Tại phiên hai đường đổi vị trí cho nhau"
+        },
+        {
+          "id": "2e7e8b03d2",
+          "text": "Ở mọi phiên đường nhanh nằm trên"
+        },
+        {
+          "id": "4114518874",
+          "text": "Ở mọi phiên giá đóng cửa tăng"
+        }
+      ],
+      "prompt": "Giao cắt xảy ra khi nào?"
+    },
+    {
+      "correct_option_id": "3c732269ca",
+      "id": "ch06-l02-q04",
+      "options": [
+        {
+          "id": "3c732269ca",
+          "text": "Tín hiệu luôn đến sau đáy và đỉnh"
+        },
+        {
+          "id": "a4badf551e",
+          "text": "Chỉ dùng được cho cổ phiếu ngân hàng"
+        },
+        {
+          "id": "ffaa9d65c3",
+          "text": "Không có đường nào để so sánh"
+        }
+      ],
+      "prompt": "Hạn chế lớn nhất của MA Cross là gì?"
+    },
+    {
+      "correct_option_id": "262ab212db",
+      "id": "ch06-l02-q05",
+      "options": [
+        {
+          "id": "262ab212db",
+          "text": "Thị trường đi ngang"
+        },
+        {
+          "id": "fd8d8f2921",
+          "text": "Xu hướng tăng rõ ràng"
+        },
+        {
+          "id": "d4f470e904",
+          "text": "Xu hướng giảm rõ ràng"
+        }
+      ],
+      "prompt": "MA Cross dễ cho tín hiệu sai trong giai đoạn nào?"
+    }
+  ],
+  "salt": "2e6917edcde3be2215c8ec94b4af5f36539764b96795d19c952d06e7e2e02c45"
+}

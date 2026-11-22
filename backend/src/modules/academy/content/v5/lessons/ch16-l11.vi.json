@@ -1,0 +1,380 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l11-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Nợ vay − tiền"
+          ],
+          "t": "Nợ ròng",
+          "tone": "neg",
+          "v": "15.424 tỷ"
+        },
+        {
+          "notes": [
+            "EBIT + khấu hao"
+          ],
+          "t": "EBITDA 4 quý",
+          "tone": "p1",
+          "v": "4.417 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Net Debt / EBITDA",
+          "tone": "warn",
+          "v": "3,49 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l11-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Công ty điện ít nợ",
+          "tone": "pos",
+          "value": 1.5
+        },
+        {
+          "label": "Công ty điện điển hình",
+          "tone": "p1",
+          "value": 3.5
+        },
+        {
+          "label": "Dự án mới, nợ cao",
+          "tone": "neg",
+          "value": 6
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Net Debt / EBITDA tham khảo · số minh họa",
+      "unit": " lần"
+    },
+    "c16l11-rep": {
+      "alt": "Net Debt / EBITDA: 3,49 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Nợ ròng / EBITDA",
+            "v": [
+              3.486,
+              3.748,
+              3.9,
+              4.045,
+              4.064,
+              3.925,
+              3.697,
+              3.492
+            ]
+          }
+        ],
+        "name": "Net Debt / EBITDA",
+        "sub": {
+          "series": [
+            {
+              "name": "Nợ ròng",
+              "v": [
+                12202.139,
+                12488.602,
+                12753.395,
+                13218.898,
+                13860.301,
+                14303.059,
+                14749.208,
+                15423.682
+              ]
+            },
+            {
+              "name": "EBITDA 4 quý",
+              "v": [
+                3499.834,
+                3332.239,
+                3270.464,
+                3267.649,
+                3410.58,
+                3643.839,
+                3989.645,
+                4416.824
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l11",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Với công ty điện, EBITDA khá ổn định và là nguồn trả nợ chính. Net Debt / EBITDA cho biết cần bao nhiêu năm EBITDA để trả hết nợ ròng, chỉ tiêu mà ngân hàng cho vay dự án thường theo dõi.",
+  "lesson_key": "fundamental:net_debt_ebitda-dien",
+  "order": 11,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l11-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>nợ vay trừ tiền và đầu tư ngắn hạn</b> chia <b>EBITDA 4 quý</b>. Cách tính giống bài Net Debt / EBITDA ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l11-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA ổn định nên công ty điện có thể chịu 3 đến 4 lần.",
+              "title": "Mức chịu được cao hơn"
+            },
+            {
+              "text": "Năm khô hạn, EBITDA thủy điện giảm, chỉ tiêu tăng.",
+              "title": "Thủy văn ảnh hưởng mẫu số"
+            },
+            {
+              "text": "Nợ tăng trước, EBITDA tăng sau khi nhà máy vận hành.",
+              "title": "Dự án mới"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở điện khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l11-rep",
+          "title": "Net Debt / EBITDA",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ ròng chia EBITDA 4 quý, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Nợ ròng và EBITDA 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "EBITDA tăng nhanh hơn nợ ròng làm đường đi xuống.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 3,5 lần với công ty điện. Mức tham khảo.",
+              "title": "Khả năng trả nợ tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 5 lần, hoặc tăng khi không có dự án mới. EBITDA khó đủ trả nợ đúng hạn.",
+              "title": "Áp lực nợ",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với công ty đang xây nhà máy, chỉ tiêu tăng tạm thời là bình thường. Cần xem EBITDA có tăng khi nhà máy vận hành không.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng khi xây, giảm khi vận hành.",
+              "title": "Theo dõi chu kỳ dự án"
+            },
+            {
+              "text": "Tính với EBITDA năm thủy văn kém.",
+              "title": "Kiểm tra năm khô hạn"
+            },
+            {
+              "text": "Khả năng trả lãi và trả gốc.",
+              "title": "Đọc cùng Interest Coverage"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Nợ ròng"
+            },
+            {
+              "label": "EBITDA 4 quý"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "12.202",
+                "3.500",
+                "3,49 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "13.219",
+                "3.268",
+                "4,04 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "15.424",
+                "4.417",
+                "3,49 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Nợ ròng tăng 26% trong hai năm khi xây nhà máy mới. Tỷ lệ lên 4,06 lần rồi giảm về 3,49 lần nhờ EBITDA tăng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty điện chịu được mức cao hơn bán lẻ.",
+              "title": "Áp mức của ngành khác"
+            },
+            {
+              "text": "Làm chỉ tiêu trông an toàn hơn.",
+              "title": "Dùng EBITDA năm nhiều mưa"
+            },
+            {
+              "text": "Nợ đã tăng nhưng EBITDA chưa tăng.",
+              "title": "Bỏ qua dự án đang xây"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA phụ thuộc thủy văn. Kiểm tra với năm khô hạn.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "EBITDA phụ thuộc mức huy động.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "EBITDA ổn định khi có giá bán cố định.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "<b>Net Debt / EBITDA</b> = (nợ vay − tiền) ÷ EBITDA 4 quý.",
+    "Công ty điện chịu được mức <b>cao hơn</b> nhờ EBITDA ổn định.",
+    "Mức tham khảo: <b>dưới khoảng 3,5 lần</b>.",
+    "Tăng tạm thời khi <b>xây nhà máy mới</b>."
+  ],
+  "title": "Net Debt / EBITDA · ở điện"
+}

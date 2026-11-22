@@ -1,0 +1,93 @@
+{
+  "format": "iqx-academy-retired-v3",
+  "lessons": [
+    {
+      "lesson_key": "concept:hop_luu",
+      "name": "Hợp lưu"
+    },
+    {
+      "lesson_key": "guide:ch02-l01",
+      "name": "Bắt đầu với Backtest"
+    },
+    {
+      "lesson_key": "guide:ch02-l02",
+      "name": "Thiết lập điều kiện Mua"
+    },
+    {
+      "lesson_key": "guide:ch02-l03",
+      "name": "Thiết lập điều kiện Bán"
+    },
+    {
+      "lesson_key": "guide:ch02-l04",
+      "name": "Chọn giả định và chạy kiểm thử"
+    },
+    {
+      "lesson_key": "guide:ch02-l05",
+      "name": "Đọc kết quả và lịch sử giao dịch"
+    },
+    {
+      "lesson_key": "guide:ch02-l06",
+      "name": "Điều chỉnh, so sánh và lưu kết quả"
+    },
+    {
+      "lesson_key": "guide:ch04-l01",
+      "name": "Bắt đầu với Bộ lọc"
+    },
+    {
+      "lesson_key": "guide:ch04-l02",
+      "name": "Thiết lập điều kiện lọc"
+    },
+    {
+      "lesson_key": "guide:ch04-l03",
+      "name": "Chọn kỳ tính cho từng chỉ tiêu"
+    },
+    {
+      "lesson_key": "guide:ch04-l04",
+      "name": "Đọc và kiểm tra kết quả"
+    },
+    {
+      "lesson_key": "guide:ch04-l05",
+      "name": "Điều chỉnh và lưu bộ lọc"
+    },
+    {
+      "lesson_key": "guide:ch04-l06",
+      "name": "Lưu và áp dụng danh mục cho Bot"
+    },
+    {
+      "lesson_key": "fundamental:fcf_yoy",
+      "name": "FCF Growth YoY"
+    },
+    {
+      "lesson_key": "fundamental:accrual",
+      "name": "Accrual Ratio"
+    },
+    {
+      "lesson_key": "fundamental:working_cap_turnover",
+      "name": "Working Capital Turnover"
+    },
+    {
+      "lesson_key": "fundamental:dividend_yield",
+      "name": "Dividend Yield"
+    },
+    {
+      "lesson_key": "fundamental:payout_ratio",
+      "name": "Payout Ratio"
+    },
+    {
+      "lesson_key": "fundamental:dividend_cagr3",
+      "name": "Dividend Growth"
+    },
+    {
+      "lesson_key": "fundamental:share_count_yoy",
+      "name": "Share Count Growth"
+    },
+    {
+      "lesson_key": "fundamental:buyback_yield",
+      "name": "Buyback Yield"
+    },
+    {
+      "lesson_key": "fundamental:shareholder_yield",
+      "name": "Shareholder Yield"
+    }
+  ]
+}

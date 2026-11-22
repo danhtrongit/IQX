@@ -1,0 +1,208 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Hai người cùng làm SACO, cùng một công ty, cùng một mức phí. Khách chọn ai? Khách chọn người họ biết, tin và nhớ tới đầu tiên. Đó chính là thương hiệu cá nhân.",
+  "lesson_key": "concept:vi_sao_thuong_hieu",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Thương hiệu cá nhân là <b>điều người khác nghĩ và nói về bạn khi bạn không có mặt</b>. Ví dụ: “À, Lan bên chứng khoán ấy, bạn đó giải thích dễ hiểu lắm, hỏi gì cũng trả lời.”",
+          "type": "paragraph"
+        },
+        {
+          "label": "Câu quan trọng nhất",
+          "text": "Thương hiệu cá nhân không phải để nổi tiếng. Mà để khi khách hàng cần, họ nhớ tới bạn đầu tiên.",
+          "tone": "good",
+          "type": "quote"
+        },
+        {
+          "text": "Bạn không cần hàng chục nghìn người theo dõi. <b>100 người thật sự tin bạn</b> có giá trị hơn 100.000 lượt theo dõi không quen biết.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Thương hiệu cá nhân là gì"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khách đã biết bạn từ trước nên dễ mở lời, dễ tin hơn khi bạn tư vấn.",
+              "title": "Niềm tin",
+              "title_tone": "info"
+            },
+            {
+              "text": "Giữa hàng trăm người làm môi giới, khách cần một lý do để nhớ riêng bạn.",
+              "title": "Sự khác biệt",
+              "title_tone": "pos"
+            },
+            {
+              "text": "Khách chọn bạn vì bạn mang lại gì, không phải vì ai rẻ hơn. Đây là cách trả lời “chỗ khác 0 đồng” bền vững nhất.",
+              "title": "Bán bằng giá trị, không bằng giá",
+              "title_tone": "warn"
+            },
+            {
+              "text": "Bạn được biết đến như một người làm nghề tử tế, không phải “người hay rủ mở tài khoản”.",
+              "title": "Sự tự hào",
+              "title_tone": "violet"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Bốn lý do cần xây thương hiệu"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Thương hiệu được xây ở hai nơi cùng lúc. Chỉ làm một nơi thì thương hiệu bị “lệch”.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": ""
+            },
+            {
+              "label": "Offline"
+            },
+            {
+              "highlight": true,
+              "label": "Online"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Ở đâu",
+                "Gặp mặt, câu lạc bộ, sự kiện, hội thảo",
+                "Facebook, Zalo, TikTok, hội nhóm"
+              ]
+            },
+            {
+              "cells": [
+                "Mạnh ở",
+                "Tạo niềm tin sâu, nhanh",
+                "Tiếp cận nhiều người, mọi lúc"
+              ]
+            },
+            {
+              "cells": [
+                "Yếu ở",
+                "Mỗi lần chỉ gặp được ít người",
+                "Niềm tin xây chậm hơn"
+              ]
+            },
+            {
+              "cells": [
+                "Kết hợp",
+                {
+                  "colspan": 2,
+                  "highlight": true,
+                  "text": "Gặp offline xong, khách lên mạng xem bạn đăng gì. Xem online lâu ngày, khách muốn gặp bạn trực tiếp."
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s3",
+      "title": "Kết hợp online và offline"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 4,
+          "items": [
+            {
+              "eyebrow": "VISIBILITY",
+              "text": "Xuất hiện liên tục, đều đặn, kể cả lúc không bán gì.",
+              "title": "Xuất hiện"
+            },
+            {
+              "eyebrow": "VALUE",
+              "text": "Mỗi lần xuất hiện, người xem nhận được điều có ích.",
+              "title": "Giá trị"
+            },
+            {
+              "eyebrow": "CONSISTENCY",
+              "text": "Cùng một hình ảnh, cùng một giọng nói, cùng một chủ đề.",
+              "title": "Nhất quán"
+            },
+            {
+              "eyebrow": "AUTHENTICITY",
+              "text": "Là chính mình, không “sống ảo”, không giả làm chuyên gia.",
+              "title": "Thật"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Nói gọn lại là ba chữ <b>Đúng, Đủ, Đều</b>: làm đúng cách, làm đủ số lượng và làm đều mỗi ngày.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Công thức thương hiệu bền"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: bắt đầu ngay bằng hành trình thật.</b> Người mới có một lợi thế: hiểu rất rõ người mới đang thấy khó ở đâu. Chia sẻ “hôm nay mình học được gì” vừa thật, vừa có ích cho người đọc. Đợi giỏi mới làm thì mất một năm xuất hiện. Dựng hình ảnh giàu có giả tạo sẽ thu hút sai người và mất niềm tin khi bị phát hiện.",
+          "options": [
+            "Đợi 1 năm, khi có nhiều khách rồi mới bắt đầu đăng bài",
+            "Bắt đầu ngay bằng hành trình thật: chia sẻ điều mình đang học mỗi ngày, giải thích lại cho người mới dễ hiểu",
+            "Đăng ảnh xe sang, đồng hồ đẹp cho giống người thành công"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Nam mới làm SACO được 2 tuần, chưa có khách, chưa có kết quả gì. Nam nghĩ: “Mình chưa có thành tích, xây thương hiệu làm gì, đợi giỏi rồi tính.”"
+          ],
+          "title": "Mới vào nghề, chưa có gì để khoe",
+          "type": "scenario"
+        },
+        {
+          "id": "br1",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Điền vào mẫu: “Tôi là ___, SACO tại DNSE. Tôi giúp ___ (ai) làm được ___ (điều gì), bằng cách ___ (điểm khác biệt của bạn).” Ví dụ: “Tôi giúp dân văn phòng bận rộn bắt đầu đầu tư từ số vốn nhỏ, bằng cách giải thích mọi thứ thật đơn giản trong 5 phút mỗi sáng.”"
+          ],
+          "title": "Bài tự làm: câu định vị của bạn",
+          "type": "workpad"
+        },
+        {
+          "id": "br1b",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Bạn muốn người khác nhớ đến bạn bằng 3 từ nào? Ví dụ: dễ hiểu, tận tâm, kỷ luật. Mọi bài đăng và mọi lần gặp mặt sau này đều phải thể hiện được 3 từ đó."
+          ],
+          "title": "Chọn 3 từ khóa",
+          "type": "workpad"
+        }
+      ],
+      "id": "s5",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Thương hiệu cá nhân là <b>điều người khác nói về bạn</b> khi bạn vắng mặt.",
+    "Mục tiêu không phải nổi tiếng, mà là <b>khi khách cần, họ nhớ tới bạn đầu tiên</b>.",
+    "Xây cả <b>online và offline</b>, hai nơi bổ trợ cho nhau.",
+    "Công thức: <b>Xuất hiện, Giá trị, Nhất quán, Thật</b>. Làm Đúng, Đủ, Đều."
+  ],
+  "title": "Vì sao SACO cần thương hiệu cá nhân"
+}

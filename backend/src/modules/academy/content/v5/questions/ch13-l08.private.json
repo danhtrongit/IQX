@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l08",
+  "questions": [
+    {
+      "correct_option_id": "1a7f54a660",
+      "id": "ch13-l08-q01",
+      "options": [
+        {
+          "id": "1a7f54a660",
+          "text": "Quỹ đất và dự án đang xây để bán"
+        },
+        {
+          "id": "0fac8a2463",
+          "text": "Vật liệu văn phòng"
+        },
+        {
+          "id": "ea4f4f57ca",
+          "text": "Chứng khoán kinh doanh"
+        }
+      ],
+      "prompt": "Hàng tồn kho của công ty bất động sản chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "4cccc97162",
+      "id": "ch13-l08-q02",
+      "options": [
+        {
+          "id": "4cccc97162",
+          "text": "Tổng tài sản"
+        },
+        {
+          "id": "b801cc46f5",
+          "text": "Vốn chủ sở hữu"
+        },
+        {
+          "id": "8967dcb296",
+          "text": "Doanh thu thuần"
+        }
+      ],
+      "prompt": "Mẫu số của chỉ tiêu là gì?"
+    },
+    {
+      "correct_option_id": "3daa5428c5",
+      "id": "ch13-l08-q03",
+      "options": [
+        {
+          "id": "3daa5428c5",
+          "text": "Không, chi tiết nằm ở thuyết minh"
+        },
+        {
+          "id": "77f957219b",
+          "text": "Có, bảng cân đối ghi từng dự án"
+        },
+        {
+          "id": "e9c3804a18",
+          "text": "Có, báo cáo kết quả kinh doanh ghi từng dự án"
+        }
+      ],
+      "prompt": "Có tách được tồn kho theo từng dự án từ 3 báo cáo tài chính không?"
+    },
+    {
+      "correct_option_id": "c4ab524b00",
+      "id": "ch13-l08-q04",
+      "options": [
+        {
+          "id": "c4ab524b00",
+          "text": "Hàng đã bán, chờ bàn giao"
+        },
+        {
+          "id": "ad0546f550",
+          "text": "Hàng chưa bán được"
+        },
+        {
+          "id": "03be5fa777",
+          "text": "Công ty đang lỗ nặng"
+        }
+      ],
+      "prompt": "Tồn kho lớn và người mua trả tiền trước lớn thường cho thấy gì?"
+    },
+    {
+      "chart_id": "c13l8-rep",
+      "correct_option_id": "80008b5af2",
+      "id": "ch13-l08-q05",
+      "options": [
+        {
+          "id": "80008b5af2",
+          "text": "Hàng tồn kho và tổng tài sản cuối quý"
+        },
+        {
+          "id": "fc2aa131eb",
+          "text": "Doanh thu và giá vốn 4 quý"
+        },
+        {
+          "id": "38d3db523a",
+          "text": "Nợ vay và vốn chủ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "86d2798a2681e62285a889233e9822bea09c31999c0b8a5e0d77494f1bea22b3"
+}

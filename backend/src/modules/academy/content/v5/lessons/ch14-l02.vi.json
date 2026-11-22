@@ -1,0 +1,426 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l2-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Q2/26"
+          ],
+          "t": "Lợi nhuận gộp quý",
+          "tone": "pos",
+          "v": "2.371 tỷ"
+        },
+        {
+          "notes": [
+            "Q2/26"
+          ],
+          "t": "Doanh thu thuần quý",
+          "tone": "p1",
+          "v": "19.215 tỷ"
+        },
+        {
+          "notes": [
+            "Không cộng 4 quý"
+          ],
+          "t": "Biên gộp quý",
+          "tone": "warn",
+          "v": "12,3%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l2-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Giá dầu tăng mạnh trong quý",
+          "tone": "pos",
+          "value": 14
+        },
+        {
+          "label": "Giá dầu đi ngang",
+          "tone": "p1",
+          "value": 10
+        },
+        {
+          "label": "Giá dầu giảm mạnh trong quý",
+          "tone": "neg",
+          "value": 5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Biên gộp một quý khi giá dầu thay đổi · số minh họa",
+      "unit": "%"
+    },
+    "c14l2-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Khai thác dầu khí",
+          "tone": "pos",
+          "value": 40
+        },
+        {
+          "label": "Vận chuyển, phân phối khí",
+          "tone": "p1",
+          "value": 18
+        },
+        {
+          "label": "Lọc dầu",
+          "tone": "warn",
+          "value": 6
+        },
+        {
+          "label": "Phân phối xăng dầu",
+          "tone": "warn",
+          "value": 7
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Biên gộp tham khảo theo mảng · số minh họa",
+      "unit": "%"
+    },
+    "c14l2-rep": {
+      "alt": "Biên lợi nhuận gộp: 12,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Biên gộp quý",
+            "v": [
+              12.51,
+              15.498,
+              14.901,
+              13.519,
+              11.282,
+              8.49,
+              8.691,
+              12.338
+            ]
+          }
+        ],
+        "name": "Biên lợi nhuận gộp",
+        "sub": {
+          "series": [
+            {
+              "name": "Giá vốn quý",
+              "v": [
+                12394.022,
+                12595.225,
+                13470.895,
+                14256.51,
+                16021.235,
+                16084.445,
+                15901.403,
+                16843.95
+              ]
+            },
+            {
+              "name": "Lợi nhuận gộp quý",
+              "v": [
+                1772.233,
+                2310.091,
+                2358.722,
+                2228.665,
+                2037.45,
+                1492.25,
+                1513.45,
+                2370.77
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên gộp của doanh nghiệp dầu khí có thể đổi vài điểm % chỉ trong một quý khi giá dầu đổi chiều. Vì vậy ở chương này, biên gộp được tính <b>từng quý</b>, không cộng 4 quý, để thấy rõ các cú dao động đó.",
+  "lesson_key": "fundamental:gross_margin-dk",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l2-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Biên gộp bằng <b>lợi nhuận gộp</b> chia <b>doanh thu thuần</b>. Ở dầu khí, Dashboard tính <b>theo từng quý</b>. Ở chế độ Năm vẫn tính theo cả năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp mua dầu thô hoặc xăng dầu, giữ trong kho vài tuần rồi mới bán. Giá thay đổi trong thời gian đó tạo ra lãi hoặc lỗ do giá trị tồn kho.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c14l2-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Hàng mua giá thấp được bán giá cao. Biên gộp phình ra tạm thời.",
+              "title": "Giá tăng"
+            },
+            {
+              "text": "Hàng mua giá cao phải bán giá thấp, có thể phải lập dự phòng giảm giá tồn kho. Biên gộp co lại.",
+              "title": "Giá giảm"
+            },
+            {
+              "text": "Phần lãi lỗ do tồn kho đến rồi đi theo giá dầu, không phản ánh hiệu quả lâu dài.",
+              "title": "Không lặp lại"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở dầu khí khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l2-rep",
+          "title": "Biên lợi nhuận gộp",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp từng quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng giá vốn và lợi nhuận gộp của quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phần lợi nhuận gộp trên đỉnh cột lúc dày lúc mỏng theo giá dầu.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên gộp dao động trong khoảng hẹp quanh mức bình quân nhiều năm. Mức nền phụ thuộc mảng kinh doanh.",
+              "title": "Biên ổn định quanh mức trung bình",
+              "tone": "pos"
+            },
+            {
+              "text": "Biên gộp thấp hơn mức bình quân nhiều quý liền. Có thể do cạnh tranh hoặc chi phí đầu vào tăng bền, không chỉ do giá dầu.",
+              "title": "Biên co lại kéo dài",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Nên so biên gộp quý với <b>mức bình quân nhiều năm</b> của chính doanh nghiệp. Một quý thấp sau khi giá dầu giảm mạnh chưa phải tín hiệu xấu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c14l2-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Quý biên gộp tăng vọt khi giá dầu tăng có thể chứa lãi do tồn kho.",
+              "title": "Tách lãi lỗ tồn kho"
+            },
+            {
+              "text": "Dùng chế độ Năm để thấy mức bình quân của doanh nghiệp.",
+              "title": "So với mức bình quân"
+            },
+            {
+              "text": "Giá giảm mạnh thường đi kèm dự phòng giảm giá tồn kho.",
+              "title": "Đọc cùng dự phòng tồn kho"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu, biên gộp từng quý.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Lợi nhuận gộp"
+            },
+            {
+              "label": "Biên gộp"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q4/24",
+                "14.905",
+                "2.310",
+                "15,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "16.485",
+                "2.229",
+                "13,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "17.577",
+                "1.492",
+                "8,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "19.215",
+                "2.371",
+                "12,3%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Biên gộp giảm từ 15,5% xuống 8,5% rồi hồi lên 12,3%. Biên gộp năm 2025 là 11,9%, gần mức bình quân nhiều năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cộng 4 quý làm mờ các cú dao động cần thấy.",
+              "title": "Cộng 4 quý cho dầu khí"
+            },
+            {
+              "text": "Biên thấp một quý do giá dầu giảm chưa phải xu hướng.",
+              "title": "Kết luận từ một quý"
+            },
+            {
+              "text": "Biên gộp khai thác và phân phối khác nhau rất xa.",
+              "title": "So mảng khác nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên cao, đi sát giá dầu. Dịch vụ có biên thấp hơn và đi theo hợp đồng.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Biên ổn định hơn nhờ phí vận chuyển và hợp đồng dài hạn.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Biên mỏng, lãi lỗ tồn kho làm biên quý dao động mạnh nhất.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>Biên gộp quý</b> = lợi nhuận gộp ÷ doanh thu thuần của quý.",
+    "Ở dầu khí tính <b>từng quý</b> để thấy dao động.",
+    "Giá dầu đổi chiều tạo <b>lãi lỗ do tồn kho</b>, không lặp lại.",
+    "So với <b>mức bình quân nhiều năm</b> của chính doanh nghiệp."
+  ],
+  "title": "Biên lợi nhuận gộp · ở dầu khí"
+}

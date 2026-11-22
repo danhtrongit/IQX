@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch06-l04",
+  "questions": [
+    {
+      "correct_option_id": "69adc264bb",
+      "id": "ch06-l04-q01",
+      "options": [
+        {
+          "id": "69adc264bb",
+          "text": "Giá cao nhất của 20 phiên trước"
+        },
+        {
+          "id": "b0a3efed62",
+          "text": "Giá đóng cửa trung bình của 20 phiên"
+        },
+        {
+          "id": "396d043c01",
+          "text": "Giá mở cửa của phiên đang xét"
+        }
+      ],
+      "prompt": "Biên trên của kênh Donchian 20 là gì?"
+    },
+    {
+      "correct_option_id": "2a632dc292",
+      "id": "ch06-l04-q02",
+      "options": [
+        {
+          "id": "2a632dc292",
+          "text": "Để giá đóng cửa có thể vượt biên trên"
+        },
+        {
+          "id": "31b384bfb1",
+          "text": "Để kênh luôn rộng hơn"
+        },
+        {
+          "id": "c97e9d697f",
+          "text": "Vì phiên đang xét không có khối lượng"
+        }
+      ],
+      "prompt": "Vì sao kênh Donchian không tính phiên đang xét?"
+    },
+    {
+      "correct_option_id": "08151edcd9",
+      "id": "ch06-l04-q03",
+      "options": [
+        {
+          "id": "08151edcd9",
+          "text": "Giá đóng cửa vượt lên trên biên trên"
+        },
+        {
+          "id": "76a535ad46",
+          "text": "Giá chạm biên dưới trong phiên"
+        },
+        {
+          "id": "b22439258f",
+          "text": "Biên trên và biên dưới bằng nhau"
+        }
+      ],
+      "prompt": "Theo cách sử dụng trong bài, khi nào có tín hiệu Mua?"
+    },
+    {
+      "correct_option_id": "02a0eeb519",
+      "id": "ch06-l04-q04",
+      "options": [
+        {
+          "id": "02a0eeb519",
+          "text": "Giá đang tích lũy trong biên độ hẹp"
+        },
+        {
+          "id": "161beb7caa",
+          "text": "Giá đang tăng rất mạnh"
+        },
+        {
+          "id": "32456293db",
+          "text": "Thị trường tạm ngừng giao dịch"
+        }
+      ],
+      "prompt": "Kênh Donchian hẹp lại trong thời gian dài thường cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "79bacb80a7",
+      "id": "ch06-l04-q05",
+      "options": [
+        {
+          "id": "79bacb80a7",
+          "text": "Giá vượt kênh rồi nhanh chóng quay lại bên trong"
+        },
+        {
+          "id": "c1ca99152b",
+          "text": "Giá đóng cửa đúng bằng biên trên"
+        },
+        {
+          "id": "353d20d352",
+          "text": "Kênh mở rộng khi giá tăng mạnh"
+        }
+      ],
+      "prompt": "Bứt phá giả là gì?"
+    }
+  ],
+  "salt": "42c96cc5ee036d81743b2695c78220b45d651c16e17a236c2953d9c7a7925ed9"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l08",
+  "questions": [
+    {
+      "correct_option_id": "57b1815465",
+      "id": "ch12-l08-q01",
+      "options": [
+        {
+          "id": "57b1815465",
+          "text": "Dự phòng nghiệp vụ chia vốn chủ sở hữu"
+        },
+        {
+          "id": "cfda61aebd",
+          "text": "Vốn chủ sở hữu chia tổng tài sản"
+        },
+        {
+          "id": "dbe81e629e",
+          "text": "Bồi thường thuần chia vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Chỉ tiêu dự phòng nghiệp vụ / VCSH được tính thế nào?"
+    },
+    {
+      "correct_option_id": "3da7dd85a8",
+      "id": "ch12-l08-q02",
+      "options": [
+        {
+          "id": "3da7dd85a8",
+          "text": "Phần nợ phải trả"
+        },
+        {
+          "id": "c25f19f93e",
+          "text": "Phần vốn chủ sở hữu"
+        },
+        {
+          "id": "1af6223fab",
+          "text": "Phần tài sản ngắn hạn"
+        }
+      ],
+      "prompt": "Dự phòng nghiệp vụ nằm ở đâu trên bảng cân đối kế toán?"
+    },
+    {
+      "correct_option_id": "4a57d82698",
+      "id": "ch12-l08-q03",
+      "options": [
+        {
+          "id": "4a57d82698",
+          "text": "Phần phí đã thu nhưng thời gian bảo hiểm chưa hết"
+        },
+        {
+          "id": "3c766836c8",
+          "text": "Phần phí đã chuyển cho nhà tái bảo hiểm"
+        },
+        {
+          "id": "21fc03cb06",
+          "text": "Phần lãi đầu tư chưa nhận được"
+        }
+      ],
+      "prompt": "Dự phòng phí là gì?"
+    },
+    {
+      "correct_option_id": "ab3f1fa1ef",
+      "id": "ch12-l08-q04",
+      "options": [
+        {
+          "id": "ab3f1fa1ef",
+          "text": "Có dự phòng toán học rất lớn"
+        },
+        {
+          "id": "99b43fcd71",
+          "text": "Vốn chủ sở hữu luôn âm"
+        },
+        {
+          "id": "fff2da3f1b",
+          "text": "Không có dự phòng bồi thường"
+        }
+      ],
+      "prompt": "Vì sao chỉ tiêu này ở công ty nhân thọ thường cao hơn nhiều?"
+    },
+    {
+      "chart_id": "c12l8-rep",
+      "correct_option_id": "5bd6d48115",
+      "id": "ch12-l08-q05",
+      "options": [
+        {
+          "id": "5bd6d48115",
+          "text": "Dự phòng nghiệp vụ và vốn chủ sở hữu"
+        },
+        {
+          "id": "54e3d34a18",
+          "text": "Phí gốc và phí thuần"
+        },
+        {
+          "id": "c011c24964",
+          "text": "Dự phòng phí và dự phòng bồi thường"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, hai cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "06e10c3caaa41c6a159441b8463f4ba093089a83ed4690dafcfc50ff89790285"
+}

@@ -1,0 +1,532 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l11-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "Vốn hoá",
+          "tone": "p1",
+          "v": "Giá × số CP"
+        },
+        {
+          "notes": [
+            "Quý đã công bố"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "warn",
+          "v": "9.892 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "P/B",
+          "tone": "pos",
+          "v": "1,34 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c12l11-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "ROE 8%",
+          "tone": "warn",
+          "value": 0.9
+        },
+        {
+          "label": "ROE 12%",
+          "tone": "p1",
+          "value": 1.4
+        },
+        {
+          "label": "ROE 16%",
+          "tone": "pos",
+          "value": 1.9
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "P/B hợp lý theo ROE · số minh họa",
+      "unit": " lần"
+    },
+    "c12l11-rep": {
+      "alt": "P/B: 1,34 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "P/B",
+            "v": [
+              1.533,
+              1.528,
+              1.485,
+              1.514,
+              1.566,
+              1.567,
+              1.568,
+              1.51,
+              1.559,
+              1.569,
+              1.576,
+              1.621,
+              1.582,
+              1.629,
+              1.626,
+              1.578,
+              1.53,
+              1.552,
+              1.584,
+              1.606,
+              1.614,
+              1.579,
+              1.554,
+              1.508,
+              1.523,
+              1.471,
+              1.441,
+              1.485,
+              1.453,
+              1.386,
+              1.374,
+              1.421,
+              1.404,
+              1.366,
+              1.381,
+              1.394,
+              1.413,
+              1.4,
+              1.383,
+              1.415,
+              1.48,
+              1.428,
+              1.452,
+              1.39,
+              1.426,
+              1.414,
+              1.418,
+              1.401,
+              1.433,
+              1.437,
+              1.412,
+              1.365,
+              1.368,
+              1.364,
+              1.363,
+              1.37,
+              1.411,
+              1.434,
+              1.395,
+              1.378,
+              1.401,
+              1.438,
+              1.445,
+              1.466,
+              1.471,
+              1.458,
+              1.416,
+              1.472,
+              1.442,
+              1.439,
+              1.411,
+              1.417,
+              1.357,
+              1.385,
+              1.467,
+              1.456,
+              1.48,
+              1.498,
+              1.451,
+              1.473,
+              1.481,
+              1.466,
+              1.469,
+              1.49,
+              1.407,
+              1.47,
+              1.465,
+              1.444,
+              1.428,
+              1.464,
+              1.489,
+              1.474,
+              1.48,
+              1.508,
+              1.525,
+              1.533,
+              1.603,
+              1.603,
+              1.535,
+              1.526,
+              1.455,
+              1.423,
+              1.453,
+              1.455,
+              1.489,
+              1.46,
+              1.486,
+              1.492,
+              1.444,
+              1.458,
+              1.463,
+              1.423,
+              1.418,
+              1.428,
+              1.479,
+              1.504,
+              1.509,
+              1.473,
+              1.471,
+              1.51,
+              1.462,
+              1.469,
+              1.421,
+              1.389,
+              1.372,
+              1.34
+            ]
+          }
+        ],
+        "name": "P/B",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l11",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tài sản công ty bảo hiểm chủ yếu là tiền gửi và trái phiếu, giá trị khá rõ ràng. Vì vậy P/B thường được dùng để định giá công ty bảo hiểm, nhất là phi nhân thọ.",
+  "lesson_key": "fundamental:pb-bh",
+  "order": 11,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l11-g1",
+          "type": "chart"
+        },
+        {
+          "text": "P/B bằng <b>vốn hoá</b> chia <b>vốn chủ sở hữu</b> của quý gần nhất đã công bố. Cách tính giống bài P/B ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l11-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền gửi, trái phiếu ít bị định giá sai trên sổ sách.",
+              "title": "Tài sản rõ ràng"
+            },
+            {
+              "text": "Giá trị hợp đồng nhân thọ đang hiệu lực không có trên báo cáo tài chính, nên P/B nhân thọ ít phản ánh đủ giá trị.",
+              "title": "Nhân thọ khó hơn"
+            },
+            {
+              "text": "Công ty ROE cao bền vững đáng P/B cao hơn.",
+              "title": "Đi cùng ROE"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bảo hiểm khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l11-rep",
+          "title": "P/B",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/B theo giá đóng cửa và vốn chủ quý đã công bố.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "P/B dao động trong dải hẹp hơn công ty chứng khoán.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "P/B gần mức ROE chia khoảng 9% đến 10%. Ví dụ ROE 12% với P/B khoảng 1,3 lần. Đây là cách ước lượng thô để tham khảo.",
+              "title": "Hợp lý",
+              "tone": "pos"
+            },
+            {
+              "text": "P/B cao trong khi combined ratio vượt 100% và ROE giảm.",
+              "title": "Cần thận trọng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với bảo hiểm nhân thọ, P/B chỉ là một góc nhìn. Phần giá trị hợp đồng đang hiệu lực nằm ngoài 3 báo cáo tài chính.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng dải trên Dashboard.",
+              "title": "So với lịch sử"
+            },
+            {
+              "text": "P/B thấp mà ROE ổn định là điểm đáng chú ý.",
+              "title": "Đọc cùng ROE"
+            },
+            {
+              "text": "Phi nhân thọ dùng P/B tốt hơn nhân thọ.",
+              "title": "Phân biệt loại hình"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu, P/B 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "P/B cuối Q2/26",
+              "text": "1,34 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "1,46 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "1,34 lần và 1,63 lần."
+            },
+            {
+              "term": "So với ROE",
+              "text": "ROE 4 quý 10,2%. P/B 1,34 lần gần mức ROE gợi ý theo cách ước lượng thô."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giá trị hợp đồng nhân thọ không có trên báo cáo.",
+              "title": "Dùng P/B cho nhân thọ như phi nhân thọ"
+            },
+            {
+              "text": "Nghiệp vụ lỗ kéo dài làm vốn chủ giảm.",
+              "title": "Bỏ qua combined ratio"
+            },
+            {
+              "text": "ROE và rủi ro khác nhau.",
+              "title": "So với ngân hàng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>P/B</b> = vốn hoá ÷ vốn chủ sở hữu.",
+    "Phù hợp nhất với <b>bảo hiểm phi nhân thọ</b>.",
+    "P/B hợp lý <b>đi cùng ROE</b>.",
+    "Giá trị hợp đồng nhân thọ <b>nằm ngoài 3 báo cáo</b>."
+  ],
+  "title": "P/B · ở công ty bảo hiểm"
+}

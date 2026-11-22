@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch05-l01",
+  "questions": [
+    {
+      "correct_option_id": "724e77a4ee",
+      "id": "ch05-l01-q01",
+      "options": [
+        {
+          "id": "724e77a4ee",
+          "text": "Đầu tư một số tiền cố định theo định kỳ, bất kể giá lên hay xuống"
+        },
+        {
+          "id": "fedcbc5292",
+          "text": "Mua toàn bộ một lần khi giá thấp nhất"
+        },
+        {
+          "id": "e48476595a",
+          "text": "Bán ra mỗi khi giá tăng 10%"
+        }
+      ],
+      "prompt": "Đầu tư định kỳ (DCA) là phương pháp gì?"
+    },
+    {
+      "correct_option_id": "9b8404f912",
+      "id": "ch05-l01-q02",
+      "options": [
+        {
+          "id": "9b8404f912",
+          "text": "Nhiều hơn"
+        },
+        {
+          "id": "dcfd8fe516",
+          "text": "Ít hơn"
+        },
+        {
+          "id": "ccce765ef0",
+          "text": "Không thay đổi"
+        }
+      ],
+      "prompt": "Khi giá giảm, cùng một số tiền DCA mua được số lượng thế nào?"
+    },
+    {
+      "correct_option_id": "611c3f163e",
+      "id": "ch05-l01-q03",
+      "options": [
+        {
+          "id": "611c3f163e",
+          "text": "Không cần đoán thời điểm mua"
+        },
+        {
+          "id": "41e3fcb8c3",
+          "text": "Luôn lãi nhiều hơn mua một lần"
+        },
+        {
+          "id": "3e3de803e8",
+          "text": "Hoàn toàn không có rủi ro"
+        }
+      ],
+      "prompt": "Ưu điểm lớn nhất của DCA là gì?"
+    },
+    {
+      "correct_option_id": "8e8859491a",
+      "id": "ch05-l01-q04",
+      "options": [
+        {
+          "id": "8e8859491a",
+          "text": "Quỹ, ETF hoặc cổ phiếu doanh nghiệp tốt"
+        },
+        {
+          "id": "f9bb5c6e07",
+          "text": "Cổ phiếu đầu cơ kém chất lượng"
+        },
+        {
+          "id": "f7964564f4",
+          "text": "Chứng quyền sắp đáo hạn"
+        }
+      ],
+      "prompt": "Tài sản nào phù hợp để đầu tư định kỳ?"
+    },
+    {
+      "correct_option_id": "85c6427a7f",
+      "id": "ch05-l01-q05",
+      "options": [
+        {
+          "id": "85c6427a7f",
+          "text": "Tiếp tục đầu tư theo kế hoạch"
+        },
+        {
+          "id": "d7783f85d4",
+          "text": "Dừng đầu tư và bán toàn bộ"
+        },
+        {
+          "id": "031aba6d57",
+          "text": "Vay margin để mua thêm"
+        }
+      ],
+      "prompt": "Khi thị trường giảm, người đầu tư định kỳ nên làm gì?"
+    }
+  ],
+  "salt": "37c74ce7456db93ae01287ce914d195a91bfef929e797c6e8ad9fa2cf9ee2703"
+}

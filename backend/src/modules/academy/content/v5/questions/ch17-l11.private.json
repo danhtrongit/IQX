@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l11",
+  "questions": [
+    {
+      "correct_option_id": "4c189c26ab",
+      "id": "ch17-l11-q01",
+      "options": [
+        {
+          "id": "4c189c26ab",
+          "text": "Tăng nhanh vì nợ tăng và EBITDA giảm"
+        },
+        {
+          "id": "40248d435c",
+          "text": "Giảm nhanh vì EBITDA tăng mạnh"
+        },
+        {
+          "id": "60753a85c2",
+          "text": "Không đổi vì nợ và EBITDA cùng giảm"
+        }
+      ],
+      "prompt": "Khi đầu tư lớn rơi vào chu kỳ yếu, Net Debt / EBITDA thế nào?"
+    },
+    {
+      "correct_option_id": "9af48e3aff",
+      "id": "ch17-l11-q02",
+      "options": [
+        {
+          "id": "9af48e3aff",
+          "text": "EBITDA năm đáy chu kỳ"
+        },
+        {
+          "id": "a537ec8b18",
+          "text": "EBITDA năm đỉnh"
+        },
+        {
+          "id": "046207ba38",
+          "text": "Doanh thu năm gần nhất"
+        }
+      ],
+      "prompt": "Nên kiểm tra kịch bản xấu bằng EBITDA nào?"
+    },
+    {
+      "correct_option_id": "9ccbfdab0e",
+      "id": "ch17-l11-q03",
+      "options": [
+        {
+          "id": "9ccbfdab0e",
+          "text": "EBITDA vật liệu dao động hơn"
+        },
+        {
+          "id": "d658713597",
+          "text": "Vật liệu không có nợ"
+        },
+        {
+          "id": "c185852dec",
+          "text": "Vật liệu không có khấu hao"
+        }
+      ],
+      "prompt": "Vì sao vật liệu chịu được mức chỉ tiêu thấp hơn ngành điện?"
+    },
+    {
+      "correct_option_id": "8dbd36b586",
+      "id": "ch17-l11-q04",
+      "options": [
+        {
+          "id": "8dbd36b586",
+          "text": "Dưới khoảng 2,5 lần"
+        },
+        {
+          "id": "08eb26b3bc",
+          "text": "Dưới 0,1 lần"
+        },
+        {
+          "id": "6661d28fe0",
+          "text": "Trên 8 lần"
+        }
+      ],
+      "prompt": "Mức tham khảo kiểm soát được là bao nhiêu?"
+    },
+    {
+      "chart_id": "c17l11-rep",
+      "correct_option_id": "17735e2733",
+      "id": "ch17-l11-q05",
+      "options": [
+        {
+          "id": "17735e2733",
+          "text": "Đi lên nhanh"
+        },
+        {
+          "id": "f95c58a266",
+          "text": "Đi xuống"
+        },
+        {
+          "id": "8c47a3412c",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, nợ ròng tăng trong khi EBITDA giảm làm đường thế nào?"
+    }
+  ],
+  "salt": "ebe4b28c8edef0a1c4c2708dbddae599d44b9dda7db1d72c02b2bd6bc29f9c8b"
+}

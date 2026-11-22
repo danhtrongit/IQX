@@ -1,0 +1,404 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l8-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Hàng nằm kho và chờ thu tiền"
+          ],
+          "t": "Ngày tồn kho + ngày thu tiền",
+          "tone": "warn",
+          "v": "73 ngày"
+        },
+        {
+          "notes": [
+            "Thời gian trả chậm"
+          ],
+          "t": "Ngày trả tiền",
+          "tone": "pos",
+          "v": "50 ngày"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "CCC",
+          "tone": "p1",
+          "v": "23 ngày"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "−",
+        "="
+      ]
+    },
+    "c15l8-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Siêu thị lớn",
+          "tone": "pos",
+          "value": -10
+        },
+        {
+          "label": "Chuỗi điện máy",
+          "tone": "p1",
+          "value": 25
+        },
+        {
+          "label": "Nhà sản xuất hàng tiêu dùng",
+          "tone": "warn",
+          "value": 60
+        },
+        {
+          "label": "Chuỗi trang sức",
+          "tone": "neg",
+          "value": 200
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "CCC tham khảo · số minh họa",
+      "unit": " ngày"
+    },
+    "c15l8-rep": {
+      "alt": "Cash Conversion Cycle: 23 ngày",
+      "chart": {
+        "kind": "C",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "CCC",
+            "v": [
+              41.277,
+              33.302,
+              32.249,
+              31.809,
+              28.374,
+              29.241,
+              26.571,
+              22.69
+            ]
+          }
+        ],
+        "name": "Cash Conversion Cycle",
+        "sub": {
+          "series": [
+            {
+              "name": "Ngày tồn kho",
+              "v": [
+                82.948,
+                78.354,
+                75.843,
+                74.344,
+                71.094,
+                71.966,
+                69.28,
+                67.097
+              ]
+            },
+            {
+              "name": "Ngày thu tiền",
+              "v": [
+                5.767,
+                5.401,
+                5.096,
+                5.584,
+                5.4,
+                5.805,
+                5.885,
+                5.687
+              ]
+            },
+            {
+              "name": "Ngày trả tiền",
+              "v": [
+                47.438,
+                50.453,
+                48.691,
+                48.119,
+                48.12,
+                48.53,
+                48.594,
+                50.094
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "ngày"
+        },
+        "unit": "ngày"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l08",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Chu kỳ chuyển đổi tiền mặt đo số ngày từ lúc trả tiền nhập hàng đến lúc thu tiền bán hàng. Chuỗi bán lẻ thu tiền ngay tại quầy và trả nhà cung cấp chậm, nên chu kỳ có thể rất ngắn, thậm chí âm.",
+  "lesson_key": "fundamental:ccc-bl",
+  "order": 8,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l8-g1",
+          "type": "chart"
+        },
+        {
+          "text": "CCC bằng <b>số ngày tồn kho</b> cộng <b>số ngày thu tiền</b> trừ <b>số ngày trả tiền</b>. Cách tính giống bài Cash Conversion Cycle ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khách trả tiền ngay khi mua, nên số ngày thu tiền của chuỗi bán lẻ chỉ vài ngày. CCC chủ yếu do ngày tồn kho và ngày trả tiền quyết định.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c15l8-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chuỗi bán được hàng và thu tiền trước khi phải trả nhà cung cấp. Tăng trưởng không cần thêm vốn lưu động.",
+              "title": "CCC âm"
+            },
+            {
+              "text": "Phần thu tiền gần như không đáng kể ở bán lẻ.",
+              "title": "Ngày thu tiền rất ngắn"
+            },
+            {
+              "text": "Nhà sản xuất bán qua nhà phân phối, phải cho nợ, nên CCC dài hơn.",
+              "title": "Khác nhà sản xuất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bán lẻ khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l8-rep",
+          "title": "Cash Conversion Cycle",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "CCC, đơn vị ngày.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Ba cột: ngày tồn kho, ngày thu tiền, ngày trả tiền.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột ngày thu tiền rất thấp, CCC gần bằng ngày tồn kho trừ ngày trả tiền.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "CCC giảm dần hoặc âm. Mức tham khảo với chuỗi bán lẻ: dưới khoảng 30 ngày.",
+              "title": "Chu kỳ ngắn",
+              "tone": "pos"
+            },
+            {
+              "text": "CCC tăng nhiều quý liền, thường do tồn kho tăng hoặc nhà cung cấp rút ngắn trả chậm.",
+              "title": "Chu kỳ dài ra",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với bán lẻ, theo dõi riêng <b>ngày tồn kho</b> và <b>ngày trả tiền</b>. Hai cột đó quyết định gần như toàn bộ CCC.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "CCC ngắn thì mở rộng cần ít vốn lưu động.",
+              "title": "Ước lượng nhu cầu vốn"
+            },
+            {
+              "text": "Xem cột nào thay đổi: tồn kho hay trả tiền.",
+              "title": "Tìm nguyên nhân"
+            },
+            {
+              "text": "Trang sức luôn có CCC dài.",
+              "title": "So cùng nhóm hàng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Ngày tồn kho"
+            },
+            {
+              "label": "Ngày thu tiền"
+            },
+            {
+              "label": "Ngày trả tiền"
+            },
+            {
+              "label": "CCC"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "83",
+                "6",
+                "47",
+                "41"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "74",
+                "6",
+                "48",
+                "32"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "67",
+                "6",
+                "50",
+                "23"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "CCC giảm từ 41 xuống 23 ngày, chủ yếu nhờ ngày tồn kho giảm. Ngày thu tiền chỉ khoảng 6 ngày.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Ở bán lẻ, ngày thu tiền rất nhỏ, không phải chỗ cần phân tích.",
+              "title": "Chú ý ngày thu tiền"
+            },
+            {
+              "text": "CCC âm là lợi thế của chuỗi lớn.",
+              "title": "Coi CCC âm là rủi ro"
+            },
+            {
+              "text": "Mô hình bán hàng khác nhau.",
+              "title": "So với nhà sản xuất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thu tiền ngay, CCC ngắn hoặc âm.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "Bán qua nhà phân phối, phải cho nợ, CCC dài hơn.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "<b>CCC</b> = ngày tồn kho + ngày thu tiền − ngày trả tiền.",
+    "Bán lẻ <b>thu tiền ngay</b>, CCC có thể rất ngắn hoặc âm.",
+    "CCC âm thì <b>tăng trưởng không cần thêm vốn lưu động</b>.",
+    "Theo dõi <b>ngày tồn kho</b> và <b>ngày trả tiền</b>."
+  ],
+  "title": "Cash Conversion Cycle · ở bán lẻ và tiêu dùng"
+}

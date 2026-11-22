@@ -1,0 +1,381 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l7-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 311"
+          ],
+          "t": "Phải trả người bán",
+          "tone": "pos",
+          "v": "6.370 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 140"
+          ],
+          "t": "Hàng tồn kho",
+          "tone": "warn",
+          "v": "8.533 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "p1",
+          "v": "0,75 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l7-g2": {
+      "decimals": 2,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Siêu thị lớn, quay vòng nhanh",
+          "tone": "pos",
+          "value": 1.3
+        },
+        {
+          "label": "Chuỗi điện máy",
+          "tone": "p1",
+          "value": 0.7
+        },
+        {
+          "label": "Chuỗi trang sức",
+          "tone": "warn",
+          "value": 0.05
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Phải trả người bán / Tồn kho · số minh họa",
+      "unit": " lần"
+    },
+    "c15l7-rep": {
+      "alt": "Phải trả người bán / Tồn kho: 0,75 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Phải trả người bán / Tồn kho",
+            "v": [
+              0.572,
+              0.644,
+              0.642,
+              0.647,
+              0.677,
+              0.674,
+              0.701,
+              0.747
+            ]
+          }
+        ],
+        "name": "Phải trả người bán / Tồn kho",
+        "ref": 1,
+        "sub": {
+          "series": [
+            {
+              "name": "Phải trả người bán",
+              "v": [
+                4704.022,
+                5230.684,
+                5319.269,
+                5480.905,
+                5670.132,
+                5894.586,
+                6071.395,
+                6370.41
+              ]
+            },
+            {
+              "name": "Hàng tồn kho",
+              "v": [
+                8225.198,
+                8123.273,
+                8285.516,
+                8467.96,
+                8377.231,
+                8741.198,
+                8655.992,
+                8532.734
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Chuỗi bán lẻ lớn thường nhập hàng trả chậm. Nếu bán được hàng trước khi phải trả tiền, nhà cung cấp đang tài trợ hàng tồn kho cho chuỗi. Chỉ tiêu này cho biết mức tài trợ đó.",
+  "lesson_key": "fundamental:payables_to_inventory-bl",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l7-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>phải trả người bán ngắn hạn</b> (mã 311) chia <b>hàng tồn kho</b> (mã 140). Cả hai trên bảng cân đối kế toán, số cuối kỳ. Đơn vị lần.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 0,75 lần nghĩa là khoảng 75% giá trị hàng tồn kho chưa phải trả tiền cho nhà cung cấp.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Phải trả người bán / Tồn kho là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l7-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nhà cung cấp tài trợ toàn bộ tồn kho và thêm một phần. Chuỗi không cần vốn cho hàng.",
+              "title": "Trên 1 lần"
+            },
+            {
+              "text": "Chuỗi phải dùng vốn chủ hoặc nợ vay cho phần còn lại.",
+              "title": "Dưới 1 lần"
+            },
+            {
+              "text": "Chuỗi lớn được trả chậm lâu hơn.",
+              "title": "Phụ thuộc sức mặc cả"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Đọc mốc 1 lần"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l7-rep",
+          "title": "Phải trả người bán / Tồn kho",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phải trả người bán chia tồn kho, đơn vị lần. Đường nét đứt là mốc 1 lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Phải trả người bán và hàng tồn kho, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột phải trả tăng trong khi tồn kho đi ngang làm đường đi lên.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ lệ tăng dần, tiến gần mốc 1. Nhà cung cấp tài trợ ngày càng nhiều.",
+              "title": "Sức mặc cả tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ giảm nhanh. Nhà cung cấp rút ngắn thời hạn trả chậm, có thể do lo ngại rủi ro của chuỗi.",
+              "title": "Cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tỷ lệ tăng quá nhanh cũng cần xem lại. Có thể chuỗi đang chậm trả nhà cung cấp vì thiếu tiền.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chuỗi lớn, bán chạy được nhà cung cấp ưu đãi trả chậm.",
+              "title": "Đo sức mặc cả"
+            },
+            {
+              "text": "Tỷ lệ tăng làm chu kỳ chuyển đổi tiền mặt ngắn lại.",
+              "title": "Đọc cùng CCC"
+            },
+            {
+              "text": "Phải trả tăng giúp CFO cao hơn lợi nhuận.",
+              "title": "Kiểm tra dòng tiền"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Phải trả người bán"
+            },
+            {
+              "label": "Tồn kho"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "4.704",
+                "8.225",
+                "0,57 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "5.481",
+                "8.468",
+                "0,65 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "6.370",
+                "8.533",
+                "0,75 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ tăng từ 0,57 lần lên 0,75 lần. Phải trả tăng 35% trong khi tồn kho gần như không đổi: nhà cung cấp tài trợ nhiều hơn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chỉ dùng phải trả người bán ngắn hạn.",
+              "title": "Cộng phải trả dài hạn"
+            },
+            {
+              "text": "Chỉ tiêu đo mức tài trợ cho hàng tồn.",
+              "title": "Dùng doanh thu thay tồn kho"
+            },
+            {
+              "text": "Có thể do chậm trả vì thiếu tiền.",
+              "title": "Coi tăng luôn là tốt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Chỉ tiêu đo sức mặc cả với nhà cung cấp.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "Nhà sản xuất mua nguyên liệu trả chậm, tỷ lệ thường thấp hơn bán lẻ.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>phải trả người bán</b> (mã 311) ÷ <b>hàng tồn kho</b> (mã 140).",
+    "Mốc <b>1 lần</b>: trên mốc là nhà cung cấp tài trợ toàn bộ hàng tồn.",
+    "Tỷ lệ tăng thường là <b>sức mặc cả tốt</b>.",
+    "Tăng quá nhanh có thể do <b>chậm trả vì thiếu tiền</b>."
+  ],
+  "title": "Phải trả người bán / Tồn kho · nhà cung cấp tài trợ hàng hoá"
+}

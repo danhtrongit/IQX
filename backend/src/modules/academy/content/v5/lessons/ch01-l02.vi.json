@@ -1,0 +1,2541 @@
+{
+  "chapter": 1,
+  "charts": {
+    "c1l2-g1": {
+      "items": [
+        {
+          "model": {
+            "edges": [
+              {
+                "from": "doanh-nghiep",
+                "label": "Cổ phiếu",
+                "to": "nha-dau-tu"
+              },
+              {
+                "from": "nha-dau-tu",
+                "label": "Tiền",
+                "to": "doanh-nghiep"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "emph": true,
+                "id": "doanh-nghiep",
+                "title": "Doanh nghiệp",
+                "tone": "p1"
+              },
+              {
+                "id": "nha-dau-tu",
+                "title": "Nhà đầu tư"
+              }
+            ]
+          },
+          "title": "Thị trường sơ cấp",
+          "tone": "p1"
+        },
+        {
+          "model": {
+            "edges": [
+              {
+                "from": "nha-dau-tu-a",
+                "label": "Cổ phiếu",
+                "to": "nha-dau-tu-b"
+              },
+              {
+                "from": "nha-dau-tu-b",
+                "label": "Tiền",
+                "to": "nha-dau-tu-a"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "nha-dau-tu-a",
+                "title": "Nhà đầu tư A"
+              },
+              {
+                "id": "nha-dau-tu-b",
+                "title": "Nhà đầu tư B"
+              }
+            ]
+          },
+          "title": "Thị trường thứ cấp",
+          "tone": "warn"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c1l2-g2": {
+      "alt": "Công ty cổ phần qua IPO trở thành công ty đại chúng, sau đó niêm yết hoặc đăng ký giao dịch",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "cong-ty-co-phan",
+          "title": "Công ty cổ phần"
+        },
+        {
+          "emph": true,
+          "id": "ipo",
+          "title": "IPO",
+          "tone": "p1"
+        },
+        {
+          "children": [
+            {
+              "sub": "HOSE · HNX",
+              "title": "Niêm yết",
+              "tone": "p1"
+            },
+            {
+              "sub": "UPCoM",
+              "title": "Đăng ký giao dịch"
+            }
+          ],
+          "id": "cong-ty-dai-chung",
+          "title": "Công ty đại chúng"
+        }
+      ]
+    },
+    "c1l2-g3": {
+      "alt": "Lệnh đi từ nhà đầu tư qua công ty chứng khoán đến sở giao dịch, VSDC lưu ký và thanh toán",
+      "edges": "sequential",
+      "header": {
+        "text": "Ủy ban Chứng khoán Nhà nước · quản lý và giám sát",
+        "tone": "warn"
+      },
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "caption": "Đặt lệnh",
+          "id": "nha-dau-tu",
+          "title": "Nhà đầu tư"
+        },
+        {
+          "caption": "Nhận, chuyển lệnh",
+          "id": "cong-ty-chung-khoan",
+          "title": "Công ty chứng khoán"
+        },
+        {
+          "caption": "Khớp lệnh",
+          "children": [
+            {
+              "title": "Doanh nghiệp phát hành"
+            }
+          ],
+          "emph": true,
+          "id": "so-giao-dich",
+          "sub": "HOSE · HNX",
+          "title": "Sở giao dịch",
+          "tone": "p1"
+        },
+        {
+          "caption": "Lưu ký, thanh toán",
+          "id": "vsdc",
+          "title": "VSDC"
+        }
+      ]
+    },
+    "c1l2-g4": {
+      "alt": "VN-Index gồm toàn bộ cổ phiếu trên HOSE, VN30 là nhóm 30 cổ phiếu bên trong",
+      "kind": "diagram",
+      "shapes": [
+        {
+          "h": 102,
+          "r": 8,
+          "stroke": "p3",
+          "t": "rect",
+          "w": 312,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "size": "m",
+          "t": "text",
+          "text": "VN-Index",
+          "weight": "bold",
+          "x": 12,
+          "y": 20
+        },
+        {
+          "size": "s",
+          "t": "text",
+          "text": "toàn bộ cổ phiếu trên HOSE",
+          "x": 12,
+          "y": 33
+        },
+        {
+          "cx": 14.28,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.71,
+          "t": "circle"
+        },
+        {
+          "cx": 23.1,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.78,
+          "t": "circle"
+        },
+        {
+          "cx": 31.92,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.37,
+          "t": "circle"
+        },
+        {
+          "cx": 40.74,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.49,
+          "t": "circle"
+        },
+        {
+          "cx": 49.56,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 58.38,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.73,
+          "t": "circle"
+        },
+        {
+          "cx": 67.2,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.33,
+          "t": "circle"
+        },
+        {
+          "cx": 76.02,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.07,
+          "t": "circle"
+        },
+        {
+          "cx": 84.84,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.8,
+          "t": "circle"
+        },
+        {
+          "cx": 93.66,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.64,
+          "t": "circle"
+        },
+        {
+          "cx": 102.48,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.52,
+          "t": "circle"
+        },
+        {
+          "cx": 111.3,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.98,
+          "t": "circle"
+        },
+        {
+          "cx": 120.12,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.87,
+          "t": "circle"
+        },
+        {
+          "cx": 128.94,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.33,
+          "t": "circle"
+        },
+        {
+          "cx": 137.76,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.72,
+          "t": "circle"
+        },
+        {
+          "cx": 146.58,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.48,
+          "t": "circle"
+        },
+        {
+          "cx": 155.4,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.88,
+          "t": "circle"
+        },
+        {
+          "cx": 164.22,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.41,
+          "t": "circle"
+        },
+        {
+          "cx": 173.04,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.78,
+          "t": "circle"
+        },
+        {
+          "cx": 181.86,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.71,
+          "t": "circle"
+        },
+        {
+          "cx": 190.68,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.42,
+          "t": "circle"
+        },
+        {
+          "cx": 199.5,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.31,
+          "t": "circle"
+        },
+        {
+          "cx": 208.32,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.13,
+          "t": "circle"
+        },
+        {
+          "cx": 261.24,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.16,
+          "t": "circle"
+        },
+        {
+          "cx": 270.06,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.37,
+          "t": "circle"
+        },
+        {
+          "cx": 278.88,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 287.7,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.14,
+          "t": "circle"
+        },
+        {
+          "cx": 296.52,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.43,
+          "t": "circle"
+        },
+        {
+          "cx": 305.34,
+          "cy": 34.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.65,
+          "t": "circle"
+        },
+        {
+          "cx": 18.48,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.77,
+          "t": "circle"
+        },
+        {
+          "cx": 27.3,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.88,
+          "t": "circle"
+        },
+        {
+          "cx": 36.12,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.52,
+          "t": "circle"
+        },
+        {
+          "cx": 44.94,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.42,
+          "t": "circle"
+        },
+        {
+          "cx": 53.76,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.17,
+          "t": "circle"
+        },
+        {
+          "cx": 62.58,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 71.4,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.47,
+          "t": "circle"
+        },
+        {
+          "cx": 80.22,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.77,
+          "t": "circle"
+        },
+        {
+          "cx": 89.04,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.57,
+          "t": "circle"
+        },
+        {
+          "cx": 97.86,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.4,
+          "t": "circle"
+        },
+        {
+          "cx": 106.68,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.97,
+          "t": "circle"
+        },
+        {
+          "cx": 115.5,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.58,
+          "t": "circle"
+        },
+        {
+          "cx": 124.32,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.58,
+          "t": "circle"
+        },
+        {
+          "cx": 133.14,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.33,
+          "t": "circle"
+        },
+        {
+          "cx": 141.96,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.12,
+          "t": "circle"
+        },
+        {
+          "cx": 150.78,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.48,
+          "t": "circle"
+        },
+        {
+          "cx": 159.6,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.08,
+          "t": "circle"
+        },
+        {
+          "cx": 168.42,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.69,
+          "t": "circle"
+        },
+        {
+          "cx": 177.24,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.48,
+          "t": "circle"
+        },
+        {
+          "cx": 186.06,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.82,
+          "t": "circle"
+        },
+        {
+          "cx": 194.88,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.63,
+          "t": "circle"
+        },
+        {
+          "cx": 274.26,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.96,
+          "t": "circle"
+        },
+        {
+          "cx": 283.08,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.86,
+          "t": "circle"
+        },
+        {
+          "cx": 291.9,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.39,
+          "t": "circle"
+        },
+        {
+          "cx": 300.72,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.47,
+          "t": "circle"
+        },
+        {
+          "cx": 309.54,
+          "cy": 42.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.68,
+          "t": "circle"
+        },
+        {
+          "cx": 14.28,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.34,
+          "t": "circle"
+        },
+        {
+          "cx": 23.1,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.3,
+          "t": "circle"
+        },
+        {
+          "cx": 31.92,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.64,
+          "t": "circle"
+        },
+        {
+          "cx": 40.74,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.89,
+          "t": "circle"
+        },
+        {
+          "cx": 49.56,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.86,
+          "t": "circle"
+        },
+        {
+          "cx": 58.38,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.14,
+          "t": "circle"
+        },
+        {
+          "cx": 67.2,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.56,
+          "t": "circle"
+        },
+        {
+          "cx": 76.02,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.66,
+          "t": "circle"
+        },
+        {
+          "cx": 84.84,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.72,
+          "t": "circle"
+        },
+        {
+          "cx": 93.66,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 102.48,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.03,
+          "t": "circle"
+        },
+        {
+          "cx": 111.3,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.68,
+          "t": "circle"
+        },
+        {
+          "cx": 120.12,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 128.94,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.5,
+          "t": "circle"
+        },
+        {
+          "cx": 137.76,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.48,
+          "t": "circle"
+        },
+        {
+          "cx": 146.58,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.95,
+          "t": "circle"
+        },
+        {
+          "cx": 155.4,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.38,
+          "t": "circle"
+        },
+        {
+          "cx": 164.22,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.51,
+          "t": "circle"
+        },
+        {
+          "cx": 173.04,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.97,
+          "t": "circle"
+        },
+        {
+          "cx": 181.86,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.05,
+          "t": "circle"
+        },
+        {
+          "cx": 190.68,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.15,
+          "t": "circle"
+        },
+        {
+          "cx": 278.88,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.12,
+          "t": "circle"
+        },
+        {
+          "cx": 287.7,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.06,
+          "t": "circle"
+        },
+        {
+          "cx": 296.52,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.95,
+          "t": "circle"
+        },
+        {
+          "cx": 305.34,
+          "cy": 50.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.85,
+          "t": "circle"
+        },
+        {
+          "cx": 18.48,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.77,
+          "t": "circle"
+        },
+        {
+          "cx": 27.3,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.28,
+          "t": "circle"
+        },
+        {
+          "cx": 36.12,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.56,
+          "t": "circle"
+        },
+        {
+          "cx": 44.94,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.59,
+          "t": "circle"
+        },
+        {
+          "cx": 53.76,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.46,
+          "t": "circle"
+        },
+        {
+          "cx": 62.58,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.62,
+          "t": "circle"
+        },
+        {
+          "cx": 71.4,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.89,
+          "t": "circle"
+        },
+        {
+          "cx": 80.22,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.94,
+          "t": "circle"
+        },
+        {
+          "cx": 89.04,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.51,
+          "t": "circle"
+        },
+        {
+          "cx": 97.86,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.14,
+          "t": "circle"
+        },
+        {
+          "cx": 106.68,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.27,
+          "t": "circle"
+        },
+        {
+          "cx": 115.5,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.59,
+          "t": "circle"
+        },
+        {
+          "cx": 124.32,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.8,
+          "t": "circle"
+        },
+        {
+          "cx": 133.14,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 141.96,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.34,
+          "t": "circle"
+        },
+        {
+          "cx": 150.78,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.18,
+          "t": "circle"
+        },
+        {
+          "cx": 159.6,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.68,
+          "t": "circle"
+        },
+        {
+          "cx": 168.42,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.07,
+          "t": "circle"
+        },
+        {
+          "cx": 177.24,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.8,
+          "t": "circle"
+        },
+        {
+          "cx": 186.06,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.69,
+          "t": "circle"
+        },
+        {
+          "cx": 194.88,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.38,
+          "t": "circle"
+        },
+        {
+          "cx": 274.26,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.99,
+          "t": "circle"
+        },
+        {
+          "cx": 283.08,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.09,
+          "t": "circle"
+        },
+        {
+          "cx": 291.9,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.5,
+          "t": "circle"
+        },
+        {
+          "cx": 300.72,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.28,
+          "t": "circle"
+        },
+        {
+          "cx": 309.54,
+          "cy": 59.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.4,
+          "t": "circle"
+        },
+        {
+          "cx": 14.28,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.91,
+          "t": "circle"
+        },
+        {
+          "cx": 23.1,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.9,
+          "t": "circle"
+        },
+        {
+          "cx": 31.92,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.87,
+          "t": "circle"
+        },
+        {
+          "cx": 40.74,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.06,
+          "t": "circle"
+        },
+        {
+          "cx": 49.56,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.47,
+          "t": "circle"
+        },
+        {
+          "cx": 58.38,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.03,
+          "t": "circle"
+        },
+        {
+          "cx": 67.2,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.42,
+          "t": "circle"
+        },
+        {
+          "cx": 76.02,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.29,
+          "t": "circle"
+        },
+        {
+          "cx": 84.84,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.34,
+          "t": "circle"
+        },
+        {
+          "cx": 93.66,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.28,
+          "t": "circle"
+        },
+        {
+          "cx": 102.48,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.76,
+          "t": "circle"
+        },
+        {
+          "cx": 111.3,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.03,
+          "t": "circle"
+        },
+        {
+          "cx": 120.12,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.04,
+          "t": "circle"
+        },
+        {
+          "cx": 128.94,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.39,
+          "t": "circle"
+        },
+        {
+          "cx": 137.76,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.72,
+          "t": "circle"
+        },
+        {
+          "cx": 146.58,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.31,
+          "t": "circle"
+        },
+        {
+          "cx": 155.4,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.52,
+          "t": "circle"
+        },
+        {
+          "cx": 164.22,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.71,
+          "t": "circle"
+        },
+        {
+          "cx": 173.04,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.32,
+          "t": "circle"
+        },
+        {
+          "cx": 181.86,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.59,
+          "t": "circle"
+        },
+        {
+          "cx": 190.68,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.47,
+          "t": "circle"
+        },
+        {
+          "cx": 278.88,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.53,
+          "t": "circle"
+        },
+        {
+          "cx": 287.7,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.99,
+          "t": "circle"
+        },
+        {
+          "cx": 296.52,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.39,
+          "t": "circle"
+        },
+        {
+          "cx": 305.34,
+          "cy": 67.64,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.41,
+          "t": "circle"
+        },
+        {
+          "cx": 18.48,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.26,
+          "t": "circle"
+        },
+        {
+          "cx": 27.3,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.84,
+          "t": "circle"
+        },
+        {
+          "cx": 36.12,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.34,
+          "t": "circle"
+        },
+        {
+          "cx": 44.94,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.63,
+          "t": "circle"
+        },
+        {
+          "cx": 53.76,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.36,
+          "t": "circle"
+        },
+        {
+          "cx": 62.58,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.7,
+          "t": "circle"
+        },
+        {
+          "cx": 71.4,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.64,
+          "t": "circle"
+        },
+        {
+          "cx": 80.22,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.27,
+          "t": "circle"
+        },
+        {
+          "cx": 89.04,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.96,
+          "t": "circle"
+        },
+        {
+          "cx": 97.86,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.68,
+          "t": "circle"
+        },
+        {
+          "cx": 106.68,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.94,
+          "t": "circle"
+        },
+        {
+          "cx": 115.5,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.57,
+          "t": "circle"
+        },
+        {
+          "cx": 124.32,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.12,
+          "t": "circle"
+        },
+        {
+          "cx": 133.14,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.92,
+          "t": "circle"
+        },
+        {
+          "cx": 141.96,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.85,
+          "t": "circle"
+        },
+        {
+          "cx": 150.78,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.51,
+          "t": "circle"
+        },
+        {
+          "cx": 159.6,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.59,
+          "t": "circle"
+        },
+        {
+          "cx": 168.42,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.33,
+          "t": "circle"
+        },
+        {
+          "cx": 177.24,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.07,
+          "t": "circle"
+        },
+        {
+          "cx": 186.06,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.34,
+          "t": "circle"
+        },
+        {
+          "cx": 194.88,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.32,
+          "t": "circle"
+        },
+        {
+          "cx": 274.26,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.43,
+          "t": "circle"
+        },
+        {
+          "cx": 283.08,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.54,
+          "t": "circle"
+        },
+        {
+          "cx": 291.9,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.29,
+          "t": "circle"
+        },
+        {
+          "cx": 300.72,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.81,
+          "t": "circle"
+        },
+        {
+          "cx": 309.54,
+          "cy": 76.04,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 14.28,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.61,
+          "t": "circle"
+        },
+        {
+          "cx": 23.1,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.76,
+          "t": "circle"
+        },
+        {
+          "cx": 31.92,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.1,
+          "t": "circle"
+        },
+        {
+          "cx": 40.74,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.75,
+          "t": "circle"
+        },
+        {
+          "cx": 49.56,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.65,
+          "t": "circle"
+        },
+        {
+          "cx": 58.38,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.37,
+          "t": "circle"
+        },
+        {
+          "cx": 67.2,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.09,
+          "t": "circle"
+        },
+        {
+          "cx": 76.02,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.87,
+          "t": "circle"
+        },
+        {
+          "cx": 84.84,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.72,
+          "t": "circle"
+        },
+        {
+          "cx": 93.66,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.1,
+          "t": "circle"
+        },
+        {
+          "cx": 102.48,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.89,
+          "t": "circle"
+        },
+        {
+          "cx": 111.3,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.68,
+          "t": "circle"
+        },
+        {
+          "cx": 120.12,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.15,
+          "t": "circle"
+        },
+        {
+          "cx": 128.94,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.08,
+          "t": "circle"
+        },
+        {
+          "cx": 137.76,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.64,
+          "t": "circle"
+        },
+        {
+          "cx": 146.58,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.72,
+          "t": "circle"
+        },
+        {
+          "cx": 155.4,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.91,
+          "t": "circle"
+        },
+        {
+          "cx": 164.22,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.99,
+          "t": "circle"
+        },
+        {
+          "cx": 173.04,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.11,
+          "t": "circle"
+        },
+        {
+          "cx": 181.86,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.76,
+          "t": "circle"
+        },
+        {
+          "cx": 190.68,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.17,
+          "t": "circle"
+        },
+        {
+          "cx": 199.5,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.85,
+          "t": "circle"
+        },
+        {
+          "cx": 270.06,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.03,
+          "t": "circle"
+        },
+        {
+          "cx": 278.88,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 287.7,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.33,
+          "t": "circle"
+        },
+        {
+          "cx": 296.52,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.16,
+          "t": "circle"
+        },
+        {
+          "cx": 305.34,
+          "cy": 84.44,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.77,
+          "t": "circle"
+        },
+        {
+          "cx": 18.48,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.86,
+          "t": "circle"
+        },
+        {
+          "cx": 27.3,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.62,
+          "t": "circle"
+        },
+        {
+          "cx": 36.12,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.95,
+          "t": "circle"
+        },
+        {
+          "cx": 44.94,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.98,
+          "t": "circle"
+        },
+        {
+          "cx": 53.76,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.72,
+          "t": "circle"
+        },
+        {
+          "cx": 62.58,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.67,
+          "t": "circle"
+        },
+        {
+          "cx": 71.4,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.08,
+          "t": "circle"
+        },
+        {
+          "cx": 80.22,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.93,
+          "t": "circle"
+        },
+        {
+          "cx": 89.04,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.31,
+          "t": "circle"
+        },
+        {
+          "cx": 97.86,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.6,
+          "t": "circle"
+        },
+        {
+          "cx": 106.68,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.69,
+          "t": "circle"
+        },
+        {
+          "cx": 115.5,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.18,
+          "t": "circle"
+        },
+        {
+          "cx": 124.32,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.87,
+          "t": "circle"
+        },
+        {
+          "cx": 133.14,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.4,
+          "t": "circle"
+        },
+        {
+          "cx": 141.96,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.89,
+          "t": "circle"
+        },
+        {
+          "cx": 150.78,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.42,
+          "t": "circle"
+        },
+        {
+          "cx": 159.6,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.44,
+          "t": "circle"
+        },
+        {
+          "cx": 168.42,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.75,
+          "t": "circle"
+        },
+        {
+          "cx": 177.24,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.55,
+          "t": "circle"
+        },
+        {
+          "cx": 186.06,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.28,
+          "t": "circle"
+        },
+        {
+          "cx": 194.88,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.15,
+          "t": "circle"
+        },
+        {
+          "cx": 203.7,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.74,
+          "t": "circle"
+        },
+        {
+          "cx": 265.44,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.29,
+          "t": "circle"
+        },
+        {
+          "cx": 274.26,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.62,
+          "t": "circle"
+        },
+        {
+          "cx": 283.08,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.43,
+          "t": "circle"
+        },
+        {
+          "cx": 291.9,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.87,
+          "t": "circle"
+        },
+        {
+          "cx": 300.72,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.48,
+          "t": "circle"
+        },
+        {
+          "cx": 309.54,
+          "cy": 92.84,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.94,
+          "t": "circle"
+        },
+        {
+          "cx": 14.28,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.54,
+          "t": "circle"
+        },
+        {
+          "cx": 23.1,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.1,
+          "t": "circle"
+        },
+        {
+          "cx": 31.92,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.81,
+          "t": "circle"
+        },
+        {
+          "cx": 40.74,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.63,
+          "t": "circle"
+        },
+        {
+          "cx": 49.56,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.03,
+          "t": "circle"
+        },
+        {
+          "cx": 58.38,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.42,
+          "t": "circle"
+        },
+        {
+          "cx": 67.2,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.58,
+          "t": "circle"
+        },
+        {
+          "cx": 76.02,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.65,
+          "t": "circle"
+        },
+        {
+          "cx": 84.84,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.09,
+          "t": "circle"
+        },
+        {
+          "cx": 93.66,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.79,
+          "t": "circle"
+        },
+        {
+          "cx": 102.48,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.34,
+          "t": "circle"
+        },
+        {
+          "cx": 111.3,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.41,
+          "t": "circle"
+        },
+        {
+          "cx": 120.12,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.71,
+          "t": "circle"
+        },
+        {
+          "cx": 128.94,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.49,
+          "t": "circle"
+        },
+        {
+          "cx": 137.76,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.63,
+          "t": "circle"
+        },
+        {
+          "cx": 146.58,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.73,
+          "t": "circle"
+        },
+        {
+          "cx": 155.4,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.57,
+          "t": "circle"
+        },
+        {
+          "cx": 164.22,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.29,
+          "t": "circle"
+        },
+        {
+          "cx": 173.04,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.32,
+          "t": "circle"
+        },
+        {
+          "cx": 181.86,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.95,
+          "t": "circle"
+        },
+        {
+          "cx": 190.68,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.68,
+          "t": "circle"
+        },
+        {
+          "cx": 199.5,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.77,
+          "t": "circle"
+        },
+        {
+          "cx": 208.32,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.09,
+          "t": "circle"
+        },
+        {
+          "cx": 217.14,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.36,
+          "t": "circle"
+        },
+        {
+          "cx": 252.42,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.63,
+          "t": "circle"
+        },
+        {
+          "cx": 261.24,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.47,
+          "t": "circle"
+        },
+        {
+          "cx": 270.06,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.62,
+          "t": "circle"
+        },
+        {
+          "cx": 278.88,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.29,
+          "t": "circle"
+        },
+        {
+          "cx": 287.7,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.38,
+          "t": "circle"
+        },
+        {
+          "cx": 296.52,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 1.93,
+          "t": "circle"
+        },
+        {
+          "cx": 305.34,
+          "cy": 101.24,
+          "fill": "p3",
+          "opacity": 0.6,
+          "r": 2.05,
+          "t": "circle"
+        },
+        {
+          "cx": 235.2,
+          "cy": 64.7,
+          "fill": "p1",
+          "opacity": 0.2,
+          "r": 34.44,
+          "stroke": "p1",
+          "t": "circle"
+        },
+        {
+          "cx": 238.67,
+          "cy": 68.06,
+          "fill": "p1",
+          "r": 3.15,
+          "t": "circle"
+        },
+        {
+          "cx": 230.77,
+          "cy": 71.39,
+          "fill": "p1",
+          "r": 3.1,
+          "t": "circle"
+        },
+        {
+          "cx": 235.88,
+          "cy": 61.72,
+          "fill": "p1",
+          "r": 3.05,
+          "t": "circle"
+        },
+        {
+          "cx": 240.79,
+          "cy": 74.03,
+          "fill": "p1",
+          "r": 3,
+          "t": "circle"
+        },
+        {
+          "cx": 224.95,
+          "cy": 66.57,
+          "fill": "p1",
+          "r": 2.95,
+          "t": "circle"
+        },
+        {
+          "cx": 244.91,
+          "cy": 62.99,
+          "fill": "p1",
+          "r": 2.9,
+          "t": "circle"
+        },
+        {
+          "cx": 231.95,
+          "cy": 77.97,
+          "fill": "p1",
+          "r": 2.85,
+          "t": "circle"
+        },
+        {
+          "cx": 229.01,
+          "cy": 58.28,
+          "fill": "p1",
+          "r": 2.8,
+          "t": "circle"
+        },
+        {
+          "cx": 248.64,
+          "cy": 72.08,
+          "fill": "p1",
+          "r": 2.75,
+          "t": "circle"
+        },
+        {
+          "cx": 221.22,
+          "cy": 72.79,
+          "fill": "p1",
+          "r": 2.7,
+          "t": "circle"
+        },
+        {
+          "cx": 241.94,
+          "cy": 56.25,
+          "fill": "p1",
+          "r": 2.65,
+          "t": "circle"
+        },
+        {
+          "cx": 240.18,
+          "cy": 81.08,
+          "fill": "p1",
+          "r": 2.6,
+          "t": "circle"
+        },
+        {
+          "cx": 220.19,
+          "cy": 60.93,
+          "fill": "p1",
+          "r": 2.55,
+          "t": "circle"
+        },
+        {
+          "cx": 252.81,
+          "cy": 64.88,
+          "fill": "p1",
+          "r": 2.49,
+          "t": "circle"
+        },
+        {
+          "cx": 224.45,
+          "cy": 80.6,
+          "fill": "p1",
+          "r": 2.44,
+          "t": "circle"
+        },
+        {
+          "cx": 232.72,
+          "cy": 52.35,
+          "fill": "p1",
+          "r": 2.39,
+          "t": "circle"
+        },
+        {
+          "cx": 250.44,
+          "cy": 78.59,
+          "fill": "p1",
+          "r": 2.34,
+          "t": "circle"
+        },
+        {
+          "cx": 214.69,
+          "cy": 68.76,
+          "fill": "p1",
+          "r": 2.29,
+          "t": "circle"
+        },
+        {
+          "cx": 250.16,
+          "cy": 55.85,
+          "fill": "p1",
+          "r": 2.24,
+          "t": "circle"
+        },
+        {
+          "cx": 234.2,
+          "cy": 85.81,
+          "fill": "p1",
+          "r": 2.19,
+          "t": "circle"
+        },
+        {
+          "cx": 220.96,
+          "cy": 54.07,
+          "fill": "p1",
+          "r": 2.14,
+          "t": "circle"
+        },
+        {
+          "cx": 257.75,
+          "cy": 70.55,
+          "fill": "p1",
+          "r": 2.09,
+          "t": "circle"
+        },
+        {
+          "cx": 216.09,
+          "cy": 78.96,
+          "fill": "p1",
+          "r": 2.04,
+          "t": "circle"
+        },
+        {
+          "cx": 240.42,
+          "cy": 49.03,
+          "fill": "p1",
+          "r": 1.99,
+          "t": "circle"
+        },
+        {
+          "cx": 247.28,
+          "cy": 85.34,
+          "fill": "p1",
+          "r": 1.94,
+          "t": "circle"
+        },
+        {
+          "cx": 211.59,
+          "cy": 61.89,
+          "fill": "p1",
+          "r": 1.89,
+          "t": "circle"
+        },
+        {
+          "cx": 258.13,
+          "cy": 59.37,
+          "fill": "p1",
+          "r": 1.84,
+          "t": "circle"
+        },
+        {
+          "cx": 225.27,
+          "cy": 87.53,
+          "fill": "p1",
+          "r": 1.79,
+          "t": "circle"
+        },
+        {
+          "cx": 226.33,
+          "cy": 47.85,
+          "fill": "p1",
+          "r": 1.74,
+          "t": "circle"
+        },
+        {
+          "cx": 258.8,
+          "cy": 78.23,
+          "fill": "p1",
+          "r": 1.69,
+          "t": "circle"
+        },
+        {
+          "anchor": "middle",
+          "size": "m",
+          "t": "text",
+          "text": "VN30",
+          "weight": "bold",
+          "x": 235.2,
+          "y": 39.5
+        }
+      ],
+      "view_box": [
+        320,
+        110
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch01-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Thị trường chứng khoán là nơi doanh nghiệp huy động vốn và nhà đầu tư mua bán cổ phiếu. Để vận hành, thị trường cần nhiều tổ chức phối hợp với nhau và được chia thành các sàn giao dịch có quy mô khác nhau.",
+  "lesson_key": "concept:thi_truong_va_san",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Thị trường sơ cấp</b> là nơi doanh nghiệp bán cổ phiếu mới phát hành cho nhà đầu tư. Số tiền thu được chảy về doanh nghiệp để mở rộng sản xuất, kinh doanh.",
+          "type": "paragraph"
+        },
+        {
+          "text": "<b>Thị trường thứ cấp</b> là nơi các nhà đầu tư mua bán lại cổ phiếu đã phát hành, với giá do cung cầu quyết định. Các giao dịch diễn ra hằng ngày trên sàn đều thuộc thị trường thứ cấp.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l2-g1",
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Thị trường sơ cấp và thứ cấp"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>IPO</b> là lần đầu tiên doanh nghiệp chào bán cổ phiếu ra công chúng. Sau IPO, doanh nghiệp trở thành công ty đại chúng và có thể đưa cổ phiếu lên sàn theo một trong hai hình thức:",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l2-g2",
+          "type": "chart"
+        },
+        {
+          "text": "Doanh nghiệp đáp ứng các tiêu chuẩn về vốn, kết quả kinh doanh và số lượng cổ đông được <b>niêm yết</b> trên HOSE hoặc HNX. Công ty đại chúng chưa đủ điều kiện niêm yết sẽ <b>đăng ký giao dịch</b> trên UPCoM.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Từ IPO đến sàn giao dịch"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Từ lúc đặt lệnh đến khi nhận cổ phiếu, một giao dịch đi qua nhiều tổ chức, mỗi tổ chức đảm nhận một vai trò riêng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l2-g3",
+          "type": "chart"
+        },
+        {
+          "items": [
+            {
+              "term": "Ủy ban Chứng khoán Nhà nước",
+              "text": "Quản lý, cấp phép và giám sát toàn bộ thị trường."
+            },
+            {
+              "term": "Sở Giao dịch Chứng khoán",
+              "text": "Tổ chức giao dịch và khớp lệnh mua bán. Gồm Sở GDCK TP.HCM (HOSE) và Sở GDCK Hà Nội (HNX)."
+            },
+            {
+              "term": "VSDC",
+              "text": "Tổng công ty Lưu ký và Bù trừ chứng khoán Việt Nam. Lưu ký chứng khoán, bù trừ và thanh toán sau khi lệnh khớp."
+            },
+            {
+              "term": "Công ty chứng khoán",
+              "text": "Mở tài khoản, nhận lệnh của nhà đầu tư và chuyển lên sở giao dịch."
+            },
+            {
+              "term": "Doanh nghiệp phát hành",
+              "text": "Phát hành cổ phiếu, công bố thông tin và báo cáo tài chính định kỳ."
+            },
+            {
+              "term": "Nhà đầu tư",
+              "text": "Cá nhân và tổ chức, trong nước và nước ngoài."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s3",
+      "title": "Các bên tham gia thị trường"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "facts": [
+                {
+                  "label": "Doanh nghiệp",
+                  "value": "Quy mô lớn"
+                },
+                {
+                  "label": "Biên độ giá",
+                  "value": "±7%"
+                },
+                {
+                  "label": "Chỉ số",
+                  "value": "VN-Index, VN30"
+                }
+              ],
+              "subtitle": "Sở GDCK TP.HCM",
+              "title": "HOSE",
+              "tone": "highlight"
+            },
+            {
+              "facts": [
+                {
+                  "label": "Doanh nghiệp",
+                  "value": "Quy mô vừa và nhỏ"
+                },
+                {
+                  "label": "Biên độ giá",
+                  "value": "±10%"
+                },
+                {
+                  "label": "Chỉ số",
+                  "value": "HNX-Index"
+                }
+              ],
+              "subtitle": "Sở GDCK Hà Nội",
+              "title": "HNX"
+            },
+            {
+              "facts": [
+                {
+                  "label": "Doanh nghiệp",
+                  "value": "Công ty đại chúng chưa niêm yết"
+                },
+                {
+                  "label": "Biên độ giá",
+                  "value": "±15%"
+                },
+                {
+                  "label": "Chỉ số",
+                  "value": "UPCoM-Index"
+                }
+              ],
+              "subtitle": "Do HNX tổ chức",
+              "title": "UPCoM"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "HOSE là sàn có quy mô vốn hóa và thanh khoản lớn nhất. Ngoài cổ phiếu, HNX còn là nơi giao dịch trái phiếu Chính phủ và chứng khoán phái sinh.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Ba sàn giao dịch tại Việt Nam"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>VN-Index</b> phản ánh biến động giá của toàn bộ cổ phiếu niêm yết trên HOSE, lấy mốc 100 điểm vào ngày 28/7/2000. Khi VN-Index tăng, mặt bằng giá cổ phiếu trên HOSE nhìn chung đang tăng.",
+          "type": "paragraph"
+        },
+        {
+          "text": "<b>Vốn hóa</b> là giá trị thị trường của doanh nghiệp, bằng giá cổ phiếu nhân với số cổ phiếu đang lưu hành. <b>Thanh khoản</b> là mức độ dễ dàng mua bán một cổ phiếu, thể hiện qua khối lượng và giá trị giao dịch mỗi phiên.",
+          "type": "paragraph"
+        },
+        {
+          "text": "<b>VN30</b> gồm 30 cổ phiếu có vốn hóa và thanh khoản hàng đầu trên HOSE, được xem xét lại định kỳ. Đây là nhóm đại diện cho những doanh nghiệp lớn nhất thị trường.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l2-g4",
+          "type": "chart"
+        }
+      ],
+      "id": "s5",
+      "title": "VN-Index và VN30"
+    }
+  ],
+  "summary": [
+    "<b>Thị trường sơ cấp</b> giúp doanh nghiệp huy động vốn. <b>Thị trường thứ cấp</b> là nơi nhà đầu tư mua bán với nhau.",
+    "Sau IPO, cổ phiếu được <b>niêm yết</b> trên HOSE, HNX hoặc <b>đăng ký giao dịch</b> trên UPCoM.",
+    "Lệnh đi qua <b>công ty chứng khoán</b>, khớp tại <b>sở giao dịch</b>, thanh toán qua <b>VSDC</b>, dưới sự giám sát của <b>UBCKNN</b>.",
+    "<b>VN-Index</b> đại diện toàn bộ HOSE. <b>VN30</b> gồm 30 cổ phiếu lớn và thanh khoản nhất."
+  ],
+  "title": "Thị trường và các sàn"
+}

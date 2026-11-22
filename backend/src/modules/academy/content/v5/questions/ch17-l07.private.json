@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l07",
+  "questions": [
+    {
+      "correct_option_id": "32a5ddd2e1",
+      "id": "ch17-l07-q01",
+      "options": [
+        {
+          "id": "32a5ddd2e1",
+          "text": "(LN kinh doanh chính + khấu hao) ÷ doanh thu"
+        },
+        {
+          "id": "9b98e43fa5",
+          "text": "LNST ÷ vốn chủ bình quân"
+        },
+        {
+          "id": "eddc5e0d3b",
+          "text": "Khấu hao ÷ doanh thu thuần"
+        }
+      ],
+      "prompt": "Biên EBITDA tính thế nào?"
+    },
+    {
+      "correct_option_id": "c66102d8cf",
+      "id": "ch17-l07-q02",
+      "options": [
+        {
+          "id": "c66102d8cf",
+          "text": "Đáy chu kỳ"
+        },
+        {
+          "id": "f8e4146f6f",
+          "text": "Đỉnh chu kỳ"
+        },
+        {
+          "id": "8e6a26241b",
+          "text": "Giai đoạn không có nợ"
+        }
+      ],
+      "prompt": "Biên EBITDA thấp kéo dài thường là giai đoạn nào?"
+    },
+    {
+      "correct_option_id": "7dbd0045fd",
+      "id": "ch17-l07-q03",
+      "options": [
+        {
+          "id": "7dbd0045fd",
+          "text": "EBITDA là nguồn trả nợ"
+        },
+        {
+          "id": "37fc046498",
+          "text": "Vì EBITDA bằng cổ tức"
+        },
+        {
+          "id": "a5c91df0ba",
+          "text": "Vì EBITDA là doanh thu"
+        }
+      ],
+      "prompt": "Vì sao biên EBITDA quan trọng với công ty đang xây dự án lớn?"
+    },
+    {
+      "correct_option_id": "036d3203a2",
+      "id": "ch17-l07-q04",
+      "options": [
+        {
+          "id": "036d3203a2",
+          "text": "Để trống"
+        },
+        {
+          "id": "1a18a9560d",
+          "text": "Lấy từ thuyết minh"
+        },
+        {
+          "id": "56ead2e673",
+          "text": "Ghi 0"
+        }
+      ],
+      "prompt": "Kỳ lưu chuyển tiền tệ trực tiếp thì sao?"
+    },
+    {
+      "chart_id": "c17l7-rep",
+      "correct_option_id": "1943f0f43b",
+      "id": "ch17-l07-q05",
+      "options": [
+        {
+          "id": "1943f0f43b",
+          "text": "LN kinh doanh chính và khấu hao"
+        },
+        {
+          "id": "22c3c3fb31",
+          "text": "Doanh thu và giá vốn"
+        },
+        {
+          "id": "180f56af55",
+          "text": "Nợ vay và vốn chủ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm gì?"
+    }
+  ],
+  "salt": "c78b5e762ce7d1736bd25169429db0b4de2a935258aa095e12d641741935c8d2"
+}

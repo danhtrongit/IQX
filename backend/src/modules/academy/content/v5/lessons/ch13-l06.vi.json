@@ -1,0 +1,393 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l6-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Trả trước cuối Q2/26",
+          "tone": "pos",
+          "v": "28.160 tỷ"
+        },
+        {
+          "notes": [
+            "Cùng kỳ năm trước"
+          ],
+          "t": "Trả trước cuối Q2/25",
+          "tone": "warn",
+          "v": "25.666 tỷ"
+        },
+        {
+          "notes": [
+            "So với cùng kỳ"
+          ],
+          "t": "Tăng trưởng",
+          "tone": "p1",
+          "v": "9,7%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "so với",
+        "="
+      ]
+    },
+    "c13l6-g2": {
+      "decimals": 0,
+      "fig": "wf",
+      "height": 270,
+      "items": [
+        {
+          "label": "Đầu năm",
+          "step": "base",
+          "value": 100
+        },
+        {
+          "label": "Khách trả thêm",
+          "step": "plus",
+          "value": 70
+        },
+        {
+          "label": "Đã bàn giao",
+          "step": "minus",
+          "value": 45
+        },
+        {
+          "label": "Cuối năm",
+          "step": "total",
+          "value": 125
+        }
+      ],
+      "kind": "figure",
+      "title": "Số dư tiền khách trả trước trong một năm · số minh họa",
+      "unit": " tỷ"
+    },
+    "c13l6-rep": {
+      "alt": "Tăng trưởng người mua trả tiền trước: 9,7%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              63.091,
+              21.945,
+              39.755,
+              53.988,
+              50.763,
+              31.223,
+              20.874,
+              9.719
+            ]
+          }
+        ],
+        "name": "Tăng trưởng người mua trả tiền trước",
+        "sub": {
+          "series": [
+            {
+              "name": "Cuối quý này",
+              "v": [
+                18195.398,
+                20329.672,
+                23444.732,
+                25665.578,
+                27431.919,
+                26677.116,
+                28338.669,
+                28159.918
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                11156.613,
+                16671.125,
+                16775.561,
+                16667.286,
+                18195.398,
+                20329.672,
+                23444.732,
+                25665.578
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh thu bất động sản đi sau bán hàng 1 đến 3 năm. Số dư tiền khách trả trước thay đổi sớm hơn nhiều. Theo dõi tốc độ tăng của số dư này giúp thấy bán hàng tốt lên hay xấu đi trước khi doanh thu phản ánh.",
+  "lesson_key": "fundamental:buyer_prepay_growth-bds",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l6-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu so <b>số dư người mua trả tiền trước</b> (mã 312 + 332 trên bảng cân đối) cuối quý này với <b>cuối cùng quý năm trước</b>. Đơn vị %.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tăng trưởng người mua trả tiền trước là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Số dư cuối kỳ bằng số dư đầu kỳ cộng tiền khách mới trả, trừ phần đã chuyển thành doanh thu khi bàn giao.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l6-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền khách trả mới nhiều hơn phần bàn giao. Bán hàng tốt hoặc dự án mới mở bán.",
+              "title": "Tăng nhanh"
+            },
+            {
+              "text": "Bàn giao nhiều hơn tiền mới vào. Doanh thu sắp tới cao nhưng nguồn cho các năm sau mỏng dần.",
+              "title": "Giảm"
+            },
+            {
+              "text": "Bán mới vừa đủ bù bàn giao. Công ty ở trạng thái cân bằng.",
+              "title": "Đi ngang"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Số dư thay đổi vì đâu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l6-rep",
+          "title": "Tăng trưởng người mua trả tiền trước",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng số dư trả trước so với cùng kỳ, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Số dư cuối quý này và cùng kỳ năm trước, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Đường giảm dần nhưng vẫn trên 0: số dư vẫn tăng, chỉ là tăng chậm lại.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tăng trên khoảng 20% so với cùng kỳ trong nhiều quý. Đây là mức tham khảo, doanh thu 1 đến 2 năm tới có nền tốt.",
+              "title": "Bán hàng tốt lên",
+              "tone": "pos"
+            },
+            {
+              "text": "Tăng trưởng âm nhiều quý liền. Nếu doanh thu đang cao, đó có thể là đỉnh tạm thời.",
+              "title": "Bán hàng chậm lại",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đây là chỉ tiêu dẫn trước: thường đổi hướng sớm hơn doanh thu. Nhưng cần đọc cùng số dư tuyệt đối, vì số dư nhỏ thì tăng trưởng phần trăm dễ bị phóng đại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số dư tăng mạnh hôm nay thường đi trước doanh thu tăng 1 đến 2 năm.",
+              "title": "Báo trước doanh thu"
+            },
+            {
+              "text": "Công ty nói bán tốt nhưng số dư trả trước giảm thì cần xem lại.",
+              "title": "Kiểm tra lời nói về bán hàng"
+            },
+            {
+              "text": "Xem cả bài Người mua trả tiền trước / Doanh thu để thấy quy mô.",
+              "title": "Kết hợp tỷ lệ trên doanh thu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu, số dư cuối quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Cuối quý"
+            },
+            {
+              "label": "Cùng kỳ"
+            },
+            {
+              "label": "Tăng trưởng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "18.195",
+                "11.157",
+                "63,1%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "25.666",
+                "16.667",
+                "54,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "26.677",
+                "20.330",
+                "31,2%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "28.160",
+                "25.666",
+                "9,7%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Số dư vẫn tăng nhưng tốc độ giảm từ 54,0% xuống 9,7%. Bán hàng mới chậm lại so với năm trước.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số dư thay đổi do cả tiền mới vào và phần đã bàn giao ra.",
+              "title": "Nhầm với doanh số bán hàng"
+            },
+            {
+              "text": "Số dư nhỏ thì tăng 100% cũng chỉ là vài trăm tỷ.",
+              "title": "Chỉ nhìn phần trăm"
+            },
+            {
+              "text": "Đợt mở bán lớn có thể làm một quý tăng vọt. Xem xu hướng nhiều quý.",
+              "title": "Kết luận từ một quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tín hiệu sớm nhất về sức bán hàng của công ty.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Ít dùng hơn. Với khu công nghiệp nên theo dõi doanh thu chưa thực hiện.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Tăng trưởng = số dư <b>người mua trả tiền trước</b> cuối quý so với <b>cùng kỳ năm trước</b>.",
+    "Số dư thay đổi do <b>tiền mới vào</b> trừ <b>phần đã bàn giao</b>.",
+    "Đây là chỉ tiêu <b>dẫn trước doanh thu</b>.",
+    "Đọc cùng <b>số dư tuyệt đối</b> để tránh bị phần trăm đánh lừa."
+  ],
+  "title": "Tăng trưởng người mua trả tiền trước · tín hiệu sớm của bán hàng"
+}

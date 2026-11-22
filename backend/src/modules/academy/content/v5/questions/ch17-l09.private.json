@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l09",
+  "questions": [
+    {
+      "correct_option_id": "dc54bcbc6b",
+      "id": "ch17-l09-q01",
+      "options": [
+        {
+          "id": "dc54bcbc6b",
+          "text": "XDCB dở dang, mã 242"
+        },
+        {
+          "id": "fa98bea2d7",
+          "text": "TSCĐ, mã 220"
+        },
+        {
+          "id": "aca3a67ef9",
+          "text": "Tồn kho, mã 140"
+        }
+      ],
+      "prompt": "Công trình nhà máy đang xây nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "8f59588ec0",
+      "id": "ch17-l09-q02",
+      "options": [
+        {
+          "id": "8f59588ec0",
+          "text": "Giảm mạnh"
+        },
+        {
+          "id": "b3b3ee5fe9",
+          "text": "Tăng mạnh"
+        },
+        {
+          "id": "d69b0842eb",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Khi nhà máy mới vận hành, tỷ lệ thường thế nào?"
+    },
+    {
+      "correct_option_id": "32250bbbc2",
+      "id": "ch17-l09-q03",
+      "options": [
+        {
+          "id": "32250bbbc2",
+          "text": "Rủi ro tài chính trong thời gian xây"
+        },
+        {
+          "id": "bcf44cbff0",
+          "text": "Rủi ro thiếu hàng tồn"
+        },
+        {
+          "id": "a8d42b43bf",
+          "text": "Rủi ro mất khách hàng"
+        }
+      ],
+      "prompt": "Dự án lớn so với nhà máy hiện có làm rủi ro gì tăng?"
+    },
+    {
+      "correct_option_id": "652d3aca9c",
+      "id": "ch17-l09-q04",
+      "options": [
+        {
+          "id": "652d3aca9c",
+          "text": "Cộng vào giá trị đang xây"
+        },
+        {
+          "id": "8aca4f8370",
+          "text": "Vào chi phí bán hàng"
+        },
+        {
+          "id": "6d3e92eac7",
+          "text": "Vào doanh thu"
+        }
+      ],
+      "prompt": "Lãi vay dự án trong thời gian xây đi đâu?"
+    },
+    {
+      "chart_id": "c17l9-rep",
+      "correct_option_id": "2ca8c8853e",
+      "id": "ch17-l09-q05",
+      "options": [
+        {
+          "id": "2ca8c8853e",
+          "text": "Dự án đang được rót vốn liên tục"
+        },
+        {
+          "id": "bee9f5539d",
+          "text": "Nhà máy cũ bị bán"
+        },
+        {
+          "id": "a021431b17",
+          "text": "Doanh thu giảm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột dở dang tăng đều mỗi quý cho thấy gì?"
+    }
+  ],
+  "salt": "4dd75af1982659758fa3b1cb04206d3442dd92646ac646d72e9ec14f9ee87079"
+}

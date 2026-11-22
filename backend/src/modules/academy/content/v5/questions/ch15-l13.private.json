@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l13",
+  "questions": [
+    {
+      "correct_option_id": "01e8ec80ba",
+      "id": "ch15-l13-q01",
+      "options": [
+        {
+          "id": "01e8ec80ba",
+          "text": "Lợi nhuận ổn định hơn nhiều ngành"
+        },
+        {
+          "id": "e847f23721",
+          "text": "Vì nhóm này không có nợ"
+        },
+        {
+          "id": "f6ab84da85",
+          "text": "Vì giá cổ phiếu không đổi"
+        }
+      ],
+      "prompt": "Vì sao P/E phù hợp để định giá bán lẻ và tiêu dùng?"
+    },
+    {
+      "correct_option_id": "6c99e569db",
+      "id": "ch15-l13-q02",
+      "options": [
+        {
+          "id": "6c99e569db",
+          "text": "Giảm"
+        },
+        {
+          "id": "a903b733f7",
+          "text": "Tăng mạnh"
+        },
+        {
+          "id": "78b63d0b3c",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Khi tăng trưởng của chuỗi bán lẻ chậm lại, P/E thường thế nào?"
+    },
+    {
+      "correct_option_id": "60d3f14e52",
+      "id": "ch15-l13-q03",
+      "options": [
+        {
+          "id": "60d3f14e52",
+          "text": "Tăng trưởng lợi nhuận"
+        },
+        {
+          "id": "e80f98acd5",
+          "text": "Số nhân viên"
+        },
+        {
+          "id": "c19ebc88b4",
+          "text": "Tỷ lệ chi phí thuê"
+        }
+      ],
+      "prompt": "Nên đọc P/E cùng gì?"
+    },
+    {
+      "correct_option_id": "46fe606cc2",
+      "id": "ch15-l13-q04",
+      "options": [
+        {
+          "id": "46fe606cc2",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "24d7d16f96",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "bdda171515",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "So với ngành chu kỳ như thép, P/E bán lẻ thường thế nào?"
+    },
+    {
+      "chart_id": "c15l13-rep",
+      "correct_option_id": "1c44cc25d6",
+      "id": "ch15-l13-q05",
+      "options": [
+        {
+          "id": "1c44cc25d6",
+          "text": "Trong dải hẹp hơn ngành chu kỳ"
+        },
+        {
+          "id": "312daea757",
+          "text": "Rất mạnh theo giá dầu"
+        },
+        {
+          "id": "3028cd4887",
+          "text": "Không dao động"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, P/E bán lẻ thường dao động thế nào?"
+    }
+  ],
+  "salt": "63b47292dfc9692e91357fa1aeeb7c6062cda80f6fcec53aa75d49ec0f58b401"
+}

@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l08",
+  "questions": [
+    {
+      "correct_option_id": "9158efacfa",
+      "id": "ch02-l08-q01",
+      "options": [
+        {
+          "id": "9158efacfa",
+          "text": "Đưa ra hai lựa chọn đều dẫn đến bước tiếp theo"
+        },
+        {
+          "id": "4381b7b052",
+          "text": "Hỏi “Anh có muốn mở không?”"
+        },
+        {
+          "id": "e9a6d0b9a7",
+          "text": "Yêu cầu khách mở ngay hôm nay"
+        }
+      ],
+      "prompt": "Câu chốt nhẹ nhàng nên được đặt theo cách nào?"
+    },
+    {
+      "correct_option_id": "0a0431ff50",
+      "id": "ch02-l08-q02",
+      "options": [
+        {
+          "id": "0a0431ff50",
+          "text": "Mở tài khoản, đăng ký SACO, nạp tiền, lệnh đầu tiên"
+        },
+        {
+          "id": "59decc8564",
+          "text": "Mở tài khoản, chuyển tiền cho SACO, SACO đặt lệnh, chia lãi"
+        },
+        {
+          "id": "f874cc8807",
+          "text": "Hội thảo, ăn trưa, tặng quà, chụp ảnh"
+        }
+      ],
+      "prompt": "Bốn bước kích hoạt khách là gì?"
+    },
+    {
+      "correct_option_id": "9b67da5576",
+      "id": "ch02-l08-q03",
+      "options": [
+        {
+          "id": "9b67da5576",
+          "text": "Khách tự bấm, SACO hướng dẫn"
+        },
+        {
+          "id": "501c459abd",
+          "text": "SACO bấm bằng mật khẩu của khách"
+        },
+        {
+          "id": "7bba1034c1",
+          "text": "Trưởng nhóm bấm giúp"
+        }
+      ],
+      "prompt": "Khi hướng dẫn lệnh đầu tiên, ai là người bấm lệnh?"
+    }
+  ],
+  "salt": "b0df0537bd217d1e39b9c98dca2ac8f2aad3ad98e9c0cee9c1a49dd073a43155"
+}

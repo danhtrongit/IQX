@@ -1,0 +1,568 @@
+{
+  "chapter": 1,
+  "charts": {
+    "c1l5-g1": {
+      "alt": "Cổ đông góp vốn và nhận cổ tức, trái chủ cho vay và nhận lãi cùng gốc",
+      "edges": [
+        {
+          "from": "co-dong",
+          "label": "Góp vốn",
+          "to": "doanh-nghiep"
+        },
+        {
+          "from": "doanh-nghiep",
+          "label": "Cổ tức, giá tăng",
+          "to": "co-dong"
+        },
+        {
+          "from": "trai-chu",
+          "label": "Cho vay",
+          "to": "doanh-nghiep"
+        },
+        {
+          "from": "doanh-nghiep",
+          "label": "Lãi và gốc",
+          "to": "trai-chu"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "caption": "Mua cổ phiếu · Lợi nhuận theo kết quả kinh doanh",
+          "id": "co-dong",
+          "sub": "chủ sở hữu",
+          "title": "Cổ đông",
+          "tone": "p1"
+        },
+        {
+          "emph": true,
+          "id": "doanh-nghiep",
+          "sub": "huy động vốn",
+          "title": "Doanh nghiệp"
+        },
+        {
+          "caption": "Mua trái phiếu · Lãi suất xác định trước",
+          "id": "trai-chu",
+          "sub": "chủ nợ",
+          "title": "Trái chủ",
+          "tone": "warn"
+        }
+      ]
+    },
+    "c1l5-g2": {
+      "kind": "category",
+      "labels": [
+        "Mua",
+        "Năm 1",
+        "Năm 2",
+        "Năm 3"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Tiền mua trái phiếu",
+          "tone": "neg",
+          "values": [
+            -100000,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "Tiền lãi 8.000/năm",
+          "tone": "warn",
+          "values": [
+            null,
+            8000,
+            8000,
+            8000
+          ]
+        },
+        {
+          "name": "Hoàn trả mệnh giá",
+          "tone": "pos",
+          "values": [
+            null,
+            null,
+            null,
+            100000
+          ]
+        }
+      ],
+      "unit": "đ",
+      "value_format": {
+        "sign": true
+      },
+      "value_labels": "all"
+    },
+    "c1l5-g3": {
+      "alt": "Rủi ro càng cao, lợi nhuận kỳ vọng càng cao: tiết kiệm, trái phiếu Chính phủ, trái phiếu doanh nghiệp, cổ phiếu",
+      "axes": {
+        "x": {
+          "arrow": true,
+          "title": "Rủi ro"
+        },
+        "y": {
+          "arrow": true,
+          "title": "Lợi nhuận kỳ vọng"
+        }
+      },
+      "domain": {
+        "x": [
+          0,
+          1
+        ],
+        "y": [
+          0,
+          1
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "dash": true,
+          "pts": [
+            [
+              0.0469,
+              0.12
+            ],
+            [
+              0.063,
+              0.1274
+            ],
+            [
+              0.0793,
+              0.1351
+            ],
+            [
+              0.0956,
+              0.1431
+            ],
+            [
+              0.1119,
+              0.1515
+            ],
+            [
+              0.1283,
+              0.1602
+            ],
+            [
+              0.1448,
+              0.1692
+            ],
+            [
+              0.1614,
+              0.1786
+            ],
+            [
+              0.178,
+              0.1884
+            ],
+            [
+              0.1947,
+              0.1984
+            ],
+            [
+              0.2115,
+              0.2088
+            ],
+            [
+              0.2283,
+              0.2195
+            ],
+            [
+              0.2452,
+              0.2306
+            ],
+            [
+              0.2622,
+              0.242
+            ],
+            [
+              0.2792,
+              0.2537
+            ],
+            [
+              0.2963,
+              0.2658
+            ],
+            [
+              0.3135,
+              0.2782
+            ],
+            [
+              0.3308,
+              0.291
+            ],
+            [
+              0.3481,
+              0.304
+            ],
+            [
+              0.3654,
+              0.3174
+            ],
+            [
+              0.3829,
+              0.3312
+            ],
+            [
+              0.4004,
+              0.3453
+            ],
+            [
+              0.418,
+              0.3597
+            ],
+            [
+              0.4356,
+              0.3745
+            ],
+            [
+              0.4533,
+              0.3896
+            ],
+            [
+              0.4711,
+              0.405
+            ],
+            [
+              0.4889,
+              0.4208
+            ],
+            [
+              0.5069,
+              0.4369
+            ],
+            [
+              0.5248,
+              0.4533
+            ],
+            [
+              0.5429,
+              0.4701
+            ],
+            [
+              0.561,
+              0.4872
+            ],
+            [
+              0.5792,
+              0.5046
+            ],
+            [
+              0.5974,
+              0.5224
+            ],
+            [
+              0.6158,
+              0.5406
+            ],
+            [
+              0.6341,
+              0.559
+            ],
+            [
+              0.6526,
+              0.5778
+            ],
+            [
+              0.6711,
+              0.5969
+            ],
+            [
+              0.6897,
+              0.6164
+            ],
+            [
+              0.7084,
+              0.6362
+            ],
+            [
+              0.7271,
+              0.6563
+            ],
+            [
+              0.7459,
+              0.6768
+            ],
+            [
+              0.7647,
+              0.6976
+            ],
+            [
+              0.7837,
+              0.7188
+            ],
+            [
+              0.8027,
+              0.7402
+            ],
+            [
+              0.8217,
+              0.762
+            ],
+            [
+              0.8408,
+              0.7842
+            ],
+            [
+              0.86,
+              0.8067
+            ],
+            [
+              0.8793,
+              0.8295
+            ],
+            [
+              0.8986,
+              0.8527
+            ],
+            [
+              0.918,
+              0.8762
+            ],
+            [
+              0.9375,
+              0.9
+            ]
+          ],
+          "t": "line",
+          "tone": "p1",
+          "width": 2
+        },
+        {
+          "at": [
+            0.08,
+            0.12
+          ],
+          "label": "Tiền gửi tiết kiệm",
+          "pos": "right",
+          "size": "m",
+          "t": "point",
+          "tone": "p3"
+        },
+        {
+          "at": [
+            0.28,
+            0.24
+          ],
+          "label": "Trái phiếu Chính phủ",
+          "pos": "right",
+          "size": "m",
+          "t": "point",
+          "tone": "warn"
+        },
+        {
+          "at": [
+            0.52,
+            0.42
+          ],
+          "label": "Trái phiếu doanh nghiệp",
+          "pos": "right",
+          "size": "m",
+          "t": "point",
+          "tone": "warn"
+        },
+        {
+          "at": [
+            0.86,
+            0.82
+          ],
+          "label": "Cổ phiếu",
+          "pos": "left",
+          "size": "l",
+          "t": "point",
+          "tone": "p1"
+        }
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch01-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh nghiệp có hai cách huy động vốn: bán một phần quyền sở hữu hoặc đi vay. Cổ phiếu và trái phiếu là hai công cụ tương ứng, mang lại quyền lợi và mức rủi ro khác nhau.",
+  "lesson_key": "concept:co_phieu_trai_phieu",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Người mua <b>cổ phiếu</b> trở thành <b>cổ đông</b>, tức là đồng sở hữu doanh nghiệp. Người mua <b>trái phiếu</b> trở thành <b>trái chủ</b>, tức là chủ nợ của doanh nghiệp.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l5-g1",
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Chủ sở hữu và chủ nợ"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Cổ đông hưởng lợi từ hai nguồn: <b>cổ tức</b> khi doanh nghiệp chia lợi nhuận, và <b>chênh lệch giá</b> khi giá cổ phiếu tăng. Cả hai khoản này đều không cố định mà phụ thuộc vào kết quả kinh doanh.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Cổ phiếu không có kỳ hạn. Khi muốn thu hồi vốn, cổ đông bán lại cổ phiếu cho nhà đầu tư khác trên thị trường.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "subtitle": "Loại phổ biến trên sàn",
+              "text": "Có quyền biểu quyết tại đại hội cổ đông và nhận cổ tức theo quyết định của doanh nghiệp.",
+              "title": "Cổ phiếu phổ thông",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Ít phổ biến",
+              "text": "Được ưu tiên khi chia cổ tức hoặc hoàn vốn, nhưng thường bị hạn chế quyền biểu quyết.",
+              "title": "Cổ phiếu ưu đãi"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Cổ phiếu"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Mệnh giá</b>, <b>lãi suất</b> và <b>kỳ hạn</b> của trái phiếu được xác định ngay từ đầu. Trái chủ nhận lãi định kỳ và được hoàn trả mệnh giá khi đáo hạn, dù doanh nghiệp kinh doanh lãi hay lỗ, với điều kiện doanh nghiệp còn khả năng trả nợ.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Ví dụ: trái phiếu mệnh giá 100.000 đồng, lãi suất 8%/năm, kỳ hạn 3 năm:",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l5-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "subtitle": "Do Nhà nước phát hành",
+              "text": "Rủi ro thấp nhất, đổi lại lãi suất thấp hơn trái phiếu doanh nghiệp.",
+              "title": "Trái phiếu Chính phủ"
+            },
+            {
+              "subtitle": "Do doanh nghiệp phát hành",
+              "text": "Lãi suất cao hơn, nhưng có rủi ro doanh nghiệp không trả được lãi hoặc gốc đúng hạn.",
+              "title": "Trái phiếu doanh nghiệp"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Trái phiếu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": ""
+            },
+            {
+              "highlight": true,
+              "label": "Cổ phiếu"
+            },
+            {
+              "label": "Trái phiếu"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Tư cách người nắm giữ",
+                "Chủ sở hữu",
+                "Chủ nợ"
+              ]
+            },
+            {
+              "cells": [
+                "Thu nhập",
+                "Cổ tức và chênh lệch giá, không cố định",
+                "Lãi suất cố định hoặc theo công thức"
+              ]
+            },
+            {
+              "cells": [
+                "Kỳ hạn",
+                "Không kỳ hạn",
+                "Có kỳ hạn, đáo hạn trả gốc"
+              ]
+            },
+            {
+              "cells": [
+                "Quyền biểu quyết",
+                "Có (cổ phiếu phổ thông)",
+                "Không"
+              ]
+            },
+            {
+              "cells": [
+                "Thứ tự thanh toán khi phá sản",
+                "Sau chủ nợ",
+                "Trước cổ đông"
+              ]
+            },
+            {
+              "cells": [
+                "Lợi nhuận tiềm năng",
+                "Cao, không giới hạn",
+                "Giới hạn ở lãi suất"
+              ]
+            },
+            {
+              "cells": [
+                "Rủi ro",
+                "Cao hơn",
+                "Thấp hơn"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s4",
+      "title": "So sánh cổ phiếu và trái phiếu"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Kênh đầu tư có lợi nhuận kỳ vọng càng cao thì rủi ro càng lớn. Trong các kênh phổ biến, cổ phiếu thuộc nhóm có cả rủi ro và lợi nhuận kỳ vọng cao nhất.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l5-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s5",
+      "title": "Rủi ro đi cùng lợi nhuận"
+    }
+  ],
+  "summary": [
+    "Mua cổ phiếu là <b>góp vốn làm chủ</b>. Mua trái phiếu là <b>cho doanh nghiệp vay</b>.",
+    "Cổ phiếu mang lại <b>cổ tức và chênh lệch giá</b>, không cố định, không kỳ hạn.",
+    "Trái phiếu trả <b>lãi định kỳ và hoàn gốc khi đáo hạn</b>, được thanh toán trước cổ đông.",
+    "Cổ phiếu có <b>lợi nhuận tiềm năng và rủi ro cao hơn</b> trái phiếu."
+  ],
+  "title": "Cổ phiếu và trái phiếu"
+}

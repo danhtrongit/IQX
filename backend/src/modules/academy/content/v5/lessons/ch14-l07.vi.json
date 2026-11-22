@@ -1,0 +1,368 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l7-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "EBIT × (1 − 20%)"
+          ],
+          "t": "NOPAT 4 quý",
+          "tone": "pos",
+          "v": "3.856 tỷ"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Vốn đầu tư bình quân",
+          "tone": "p1",
+          "v": "VCSH + nợ vay − tiền"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "ROIC",
+          "tone": "warn",
+          "v": "14,0%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l7-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Năm giá dầu cao",
+          "tone": "pos",
+          "value": 22
+        },
+        {
+          "label": "Năm giá dầu trung bình",
+          "tone": "p1",
+          "value": 12
+        },
+        {
+          "label": "Năm giá dầu thấp",
+          "tone": "neg",
+          "value": 4
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "ROIC của một doanh nghiệp qua chu kỳ giá · số minh họa",
+      "unit": "%"
+    },
+    "c14l7-rep": {
+      "alt": "ROIC: 14,0%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "ROIC (4 quý)",
+            "v": [
+              12.052,
+              15.178,
+              18.259,
+              19.593,
+              19.982,
+              17.027,
+              14.542,
+              13.968
+            ]
+          }
+        ],
+        "name": "ROIC",
+        "sub": {
+          "series": [
+            {
+              "name": "NOPAT 4 quý",
+              "v": [
+                3105.377,
+                3909.552,
+                4725.52,
+                5236.175,
+                5334.951,
+                4606.449,
+                3876.838,
+                3855.739
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "ROIC đo lợi nhuận trên vốn đầu tư. Doanh nghiệp dầu khí cần vốn rất lớn cho tài sản, nên ROIC là thước đo quan trọng để biết vốn có được dùng hiệu quả qua chu kỳ giá hay không.",
+  "lesson_key": "fundamental:roic-dk",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l7-g1",
+          "type": "chart"
+        },
+        {
+          "text": "ROIC bằng <b>NOPAT</b> (lợi nhuận hoạt động sau thuế) chia <b>vốn đầu tư bình quân</b> (vốn chủ cộng nợ vay trừ tiền). Cách tính giống bài ROIC ở phần doanh nghiệp sản xuất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l7-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC tăng mạnh khi giá dầu cao và giảm khi giá thấp. Đọc bình quân nhiều năm.",
+              "title": "Đi theo chu kỳ"
+            },
+            {
+              "text": "Nhiều doanh nghiệp dầu khí giữ nhiều tiền. Trừ tiền giúp đo đúng vốn đang dùng cho kinh doanh.",
+              "title": "Trừ tiền mặt"
+            },
+            {
+              "text": "Dự án đang xây làm vốn tăng trước khi lợi nhuận tăng, ROIC giảm tạm thời.",
+              "title": "Tài sản mới chưa sinh lời"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở dầu khí khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l7-rep",
+          "title": "ROIC",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "NOPAT 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột NOPAT giảm kéo ROIC giảm theo khi biên gộp co lại.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "ROIC bình quân nhiều năm trên khoảng 12%. Mức tham khảo, cao hơn chi phí vốn của doanh nghiệp.",
+              "title": "Tạo giá trị qua chu kỳ",
+              "tone": "pos"
+            },
+            {
+              "text": "ROIC bình quân dưới khoảng 8%, chỉ cao trong năm giá dầu đỉnh.",
+              "title": "Không tạo giá trị",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc ROIC dầu khí theo <b>bình quân 5 năm</b> và so với cùng mảng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bỏ bớt ảnh hưởng của đỉnh và đáy giá dầu.",
+              "title": "Dùng bình quân nhiều năm"
+            },
+            {
+              "text": "Phân phối thường có ROIC cao vì tài sản nhẹ hơn khai thác.",
+              "title": "So cùng mảng"
+            },
+            {
+              "text": "Đầu tư lớn làm ROIC giảm tạm thời trước khi dự án sinh lời.",
+              "title": "Đọc cùng Capex / Khấu hao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "NOPAT"
+            },
+            {
+              "label": "ROIC"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "3.105",
+                "12,1%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "5.236",
+                "19,6%"
+              ]
+            },
+            {
+              "cells": [
+                "Q3/25",
+                "5.335",
+                "20,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "3.856",
+                "14,0%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "ROIC lên đỉnh 20,0% ở Q3/25 rồi giảm còn 14,0% khi biên gộp co lại. Bình quân các năm vẫn trên 12%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC năm giá dầu cao không đại diện cho cả chu kỳ.",
+              "title": "Đọc ở đỉnh chu kỳ"
+            },
+            {
+              "text": "Tiền mặt lớn làm vốn đầu tư phình ra, ROIC thấp giả.",
+              "title": "Không trừ tiền"
+            },
+            {
+              "text": "Khai thác và phân phối có cấu trúc vốn rất khác.",
+              "title": "So khác mảng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC rất cao ở đỉnh giá dầu, rất thấp ở đáy.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "ROIC ổn định hơn nhờ phí vận chuyển.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "ROIC phụ thuộc biên lọc dầu và lãi lỗ tồn kho.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>ROIC</b> = NOPAT 4 quý ÷ vốn đầu tư bình quân.",
+    "Ở dầu khí <b>đi theo chu kỳ giá</b>.",
+    "Đọc theo <b>bình quân 5 năm</b>, so cùng mảng.",
+    "Dự án mới làm ROIC <b>giảm tạm thời</b>."
+  ],
+  "title": "ROIC · ở dầu khí"
+}

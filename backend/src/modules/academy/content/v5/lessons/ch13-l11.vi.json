@@ -1,0 +1,411 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l11-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Ngắn hạn + dài hạn"
+          ],
+          "t": "Trả trước + phải thu khác",
+          "tone": "p5",
+          "v": "16.206 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 410"
+          ],
+          "t": "Vốn chủ sở hữu",
+          "tone": "p1",
+          "v": "51.074 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "31,7%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l11-g2": {
+      "fig": "lines",
+      "kind": "figure",
+      "rows": [
+        {
+          "code": "Mã 132",
+          "line": "Trả trước cho người bán ngắn hạn",
+          "report": "Ngắn hạn",
+          "tone": "p5"
+        },
+        {
+          "code": "Mã 136",
+          "line": "Phải thu ngắn hạn khác",
+          "report": "Ngắn hạn",
+          "tone": "p5"
+        },
+        {
+          "code": "Mã 212",
+          "line": "Trả trước cho người bán dài hạn",
+          "report": "Dài hạn",
+          "tone": "warn"
+        },
+        {
+          "code": "Mã 216",
+          "line": "Phải thu dài hạn khác",
+          "report": "Dài hạn",
+          "tone": "warn"
+        }
+      ],
+      "title": "Bảng cân đối kế toán (mẫu B01-DN)"
+    },
+    "c13l11-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Chủ yếu ứng trước nhà thầu",
+          "tone": "pos",
+          "value": 15
+        },
+        {
+          "label": "Có thêm đặt cọc dự án",
+          "tone": "warn",
+          "value": 35
+        },
+        {
+          "label": "Nhiều hợp tác, cho vay đối tác",
+          "tone": "neg",
+          "value": 70
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Tỷ lệ tham khảo · số minh họa",
+      "unit": "%"
+    },
+    "c13l11-rep": {
+      "alt": "Phải thu và trả trước / VCSH: 31,7%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "(Trả trước + Phải thu khác) / VCSH",
+            "v": [
+              25.522,
+              24.776,
+              27.093,
+              28.003,
+              29.096,
+              28.487,
+              30.668,
+              31.73
+            ]
+          }
+        ],
+        "name": "Phải thu và trả trước / VCSH",
+        "sub": {
+          "series": [
+            {
+              "name": "Trả trước cho người bán",
+              "v": [
+                5918,
+                6175.201,
+                6860.771,
+                7197.005,
+                7534.333,
+                7823.04,
+                8541.928,
+                8913.056
+              ]
+            },
+            {
+              "name": "Phải thu khác",
+              "v": [
+                4842,
+                5052.437,
+                5613.358,
+                5888.458,
+                6164.455,
+                6400.669,
+                6988.85,
+                7292.5
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l11",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty bất động sản hay ứng trước tiền cho nhà thầu, đặt cọc mua dự án, cho đối tác hợp tác vay. Những khoản này nằm ở trả trước cho người bán và phải thu khác. Khi chúng quá lớn so với vốn chủ, tiền của cổ đông đang nằm ở bên ngoài công ty.",
+  "lesson_key": "fundamental:prepay_receivables_to_equity-bds",
+  "order": 11,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l11-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>trả trước cho người bán</b> cộng <b>phải thu khác</b>, cả ngắn hạn và dài hạn, chia <b>vốn chủ sở hữu</b>. Tất cả lấy từ bảng cân đối kế toán.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Phải thu và trả trước / VCSH là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l11-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bình thường khi dự án đang xây. Nên giảm dần khi công trình hoàn thành.",
+              "title": "Ứng trước nhà thầu"
+            },
+            {
+              "text": "Tiền cọc để nhận chuyển nhượng dự án hoặc cổ phần. Có thể kéo dài nhiều năm.",
+              "title": "Đặt cọc mua dự án"
+            },
+            {
+              "text": "Tiền góp vào dự án làm chung, cho đối tác vay. Khó biết khi nào thu về.",
+              "title": "Hợp tác kinh doanh"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lấy ở dòng nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l11-rep",
+          "title": "Phải thu và trả trước / VCSH",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Trả trước và phải thu khác chia vốn chủ sở hữu, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng trả trước cho người bán và phải thu khác, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tăng nhanh hơn vốn chủ nghĩa là ngày càng nhiều tiền nằm ở bên khác.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 20% vốn chủ. Mức tham khảo, phần lớn là ứng trước nhà thầu theo tiến độ.",
+              "title": "Mức kiểm soát được",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 50% vốn chủ, hoặc tăng nhanh nhiều năm liền. Tiền có thể nằm lâu ở đối tác, khó thu hồi.",
+              "title": "Cờ đỏ",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Báo cáo tài chính không cho biết đối tác là ai. Chỉ tiêu này chỉ cho thấy quy mô, không cho thấy rủi ro của từng khoản.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l11-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty vay nhiều mà tiền mặt không tăng thì xem tiền có đang nằm ở các khoản này không.",
+              "title": "Kiểm tra tiền đi đâu"
+            },
+            {
+              "text": "Tăng đều nhiều năm mà không giảm là dấu hiệu khó thu hồi.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "Khoản tăng lên làm dòng tiền kinh doanh thấp đi.",
+              "title": "Đọc cùng CFO"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Trả trước"
+            },
+            {
+              "label": "Phải thu khác"
+            },
+            {
+              "label": "Tỷ lệ / VCSH"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "5.918",
+                "4.842",
+                "25,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "7.197",
+                "5.888",
+                "28,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "8.913",
+                "7.292",
+                "31,7%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ tăng từ 25,5% lên 31,7% trong hai năm. Chưa ở mức cờ đỏ nhưng xu hướng tăng liên tục cần theo dõi.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đặt cọc dự án hay nằm ở phần dài hạn.",
+              "title": "Chỉ lấy phần ngắn hạn"
+            },
+            {
+              "text": "Phải thu khác không phải tiền khách mua nhà nợ. Có thể nhiều năm chưa thu về.",
+              "title": "Coi là tiền sắp thu"
+            },
+            {
+              "text": "Các khoản này không làm giảm lợi nhuận, nên dễ bị bỏ sót.",
+              "title": "Bỏ qua vì không có trên kết quả kinh doanh"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Ứng trước nhà thầu và đặt cọc quỹ đất là phổ biến. Đáng lo khi tăng nhanh hơn vốn chủ nhiều năm.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Thường thấp hơn nhà ở. Khoản lớn có thể là bồi thường giải phóng mặt bằng ứng trước.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>(trả trước cho người bán + phải thu khác)</b> ÷ <b>vốn chủ sở hữu</b>.",
+    "Gồm cả <b>ngắn hạn và dài hạn</b>.",
+    "Mức tham khảo: <b>dưới khoảng 20%</b> là kiểm soát được, trên 50% là cờ đỏ.",
+    "Chỉ cho thấy <b>quy mô</b>, không cho biết đối tác là ai."
+  ],
+  "title": "Phải thu và trả trước / VCSH · tiền đang nằm ở bên khác"
+}

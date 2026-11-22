@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l17",
+  "questions": [
+    {
+      "correct_option_id": "ca296e47bc",
+      "id": "ch13-l17-q01",
+      "options": [
+        {
+          "id": "ca296e47bc",
+          "text": "Dòng tiền từ hoạt động kinh doanh"
+        },
+        {
+          "id": "337ea7dceb",
+          "text": "Dòng tiền từ hoạt động đầu tư"
+        },
+        {
+          "id": "106b5bb088",
+          "text": "Dòng tiền từ hoạt động tài chính"
+        }
+      ],
+      "prompt": "Tiền mua đất và xây dự án để bán nằm ở dòng tiền nào?"
+    },
+    {
+      "correct_option_id": "ae39c46cf1",
+      "id": "ch13-l17-q02",
+      "options": [
+        {
+          "id": "ae39c46cf1",
+          "text": "Tồn kho dự án tăng"
+        },
+        {
+          "id": "74ae061b43",
+          "text": "Doanh thu giảm"
+        },
+        {
+          "id": "472f11faf0",
+          "text": "Trả cổ tức"
+        }
+      ],
+      "prompt": "CFO âm ở công ty bất động sản đang xây dự án thường do đâu?"
+    },
+    {
+      "correct_option_id": "48f9fa9f73",
+      "id": "ch13-l17-q03",
+      "options": [
+        {
+          "id": "48f9fa9f73",
+          "text": "Làm CFO tăng"
+        },
+        {
+          "id": "1a8fac4621",
+          "text": "Làm CFO giảm"
+        },
+        {
+          "id": "101e8ed16a",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Tiền khách trả theo tiến độ ảnh hưởng thế nào đến CFO?"
+    },
+    {
+      "correct_option_id": "c5c2cdb174",
+      "id": "ch13-l17-q04",
+      "options": [
+        {
+          "id": "c5c2cdb174",
+          "text": "Cả chu kỳ dự án, khoảng 3 đến 5 năm"
+        },
+        {
+          "id": "974a5f0145",
+          "text": "Quý gần nhất có đợt bàn giao lớn"
+        },
+        {
+          "id": "3773ed075e",
+          "text": "Riêng năm có lợi nhuận cao nhất"
+        }
+      ],
+      "prompt": "Nên đọc CFO / LNST của công ty bất động sản trong khoảng thời gian nào?"
+    },
+    {
+      "chart_id": "c13l17-rep",
+      "correct_option_id": "cc3017c505",
+      "id": "ch13-l17-q05",
+      "options": [
+        {
+          "id": "cc3017c505",
+          "text": "Tiền đang được dồn vào dự án"
+        },
+        {
+          "id": "75237c57db",
+          "text": "Công ty đang lỗ"
+        },
+        {
+          "id": "484a82bc4c",
+          "text": "Công ty không có nợ vay"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột CFO âm trong khi LNST dương nghĩa là gì?"
+    }
+  ],
+  "salt": "1078f6a8edcaed9c871a52863e2ca455949320c400b64fca834ae7305fa7ca96"
+}

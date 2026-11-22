@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l11",
+  "questions": [
+    {
+      "correct_option_id": "f1b5e083f1",
+      "id": "ch12-l11-q01",
+      "options": [
+        {
+          "id": "f1b5e083f1",
+          "text": "Tài sản chủ yếu là tiền gửi, trái phiếu có giá trị rõ ràng"
+        },
+        {
+          "id": "952e7b053e",
+          "text": "Lợi nhuận phi nhân thọ không bao giờ thay đổi"
+        },
+        {
+          "id": "e20ba6c37d",
+          "text": "Phi nhân thọ không phải trích dự phòng nghiệp vụ"
+        }
+      ],
+      "prompt": "Vì sao P/B phù hợp với bảo hiểm phi nhân thọ?"
+    },
+    {
+      "correct_option_id": "b6b2a8fba3",
+      "id": "ch12-l11-q02",
+      "options": [
+        {
+          "id": "b6b2a8fba3",
+          "text": "Giá trị hợp đồng đang hiệu lực không có trên báo cáo"
+        },
+        {
+          "id": "7abc7004e1",
+          "text": "Vốn chủ nhân thọ luôn bằng không trên báo cáo"
+        },
+        {
+          "id": "0321040a19",
+          "text": "Nhân thọ không lập bảng cân đối kế toán"
+        }
+      ],
+      "prompt": "Vì sao P/B ít phản ánh đủ giá trị công ty nhân thọ?"
+    },
+    {
+      "correct_option_id": "ca46994d2c",
+      "id": "ch12-l11-q03",
+      "options": [
+        {
+          "id": "ca46994d2c",
+          "text": "ROE"
+        },
+        {
+          "id": "aed71810a4",
+          "text": "Số ngày tồn kho"
+        },
+        {
+          "id": "7ded684446",
+          "text": "LDR"
+        }
+      ],
+      "prompt": "P/B hợp lý của công ty bảo hiểm đi cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "595a3cb850",
+      "id": "ch12-l11-q04",
+      "options": [
+        {
+          "id": "595a3cb850",
+          "text": "Thận trọng"
+        },
+        {
+          "id": "4526558987",
+          "text": "Coi là rẻ"
+        },
+        {
+          "id": "c4a0756402",
+          "text": "Bỏ qua"
+        }
+      ],
+      "prompt": "P/B cao khi combined ratio trên 100% và ROE giảm cần làm gì?"
+    },
+    {
+      "chart_id": "c12l11-rep",
+      "correct_option_id": "02b9b48815",
+      "id": "ch12-l11-q05",
+      "options": [
+        {
+          "id": "02b9b48815",
+          "text": "Trung vị giai đoạn"
+        },
+        {
+          "id": "7fe7cb4465",
+          "text": "Mốc 100%"
+        },
+        {
+          "id": "d32a5757bc",
+          "text": "Đường CAGR"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường nét đứt là gì?"
+    }
+  ],
+  "salt": "d941f6a7c922676727e7e0be2200deae00ef0661de12ac5e57883e4adc1eaf73"
+}

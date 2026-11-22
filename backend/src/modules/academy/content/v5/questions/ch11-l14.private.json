@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l14",
+  "questions": [
+    {
+      "correct_option_id": "b0da3d2870",
+      "id": "ch11-l14-q01",
+      "options": [
+        {
+          "id": "b0da3d2870",
+          "text": "Tài sản phần lớn ghi gần giá trị thật"
+        },
+        {
+          "id": "3fac055828",
+          "text": "Công ty không có lợi nhuận"
+        },
+        {
+          "id": "68961e8eae",
+          "text": "Vì không có nợ"
+        }
+      ],
+      "prompt": "Vì sao P/B phù hợp để định giá công ty chứng khoán?"
+    },
+    {
+      "correct_option_id": "0d5ab902d0",
+      "id": "ch11-l14-q02",
+      "options": [
+        {
+          "id": "0d5ab902d0",
+          "text": "Giá trị hợp lý"
+        },
+        {
+          "id": "3c689f94e6",
+          "text": "Giá gốc"
+        },
+        {
+          "id": "57ac7e5d4f",
+          "text": "Giá dự kiến bán"
+        }
+      ],
+      "prompt": "Tài sản FVTPL được ghi theo giá nào?"
+    },
+    {
+      "correct_option_id": "a4f061da39",
+      "id": "ch11-l14-q03",
+      "options": [
+        {
+          "id": "a4f061da39",
+          "text": "Thị trường trầm lắng"
+        },
+        {
+          "id": "9561cd8f6f",
+          "text": "Thị trường sôi động"
+        },
+        {
+          "id": "8a500cf4f7",
+          "text": "Năm tăng vốn"
+        }
+      ],
+      "prompt": "P/B gần cận dưới dải thường trùng với giai đoạn nào?"
+    },
+    {
+      "correct_option_id": "e651fa53d6",
+      "id": "ch11-l14-q04",
+      "options": [
+        {
+          "id": "e651fa53d6",
+          "text": "ROE bình quân qua chu kỳ"
+        },
+        {
+          "id": "236a34c5ed",
+          "text": "Số ngày tồn kho"
+        },
+        {
+          "id": "c8d78b9f1f",
+          "text": "Biên gộp"
+        }
+      ],
+      "prompt": "Nên đọc P/B cùng chỉ tiêu nào?"
+    },
+    {
+      "chart_id": "c11l14-rep",
+      "correct_option_id": "951511fa99",
+      "id": "ch11-l14-q05",
+      "options": [
+        {
+          "id": "951511fa99",
+          "text": "Trung vị giai đoạn"
+        },
+        {
+          "id": "cb2095774a",
+          "text": "Mốc 1 lần"
+        },
+        {
+          "id": "749eae37bd",
+          "text": "Đường CAGR"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường nét đứt là gì?"
+    }
+  ],
+  "salt": "f6917fb484f18b8011f94853d2545b5eeac9bfb47ee0f16bcdff4119c2f2bb8d"
+}

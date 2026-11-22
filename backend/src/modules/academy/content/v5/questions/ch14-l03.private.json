@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l03",
+  "questions": [
+    {
+      "correct_option_id": "fb7d75d94e",
+      "id": "ch14-l03-q01",
+      "options": [
+        {
+          "id": "fb7d75d94e",
+          "text": "Biên lợi nhuận ròng năm trong 5 năm"
+        },
+        {
+          "id": "6b68f845d2",
+          "text": "Doanh thu quý trong 5 quý"
+        },
+        {
+          "id": "9d478976ca",
+          "text": "Giá cổ phiếu trong 5 năm"
+        }
+      ],
+      "prompt": "Margin Stability là độ lệch chuẩn của gì?"
+    },
+    {
+      "correct_option_id": "10a4e56042",
+      "id": "ch14-l03-q02",
+      "options": [
+        {
+          "id": "10a4e56042",
+          "text": "Vận chuyển khí theo hợp đồng"
+        },
+        {
+          "id": "9414c12252",
+          "text": "Khai thác dầu khí"
+        },
+        {
+          "id": "3f1022a30f",
+          "text": "Lọc dầu"
+        }
+      ],
+      "prompt": "Mảng nào thường có biên ròng ổn định nhất?"
+    },
+    {
+      "correct_option_id": "7f0280c50f",
+      "id": "ch14-l03-q03",
+      "options": [
+        {
+          "id": "7f0280c50f",
+          "text": "Biên thấp thì cùng mức lệch là dao động lớn hơn"
+        },
+        {
+          "id": "13843910f6",
+          "text": "Vì độ lệch chuẩn luôn bằng biên bình quân"
+        },
+        {
+          "id": "d7e434498d",
+          "text": "Vì biên bình quân không tính được"
+        }
+      ],
+      "prompt": "Vì sao phải đọc độ lệch chuẩn so với mức biên bình quân?"
+    },
+    {
+      "correct_option_id": "8657d7d334",
+      "id": "ch14-l03-q04",
+      "options": [
+        {
+          "id": "8657d7d334",
+          "text": "Doanh nghiệp cùng mảng"
+        },
+        {
+          "id": "7f8b45ecee",
+          "text": "Doanh nghiệp dầu khí và ngân hàng"
+        },
+        {
+          "id": "bb1689bec7",
+          "text": "Mọi doanh nghiệp trên sàn"
+        }
+      ],
+      "prompt": "Nên so Margin Stability giữa những doanh nghiệp nào?"
+    },
+    {
+      "chart_id": "c14l3-rep",
+      "correct_option_id": "a20d4341b0",
+      "id": "ch14-l03-q05",
+      "options": [
+        {
+          "id": "a20d4341b0",
+          "text": "Năm giá dầu biến động mạnh"
+        },
+        {
+          "id": "58ad7e42b4",
+          "text": "Năm trả cổ tức"
+        },
+        {
+          "id": "37e359ab42",
+          "text": "Năm đổi kiểm toán"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, năm nằm ngoài dải thường trùng với gì?"
+    }
+  ],
+  "salt": "22d9403e74b9fb67ded9b8bb04b1044a1e37bec218aa077d19bed0465fa097bc"
+}

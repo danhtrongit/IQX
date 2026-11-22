@@ -1,0 +1,341 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l14-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "LNST 4 quý",
+          "tone": "pos",
+          "v": "51.866 tỷ"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "Tổng tài sản bình quân",
+          "tone": "p1",
+          "v": "2.378.500 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "ROA",
+          "tone": "warn",
+          "v": "2,18%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c10l14-g2": {
+      "decimals": 1,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Doanh nghiệp sản xuất tốt",
+          "tone": "pos",
+          "value": 10
+        },
+        {
+          "label": "Ngân hàng hiệu quả cao",
+          "tone": "p1",
+          "value": 2
+        },
+        {
+          "label": "Ngân hàng trung bình",
+          "tone": "warn",
+          "value": 1.2
+        },
+        {
+          "label": "Ngân hàng yếu",
+          "tone": "neg",
+          "value": 0.5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "ROA tham khảo · số minh họa",
+      "unit": "%"
+    },
+    "c10l14-rep": {
+      "alt": "ROA: 2,2%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "ROA (4 quý)",
+            "v": [
+              1.93,
+              1.95,
+              1.96,
+              1.98,
+              2.03,
+              2.08,
+              2.13,
+              2.18
+            ]
+          }
+        ],
+        "name": "ROA",
+        "sub": {
+          "series": [
+            {
+              "name": "Tổng tài sản bình quân",
+              "v": [
+                1880000,
+                1930000,
+                1990000,
+                2057000,
+                2130000,
+                2210000,
+                2290000,
+                2378500
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l14",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "ROA của ngân hàng chỉ khoảng 1% đến 2%, thấp hơn nhiều doanh nghiệp sản xuất. Điều đó không có nghĩa ngân hàng kém hiệu quả. Tài sản ngân hàng chủ yếu là khoản cho vay với chênh lệch lãi mỏng nhưng quy mô rất lớn.",
+  "lesson_key": "fundamental:roa-nh",
+  "order": 8,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l14-g1",
+          "type": "chart"
+        },
+        {
+          "text": "ROA bằng <b>LNST 4 quý</b> chia <b>tổng tài sản bình quân</b>. Cách tính giống bài ROA ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l14-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mỗi đồng cho vay chỉ mang lại vài phần trăm chênh lệch lãi, sau chi phí và dự phòng còn khoảng 1% đến 2%.",
+              "title": "Mức nền thấp"
+            },
+            {
+              "text": "ROA không bị ảnh hưởng bởi đòn bẩy, nên phản ánh sức sinh lời của tài sản.",
+              "title": "Thước đo hiệu quả gốc"
+            },
+            {
+              "text": "ROA ≈ NIM trừ chi phí hoạt động, chi phí tín dụng và thuế, tính trên tài sản.",
+              "title": "Từ NIM đến ROA"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở ngân hàng khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l14-rep",
+          "title": "ROA",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROA tính theo 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Tổng tài sản bình quân, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Tài sản tăng đều mà ROA vẫn tăng: ngân hàng mở rộng mà không giảm hiệu quả.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 1,5% trở lên và ổn định. Mức tham khảo với ngân hàng Việt Nam.",
+              "title": "ROA tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 0,8%, hoặc giảm nhiều năm. Chênh lệch lãi hẹp hoặc chi phí dự phòng lớn.",
+              "title": "ROA yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với ngân hàng, ROA là thước đo hiệu quả <b>trước khi tính đòn bẩy</b>. So các ngân hàng bằng ROA công bằng hơn ROE.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bỏ khác biệt về đòn bẩy.",
+              "title": "So các ngân hàng"
+            },
+            {
+              "text": "ROA đổi do NIM, CIR hay chi phí tín dụng.",
+              "title": "Tìm nguyên nhân thay đổi"
+            },
+            {
+              "text": "ROE ÷ ROA ≈ đòn bẩy.",
+              "title": "Đọc cùng ROE"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ngân hàng mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Tổng tài sản BQ"
+            },
+            {
+              "label": "ROA"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "1.880.000",
+                "1,93%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "2.057.000",
+                "1,98%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "2.378.500",
+                "2,18%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "ROA tăng từ 1,98% lên 2,18% trong năm qua, cùng lúc NIM tăng từ 4,07% lên 4,27% và CIR giảm từ 34,3% xuống 32,5%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mức nền khác hẳn.",
+              "title": "So ROA ngân hàng với sản xuất"
+            },
+            {
+              "text": "Tài sản tăng nhanh làm ROA cuối kỳ thấp hơn thực tế. Dùng bình quân.",
+              "title": "Dùng tổng tài sản cuối kỳ"
+            },
+            {
+              "text": "ROA cao có thể do trích dự phòng ít.",
+              "title": "Bỏ qua chi phí tín dụng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>ROA</b> = LNST 4 quý ÷ tổng tài sản bình quân.",
+    "ROA ngân hàng chỉ <b>khoảng 1% đến 2%</b>.",
+    "ROA đo hiệu quả <b>trước đòn bẩy</b>.",
+    "So các ngân hàng bằng ROA <b>công bằng hơn ROE</b>."
+  ],
+  "title": "ROA · ở ngân hàng"
+}

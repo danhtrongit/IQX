@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l10",
+  "questions": [
+    {
+      "correct_option_id": "e41d1988ac",
+      "id": "ch01-l10-q01",
+      "options": [
+        {
+          "id": "e41d1988ac",
+          "text": "Rủi ro riêng doanh nghiệp"
+        },
+        {
+          "id": "da78645a79",
+          "text": "Rủi ro thị trường"
+        },
+        {
+          "id": "3ad543c53b",
+          "text": "Mọi loại rủi ro"
+        }
+      ],
+      "prompt": "Đa dạng hóa danh mục giúp giảm loại rủi ro nào?"
+    },
+    {
+      "correct_option_id": "8553d6f7f0",
+      "id": "ch01-l10-q02",
+      "options": [
+        {
+          "id": "8553d6f7f0",
+          "text": "Vì phần lãi được tính trên số vốn đã nhỏ đi sau khi lỗ"
+        },
+        {
+          "id": "a3e77958b0",
+          "text": "Vì khi lãi luôn phải trừ thêm một nửa phí"
+        },
+        {
+          "id": "8597ff3e54",
+          "text": "Vì lãi và lỗ luôn được tính trên cùng một số vốn"
+        }
+      ],
+      "prompt": "Vì sao lỗ một nửa thì phải lãi nhiều hơn một nửa mới hòa vốn?"
+    },
+    {
+      "correct_option_id": "db21e78364",
+      "id": "ch01-l10-q03",
+      "options": [
+        {
+          "id": "db21e78364",
+          "text": "Trước khi mua"
+        },
+        {
+          "id": "2ab95dc6e3",
+          "text": "Sau khi giá đã giảm"
+        },
+        {
+          "id": "98115869d6",
+          "text": "Khi bị bán giải chấp"
+        }
+      ],
+      "prompt": "Mức cắt lỗ nên được xác định khi nào?"
+    }
+  ],
+  "salt": "1ad0ec405c923853a50e48a2244949db2a135adc837ce882df0af41a71c7ba9f"
+}

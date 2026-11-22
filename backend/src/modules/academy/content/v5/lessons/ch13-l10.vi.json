@@ -1,0 +1,383 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l10-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 230 + mã 242"
+          ],
+          "t": "BĐS đầu tư + XDCB dở dang",
+          "tone": "pos",
+          "v": "6.173 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 270"
+          ],
+          "t": "Tổng tài sản",
+          "tone": "p1",
+          "v": "116.495 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ trọng",
+          "tone": "warn",
+          "v": "5,3%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l10-g2": {
+      "fig": "formula",
+      "height": 190,
+      "items": [
+        {
+          "notes": [
+            "Doanh thu lớn, dồn theo đợt",
+            "Lãi một lần khi bàn giao"
+          ],
+          "t": "Xây để bán",
+          "tone": "warn",
+          "v": "Tồn kho"
+        },
+        {
+          "notes": [
+            "Doanh thu nhỏ hơn nhưng đều",
+            "Thu tiền nhiều năm"
+          ],
+          "t": "Giữ để cho thuê",
+          "tone": "pos",
+          "v": "BĐS đầu tư"
+        }
+      ],
+      "kind": "figure",
+      "ops": []
+    },
+    "c13l10-g3": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Chuyên cho thuê văn phòng, trung tâm thương mại",
+          "tone": "pos",
+          "value": 60
+        },
+        {
+          "label": "Vừa bán vừa cho thuê",
+          "tone": "p1",
+          "value": 20
+        },
+        {
+          "label": "Chuyên bán nhà ở",
+          "tone": "warn",
+          "value": 5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 330,
+      "title": "Tỷ trọng tham khảo theo mô hình · số minh họa",
+      "unit": "%"
+    },
+    "c13l10-rep": {
+      "alt": "Tỷ trọng bất động sản đầu tư: 5,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "(BĐS đầu tư + XDCB dở dang) / Tổng tài sản",
+            "v": [
+              5.914,
+              5.597,
+              5.524,
+              5.406,
+              5.333,
+              5.262,
+              5.277,
+              5.299
+            ]
+          }
+        ],
+        "name": "Tỷ trọng bất động sản đầu tư",
+        "sub": {
+          "series": [
+            {
+              "name": "Bất động sản đầu tư",
+              "v": [
+                3344.622,
+                3372.729,
+                3625.368,
+                3683.316,
+                3738.269,
+                3766.557,
+                3994.379,
+                4051.389
+              ]
+            },
+            {
+              "name": "Xây dựng cơ bản dở dang",
+              "v": [
+                1830.685,
+                1871.332,
+                1916.226,
+                1962.27,
+                2008.08,
+                2047.52,
+                2086.824,
+                2121.956
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty bất động sản có hai cách kiếm tiền: xây để bán và giữ lại để cho thuê. Phần giữ lại cho thuê nằm ở bất động sản đầu tư. Chỉ tiêu này cho biết công ty nghiêng về mô hình nào.",
+  "lesson_key": "fundamental:investment_property_share-bds",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l10-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>bất động sản đầu tư</b> cộng <b>chi phí xây dựng cơ bản dở dang</b>, chia <b>tổng tài sản</b>. Tất cả lấy từ bảng cân đối kế toán, số cuối kỳ.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Cộng xây dựng dở dang vì trung tâm thương mại, văn phòng đang xây để cho thuê thường nằm ở dòng này trước khi chuyển sang bất động sản đầu tư.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ trọng bất động sản đầu tư là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l10-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền thuê văn phòng, trung tâm thương mại, nhà xưởng về đều mỗi quý.",
+              "title": "Doanh thu đều"
+            },
+            {
+              "text": "Tài sản cho thuê thu hồi vốn trong 10 đến 20 năm. Thường dùng nợ vay dài hạn.",
+              "title": "Cần nhiều vốn lâu dài"
+            },
+            {
+              "text": "Bất động sản đầu tư ghi theo giá gốc trừ khấu hao, có thể thấp hơn giá thị trường nhiều.",
+              "title": "Ghi theo giá gốc"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Hai mô hình"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l10-rep",
+          "title": "Tỷ trọng bất động sản đầu tư",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bất động sản đầu tư và xây dựng dở dang chia tổng tài sản, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng bất động sản đầu tư và xây dựng dở dang, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phần xây dựng dở dang lớn dần là tài sản cho thuê sắp đưa vào hoạt động.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 20% trở lên. Đây là mức tham khảo cho công ty có mảng cho thuê đáng kể, giúp doanh thu bớt phụ thuộc lịch bàn giao.",
+              "title": "Thu nhập đều hơn",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 5%. Gần như toàn bộ lợi nhuận đến từ bán, doanh thu lên xuống theo dự án.",
+              "title": "Phụ thuộc bán hàng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Không có mức nào là đúng. Chỉ tiêu này giúp hiểu mô hình kinh doanh để chọn cách đọc các chỉ tiêu khác cho phù hợp.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l10-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ trọng cao thì nên đọc thêm doanh thu cho thuê và khấu hao. Tỷ trọng thấp thì đọc tồn kho và trả trước.",
+              "title": "Hiểu mô hình"
+            },
+            {
+              "text": "Tỷ trọng tăng dần là công ty đang xây thêm tài sản cho thuê.",
+              "title": "Theo dõi chuyển hướng"
+            },
+            {
+              "text": "Bất động sản đầu tư theo giá gốc có thể thấp hơn giá trị thị trường, làm P/B trông cao hơn thực tế.",
+              "title": "Định giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu, cuối Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Bất động sản đầu tư",
+              "text": "4.051 tỷ đồng."
+            },
+            {
+              "term": "Xây dựng cơ bản dở dang",
+              "text": "2.122 tỷ đồng."
+            },
+            {
+              "term": "Tổng tài sản",
+              "text": "116.495 tỷ đồng."
+            },
+            {
+              "term": "Tỷ trọng",
+              "text": "(4.051 + 2.122) ÷ 116.495 ≈ 5,3%. Công ty chủ yếu xây để bán."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty chuyên bán nhà có tỷ trọng thấp là bình thường.",
+              "title": "Coi tỷ trọng thấp là xấu"
+            },
+            {
+              "text": "Tài sản cho thuê đang xây chưa nằm ở bất động sản đầu tư.",
+              "title": "Quên xây dựng dở dang"
+            },
+            {
+              "text": "Bất động sản đầu tư ghi theo giá gốc, không phải giá thị trường.",
+              "title": "Tin giá trị sổ sách"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thường thấp. Công ty nhà ở chủ yếu xây để bán.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Nhà xưởng, kho bãi xây sẵn cho thuê nằm ở bất động sản đầu tư, có thể chiếm tỷ trọng đáng kể.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "Tỷ trọng = <b>(BĐS đầu tư + XDCB dở dang)</b> ÷ <b>tổng tài sản</b>.",
+    "Cho biết công ty nghiêng về <b>xây để bán</b> hay <b>giữ để cho thuê</b>.",
+    "Tỷ trọng cao thì <b>doanh thu đều hơn</b>.",
+    "Bất động sản đầu tư ghi theo <b>giá gốc</b>, có thể thấp hơn giá thị trường."
+  ],
+  "title": "Tỷ trọng bất động sản đầu tư · phần tài sản để cho thuê"
+}

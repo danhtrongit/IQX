@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l05",
+  "questions": [
+    {
+      "correct_option_id": "c4b05e5558",
+      "id": "ch15-l05-q01",
+      "options": [
+        {
+          "id": "c4b05e5558",
+          "text": "Giá vốn 4 quý"
+        },
+        {
+          "id": "946b6d5658",
+          "text": "Doanh thu 4 quý"
+        },
+        {
+          "id": "e7e36904d2",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Số ngày tồn kho bằng tồn kho bình quân chia cho gì, nhân 365?"
+    },
+    {
+      "correct_option_id": "efd94350f3",
+      "id": "ch15-l05-q02",
+      "options": [
+        {
+          "id": "efd94350f3",
+          "text": "Trang sức"
+        },
+        {
+          "id": "37f8ead5ab",
+          "text": "Thực phẩm tươi"
+        },
+        {
+          "id": "a88f7252d3",
+          "text": "Bánh mì"
+        }
+      ],
+      "prompt": "Nhóm hàng nào có số ngày tồn kho dài là bình thường?"
+    },
+    {
+      "correct_option_id": "e21f54f5bb",
+      "id": "ch15-l05-q03",
+      "options": [
+        {
+          "id": "e21f54f5bb",
+          "text": "Hàng đang tồn đọng"
+        },
+        {
+          "id": "12f244613a",
+          "text": "Hàng bán rất nhanh"
+        },
+        {
+          "id": "cbcc052d06",
+          "text": "Chuỗi không cần vốn"
+        }
+      ],
+      "prompt": "Số ngày tăng khi doanh thu chậm lại cho thấy gì?"
+    },
+    {
+      "correct_option_id": "38b7d2829e",
+      "id": "ch15-l05-q04",
+      "options": [
+        {
+          "id": "38b7d2829e",
+          "text": "Dự phòng giảm giá tồn kho / Tồn kho"
+        },
+        {
+          "id": "22a90a050a",
+          "text": "Doanh thu / Tài sản cố định"
+        },
+        {
+          "id": "58968469cd",
+          "text": "Tỷ lệ chi trả cổ tức"
+        }
+      ],
+      "prompt": "Nên đọc số ngày tồn kho cùng chỉ tiêu nào để biết hàng có mất giá không?"
+    },
+    {
+      "chart_id": "c15l5-rep",
+      "correct_option_id": "e0f3b99891",
+      "id": "ch15-l05-q05",
+      "options": [
+        {
+          "id": "e0f3b99891",
+          "text": "Đi xuống"
+        },
+        {
+          "id": "3c7f04d095",
+          "text": "Đi lên"
+        },
+        {
+          "id": "1e8dc9102e",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, giá vốn tăng nhanh hơn tồn kho làm đường thế nào?"
+    }
+  ],
+  "salt": "014dadef0a2b793c7b56cd2db1bd73fec93e2c221b300f3d204416240f834349"
+}

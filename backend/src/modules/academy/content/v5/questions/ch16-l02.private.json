@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l02",
+  "questions": [
+    {
+      "correct_option_id": "76268b01bc",
+      "id": "ch16-l02-q01",
+      "options": [
+        {
+          "id": "76268b01bc",
+          "text": "Khấu hao, thuế phí tài nguyên và vận hành"
+        },
+        {
+          "id": "35b12c84c2",
+          "text": "Nhiên liệu than và khí đốt"
+        },
+        {
+          "id": "1bb40d4e75",
+          "text": "Chi phí bán hàng và quảng cáo"
+        }
+      ],
+      "prompt": "Giá vốn thủy điện chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "29561a3e38",
+      "id": "ch16-l02-q02",
+      "options": [
+        {
+          "id": "29561a3e38",
+          "text": "Nhiên liệu than, khí"
+        },
+        {
+          "id": "398946e014",
+          "text": "Thuế tài nguyên nước"
+        },
+        {
+          "id": "7191b7188f",
+          "text": "Tiền thuê đất"
+        }
+      ],
+      "prompt": "Giá vốn nhiệt điện chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "690c07b474",
+      "id": "ch16-l02-q03",
+      "options": [
+        {
+          "id": "690c07b474",
+          "text": "Giá vốn gần như cố định"
+        },
+        {
+          "id": "878943a5c1",
+          "text": "Giá bán thay đổi mỗi ngày"
+        },
+        {
+          "id": "dcc0f8b252",
+          "text": "Không có khấu hao"
+        }
+      ],
+      "prompt": "Vì sao biên gộp thủy điện thay đổi mạnh theo sản lượng?"
+    },
+    {
+      "correct_option_id": "1b3e0193c2",
+      "id": "ch16-l02-q04",
+      "options": [
+        {
+          "id": "1b3e0193c2",
+          "text": "Theo năm, so với năm thủy văn tương tự"
+        },
+        {
+          "id": "206d5305fd",
+          "text": "Theo từng tuần trong mùa mưa"
+        },
+        {
+          "id": "3adc3711e1",
+          "text": "Chỉ theo các quý mùa khô"
+        }
+      ],
+      "prompt": "Nên đọc biên gộp thủy điện theo cách nào?"
+    },
+    {
+      "chart_id": "c16l2-rep",
+      "correct_option_id": "ebb934a68d",
+      "id": "ch16-l02-q05",
+      "options": [
+        {
+          "id": "ebb934a68d",
+          "text": "Chi phí cố định, sản lượng tăng"
+        },
+        {
+          "id": "39b9d98082",
+          "text": "Giá nhiên liệu tăng"
+        },
+        {
+          "id": "0b9f35bf95",
+          "text": "Công ty giảm nợ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, giá vốn đi ngang trong khi lợi nhuận gộp tăng cho thấy gì?"
+    }
+  ],
+  "salt": "e9c28d7655bc6bc1c5c2e85c3c3dac6b72ae730b2fa682e76b07273bc11d25cc"
+}

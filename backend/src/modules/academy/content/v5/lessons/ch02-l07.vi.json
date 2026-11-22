@@ -1,0 +1,145 @@
+{
+  "chapter": 2,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Bị từ chối là chuyện xảy ra mỗi ngày với mọi người làm sale. Lời từ chối thường không có nghĩa là “không bao giờ”, mà là “tôi chưa đủ hiểu” hoặc “tôi đang lo một điều gì đó”.",
+  "lesson_key": "concept:xu_ly_tu_choi",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "label": "Bước 1",
+              "text": "“Em hiểu, nhiều người cũng nghĩ giống anh/chị.”",
+              "title": "Đồng cảm"
+            },
+            {
+              "label": "Bước 2",
+              "text": "“Điều anh/chị lo nhất là gì ạ?”",
+              "title": "Hỏi rõ"
+            },
+            {
+              "label": "Bước 3",
+              "text": "Giải thích ngắn, thật, đúng điều khách lo.",
+              "title": "Trả lời"
+            },
+            {
+              "label": "Bước 4",
+              "text": "Đọc thử tài liệu, dự hội thảo, mở tài khoản chưa cần nạp nhiều.",
+              "title": "Đề xuất bước nhỏ"
+            }
+          ],
+          "type": "steps"
+        }
+      ],
+      "id": "s1",
+      "title": "Công thức 4 bước"
+    },
+    {
+      "blocks": [
+        {
+          "objection": "“Chứng khoán là cờ bạc.”",
+          "response": "“Em hiểu, vì nhiều người mua bán theo tin đồn nên mới thấy như vậy. Thực ra mua cổ phiếu là góp vốn vào doanh nghiệp. Nếu chọn doanh nghiệp tốt và có kế hoạch rõ ràng thì khác hẳn đánh bạc. Anh/chị có muốn em gửi bài viết ngắn về chuyện này không?”",
+          "type": "objection"
+        },
+        {
+          "objection": "“Tôi không có tiền.”",
+          "response": "“Dạ, chứng khoán có thể bắt đầu chỉ từ vài triệu đồng. Quan trọng là chỉ dùng tiền nhàn rỗi. Anh/chị có thể học trước, khi nào sẵn sàng thì bắt đầu cũng được.”",
+          "type": "objection"
+        },
+        {
+          "objection": "“Tôi sợ lỗ.”",
+          "response": "“Lo lắng như vậy là đúng, vì chứng khoán có thể lãi và cũng có thể lỗ. Mình sẽ bắt đầu với số tiền nhỏ, học cách đặt mức cắt lỗ trước khi mua, để nếu sai thì chỉ mất một phần nhỏ.”",
+          "type": "objection"
+        },
+        {
+          "objection": "“Để tôi suy nghĩ thêm.”",
+          "response": "“Dạ được ạ. Anh/chị đang cân nhắc điều gì nhất để em gửi thêm thông tin cho dễ quyết định?” Sau đó hẹn một ngày cụ thể để liên hệ lại.",
+          "type": "objection"
+        },
+        {
+          "objection": "“Tôi có tài khoản ở công ty khác rồi.”",
+          "response": "“Rất tốt ạ, vậy anh/chị đã quen thị trường rồi. Hiện tại anh/chị có ai hỗ trợ thông tin hằng ngày không? Nếu muốn, em gửi anh/chị bản tin vài hôm dùng thử.”",
+          "type": "objection"
+        },
+        {
+          "objection": "“Chỗ khác miễn phí giao dịch.”",
+          "response": "“Dạ đúng, nếu anh/chị chỉ cần một nút mua bán thì có nhiều lựa chọn. Còn khi có em đồng hành, anh/chị có thêm hướng dẫn, bản tin và hỗ trợ khi thị trường biến động.”",
+          "type": "objection"
+        }
+      ],
+      "id": "s2",
+      "title": "Sáu lời từ chối thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thắng lý lẽ nhưng mất khách. Hãy hỏi để hiểu, không tranh luận.",
+              "title": "Cãi cho thắng"
+            },
+            {
+              "text": "Không bao giờ cam kết lợi nhuận, dù khách đang lưỡng lự.",
+              "title": "Hứa lãi để thuyết phục"
+            },
+            {
+              "text": "Chỉ nói về giá trị bạn mang lại, không hạ thấp người khác.",
+              "title": "Nói xấu công ty khác"
+            },
+            {
+              "text": "Không ép “phải mở ngay hôm nay”. Khách bị ép thường rời đi rất nhanh.",
+              "title": "Gây áp lực"
+            }
+          ],
+          "style": "mistake",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Những điều không được làm"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 2,
+          "debrief": "<b>Cách tốt nhất: đồng cảm, hỏi rõ, mời cả hai.</b> Đây là lời từ chối thật chứ không phải cái cớ, vì người quyết định là cả hai vợ chồng. Ép khách tự quyết dễ gây khó chịu. Im lặng thì khách quên. Hỏi người vợ lo gì giúp bạn chuẩn bị đúng câu trả lời, và mời cả hai biến người đang nghi ngờ thành người được nghe trực tiếp.",
+          "options": [
+            "“Anh là trụ cột mà, tự quyết đi anh.”",
+            "Im lặng chờ anh Tuấn tự liên hệ lại",
+            "“Dạ hợp lý ạ, tiền chung thì nên bàn cùng chị. Theo anh, chị thường lo nhất điều gì? Nếu tiện, cuối tuần em mời cả anh chị dự buổi chia sẻ cho người mới.”"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Sau buổi tư vấn, anh Tuấn nói: “Nghe cũng hay, nhưng để anh về hỏi ý vợ đã.”"
+          ],
+          "title": "“Để anh hỏi ý vợ đã”",
+          "type": "scenario"
+        },
+        {
+          "id": "l7",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Ghi lại 3 lời từ chối bạn gặp trong tuần này. Với mỗi lời, viết lại câu trả lời theo 4 bước: đồng cảm, hỏi rõ, trả lời, đề xuất bước nhỏ."
+          ],
+          "title": "Bài tự làm: nhật ký từ chối",
+          "type": "workpad"
+        }
+      ],
+      "id": "s4",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Từ chối thường là <b>“chưa hiểu” hoặc “đang lo”</b>, không phải “không bao giờ”.",
+    "Công thức: <b>đồng cảm, hỏi rõ, trả lời, đề xuất bước nhỏ</b>.",
+    "Không <b>cãi, hứa lãi, nói xấu người khác hay gây áp lực</b>."
+  ],
+  "title": "Xử lý từ chối"
+}

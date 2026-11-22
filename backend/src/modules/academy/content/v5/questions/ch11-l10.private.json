@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l10",
+  "questions": [
+    {
+      "correct_option_id": "6cfe6a93d1",
+      "id": "ch11-l10-q01",
+      "options": [
+        {
+          "id": "6cfe6a93d1",
+          "text": "Vay ngắn hạn và vay dài hạn"
+        },
+        {
+          "id": "af6a0f5e9d",
+          "text": "Toàn bộ nợ phải trả của công ty"
+        },
+        {
+          "id": "6b17bade60",
+          "text": "Tiền gửi của nhà đầu tư tại công ty"
+        }
+      ],
+      "prompt": "Nợ vay trong chỉ tiêu Nợ vay / VCSH gồm những gì?"
+    },
+    {
+      "correct_option_id": "e16e781f94",
+      "id": "ch11-l10-q02",
+      "options": [
+        {
+          "id": "e16e781f94",
+          "text": "Tài trợ cho vay margin"
+        },
+        {
+          "id": "845623667b",
+          "text": "Trả cổ tức cho cổ đông"
+        },
+        {
+          "id": "e167f84c91",
+          "text": "Mua tài sản cố định"
+        }
+      ],
+      "prompt": "Nợ vay của công ty chứng khoán chủ yếu dùng để làm gì?"
+    },
+    {
+      "correct_option_id": "a1bdca57f0",
+      "id": "ch11-l10-q03",
+      "options": [
+        {
+          "id": "a1bdca57f0",
+          "text": "Chênh lệch giữa lãi cho vay và lãi vay"
+        },
+        {
+          "id": "1683e39666",
+          "text": "Phí giao dịch của nhà đầu tư"
+        },
+        {
+          "id": "f0fb383aea",
+          "text": "Lãi đánh giá lại cổ phiếu FVTPL"
+        }
+      ],
+      "prompt": "Lợi nhuận từ việc vay để cho vay margin đến từ đâu?"
+    },
+    {
+      "correct_option_id": "65eb32064b",
+      "id": "ch11-l10-q04",
+      "options": [
+        {
+          "id": "65eb32064b",
+          "text": "Chi phí tài chính"
+        },
+        {
+          "id": "9c1392919b",
+          "text": "Chi phí hoạt động"
+        },
+        {
+          "id": "d5df149071",
+          "text": "Chi phí môi giới"
+        }
+      ],
+      "prompt": "Chi phí lãi vay nằm ở mục nào trên báo cáo kết quả hoạt động?"
+    },
+    {
+      "chart_id": "c11l10-rep",
+      "correct_option_id": "e05a579c72",
+      "id": "ch11-l10-q05",
+      "options": [
+        {
+          "id": "e05a579c72",
+          "text": "Nợ vay chia vốn chủ sở hữu"
+        },
+        {
+          "id": "c16947b7fb",
+          "text": "Dư nợ cho vay chia tổng tài sản"
+        },
+        {
+          "id": "30274ed7c2",
+          "text": "Lãi vay chia doanh thu hoạt động"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường phía trên thể hiện gì?"
+    }
+  ],
+  "salt": "84e7321916d476c861dc1faf3c412aa2912070dc7fba8a3faa5456a5424f4555"
+}

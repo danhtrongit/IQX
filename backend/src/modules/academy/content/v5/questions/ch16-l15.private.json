@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l15",
+  "questions": [
+    {
+      "correct_option_id": "95007dc5fe",
+      "id": "ch16-l15-q01",
+      "options": [
+        {
+          "id": "95007dc5fe",
+          "text": "Tính cả nợ và bỏ khác biệt khấu hao"
+        },
+        {
+          "id": "7f3c059ebc",
+          "text": "Không cần số liệu báo cáo"
+        },
+        {
+          "id": "3831e06914",
+          "text": "Không bị ảnh hưởng bởi giá cổ phiếu"
+        }
+      ],
+      "prompt": "Vì sao EV / EBITDA phù hợp hơn P/E với công ty điện?"
+    },
+    {
+      "correct_option_id": "e5708577c7",
+      "id": "ch16-l15-q02",
+      "options": [
+        {
+          "id": "e5708577c7",
+          "text": "Lớn hơn nhiều vì nợ lớn"
+        },
+        {
+          "id": "2241979d5d",
+          "text": "Nhỏ hơn nhiều"
+        },
+        {
+          "id": "5f1f3e99f3",
+          "text": "Luôn bằng nhau"
+        }
+      ],
+      "prompt": "EV của công ty điện so với vốn hoá thường thế nào?"
+    },
+    {
+      "correct_option_id": "75003fa598",
+      "id": "ch16-l15-q03",
+      "options": [
+        {
+          "id": "75003fa598",
+          "text": "Cao tạm thời"
+        },
+        {
+          "id": "e939b5bbe0",
+          "text": "Thấp tạm thời"
+        },
+        {
+          "id": "b7999d4d89",
+          "text": "Bằng 0"
+        }
+      ],
+      "prompt": "Công ty đang xây nhà máy có EV / EBITDA thế nào?"
+    },
+    {
+      "correct_option_id": "1c30bc46a7",
+      "id": "ch16-l15-q04",
+      "options": [
+        {
+          "id": "1c30bc46a7",
+          "text": "Khoảng 6 đến 10 lần"
+        },
+        {
+          "id": "1b05d2e2c6",
+          "text": "Khoảng 0,5 lần"
+        },
+        {
+          "id": "b23ac5f91b",
+          "text": "Trên 50 lần"
+        }
+      ],
+      "prompt": "Mức nền EV / EBITDA thường gặp của công ty điện là bao nhiêu?"
+    },
+    {
+      "chart_id": "c16l15-rep",
+      "correct_option_id": "71e240f7c8",
+      "id": "ch16-l15-q05",
+      "options": [
+        {
+          "id": "71e240f7c8",
+          "text": "EBITDA tăng nhanh hơn EV"
+        },
+        {
+          "id": "e28f4c7cd9",
+          "text": "Nợ vay tăng mạnh"
+        },
+        {
+          "id": "8bac58af92",
+          "text": "Giá cổ phiếu tăng mạnh"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, chỉ tiêu giảm khi nào?"
+    }
+  ],
+  "salt": "744cdbeb114aa87547a75d861e70e8b5c57993b19d4a145f3ea658be8b5c21ee"
+}

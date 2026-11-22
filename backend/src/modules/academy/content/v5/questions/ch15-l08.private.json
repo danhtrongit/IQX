@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l08",
+  "questions": [
+    {
+      "correct_option_id": "da5f45900c",
+      "id": "ch15-l08-q01",
+      "options": [
+        {
+          "id": "da5f45900c",
+          "text": "Ngày tồn kho cộng ngày thu tiền trừ ngày trả tiền"
+        },
+        {
+          "id": "cca50207e2",
+          "text": "Ngày tồn kho trừ ngày thu tiền"
+        },
+        {
+          "id": "e6285072cf",
+          "text": "Ngày trả tiền cộng ngày tồn kho"
+        }
+      ],
+      "prompt": "CCC bằng gì?"
+    },
+    {
+      "correct_option_id": "e1cec1b651",
+      "id": "ch15-l08-q02",
+      "options": [
+        {
+          "id": "e1cec1b651",
+          "text": "Khách trả tiền ngay khi mua"
+        },
+        {
+          "id": "f64a62a210",
+          "text": "Chuỗi không có khách hàng"
+        },
+        {
+          "id": "2b3f68bc08",
+          "text": "Chuỗi bán chịu dài hạn"
+        }
+      ],
+      "prompt": "Vì sao ngày thu tiền của chuỗi bán lẻ rất ngắn?"
+    },
+    {
+      "correct_option_id": "9e9e20f8d3",
+      "id": "ch15-l08-q03",
+      "options": [
+        {
+          "id": "9e9e20f8d3",
+          "text": "Thu tiền bán hàng trước khi phải trả nhà cung cấp"
+        },
+        {
+          "id": "e9ef5e5dcd",
+          "text": "Chuỗi đang lỗ trong hoạt động bán hàng"
+        },
+        {
+          "id": "a2f3701f63",
+          "text": "Chuỗi không còn hàng tồn kho cuối kỳ"
+        }
+      ],
+      "prompt": "CCC âm có ý nghĩa gì?"
+    },
+    {
+      "correct_option_id": "fa703ff2c3",
+      "id": "ch15-l08-q04",
+      "options": [
+        {
+          "id": "fa703ff2c3",
+          "text": "Chuỗi trang sức"
+        },
+        {
+          "id": "5779885b23",
+          "text": "Siêu thị lớn"
+        },
+        {
+          "id": "4355c48e4c",
+          "text": "Chuỗi điện máy"
+        }
+      ],
+      "prompt": "Nhóm nào thường có CCC dài nhất?"
+    },
+    {
+      "chart_id": "c15l8-rep",
+      "correct_option_id": "e7bf5cb2e9",
+      "id": "ch15-l08-q05",
+      "options": [
+        {
+          "id": "e7bf5cb2e9",
+          "text": "Ngày thu tiền"
+        },
+        {
+          "id": "3aeb9fb819",
+          "text": "Ngày tồn kho"
+        },
+        {
+          "id": "63c1dbf0cf",
+          "text": "Ngày trả tiền"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột nào rất thấp ở bán lẻ?"
+    }
+  ],
+  "salt": "bdbcdff0c187da0b5171515b6bbeb8073f2b2df6c6403ce0d2897e2f897058c3"
+}

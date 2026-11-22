@@ -1,0 +1,580 @@
+{
+  "chapter": 1,
+  "charts": {
+    "c1l6-g1": {
+      "alt": "Nhiều nhà đầu tư góp tiền vào quỹ, công ty quản lý quỹ đầu tư vào danh mục cổ phiếu, trái phiếu và tiền",
+      "edges": [
+        {
+          "from": "nha-dau-tu",
+          "to": "quy"
+        },
+        {
+          "from": "quy",
+          "to": "danh-muc"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "nha-dau-tu",
+          "title": "Nhà đầu tư"
+        },
+        {
+          "emph": true,
+          "id": "quy",
+          "sub": "công ty quản lý quỹ",
+          "title": "Quỹ đầu tư",
+          "tone": "p1"
+        },
+        {
+          "children": [
+            {
+              "title": "Cổ phiếu",
+              "tone": "p1"
+            },
+            {
+              "title": "Trái phiếu",
+              "tone": "warn"
+            },
+            {
+              "title": "Tiền",
+              "tone": "pos"
+            }
+          ],
+          "id": "danh-muc",
+          "title": "Danh mục"
+        }
+      ]
+    },
+    "c1l6-g2": {
+      "alt": "Một chứng chỉ ETF mô phỏng VN30 tương đương một rổ 30 cổ phiếu VN30",
+      "edges": [
+        {
+          "from": "etf",
+          "label": "≈",
+          "to": "ro-vn30"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "emph": true,
+          "id": "etf",
+          "sub": "mô phỏng VN30",
+          "title": "1 chứng chỉ ETF",
+          "tone": "p1"
+        },
+        {
+          "id": "ro-vn30",
+          "title": "Rổ 30 cổ phiếu VN30"
+        }
+      ]
+    },
+    "c1l6-g3": {
+      "alt": "Chứng quyền mua giá thực hiện 30.000, giá chứng quyền 2.000: lỗ tối đa 2.000, hòa vốn ở 32.000",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "20.000",
+              "v": 20000
+            },
+            {
+              "label": "25.000",
+              "v": 25000
+            },
+            {
+              "label": "30.000",
+              "v": 30000
+            },
+            {
+              "label": "35.000",
+              "v": 35000
+            },
+            {
+              "label": "40.000",
+              "v": 40000
+            }
+          ],
+          "title": "Giá cổ phiếu ABC ngày đáo hạn"
+        },
+        "y": {
+          "ticks": [
+            {
+              "label": "−2.000",
+              "v": -2000
+            },
+            {
+              "label": "0",
+              "v": 0
+            },
+            {
+              "label": "+4.000",
+              "v": 4000
+            },
+            {
+              "label": "+8.000",
+              "v": 8000
+            }
+          ],
+          "title": "Lãi/lỗ"
+        }
+      },
+      "domain": {
+        "x": [
+          20000,
+          40000
+        ],
+        "y": [
+          -3000,
+          9000
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "t": "zone",
+          "tone": "neg",
+          "x": [
+            20000,
+            30000
+          ],
+          "y": [
+            -2000,
+            0
+          ]
+        },
+        {
+          "dash": true,
+          "from": [
+            30000,
+            -2000
+          ],
+          "t": "segment",
+          "to": [
+            30000,
+            8800
+          ],
+          "tone": "warn"
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            30000,
+            8800
+          ],
+          "t": "text",
+          "text": "Giá thực hiện 30.000",
+          "tone": "warn"
+        },
+        {
+          "pts": [
+            [
+              20000,
+              -2000
+            ],
+            [
+              30000,
+              -2000
+            ],
+            [
+              40000,
+              8000
+            ]
+          ],
+          "t": "line",
+          "tone": "p1",
+          "width": 3
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            25000,
+            -1600
+          ],
+          "t": "text",
+          "text": "Mất toàn bộ 2.000",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            32000,
+            0
+          ],
+          "label": "Hòa vốn 32.000",
+          "pos": "below",
+          "t": "point",
+          "tone": "price"
+        },
+        {
+          "at": [
+            38000,
+            6000
+          ],
+          "label": "Giá 38.000: lãi 6.000",
+          "pos": "left",
+          "t": "point",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c1l6-g4": {
+      "alt": "Vị thế mua lãi khi chỉ số tăng, vị thế bán lãi khi chỉ số giảm",
+      "axes": {
+        "x": {
+          "arrow": true,
+          "ticks": [
+            {
+              "label": "Chỉ số giảm",
+              "v": -1
+            },
+            {
+              "label": "Giá lúc mở vị thế",
+              "v": 0
+            },
+            {
+              "label": "Chỉ số tăng",
+              "v": 1
+            }
+          ]
+        }
+      },
+      "domain": {
+        "x": [
+          -1,
+          1
+        ],
+        "y": [
+          -1.2,
+          1.2
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "from": [
+            -1,
+            0
+          ],
+          "t": "segment",
+          "to": [
+            1,
+            0
+          ],
+          "tone": "neutral"
+        },
+        {
+          "dash": true,
+          "from": [
+            0,
+            -1.2
+          ],
+          "t": "segment",
+          "to": [
+            0,
+            1.2
+          ],
+          "tone": "neutral"
+        },
+        {
+          "pts": [
+            [
+              -1,
+              -1
+            ],
+            [
+              1,
+              1
+            ]
+          ],
+          "t": "line",
+          "tone": "p1",
+          "width": 3
+        },
+        {
+          "pts": [
+            [
+              -1,
+              1
+            ],
+            [
+              1,
+              -1
+            ]
+          ],
+          "t": "line",
+          "tone": "p5",
+          "width": 3
+        },
+        {
+          "anchor": "start",
+          "at": [
+            1,
+            1
+          ],
+          "t": "text",
+          "text": "Mua",
+          "tone": "p1"
+        },
+        {
+          "anchor": "start",
+          "at": [
+            1,
+            -1
+          ],
+          "t": "text",
+          "text": "Bán",
+          "tone": "p5"
+        },
+        {
+          "anchor": "end",
+          "at": [
+            -1,
+            1
+          ],
+          "t": "text",
+          "text": "Lãi",
+          "tone": "pos"
+        },
+        {
+          "anchor": "end",
+          "at": [
+            -1,
+            -1
+          ],
+          "t": "text",
+          "text": "Lỗ",
+          "tone": "neg"
+        }
+      ]
+    },
+    "c1l6-g5": {
+      "alt": "Mức rủi ro tăng dần: quỹ mở và ETF, cổ phiếu, chứng quyền, phái sinh",
+      "domain": [
+        0,
+        700
+      ],
+      "ends": [
+        "Rủi ro thấp",
+        "Rủi ro cao"
+      ],
+      "gradient": [
+        "pos",
+        "warn",
+        "neg"
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Quỹ mở, ETF",
+          "side": "a",
+          "tone": "price",
+          "v": 120
+        },
+        {
+          "label": "Cổ phiếu",
+          "side": "b",
+          "tone": "price",
+          "v": 370
+        },
+        {
+          "label": "Chứng quyền",
+          "side": "a",
+          "tone": "price",
+          "v": 570
+        },
+        {
+          "label": "Phái sinh",
+          "side": "b",
+          "tone": "price",
+          "v": 660
+        }
+      ],
+      "orientation": "h"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch01-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Bên cạnh cổ phiếu và trái phiếu, thị trường còn nhiều sản phẩm khác. Quỹ và ETF giúp nhà đầu tư phân tán rủi ro với số vốn nhỏ. Chứng quyền và phái sinh là sản phẩm có đòn bẩy, phù hợp với nhà đầu tư đã có kinh nghiệm.",
+  "lesson_key": "concept:quy_etf_cw_phai_sinh",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Quỹ đầu tư</b> tập hợp tiền từ nhiều nhà đầu tư và giao cho <b>công ty quản lý quỹ</b> đầu tư thay. Số tiền này được phân bổ vào một danh mục gồm nhiều cổ phiếu và trái phiếu. Nhà đầu tư nắm giữ <b>chứng chỉ quỹ</b>, có giá trị theo <b>giá trị tài sản ròng (NAV)</b> của quỹ.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l6-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Quỹ mở</b> là loại quỹ phổ biến nhất. Nhà đầu tư mua và bán lại chứng chỉ quỹ trực tiếp với công ty quản lý quỹ theo giá NAV, vào các ngày giao dịch định kỳ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Quỹ đầu tư"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>ETF</b> là quỹ đầu tư bám sát một chỉ số, chẳng hạn VN30. Chứng chỉ quỹ ETF được niêm yết và <b>mua bán trên sàn như cổ phiếu</b>. Sở hữu một chứng chỉ ETF mô phỏng VN30 tương đương sở hữu một phần nhỏ của cả rổ 30 cổ phiếu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l6-g2",
+          "type": "chart"
+        },
+        {
+          "columns": [
+            {
+              "label": ""
+            },
+            {
+              "label": "Tự mua cổ phiếu"
+            },
+            {
+              "highlight": true,
+              "label": "Quỹ mở"
+            },
+            {
+              "highlight": true,
+              "label": "ETF"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Người chọn cổ phiếu",
+                "Nhà đầu tư",
+                "Công ty quản lý quỹ",
+                "Theo chỉ số"
+              ]
+            },
+            {
+              "cells": [
+                "Mức đa dạng hóa",
+                "Tùy số vốn",
+                "Cao",
+                "Cao"
+              ]
+            },
+            {
+              "cells": [
+                "Nơi giao dịch",
+                "Trên sàn",
+                "Với công ty quản lý quỹ",
+                "Trên sàn"
+              ]
+            },
+            {
+              "cells": [
+                "Giá giao dịch",
+                "Giá khớp lệnh",
+                "Giá NAV",
+                "Giá khớp lệnh"
+              ]
+            },
+            {
+              "cells": [
+                "Chi phí thêm",
+                "Không",
+                "Phí quản lý quỹ",
+                "Phí quản lý quỹ"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s2",
+      "title": "ETF: quỹ mô phỏng chỉ số"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Chứng quyền có bảo đảm</b> do công ty chứng khoán phát hành và được giao dịch trên HOSE. Người nắm giữ được hưởng phần chênh lệch nếu vào ngày đáo hạn, giá cổ phiếu cơ sở <b>cao hơn giá thực hiện</b>.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Ví dụ: chứng quyền trên cổ phiếu ABC có giá thực hiện 30.000 đồng, giá mua 2.000 đồng, tỷ lệ chuyển đổi 1:1. Lãi lỗ tại ngày đáo hạn như sau:",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l6-g3",
+          "type": "chart"
+        },
+        {
+          "text": "Giá cổ phiếu vượt giá thực hiện càng nhiều, lợi nhuận càng lớn so với số tiền bỏ ra. Ngược lại, nếu giá cổ phiếu không vượt giá thực hiện, chứng quyền <b>mất toàn bộ giá trị</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s3",
+      "title": "Chứng quyền có bảo đảm"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Hợp đồng tương lai chỉ số VN30</b> là sản phẩm phái sinh phổ biến nhất, được giao dịch trên HNX. Đây là cam kết mua hoặc bán chỉ số ở một mức giá xác định vào một ngày trong tương lai.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "subtitle": "Kỳ vọng chỉ số tăng",
+              "text": "Lãi khi chỉ số tăng, lỗ khi chỉ số giảm.",
+              "title": "Vị thế mua",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Kỳ vọng chỉ số giảm",
+              "text": "Lãi khi chỉ số giảm, lỗ khi chỉ số tăng.",
+              "title": "Vị thế bán"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "chart_id": "c1l6-g4",
+          "type": "chart"
+        },
+        {
+          "text": "Nhà đầu tư chỉ cần <b>ký quỹ một phần</b> giá trị hợp đồng, nên mức đòn bẩy rất cao. Vị thế có thể đóng ngay trong ngày, và lãi lỗ được ghi nhận hằng ngày theo biến động của chỉ số.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Hợp đồng tương lai"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c1l6-g5",
+          "type": "chart"
+        },
+        {
+          "text": "Nhờ đa dạng hóa, quỹ và ETF phù hợp với người mới. Chứng quyền và phái sinh có đòn bẩy cao, có thể khiến nhà đầu tư <b>mất toàn bộ vốn trong thời gian ngắn</b>, nên chỉ phù hợp khi đã có kinh nghiệm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Mức độ rủi ro"
+    }
+  ],
+  "summary": [
+    "<b>Quỹ đầu tư</b> do chuyên gia quản lý, giúp đa dạng hóa với số vốn nhỏ.",
+    "<b>ETF</b> mô phỏng một chỉ số, mua bán trên sàn như cổ phiếu.",
+    "<b>Chứng quyền</b> có lãi khi giá cổ phiếu vượt giá thực hiện, nếu không sẽ mất toàn bộ giá trị.",
+    "<b>Hợp đồng tương lai</b> cho phép mua hoặc bán chỉ số, đòn bẩy và rủi ro cao."
+  ],
+  "title": "Quỹ, ETF, chứng quyền và phái sinh"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l10",
+  "questions": [
+    {
+      "correct_option_id": "417eeebd82",
+      "id": "ch14-l10-q01",
+      "options": [
+        {
+          "id": "417eeebd82",
+          "text": "Doanh nghiệp có tiền nhiều hơn nợ vay"
+        },
+        {
+          "id": "4d67eb7534",
+          "text": "Doanh nghiệp đang lỗ trước khấu hao"
+        },
+        {
+          "id": "77c47a0db0",
+          "text": "Nợ vay lớn hơn tiền và đầu tư"
+        }
+      ],
+      "prompt": "Net Debt / EBITDA âm nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "acf0256754",
+      "id": "ch14-l10-q02",
+      "options": [
+        {
+          "id": "acf0256754",
+          "text": "EBITDA ở mẫu số giảm mạnh"
+        },
+        {
+          "id": "e6fe44e15a",
+          "text": "Nợ vay tự động tăng"
+        },
+        {
+          "id": "3fcc827177",
+          "text": "Tiền mặt tự động giảm"
+        }
+      ],
+      "prompt": "Vì sao chỉ tiêu có thể xấu đi nhanh khi giá dầu giảm?"
+    },
+    {
+      "correct_option_id": "495f7c69e8",
+      "id": "ch14-l10-q03",
+      "options": [
+        {
+          "id": "495f7c69e8",
+          "text": "Tính lại với EBITDA năm giá dầu thấp"
+        },
+        {
+          "id": "dd3750a0d3",
+          "text": "Tính lại với EBITDA năm giá dầu cao nhất"
+        },
+        {
+          "id": "fbac31eae9",
+          "text": "Tính lại với doanh thu thay cho EBITDA"
+        }
+      ],
+      "prompt": "Nên kiểm tra rủi ro bằng cách nào?"
+    },
+    {
+      "correct_option_id": "a6f8bd107c",
+      "id": "ch14-l10-q04",
+      "options": [
+        {
+          "id": "a6f8bd107c",
+          "text": "Tiền ròng / VCSH"
+        },
+        {
+          "id": "d6f5c5a59c",
+          "text": "Số ngày thu tiền"
+        },
+        {
+          "id": "673bcfbd93",
+          "text": "P/S"
+        }
+      ],
+      "prompt": "Nên đọc chỉ tiêu này cùng chỉ tiêu nào ở dầu khí?"
+    },
+    {
+      "chart_id": "c14l10-rep",
+      "correct_option_id": "fb90b249d8",
+      "id": "ch14-l10-q05",
+      "options": [
+        {
+          "id": "fb90b249d8",
+          "text": "Doanh nghiệp dư tiền"
+        },
+        {
+          "id": "8bafe280f9",
+          "text": "Doanh nghiệp đang vay nhiều"
+        },
+        {
+          "id": "a615274fa0",
+          "text": "EBITDA âm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột nợ ròng âm cho thấy gì?"
+    }
+  ],
+  "salt": "add9eb4400f1bf3dd675684bbdab8805845fe3e485ceb5efbc4e646fcb31627b"
+}

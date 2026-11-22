@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l04",
+  "questions": [
+    {
+      "correct_option_id": "660199dbea",
+      "id": "ch16-l04-q01",
+      "options": [
+        {
+          "id": "660199dbea",
+          "text": "(LN kinh doanh chính + khấu hao) ÷ doanh thu thuần"
+        },
+        {
+          "id": "2ecd4ec5db",
+          "text": "LNST ÷ doanh thu thuần, cộng 4 quý"
+        },
+        {
+          "id": "eff3b497ed",
+          "text": "Khấu hao ÷ tổng tài sản bình quân"
+        }
+      ],
+      "prompt": "Biên EBITDA trong chương này tính thế nào?"
+    },
+    {
+      "correct_option_id": "9dc356c7e7",
+      "id": "ch16-l04-q02",
+      "options": [
+        {
+          "id": "9dc356c7e7",
+          "text": "Khấu hao là chi phí sổ sách, tiền đã chi từ trước"
+        },
+        {
+          "id": "e802d90e49",
+          "text": "Vì khấu hao là doanh thu"
+        },
+        {
+          "id": "abcf009095",
+          "text": "Vì khấu hao không có trên báo cáo"
+        }
+      ],
+      "prompt": "Vì sao cộng lại khấu hao?"
+    },
+    {
+      "correct_option_id": "dc5805da12",
+      "id": "ch16-l04-q03",
+      "options": [
+        {
+          "id": "dc5805da12",
+          "text": "Để trống"
+        },
+        {
+          "id": "df568bf44f",
+          "text": "Lấy từ thuyết minh"
+        },
+        {
+          "id": "04a549d3f0",
+          "text": "Ghi bằng 0"
+        }
+      ],
+      "prompt": "Kỳ không có dòng khấu hao trên lưu chuyển tiền tệ thì sao?"
+    },
+    {
+      "correct_option_id": "4ccacd3838",
+      "id": "ch16-l04-q04",
+      "options": [
+        {
+          "id": "4ccacd3838",
+          "text": "Thủy điện"
+        },
+        {
+          "id": "03aee8f1a9",
+          "text": "Nhiệt điện than"
+        },
+        {
+          "id": "f09e8aaa02",
+          "text": "Nhiệt điện khí"
+        }
+      ],
+      "prompt": "Loại nhà máy nào thường có biên EBITDA cao nhất?"
+    },
+    {
+      "chart_id": "c16l4-rep",
+      "correct_option_id": "80dbbf2b75",
+      "id": "ch16-l04-q05",
+      "options": [
+        {
+          "id": "80dbbf2b75",
+          "text": "LN kinh doanh chính và khấu hao 4 quý"
+        },
+        {
+          "id": "043ae2b839",
+          "text": "Doanh thu thuần và giá vốn 4 quý"
+        },
+        {
+          "id": "2e26994abf",
+          "text": "Nợ vay và vốn chủ sở hữu cuối quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm gì?"
+    }
+  ],
+  "salt": "ee5f7c77a8b6d43f6aabe8444a36bc8112d447fb1d9858b8b5350eacca091d1b"
+}

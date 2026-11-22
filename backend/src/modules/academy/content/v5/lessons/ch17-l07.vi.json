@@ -1,0 +1,380 @@
+{
+  "chapter": 17,
+  "charts": {
+    "c17l7-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "4 quý"
+          ],
+          "t": "LN kinh doanh chính + khấu hao",
+          "tone": "pos",
+          "v": "13.759 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "121.579 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Biên EBITDA",
+          "tone": "warn",
+          "v": "11,3%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c17l7-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Đỉnh chu kỳ",
+          "tone": "pos",
+          "value": 25
+        },
+        {
+          "label": "Giữa chu kỳ",
+          "tone": "p1",
+          "value": 15
+        },
+        {
+          "label": "Đáy chu kỳ",
+          "tone": "neg",
+          "value": 8
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Biên EBITDA của công ty thép qua chu kỳ · số minh họa",
+      "unit": "%"
+    },
+    "c17l7-rep": {
+      "alt": "Biên EBITDA: 11,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "EBITDA / Doanh thu (4 quý)",
+            "v": [
+              18.271,
+              16.289,
+              14.298,
+              13.523,
+              11.924,
+              10.884,
+              11.085,
+              11.317
+            ]
+          }
+        ],
+        "name": "Biên EBITDA",
+        "sub": {
+          "series": [
+            {
+              "name": "LN kinh doanh chính 4 quý",
+              "v": [
+                13428.571,
+                11812.216,
+                10409.037,
+                10044.095,
+                8831.258,
+                7842.127,
+                8126.33,
+                8662.491
+              ]
+            },
+            {
+              "name": "Khấu hao 4 quý",
+              "v": [
+                3650.813,
+                3841.814,
+                4034.117,
+                4230.721,
+                4433.991,
+                4646.144,
+                4867.628,
+                5096.58
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch17-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Nhà máy thép, xi măng, phân bón là tài sản lớn với khấu hao nặng. Biên EBITDA cho biết tiền tạo ra từ vận hành trên mỗi đồng doanh thu, không bị ảnh hưởng bởi tuổi nhà máy.",
+  "lesson_key": "fundamental:ebitda_margin-vl",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l7-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>lợi nhuận kinh doanh chính</b> (lợi nhuận gộp trừ chi phí bán hàng và quản lý) cộng <b>khấu hao</b> (mã 02 trên lưu chuyển tiền tệ), chia <b>doanh thu thuần</b>, cộng 4 quý.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Biên EBITDA là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l7-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên EBITDA đi theo giá bán và giá nguyên liệu.",
+              "title": "Theo chu kỳ"
+            },
+            {
+              "text": "Nhà máy lớn, công nghệ mới có chi phí thấp, biên EBITDA cao hơn.",
+              "title": "Quy mô giúp chi phí thấp"
+            },
+            {
+              "text": "EBITDA là nguồn trả nợ cho dự án lớn. Biên giảm thì áp lực nợ tăng.",
+              "title": "Nguồn trả nợ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở vật liệu cơ bản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c17l7-rep",
+          "title": "Biên EBITDA",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA chia doanh thu 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng LN kinh doanh chính và khấu hao 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phần LN kinh doanh chính giảm trong khi khấu hao tăng: chu kỳ yếu đúng lúc tài sản mới tăng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Trên khoảng 15% qua chu kỳ với thép. Mức tham khảo.",
+              "title": "Biên tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 8% kéo dài. Khó trả nợ cho dự án mới.",
+              "title": "Biên mỏng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Kỳ lưu chuyển tiền tệ lập theo phương pháp trực tiếp không có dòng khấu hao. Dashboard để trống kỳ đó.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bỏ khác biệt khấu hao.",
+              "title": "So nhà máy cũ, mới"
+            },
+            {
+              "text": "Đọc cùng Net Debt / EBITDA.",
+              "title": "Đánh giá khả năng trả nợ"
+            },
+            {
+              "text": "Biên EBITDA thấp kéo dài là đáy chu kỳ.",
+              "title": "Xác định vị trí chu kỳ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty thép mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "LN kinh doanh chính"
+            },
+            {
+              "label": "Khấu hao"
+            },
+            {
+              "label": "Biên EBITDA"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "13.429",
+                "3.651",
+                "18,3%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "10.044",
+                "4.231",
+                "13,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "8.662",
+                "5.097",
+                "11,3%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Biên EBITDA giảm từ 18,3% xuống 11,3%. LN kinh doanh chính giảm mạnh trong khi khấu hao tăng do tài sản mới.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chỉ tính phần vận hành.",
+              "title": "Cộng doanh thu tài chính"
+            },
+            {
+              "text": "Còn khấu hao, lãi vay, thuế.",
+              "title": "Coi EBITDA là lợi nhuận"
+            },
+            {
+              "text": "Kỳ trực tiếp để trống.",
+              "title": "Lấy khấu hao từ thuyết minh"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên EBITDA dao động mạnh theo giá thép.",
+              "title": "Thép"
+            },
+            {
+              "text": "Biên ổn định hơn, phụ thuộc giá than, điện.",
+              "title": "Xi măng"
+            },
+            {
+              "text": "Biên theo chênh lệch giá khí và phân bón.",
+              "title": "Phân bón và hoá chất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Biên EBITDA = <b>(LN kinh doanh chính + khấu hao)</b> ÷ <b>doanh thu thuần</b>, 4 quý.",
+    "Đi theo <b>chu kỳ giá</b>.",
+    "Là <b>nguồn trả nợ</b> cho dự án lớn.",
+    "Kỳ không có khấu hao thì <b>để trống</b>."
+  ],
+  "title": "Biên EBITDA · ở vật liệu cơ bản"
+}

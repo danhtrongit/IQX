@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch07-l03",
+  "questions": [
+    {
+      "correct_option_id": "f6a0ca9281",
+      "id": "ch07-l03-q01",
+      "options": [
+        {
+          "id": "f6a0ca9281",
+          "text": "Phần trăm thay đổi giá so với N phiên trước"
+        },
+        {
+          "id": "e5490bd486",
+          "text": "Khoảng cách từ giá tới đỉnh N phiên"
+        },
+        {
+          "id": "847cb159d3",
+          "text": "Tổng khối lượng của N phiên gần nhất"
+        }
+      ],
+      "prompt": "ROC đo điều gì?"
+    },
+    {
+      "correct_option_id": "291beca794",
+      "id": "ch07-l03-q02",
+      "options": [
+        {
+          "id": "291beca794",
+          "text": "Giá hôm nay cao hơn giá N phiên trước"
+        },
+        {
+          "id": "74fe2050f3",
+          "text": "Giá hôm nay thấp hơn giá N phiên trước"
+        },
+        {
+          "id": "254d6a553c",
+          "text": "Khối lượng hôm nay tăng mạnh"
+        }
+      ],
+      "prompt": "ROC dương cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "6e1f919247",
+      "id": "ch07-l03-q03",
+      "options": [
+        {
+          "id": "6e1f919247",
+          "text": "ROC cắt lên trên đường 0"
+        },
+        {
+          "id": "4a050cefcf",
+          "text": "ROC cắt xuống dưới đường 0"
+        },
+        {
+          "id": "11fcaaaa9f",
+          "text": "ROC đi ngang sát mức −5%"
+        }
+      ],
+      "prompt": "Tín hiệu Mua cơ bản của ROC là gì?"
+    },
+    {
+      "correct_option_id": "c6513ac5ea",
+      "id": "ch07-l03-q04",
+      "options": [
+        {
+          "id": "c6513ac5ea",
+          "text": "Vì ROC tính theo phần trăm"
+        },
+        {
+          "id": "05c61b385e",
+          "text": "Vì ROC tính theo số đồng tăng"
+        },
+        {
+          "id": "3137537efe",
+          "text": "Vì ROC không phụ thuộc vào giá"
+        }
+      ],
+      "prompt": "Vì sao ROC dùng được để so sánh các cổ phiếu có thị giá khác nhau?"
+    },
+    {
+      "correct_option_id": "64a3837746",
+      "id": "ch07-l03-q05",
+      "options": [
+        {
+          "id": "64a3837746",
+          "text": "Đà tăng đang chậm lại"
+        },
+        {
+          "id": "e612168465",
+          "text": "Xu hướng tăng đang mạnh lên"
+        },
+        {
+          "id": "8606b69c2f",
+          "text": "Khối lượng giao dịch bằng 0"
+        }
+      ],
+      "prompt": "ROC giảm dần trong khi giá vẫn tăng cho thấy điều gì?"
+    }
+  ],
+  "salt": "69e73f2b6395c6e90dd0960dc22c3566c930f6eaa16f69bce16498d7eeb7f97c"
+}

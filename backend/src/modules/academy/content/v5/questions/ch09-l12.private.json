@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l12",
+  "questions": [
+    {
+      "correct_option_id": "24ad349f9f",
+      "id": "ch09-l12-q01",
+      "options": [
+        {
+          "id": "24ad349f9f",
+          "text": "Chi mua sắm tài sản cố định như nhà xưởng, máy móc"
+        },
+        {
+          "id": "087e89ae71",
+          "text": "Chi trả lương và thưởng cho nhân viên"
+        },
+        {
+          "id": "be6b58c7f4",
+          "text": "Chi trả lãi vay cho ngân hàng"
+        }
+      ],
+      "prompt": "Capex là khoản chi nào?"
+    },
+    {
+      "correct_option_id": "7137f9b040",
+      "id": "ch09-l12-q02",
+      "options": [
+        {
+          "id": "7137f9b040",
+          "text": "Dòng tiền đầu tư"
+        },
+        {
+          "id": "98d6385003",
+          "text": "Dòng tiền tài chính"
+        },
+        {
+          "id": "124b16ea76",
+          "text": "Dòng tiền kinh doanh"
+        }
+      ],
+      "prompt": "Capex nằm trong dòng tiền nào của báo cáo lưu chuyển tiền tệ?"
+    },
+    {
+      "correct_option_id": "3ea5a6802d",
+      "id": "ch09-l12-q03",
+      "options": [
+        {
+          "id": "3ea5a6802d",
+          "text": "Nhu cầu tài sản mỗi ngành rất khác nhau"
+        },
+        {
+          "id": "d35719600b",
+          "text": "Doanh thu mỗi ngành tính theo đơn vị khác"
+        },
+        {
+          "id": "051b1ca9be",
+          "text": "Ngành nào cũng có Capex / Revenue như nhau"
+        }
+      ],
+      "prompt": "Vì sao chỉ nên so Capex / Revenue giữa các doanh nghiệp cùng ngành?"
+    },
+    {
+      "correct_option_id": "d8c21c90de",
+      "id": "ch09-l12-q04",
+      "options": [
+        {
+          "id": "d8c21c90de",
+          "text": "Doanh thu tăng tương xứng trong các năm sau"
+        },
+        {
+          "id": "99b5e57e5f",
+          "text": "Doanh thu giữ nguyên như trước khi đầu tư"
+        },
+        {
+          "id": "a731a8b995",
+          "text": "Doanh nghiệp phải vay thêm để duy trì"
+        }
+      ],
+      "prompt": "Sau một giai đoạn Capex / Revenue tăng vọt, điều gì nên xảy ra để khoản đầu tư được xem là hiệu quả?"
+    },
+    {
+      "chart_id": "c9l12-rep",
+      "correct_option_id": "9bf1e73029",
+      "id": "ch09-l12-q05",
+      "options": [
+        {
+          "id": "9bf1e73029",
+          "text": "Capex chia doanh thu tính trên 4 quý"
+        },
+        {
+          "id": "7a9c735577",
+          "text": "Capex của riêng quý gần nhất"
+        },
+        {
+          "id": "f91b870d71",
+          "text": "Doanh thu cộng dồn 4 quý gần nhất"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện Capex / Revenue, đường chính thể hiện gì?"
+    }
+  ],
+  "salt": "96a70af4a1b639ebe6fc9a3c09d445d597473624aacaa03df8af24470a35323a"
+}

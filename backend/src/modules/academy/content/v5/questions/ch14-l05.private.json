@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l05",
+  "questions": [
+    {
+      "correct_option_id": "c3301cf598",
+      "id": "ch14-l05-q01",
+      "options": [
+        {
+          "id": "c3301cf598",
+          "text": "Khấu hao TSCĐ và BĐS đầu tư trên lưu chuyển tiền tệ"
+        },
+        {
+          "id": "3ae6a1c1d6",
+          "text": "Chi phí quản lý doanh nghiệp"
+        },
+        {
+          "id": "ff9b828a8c",
+          "text": "Tài sản cố định trên bảng cân đối"
+        }
+      ],
+      "prompt": "Khấu hao lấy từ dòng nào?"
+    },
+    {
+      "correct_option_id": "c040fece3b",
+      "id": "ch14-l05-q02",
+      "options": [
+        {
+          "id": "c040fece3b",
+          "text": "Để trống kỳ đó"
+        },
+        {
+          "id": "67e2574501",
+          "text": "Lấy số từ thuyết minh"
+        },
+        {
+          "id": "d7ab60dbed",
+          "text": "Ghi bằng 0"
+        }
+      ],
+      "prompt": "Khi lưu chuyển tiền tệ lập theo phương pháp trực tiếp, Dashboard xử lý thế nào?"
+    },
+    {
+      "correct_option_id": "2133f5e8c0",
+      "id": "ch14-l05-q03",
+      "options": [
+        {
+          "id": "2133f5e8c0",
+          "text": "Doanh nghiệp nặng tài sản, chi phí cố định lớn"
+        },
+        {
+          "id": "266c1f4598",
+          "text": "Doanh nghiệp không có tài sản"
+        },
+        {
+          "id": "18e69317a4",
+          "text": "Doanh nghiệp có nhiều tiền mặt"
+        }
+      ],
+      "prompt": "Tỷ lệ khấu hao trên doanh thu cao cho thấy gì?"
+    },
+    {
+      "correct_option_id": "730d0fc10f",
+      "id": "ch14-l05-q04",
+      "options": [
+        {
+          "id": "730d0fc10f",
+          "text": "Phân phối xăng dầu"
+        },
+        {
+          "id": "ecbc571ed8",
+          "text": "Khoan dầu khí"
+        },
+        {
+          "id": "7f8dab3274",
+          "text": "Vận tải biển"
+        }
+      ],
+      "prompt": "Mảng nào thường có tỷ lệ thấp nhất?"
+    },
+    {
+      "chart_id": "c14l5-rep",
+      "correct_option_id": "a5d81d7f7e",
+      "id": "ch14-l05-q05",
+      "options": [
+        {
+          "id": "a5d81d7f7e",
+          "text": "Doanh thu tăng nhanh hơn"
+        },
+        {
+          "id": "1491387b62",
+          "text": "Tài sản bị bán"
+        },
+        {
+          "id": "80b6bceaf1",
+          "text": "Lãi vay giảm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khấu hao đi ngang mà tỷ lệ giảm thường do đâu?"
+    }
+  ],
+  "salt": "12f5d3591b203148438008480f299146198bf58fd2647d8888b207be789bc4f2"
+}

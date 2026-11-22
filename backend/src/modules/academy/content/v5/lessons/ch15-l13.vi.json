@@ -1,0 +1,553 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l13-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "Giá cổ phiếu",
+          "tone": "p1",
+          "v": "Giá"
+        },
+        {
+          "notes": [
+            "LNST 4 quý ÷ số cổ phiếu"
+          ],
+          "t": "EPS 4 quý",
+          "tone": "warn",
+          "v": "EPS"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "P/E",
+          "tone": "pos",
+          "v": "16,55 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l13-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Hàng tiêu dùng thiết yếu, thương hiệu mạnh",
+          "tone": "pos",
+          "value": 20
+        },
+        {
+          "label": "Chuỗi bán lẻ tăng trưởng",
+          "tone": "p1",
+          "value": 16
+        },
+        {
+          "label": "Chuỗi bán lẻ chậm lại",
+          "tone": "warn",
+          "value": 10
+        }
+      ],
+      "kind": "figure",
+      "label_width": 320,
+      "title": "P/E tham khảo · số minh họa",
+      "unit": " lần"
+    },
+    "c15l13-rep": {
+      "alt": "P/E: 16,55 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "P/E",
+            "v": [
+              19.278,
+              19.482,
+              19.122,
+              20.163,
+              19.871,
+              20.032,
+              20.718,
+              21.313,
+              20.92,
+              21.847,
+              21.697,
+              22.192,
+              21.438,
+              21.067,
+              21.98,
+              22.224,
+              21.824,
+              19.794,
+              19.833,
+              19.367,
+              19.043,
+              18.103,
+              17.753,
+              17.569,
+              17.509,
+              17.45,
+              17.611,
+              18.45,
+              18.241,
+              17.766,
+              16.824,
+              16.826,
+              17.723,
+              16.538,
+              16.625,
+              16.891,
+              17.164,
+              17.343,
+              16.381,
+              16.435,
+              16.251,
+              15.396,
+              16.113,
+              16.198,
+              15.947,
+              15.666,
+              15.001,
+              15.034,
+              14.75,
+              14.749,
+              14.408,
+              15.346,
+              15.297,
+              14.992,
+              15.2,
+              14.54,
+              14.34,
+              14.844,
+              14.619,
+              14.424,
+              14.53,
+              14.749,
+              15.209,
+              15.303,
+              15.662,
+              15.612,
+              15.492,
+              15.758,
+              15.405,
+              15.109,
+              15.457,
+              15.482,
+              15.257,
+              15.371,
+              15.144,
+              15.04,
+              14.473,
+              14.692,
+              15.159,
+              15.159,
+              14.948,
+              15.292,
+              14.995,
+              14.329,
+              14.164,
+              14.258,
+              14.528,
+              14.273,
+              13.782,
+              14.006,
+              14.66,
+              14.833,
+              14.403,
+              14.65,
+              14.477,
+              14.882,
+              15.088,
+              15.295,
+              16.397,
+              16.134,
+              16.187,
+              16.861,
+              17.003,
+              16.99,
+              16.526,
+              17.069,
+              17.709,
+              17.631,
+              18.315,
+              19.077,
+              19.206,
+              19.324,
+              18.966,
+              18.851,
+              18.157,
+              17.824,
+              17.544,
+              17.557,
+              16.745,
+              16.439,
+              17.127,
+              16.565,
+              16.395,
+              16.565,
+              16.433,
+              16.547
+            ]
+          }
+        ],
+        "name": "P/E",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l13",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Bán lẻ và hàng tiêu dùng có lợi nhuận ổn định hơn nhiều ngành khác. Vì vậy P/E là thước đo định giá phù hợp nhất cho nhóm này. Bài này nói khi nào P/E cao là hợp lý.",
+  "lesson_key": "fundamental:pe-bl",
+  "order": 13,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l13-g1",
+          "type": "chart"
+        },
+        {
+          "text": "P/E bằng <b>giá cổ phiếu</b> chia <b>EPS 4 quý</b>, theo ngày. Cách tính giống bài P/E ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l13-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/E ít bị nhiễu bởi chu kỳ như dầu khí hay bất động sản.",
+              "title": "Lợi nhuận ổn định"
+            },
+            {
+              "text": "Thị trường trả giá cao cho lợi nhuận đều và tăng trưởng.",
+              "title": "Thường cao hơn thị trường"
+            },
+            {
+              "text": "Chuỗi tăng trưởng nhanh có P/E cao hơn. Khi tăng trưởng chậm lại, P/E thường giảm.",
+              "title": "Theo tăng trưởng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bán lẻ và tiêu dùng khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l13-rep",
+          "title": "P/E",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/E theo giá đóng cửa và EPS 4 quý đã công bố.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "P/E dao động trong dải hẹp hơn các ngành chu kỳ.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "P/E quanh trung vị lịch sử, tăng trưởng lợi nhuận ổn định.",
+              "title": "Hợp lý",
+              "tone": "pos"
+            },
+            {
+              "text": "P/E trên dải lịch sử trong khi tăng trưởng doanh thu chậm lại.",
+              "title": "Cần thận trọng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc P/E <b>cùng tăng trưởng lợi nhuận</b>. P/E 20 lần với lợi nhuận tăng 20% mỗi năm khác hẳn P/E 20 lần với lợi nhuận đi ngang.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dùng dải trên Dashboard.",
+              "title": "So với lịch sử"
+            },
+            {
+              "text": "Xem bài PEG ở phần chỉ tiêu chung.",
+              "title": "Đọc cùng tăng trưởng"
+            },
+            {
+              "text": "Chuỗi bán lẻ so với chuỗi bán lẻ.",
+              "title": "So cùng nhóm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu, P/E 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "P/E cuối Q2/26",
+              "text": "16,55 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "16,41 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "13,78 lần và 22,22 lần."
+            },
+            {
+              "term": "Nhận xét",
+              "text": "P/E gần trung vị trong khi doanh thu vẫn tăng 9% và biên kinh doanh chính cải thiện."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/E bán lẻ thường cao hơn dầu khí, thép.",
+              "title": "So với ngành chu kỳ"
+            },
+            {
+              "text": "P/E cao chỉ hợp lý khi lợi nhuận tăng đều.",
+              "title": "Bỏ qua tăng trưởng"
+            },
+            {
+              "text": "Lãi bán tài sản làm P/E thấp giả.",
+              "title": "Dùng EPS có lãi bất thường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "P/E đi theo tốc độ mở rộng và tăng trưởng cửa hàng cũ.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "P/E cao, ổn định nhờ thương hiệu và nhu cầu thiết yếu.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "<b>P/E</b> = giá ÷ EPS 4 quý.",
+    "Lợi nhuận ổn định nên <b>P/E phù hợp</b> với nhóm này.",
+    "P/E thường <b>cao hơn thị trường</b>.",
+    "Đọc cùng <b>tăng trưởng lợi nhuận</b>."
+  ],
+  "title": "P/E · ở bán lẻ và tiêu dùng"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l10",
+  "questions": [
+    {
+      "correct_option_id": "756c88d7ef",
+      "id": "ch13-l10-q01",
+      "options": [
+        {
+          "id": "756c88d7ef",
+          "text": "Bất động sản đầu tư"
+        },
+        {
+          "id": "83660f0388",
+          "text": "Hàng tồn kho"
+        },
+        {
+          "id": "9c9151d72c",
+          "text": "Phải thu khách hàng"
+        }
+      ],
+      "prompt": "Tài sản giữ lại để cho thuê nằm ở dòng nào?"
+    },
+    {
+      "correct_option_id": "1eab9e2cad",
+      "id": "ch13-l10-q02",
+      "options": [
+        {
+          "id": "1eab9e2cad",
+          "text": "Tài sản cho thuê đang xây thường nằm ở dòng này"
+        },
+        {
+          "id": "942c279b55",
+          "text": "Đây là tiền khách trả trước"
+        },
+        {
+          "id": "d0f19b206d",
+          "text": "Đây là lãi vay đã trả"
+        }
+      ],
+      "prompt": "Vì sao cộng thêm chi phí xây dựng cơ bản dở dang?"
+    },
+    {
+      "correct_option_id": "be4d31ad3e",
+      "id": "ch13-l10-q03",
+      "options": [
+        {
+          "id": "be4d31ad3e",
+          "text": "Doanh thu đều hơn nhờ tiền thuê"
+        },
+        {
+          "id": "6de1dd6ed5",
+          "text": "Doanh thu dồn hết vào quý 4"
+        },
+        {
+          "id": "30e27e6267",
+          "text": "Không có nợ vay"
+        }
+      ],
+      "prompt": "Công ty có tỷ trọng cao thường có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "7dd0956661",
+      "id": "ch13-l10-q04",
+      "options": [
+        {
+          "id": "7dd0956661",
+          "text": "Giá gốc trừ khấu hao"
+        },
+        {
+          "id": "8db1687b97",
+          "text": "Giá thị trường cuối kỳ"
+        },
+        {
+          "id": "84e758bd1d",
+          "text": "Giá khách trả trước"
+        }
+      ],
+      "prompt": "Bất động sản đầu tư được ghi theo giá nào?"
+    },
+    {
+      "chart_id": "c13l10-rep",
+      "correct_option_id": "3304042108",
+      "id": "ch13-l10-q05",
+      "options": [
+        {
+          "id": "3304042108",
+          "text": "Tài sản cho thuê sắp đưa vào hoạt động"
+        },
+        {
+          "id": "7f95cda228",
+          "text": "Công ty đang bán bớt tài sản"
+        },
+        {
+          "id": "65ed5297aa",
+          "text": "Nợ vay đang giảm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, phần xây dựng dở dang lớn dần cho thấy gì?"
+    }
+  ],
+  "salt": "506835da7ef2d4f6a17c140ac586325fa1f67563df7bbf9629a7fbc68021bfb7"
+}

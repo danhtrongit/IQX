@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-exam",
+  "questions": [
+    {
+      "correct_option_id": "c4beff5cc5",
+      "id": "ch15-exam-q01",
+      "options": [
+        {
+          "id": "c4beff5cc5",
+          "text": "Để bỏ ảnh hưởng mùa vụ"
+        },
+        {
+          "id": "b059a7364b",
+          "text": "Vì quý trước không có số"
+        },
+        {
+          "id": "fbdf1984dd",
+          "text": "Vì luật quy định"
+        }
+      ],
+      "prompt": "Vì sao nên so doanh thu bán lẻ với cùng kỳ năm trước?"
+    },
+    {
+      "correct_option_id": "10ff7a086c",
+      "id": "ch15-exam-q02",
+      "options": [
+        {
+          "id": "10ff7a086c",
+          "text": "Cửa hàng cũ bán nhiều hơn"
+        },
+        {
+          "id": "7a3368b70f",
+          "text": "Mở cửa hàng mới"
+        },
+        {
+          "id": "2c5f58c22a",
+          "text": "Mua lại chuỗi khác"
+        }
+      ],
+      "prompt": "Nguồn tăng trưởng nào của chuỗi bán lẻ tốn ít vốn nhất?"
+    },
+    {
+      "correct_option_id": "6ab27756a3",
+      "id": "ch15-exam-q03",
+      "options": [
+        {
+          "id": "6ab27756a3",
+          "text": "Không"
+        },
+        {
+          "id": "fed2766ad2",
+          "text": "Có, ở bảng cân đối"
+        },
+        {
+          "id": "c83a47fbf8",
+          "text": "Có, ở kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Doanh thu từng cửa hàng có trên 3 báo cáo tài chính không?"
+    },
+    {
+      "correct_option_id": "6842eb5898",
+      "id": "ch15-exam-q04",
+      "options": [
+        {
+          "id": "6842eb5898",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "559bf0c1e7",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "c262c660ac",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "Biên gộp chuỗi bán lẻ so với nhà sản xuất hàng tiêu dùng thường thế nào?"
+    },
+    {
+      "correct_option_id": "940a8af3d0",
+      "id": "ch15-exam-q05",
+      "options": [
+        {
+          "id": "940a8af3d0",
+          "text": "Biên lợi nhuận cuối cùng chỉ vài phần trăm"
+        },
+        {
+          "id": "41d8ab2319",
+          "text": "Biên gộp bán lẻ trên 50%"
+        },
+        {
+          "id": "3192436641",
+          "text": "Bán lẻ không có chi phí"
+        }
+      ],
+      "prompt": "Vì sao thay đổi 1 điểm % biên gộp là lớn với bán lẻ?"
+    },
+    {
+      "correct_option_id": "2e09c0bc80",
+      "id": "ch15-exam-q06",
+      "options": [
+        {
+          "id": "2e09c0bc80",
+          "text": "Chi phí bán hàng và chi phí quản lý"
+        },
+        {
+          "id": "ae4c1d6194",
+          "text": "Giá vốn và chi phí lãi vay"
+        },
+        {
+          "id": "5fee524073",
+          "text": "Khấu hao và thuế thu nhập"
+        }
+      ],
+      "prompt": "Chi phí bán hàng và quản lý / Doanh thu gồm những chi phí nào?"
+    },
+    {
+      "correct_option_id": "cf31ebf489",
+      "id": "ch15-exam-q07",
+      "options": [
+        {
+          "id": "cf31ebf489",
+          "text": "Phần lớn chi phí là cố định"
+        },
+        {
+          "id": "df245b1c85",
+          "text": "Chi phí tự động tăng"
+        },
+        {
+          "id": "6992afb4ac",
+          "text": "Doanh thu không liên quan chi phí"
+        }
+      ],
+      "prompt": "Vì sao doanh thu giảm làm tỷ lệ chi phí vận hành tăng nhanh?"
+    },
+    {
+      "correct_option_id": "3bfe481597",
+      "id": "ch15-exam-q08",
+      "options": [
+        {
+          "id": "3bfe481597",
+          "text": "Biên lợi nhuận kinh doanh chính"
+        },
+        {
+          "id": "f862451437",
+          "text": "Biên lợi nhuận ròng sau thuế"
+        },
+        {
+          "id": "9b08739733",
+          "text": "Tỷ lệ chi trả cổ tức"
+        }
+      ],
+      "prompt": "Biên gộp trừ tỷ lệ chi phí bán hàng và quản lý gần bằng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "6f1c2017bf",
+      "id": "ch15-exam-q09",
+      "options": [
+        {
+          "id": "6f1c2017bf",
+          "text": "Không"
+        },
+        {
+          "id": "b6460dfad1",
+          "text": "Có"
+        },
+        {
+          "id": "1d4d847b59",
+          "text": "Chỉ tính lãi tiền gửi"
+        }
+      ],
+      "prompt": "Biên lợi nhuận kinh doanh chính có tính doanh thu tài chính không?"
+    },
+    {
+      "correct_option_id": "0c236b3d34",
+      "id": "ch15-exam-q10",
+      "options": [
+        {
+          "id": "0c236b3d34",
+          "text": "Giá vốn 4 quý"
+        },
+        {
+          "id": "8dbbdfcbdc",
+          "text": "Doanh thu 4 quý"
+        },
+        {
+          "id": "cf9064f3f5",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Số ngày tồn kho bằng tồn kho bình quân chia gì, nhân 365?"
+    },
+    {
+      "correct_option_id": "0afaf77938",
+      "id": "ch15-exam-q11",
+      "options": [
+        {
+          "id": "0afaf77938",
+          "text": "Trang sức"
+        },
+        {
+          "id": "0d89118e6a",
+          "text": "Thực phẩm tươi"
+        },
+        {
+          "id": "6b93df13a9",
+          "text": "Rau quả"
+        }
+      ],
+      "prompt": "Nhóm hàng nào có số ngày tồn kho dài là bình thường?"
+    },
+    {
+      "correct_option_id": "1dce62b758",
+      "id": "ch15-exam-q12",
+      "options": [
+        {
+          "id": "1dce62b758",
+          "text": "Mã 149"
+        },
+        {
+          "id": "c592916c92",
+          "text": "Mã 311"
+        },
+        {
+          "id": "a68ef4dd16",
+          "text": "Mã 320"
+        }
+      ],
+      "prompt": "Dự phòng giảm giá tồn kho nằm ở mã dòng nào trên bảng cân đối?"
+    },
+    {
+      "correct_option_id": "6b16157da3",
+      "id": "ch15-exam-q13",
+      "options": [
+        {
+          "id": "6b16157da3",
+          "text": "Tồn kho gốc chưa trừ dự phòng"
+        },
+        {
+          "id": "de3ee948a6",
+          "text": "Tồn kho thuần"
+        },
+        {
+          "id": "77c1692206",
+          "text": "Doanh thu thuần"
+        }
+      ],
+      "prompt": "Mẫu số của Dự phòng giảm giá tồn kho / Tồn kho là gì?"
+    },
+    {
+      "correct_option_id": "5a4ff037c3",
+      "id": "ch15-exam-q14",
+      "options": [
+        {
+          "id": "5a4ff037c3",
+          "text": "Làm lợi nhuận giảm"
+        },
+        {
+          "id": "18fc091a56",
+          "text": "Làm lợi nhuận tăng"
+        },
+        {
+          "id": "e35cb98353",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Tăng dự phòng giảm giá tồn kho ảnh hưởng thế nào đến lợi nhuận?"
+    },
+    {
+      "correct_option_id": "6f374293ee",
+      "id": "ch15-exam-q15",
+      "options": [
+        {
+          "id": "6f374293ee",
+          "text": "Nhà cung cấp tài trợ toàn bộ hàng tồn"
+        },
+        {
+          "id": "8aed1a6b49",
+          "text": "Chuỗi vay để mua toàn bộ hàng"
+        },
+        {
+          "id": "a4923c0f7e",
+          "text": "Chuỗi không có hàng"
+        }
+      ],
+      "prompt": "Phải trả người bán / Tồn kho trên 1 lần nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "ad04e0a69a",
+      "id": "ch15-exam-q16",
+      "options": [
+        {
+          "id": "ad04e0a69a",
+          "text": "Chậm trả nhà cung cấp vì thiếu tiền"
+        },
+        {
+          "id": "3f6d15c555",
+          "text": "Hàng tồn kho giảm mạnh cuối quý"
+        },
+        {
+          "id": "a1f914f72f",
+          "text": "Cổ tức tiền mặt tăng lên nhiều"
+        }
+      ],
+      "prompt": "Phải trả người bán tăng quá nhanh có thể do đâu?"
+    },
+    {
+      "correct_option_id": "f1a17be4b1",
+      "id": "ch15-exam-q17",
+      "options": [
+        {
+          "id": "f1a17be4b1",
+          "text": "Khách trả tiền ngay khi mua"
+        },
+        {
+          "id": "3b7b86702c",
+          "text": "Chuỗi bán chịu dài hạn"
+        },
+        {
+          "id": "26043d2ee0",
+          "text": "Chuỗi không có khách"
+        }
+      ],
+      "prompt": "Vì sao ngày thu tiền của chuỗi bán lẻ rất ngắn?"
+    },
+    {
+      "correct_option_id": "774023704b",
+      "id": "ch15-exam-q18",
+      "options": [
+        {
+          "id": "774023704b",
+          "text": "Thu tiền trước khi phải trả nhà cung cấp"
+        },
+        {
+          "id": "7b17831688",
+          "text": "Chuỗi đang lỗ"
+        },
+        {
+          "id": "c411fe8b6f",
+          "text": "Chuỗi không có hàng tồn"
+        }
+      ],
+      "prompt": "CCC âm có ý nghĩa gì?"
+    },
+    {
+      "correct_option_id": "accdc6fbcd",
+      "id": "ch15-exam-q19",
+      "options": [
+        {
+          "id": "accdc6fbcd",
+          "text": "Một phần vay ngắn hạn dùng cho việc khác"
+        },
+        {
+          "id": "73ed8b3214",
+          "text": "Chuỗi không có nợ"
+        },
+        {
+          "id": "fe3b38b724",
+          "text": "Hàng tồn được tài trợ bằng vốn chủ"
+        }
+      ],
+      "prompt": "Vay ngắn hạn / Tồn kho trên 1 lần cho thấy gì?"
+    },
+    {
+      "correct_option_id": "6c2e3151c1",
+      "id": "ch15-exam-q20",
+      "options": [
+        {
+          "id": "6c2e3151c1",
+          "text": "Phải trả người bán / Tồn kho"
+        },
+        {
+          "id": "1d69d9a7ff",
+          "text": "P/E"
+        },
+        {
+          "id": "f6b297f703",
+          "text": "Margin Stability"
+        }
+      ],
+      "prompt": "Nên đọc Vay ngắn hạn / Tồn kho cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "df96d92460",
+      "id": "ch15-exam-q21",
+      "options": [
+        {
+          "id": "df96d92460",
+          "text": "Doanh thu mỗi cửa hàng"
+        },
+        {
+          "id": "0ed5210d10",
+          "text": "Số nhân viên"
+        },
+        {
+          "id": "62d61b1f4a",
+          "text": "Giá cổ phiếu"
+        }
+      ],
+      "prompt": "Doanh thu / Tài sản cố định dùng thay cho số liệu nào không có trên báo cáo?"
+    },
+    {
+      "correct_option_id": "5100daf8f4",
+      "id": "ch15-exam-q22",
+      "options": [
+        {
+          "id": "5100daf8f4",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "bb200f274a",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "18c2c1371c",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "Chuỗi thuê mặt bằng so với chuỗi tự xây có Doanh thu / Tài sản cố định thế nào?"
+    },
+    {
+      "correct_option_id": "e35b756005",
+      "id": "ch15-exam-q23",
+      "options": [
+        {
+          "id": "e35b756005",
+          "text": "Giảm tạm thời"
+        },
+        {
+          "id": "30d6feb6e3",
+          "text": "Tăng ngay"
+        },
+        {
+          "id": "f45ca858da",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Mở nhiều cửa hàng mới làm Doanh thu / Tài sản cố định thế nào?"
+    },
+    {
+      "correct_option_id": "70a135a1e0",
+      "id": "ch15-exam-q24",
+      "options": [
+        {
+          "id": "70a135a1e0",
+          "text": "Thuê mặt bằng và được nhà cung cấp tài trợ hàng"
+        },
+        {
+          "id": "d9fe5d4271",
+          "text": "Không phải nộp thuế thu nhập doanh nghiệp"
+        },
+        {
+          "id": "f18567cc66",
+          "text": "Không phải chi tiền thuê mặt bằng"
+        }
+      ],
+      "prompt": "Vì sao chuỗi bán lẻ tốt có ROIC cao?"
+    },
+    {
+      "correct_option_id": "f3877907c4",
+      "id": "ch15-exam-q25",
+      "options": [
+        {
+          "id": "f3877907c4",
+          "text": "Không"
+        },
+        {
+          "id": "c647e85de1",
+          "text": "Có"
+        },
+        {
+          "id": "ad83eba3a2",
+          "text": "Chỉ phần dài hạn"
+        }
+      ],
+      "prompt": "Phải trả nhà cung cấp có nằm trong vốn đầu tư khi tính ROIC không?"
+    },
+    {
+      "correct_option_id": "eb2126bd86",
+      "id": "ch15-exam-q26",
+      "options": [
+        {
+          "id": "eb2126bd86",
+          "text": "Thấp"
+        },
+        {
+          "id": "9dd5d89562",
+          "text": "Rất cao"
+        },
+        {
+          "id": "6389ad4d97",
+          "text": "Trên 100%"
+        }
+      ],
+      "prompt": "Chuỗi bán lẻ đang mở rộng thường có tỷ lệ chi trả cổ tức thế nào?"
+    },
+    {
+      "correct_option_id": "b464a526c9",
+      "id": "ch15-exam-q27",
+      "options": [
+        {
+          "id": "b464a526c9",
+          "text": "ROIC cao thì giữ lại đầu tư có lợi hơn"
+        },
+        {
+          "id": "85c38f1250",
+          "text": "ROIC bằng tỷ lệ chi trả"
+        },
+        {
+          "id": "3388a97c4d",
+          "text": "ROIC quyết định cổ tức"
+        }
+      ],
+      "prompt": "Vì sao nên đọc tỷ lệ chi trả cổ tức cùng ROIC?"
+    },
+    {
+      "correct_option_id": "707e37325f",
+      "id": "ch15-exam-q28",
+      "options": [
+        {
+          "id": "707e37325f",
+          "text": "Lợi nhuận ổn định"
+        },
+        {
+          "id": "cec1e733ee",
+          "text": "Không có nợ"
+        },
+        {
+          "id": "2deb134138",
+          "text": "Giá cổ phiếu không đổi"
+        }
+      ],
+      "prompt": "Vì sao P/E phù hợp để định giá bán lẻ và tiêu dùng?"
+    },
+    {
+      "correct_option_id": "c2c058b34b",
+      "id": "ch15-exam-q29",
+      "options": [
+        {
+          "id": "c2c058b34b",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "f8f701e0b8",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "5fb977c2bb",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "P/E bán lẻ so với ngành chu kỳ thường thế nào?"
+    },
+    {
+      "correct_option_id": "5de69d4627",
+      "id": "ch15-exam-q30",
+      "options": [
+        {
+          "id": "5de69d4627",
+          "text": "Tăng trưởng lợi nhuận"
+        },
+        {
+          "id": "4065fa9065",
+          "text": "Số cửa hàng đóng cửa"
+        },
+        {
+          "id": "79d2aeb76a",
+          "text": "Tỷ giá"
+        }
+      ],
+      "prompt": "Nên đọc P/E bán lẻ cùng gì?"
+    }
+  ],
+  "salt": "f4aa34330c689304d0e3707c4da2441841c563bb848fe6d9f51a4ae3a9dd1145"
+}

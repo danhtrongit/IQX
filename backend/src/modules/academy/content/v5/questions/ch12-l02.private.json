@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l02",
+  "questions": [
+    {
+      "correct_option_id": "4e00e72e85",
+      "id": "ch12-l02-q01",
+      "options": [
+        {
+          "id": "4e00e72e85",
+          "text": "Phí bảo hiểm thuần chia phí bảo hiểm gốc"
+        },
+        {
+          "id": "3bb787d899",
+          "text": "Phí nhượng tái chia vốn chủ sở hữu"
+        },
+        {
+          "id": "862e103803",
+          "text": "Bồi thường thuần chia phí bảo hiểm gốc"
+        }
+      ],
+      "prompt": "Tỷ lệ giữ lại được tính thế nào?"
+    },
+    {
+      "correct_option_id": "d24ec49a22",
+      "id": "ch12-l02-q02",
+      "options": [
+        {
+          "id": "d24ec49a22",
+          "text": "Phí nhượng tái bảo hiểm"
+        },
+        {
+          "id": "ed430a40dc",
+          "text": "Chi phí quản lý doanh nghiệp"
+        },
+        {
+          "id": "be6d80d84b",
+          "text": "Dự phòng dao động lớn"
+        }
+      ],
+      "prompt": "Phần phí không giữ lại chủ yếu là khoản nào?"
+    },
+    {
+      "correct_option_id": "2ad907d1b1",
+      "id": "ch12-l02-q03",
+      "options": [
+        {
+          "id": "2ad907d1b1",
+          "text": "Chia sẻ một phần tổn thất khi có sự cố lớn"
+        },
+        {
+          "id": "a315986b02",
+          "text": "Tăng doanh thu phí bảo hiểm gốc"
+        },
+        {
+          "id": "b03dfe6c15",
+          "text": "Giảm chi phí hoa hồng cho đại lý"
+        }
+      ],
+      "prompt": "Tái bảo hiểm mang lại lợi ích gì cho công ty bảo hiểm?"
+    },
+    {
+      "correct_option_id": "4733e608a8",
+      "id": "ch12-l02-q04",
+      "options": [
+        {
+          "id": "4733e608a8",
+          "text": "Lãi tiềm năng lớn hơn nhưng tự gánh nhiều rủi ro hơn"
+        },
+        {
+          "id": "5df1620ece",
+          "text": "Lợi nhuận luôn ổn định hơn qua các năm"
+        },
+        {
+          "id": "0dafaa29f6",
+          "text": "Công ty không phải trả bồi thường lớn"
+        }
+      ],
+      "prompt": "Công ty giữ lại tỷ lệ phí cao thì điều gì xảy ra?"
+    },
+    {
+      "chart_id": "c12l2-rep",
+      "correct_option_id": "f310bf8f1c",
+      "id": "ch12-l02-q05",
+      "options": [
+        {
+          "id": "f310bf8f1c",
+          "text": "Phần phí đã nhượng cho nhà tái bảo hiểm"
+        },
+        {
+          "id": "ac66a453bf",
+          "text": "Phần bồi thường công ty đã trả"
+        },
+        {
+          "id": "31a742f8c7",
+          "text": "Lợi nhuận từ hoạt động đầu tư"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khoảng chênh giữa hai cột thể hiện gì?"
+    }
+  ],
+  "salt": "6e7f4492cd37a055cb7a62795c8c9ebcd30be69b574066bb7628940036a91b34"
+}

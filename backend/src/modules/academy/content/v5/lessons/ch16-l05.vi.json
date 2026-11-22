@@ -1,0 +1,372 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l5-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Lưu chuyển tiền tệ",
+            "Mã 02"
+          ],
+          "t": "Khấu hao 4 quý",
+          "tone": "warn",
+          "v": "850 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "12.507 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "pos",
+          "v": "6,8%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l5-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Nhà máy mới vận hành",
+          "tone": "warn",
+          "value": 30
+        },
+        {
+          "label": "Giữa vòng đời",
+          "tone": "p1",
+          "value": 20
+        },
+        {
+          "label": "Đã khấu hao xong phần lớn",
+          "tone": "pos",
+          "value": 5
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Khấu hao / Doanh thu theo tuổi nhà máy · số minh họa",
+      "unit": "%"
+    },
+    "c16l5-rep": {
+      "alt": "Khấu hao / Doanh thu: 6,8%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Khấu hao / Doanh thu (4 quý)",
+            "v": [
+              7.004,
+              6.998,
+              6.935,
+              6.748,
+              6.754,
+              6.693,
+              6.713,
+              6.795
+            ]
+          }
+        ],
+        "name": "Khấu hao / Doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Khấu hao 4 quý",
+              "v": [
+                721.641,
+                733.369,
+                751.31,
+                769.503,
+                788.458,
+                808.108,
+                828.604,
+                849.871
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Nhà máy điện là tài sản rất lớn, thường khấu hao trong 10 đến 25 năm. Khấu hao chiếm phần đáng kể trong chi phí. Chỉ tiêu này cho biết mức nặng tài sản và giai đoạn của nhà máy.",
+  "lesson_key": "fundamental:depreciation_to_revenue-dien",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l5-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>khấu hao tài sản cố định và bất động sản đầu tư</b> (mã 02 trên lưu chuyển tiền tệ gián tiếp) chia <b>doanh thu thuần</b>, cộng 4 quý.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Kỳ lưu chuyển tiền tệ lập theo phương pháp trực tiếp không có dòng này. Dashboard để trống kỳ đó.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Khấu hao / Doanh thu là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l5-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khấu hao lớn làm lợi nhuận kế toán thấp dù tiền tạo ra tốt.",
+              "title": "Nhà máy mới"
+            },
+            {
+              "text": "Lợi nhuận tăng mạnh khi nhà máy khấu hao hết, vì doanh thu vẫn giữ.",
+              "title": "Khấu hao xong"
+            },
+            {
+              "text": "EBITDA không bị ảnh hưởng bởi tuổi nhà máy.",
+              "title": "Đọc cùng EBITDA"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vòng đời một nhà máy"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l5-rep",
+          "title": "Khấu hao / Doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khấu hao 4 quý chia doanh thu 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Khấu hao 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Khấu hao tăng cùng nhịp doanh thu thì tỷ lệ đi ngang.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ lệ giảm dần qua nhiều năm. Lợi nhuận kế toán sẽ tốt dần lên.",
+              "title": "Tài sản đang khấu hao dần hết",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ tăng khi nhà máy mới đi vào vận hành. Lợi nhuận kế toán thấp trong vài năm đầu.",
+              "title": "Tài sản mới, khấu hao nặng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Không có mức tốt xấu chung. Chỉ tiêu này giúp hiểu vì sao lợi nhuận kế toán thay đổi khi doanh thu không đổi.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nhà máy sắp khấu hao xong thì lợi nhuận kế toán sắp tăng.",
+              "title": "Dự báo lợi nhuận"
+            },
+            {
+              "text": "Nhà máy mới khấu hao nặng làm lãi thấp tạm thời.",
+              "title": "Giải thích lãi thấp"
+            },
+            {
+              "text": "Biết công ty có đang xây nhà máy mới không.",
+              "title": "Đọc cùng Capex / Khấu hao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Khấu hao"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "722",
+                "10.303",
+                "7,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "770",
+                "11.404",
+                "6,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "850",
+                "12.507",
+                "6,8%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ giữ quanh 7%. Khấu hao tăng cùng nhịp doanh thu. Khi nhà máy mới đang xây đi vào vận hành, tỷ lệ sẽ tăng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Kỳ trực tiếp để trống.",
+              "title": "Lấy số từ thuyết minh"
+            },
+            {
+              "text": "Tiền đã chi khi xây nhà máy.",
+              "title": "Coi khấu hao là tiền chi ra"
+            },
+            {
+              "text": "Nhà máy mới và cũ có tỷ lệ rất khác.",
+              "title": "So nhà máy khác tuổi"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khấu hao chiếm phần lớn giá vốn.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Khấu hao nhỏ hơn so với chi phí nhiên liệu.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Gió, mặt trời mới xây nên khấu hao nặng.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>khấu hao</b> (B03 mã 02) ÷ <b>doanh thu thuần</b>, 4 quý.",
+    "Phản ánh <b>tuổi và quy mô</b> nhà máy.",
+    "Nhà máy <b>khấu hao xong</b> thì lợi nhuận kế toán tăng.",
+    "Kỳ không có dòng khấu hao thì <b>để trống</b>."
+  ],
+  "title": "Khấu hao / Doanh thu · ở điện"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l01",
+  "questions": [
+    {
+      "correct_option_id": "4ba803c9fa",
+      "id": "ch17-l01-q01",
+      "options": [
+        {
+          "id": "4ba803c9fa",
+          "text": "Sản lượng và giá bán theo chu kỳ"
+        },
+        {
+          "id": "ad422b6f50",
+          "text": "Số chi nhánh bán hàng mở thêm"
+        },
+        {
+          "id": "bfb328260b",
+          "text": "Lãi tiền gửi và cổ tức nhận được"
+        }
+      ],
+      "prompt": "Doanh thu công ty thép thay đổi chủ yếu theo yếu tố nào?"
+    },
+    {
+      "correct_option_id": "18a0b06d20",
+      "id": "ch17-l01-q02",
+      "options": [
+        {
+          "id": "18a0b06d20",
+          "text": "Sản lượng từ công suất mới"
+        },
+        {
+          "id": "d8777ccb54",
+          "text": "Giá hàng hoá ở đỉnh"
+        },
+        {
+          "id": "366c70ddd1",
+          "text": "Thanh lý tài sản"
+        }
+      ],
+      "prompt": "Tăng trưởng nhờ yếu tố nào thường bền hơn?"
+    },
+    {
+      "correct_option_id": "238f748477",
+      "id": "ch17-l01-q03",
+      "options": [
+        {
+          "id": "238f748477",
+          "text": "Biên lợi nhuận gộp quý"
+        },
+        {
+          "id": "11aa34783f",
+          "text": "Tỷ lệ chi trả cổ tức"
+        },
+        {
+          "id": "b975739a9c",
+          "text": "P/S"
+        }
+      ],
+      "prompt": "Nên đọc tăng trưởng doanh thu vật liệu cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "c65a4773c2",
+      "id": "ch17-l01-q04",
+      "options": [
+        {
+          "id": "c65a4773c2",
+          "text": "Xi măng"
+        },
+        {
+          "id": "e290f789d6",
+          "text": "Phân bón"
+        },
+        {
+          "id": "5fe3db0eec",
+          "text": "Hoá chất xuất khẩu"
+        }
+      ],
+      "prompt": "Mảng nào giá thường ít biến động hơn thép?"
+    },
+    {
+      "chart_id": "c17l1-rep",
+      "correct_option_id": "9f1286b74a",
+      "id": "ch17-l01-q05",
+      "options": [
+        {
+          "id": "9f1286b74a",
+          "text": "Doanh thu quý này và cùng kỳ năm trước"
+        },
+        {
+          "id": "c1272a3c4f",
+          "text": "Giá vốn và lợi nhuận gộp"
+        },
+        {
+          "id": "58db8ba87c",
+          "text": "Capex và khấu hao"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm gì?"
+    }
+  ],
+  "salt": "6220e7806624d8a3c9ab23d676470b2a6ad245799bd4a0b93967472e39687e1c"
+}

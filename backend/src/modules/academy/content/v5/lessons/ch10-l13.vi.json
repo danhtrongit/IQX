@@ -1,0 +1,342 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l13-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "LNST 4 quý",
+          "tone": "pos",
+          "v": "51.866 tỷ"
+        },
+        {
+          "notes": [
+            "Bảng cân đối"
+          ],
+          "t": "VCSH bình quân",
+          "tone": "p1",
+          "v": "222.750 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "ROE",
+          "tone": "warn",
+          "v": "23,3%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c10l13-g2": {
+      "fig": "formula",
+      "height": 180,
+      "items": [
+        {
+          "notes": [
+            "Lãi trên mỗi đồng tài sản"
+          ],
+          "t": "ROA",
+          "tone": "pos",
+          "v": "2,18%"
+        },
+        {
+          "notes": [
+            "Tổng tài sản ÷ VCSH"
+          ],
+          "t": "Đòn bẩy",
+          "tone": "warn",
+          "v": "10,7 lần"
+        },
+        {
+          "notes": [
+            "≈ ROA × đòn bẩy"
+          ],
+          "t": "ROE",
+          "tone": "p1",
+          "v": "23,3%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "×",
+        "="
+      ]
+    },
+    "c10l13-rep": {
+      "alt": "ROE: 23,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "ROE (4 quý)",
+            "v": [
+              20.6,
+              20.9,
+              21.1,
+              21.3,
+              21.8,
+              22.3,
+              22.8,
+              23.3
+            ]
+          },
+          {
+            "name": "ROA (4 quý)",
+            "v": [
+              1.93,
+              1.95,
+              1.96,
+              1.98,
+              2.03,
+              2.08,
+              2.13,
+              2.18
+            ]
+          }
+        ],
+        "name": "ROE",
+        "sub": {
+          "series": [
+            {
+              "name": "Tổng tài sản BQ / VCSH BQ",
+              "v": [
+                10.674,
+                10.718,
+                10.765,
+                10.758,
+                10.739,
+                10.721,
+                10.704,
+                10.688
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "lần"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l13",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "ROE của ngân hàng thường 15% đến 25%, cao hơn nhiều doanh nghiệp sản xuất. Lý do chính là ngân hàng dùng đòn bẩy rất cao: vốn chủ chỉ khoảng 8% đến 10% tổng tài sản. Bài này tách ROE thành hai phần để đọc đúng.",
+  "lesson_key": "fundamental:roe-nh",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l13-g1",
+          "type": "chart"
+        },
+        {
+          "text": "ROE bằng <b>LNST 4 quý</b> chia <b>vốn chủ sở hữu bình quân</b>. Cách tính giống bài ROE ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "ROE có thể tách thành hai phần: ngân hàng sinh lời trên tài sản tốt đến đâu, và dùng đòn bẩy nhiều đến đâu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l13-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Ngân hàng huy động tiền gửi để cho vay, nên tài sản gấp 10 lần vốn chủ là bình thường.",
+              "title": "Đòn bẩy cao là đặc thù"
+            },
+            {
+              "text": "Bền hơn: ngân hàng sinh lời tốt trên tài sản.",
+              "title": "ROE cao nhờ ROA"
+            },
+            {
+              "text": "Rủi ro hơn: vốn đệm mỏng, một cú sốc nợ xấu làm vốn giảm nhanh.",
+              "title": "ROE cao nhờ đòn bẩy"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở ngân hàng khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l13-rep",
+          "title": "ROE",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE và ROA tính theo 4 quý, đơn vị %.",
+              "title": "Hai đường phía trên"
+            },
+            {
+              "text": "Tổng tài sản bình quân chia vốn chủ bình quân, đơn vị lần.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "ROE tăng cùng ROA trong khi đòn bẩy đi ngang: ROE tăng nhờ sinh lời tốt hơn, không phải nhờ vay thêm.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "ROE trên khoảng 18% với ROA trên khoảng 1,5% và đòn bẩy dưới khoảng 12 lần. Mức tham khảo với ngân hàng Việt Nam.",
+              "title": "ROE chất lượng",
+              "tone": "pos"
+            },
+            {
+              "text": "ROE cao nhưng ROA thấp, đòn bẩy trên 14 lần. Vốn đệm mỏng.",
+              "title": "ROE cần thận trọng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc ROE ngân hàng <b>luôn cùng ROA và VCSH / Tổng tài sản</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE tăng vì ROA hay vì đòn bẩy?",
+              "title": "Tách hai phần"
+            },
+            {
+              "text": "Hai ngân hàng cùng ROE nhưng ROA khác nhau thì chất lượng khác nhau.",
+              "title": "So các ngân hàng"
+            },
+            {
+              "text": "Ngân hàng ROE cao bền vững thường có P/B cao hơn.",
+              "title": "Đọc cùng P/B"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ngân hàng mẫu, 4 quý đến Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "LNST 4 quý",
+              "text": "51.866 tỷ đồng."
+            },
+            {
+              "term": "VCSH bình quân",
+              "text": "(205.300 + 240.200) ÷ 2 ≈ 222.750 tỷ đồng."
+            },
+            {
+              "term": "ROE",
+              "text": "51.866 ÷ 222.750 ≈ 23,3%."
+            },
+            {
+              "term": "Tách thành hai phần",
+              "text": "ROA 2,18% × đòn bẩy 10,7 lần. So với Q2/25, ROA tăng từ 1,98%, đòn bẩy gần như không đổi."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đòn bẩy khác hẳn nên ROE khác hẳn.",
+              "title": "So ROE ngân hàng với sản xuất"
+            },
+            {
+              "text": "ROE cao nhờ đòn bẩy rủi ro hơn ROE cao nhờ ROA.",
+              "title": "Chỉ nhìn ROE"
+            },
+            {
+              "text": "Ngân hàng tăng vốn giữa kỳ làm ROE cuối kỳ lệch.",
+              "title": "Quên vốn chủ bình quân"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>ROE</b> = LNST 4 quý ÷ VCSH bình quân.",
+    "ROE ngân hàng ≈ <b>ROA × đòn bẩy</b>.",
+    "ROE cao nhờ <b>ROA</b> bền hơn nhờ <b>đòn bẩy</b>.",
+    "Đọc cùng <b>ROA</b> và <b>VCSH / Tổng tài sản</b>."
+  ],
+  "title": "ROE · ở ngân hàng"
+}

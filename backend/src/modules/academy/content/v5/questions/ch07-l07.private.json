@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch07-l07",
+  "questions": [
+    {
+      "correct_option_id": "3b87fe870d",
+      "id": "ch07-l07-q01",
+      "options": [
+        {
+          "id": "3b87fe870d",
+          "text": "Giá đóng cửa ở mức cao nhất của phiên"
+        },
+        {
+          "id": "d09d799569",
+          "text": "Giá đóng cửa ở mức thấp nhất của phiên"
+        },
+        {
+          "id": "e0e8ccdb59",
+          "text": "Giá đóng cửa ở đúng giữa phiên"
+        }
+      ],
+      "prompt": "Hệ số dòng tiền của CMF bằng +1 khi nào?"
+    },
+    {
+      "correct_option_id": "e49c070e46",
+      "id": "ch07-l07-q02",
+      "options": [
+        {
+          "id": "e49c070e46",
+          "text": "Phe mua đang tích lũy"
+        },
+        {
+          "id": "225fe03a66",
+          "text": "Phe bán đang phân phối"
+        },
+        {
+          "id": "c9b048abf2",
+          "text": "Không có giao dịch nào"
+        }
+      ],
+      "prompt": "CMF trên 0 cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "36839364ac",
+      "id": "ch07-l07-q03",
+      "options": [
+        {
+          "id": "36839364ac",
+          "text": "20 phiên"
+        },
+        {
+          "id": "071798f476",
+          "text": "5 phiên"
+        },
+        {
+          "id": "c3c2433a84",
+          "text": "200 phiên"
+        }
+      ],
+      "prompt": "CMF được tính trong bao nhiêu phiên theo mặc định?"
+    },
+    {
+      "correct_option_id": "e780b56b65",
+      "id": "ch07-l07-q04",
+      "options": [
+        {
+          "id": "e780b56b65",
+          "text": "CMF xem đóng cửa trong biên độ của chính phiên đó"
+        },
+        {
+          "id": "380d8cfa5e",
+          "text": "CMF so đóng cửa với giá của 20 phiên trước"
+        },
+        {
+          "id": "f2fa8936e7",
+          "text": "CMF không dùng đến khối lượng giao dịch"
+        }
+      ],
+      "prompt": "CMF khác OBV ở điểm nào?"
+    },
+    {
+      "correct_option_id": "2009167441",
+      "id": "ch07-l07-q05",
+      "options": [
+        {
+          "id": "2009167441",
+          "text": "Để tránh tín hiệu nhiễu khi CMF cắt 0 liên tục"
+        },
+        {
+          "id": "39c640cb64",
+          "text": "Vì CMF không bao giờ chạm mốc 0"
+        },
+        {
+          "id": "a6fbb3fc2c",
+          "text": "Vì mốc 0 chỉ dùng cho cổ phiếu lớn"
+        }
+      ],
+      "prompt": "Vì sao nên chờ CMF rời hẳn mốc 0?"
+    }
+  ],
+  "salt": "ced7ffd805fa6bed0caff355b6655e81c9d9877a08437b8358a72cf84cac9bbb"
+}

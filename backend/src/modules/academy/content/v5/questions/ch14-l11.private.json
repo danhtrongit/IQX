@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l11",
+  "questions": [
+    {
+      "correct_option_id": "6d0e4b0837",
+      "id": "ch14-l11-q01",
+      "options": [
+        {
+          "id": "6d0e4b0837",
+          "text": "Lãi tiền gửi, cổ tức, lãi tỷ giá, lãi bán khoản đầu tư"
+        },
+        {
+          "id": "9274b0fba5",
+          "text": "Doanh thu bán xăng dầu và dịch vụ kỹ thuật"
+        },
+        {
+          "id": "abc8eb97ba",
+          "text": "Tiền khách hàng tạm ứng khi ký hợp đồng"
+        }
+      ],
+      "prompt": "Doanh thu hoạt động tài chính gồm những gì?"
+    },
+    {
+      "correct_option_id": "53a9dc21d3",
+      "id": "ch14-l11-q02",
+      "options": [
+        {
+          "id": "53a9dc21d3",
+          "text": "Lợi nhuận trước thuế"
+        },
+        {
+          "id": "b58739d272",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "b040059f2d",
+          "text": "Vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Mẫu số của chỉ tiêu là gì?"
+    },
+    {
+      "correct_option_id": "47b7f04a6a",
+      "id": "ch14-l11-q03",
+      "options": [
+        {
+          "id": "47b7f04a6a",
+          "text": "Lãi suất tiền gửi"
+        },
+        {
+          "id": "c672390f74",
+          "text": "Giá xăng dầu bán lẻ"
+        },
+        {
+          "id": "aefeb8de31",
+          "text": "Số nhân viên"
+        }
+      ],
+      "prompt": "Tỷ trọng cao làm lợi nhuận nhạy với yếu tố nào?"
+    },
+    {
+      "correct_option_id": "0bb0e231a9",
+      "id": "ch14-l11-q04",
+      "options": [
+        {
+          "id": "0bb0e231a9",
+          "text": "Lợi nhuận kinh doanh chính đang giảm"
+        },
+        {
+          "id": "5a390ad156",
+          "text": "Doanh nghiệp gửi thêm nhiều tiền"
+        },
+        {
+          "id": "0590f6a71e",
+          "text": "Doanh nghiệp không còn nợ vay"
+        }
+      ],
+      "prompt": "Tỷ trọng tăng trong khi doanh thu tài chính đi ngang cho thấy gì?"
+    },
+    {
+      "chart_id": "c14l11-rep",
+      "correct_option_id": "9300a72d8f",
+      "id": "ch14-l11-q05",
+      "options": [
+        {
+          "id": "9300a72d8f",
+          "text": "Doanh thu tài chính và LNTT 4 quý"
+        },
+        {
+          "id": "7e710d4037",
+          "text": "Tiền và nợ vay cuối mỗi quý"
+        },
+        {
+          "id": "7e99cd4b76",
+          "text": "Capex và khấu hao 4 quý gần nhất"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm gì?"
+    }
+  ],
+  "salt": "5934630bce1027aa7d565a598ae57da48c94876a64857b48f0b4a63c34a359a1"
+}

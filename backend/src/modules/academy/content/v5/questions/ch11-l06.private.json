@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l06",
+  "questions": [
+    {
+      "correct_option_id": "f2e457b7cd",
+      "id": "ch11-l06-q01",
+      "options": [
+        {
+          "id": "f2e457b7cd",
+          "text": "Phần doanh thu môi giới còn lại sau chi phí môi giới"
+        },
+        {
+          "id": "c5e1bf4252",
+          "text": "Phần doanh thu hoạt động đến từ môi giới"
+        },
+        {
+          "id": "ef71a03571",
+          "text": "Tốc độ tăng của giá trị giao dịch"
+        }
+      ],
+      "prompt": "Biên lợi nhuận môi giới đo điều gì?"
+    },
+    {
+      "correct_option_id": "cf856cc15d",
+      "id": "ch11-l06-q02",
+      "options": [
+        {
+          "id": "cf856cc15d",
+          "text": "Giá trị giao dịch và tỷ lệ phí"
+        },
+        {
+          "id": "11e6aea9fd",
+          "text": "Dư nợ cho vay và lãi suất"
+        },
+        {
+          "id": "6c02f74acc",
+          "text": "Danh mục FVTPL và AFS"
+        }
+      ],
+      "prompt": "Doanh thu môi giới phụ thuộc chủ yếu vào yếu tố nào?"
+    },
+    {
+      "correct_option_id": "e6f106422b",
+      "id": "ch11-l06-q03",
+      "options": [
+        {
+          "id": "e6f106422b",
+          "text": "Vì một phần chi phí môi giới là cố định"
+        },
+        {
+          "id": "648ffaa871",
+          "text": "Vì công ty phải trả thêm thuế giao dịch"
+        },
+        {
+          "id": "5feeefece6",
+          "text": "Vì lãi cho vay margin bị trừ vào đây"
+        }
+      ],
+      "prompt": "Vì sao biên môi giới thu hẹp khi thanh khoản giảm?"
+    },
+    {
+      "correct_option_id": "d6f132a3d5",
+      "id": "ch11-l06-q04",
+      "options": [
+        {
+          "id": "d6f132a3d5",
+          "text": "Chiến lược hạ phí để thu hút khách vay margin"
+        },
+        {
+          "id": "5d9457b782",
+          "text": "Danh mục tự doanh đang thua lỗ nặng"
+        },
+        {
+          "id": "b1bb9dee3e",
+          "text": "Công ty không còn khoản nợ vay nào"
+        }
+      ],
+      "prompt": "Biên môi giới thấp kéo dài có thể phản ánh điều gì?"
+    },
+    {
+      "chart_id": "c11l6-rep",
+      "correct_option_id": "193fcb53e6",
+      "id": "ch11-l06-q05",
+      "options": [
+        {
+          "id": "193fcb53e6",
+          "text": "Lãi môi giới 4 quý"
+        },
+        {
+          "id": "e6f774ec96",
+          "text": "Lãi cho vay margin 4 quý"
+        },
+        {
+          "id": "c0b57d8659",
+          "text": "Lãi tự doanh thuần 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khoảng cách giữa hai cột mỗi quý là gì?"
+    }
+  ],
+  "salt": "a2cb50e668e23e67acdc7f463bb0fb5b71d32fbc4d475690591193ef44ad99e5"
+}

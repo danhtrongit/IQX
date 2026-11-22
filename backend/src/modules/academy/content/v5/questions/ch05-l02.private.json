@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch05-l02",
+  "questions": [
+    {
+      "correct_option_id": "b34a3d012b",
+      "id": "ch05-l02-q01",
+      "options": [
+        {
+          "id": "b34a3d012b",
+          "text": "Mua cổ phiếu doanh nghiệp tốt khi giá thấp hơn giá trị thực"
+        },
+        {
+          "id": "805247b0d5",
+          "text": "Mua cổ phiếu đang tăng mạnh nhất"
+        },
+        {
+          "id": "76b990abdf",
+          "text": "Mua bán liên tục trong ngày"
+        }
+      ],
+      "prompt": "Đầu tư giá trị là gì?"
+    },
+    {
+      "correct_option_id": "d6699e22c4",
+      "id": "ch05-l02-q02",
+      "options": [
+        {
+          "id": "d6699e22c4",
+          "text": "Khoảng chênh lệch giữa giá trị ước tính và giá mua"
+        },
+        {
+          "id": "52143b76ca",
+          "text": "Mức cắt lỗ cố định 7%"
+        },
+        {
+          "id": "ba2041f15c",
+          "text": "Hạn mức vay margin"
+        }
+      ],
+      "prompt": "Biên an toàn là gì?"
+    },
+    {
+      "correct_option_id": "6cd09e4b3e",
+      "id": "ch05-l02-q03",
+      "options": [
+        {
+          "id": "6cd09e4b3e",
+          "text": "Nhà đầu tư trả bao nhiêu đồng cho mỗi đồng lợi nhuận"
+        },
+        {
+          "id": "43ff479d1f",
+          "text": "Tỷ lệ nợ vay trên vốn"
+        },
+        {
+          "id": "4c70fc7250",
+          "text": "Khối lượng giao dịch trung bình"
+        }
+      ],
+      "prompt": "Chỉ số P/E cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "8416fdd5c4",
+      "id": "ch05-l02-q04",
+      "options": [
+        {
+          "id": "8416fdd5c4",
+          "text": "Hiệu quả sử dụng vốn chủ sở hữu"
+        },
+        {
+          "id": "99308f7bff",
+          "text": "Tốc độ tăng giá cổ phiếu"
+        },
+        {
+          "id": "743c9bbacc",
+          "text": "Số lượng cổ đông"
+        }
+      ],
+      "prompt": "Chỉ số ROE đo lường điều gì?"
+    },
+    {
+      "correct_option_id": "c6b83d7c16",
+      "id": "ch05-l02-q05",
+      "options": [
+        {
+          "id": "c6b83d7c16",
+          "text": "Cổ phiếu trông rẻ nhưng doanh nghiệp đang suy yếu"
+        },
+        {
+          "id": "46c41d071d",
+          "text": "Cổ phiếu tăng giá quá nhanh"
+        },
+        {
+          "id": "3129d80500",
+          "text": "Cổ phiếu có nhiều người mua"
+        }
+      ],
+      "prompt": "Bẫy giá trị là gì?"
+    }
+  ],
+  "salt": "fd5eae0ed356082655de6e8eaa3ee66780baf608eb1310b69db2dfad2b859b5d"
+}

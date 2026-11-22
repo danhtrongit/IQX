@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l02",
+  "questions": [
+    {
+      "correct_option_id": "fbbe981137",
+      "id": "ch10-l02-q01",
+      "options": [
+        {
+          "id": "fbbe981137",
+          "text": "Thu nhập lãi 4 quý chia tài sản sinh lãi bình quân"
+        },
+        {
+          "id": "5effcb96c1",
+          "text": "Thu nhập lãi thuần 4 quý chia tổng tài sản"
+        },
+        {
+          "id": "b6001bc55e",
+          "text": "Chi phí lãi 4 quý chia tài sản sinh lãi bình quân"
+        }
+      ],
+      "prompt": "Lợi suất tài sản sinh lãi được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "317f3c832d",
+      "id": "ch10-l02-q02",
+      "options": [
+        {
+          "id": "317f3c832d",
+          "text": "Nợ chịu lãi bình quân"
+        },
+        {
+          "id": "b01fd5fbfb",
+          "text": "Tài sản sinh lãi bình quân"
+        },
+        {
+          "id": "3733a5f0cb",
+          "text": "Vốn chủ sở hữu bình quân"
+        }
+      ],
+      "prompt": "Mẫu số của chi phí vốn là gì?"
+    },
+    {
+      "correct_option_id": "3ef0789a17",
+      "id": "ch10-l02-q03",
+      "options": [
+        {
+          "id": "3ef0789a17",
+          "text": "Phát hành giấy tờ có giá"
+        },
+        {
+          "id": "9a1481fde4",
+          "text": "Dự phòng rủi ro cho vay"
+        },
+        {
+          "id": "3fa5dfbe5f",
+          "text": "Lợi nhuận chưa phân phối"
+        }
+      ],
+      "prompt": "Khoản nào thuộc nợ chịu lãi của ngân hàng?"
+    },
+    {
+      "correct_option_id": "c78cbf9caf",
+      "id": "ch10-l02-q04",
+      "options": [
+        {
+          "id": "c78cbf9caf",
+          "text": "Một phần tài sản do vốn chủ tài trợ, không phải trả lãi"
+        },
+        {
+          "id": "d899a49f2d",
+          "text": "Chi phí vốn đã được tính hai lần trong công thức của NIM"
+        },
+        {
+          "id": "22e3a478c2",
+          "text": "NIM dùng thu nhập ngoài lãi làm tử số"
+        }
+      ],
+      "prompt": "Vì sao NIM thường cao hơn khoảng chênh giữa lợi suất và chi phí vốn một chút?"
+    },
+    {
+      "chart_id": "c10l2-rep",
+      "correct_option_id": "4fe2d8bc70",
+      "id": "ch10-l02-q05",
+      "options": [
+        {
+          "id": "4fe2d8bc70",
+          "text": "NIM"
+        },
+        {
+          "id": "1a6c1e2801",
+          "text": "CIR"
+        },
+        {
+          "id": "dd7a9bd8dc",
+          "text": "LDR"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khoảng cách giữa hai đường phía trên gần với chỉ tiêu nào?"
+    }
+  ],
+  "salt": "074948edfdc84adf46a628127de8fb8eed9fc2c92bd10a5c9159a0b0f9775129"
+}

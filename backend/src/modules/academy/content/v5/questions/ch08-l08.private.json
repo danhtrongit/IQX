@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l08",
+  "questions": [
+    {
+      "correct_option_id": "ce2d513a71",
+      "id": "ch08-l08-q01",
+      "options": [
+        {
+          "id": "ce2d513a71",
+          "text": "Độ lệch chuẩn của tăng trưởng doanh thu từng năm"
+        },
+        {
+          "id": "930a8b211c",
+          "text": "Tổng doanh thu của 5 năm gần nhất"
+        },
+        {
+          "id": "a14929c3ef",
+          "text": "Doanh thu năm gần nhất chia năm đầu tiên"
+        }
+      ],
+      "prompt": "Revenue Growth Stability được đo bằng gì?"
+    },
+    {
+      "correct_option_id": "cedd11e319",
+      "id": "ch08-l08-q02",
+      "options": [
+        {
+          "id": "cedd11e319",
+          "text": "Tăng trưởng doanh thu càng ổn định"
+        },
+        {
+          "id": "99f7de2a18",
+          "text": "Doanh thu càng tăng nhanh"
+        },
+        {
+          "id": "f93f0dd1f5",
+          "text": "Doanh thu càng giảm mạnh"
+        }
+      ],
+      "prompt": "Revenue Growth Stability càng nhỏ nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "83eea727fb",
+      "id": "ch08-l08-q03",
+      "options": [
+        {
+          "id": "83eea727fb",
+          "text": "Khoảng cách điển hình từ mỗi năm tới đường bình quân"
+        },
+        {
+          "id": "c6a1de0642",
+          "text": "Khoảng cách giữa năm cao nhất và năm đầu tiên"
+        },
+        {
+          "id": "0c1271c8dd",
+          "text": "Giá trị của năm gần nhất trừ năm trước"
+        }
+      ],
+      "prompt": "Độ lệch chuẩn có thể hiểu trực quan là gì?"
+    },
+    {
+      "chart_id": "c8l8-rep",
+      "correct_option_id": "69b2581ab2",
+      "id": "ch08-l08-q04",
+      "options": [
+        {
+          "id": "69b2581ab2",
+          "text": "Bình quân cộng trừ một độ lệch chuẩn"
+        },
+        {
+          "id": "9fc435b51a",
+          "text": "Mức tăng trưởng cao nhất và thấp nhất"
+        },
+        {
+          "id": "ad606bfe08",
+          "text": "Khoảng dự báo cho năm tới"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, dải tô quanh đường đứt nét thể hiện gì?"
+    },
+    {
+      "correct_option_id": "8c44f4b73f",
+      "id": "ch08-l08-q05",
+      "options": [
+        {
+          "id": "8c44f4b73f",
+          "text": "Ổn định nhưng gần như không lớn lên"
+        },
+        {
+          "id": "c5d4d660e7",
+          "text": "Là trường hợp tốt nhất vì rất ổn định"
+        },
+        {
+          "id": "8b624c6c79",
+          "text": "Đang tăng trưởng thất thường"
+        }
+      ],
+      "prompt": "Doanh nghiệp tăng trưởng đều 1% mỗi năm nên được hiểu thế nào?"
+    }
+  ],
+  "salt": "a7e38cd5e079b1cba35e8bb29513b320a536bcac5e2ecc01d1a4fcd153a455b2"
+}

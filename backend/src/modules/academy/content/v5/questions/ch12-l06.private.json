@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l06",
+  "questions": [
+    {
+      "correct_option_id": "7ea9471bad",
+      "id": "ch12-l06-q01",
+      "options": [
+        {
+          "id": "7ea9471bad",
+          "text": "Doanh thu tài chính 4 quý chia đầu tư tài chính bình quân"
+        },
+        {
+          "id": "a9a83b528f",
+          "text": "Lợi nhuận sau thuế chia tổng tài sản"
+        },
+        {
+          "id": "34eaaf5a69",
+          "text": "Doanh thu tài chính chia vốn chủ sở hữu cuối kỳ"
+        }
+      ],
+      "prompt": "Lợi suất đầu tư được tính thế nào?"
+    },
+    {
+      "correct_option_id": "c794aba571",
+      "id": "ch12-l06-q02",
+      "options": [
+        {
+          "id": "c794aba571",
+          "text": "Đầu tư ngắn hạn, dài hạn và tiền gửi có kỳ hạn"
+        },
+        {
+          "id": "ce61898c65",
+          "text": "Chỉ gồm cổ phiếu niêm yết"
+        },
+        {
+          "id": "e139d4852c",
+          "text": "Chỉ gồm dự phòng nghiệp vụ"
+        }
+      ],
+      "prompt": "Đầu tư tài chính trong mẫu số gồm những gì?"
+    },
+    {
+      "correct_option_id": "abe6a88c20",
+      "id": "ch12-l06-q03",
+      "options": [
+        {
+          "id": "abe6a88c20",
+          "text": "Thu phí trước, trả bồi thường sau"
+        },
+        {
+          "id": "be087691ff",
+          "text": "Được vay ưu đãi từ ngân hàng"
+        },
+        {
+          "id": "250dcb0a40",
+          "text": "Không phải trích lập dự phòng"
+        }
+      ],
+      "prompt": "Vì sao công ty bảo hiểm có tiền để đầu tư?"
+    },
+    {
+      "correct_option_id": "64d1cf1558",
+      "id": "ch12-l06-q04",
+      "options": [
+        {
+          "id": "64d1cf1558",
+          "text": "Khó lặp lại, cần thận trọng"
+        },
+        {
+          "id": "d8cd5b94c8",
+          "text": "Chắc chắn duy trì các năm sau"
+        },
+        {
+          "id": "3bdd8d5dfe",
+          "text": "Cho thấy mảng bảo hiểm có lãi"
+        }
+      ],
+      "prompt": "Lợi suất đầu tư rất cao trong một năm nhờ bán cổ phiếu nên được hiểu thế nào?"
+    },
+    {
+      "chart_id": "c12l6-rep",
+      "correct_option_id": "a03fcb8106",
+      "id": "ch12-l06-q05",
+      "options": [
+        {
+          "id": "a03fcb8106",
+          "text": "Doanh thu hoạt động tài chính cộng dồn 4 quý"
+        },
+        {
+          "id": "33513b0dd5",
+          "text": "Đầu tư tài chính cuối mỗi quý"
+        },
+        {
+          "id": "772a4efb9c",
+          "text": "Lãi suất tiền gửi bình quân"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "df7e63625efa83e0d631e709c39956b1052723ebd7dc17fb7c591cd489ecbe19"
+}

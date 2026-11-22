@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l07",
+  "questions": [
+    {
+      "correct_option_id": "9eae0e6654",
+      "id": "ch13-l07-q01",
+      "options": [
+        {
+          "id": "9eae0e6654",
+          "text": "Tiền thuê đất khách trả trước"
+        },
+        {
+          "id": "06d93462ff",
+          "text": "Tiền khách mua nhà trả theo tiến độ"
+        },
+        {
+          "id": "937b9ff99b",
+          "text": "Lãi tiền gửi ngân hàng"
+        }
+      ],
+      "prompt": "Doanh thu chưa thực hiện ở công ty khu công nghiệp chủ yếu là gì?"
+    },
+    {
+      "correct_option_id": "6fca4c8b15",
+      "id": "ch13-l07-q02",
+      "options": [
+        {
+          "id": "6fca4c8b15",
+          "text": "Vốn chủ sở hữu"
+        },
+        {
+          "id": "32ec5dd351",
+          "text": "Doanh thu thuần 4 quý"
+        },
+        {
+          "id": "cdce66805e",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Mẫu số của chỉ tiêu là gì?"
+    },
+    {
+      "correct_option_id": "b6b94bcd3c",
+      "id": "ch13-l07-q03",
+      "options": [
+        {
+          "id": "b6b94bcd3c",
+          "text": "Tiền khách mua nhà nằm ở người mua trả tiền trước"
+        },
+        {
+          "id": "e7284334e3",
+          "text": "Công ty nhà ở không có vốn chủ"
+        },
+        {
+          "id": "2a0d90f70d",
+          "text": "Công ty nhà ở không lập bảng cân đối"
+        }
+      ],
+      "prompt": "Vì sao công ty nhà ở thường có tỷ lệ này rất thấp?"
+    },
+    {
+      "correct_option_id": "20fcc3411f",
+      "id": "ch13-l07-q04",
+      "options": [
+        {
+          "id": "20fcc3411f",
+          "text": "Có nhiều hợp đồng thuê mới trả trước"
+        },
+        {
+          "id": "27303178ac",
+          "text": "Công ty đang lỗ"
+        },
+        {
+          "id": "cabb75f3f5",
+          "text": "Công ty vừa trả cổ tức"
+        }
+      ],
+      "prompt": "Số dư doanh thu chưa thực hiện tăng thường cho thấy điều gì?"
+    },
+    {
+      "chart_id": "c13l7-rep",
+      "correct_option_id": "3a0fb3c472",
+      "id": "ch13-l07-q05",
+      "options": [
+        {
+          "id": "3a0fb3c472",
+          "text": "Doanh thu chưa thực hiện và vốn chủ sở hữu"
+        },
+        {
+          "id": "ed393f4efc",
+          "text": "Doanh thu thuần và giá vốn hàng bán 4 quý"
+        },
+        {
+          "id": "ddbcd2c7ed",
+          "text": "Tiền và nợ vay ngắn hạn cuối mỗi quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới gồm những gì?"
+    }
+  ],
+  "salt": "7e587c7bd262bd5c12951d215a564001294487b16541f482d53e725207922741"
+}

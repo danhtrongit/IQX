@@ -1,0 +1,217 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Phần lớn người làm môi giới bỏ cuộc với thương hiệu cá nhân sau vài tuần, không phải vì họ làm kém, mà vì họ mắc những sai lầm giống nhau. Bài này giúp bạn tránh chúng và có một kế hoạch 100 ngày rõ ràng.",
+  "lesson_key": "concept:tam_sai_lam_100_ngay",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Bài nào cũng “mở tài khoản đi anh”. Người xem nghĩ: chỉ xuất hiện khi cần tiền. Thương hiệu thật phải xuất hiện đều, kể cả lúc không bán gì.",
+              "title": "1. Chỉ đăng bài bán hàng"
+            },
+            {
+              "text": "Khoe lệnh lãi, khoe cuộc sống sang. Khách cần người đồng hành, không cần “idol sống ảo”.",
+              "title": "2. Xây hình ảnh hoàn hảo"
+            },
+            {
+              "text": "Copy tin tức giống hệt 100 người khác. Thương hiệu mạnh cần góc nhìn riêng, cách nói riêng, tính cách riêng.",
+              "title": "3. Không có sự khác biệt"
+            },
+            {
+              "text": "Đăng một tuần không thấy khách là bỏ. Người thắng không phải người giỏi nhất mà là người bền nhất, xuất hiện lâu nhất.",
+              "title": "4. Muốn kết quả nhanh"
+            },
+            {
+              "text": "Chạy theo lượt xem, nội dung gây tranh cãi. 100.000 lượt theo dõi không bằng 100 khách tin bạn thật sự.",
+              "title": "5. Chỉ tập trung lượt theo dõi"
+            },
+            {
+              "text": "Hôm nay chuyên gia đầu tư, mai đăng than thở, mốt bán mỹ phẩm. Người xem không biết bạn là ai.",
+              "title": "6. Không nhất quán hình ảnh"
+            },
+            {
+              "text": "Sợ bị chê nên nội dung nhạt, an toàn, không có dấu ấn.",
+              "title": "7. Không dám thể hiện quan điểm"
+            },
+            {
+              "text": "Khách rất nhạy cảm. Họ nhận ra ai thật lòng, ai chỉ muốn chốt.",
+              "title": "8. Chỉ muốn bán, không muốn giúp"
+            }
+          ],
+          "style": "mistake",
+          "type": "cards"
+        },
+        {
+          "text": "Hậu quả của các sai lầm này là mất thời gian, không xây được niềm tin và không có khách hàng trung thành.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tám sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "subtitle": "Dựng nền",
+              "text": "Chỉnh hồ sơ ở mọi kênh. Viết 15 bài, quay 30 video. Gặp 10 người quen theo câu giới thiệu 30 giây.",
+              "title": "Ngày 1-30",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Đều đặn và tương tác",
+              "text": "Giữ lịch đăng. Trả lời mọi bình luận, tin nhắn trong ngày. Tham gia câu lạc bộ đều đặn. Lập nhóm Zalo bản tin.",
+              "title": "Ngày 31-70"
+            },
+            {
+              "subtitle": "Xây cộng đồng",
+              "text": "Tổ chức buổi cà phê chia sẻ đầu tiên. Livestream hỏi đáp. Xin giới thiệu từ những khách hài lòng.",
+              "title": "Ngày 71-100"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Kế hoạch 100 ngày"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lượt xem và lượt thích chỉ là chỉ số phụ. Chỉ số thật của thương hiệu là những điều dẫn tới khách hàng:",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Chỉ số chính"
+            },
+            {
+              "label": "Nói lên điều gì"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Số người nhắn tin hỏi",
+                "Nội dung của bạn đủ hữu ích để người ta muốn hỏi thêm"
+              ]
+            },
+            {
+              "cells": [
+                "Số cuộc hẹn tư vấn",
+                "Người xem đã tin đủ để dành thời gian cho bạn"
+              ]
+            },
+            {
+              "cells": [
+                "Số người vào nhóm bản tin",
+                "Người xem muốn nhận giá trị từ bạn đều đặn"
+              ]
+            },
+            {
+              "cells": [
+                "Số lượt được giới thiệu",
+                "Thương hiệu của bạn đã được người khác nói hộ"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s3",
+      "title": "Đo đúng chỉ số"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: tiếp tục và học từ dữ liệu thật.</b> 3 người chủ động nhắn hỏi là kết quả thật, quý hơn nhiều so với lượt xem. Dừng lại ở ngày 30 đúng là sai lầm “muốn kết quả nhanh”. Nội dung gây tranh cãi kéo lượt xem nhưng phá niềm tin. Hãy làm thêm chủ đề đã khiến người ta nhắn hỏi.",
+          "options": [
+            "Dừng lại vì 200 lượt xem là thất bại",
+            "Tiếp tục kế hoạch, xem lại video nào có người nhắn hỏi để làm thêm chủ đề tương tự, và chăm sóc thật tốt 3 người vừa nhắn",
+            "Chuyển sang làm video gây tranh cãi cho nhiều lượt xem hơn"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Mai đã đăng đủ 30 video trong 30 ngày. Mỗi video chỉ khoảng 200 lượt xem. Nhưng tuần này có 3 người nhắn hỏi cách mở tài khoản cho người mới."
+          ],
+          "title": "30 ngày, 30 video, ít người xem",
+          "type": "scenario"
+        },
+        {
+          "id": "br5",
+          "items": [
+            {
+              "id": "0",
+              "text": "Tôi xuất hiện đều đặn, kể cả lúc không bán gì"
+            },
+            {
+              "id": "1",
+              "text": "Mỗi bài, mỗi video đều có điều hữu ích cho người xem"
+            },
+            {
+              "id": "2",
+              "text": "Hình ảnh, chủ đề của tôi nhất quán ở mọi kênh"
+            },
+            {
+              "id": "3",
+              "text": "Tôi chia sẻ thật, không khoe lãi, không sống ảo"
+            },
+            {
+              "id": "4",
+              "text": "Tôi có góc nhìn và cách nói của riêng mình"
+            },
+            {
+              "id": "5",
+              "text": "Tôi đo bằng tin nhắn, cuộc hẹn, giới thiệu, không chỉ lượt xem"
+            },
+            {
+              "id": "6",
+              "text": "Tôi trả lời mọi bình luận, tin nhắn trong ngày"
+            },
+            {
+              "id": "7",
+              "text": "Tôi đã làm đủ 30 ngày liên tục"
+            }
+          ],
+          "mode": "self_check",
+          "result_label": "Số mục đã đạt",
+          "title": "Tự chấm thương hiệu của bạn",
+          "type": "checklist"
+        },
+        {
+          "id": "br5b",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Ghi ngày bắt đầu, mục tiêu cho từng giai đoạn (ngày 1-30, 31-70, 71-100), và tên người sẽ cùng bạn kiểm tra tiến độ mỗi tuần."
+          ],
+          "title": "Bài tự làm: kế hoạch 100 ngày của bạn",
+          "type": "workpad"
+        }
+      ],
+      "id": "s4",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Tránh <b>8 sai lầm</b>, nhất là chỉ đăng bài bán hàng và muốn kết quả nhanh.",
+    "Đi theo <b>kế hoạch 100 ngày</b>: dựng nền, đều đặn, xây cộng đồng.",
+    "Đo bằng <b>tin nhắn, cuộc hẹn, giới thiệu</b>, không chỉ lượt xem.",
+    "Người thắng là <b>người bền nhất</b>, không phải người giỏi nhất."
+  ],
+  "title": "Tám sai lầm và kế hoạch 100 ngày"
+}

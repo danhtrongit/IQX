@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l06",
+  "questions": [
+    {
+      "correct_option_id": "1f0796e713",
+      "id": "ch09-l06-q01",
+      "options": [
+        {
+          "id": "1f0796e713",
+          "text": "Nợ vay chia cho vốn chủ sở hữu"
+        },
+        {
+          "id": "a884d5faba",
+          "text": "Tổng tài sản chia cho vốn chủ sở hữu"
+        },
+        {
+          "id": "024e3b9c4d",
+          "text": "Vốn chủ sở hữu chia cho nợ vay"
+        }
+      ],
+      "prompt": "D/E được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "69ac128862",
+      "id": "ch09-l06-q02",
+      "options": [
+        {
+          "id": "69ac128862",
+          "text": "Tài sản = nợ phải trả + vốn chủ sở hữu"
+        },
+        {
+          "id": "9c96f3f038",
+          "text": "Tài sản = doanh thu − chi phí − thuế phải nộp"
+        },
+        {
+          "id": "264618b1bc",
+          "text": "Nợ phải trả = tài sản + vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Bảng cân đối kế toán luôn cân bằng theo đẳng thức nào?"
+    },
+    {
+      "correct_option_id": "7ecf18429d",
+      "id": "ch09-l06-q03",
+      "options": [
+        {
+          "id": "7ecf18429d",
+          "text": "Trái phiếu doanh nghiệp đã phát hành"
+        },
+        {
+          "id": "77300f5dfd",
+          "text": "Tiền còn phải trả cho nhà cung cấp"
+        },
+        {
+          "id": "676ef9a5cd",
+          "text": "Tiền khách hàng trả trước cho đơn hàng sau"
+        }
+      ],
+      "prompt": "Khoản nào được tính là nợ vay trong D/E?"
+    },
+    {
+      "correct_option_id": "c3e53dbf15",
+      "id": "ch09-l06-q04",
+      "options": [
+        {
+          "id": "c3e53dbf15",
+          "text": "Tăng ROE khi kinh doanh tốt, khuếch đại lỗ khi kinh doanh kém"
+        },
+        {
+          "id": "3d4b0ea71e",
+          "text": "Luôn làm ROE giảm bất kể kết quả kinh doanh"
+        },
+        {
+          "id": "d7ff7421eb",
+          "text": "Chỉ có tác dụng với doanh nghiệp hoàn toàn không vay nợ"
+        }
+      ],
+      "prompt": "Vì sao đòn bẩy tài chính được gọi là con dao hai lưỡi?"
+    },
+    {
+      "chart_id": "c9l6-rep",
+      "correct_option_id": "85b9c5f807",
+      "id": "ch09-l06-q05",
+      "options": [
+        {
+          "id": "85b9c5f807",
+          "text": "Giảm dần"
+        },
+        {
+          "id": "ea8153332f",
+          "text": "Tăng dần"
+        },
+        {
+          "id": "9eda12145f",
+          "text": "Không thay đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của D/E, nợ vay đứng yên còn vốn chủ tăng dần thì đường D/E thế nào?"
+    }
+  ],
+  "salt": "614717028f5734e0f9832e4bce9a5d55cc7585610b0b3572fa3f7bef7e70bc08"
+}

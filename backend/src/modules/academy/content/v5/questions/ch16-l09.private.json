@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch16-l09",
+  "questions": [
+    {
+      "correct_option_id": "e26c771b6c",
+      "id": "ch16-l09-q01",
+      "options": [
+        {
+          "id": "e26c771b6c",
+          "text": "Mã 131"
+        },
+        {
+          "id": "d1f9d0e29a",
+          "text": "Mã 136"
+        },
+        {
+          "id": "48cc78c069",
+          "text": "Mã 311"
+        }
+      ],
+      "prompt": "Phải thu khách hàng lấy ở mã dòng nào?"
+    },
+    {
+      "correct_option_id": "5c72aea98c",
+      "id": "ch16-l09-q02",
+      "options": [
+        {
+          "id": "5c72aea98c",
+          "text": "Phụ thuộc vào một bên mua chính"
+        },
+        {
+          "id": "132b03399e",
+          "text": "Vì không có hợp đồng"
+        },
+        {
+          "id": "3aac3288f8",
+          "text": "Vì không có doanh thu"
+        }
+      ],
+      "prompt": "Vì sao công ty điện khó đòi tiền gấp?"
+    },
+    {
+      "correct_option_id": "5f0b6c4e0b",
+      "id": "ch16-l09-q03",
+      "options": [
+        {
+          "id": "5f0b6c4e0b",
+          "text": "Làm CFO thấp hơn lợi nhuận"
+        },
+        {
+          "id": "af62c2b369",
+          "text": "Làm CFO tăng"
+        },
+        {
+          "id": "aeae32942c",
+          "text": "Không ảnh hưởng"
+        }
+      ],
+      "prompt": "Số ngày tăng ảnh hưởng thế nào đến CFO?"
+    },
+    {
+      "correct_option_id": "ac22098856",
+      "id": "ch16-l09-q04",
+      "options": [
+        {
+          "id": "ac22098856",
+          "text": "Nước sạch thu tiền nhiều hộ dân"
+        },
+        {
+          "id": "89a2a9f38b",
+          "text": "Nhiệt điện bán cho bên mua lớn"
+        },
+        {
+          "id": "5f075b5acd",
+          "text": "Thủy điện bán theo hợp đồng dài"
+        }
+      ],
+      "prompt": "Mảng nào thường có số ngày thu tiền ngắn và ổn định?"
+    },
+    {
+      "chart_id": "c16l9-rep",
+      "correct_option_id": "068dc71682",
+      "id": "ch16-l09-q05",
+      "options": [
+        {
+          "id": "068dc71682",
+          "text": "Bên mua trả tiền nhanh hơn"
+        },
+        {
+          "id": "9c2a9c4112",
+          "text": "Bên mua trả chậm hơn"
+        },
+        {
+          "id": "f43fc5a295",
+          "text": "Doanh thu giảm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, phải thu giảm trong khi doanh thu tăng cho thấy gì?"
+    }
+  ],
+  "salt": "ae6dec8391f2daacc27a76f151a611b8928e6567d6dc1fa9ab3def90138e3c90"
+}

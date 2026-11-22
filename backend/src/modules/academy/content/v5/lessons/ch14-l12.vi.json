@@ -1,0 +1,384 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l12-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Mã 312 + 332"
+          ],
+          "t": "Người mua trả tiền trước",
+          "tone": "pos",
+          "v": "3.806 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "72.265 tỷ"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "warn",
+          "v": "0,05 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l12-g2": {
+      "decimals": 2,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Dịch vụ kỹ thuật, chế tạo công trình",
+          "tone": "pos",
+          "value": 0.3
+        },
+        {
+          "label": "Lọc dầu, phân phối",
+          "tone": "warn",
+          "value": 0.02
+        },
+        {
+          "label": "Vận chuyển khí",
+          "tone": "warn",
+          "value": 0.01
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Tỷ lệ tham khảo theo mảng · số minh họa",
+      "unit": " lần"
+    },
+    "c14l12-rep": {
+      "alt": "Người mua trả tiền trước / Doanh thu: 0,05 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Trả trước / Doanh thu 4 quý",
+            "v": [
+              0.077,
+              0.075,
+              0.072,
+              0.068,
+              0.064,
+              0.06,
+              0.057,
+              0.053
+            ]
+          }
+        ],
+        "name": "Người mua trả tiền trước / Doanh thu",
+        "sub": {
+          "series": [
+            {
+              "name": "Người mua trả tiền trước",
+              "v": [
+                4200.767,
+                4197.97,
+                4215.038,
+                4189.151,
+                4207.727,
+                4110.68,
+                3929.687,
+                3806.225
+              ]
+            },
+            {
+              "name": "Doanh thu 4 quý",
+              "v": [
+                54490.331,
+                56206.8,
+                58788.505,
+                61386.364,
+                65278.794,
+                67950.173,
+                69535.408,
+                72264.953
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l12",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh nghiệp dịch vụ kỹ thuật dầu khí thường nhận tạm ứng khi ký hợp đồng chế tạo, lắp đặt công trình. Số tiền tạm ứng này giúp ước lượng khối lượng việc đã ký nhưng chưa làm xong.",
+  "lesson_key": "fundamental:buyer_prepay_to_revenue-dk",
+  "order": 12,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l12-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>người mua trả tiền trước</b> ngắn hạn và dài hạn trên bảng cân đối, chia <b>doanh thu thuần 4 quý</b>. Đơn vị lần. Cách tính giống bài cùng tên ở chương bất động sản, cách đọc khác.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Người mua trả tiền trước / Doanh thu là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Với hợp đồng chế tạo, lắp đặt (EPC), khách hàng tạm ứng một phần giá trị khi ký. Doanh thu ghi nhận dần theo tiến độ công trình.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c14l12-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp bán xăng dầu, khí gần như không có tạm ứng lớn.",
+              "title": "Chỉ ý nghĩa với dịch vụ"
+            },
+            {
+              "text": "Giá trị hợp đồng đã ký (backlog) nằm ở tài liệu công ty, không có trên báo cáo tài chính.",
+              "title": "Chỉ là ước lượng"
+            },
+            {
+              "text": "Số dư tăng là có hợp đồng mới. Số dư giảm là đang làm xong các hợp đồng cũ.",
+              "title": "Đọc xu hướng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở dầu khí đọc thế nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l12-rep",
+          "title": "Người mua trả tiền trước / Doanh thu",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Người mua trả tiền trước chia doanh thu 4 quý, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Người mua trả tiền trước và doanh thu 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Số dư đi ngang trong khi doanh thu tăng thì tỷ lệ giảm dần.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Với doanh nghiệp dịch vụ, từ khoảng 0,2 lần trở lên và tăng. Mức tham khảo, có hợp đồng mới ký.",
+              "title": "Nhiều việc phía trước",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ giảm liên tục về gần 0. Hợp đồng cũ sắp xong, chưa có hợp đồng mới.",
+              "title": "Ít việc phía trước",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Doanh nghiệp dầu khí mẫu có nhiều mảng, nên tỷ lệ thấp. Với doanh nghiệp chuyên dịch vụ kỹ thuật, chỉ tiêu này quan trọng hơn nhiều.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tạm ứng tăng thường đi trước doanh thu dịch vụ tăng.",
+              "title": "Ước lượng doanh thu dịch vụ"
+            },
+            {
+              "text": "Đối chiếu với giá trị hợp đồng công ty công bố.",
+              "title": "So với tài liệu công ty"
+            },
+            {
+              "text": "Với lọc dầu, phân phối, chỉ tiêu ít ý nghĩa.",
+              "title": "Chỉ dùng cho mảng dịch vụ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Trả trước"
+            },
+            {
+              "label": "Doanh thu 4 quý"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "4.201",
+                "54.490",
+                "0,08 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "4.189",
+                "61.386",
+                "0,07 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "3.806",
+                "72.265",
+                "0,05 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Số dư giảm nhẹ từ 4.201 xuống 3.806 tỷ trong khi doanh thu tăng. Mảng dịch vụ chưa có nhiều hợp đồng mới.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bán xăng dầu thu tiền ngay, gần như không có tạm ứng.",
+              "title": "Dùng cho doanh nghiệp phân phối"
+            },
+            {
+              "text": "Tạm ứng chỉ là một phần giá trị hợp đồng.",
+              "title": "Coi là giá trị hợp đồng"
+            },
+            {
+              "text": "Hợp đồng nhiều năm có thể có tạm ứng dài hạn.",
+              "title": "Quên phần dài hạn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chỉ tiêu quan trọng để ước lượng việc đã ký chưa làm.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Ít ý nghĩa.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Ít ý nghĩa, doanh thu thu tiền ngay.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>người mua trả tiền trước</b> ÷ <b>doanh thu thuần 4 quý</b>.",
+    "Ở dầu khí là <b>tạm ứng hợp đồng dịch vụ</b>.",
+    "Chỉ <b>ước lượng</b> khối lượng việc, không phải giá trị hợp đồng.",
+    "Có ý nghĩa với <b>dịch vụ kỹ thuật</b>, ít ý nghĩa với phân phối."
+  ],
+  "title": "Người mua trả tiền trước / Doanh thu · việc đã ký chưa làm"
+}

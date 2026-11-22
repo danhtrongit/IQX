@@ -1,0 +1,549 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l18-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "Giá cổ phiếu",
+          "tone": "p1",
+          "v": "Giá"
+        },
+        {
+          "notes": [
+            "LNST 4 quý ÷ số cổ phiếu"
+          ],
+          "t": "EPS 4 quý",
+          "tone": "warn",
+          "v": "EPS"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "P/E",
+          "tone": "pos",
+          "v": "11,07 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c13l18-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Năm bàn giao lớn",
+          "tone": "pos",
+          "value": 5
+        },
+        {
+          "label": "Năm ít bàn giao",
+          "tone": "neg",
+          "value": 25
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "note": "Giá không đổi, chỉ lợi nhuận đổi theo lịch bàn giao.",
+      "title": "P/E của cùng một công ty qua hai năm · số minh họa",
+      "unit": " lần"
+    },
+    "c13l18-rep": {
+      "alt": "P/E: 11,07 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "P/E",
+            "v": [
+              13.357,
+              13.603,
+              14.022,
+              13.879,
+              14.021,
+              14.301,
+              14.834,
+              14.256,
+              13.764,
+              13.266,
+              12.606,
+              12.647,
+              12.247,
+              12.121,
+              11.917,
+              11.451,
+              11.685,
+              11.482,
+              11.626,
+              11.321,
+              10.881,
+              10.999,
+              10.98,
+              11.226,
+              12.302,
+              12.034,
+              12.038,
+              12.622,
+              11.855,
+              11.88,
+              12.009,
+              12.06,
+              12.3,
+              11.519,
+              11.722,
+              11.813,
+              12.267,
+              11.988,
+              12.144,
+              11.87,
+              12.633,
+              12.189,
+              12.186,
+              12.011,
+              12.393,
+              12.065,
+              11.885,
+              12.097,
+              12.286,
+              11.117,
+              11.467,
+              11.555,
+              11.286,
+              11.06,
+              11.514,
+              11.696,
+              11.335,
+              12.254,
+              12.558,
+              12.348,
+              12.145,
+              12.162,
+              11.833,
+              11.477,
+              11.388,
+              12.441,
+              12.849,
+              12.999,
+              12.343,
+              12.403,
+              12.43,
+              11.76,
+              12.058,
+              11.654,
+              10.949,
+              11.214,
+              11.158,
+              10.68,
+              10.667,
+              10.781,
+              10.655,
+              10.219,
+              10.128,
+              10.149,
+              9.732,
+              9.691,
+              9.498,
+              9.761,
+              9.832,
+              9.7,
+              9.874,
+              9.774,
+              10.391,
+              10.135,
+              9.801,
+              10.226,
+              10.033,
+              10.192,
+              11.307,
+              11.527,
+              11.52,
+              11.136,
+              11.402,
+              11.946,
+              12.441,
+              12.419,
+              12.156,
+              11.641,
+              11.35,
+              11.034,
+              10.655,
+              11.053,
+              10.698,
+              10.615,
+              10.333,
+              10.709,
+              10.963,
+              10.501,
+              10.58,
+              10.433,
+              10.072,
+              9.964,
+              10.219,
+              10.732,
+              11.208,
+              11.07
+            ]
+          }
+        ],
+        "name": "P/E",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l18",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "P/E so giá cổ phiếu với lợi nhuận. Với công ty bất động sản, lợi nhuận lên xuống theo đợt bàn giao và có thể có lãi bán dự án một lần. Vì vậy P/E dễ cho tín hiệu sai. Bài này nói khi nào nên tin P/E và khi nào không.",
+  "lesson_key": "fundamental:pe-bds",
+  "order": 18,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l18-g1",
+          "type": "chart"
+        },
+        {
+          "text": "P/E bằng <b>giá cổ phiếu</b> chia <b>EPS 4 quý gần nhất</b>, tính theo ngày. Cách tính giống bài P/E ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l18-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Năm bàn giao nhiều thì P/E rất thấp, năm ít bàn giao thì P/E rất cao.",
+              "title": "Lợi nhuận dồn theo đợt"
+            },
+            {
+              "text": "Lãi bán dự án làm EPS tăng tạm thời, P/E thấp giả.",
+              "title": "Lãi một lần"
+            },
+            {
+              "text": "Nhà đầu tư thường định giá bất động sản theo giá trị quỹ đất và dự án nhiều hơn theo lợi nhuận một năm.",
+              "title": "Thị trường nhìn tài sản"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở bất động sản khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l18-rep",
+          "title": "P/E",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/E theo giá đóng cửa từng ngày và EPS 4 quý đã công bố.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn của giai đoạn đang hiện.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "P/E nhảy bậc ở ngày công bố báo cáo quý có bàn giao lớn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khi lợi nhuận 3 năm gần nhất tương đối đều và không có khoản lãi bất thường lớn.",
+              "title": "P/E đáng tin hơn",
+              "tone": "pos"
+            },
+            {
+              "text": "Khi lợi nhuận năm gần nhất có đợt bàn giao đột biến hoặc lãi bán dự án lớn.",
+              "title": "P/E dễ sai",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với bất động sản, nên đọc P/E cùng <b>P/B</b> và với <b>lợi nhuận bình quân vài năm</b>. Không có mức P/E chung cho cả ngành.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chia giá cho EPS bình quân 3 năm để giảm ảnh hưởng của lịch bàn giao.",
+              "title": "Dùng lợi nhuận bình quân"
+            },
+            {
+              "text": "Trừ lãi bán dự án khỏi EPS trước khi tính.",
+              "title": "Loại lãi bất thường"
+            },
+            {
+              "text": "P/B ít bị ảnh hưởng bởi lịch bàn giao hơn.",
+              "title": "Kết hợp P/B"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bất động sản mẫu, P/E theo ngày trong 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "P/E cuối Q2/26",
+              "text": "11,07 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "11,54 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "9,50 lần và 14,83 lần."
+            },
+            {
+              "term": "Bỏ lãi chuyển nhượng dự án",
+              "text": "Khoảng 880 tỷ đồng lợi nhuận 4 quý gần nhất đến từ lãi chuyển nhượng dự án ở Q4/25. Bỏ phần này ra thì P/E là khoảng 13,51 lần."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/E thấp năm bàn giao lớn không có nghĩa cổ phiếu rẻ hơn.",
+              "title": "So P/E giữa các năm"
+            },
+            {
+              "text": "Lãi bán dự án làm P/E thấp giả.",
+              "title": "Dùng EPS có lãi bất thường"
+            },
+            {
+              "text": "Nên kết hợp P/B cho công ty bất động sản.",
+              "title": "Chỉ dùng P/E"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "P/E dao động mạnh theo lịch bàn giao. Dùng lợi nhuận bình quân vài năm.",
+              "title": "Nhà ở"
+            },
+            {
+              "text": "Lợi nhuận cũng dồn theo hợp đồng thuê lớn. P/E nên đọc cùng doanh thu chưa thực hiện.",
+              "title": "Khu công nghiệp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Nhà ở và khu công nghiệp"
+    }
+  ],
+  "summary": [
+    "<b>P/E</b> = giá ÷ EPS 4 quý, theo ngày.",
+    "Lợi nhuận bất động sản <b>dồn theo đợt</b> nên P/E dễ cho tín hiệu sai.",
+    "Dùng <b>lợi nhuận bình quân</b> và <b>loại lãi bất thường</b>.",
+    "Đọc cùng <b>P/B</b>."
+  ],
+  "title": "P/E · ở bất động sản"
+}

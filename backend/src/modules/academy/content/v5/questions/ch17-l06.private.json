@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch17-l06",
+  "questions": [
+    {
+      "correct_option_id": "839d4374dd",
+      "id": "ch17-l06-q01",
+      "options": [
+        {
+          "id": "839d4374dd",
+          "text": "Nhập nguyên liệu"
+        },
+        {
+          "id": "bb9e6a252e",
+          "text": "Trả cổ tức"
+        },
+        {
+          "id": "bd21cf747c",
+          "text": "Mua cổ phiếu quỹ"
+        }
+      ],
+      "prompt": "Vay ngắn hạn của công ty thép thường dùng để làm gì?"
+    },
+    {
+      "correct_option_id": "1dca97ce5b",
+      "id": "ch17-l06-q02",
+      "options": [
+        {
+          "id": "1dca97ce5b",
+          "text": "Tồn kho mất giá trong khi nợ giữ nguyên"
+        },
+        {
+          "id": "fd5af12ea3",
+          "text": "Lãi vay tự giảm theo giá hàng"
+        },
+        {
+          "id": "356aae0b93",
+          "text": "Doanh thu tăng theo giá giảm"
+        }
+      ],
+      "prompt": "Vì sao giá giảm là rủi ro kép khi tồn kho được tài trợ bằng vay?"
+    },
+    {
+      "correct_option_id": "06c463d948",
+      "id": "ch17-l06-q03",
+      "options": [
+        {
+          "id": "06c463d948",
+          "text": "Không"
+        },
+        {
+          "id": "e31f276a2a",
+          "text": "Có"
+        },
+        {
+          "id": "51b797e51d",
+          "text": "Chỉ tốt ở quý 4"
+        }
+      ],
+      "prompt": "Tỷ lệ giảm vì tồn kho tăng nhanh có luôn tốt không?"
+    },
+    {
+      "correct_option_id": "546e5c6541",
+      "id": "ch17-l06-q04",
+      "options": [
+        {
+          "id": "546e5c6541",
+          "text": "Ngoại tệ như USD"
+        },
+        {
+          "id": "541259f6b9",
+          "text": "Chỉ đồng"
+        },
+        {
+          "id": "8467267b86",
+          "text": "Vàng"
+        }
+      ],
+      "prompt": "Vay ngắn hạn nhập nguyên liệu thường bằng loại tiền nào?"
+    },
+    {
+      "chart_id": "c17l6-rep",
+      "correct_option_id": "b4065f3df8",
+      "id": "ch17-l06-q05",
+      "options": [
+        {
+          "id": "b4065f3df8",
+          "text": "Đi xuống"
+        },
+        {
+          "id": "a4fbb6df08",
+          "text": "Đi lên"
+        },
+        {
+          "id": "c3784aad95",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, tồn kho tăng nhanh hơn vay làm đường thế nào?"
+    }
+  ],
+  "salt": "3c4bb984be1eb1d0b7f3ddb502138160b1857d2c2f9c2e69175a216693c1371a"
+}

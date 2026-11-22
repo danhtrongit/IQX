@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch06-l01",
+  "questions": [
+    {
+      "correct_option_id": "4551cfc3bf",
+      "id": "ch06-l01-q01",
+      "options": [
+        {
+          "id": "4551cfc3bf",
+          "text": "EMA cho phiên gần đây trọng số lớn hơn"
+        },
+        {
+          "id": "2cb111fdb8",
+          "text": "EMA chỉ tính trên giá cao nhất của phiên"
+        },
+        {
+          "id": "a365e1f13e",
+          "text": "EMA không phụ thuộc vào số phiên chọn"
+        }
+      ],
+      "prompt": "EMA khác MA (SMA) ở điểm nào?"
+    },
+    {
+      "correct_option_id": "966eec80b4",
+      "id": "ch06-l01-q02",
+      "options": [
+        {
+          "id": "966eec80b4",
+          "text": "EMA 20"
+        },
+        {
+          "id": "fa4a8e4f95",
+          "text": "MA 20"
+        },
+        {
+          "id": "caa1d96f49",
+          "text": "Hai đường đổi hướng cùng lúc"
+        }
+      ],
+      "prompt": "Cùng chu kỳ 20, khi giá đổi hướng thì đường nào thường đổi hướng sớm hơn?"
+    },
+    {
+      "correct_option_id": "d59efdc379",
+      "id": "ch06-l01-q03",
+      "options": [
+        {
+          "id": "d59efdc379",
+          "text": "Xu hướng tăng"
+        },
+        {
+          "id": "da7e5b7902",
+          "text": "Xu hướng giảm"
+        },
+        {
+          "id": "6c65e63784",
+          "text": "Thị trường đi ngang"
+        }
+      ],
+      "prompt": "Giá đóng cửa nằm trên EMA và EMA dốc lên cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "7564221f39",
+      "id": "ch06-l01-q04",
+      "options": [
+        {
+          "id": "7564221f39",
+          "text": "Xác định xu hướng chính"
+        },
+        {
+          "id": "b14d1af29f",
+          "text": "Theo dõi từng nhịp rất ngắn"
+        },
+        {
+          "id": "ef39539bd4",
+          "text": "Đo khối lượng giao dịch"
+        }
+      ],
+      "prompt": "EMA 50 thường được dùng để làm gì?"
+    },
+    {
+      "correct_option_id": "58a0f77bc0",
+      "id": "ch06-l01-q05",
+      "options": [
+        {
+          "id": "58a0f77bc0",
+          "text": "Giá cắt lên cắt xuống EMA liên tục"
+        },
+        {
+          "id": "b3b8c7ced9",
+          "text": "EMA ngừng được tính khi đi ngang"
+        },
+        {
+          "id": "e146be8ef0",
+          "text": "Khi đi ngang không có giá đóng cửa"
+        }
+      ],
+      "prompt": "Vì sao EMA chu kỳ ngắn dễ cho tín hiệu sai khi thị trường đi ngang?"
+    }
+  ],
+  "salt": "9704e220f0988a449f8d1f1e01c325f4723e3dab211ccc4cb7a3b4809c512270"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch14-l09",
+  "questions": [
+    {
+      "correct_option_id": "4dcce26ecf",
+      "id": "ch14-l09-q01",
+      "options": [
+        {
+          "id": "4dcce26ecf",
+          "text": "Tiền và đầu tư ngắn hạn trừ nợ vay"
+        },
+        {
+          "id": "5d31c4732e",
+          "text": "Tiền trừ phải trả người bán"
+        },
+        {
+          "id": "3c2996e406",
+          "text": "Doanh thu trừ chi phí"
+        }
+      ],
+      "prompt": "Tiền ròng bằng gì?"
+    },
+    {
+      "correct_option_id": "022535135a",
+      "id": "ch14-l09-q02",
+      "options": [
+        {
+          "id": "022535135a",
+          "text": "Nợ vay nhiều hơn tiền"
+        },
+        {
+          "id": "d2916fa2d3",
+          "text": "Doanh nghiệp đang lỗ"
+        },
+        {
+          "id": "5dfa380b53",
+          "text": "Doanh nghiệp không có vốn chủ"
+        }
+      ],
+      "prompt": "Tiền ròng / VCSH âm nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "7b073b7c3f",
+      "id": "ch14-l09-q03",
+      "options": [
+        {
+          "id": "7b073b7c3f",
+          "text": "Doanh thu tài chính từ lãi tiền gửi"
+        },
+        {
+          "id": "f8eec58b64",
+          "text": "Doanh thu bán hàng"
+        },
+        {
+          "id": "a6af896b71",
+          "text": "Thu nhập khác từ thanh lý"
+        }
+      ],
+      "prompt": "Lượng tiền lớn tạo ra khoản thu nào?"
+    },
+    {
+      "correct_option_id": "4a9179b962",
+      "id": "ch14-l09-q04",
+      "options": [
+        {
+          "id": "4a9179b962",
+          "text": "Tiền nằm yên làm hiệu quả vốn thấp"
+        },
+        {
+          "id": "e6b584b225",
+          "text": "Vì tiền mất giá trị ngay"
+        },
+        {
+          "id": "d9962ddcbe",
+          "text": "Vì luật cấm giữ tiền"
+        }
+      ],
+      "prompt": "Vì sao dư tiền quá lâu chưa chắc tốt?"
+    },
+    {
+      "chart_id": "c14l9-rep",
+      "correct_option_id": "427c26936f",
+      "id": "ch14-l09-q05",
+      "options": [
+        {
+          "id": "427c26936f",
+          "text": "Doanh nghiệp dư tiền"
+        },
+        {
+          "id": "99b16ac709",
+          "text": "Doanh nghiệp nợ nhiều"
+        },
+        {
+          "id": "20cef48cc2",
+          "text": "Doanh nghiệp đang đầu tư lớn"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột tiền cao hơn hẳn cột nợ vay cho thấy gì?"
+    }
+  ],
+  "salt": "711a0297ebb999d624d37b2ffaa1b3d077b8fe5a7dcfcf4a132fbef7bbd98802"
+}

@@ -1,0 +1,385 @@
+{
+  "chapter": 15,
+  "charts": {
+    "c15l10-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "58.913 tỷ"
+        },
+        {
+          "notes": [
+            "Mã 220"
+          ],
+          "t": "TSCĐ bình quân",
+          "tone": "warn",
+          "v": "4.459 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Tỷ lệ",
+          "tone": "pos",
+          "v": "13,21 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c15l10-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Chuỗi thuê mặt bằng, ít đầu tư",
+          "tone": "pos",
+          "value": 15
+        },
+        {
+          "label": "Chuỗi điện máy",
+          "tone": "p1",
+          "value": 10
+        },
+        {
+          "label": "Chuỗi siêu thị tự xây",
+          "tone": "warn",
+          "value": 4
+        },
+        {
+          "label": "Nhà sản xuất hàng tiêu dùng",
+          "tone": "warn",
+          "value": 3
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Doanh thu / Tài sản cố định tham khảo · số minh họa",
+      "unit": " lần"
+    },
+    "c15l10-rep": {
+      "alt": "Doanh thu / Tài sản cố định: 13,21 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Doanh thu 4 quý / TSCĐ bình quân",
+            "v": [
+              10.372,
+              10.896,
+              11.497,
+              11.98,
+              12.38,
+              12.717,
+              13.029,
+              13.211
+            ]
+          }
+        ],
+        "name": "Doanh thu / Tài sản cố định",
+        "sub": {
+          "series": [
+            {
+              "name": "Doanh thu 4 quý",
+              "v": [
+                45655.72,
+                47841.882,
+                50432.477,
+                52557.794,
+                54387.136,
+                56046.778,
+                57717.689,
+                58913.158
+              ]
+            },
+            {
+              "name": "TSCĐ bình quân",
+              "v": [
+                4401.852,
+                4390.778,
+                4386.433,
+                4387.297,
+                4393.028,
+                4407.127,
+                4430.108,
+                4459.412
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch15-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Báo cáo tài chính không cho biết doanh thu từng cửa hàng. Nhưng tài sản cố định của chuỗi bán lẻ chủ yếu là cửa hàng, kho và thiết bị. So doanh thu với tài sản cố định cho biết mạng lưới cửa hàng đang tạo ra doanh thu tốt đến đâu.",
+  "lesson_key": "fundamental:revenue_to_fixed_assets-bl",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l10-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>doanh thu thuần 4 quý</b> chia <b>tài sản cố định bình quân</b> (mã 220, cuối quý này và cuối cùng quý năm trước). Đơn vị lần.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 13,21 lần nghĩa là mỗi đồng tài sản cố định tạo ra khoảng 13,2 đồng doanh thu một năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Doanh thu / Tài sản cố định là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l10-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cửa hàng cũ bán được nhiều hơn mà không cần đầu tư thêm.",
+              "title": "Tăng là tốt"
+            },
+            {
+              "text": "Cửa hàng mới chưa đạt doanh thu ổn định làm tỷ lệ giảm tạm thời.",
+              "title": "Giảm khi mở mới"
+            },
+            {
+              "text": "Chuỗi thuê mặt bằng có tài sản cố định nhỏ nên tỷ lệ cao hơn chuỗi tự xây.",
+              "title": "Thuê hay sở hữu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Thay cho doanh thu mỗi cửa hàng"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c15l10-rep",
+          "title": "Doanh thu / Tài sản cố định",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu 4 quý chia TSCĐ bình quân, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu 4 quý và TSCĐ bình quân, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Doanh thu tăng trong khi TSCĐ đi ngang: mạng lưới hiện có bán được nhiều hơn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ lệ tăng dần hoặc ổn định ở mức cao so với chuỗi cùng mô hình.",
+              "title": "Mạng lưới hiệu quả",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ giảm nhiều năm liền dù không mở mới nhiều. Cửa hàng cũ đang bán kém.",
+              "title": "Mạng lưới kém đi",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Từ năm 2019, tiền thuê mặt bằng dài hạn ở Việt Nam vẫn chủ yếu ghi vào chi phí, không ghi thành tài sản. Vì vậy chuỗi thuê mặt bằng có tài sản cố định nhỏ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thay cho doanh thu mỗi cửa hàng khi không có số liệu.",
+              "title": "Ước lượng sức bán cửa hàng cũ"
+            },
+            {
+              "text": "Doanh thu tăng và tỷ lệ tăng là tăng trưởng chất lượng.",
+              "title": "Đọc cùng tăng trưởng doanh thu"
+            },
+            {
+              "text": "Chuỗi thuê và chuỗi tự xây không so trực tiếp.",
+              "title": "So cùng mô hình"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bán lẻ mẫu (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "Doanh thu"
+            },
+            {
+              "label": "TSCĐ bình quân"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "45.656",
+                "4.402",
+                "10,37 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "52.558",
+                "4.387",
+                "11,98 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "58.913",
+                "4.459",
+                "13,21 lần"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ tăng từ 10,37 lần lên 13,21 lần. Tài sản cố định gần như không đổi, doanh thu tăng 29%. Chuỗi bán được nhiều hơn trên mạng lưới sẵn có.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tổng tài sản gồm cả tồn kho và tiền. Chỉ tiêu này nhìn riêng tài sản cố định.",
+              "title": "Dùng tổng tài sản"
+            },
+            {
+              "text": "Cấu trúc tài sản khác hẳn.",
+              "title": "So chuỗi thuê với chuỗi tự xây"
+            },
+            {
+              "text": "Cửa hàng mới làm tỷ lệ giảm tạm thời.",
+              "title": "Kết luận khi đang mở mới mạnh"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thay cho doanh thu mỗi cửa hàng.",
+              "title": "Chuỗi bán lẻ"
+            },
+            {
+              "text": "Nhà máy lớn nên tỷ lệ thấp hơn. Đo mức sử dụng công suất.",
+              "title": "Sản xuất hàng tiêu dùng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Bán lẻ và hàng tiêu dùng"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>doanh thu 4 quý</b> ÷ <b>TSCĐ bình quân</b> (mã 220).",
+    "Thay cho <b>doanh thu mỗi cửa hàng</b> khi báo cáo không có số này.",
+    "Tỷ lệ tăng là <b>mạng lưới hiện có bán được nhiều hơn</b>.",
+    "So <b>cùng mô hình</b> thuê hoặc tự xây."
+  ],
+  "title": "Doanh thu / Tài sản cố định · mỗi đồng cửa hàng bán được bao nhiêu"
+}

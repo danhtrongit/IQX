@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l15",
+  "questions": [
+    {
+      "correct_option_id": "a11a3bcbf6",
+      "id": "ch13-l15-q01",
+      "options": [
+        {
+          "id": "a11a3bcbf6",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        },
+        {
+          "id": "171b541272",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "abda9e3d2b",
+          "text": "Báo cáo kết quả kinh doanh"
+        }
+      ],
+      "prompt": "Tiền lãi vay đã trả lấy từ báo cáo nào?"
+    },
+    {
+      "correct_option_id": "c7b82766ec",
+      "id": "ch13-l15-q02",
+      "options": [
+        {
+          "id": "c7b82766ec",
+          "text": "Một phần lớn lãi vay đang được vốn hoá vào dự án"
+        },
+        {
+          "id": "e737f3f00a",
+          "text": "Công ty đang trả lãi chậm hơn hạn trong hợp đồng"
+        },
+        {
+          "id": "720855a68f",
+          "text": "Công ty đã trả trước toàn bộ lãi vay của năm sau"
+        }
+      ],
+      "prompt": "Tỷ lệ lớn hơn 1 nhiều nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "9a31ec3e2e",
+      "id": "ch13-l15-q03",
+      "options": [
+        {
+          "id": "9a31ec3e2e",
+          "text": "Khi dự án được bàn giao"
+        },
+        {
+          "id": "106fca895a",
+          "text": "Ngay khi trả lãi"
+        },
+        {
+          "id": "ee580c9789",
+          "text": "Khi công ty trả cổ tức"
+        }
+      ],
+      "prompt": "Lãi vay vốn hoá đi vào giá vốn khi nào?"
+    },
+    {
+      "correct_option_id": "d4cf801c4a",
+      "id": "ch13-l15-q04",
+      "options": [
+        {
+          "id": "d4cf801c4a",
+          "text": "Chi phí lãi vay ở mẫu số đã giảm do vốn hoá"
+        },
+        {
+          "id": "d160ba456d",
+          "text": "Công ty bất động sản không vay nợ"
+        },
+        {
+          "id": "3610b9316a",
+          "text": "Lợi nhuận bất động sản luôn rất lớn"
+        }
+      ],
+      "prompt": "Vì sao Interest Coverage của công ty bất động sản thường cao?"
+    },
+    {
+      "chart_id": "c13l15-rep",
+      "correct_option_id": "ada07563f8",
+      "id": "ch13-l15-q05",
+      "options": [
+        {
+          "id": "ada07563f8",
+          "text": "Quy mô lãi vay được vốn hoá"
+        },
+        {
+          "id": "dd6753de11",
+          "text": "Quy mô tiền khách trả trước"
+        },
+        {
+          "id": "25666dd5e8",
+          "text": "Quy mô tồn kho"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khoảng cách giữa hai cột phía dưới cho biết gì?"
+    }
+  ],
+  "salt": "568bf8be66de8dc5b1815fca9d057ae11212995612807d5fcab2cd59253438b7"
+}

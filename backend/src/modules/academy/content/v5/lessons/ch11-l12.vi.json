@@ -1,0 +1,311 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l12-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "LNST ÷ doanh thu hoạt động"
+          ],
+          "t": "Biên ròng năm",
+          "tone": "p1",
+          "v": "5 năm"
+        },
+        {
+          "notes": [
+            "Mức phân tán"
+          ],
+          "t": "Độ lệch chuẩn",
+          "tone": "warn",
+          "v": "σ"
+        },
+        {
+          "notes": [
+            "Càng thấp càng ổn định"
+          ],
+          "t": "Margin Stability",
+          "tone": "pos",
+          "v": "5,09 điểm %"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "arrow",
+        "="
+      ]
+    },
+    "c11l12-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Thiên về margin và môi giới",
+          "tone": "pos",
+          "value": 3
+        },
+        {
+          "label": "Đa dạng nguồn thu",
+          "tone": "p1",
+          "value": 5
+        },
+        {
+          "label": "Thiên về tự doanh",
+          "tone": "neg",
+          "value": 12
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "Độ lệch chuẩn biên ròng 5 năm · số minh họa",
+      "unit": " điểm %"
+    },
+    "c11l12-rep": {
+      "alt": "Margin Stability: 5,1 điểm %",
+      "chart": {
+        "hero": 5.085,
+        "kind": "E1",
+        "labels": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "Biên ròng năm",
+            "v": [
+              38.5,
+              24,
+              29.5,
+              33,
+              26.5
+            ]
+          }
+        ],
+        "mainUnit": "%",
+        "name": "Margin Stability",
+        "unit": "điểm %"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l12",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên lợi nhuận ròng của công ty chứng khoán thay đổi mạnh theo năm thị trường tốt hay xấu. Margin Stability giúp biết công ty nào giữ được biên qua chu kỳ, thường là công ty có nguồn thu đa dạng.",
+  "lesson_key": "fundamental:net_margin_stability-ck",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l12-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ số bằng <b>độ lệch chuẩn</b> của biên lợi nhuận ròng năm (LNST chia doanh thu hoạt động) trong 5 năm. Cách tính giống bài Margin Stability ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l12-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Năm thị trường giảm, tự doanh lỗ kéo biên ròng xuống mạnh.",
+              "title": "Tự doanh làm biên dao động"
+            },
+            {
+              "text": "Lãi cho vay đều hơn lãi tự doanh.",
+              "title": "Margin ổn định hơn"
+            },
+            {
+              "text": "Lương, hệ thống không giảm kịp khi doanh thu giảm.",
+              "title": "Chi phí cố định"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở công ty chứng khoán khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l12-rep",
+          "title": "Margin Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên ròng từng năm, đơn vị %.",
+              "title": "Đường giá trị"
+            },
+            {
+              "text": "Bình quân 5 năm và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "Năm nằm dưới dải thường là năm thị trường giảm mạnh.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Độ lệch chuẩn dưới khoảng 5 điểm %. Mức tham khảo với công ty chứng khoán.",
+              "title": "Ổn định qua chu kỳ",
+              "tone": "pos"
+            },
+            {
+              "text": "Độ lệch chuẩn trên khoảng 10 điểm %, có năm biên ròng rất thấp hoặc âm.",
+              "title": "Phụ thuộc thị trường",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc chỉ số cùng <b>Cơ cấu doanh thu hoạt động</b>: tự doanh chiếm phần lớn thường đi kèm biên dao động mạnh.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty ổn định hơn thường ít rủi ro hơn qua chu kỳ.",
+              "title": "So các công ty"
+            },
+            {
+              "text": "Biên dao động mạnh là dấu hiệu phụ thuộc tự doanh.",
+              "title": "Hiểu mô hình"
+            },
+            {
+              "text": "Biên ổn định giúp dự báo dễ hơn.",
+              "title": "Dự báo lợi nhuận"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu, biên ròng từng năm.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Biên ròng",
+                "38,5%",
+                "24,0%",
+                "29,5%",
+                "33,0%",
+                "26,5%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Năm 2021 thị trường sôi động, biên lên 38,5%. Năm 2022 thị trường giảm, biên còn 24,0%. Độ lệch chuẩn 5,09 điểm %.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chứng khoán luôn dao động hơn.",
+              "title": "So với ngành ổn định"
+            },
+            {
+              "text": "Năm xấu cho thấy rủi ro thật.",
+              "title": "Bỏ qua năm xấu"
+            },
+            {
+              "text": "Biên dao động do tự doanh khác do môi giới.",
+              "title": "Không xem cơ cấu doanh thu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Margin Stability</b> = độ lệch chuẩn biên ròng 5 năm.",
+    "Biên công ty chứng khoán <b>đi theo chu kỳ thị trường</b>.",
+    "<b>Tự doanh</b> là nguồn dao động lớn nhất.",
+    "Mức tham khảo: <b>dưới khoảng 5 điểm %</b> là ổn định."
+  ],
+  "title": "Margin Stability · ở công ty chứng khoán"
+}

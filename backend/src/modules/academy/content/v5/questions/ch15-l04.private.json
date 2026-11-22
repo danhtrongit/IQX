@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch15-l04",
+  "questions": [
+    {
+      "correct_option_id": "3da88fec49",
+      "id": "ch15-l04-q01",
+      "options": [
+        {
+          "id": "3da88fec49",
+          "text": "Lợi nhuận gộp trừ chi phí bán hàng và chi phí quản lý"
+        },
+        {
+          "id": "6ad30a19cb",
+          "text": "Lợi nhuận sau thuế cộng lãi vay"
+        },
+        {
+          "id": "4eaaaa4701",
+          "text": "Doanh thu trừ chi phí tài chính"
+        }
+      ],
+      "prompt": "LN kinh doanh chính bằng gì?"
+    },
+    {
+      "correct_option_id": "bf7e7d5efe",
+      "id": "ch15-l04-q02",
+      "options": [
+        {
+          "id": "bf7e7d5efe",
+          "text": "Không tính doanh thu và chi phí tài chính"
+        },
+        {
+          "id": "cde8b19042",
+          "text": "Vì chuỗi bán lẻ không vay nợ"
+        },
+        {
+          "id": "e46298b33b",
+          "text": "Vì lãi vay nằm trong giá vốn"
+        }
+      ],
+      "prompt": "Vì sao chỉ tiêu này không bị ảnh hưởng bởi nợ vay?"
+    },
+    {
+      "correct_option_id": "d3f0bdc9ce",
+      "id": "ch15-l04-q03",
+      "options": [
+        {
+          "id": "d3f0bdc9ce",
+          "text": "Biên gộp tăng hoặc chi phí vận hành giảm"
+        },
+        {
+          "id": "017270a30f",
+          "text": "Lãi tiền gửi ngân hàng tăng mạnh"
+        },
+        {
+          "id": "0763f6a89a",
+          "text": "Nợ vay ngắn hạn tăng nhanh hơn"
+        }
+      ],
+      "prompt": "Biên kinh doanh chính tăng có thể do đâu?"
+    },
+    {
+      "correct_option_id": "3d16dc5eb0",
+      "id": "ch15-l04-q04",
+      "options": [
+        {
+          "id": "3d16dc5eb0",
+          "text": "Từ khoảng 5% trở lên"
+        },
+        {
+          "id": "b9677c9219",
+          "text": "Từ khoảng 40% trở lên"
+        },
+        {
+          "id": "a41fa56035",
+          "text": "Dưới 0%"
+        }
+      ],
+      "prompt": "Mức biên tham khảo tốt với chuỗi bán lẻ là bao nhiêu?"
+    },
+    {
+      "chart_id": "c15l4-rep",
+      "correct_option_id": "402de2b003",
+      "id": "ch15-l04-q05",
+      "options": [
+        {
+          "id": "402de2b003",
+          "text": "LN kinh doanh chính 4 quý"
+        },
+        {
+          "id": "fdb525b4b9",
+          "text": "Doanh thu tài chính 4 quý"
+        },
+        {
+          "id": "b17d671785",
+          "text": "Chi phí bán hàng 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới là gì?"
+    }
+  ],
+  "salt": "5f575d0a3116698bd7d31f1dac03da7df16df003c7d6ab1b4ea757a81f75c552"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l03",
+  "questions": [
+    {
+      "correct_option_id": "b6d90dec6b",
+      "id": "ch10-l03-q01",
+      "options": [
+        {
+          "id": "b6d90dec6b",
+          "text": "Chi phí hoạt động chia tổng thu nhập hoạt động"
+        },
+        {
+          "id": "72eb49133e",
+          "text": "Chi phí dự phòng chia tổng thu nhập hoạt động của ngân hàng"
+        },
+        {
+          "id": "d4d776218e",
+          "text": "Chi phí lãi chia thu nhập lãi"
+        }
+      ],
+      "prompt": "CIR được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "79d93962ae",
+      "id": "ch10-l03-q02",
+      "options": [
+        {
+          "id": "79d93962ae",
+          "text": "Ngân hàng vận hành hiệu quả hơn"
+        },
+        {
+          "id": "d38b80e45d",
+          "text": "Ngân hàng trích dự phòng ít hơn"
+        },
+        {
+          "id": "02369d79fc",
+          "text": "Ngân hàng cho vay nhiều hơn tiền gửi"
+        }
+      ],
+      "prompt": "CIR thấp có ý nghĩa gì?"
+    },
+    {
+      "correct_option_id": "a6ff0e82cd",
+      "id": "ch10-l03-q03",
+      "options": [
+        {
+          "id": "a6ff0e82cd",
+          "text": "Chi phí dự phòng rủi ro tín dụng"
+        },
+        {
+          "id": "1922a072b0",
+          "text": "Chi phí nhân viên"
+        },
+        {
+          "id": "390f79622f",
+          "text": "Chi phí thuê và khấu hao tài sản cố định"
+        }
+      ],
+      "prompt": "Khoản nào không nằm trong tử số của CIR?"
+    },
+    {
+      "correct_option_id": "cd96303272",
+      "id": "ch10-l03-q04",
+      "options": [
+        {
+          "id": "cd96303272",
+          "text": "Thu nhập tăng nhanh hơn chi phí"
+        },
+        {
+          "id": "8557ef5d39",
+          "text": "Cắt mạnh chi phí công nghệ"
+        },
+        {
+          "id": "1a4402d6fc",
+          "text": "Giảm mạnh số lượng nhân viên"
+        }
+      ],
+      "prompt": "Cách giảm CIR nào thường bền hơn?"
+    },
+    {
+      "chart_id": "c10l3-rep",
+      "correct_option_id": "68af43d23c",
+      "id": "ch10-l03-q05",
+      "options": [
+        {
+          "id": "68af43d23c",
+          "text": "Chi phí hoạt động và tổng thu nhập hoạt động 4 quý"
+        },
+        {
+          "id": "8ef220ecb8",
+          "text": "Thu nhập lãi 4 quý và chi phí lãi 4 quý"
+        },
+        {
+          "id": "3fb79e7d13",
+          "text": "Cho vay khách hàng và tiền gửi khách hàng cuối mỗi quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của CIR, hai cột phía dưới là gì?"
+    }
+  ],
+  "salt": "68ac182eb833b7ff464bfc250f6dd854dd3bc089fdfe0d77afcc51b30fd1be00"
+}

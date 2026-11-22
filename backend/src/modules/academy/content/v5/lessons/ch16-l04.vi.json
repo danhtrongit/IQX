@@ -1,0 +1,399 @@
+{
+  "chapter": 16,
+  "charts": {
+    "c16l4-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "4 quý"
+          ],
+          "t": "LN kinh doanh chính + khấu hao",
+          "tone": "pos",
+          "v": "4.429 tỷ"
+        },
+        {
+          "notes": [
+            "Kết quả kinh doanh"
+          ],
+          "t": "Doanh thu thuần 4 quý",
+          "tone": "p1",
+          "v": "12.507 tỷ"
+        },
+        {
+          "notes": [
+            "4 quý đến Q2/26"
+          ],
+          "t": "Biên EBITDA",
+          "tone": "warn",
+          "v": "35,4%"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c16l4-g2": {
+      "decimals": 0,
+      "fig": "wf",
+      "height": 270,
+      "items": [
+        {
+          "label": "Doanh thu",
+          "step": "base",
+          "tone": "p1",
+          "value": 100
+        },
+        {
+          "label": "Chi phí tiền mặt",
+          "step": "minus",
+          "tone": "neg",
+          "value": 65
+        },
+        {
+          "label": "EBITDA",
+          "step": "total",
+          "tone": "pos",
+          "value": 35
+        },
+        {
+          "label": "Khấu hao",
+          "step": "minus",
+          "tone": "warn",
+          "value": 7
+        },
+        {
+          "label": "LN kinh doanh chính",
+          "step": "total",
+          "tone": "p1",
+          "value": 28
+        }
+      ],
+      "kind": "figure",
+      "title": "100 đồng doanh thu của nhà máy điện · số minh họa",
+      "unit": " đồng"
+    },
+    "c16l4-rep": {
+      "alt": "Biên EBITDA: 35,4%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "EBITDA / Doanh thu (4 quý)",
+            "v": [
+              34.261,
+              32.119,
+              30.302,
+              28.836,
+              29.228,
+              30.543,
+              32.568,
+              35.414
+            ]
+          }
+        ],
+        "name": "Biên EBITDA",
+        "sub": {
+          "series": [
+            {
+              "name": "LN kinh doanh chính 4 quý",
+              "v": [
+                2808.226,
+                2632.839,
+                2531.501,
+                2519.064,
+                2623.759,
+                2879.743,
+                3191.217,
+                3579.317
+              ]
+            },
+            {
+              "name": "Khấu hao 4 quý",
+              "v": [
+                721.641,
+                733.369,
+                751.31,
+                769.503,
+                788.458,
+                808.108,
+                828.604,
+                849.871
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch16-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Nhà máy điện có khấu hao rất lớn. Khấu hao là chi phí trên sổ sách, tiền đã chi từ khi xây nhà máy. Biên EBITDA cộng lại khấu hao để thấy mỗi đồng doanh thu tạo ra bao nhiêu tiền từ vận hành.",
+  "lesson_key": "fundamental:ebitda_margin-dien",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l4-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>lợi nhuận kinh doanh chính</b> (lợi nhuận gộp trừ chi phí bán hàng và quản lý) cộng <b>khấu hao</b> (mã 02 trên lưu chuyển tiền tệ), chia <b>doanh thu thuần</b>, cộng 4 quý.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Ở đây EBITDA không cộng doanh thu tài chính, để chỉ đo phần đến từ vận hành nhà máy.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Biên EBITDA là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l4-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA gần với tiền nhà máy tạo ra trước lãi vay, thuế và đầu tư.",
+              "title": "Đo tiền từ vận hành"
+            },
+            {
+              "text": "Nhà máy mới khấu hao nhiều, nhà máy cũ khấu hao ít. EBITDA bỏ khác biệt đó.",
+              "title": "So nhà máy cũ và mới"
+            },
+            {
+              "text": "Kỳ lưu chuyển tiền tệ lập theo phương pháp trực tiếp thì không tính được, để trống.",
+              "title": "Cần dòng khấu hao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Từ doanh thu đến EBITDA"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c16l4-rep",
+          "title": "Biên EBITDA",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBITDA chia doanh thu 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng LN kinh doanh chính và khấu hao 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phần khấu hao trong cột tăng đều khi tài sản lớn lên.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thủy điện từ khoảng 50%, nhiệt điện từ khoảng 15%. Mức tham khảo.",
+              "title": "Biên tiền mặt tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Biên EBITDA giảm nhiều năm, hoặc thấp hơn nhiều công ty cùng loại nguồn.",
+              "title": "Biên tiền mặt mỏng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Biên EBITDA cao chưa chắc lãi cao. Lãi vay và khấu hao lớn vẫn có thể ăn hết phần này. Đọc cùng Net Debt / EBITDA.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bỏ khác biệt khấu hao.",
+              "title": "So nhà máy cũ mới"
+            },
+            {
+              "text": "EBITDA là nguồn trả nợ. Xem Net Debt / EBITDA.",
+              "title": "Đánh giá khả năng trả nợ"
+            },
+            {
+              "text": "Dùng cho EV / EBITDA.",
+              "title": "Định giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty điện mẫu, số liệu 4 quý (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "4 quý đến"
+            },
+            {
+              "label": "LN kinh doanh chính"
+            },
+            {
+              "label": "Khấu hao"
+            },
+            {
+              "label": "Biên EBITDA"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "2.808",
+                "722",
+                "34,3%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/25",
+                "2.519",
+                "770",
+                "28,8%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "3.579",
+                "850",
+                "35,4%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Biên EBITDA giảm về 28,8% rồi tăng lên 35,4%. Khấu hao tăng đều từ 722 lên 850 tỷ khi công ty đầu tư thêm tài sản.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Ở chỉ tiêu này EBITDA chỉ tính phần vận hành.",
+              "title": "Cộng doanh thu tài chính"
+            },
+            {
+              "text": "Kỳ không có dòng khấu hao thì để trống.",
+              "title": "Lấy khấu hao từ thuyết minh"
+            },
+            {
+              "text": "Còn phải trừ khấu hao, lãi vay và thuế.",
+              "title": "Coi EBITDA là lợi nhuận"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên EBITDA rất cao vì gần như không tốn nhiên liệu.",
+              "title": "Thủy điện"
+            },
+            {
+              "text": "Biên mỏng hơn vì chi phí nhiên liệu là tiền mặt.",
+              "title": "Nhiệt điện"
+            },
+            {
+              "text": "Gió, mặt trời biên EBITDA cao. Nước sạch biên ổn định.",
+              "title": "Tái tạo và nước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo loại nguồn điện"
+    }
+  ],
+  "summary": [
+    "Biên EBITDA = <b>(LN kinh doanh chính + khấu hao)</b> ÷ <b>doanh thu thuần</b>, 4 quý.",
+    "Đo <b>tiền tạo ra từ vận hành</b> trước lãi vay, thuế, đầu tư.",
+    "Bỏ khác biệt <b>nhà máy cũ, mới</b>.",
+    "Cần dòng <b>khấu hao</b> trên lưu chuyển tiền tệ gián tiếp."
+  ],
+  "title": "Biên EBITDA · biên lợi nhuận trước khấu hao"
+}

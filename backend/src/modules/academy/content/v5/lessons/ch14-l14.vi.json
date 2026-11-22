@@ -1,0 +1,557 @@
+{
+  "chapter": 14,
+  "charts": {
+    "c14l14-g1": {
+      "fig": "formula",
+      "height": 200,
+      "items": [
+        {
+          "notes": [
+            "Theo ngày"
+          ],
+          "t": "Giá cổ phiếu",
+          "tone": "p1",
+          "v": "Giá"
+        },
+        {
+          "notes": [
+            "LNST 4 quý ÷ số cổ phiếu"
+          ],
+          "t": "EPS 4 quý",
+          "tone": "warn",
+          "v": "EPS"
+        },
+        {
+          "notes": [
+            "Cuối Q2/26"
+          ],
+          "t": "P/E",
+          "tone": "pos",
+          "v": "16,06 lần"
+        }
+      ],
+      "kind": "figure",
+      "ops": [
+        "÷",
+        "="
+      ]
+    },
+    "c14l14-g2": {
+      "decimals": 0,
+      "fig": "hbar",
+      "items": [
+        {
+          "label": "Đỉnh giá dầu · lợi nhuận cao",
+          "tone": "warn",
+          "value": 7
+        },
+        {
+          "label": "Giữa chu kỳ",
+          "tone": "p1",
+          "value": 12
+        },
+        {
+          "label": "Đáy giá dầu · lợi nhuận thấp",
+          "tone": "warn",
+          "value": 25
+        }
+      ],
+      "kind": "figure",
+      "label_width": 250,
+      "title": "P/E của cùng một doanh nghiệp qua chu kỳ · số minh họa",
+      "unit": " lần"
+    },
+    "c14l14-rep": {
+      "alt": "P/E: 16,06 lần",
+      "chart": {
+        "kind": "F",
+        "labels": [
+          "2024-07-31",
+          "2024-08-06",
+          "2024-08-12",
+          "2024-08-16",
+          "2024-08-22",
+          "2024-08-28",
+          "2024-09-03",
+          "2024-09-09",
+          "2024-09-13",
+          "2024-09-19",
+          "2024-09-25",
+          "2024-10-01",
+          "2024-10-07",
+          "2024-10-11",
+          "2024-10-17",
+          "2024-10-23",
+          "2024-10-29",
+          "2024-11-04",
+          "2024-11-08",
+          "2024-11-14",
+          "2024-11-20",
+          "2024-11-26",
+          "2024-12-02",
+          "2024-12-06",
+          "2024-12-12",
+          "2024-12-18",
+          "2024-12-24",
+          "2024-12-30",
+          "2025-01-03",
+          "2025-01-09",
+          "2025-01-15",
+          "2025-01-21",
+          "2025-01-27",
+          "2025-01-31",
+          "2025-02-06",
+          "2025-02-12",
+          "2025-02-18",
+          "2025-02-24",
+          "2025-02-28",
+          "2025-03-06",
+          "2025-03-12",
+          "2025-03-18",
+          "2025-03-24",
+          "2025-03-28",
+          "2025-04-03",
+          "2025-04-09",
+          "2025-04-15",
+          "2025-04-21",
+          "2025-04-25",
+          "2025-05-01",
+          "2025-05-07",
+          "2025-05-13",
+          "2025-05-19",
+          "2025-05-23",
+          "2025-05-29",
+          "2025-06-04",
+          "2025-06-10",
+          "2025-06-16",
+          "2025-06-20",
+          "2025-06-26",
+          "2025-07-02",
+          "2025-07-08",
+          "2025-07-14",
+          "2025-07-18",
+          "2025-07-24",
+          "2025-07-30",
+          "2025-08-05",
+          "2025-08-11",
+          "2025-08-15",
+          "2025-08-21",
+          "2025-08-27",
+          "2025-09-02",
+          "2025-09-08",
+          "2025-09-12",
+          "2025-09-18",
+          "2025-09-24",
+          "2025-09-30",
+          "2025-10-06",
+          "2025-10-10",
+          "2025-10-16",
+          "2025-10-22",
+          "2025-10-28",
+          "2025-11-03",
+          "2025-11-07",
+          "2025-11-13",
+          "2025-11-19",
+          "2025-11-25",
+          "2025-12-01",
+          "2025-12-05",
+          "2025-12-11",
+          "2025-12-17",
+          "2025-12-23",
+          "2025-12-29",
+          "2026-01-02",
+          "2026-01-08",
+          "2026-01-14",
+          "2026-01-20",
+          "2026-01-26",
+          "2026-01-30",
+          "2026-02-05",
+          "2026-02-11",
+          "2026-02-17",
+          "2026-02-23",
+          "2026-02-27",
+          "2026-03-05",
+          "2026-03-11",
+          "2026-03-17",
+          "2026-03-23",
+          "2026-03-27",
+          "2026-04-02",
+          "2026-04-08",
+          "2026-04-14",
+          "2026-04-20",
+          "2026-04-24",
+          "2026-04-30",
+          "2026-05-06",
+          "2026-05-12",
+          "2026-05-18",
+          "2026-05-22",
+          "2026-05-28",
+          "2026-06-03",
+          "2026-06-09",
+          "2026-06-15",
+          "2026-06-19",
+          "2026-06-25",
+          "2026-06-30"
+        ],
+        "main": [
+          {
+            "name": "P/E",
+            "v": [
+              24.818,
+              26.18,
+              26.722,
+              26.501,
+              26.245,
+              25.858,
+              25.814,
+              25.248,
+              25.851,
+              24.895,
+              24.246,
+              24.169,
+              24.12,
+              23.166,
+              23.249,
+              23.52,
+              23.293,
+              21.322,
+              20.672,
+              20.564,
+              21.175,
+              21.991,
+              22.489,
+              21.82,
+              22.572,
+              22.478,
+              23.42,
+              22.021,
+              22.053,
+              22.378,
+              22.181,
+              23.113,
+              22.202,
+              17.264,
+              16.909,
+              17.082,
+              17.424,
+              17.653,
+              17.068,
+              16.974,
+              17.912,
+              17.896,
+              17.523,
+              17.487,
+              17.542,
+              17.476,
+              17.742,
+              17.998,
+              17.883,
+              15.143,
+              15.376,
+              15.315,
+              15.368,
+              15.842,
+              14.994,
+              15.253,
+              14.817,
+              15.004,
+              14.511,
+              14.524,
+              14.111,
+              13.819,
+              13.877,
+              14.024,
+              14.276,
+              13.191,
+              13.108,
+              13.244,
+              12.951,
+              12.764,
+              13.101,
+              12.994,
+              13.338,
+              13.169,
+              13.466,
+              13.881,
+              14.402,
+              14.52,
+              14.192,
+              14.511,
+              14.238,
+              14.802,
+              13.853,
+              14.215,
+              14.066,
+              13.875,
+              14.141,
+              14.275,
+              13.814,
+              13.752,
+              13.53,
+              13.818,
+              13.023,
+              12.533,
+              12.375,
+              12.166,
+              12.315,
+              12.177,
+              14.336,
+              14.079,
+              14.395,
+              14.111,
+              13.843,
+              14.237,
+              14.383,
+              14.475,
+              13.923,
+              14.046,
+              13.864,
+              13.694,
+              13.134,
+              13.338,
+              13.235,
+              13.708,
+              16.275,
+              16.321,
+              16.326,
+              16.649,
+              17.072,
+              16.862,
+              16.384,
+              16.471,
+              16.362,
+              16.488,
+              16.267,
+              16.064
+            ]
+          }
+        ],
+        "name": "P/E",
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch14-l14",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Với doanh nghiệp đi theo chu kỳ giá dầu, P/E thường thấp nhất đúng lúc lợi nhuận ở đỉnh, và cao nhất khi lợi nhuận ở đáy. Đọc P/E theo cách thông thường dễ mua ở đỉnh, bán ở đáy.",
+  "lesson_key": "fundamental:pe-dk",
+  "order": 14,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l14-g1",
+          "type": "chart"
+        },
+        {
+          "text": "P/E bằng <b>giá cổ phiếu</b> chia <b>EPS 4 quý</b>, tính theo ngày. Cách tính giống bài P/E ở phần chỉ tiêu chung.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nhắc lại công thức"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l14-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận đỉnh làm P/E thấp, trông rẻ. Nhưng lợi nhuận có thể sắp giảm.",
+              "title": "P/E thấp ở đỉnh"
+            },
+            {
+              "text": "Lợi nhuận đáy làm P/E cao, trông đắt. Nhưng lợi nhuận có thể sắp hồi.",
+              "title": "P/E cao ở đáy"
+            },
+            {
+              "text": "Chia giá cho EPS bình quân qua chu kỳ cho kết quả ổn định hơn.",
+              "title": "Dùng lợi nhuận bình quân"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ở dầu khí khác gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c14l14-rep",
+          "title": "P/E",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "P/E theo giá đóng cửa và EPS 4 quý đã công bố.",
+              "title": "Đường theo ngày"
+            },
+            {
+              "text": "Trung vị và dải cộng trừ một độ lệch chuẩn.",
+              "title": "Đường nét đứt và dải"
+            },
+            {
+              "text": "P/E tăng khi lợi nhuận 4 quý giảm, dù giá cổ phiếu không tăng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khi lợi nhuận 4 quý gần mức bình quân nhiều năm.",
+              "title": "P/E đáng tin hơn",
+              "tone": "pos"
+            },
+            {
+              "text": "Khi lợi nhuận 4 quý ở đỉnh hoặc đáy chu kỳ giá dầu.",
+              "title": "P/E dễ sai",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Với dầu khí, nên đọc P/E cùng <b>EV / EBITDA</b> và với <b>EPS bình quân 5 năm</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giảm ảnh hưởng của đỉnh và đáy chu kỳ.",
+              "title": "Dùng EPS bình quân"
+            },
+            {
+              "text": "Doanh nghiệp dư tiền nhiều nên EV / EBITDA phản ánh rõ hơn.",
+              "title": "Kết hợp EV / EBITDA"
+            },
+            {
+              "text": "Biên đang ở đỉnh thì P/E thấp có thể là bẫy.",
+              "title": "Xem biên gộp hiện tại"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp dầu khí mẫu, P/E 2 năm gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "P/E cuối Q2/26",
+              "text": "16,06 lần."
+            },
+            {
+              "term": "Trung vị 2 năm",
+              "text": "15,37 lần."
+            },
+            {
+              "term": "Thấp nhất và cao nhất",
+              "text": "12,17 lần và 26,72 lần."
+            },
+            {
+              "term": "Nhận xét",
+              "text": "P/E tăng trong năm qua chủ yếu vì lợi nhuận 4 quý giảm khi biên gộp co lại, không phải vì giá cổ phiếu tăng mạnh."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận đỉnh có thể sắp giảm.",
+              "title": "Mua vì P/E thấp ở đỉnh"
+            },
+            {
+              "text": "Lợi nhuận đáy có thể sắp hồi.",
+              "title": "Bán vì P/E cao ở đáy"
+            },
+            {
+              "text": "P/E dầu khí không nên so với bán lẻ, tiêu dùng.",
+              "title": "So với ngành ít chu kỳ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận chu kỳ mạnh, P/E dễ sai nhất.",
+              "title": "Thượng nguồn và dịch vụ"
+            },
+            {
+              "text": "Lợi nhuận ổn định hơn, P/E đáng tin hơn.",
+              "title": "Trung nguồn"
+            },
+            {
+              "text": "Lãi lỗ tồn kho làm EPS dao động, P/E nhảy theo.",
+              "title": "Hạ nguồn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Theo từng mảng"
+    }
+  ],
+  "summary": [
+    "<b>P/E</b> = giá ÷ EPS 4 quý.",
+    "Ở dầu khí, P/E <b>thấp ở đỉnh, cao ở đáy</b> chu kỳ.",
+    "Dùng <b>EPS bình quân</b> qua chu kỳ.",
+    "Đọc cùng <b>EV / EBITDA</b>."
+  ],
+  "title": "P/E · ở dầu khí"
+}
