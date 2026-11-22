@@ -61,7 +61,6 @@ import { CandleDojoModule } from './modules/candle-dojo/candle-dojo.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { FlashbackModule } from './modules/flashback/flashback.module.js';
 import { WorkspaceModule } from './modules/workspace/workspace.module.js';
-import { PracticeModule } from './modules/practice/practice.module.js';
 import { ResearchModule } from './modules/research/index.js';
 import { SacoPostsModule } from './modules/trading-floor/saco-posts.module.js';
 import { TradingFloorModule } from './modules/trading-floor/trading-floor.module.js';
@@ -114,7 +113,6 @@ export function createApiModule(
       CandleDojoModule,
       DashboardModule,
       WorkspaceModule,
-      PracticeModule,
       FlashbackModule,
       ResearchModule,
       NotificationsModule,

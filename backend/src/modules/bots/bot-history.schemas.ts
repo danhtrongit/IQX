@@ -95,6 +95,15 @@ export const botTradeSchema = z.object({
   holding_sessions: z.number().int().min(0),
   /** Calendar days between the buy and the sell session. */
   holding_days: z.number().int().min(0),
+  /** v2.0 sells: `indicator` (Điều kiện Bán) or `max_holding` (Hết thời gian giữ); null = legacy. */
+  exit_reason: z.enum(['indicator', 'max_holding', 'legacy']).nullable(),
+  /** Every reason true at the sell (both = "cùng đến hạn"). */
+  exit_reasons: z.array(z.enum(['indicator', 'max_holding'])),
+  exit_reason_label: z.string().nullable(),
+  max_holding_at_exit: z.number().int().nullable(),
+  counted_sessions: z.number().int().nullable(),
+  strategy_label: z.string().nullable(),
+  version_label: z.string().nullable(),
   /** Retired-policy audit values; null/empty for iqx-bot-v1.0 lots. */
   legacy_stop_loss_vnd: z.string().nullable(),
   legacy_take_profit_vnd: z.string().nullable(),
@@ -155,6 +164,23 @@ export const botSessionSchema = z.object({
   issues: z.array(
     z.object({ code: z.string(), symbol: z.string().nullable(), detail: z.string().nullable() }),
   ),
+  /** v2.0 sessions (null on v1.x runs): strategy, version, basket and the one-line result. */
+  strategy_label: z.string().nullable(),
+  version_label: z.string().nullable(),
+  universe_label: z.string().nullable(),
+  universe_count: z.number().int().nullable(),
+  summary: z.string().nullable(),
+  counters: z
+    .object({
+      sells: z.number().int(),
+      buys: z.number().int(),
+      time_exits: z.number().int(),
+      t2_blocked: z.number().int(),
+      due_unfilled: z.number().int(),
+      universe_empty: z.boolean(),
+      skipped_buys: z.number().int(),
+    })
+    .nullable(),
 });
 export type BotSessionView = z.infer<typeof botSessionSchema>;
 

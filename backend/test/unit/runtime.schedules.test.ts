@@ -41,18 +41,32 @@ describe('runtime schedules', () => {
     expect(find('market.bulletin-draft')?.enabled).toBe(false);
   });
 
-  it('stores the VN30 membership on trading days before the Bot session runs', () => {
+  it('stores the VN30 membership on trading days and ticks the Bot v2.0 session every 10 minutes', () => {
     const schedules = defaultRuntimeSchedules();
     const membership = schedules.find((schedule) => schedule.name === 'market.index-membership');
     const bot = schedules.find((schedule) => schedule.name === 'bot.session-eod');
     expect(membership).toMatchObject({ pattern: '0 40 18 * * 1-5', tradingDay: true });
-    expect(bot).toMatchObject({ pattern: '0 0 19 * * 1-5', tradingDay: true });
-    // second minute hour ... : 18:40 precedes 19:00 on the same trading days.
-    const at = (pattern?: string) => {
-      const [, minute, hour] = (pattern ?? '').split(' ').map(Number);
-      return hour! * 60 + minute!;
-    };
-    expect(at(membership?.pattern)).toBeLessThan(at(bot?.pattern));
+    // The handler skips before BOT_SESSION_CUTOFF (19:00) and retries until 23:50.
+    expect(bot).toMatchObject({ pattern: '0 */10 15-23 * * 1-5', tradingDay: true });
+  });
+
+  it('refreshes the price store and dispatches notification emails off the trading calendar', () => {
+    const find = (name: string) =>
+      defaultRuntimeSchedules().find((schedule) => schedule.name === name);
+    expect(find('strategy.price-store-refresh')).toMatchObject({
+      everyMs: 600_000,
+      tradingDay: false,
+      enabled: true,
+    });
+    expect(find('notifications.email-dispatch')).toMatchObject({
+      everyMs: 60_000,
+      tradingDay: false,
+      enabled: true,
+    });
+    vi.stubEnv('JOB_NOTIFICATIONS_EMAIL_DISPATCH_ENABLED', 'false');
+    expect(find('notifications.email-dispatch')?.enabled).toBe(false);
+    vi.stubEnv('JOB_STRATEGY_PRICE_STORE_REFRESH_ENABLED', 'false');
+    expect(find('strategy.price-store-refresh')?.enabled).toBe(false);
   });
 
   it('does not run scheduled market jobs on weekends', async () => {

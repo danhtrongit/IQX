@@ -519,28 +519,14 @@ export interface BotSchedulePort {
   botCountsByIqx(): Promise<Map<string, number>>;
 }
 
-/** In-app + email notifications (W4). */
-export const NOTIFICATION_WRITER = Symbol('NOTIFICATION_WRITER');
-
-export type BotTradesNotificationPayload = {
-  strategy_label: string;
-  version_label: string;
-  buys: Array<{ symbol: string; qty: number; price_vnd: string }>;
-  sells: Array<{
-    symbol: string;
-    qty: number;
-    price_vnd: string;
-    exit_reason: ExitReason;
-    pnl_vnd: string;
-  }>;
-};
-
-export interface NotificationWriterPort {
-  /** Inserted in the Bot run's commit transaction; deduplicated by (user, type, trade_date). */
-  botTrades(
-    tx: SqlClient,
-    userId: string,
-    tradeDate: string,
-    payload: BotTradesNotificationPayload,
-  ): Promise<void>;
-}
+/**
+ * In-app + email notifications: single source of truth is the notifications module port (W4).
+ * Re-exported here so strategy-rules consumers keep one import path.
+ */
+export {
+  NOTIFICATION_WRITER,
+  type BotTradeExecution,
+  type BotTradesNotificationInput,
+  type NotificationWriter,
+  type NotificationWriter as NotificationWriterPort,
+} from '../notifications/notification-writer.port.js';

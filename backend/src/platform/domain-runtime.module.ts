@@ -7,7 +7,11 @@ import {
   StrategyAlertEvaluator,
 } from '../modules/alerts/index.js';
 import { BillingModule, BillingService } from '../modules/billing/index.js';
-import { BotService, BotsModule } from '../modules/bots/index.js';
+import { BotService, BotsModule, isAtOrAfterCutoff } from '../modules/bots/index.js';
+import {
+  NotificationEmailDispatcher,
+  UserNotificationsModule,
+} from '../modules/notifications/index.js';
 import { Cap5Service } from '../modules/journey/cap5/index.js';
 import { JourneyModule } from '../modules/journey/journey.module.js';
 import {
@@ -27,6 +31,7 @@ import {
   SCREENER_BASKET_CODES,
   SymbolAttributesService,
 } from '../modules/market-integration/index.js';
+import { PriceStoreModule, PriceStoreService } from '../modules/price-store/index.js';
 import { ReportsModule, MarketReportsService } from '../modules/reports/index.js';
 import { TradingModule } from '../modules/trading/trading.module.js';
 import { TradingRightsService } from '../modules/trading/rights.service.js';
@@ -107,6 +112,8 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly symbolAttributes?: SymbolAttributesService,
     private readonly indexMembership?: IndexMembershipService,
     private readonly marketBulletins?: MarketBulletinsJob,
+    private readonly emailDispatcher?: NotificationEmailDispatcher,
+    private readonly priceStore?: PriceStoreService,
   ) {}
 
   handlers(): RuntimeJobHandlers {
@@ -186,8 +193,43 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
         if (!this.marketBulletins) return { status: 'skipped', reason: 'market-bulletins-unavailable' };
         return this.marketBulletins.run(scheduledFor);
       },
-      'bot.session-eod': async ({ scheduledFor }) =>
-        this.complete(await this.bot.runScheduledSession(ictDate(scheduledFor))),
+      'bot.session-eod': async ({ scheduledFor }) => {
+        // Bot v2.0 (§6.4): nothing before the cutoff; then lock + run once the store has D.
+        if (!isAtOrAfterCutoff(scheduledFor)) return { status: 'skipped', reason: 'before-cutoff' };
+        const result = await this.bot.runScheduledSession(ictDate(scheduledFor), scheduledFor);
+        if (!result.ready) {
+          return { status: 'skipped', reason: 'price-store-not-ready', detail: { ...result } };
+        }
+        return this.complete(result);
+      },
+      'strategy.price-store-refresh': async ({ scheduledFor }) => {
+        // Bot và Chiến lược v2.0 (§16.4): one store for Backtest and Bot; VN100 ∪ VN30 ∪ held.
+        if (!this.priceStore) return { status: 'skipped', reason: 'price-store-unavailable' };
+        const result = await this.priceStore.refresh({ now: scheduledFor });
+        const detail = {
+          status: result.status,
+          latest_session: result.latest_session,
+          data_as_of_before: result.data_as_of_before,
+          data_as_of: result.data_as_of,
+          set_size: result.set_size,
+          refreshed: result.refreshed,
+          adjusted: result.adjusted,
+          failed: result.failed,
+          duration_ms: result.duration_ms,
+        };
+        if (result.status === 'up_to_date') {
+          return { status: 'skipped', reason: 'up-to-date', detail };
+        }
+        if (result.status === 'failed') {
+          throw new Error(`price-store refresh failed: ${JSON.stringify(result.failed.slice(0, 5))}`);
+        }
+        return { status: 'completed', detail };
+      },
+      'notifications.email-dispatch': async ({ scheduledFor }) => {
+        if (!this.emailDispatcher)
+          return { status: 'skipped', reason: 'notifications-dispatcher-unavailable' };
+        return this.emailDispatcher.dispatch(scheduledFor);
+      },
       'trading.rights-sync': async () => this.complete(await this.rights.syncAndApply(new Date())),
       'research.reports-sync': async ({ scheduledFor }) => {
         if (!this.research) return { status: 'skipped', reason: 'research-unavailable' };
@@ -600,6 +642,8 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     ResearchModule,
     FlashbackModule,
     MarketBulletinsModule,
+    UserNotificationsModule,
+    PriceStoreModule,
   ],
   providers: [DomainRuntimeJobs],
   exports: [DomainRuntimeJobs],

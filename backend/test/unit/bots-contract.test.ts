@@ -7,7 +7,6 @@ import { enrichOpenApiDocument } from '../../src/platform/openapi/enrich-openapi
 
 const BOT_READ_PATHS = ['', '/positions', '/status', '/journal', '/performance'] as const;
 const WRITE_METHODS = ['post', 'put', 'patch', 'delete'] as const;
-const UNIVERSE_WRITES = ['apply-list', 'revert-vn30', 'pending/cancel'] as const;
 
 function schema(document: OpenAPIObject, name: string): SchemaObject {
   const value = document.components?.schemas?.[name];
@@ -150,31 +149,23 @@ describe('Bot policy iqx-bot-v1.1 OpenAPI contract', () => {
     expect(item).not.toHaveProperty('filter_ids');
   });
 
-  it('documents the buy-universe endpoints with typed responses (v2 only)', () => {
-    const base = '/api/v2/bot/universe';
-    expect(document.paths[base]?.get?.operationId).toBe('getBotUniverse');
-    for (const suffix of UNIVERSE_WRITES) {
-      const operation = document.paths[`${base}/${suffix}`]?.post as OperationObject | undefined;
-      expect(operation, `POST ${suffix}`).toBeDefined();
-      expect(operation?.security ?? document.security).toBeDefined();
-      expect(operation?.requestBody, `body of ${suffix}`).toBeDefined();
-    }
-    expect(document.paths[`${base}/apply-list`]?.post?.operationId).toBe('applyBotUniverseList');
-    expect(document.paths['/api/v1/bot/universe']).toBeUndefined();
-    const state = document.paths[base]?.get?.responses?.['200'];
-    expect(
-      state && !('$ref' in state) && state.content?.['application/json']?.schema,
-    ).toMatchObject({
-      type: 'object',
-      properties: {
-        revision: expect.anything(),
-        effective: expect.anything(),
-        pending: expect.anything(),
-      },
-    });
+  it('documents the Bot v2.0 schedule endpoints (v2 only, ApiAuthGuard)', () => {
+    const base = '/api/v2/bot';
+    expect(document.paths[`${base}/strategy-options`]?.get?.operationId).toBe('getBotStrategyOptions');
+    expect(document.paths[`${base}/schedule`]?.get?.operationId).toBe('getBotSchedule');
+    expect(document.paths[`${base}/schedule/next/impact`]?.get?.operationId).toBe(
+      'getBotScheduleImpact',
+    );
+    const put = document.paths[`${base}/schedule/next`]?.put as OperationObject | undefined;
+    expect(put?.operationId).toBe('putBotScheduleNext');
+    expect(put?.requestBody).toBeDefined();
+    const keep = document.paths[`${base}/schedule/next/keep-last`]?.post as OperationObject | undefined;
+    expect(keep?.operationId).toBe('keepBotScheduleLast');
+    expect(document.paths['/api/v2/bot/universe']).toBeUndefined();
+    expect(document.paths['/api/v1/bot/schedule']).toBeUndefined();
   });
 
-  it('keeps the Bot trading API read-only; universe writes never place orders', () => {
+  it('keeps the Bot trading API read-only; schedule writes never place orders', () => {
     for (const version of ['v1', 'v2']) {
       for (const suffix of BOT_READ_PATHS) {
         const path = `/api/${version}/bot${suffix}`;
@@ -192,9 +183,8 @@ describe('Bot policy iqx-bot-v1.1 OpenAPI contract', () => {
         : [],
     );
     expect(botWrites.sort()).toEqual([
-      'post /api/v2/bot/universe/apply-list',
-      'post /api/v2/bot/universe/pending/cancel',
-      'post /api/v2/bot/universe/revert-vn30',
+      'post /api/v2/bot/schedule/next/keep-last',
+      'put /api/v2/bot/schedule/next',
     ]);
   });
 });

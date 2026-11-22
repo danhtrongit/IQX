@@ -104,7 +104,6 @@ type BotUsageRecord = {
   effective_session: string | null;
   source_name: string;
 };
-type BotUsageRow = BotUsageRecord;
 type State = {
   filters: FilterRecord[];
   versions: VersionRecord[];

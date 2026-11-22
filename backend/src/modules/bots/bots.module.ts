@@ -1,39 +1,45 @@
 import { Module } from '@nestjs/common';
 
 import { DatabaseModule } from '../../platform/database/index.js';
-import { AcademyModule } from '../academy/academy.module.js';
 import { AuthModule } from '../auth/index.js';
-import { BotMarketSnapshotProvider, MarketIntegrationModule } from '../market-integration/index.js';
-import { QuantModule } from '../quant/quant.module.js';
-import { StrategyConfigModule } from '../strategy-config/strategy-config.module.js';
+import { MarketIntegrationModule } from '../market-integration/index.js';
+import { UserNotificationsModule } from '../notifications/user-notifications.module.js';
+import { PriceStoreModule } from '../price-store/price-store.module.js';
+import { StrategiesModule } from '../strategies/strategies.module.js';
+import { BOT_SCHEDULE_PORT } from '../strategy-rules/index.js';
 import { BotHistoryController } from './bot-history.controller.js';
 import { BotHistoryService } from './bot-history.service.js';
-import { BotUniverseController } from './bot-universe.controller.js';
-import { BotUniverseService } from './bot-universe.service.js';
+import { BotScheduleController } from './bot-schedule.controller.js';
+import { BotScheduleService } from './bot-schedule.service.js';
+import { BotSessionRunner } from './bot-session-runner.js';
 import { BotsController } from './bots.controller.js';
 import { BotService } from './bot.service.js';
-import { BOT_SNAPSHOT_PROVIDER, BOT_UNIVERSE } from './bot.types.js';
 
-// StrategyConfigModule (SHARED_CONFIG_READER) and QuantModule (QUANT_MARKET_DATA) are read-only
-// inputs for the Bot policy; neither imports BotsModule. AcademyModule supplies ACADEMY_GRANTS
-// for checking the metric grants behind an applied list.
+/**
+ * Bot v2.0. Inputs (optional injections, wired at integration):
+ * - `PRICE_STORE` (price-store module, W1) — the only price source of the Bot;
+ * - `STRATEGY_READER` (StrategiesModule) — resolves the strategy of a schedule row;
+ * - `NOTIFICATION_WRITER` (UserNotificationsModule) — "Bot giao dịch" in the run's commit tx.
+ * Exports `BOT_SCHEDULE_PORT` for W2 ("Lưu và áp dụng phiên tới", in-use checks). The
+ * StrategiesModule looks the port up lazily (ModuleRef), so there is no module cycle.
+ */
 @Module({
   imports: [
     DatabaseModule,
     AuthModule,
-    AcademyModule,
     MarketIntegrationModule,
-    QuantModule,
-    StrategyConfigModule,
+    UserNotificationsModule,
+    PriceStoreModule,
+    StrategiesModule,
   ],
-  controllers: [BotsController, BotHistoryController, BotUniverseController],
+  controllers: [BotsController, BotHistoryController, BotScheduleController],
   providers: [
     BotService,
     BotHistoryService,
-    BotUniverseService,
-    { provide: BOT_SNAPSHOT_PROVIDER, useExisting: BotMarketSnapshotProvider },
-    { provide: BOT_UNIVERSE, useExisting: BotUniverseService },
+    BotScheduleService,
+    BotSessionRunner,
+    { provide: BOT_SCHEDULE_PORT, useExisting: BotScheduleService },
   ],
-  exports: [BotService, BotHistoryService, BotUniverseService],
+  exports: [BotService, BotHistoryService, BotScheduleService, BOT_SCHEDULE_PORT],
 })
 export class BotsModule {}

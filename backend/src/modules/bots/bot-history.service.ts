@@ -93,6 +93,17 @@ export type TradeRow = {
   sell_reason_code: string | null;
   sell_reason: string | null;
   sell_decision_revision: number | string | null;
+  sell_exit_reason?: string | null;
+  sell_exit_reasons?: unknown;
+  sell_holding_sessions?: number | string | null;
+  sell_counted_sessions?: number | string | null;
+  sell_max_holding?: number | string | null;
+  sell_data_refs?: unknown;
+};
+
+const EXIT_LABELS: Readonly<Record<string, string>> = {
+  indicator: 'Điều kiện Bán',
+  max_holding: 'Hết thời gian giữ',
 };
 
 /**
@@ -156,10 +167,27 @@ export function tradeView(row: TradeRow, isTradingDay: IsTradingDay | null = nul
     realized_pnl_vnd: realized.toString(),
     // (realized x 100 + cost - cost) / cost: a percentage, e.g. "2.5" = +2.5 %.
     realized_pnl_pct: buyTotal > 0n ? ratioString(realized * 100n + buyTotal, buyTotal) : null,
-    holding_sessions: isTradingDay
+    holding_sessions:
+      row.sell_holding_sessions !== null && row.sell_holding_sessions !== undefined
+        ? Number(row.sell_holding_sessions)
+        : isTradingDay
       ? tradingSessionsBetween(row.opened_session, row.sell_session, isTradingDay)
       : Number(row.holding_sessions ?? 0),
     holding_days: Number(row.holding_days ?? 0),
+    exit_reason: (row.sell_exit_reason as BotTradeView['exit_reason']) ?? null,
+    exit_reasons: stringList(row.sell_exit_reasons).filter(
+      (reason): reason is 'indicator' | 'max_holding' =>
+        reason === 'indicator' || reason === 'max_holding',
+    ),
+    exit_reason_label: row.sell_exit_reason
+      ? `${EXIT_LABELS[row.sell_exit_reason] ?? row.sell_exit_reason}${
+          stringList(row.sell_exit_reasons).length > 1 ? ' (cùng đến hạn)' : ''
+        }`
+      : null,
+    max_holding_at_exit: optionalInteger(row.sell_max_holding),
+    counted_sessions: optionalInteger(row.sell_counted_sessions),
+    strategy_label: optionalString(objectValue(row.sell_data_refs).strategy_label),
+    version_label: optionalString(objectValue(row.sell_data_refs).version_label),
     // Retired-policy audit values only; null/empty for iqx-bot-v1.0 lots.
     legacy_stop_loss_vnd: optionalString(row.stop_loss_vnd),
     legacy_take_profit_vnd: optionalString(row.take_profit_vnd),
@@ -185,6 +213,8 @@ export type SessionRow = {
   nav_vnd: string | number | null;
   cash_vnd: string | number | null;
   valuation_complete: boolean | null;
+  counters?: unknown;
+  universe_v2?: unknown;
 };
 
 /** Decisions of one run grouped by action and reason code. */
@@ -257,6 +287,37 @@ export function sessionView(row: SessionRow, reasons: readonly SessionReasonRow[
     cash_end_vnd: row.cash_vnd === null ? null : String(row.cash_vnd),
     valuation_complete: complete,
     issues: issueList(row.issues),
+    ...v2SessionFields(row),
+  };
+}
+
+function v2SessionFields(row: SessionRow): Pick<
+  BotSessionView,
+  'strategy_label' | 'version_label' | 'universe_label' | 'universe_count' | 'summary' | 'counters'
+> {
+  const counters = objectValue(row.counters);
+  const universe = objectValue(row.universe_v2);
+  const has = Object.keys(counters).length > 0;
+  const int = (value: unknown) => (typeof value === 'number' ? value : 0);
+  return {
+    strategy_label: optionalString(counters.strategy_label),
+    version_label: optionalString(counters.version_label),
+    universe_label:
+      optionalString(counters.universe_label) ??
+      (typeof universe.label === 'string' && universe.label ? universe.label : null),
+    universe_count: has ? int(counters.universe_count) : null,
+    summary: optionalString(counters.summary),
+    counters: has
+      ? {
+          sells: int(counters.sells),
+          buys: int(counters.buys),
+          time_exits: int(counters.time_exits),
+          t2_blocked: int(counters.t2_blocked),
+          due_unfilled: int(counters.due_unfilled),
+          universe_empty: counters.universe_empty === true,
+          skipped_buys: int(counters.skipped_buys),
+        }
+      : null,
   };
 }
 
@@ -390,7 +451,11 @@ export class BotHistoryService {
               sx.fee_vnd as sell_fee_vnd, sx.tax_vnd as sell_tax_vnd,
               sx.net_cash_delta_vnd as sell_net_vnd, sx.reason as sell_exec_reason,
               sd.id as sell_decision_id, sd.reason_code as sell_reason_code,
-              sd.reason as sell_reason, sd.decision_config_revision as sell_decision_revision
+              sd.reason as sell_reason, sd.decision_config_revision as sell_decision_revision,
+              sx.exit_reason as sell_exit_reason, sx.exit_reasons as sell_exit_reasons,
+              sx.holding_sessions as sell_holding_sessions,
+              sx.counted_sessions as sell_counted_sessions,
+              sx.max_holding_at_exit as sell_max_holding, sd.data_refs as sell_data_refs
          from bot_positions p
          join bot_executions sx on sx.id = p.sell_execution_id
          left join bot_executions bx on bx.id = p.buy_execution_id
@@ -399,7 +464,7 @@ export class BotHistoryService {
              from bot_decisions d where d.execution_id = bx.id
             order by d.created_at, d.id limit 1) bd on true
          left join lateral (
-           select d.id, d.reason_code, d.reason, d.decision_config_revision
+           select d.id, d.reason_code, d.reason, d.decision_config_revision, d.data_refs
              from bot_decisions d where d.execution_id = sx.id
             order by d.created_at, d.id limit 1) sd on true
         where p.bot_account_id = $1 and p.status = 'closed' ${cursorCondition}
@@ -514,7 +579,8 @@ export class BotHistoryService {
               case when jsonb_typeof(r.rule_snapshot #> '{shared_config,revision}') = 'number'
                    then (r.rule_snapshot #>> '{shared_config,revision}')::numeric::int
               end as pinned_revision,
-              n.nav_vnd, n.cash_vnd, n.valuation_complete
+              n.nav_vnd, n.cash_vnd, n.valuation_complete,
+              r.counters, r.universe as universe_v2
          from bot_run_receipts r
          left join bot_universe_revisions u
            on u.user_id = r.user_id and u.revision = r.universe_revision

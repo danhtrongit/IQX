@@ -4,8 +4,6 @@ import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { definitionHash } from '../../src/modules/alerts/strategy-alerts.evaluation.js';
-import { BotUniverseService } from '../../src/modules/bots/bot-universe.service.js';
-import type { IndexMembershipService } from '../../src/modules/market-integration/index-membership.service.js';
 import { StrategyAlertsRepository } from '../../src/modules/alerts/strategy-alerts.repository.js';
 import type { NewVersionInput } from '../../src/modules/alerts/strategy-alerts.store.js';
 import {
@@ -567,73 +565,5 @@ describe.skipIf(!URL)('Strategy SQL against PostgreSQL', () => {
     await expect(
       results.createListFromResult(admin, { ...input, name: `${NAME_PREFIX} other` }),
     ).rejects.toMatchObject({ response: { code: 'IDEMPOTENCY_KEY_CONFLICT' } });
-  });
-
-  it('Bot apply-list: only a list tied to a stored result is accepted, grants follow its definition', async () => {
-    const buyer = randomUUID();
-    await insertUser(buyer, 'user');
-    await pool.query(
-      `INSERT INTO bot_accounts (id, user_id, initial_cash_vnd, cash_vnd, activated_at)
-       VALUES ($1, $2, 100000000, 100000000, now())`,
-      [randomUUID(), buyer],
-    );
-    const granted = new Set<string>();
-    const bot = new BotUniverseService(
-      db,
-      { latestOnOrBefore: async () => null } as unknown as IndexMembershipService,
-      { grantedCapabilities: async () => granted },
-    );
-    const runId = await runs.insert({
-      user_id: buyer,
-      definition_hash: 'd'.repeat(64),
-      header: header(),
-      results: rows(['PGA', 'PGB', 'PGX']),
-    });
-    const verified = await results.createListFromResult(buyer, {
-      name: `${NAME_PREFIX} verified`,
-      run_id: runId,
-      selection: { mode: 'all' },
-      visibility: 'internal',
-    });
-    // POST /strategy/lists accepts any client-declared tickers: it carries no result evidence.
-    const declared = await lists.createList(buyer, {
-      name: `${NAME_PREFIX} declared`,
-      tickers: ['PGA'],
-      as_of: '2026-02-01',
-      data_source: 'client',
-      scope: {},
-    });
-    expect(declared.result_snapshot_id).toBeNull();
-    const apply = (listId: string) =>
-      bot.applyList(buyer, {
-        list_id: listId,
-        symbols: ['PGA'],
-        expected_revision: 0,
-        idempotency_key: `${NAME_PREFIX}-apply-${randomUUID()}`,
-      });
-    const stored = async () =>
-      (
-        await pool.query(
-          `SELECT count(*)::int AS count FROM bot_universe_revisions WHERE user_id = $1`,
-          [buyer],
-        )
-      ).rows[0].count as number;
-
-    await expect(apply(declared.id)).rejects.toMatchObject({
-      response: { code: 'LIST_NOT_VERIFIED' },
-    });
-    // The rule of the stored result is on roe, which this account has not learned yet.
-    await expect(apply(verified.id)).rejects.toMatchObject({
-      response: { code: 'CAPABILITY_LOCKED', details: [{ capability: 'metric:roe' }] },
-    });
-    expect(await stored()).toBe(0);
-
-    granted.add('metric:roe');
-    const applied = await apply(verified.id);
-    expect(applied.request).toMatchObject({ kind: 'custom', saved_list_id: verified.id });
-    expect(applied.request.provenance).toMatchObject({
-      result: { snapshot_id: verified.result_snapshot_id, run_id: runId },
-    });
-    expect(await stored()).toBe(1);
   });
 });

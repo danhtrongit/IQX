@@ -157,11 +157,32 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       enabled: enabled('market.bulletin-draft'),
     },
     {
+      name: 'strategy.price-store-refresh',
+      description:
+        'Bot và Chiến lược v2.0: refresh the daily price store (VN100 + VN30 + VNINDEX + held symbols, DNSE adjusted VND); no-op until VNINDEX has a closed bar newer than the store',
+      // Idempotent like market.daily-bars: ticks all day and acts after the 15:15 readiness.
+      everyMs: 600_000,
+      tradingDay: false,
+      enabled: enabled('strategy.price-store-refresh'),
+    },
+    {
       name: 'bot.session-eod',
-      description: 'Run the standard bot after close',
-      pattern: '0 0 19 * * 1-5',
+      description:
+        'Bot v2.0: at the cutoff (BOT_SESSION_CUTOFF, default 19:00) lock each Lịch phiên row and run the session once the price store has it; retries every 10 min until 23:50',
+      // Every 10 minutes from 15:00 to 23:50 on weekdays: the handler skips before the cutoff,
+      // runs once the store holds the session (later ticks are no-ops per receipt) and marks the
+      // session skipped_no_session at 23:50 when the store never got it.
+      pattern: '0 */10 15-23 * * 1-5',
       tradingDay: true,
       enabled: enabled('bot.session-eod'),
+    },
+    {
+      name: 'notifications.email-dispatch',
+      description:
+        'Send pending notification emails (outbox, max 3 attempts); no-op while EMAIL_ENABLED=false',
+      everyMs: 60_000,
+      tradingDay: false,
+      enabled: enabled('notifications.email-dispatch'),
     },
     {
       name: 'trading.rights-sync',
