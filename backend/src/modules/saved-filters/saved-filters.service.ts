@@ -8,8 +8,6 @@ import {
   readStoredDefinition,
   type ScreenerDefinitionV4,
 } from '../screener/screener.definition.js';
-import { vnDate } from '../strategy-config/strategy-config.calendar.js';
-import { findBotUsage, listInUseByBot } from './saved-filters.bot-usage.js';
 import type { FilterDefinition } from './saved-filters.definition.js';
 import { canonicalHash } from './saved-filters.hash.js';
 import type {
@@ -347,24 +345,16 @@ export class SavedFiltersService {
   }
 
   /**
-   * Soft-deletes a list unless the Bot buys from it (pending or effective universe revision):
-   * the user must first switch the Bot to another list or back to VN30 (Strategy spec §8.7).
-   * Takes the Bot's own per-user advisory lock so a concurrent "apply list" cannot slip a
-   * reference in between the check and the delete.
+   * Soft-deletes a list. Allowed even when a strategy was made from it: strategies copy the
+   * symbols when saved (spec Bot và Chiến lược v2.0 §2.2, §13).
    */
-  async deleteList(userId: string, listId: string, now: Date = new Date()): Promise<void> {
+  async deleteList(userId: string, listId: string): Promise<void> {
     await this.database.transaction(async (client) => {
-      await client.query(
-        `SELECT pg_advisory_xact_lock(hashtext('bot_universe_revisions:' || $1::text))`,
-        [userId],
-      );
       const [owned] = await client.query<{ id: string }>(
         `SELECT id FROM list_snapshots WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
         [listId, userId],
       );
       if (!owned) throw listNotFound();
-      const usage = await findBotUsage(client, userId, [listId], vnDate(now));
-      if (usage.length) throw listInUseByBot(usage);
       await client.query(
         `UPDATE list_snapshots SET deleted_at = now()
           WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,

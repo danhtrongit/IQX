@@ -28,7 +28,7 @@ import { StrategyBacktestsService } from './strategy-backtests.service.js';
 const openApi = (schema: z.ZodType) =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
 
-/** Immutable v2 backtest runs over a saved shared-config revision (never the form draft). */
+/** Immutable basket Backtest runs (update 22-11); pre-22-11 runs are read-only (`legacy`). */
 @ApiTags('Strategy backtests')
 @Premium()
 @UseGuards(StrategyBacktestsEnabledGuard, ApiAuthGuard, PremiumGuard)
@@ -39,7 +39,8 @@ export class StrategyBacktestsController {
   @Post()
   @ApiOperation({
     operationId: 'strategyBacktestsCreate',
-    summary: 'Run a backtest (optionally research or portfolio) on a saved shared-config revision',
+    summary:
+      'Chạy Backtest theo rổ của một chiến lược (IQX, của tôi hoặc bản nháp) và lưu lần chạy',
   })
   @ApiCreatedResponse({ schema: openApi(backtestRunResponseSchema) })
   create(
@@ -52,14 +53,14 @@ export class StrategyBacktestsController {
   @Get()
   @ApiOperation({
     operationId: 'strategyBacktestsList',
-    summary: 'Latest backtest runs of the current user',
+    summary: 'Lần chạy đã lưu, lọc theo chiến lược; lần chạy cũ có legacy: true',
   })
   @ApiOkResponse({ schema: openApi(backtestRunListSchema) })
   list(
     @CurrentUser() user: AuthenticatedUser,
     @Query({ schema: backtestListQuerySchema }) query: BacktestListQuery,
   ) {
-    return this.backtests.list(user.id, query.limit);
+    return this.backtests.list(user.id, query);
   }
 
   @Get(':id')
@@ -78,7 +79,7 @@ export class StrategyBacktestsController {
   @Get(':id/trades')
   @ApiOperation({
     operationId: 'strategyBacktestsTrades',
-    summary: 'Complete trade history of one stored run, paged (total counts the whole run)',
+    summary: 'Giao dịch của một lần chạy, mới nhất trước (total = cả lần chạy)',
   })
   @ApiOkResponse({ schema: openApi(backtestTradesResponseSchema) })
   trades(

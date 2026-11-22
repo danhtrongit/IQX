@@ -3,10 +3,14 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
+import { NOT_ON_BOT, resolveBotSchedule } from '../strategies/bot-schedule.port.js';
+import { iqxDefinitionAsContent } from '../strategies/strategies.labels.js';
 import { recordAudit, type AuditContext } from '../users/audit.js';
 import type { IqxDraft, IqxTemplateKind } from './iqx-templates.schemas.js';
 import {
@@ -33,6 +37,7 @@ type TemplateRow = {
   updated_by_name: string | null;
   content: Record<string, unknown> | null;
   used_30d: number | string;
+  trial_runs_30d: number | string;
 };
 
 type VersionRow = {
@@ -62,6 +67,11 @@ export type IqxPublishedItem = {
   version: number;
   content: IqxContent;
   pair: { id: string; slug: string; name: string; version: number } | null;
+  /** Chiến lược IQX only (spec v2.0 §4.2, §10.3). */
+  current_version?: number;
+  universe?: { type: 'vn30' | 'vn100' };
+  max_holding?: number;
+  on_bot?: { last: boolean; next: boolean };
 };
 
 const ACTIONS = [
@@ -125,7 +135,11 @@ const SELECT_TEMPLATE = `
          t.updated_at, t.updated_by, uu.full_name as updated_by_name,
          v.content,
          (select count(*) from iqx_template_used u
-           where u.template_id = t.id and u.created_at >= now() - interval '30 days') as used_30d
+           where u.template_id = t.id and u.event = 'used'
+             and u.created_at >= now() - interval '30 days') as used_30d,
+         (select count(*) from iqx_template_used u
+           where u.template_id = t.id and u.event = 'strategy_run'
+             and u.created_at >= now() - interval '30 days') as trial_runs_30d
     from iqx_templates t
     left join iqx_template_versions v on v.template_id = t.id and v.version = t.current_version
     left join users du on du.id = t.draft_updated_by
@@ -139,7 +153,15 @@ const SELECT_TEMPLATE = `
 export class IqxTemplatesService {
   private readonly logger = new Logger(IqxTemplatesService.name);
 
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    /** BOT_SCHEDULE_PORT (bots module) is looked up lazily: see strategies/bot-schedule.port.ts. */
+    @Optional() private readonly moduleRef?: ModuleRef,
+  ) {}
+
+  private get schedule() {
+    return resolveBotSchedule(this.moduleRef);
+  }
 
   // ---------------------------------------------------------------------------------------------
   // Users
@@ -150,6 +172,7 @@ export class IqxTemplatesService {
    */
   async listPublished(
     kind: IqxTemplateKind,
+    userId?: string,
   ): Promise<{ kind: IqxTemplateKind; items: IqxPublishedItem[] }> {
     const rows = await this.database.query<{
       id: string;
@@ -177,7 +200,7 @@ export class IqxTemplatesService {
         continue;
       }
       const pairSlug = 'pair_slug' in checked.content ? checked.content.pair_slug : null;
-      items.push({
+      const item: IqxPublishedItem = {
         id: row.id,
         slug: row.slug,
         kind,
@@ -185,7 +208,19 @@ export class IqxTemplatesService {
         // Content exactly as published: the check above only decides whether it is still usable.
         content: row.content as IqxContent,
         pair: (pairSlug && pairs.get(pairSlug)) || null,
-      });
+      };
+      if (kind === 'strategy') {
+        const content = iqxDefinitionAsContent(
+          row.content.definition as Record<string, unknown> | undefined,
+        );
+        const schedule = this.schedule;
+        item.current_version = row.version;
+        item.universe = content.universe as { type: 'vn30' | 'vn100' };
+        item.max_holding = content.max_holding;
+        item.on_bot =
+          userId && schedule ? await schedule.usage(userId, 'iqx', row.id) : { ...NOT_ON_BOT };
+      }
+      items.push(item);
     }
     return { kind, items };
   }
@@ -217,6 +252,100 @@ export class IqxTemplatesService {
     return row?.name ?? null;
   }
 
+  /**
+   * "Lịch sử phiên bản" of a Chiến lược IQX (spec v2.0 §4.2): every published version, read-only.
+   * A hidden template is readable only while the user's Bot (last or next session) uses it.
+   */
+  async userVersions(userId: string, id: string) {
+    const template = await this.userStrategyTemplate(userId, id);
+    const rows = await this.database.query<{
+      version: number;
+      published_at: Timestamp;
+      reason: string;
+    }>(
+      `select version, published_at, reason from iqx_template_versions
+        where template_id = $1 order by version desc`,
+      [template.id],
+    );
+    return {
+      id: template.id,
+      slug: template.slug,
+      name: template.name,
+      current_version: template.current_version,
+      hidden: template.visibility === 'hidden',
+      on_bot: template.on_bot,
+      items: rows.map((row) => ({
+        version: Number(row.version),
+        published_at: iso(row.published_at),
+        reason: row.reason,
+        current: Number(row.version) === template.current_version,
+      })),
+    };
+  }
+
+  async userVersion(userId: string, id: string, version: number) {
+    const template = await this.userStrategyTemplate(userId, id);
+    const [row] = await this.database.query<{
+      version: number;
+      published_at: Timestamp;
+      reason: string;
+      content: Record<string, unknown>;
+    }>(
+      `select version, published_at, reason, content from iqx_template_versions
+        where template_id = $1 and version = $2`,
+      [template.id, version],
+    );
+    if (!row)
+      throw new NotFoundException({
+        code: 'IQX_TEMPLATE_VERSION_NOT_FOUND',
+        message: `Không có phiên bản v${version}.`,
+      });
+    const content = iqxDefinitionAsContent(
+      row.content.definition as Record<string, unknown> | undefined,
+    );
+    return {
+      id: template.id,
+      slug: template.slug,
+      version: Number(row.version),
+      current_version: template.current_version,
+      hidden: template.visibility === 'hidden',
+      published_at: iso(row.published_at),
+      reason: row.reason,
+      content: row.content,
+      strategy_content: {
+        universe: content.universe as { type: 'vn30' | 'vn100' },
+        indicators: content.indicators,
+        max_holding: content.max_holding,
+      },
+    };
+  }
+
+  private async userStrategyTemplate(userId: string, id: string) {
+    const [row] = await this.database.query<{
+      id: string;
+      slug: string;
+      visibility: 'shown' | 'hidden';
+      current_version: number;
+      name: string | null;
+    }>(
+      `select t.id, t.slug, t.visibility, t.current_version, v.content->>'name' as name
+         from iqx_templates t
+         join iqx_template_versions v on v.template_id = t.id and v.version = t.current_version
+        where t.kind = 'strategy' and t.id = $1`,
+      [id],
+    );
+    if (!row) throw notFound();
+    const schedule = this.schedule;
+    const onBot = schedule ? await schedule.usage(userId, 'iqx', row.id) : { ...NOT_ON_BOT };
+    if (row.visibility === 'hidden' && !onBot.last && !onBot.next) throw notFound();
+    return {
+      ...row,
+      current_version: Number(row.current_version),
+      name: row.name ?? '',
+      on_bot: onBot,
+    };
+  }
+
   private async shownStrategiesBySlug() {
     const rows = await this.database.query<{
       id: string;
@@ -240,7 +369,8 @@ export class IqxTemplatesService {
       `${SELECT_TEMPLATE} where t.kind = $1 order by t.sort_order, t.created_at, t.id`,
       [kind],
     );
-    return { kind, items: rows.map((row) => this.listItem(row)) };
+    const counts = kind === 'strategy' ? await this.botCounts() : null;
+    return { kind, items: rows.map((row) => this.listItem(row, counts)) };
   }
 
   async adminDetail(id: string) {
@@ -456,7 +586,8 @@ export class IqxTemplatesService {
         `${SELECT_TEMPLATE} where t.kind = $1 order by t.sort_order, t.created_at, t.id`,
         [kind],
       );
-      return { kind, items: list.map((row) => this.listItem(row)) };
+      const counts = kind === 'strategy' ? await this.botCounts() : null;
+      return { kind, items: list.map((row) => this.listItem(row, counts)) };
     });
   }
 
@@ -542,8 +673,26 @@ export class IqxTemplatesService {
     for (let index = 2; ; index += 1) if (!used.has(`${base}-${index}`)) return `${base}-${index}`;
   }
 
-  private listItem(row: TemplateRow) {
+  /** Next-session Bot count per strategy template (null when the bots module is absent). */
+  private async botCounts(): Promise<Map<string, number> | null> {
+    const schedule = this.schedule;
+    if (!schedule) return null;
+    try {
+      return await schedule.botCountsByIqx();
+    } catch (error) {
+      this.logger.warn(`botCountsByIqx failed: ${String(error)}`);
+      return null;
+    }
+  }
+
+  private listItem(row: TemplateRow, botCounts: Map<string, number> | null = null) {
     const content = row.content ?? {};
+    const strategy = row.kind === 'strategy';
+    const definition = strategy
+      ? iqxDefinitionAsContent(
+          (content.definition ?? (row.draft ?? {}).definition) as Record<string, unknown> | undefined,
+        )
+      : null;
     const draft = row.draft ?? {};
     const text = (value: unknown) => (typeof value === 'string' ? value : '');
     return {
@@ -566,6 +715,10 @@ export class IqxTemplatesService {
       updated_at: iso(row.updated_at),
       updated_by: actor(row.updated_by, row.updated_by_name) ?? SYSTEM_ACTOR,
       used_30d: Number(row.used_30d),
+      universe: definition ? (definition.universe as { type: 'vn30' | 'vn100' }) : null,
+      max_holding: definition ? definition.max_holding : null,
+      bots_using: strategy ? (botCounts?.get(row.id) ?? 0) : null,
+      trial_runs_30d: strategy ? Number(row.trial_runs_30d) : null,
     };
   }
 
@@ -626,8 +779,9 @@ export class IqxTemplatesService {
     }
     history.sort((a, b) => b.at.localeCompare(a.at));
     const current = versions.find((item) => item.version === row.current_version);
+    const counts = row.kind === 'strategy' ? await this.botCounts() : null;
     return {
-      ...this.listItem(row),
+      ...this.listItem(row, counts),
       draft: row.draft,
       draft_updated_by: actor(row.draft_updated_by, row.draft_updated_by_name),
       current: current ? versionView(current) : null,

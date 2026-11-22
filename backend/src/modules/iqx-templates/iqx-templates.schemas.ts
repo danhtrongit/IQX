@@ -91,7 +91,10 @@ export type IqxUsedBody = z.infer<typeof iqxUsedBodySchema>;
 /** Bot condition record of a Chiến lược IQX (Chỉ báo v3 §1.4): only the indicators it uses. */
 const indicatorsRecordSchema = z.record(z.string(), z.record(z.string(), z.unknown()));
 
+export const iqxUniverseSchema = z.object({ type: z.enum(['vn30', 'vn100']) });
+
 export const iqxStrategyDefinitionSchema = z.object({
+  universe: iqxUniverseSchema,
   indicators: indicatorsRecordSchema,
   max_holding: z.number().int(),
 });
@@ -141,13 +144,20 @@ export const iqxPublishedFilterSchema = z.object({
   /** The paired Chiến lược IQX when it is published and shown; null otherwise (§5.5). */
   pair: pairSchema.nullable(),
 });
+export const iqxOnBotSchema = z.object({ last: z.boolean(), next: z.boolean() });
+
 export const iqxPublishedStrategySchema = z.object({
   id: z.uuid(),
   slug: z.string(),
   kind: z.literal('strategy'),
   version: z.number().int(),
+  current_version: z.number().int(),
   content: iqxStrategyContentSchema,
   pair: z.null(),
+  universe: iqxUniverseSchema,
+  max_holding: z.number().int(),
+  /** Bot của người dùng: phiên gần nhất / phiên tới dùng chiến lược này. */
+  on_bot: iqxOnBotSchema,
 });
 export const iqxPublishedListSchema = z.object({
   kind: kindSchema,
@@ -171,6 +181,12 @@ export const iqxAdminListItemSchema = z.object({
   updated_at: timestamp,
   updated_by: actorSchema,
   used_30d: z.number().int(),
+  /** Chiến lược IQX only (null for Bộ lọc IQX), spec v2.0 §7.2. */
+  universe: iqxUniverseSchema.nullable(),
+  max_holding: z.number().int().nullable(),
+  /** Bots whose next session uses this strategy. */
+  bots_using: z.number().int().nullable(),
+  trial_runs_30d: z.number().int().nullable(),
 });
 export const iqxAdminListSchema = z.object({
   kind: kindSchema,
@@ -220,3 +236,41 @@ export const iqxAdminDetailSchema = iqxAdminListItemSchema.extend({
 
 export const iqxDeletedSchema = z.object({ id: z.uuid(), deleted: z.literal(true) });
 export const iqxUsedResponseSchema = z.object({ recorded: z.literal(true) });
+
+export const iqxVersionParamSchema = z.coerce.number().int().min(1).max(1_000_000);
+
+/** Lịch sử phiên bản of a Chiến lược IQX for users (§4.2): read-only. */
+export const iqxUserVersionListSchema = z.object({
+  id: z.uuid(),
+  slug: z.string(),
+  name: z.string(),
+  current_version: z.number().int(),
+  hidden: z.boolean(),
+  on_bot: iqxOnBotSchema,
+  items: z.array(
+    z.object({
+      version: z.number().int(),
+      published_at: timestamp,
+      reason: z.string(),
+      current: z.boolean(),
+    }),
+  ),
+});
+
+export const iqxUserVersionDetailSchema = z.object({
+  id: z.uuid(),
+  slug: z.string(),
+  version: z.number().int(),
+  current_version: z.number().int(),
+  hidden: z.boolean(),
+  published_at: timestamp,
+  reason: z.string(),
+  /** As published (v1 rows have no `definition.universe`). */
+  content: z.record(z.string(), z.unknown()),
+  /** Content as the rules run it (v1 rows without a basket read as VN30). */
+  strategy_content: z.object({
+    universe: iqxUniverseSchema,
+    indicators: indicatorsRecordSchema,
+    max_holding: z.number().int(),
+  }),
+});

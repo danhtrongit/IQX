@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags, type SchemaObject } from '@nestjs/swagger';
+import { Controller, GoneException, Get, HttpCode, Patch, Query, UseGuards } from '@nestjs/common';
+import { ApiGoneResponse, ApiOkResponse, ApiOperation, ApiTags, type SchemaObject } from '@nestjs/swagger';
 import { z } from 'zod';
 
 import { ApiAuthGuard, CurrentUser, Premium, PremiumGuard } from '../auth/index.js';
@@ -7,13 +7,10 @@ import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { StrategyConfigEnabledGuard } from './strategy-config-enabled.guard.js';
 import {
   revisionsQuerySchema,
-  sharedConfigPatchSchema,
   sharedConfigRevisionListSchema,
-  sharedConfigSaveResultSchema,
   sharedConfigStateSchema,
   technicalRegistryResponseSchema,
   type RevisionsQuery,
-  type SharedConfigPatchInput,
 } from './strategy-config.schemas.js';
 import { SharedConfigService } from './strategy-config.service.js';
 
@@ -48,17 +45,23 @@ export class StrategyConfigController {
     return this.sharedConfig.current(user.id);
   }
 
+  /**
+   * Retired by update 22-11 (spec Bot và Chiến lược v2.0 §9): the Bot runs a chosen strategy and
+   * Backtest runs drafts, so nothing writes the shared config any more. Old tabs get 410.
+   */
   @Patch('shared-config')
+  @HttpCode(410)
   @ApiOperation({
     operationId: 'strategyConfigPatchSharedConfig',
-    summary: 'Save changed indicators as a new revision (expected_revision + idempotency_key)',
+    summary: 'Retired: 410 SHARED_CONFIG_RETIRED (use strategies + Bot schedule)',
   })
-  @ApiOkResponse({ schema: openApi(sharedConfigSaveResultSchema) })
-  save(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body({ schema: sharedConfigPatchSchema }) body: SharedConfigPatchInput,
-  ) {
-    return this.sharedConfig.save(user.id, body);
+  @ApiGoneResponse({ description: 'SHARED_CONFIG_RETIRED' })
+  save(): never {
+    throw new GoneException({
+      code: 'SHARED_CONFIG_RETIRED',
+      message:
+        'Cấu hình chung không còn được lưu. Lưu chiến lược ở Backtest và chọn chiến lược cho Bot.',
+    });
   }
 
   @Get('shared-config/revisions')

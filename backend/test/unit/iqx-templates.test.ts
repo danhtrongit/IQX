@@ -40,7 +40,18 @@ const migration = readFileSync(
   'utf8',
 );
 
+const migration0059 = readFileSync(
+  resolve(import.meta.dirname, '../../migrations/0059_user_strategies.sql'),
+  'utf8',
+);
+
 const clone = <T>(value: T): T => structuredClone(value);
+
+/** What migration 0059 publishes as v2 of a seeded Chiến lược IQX (D9, spec v2.0 §7.1). */
+const asV2 = (content: SeedItem['content']): SeedItem['content'] => ({
+  ...content,
+  definition: { ...content.definition, universe: { type: 'vn30' }, max_holding: 30 },
+});
 
 describe('seed of the tab IQX (spec §2.4, §3.4, §4.1)', () => {
   it('has the 6 Bộ lọc IQX and 5 Chiến lược IQX in the order of the spec', () => {
@@ -64,11 +75,32 @@ describe('seed of the tab IQX (spec §2.4, §3.4, §4.1)', () => {
   it('every seed item passes the current validators unchanged', () => {
     for (const kind of ['filter', 'strategy'] as const) {
       for (const item of seed[kind]) {
-        const checked = validateContent(kind, item.content);
+        // Strategies are live as v2 (basket VN30, Giữ tối đa 30) since update 22-11.
+        const content = kind === 'strategy' ? asV2(item.content) : item.content;
+        const checked = validateContent(kind, content);
         expect(checked, `${kind}/${item.slug}`).toMatchObject({ ok: true });
-        if (checked.ok) expect(checked.content).toEqual(item.content);
+        if (checked.ok) expect(checked.content).toEqual(content);
       }
     }
+  });
+
+  it('a v1 Chiến lược without a basket is refused at publish (Rổ mã VN30/VN100)', () => {
+    const checked = validateContent('strategy', seed.strategy[0]!.content);
+    expect(checked).toEqual({
+      ok: false,
+      errors: [{ field: 'definition.universe', message: 'Rổ mã: chọn VN30 hoặc VN100.' }],
+    });
+    for (const universe of [{ type: 'saved_list' }, { type: 'vn30', extra: 1 }, 'vn30'])
+      expect(
+        validateStrategyDefinition({ ...asV2(seed.strategy[0]!.content).definition, universe }),
+      ).toMatchObject({ ok: false, errors: [{ field: 'definition.universe' }] });
+  });
+
+  it('migration 0059 publishes v2 = universe VN30 + Giữ tối đa 30 for strategies without a basket', () => {
+    expect(migration0059).toContain(`'{definition,universe}', '{"type":"vn30"}'::jsonb`);
+    expect(migration0059).toContain(`'{definition,max_holding}', '30'::jsonb`);
+    expect(migration0059).toContain(`'Thêm rổ mã; giữ tối đa 30 phiên'`);
+    expect(migration0059).toContain(`NOT (v.content -> 'definition' ? 'universe')`);
   });
 
   it('the migration inserts exactly the seed file content, version 1, reason Khởi tạo', () => {
@@ -105,7 +137,7 @@ describe('seed of the tab IQX (spec §2.4, §3.4, §4.1)', () => {
 
 describe('content checks (§5.3, §5.4)', () => {
   const filter = () => clone(seed.filter[0]!.content);
-  const strategy = () => clone(seed.strategy[1]!.content);
+  const strategy = () => clone(asV2(seed.strategy[1]!.content));
 
   it('requires every info field and enforces the limits', () => {
     expect(infoErrors({})).toEqual([

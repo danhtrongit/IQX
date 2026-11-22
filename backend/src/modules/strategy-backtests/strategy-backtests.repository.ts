@@ -2,8 +2,11 @@ import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
 
+/** `basket` = update 22-11 runs; the others are pre-22-11 runs (read-only, `legacy`). */
 export type BacktestRunKind =
-  'single' | 'sensitivity' | 'out_of_sample' | 'walk_forward' | 'portfolio';
+  'single' | 'sensitivity' | 'out_of_sample' | 'walk_forward' | 'portfolio' | 'basket';
+
+export type StrategyRunSourceColumn = 'iqx' | 'user' | 'draft';
 
 export type StoredRunError = {
   status: number;
@@ -15,13 +18,14 @@ export type StoredRunError = {
 export type BacktestRunRecord = {
   user_id: string;
   kind: BacktestRunKind;
-  shared_revision: number;
+  shared_revision: number | null;
+  strategy_source: StrategyRunSourceColumn | null;
+  strategy_ref_id: string | null;
+  strategy_version: number | null;
   request: Record<string, unknown>;
   request_hash: string;
   snapshot: Record<string, unknown> | null;
   result: Record<string, unknown> | null;
-  research_result: Record<string, unknown> | null;
-  system_result: Record<string, unknown> | null;
   config_hash: string;
   data_hash: string | null;
   engine_version: string;
@@ -32,50 +36,71 @@ export type BacktestRunRecord = {
   error: StoredRunError | null;
 };
 
-export type BacktestRunRow = BacktestRunRecord & { id: string; created_at: Date };
+export type BacktestRunRow = BacktestRunRecord & {
+  id: string;
+  created_at: Date;
+  /** Legacy columns, read for pre-22-11 runs only. */
+  system_result?: Record<string, unknown> | null;
+};
 
 export type BacktestRunSummaryRow = {
   id: string;
   kind: BacktestRunKind;
   status: 'succeeded' | 'failed';
-  shared_revision: number;
-  symbol: string;
-  start: string;
-  end: string;
+  strategy_source: StrategyRunSourceColumn | null;
+  strategy_ref_id: string | null;
+  strategy_version: number | null;
   created_at: Date;
   config_hash: string;
+  /** Basket: `snapshot` labels; legacy: request symbol/start/end. */
+  strategy_label: string | null;
+  version_label: string | null;
+  universe_label: string | null;
+  start: string | null;
+  end: string | null;
+  symbol: string | null;
+  /** Basket: result.kpis; legacy: engine kpis (system or single). */
   kpis: Record<string, unknown> | null;
-  error_code: string | null;
 };
 
-/** Persistence + owner-scoped lookups used by the v2 backtest service (faked in unit tests). */
+export type BacktestListFilter = {
+  strategy_source?: StrategyRunSourceColumn | undefined;
+  strategy_id?: string | undefined;
+  limit: number;
+};
+
+/** Persistence + owner-scoped lookups used by the backtest service (faked in unit tests). */
 export interface StrategyBacktestStore {
   findByIdempotencyKey(userId: string, idempotencyKey: string): Promise<BacktestRunRow | null>;
   /** Insert unless (user, idempotency_key) already exists; null when another request won. */
   insert(record: BacktestRunRecord): Promise<BacktestRunRow | null>;
   findById(userId: string, id: string): Promise<BacktestRunRow | null>;
-  list(userId: string, limit: number): Promise<BacktestRunSummaryRow[]>;
-  /** Current ICB sector per symbol (not point-in-time); missing symbols are absent. */
-  sectors(symbols: readonly string[]): Promise<Map<string, string | null>>;
+  list(userId: string, filter: BacktestListFilter): Promise<BacktestRunSummaryRow[]>;
+  /** One `iqx_template_used` event (§7.2): `strategy_run` for a stored IQX run. */
+  recordIqxEvent(
+    templateId: string,
+    version: number,
+    userId: string,
+    event: 'strategy_run',
+  ): Promise<void>;
 }
 
-const RUN_COLUMNS = `id, user_id, kind, shared_revision, request, request_hash, snapshot, result,
-  research_result, system_result, config_hash, data_hash, engine_version, calculation_version,
-  rule_version, idempotency_key, status, error, created_at`;
+const RUN_COLUMNS = `id, user_id, kind, shared_revision, strategy_source, strategy_ref_id,
+  strategy_version, request, request_hash, snapshot, result, system_result, config_hash, data_hash,
+  engine_version, calculation_version, rule_version, idempotency_key, status, error, created_at`;
 
-type RawRunRow = Omit<
-  BacktestRunRow,
-  'shared_revision' | 'created_at' | 'config_hash' | 'data_hash'
-> & {
-  shared_revision: number | string;
+type RawRunRow = Omit<BacktestRunRow, 'shared_revision' | 'strategy_version' | 'created_at'> & {
+  shared_revision: number | string | null;
+  strategy_version: number | string | null;
   created_at: Date | string;
-  config_hash: string;
-  data_hash: string | null;
 };
+
+const numOrNull = (value: number | string | null) => (value === null ? null : Number(value));
 
 const toRunRow = (row: RawRunRow): BacktestRunRow => ({
   ...row,
-  shared_revision: Number(row.shared_revision),
+  shared_revision: numOrNull(row.shared_revision),
+  strategy_version: numOrNull(row.strategy_version),
   created_at: new Date(row.created_at),
   config_hash: row.config_hash.trim(),
   data_hash: row.data_hash?.trim() ?? null,
@@ -98,23 +123,24 @@ export class StrategyBacktestRepository implements StrategyBacktestStore {
   async insert(record: BacktestRunRecord) {
     const [row] = await this.database.query<RawRunRow>(
       `insert into backtest_runs
-         (user_id, kind, shared_revision, request, request_hash, snapshot, result, research_result,
-          system_result, config_hash, data_hash, engine_version, calculation_version, rule_version,
-          idempotency_key, status, error)
-       values ($1, $2, $3, $4::jsonb, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb, $10, $11, $12,
-               $13, $14, $15, $16, $17::jsonb)
+         (user_id, kind, shared_revision, strategy_source, strategy_ref_id, strategy_version,
+          request, request_hash, snapshot, result, config_hash, data_hash, engine_version,
+          calculation_version, rule_version, idempotency_key, status, error)
+       values ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9::jsonb, $10::jsonb, $11, $12, $13, $14,
+               $15, $16, $17, $18::jsonb)
        on conflict (user_id, idempotency_key) do nothing
        returning ${RUN_COLUMNS}`,
       [
         record.user_id,
         record.kind,
         record.shared_revision,
+        record.strategy_source,
+        record.strategy_ref_id,
+        record.strategy_version,
         JSON.stringify(record.request),
         record.request_hash,
         json(record.snapshot),
         json(record.result),
-        json(record.research_result),
-        json(record.system_result),
         record.config_hash,
         record.data_hash,
         record.engine_version,
@@ -136,39 +162,40 @@ export class StrategyBacktestRepository implements StrategyBacktestStore {
     return row ? toRunRow(row) : null;
   }
 
-  async list(userId: string, limit: number) {
+  async list(userId: string, filter: BacktestListFilter) {
     const rows = await this.database.query<
-      Omit<BacktestRunSummaryRow, 'shared_revision' | 'created_at'> & {
-        shared_revision: number | string;
+      Omit<BacktestRunSummaryRow, 'created_at' | 'strategy_version'> & {
         created_at: Date | string;
+        strategy_version: number | string | null;
       }
     >(
-      `select id, kind, status, shared_revision, request->>'symbol' as symbol,
-              request->>'start' as start, request->>'end' as "end", created_at,
+      `select id, kind, status, strategy_source, strategy_ref_id, strategy_version, created_at,
               trim(config_hash) as config_hash,
-              coalesce(system_result->'kpis', result->'kpis') as kpis,
-              error->>'code' as error_code
+              snapshot->>'strategy_label' as strategy_label,
+              snapshot->>'version_label' as version_label,
+              snapshot->>'universe_label' as universe_label,
+              request->>'start' as start, request->>'end' as "end", request->>'symbol' as symbol,
+              case when kind = 'basket' then result->'kpis'
+                   else coalesce(system_result->'kpis', result->'kpis') end as kpis
          from backtest_runs
         where user_id = $1
+          and ($2::text is null or strategy_source = $2::text)
+          and ($3::text is null or strategy_ref_id = $3::text)
         order by created_at desc, id desc
-        limit $2`,
-      [userId, limit],
+        limit $4`,
+      [userId, filter.strategy_source ?? null, filter.strategy_id ?? null, filter.limit],
     );
     return rows.map((row) => ({
       ...row,
-      shared_revision: Number(row.shared_revision),
+      strategy_version: numOrNull(row.strategy_version),
       created_at: new Date(row.created_at),
     }));
   }
 
-  async sectors(symbols: readonly string[]) {
-    const rows = await this.database.query<{ symbol: string; sector: string | null }>(
-      `select upper(symbol) as symbol,
-              coalesce(nullif(trim(icb_lv2), ''), nullif(trim(icb_lv1), '')) as sector
-         from symbols
-        where upper(symbol) = any($1::text[])`,
-      [symbols],
+  async recordIqxEvent(templateId: string, version: number, userId: string, event: 'strategy_run') {
+    await this.database.query(
+      `insert into iqx_template_used (template_id, version, user_id, event) values ($1, $2, $3, $4)`,
+      [templateId, version, userId, event],
     );
-    return new Map(rows.map((row) => [row.symbol, row.sector]));
   }
 }

@@ -53,6 +53,7 @@ import { AcademyModule } from './modules/academy/academy.module.js';
 import { StrategyConfigModule } from './modules/strategy-config/strategy-config.module.js';
 import { ScreenerModule } from './modules/screener/screener.module.js';
 import { StrategyBacktestsModule } from './modules/strategy-backtests/strategy-backtests.module.js';
+import { StrategiesModule } from './modules/strategies/strategies.module.js';
 import { IqxTemplatesModule } from './modules/iqx-templates/iqx-templates.module.js';
 import { SavedFiltersModule } from './modules/saved-filters/saved-filters.module.js';
 import { ShopModule } from './modules/shop/shop.module.js';
@@ -106,6 +107,7 @@ export function createApiModule(
       StrategyConfigModule,
       ScreenerModule,
       StrategyBacktestsModule,
+      StrategiesModule,
       SavedFiltersModule,
       IqxTemplatesModule,
       ShopModule,

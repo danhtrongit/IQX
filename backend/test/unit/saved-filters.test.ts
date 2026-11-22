@@ -896,71 +896,18 @@ describe('SavedFiltersService reads stored 2.0 definitions without rewriting the
   });
 });
 
-describe('SavedFiltersService.deleteList and the Bot buy source (Strategy spec §8.7)', () => {
-  const usage = (listId: string, patch: Partial<BotUsageRow> = {}): BotUsageRow => ({
-    user_id: USER_A,
-    saved_list_id: listId,
-    revision: 3,
-    role: 'effective',
-    status: 'effective',
-    effective_session: '2026-01-05',
-    source_name: 'Danh sách ROE',
-    ...patch,
-  });
-
-  it('refuses with 409 LIST_IN_USE_BY_BOT while the list is the effective or pending source', async () => {
+describe('SavedFiltersService.deleteList (update 22-11 §2.2, §13: no Bot block)', () => {
+  it('soft-deletes a list even when a strategy was made from it (strategies copy their symbols)', async () => {
     const { database, service } = setup();
     const list = await service.createList(USER_A, listInput());
-    for (const role of ['effective', 'pending'] as const) {
-      database.state.botUsage = [
-        usage(list.id, { role, status: role === 'effective' ? 'effective' : 'pending' }),
-      ];
-      const error = await service.deleteList(USER_A, list.id).then(
-        () => null,
-        (reason: unknown) => reason,
-      );
-      expect(error).toBeInstanceOf(ConflictException);
-      const body = (error as ConflictException).getResponse() as {
-        code: string;
-        message: string;
-        details: Array<Record<string, unknown>>;
-      };
-      expect(body.code).toBe('LIST_IN_USE_BY_BOT');
-      expect(body.message).toContain('VN30');
-      expect(body.details).toEqual([
-        expect.objectContaining({
-          role,
-          revision: 3,
-          saved_list_id: list.id,
-          source_name: 'Danh sách ROE',
-          next_step:
-            role === 'pending'
-              ? 'cancel_pending_bot_source_or_wait_for_it_to_take_effect'
-              : 'switch_bot_source_to_another_list_or_vn30_first',
-        }),
-      ]);
-      // The list is untouched: still listed, not soft-deleted.
-      expect(database.state.lists[0]?.deleted_at).toBeNull();
-      expect((await service.listLists(USER_A)).items).toHaveLength(1);
-    }
-  });
-
-  it('deletes once the Bot no longer uses the list, under the Bot per-user lock and VN date', async () => {
-    const { database, service } = setup();
-    const list = await service.createList(USER_A, listInput());
-    // A cancelled / superseded / replaced revision does not come back from the usage query.
-    database.state.botUsage = [];
-    // 2026-01-02T18:30Z is already 2026-01-03 in Asia/Ho_Chi_Minh.
-    await service.deleteList(USER_A, list.id, new Date('2026-01-02T18:30:00Z'));
+    await service.deleteList(USER_A, list.id);
     expect(database.state.lists[0]?.deleted_at).toBeInstanceOf(Date);
-    expect(database.state.advisoryLocks).toEqual([USER_A]);
-    expect(database.state.usageQueries).toEqual([[USER_A, [list.id], '2026-01-03']]);
+    expect((await service.listLists(USER_A)).items).toHaveLength(0);
   });
 
-  it('only counts the Bot usage of the owner: another user list is simply not found', async () => {
+  it('another user list is simply not found', async () => {
     const { database, service } = setup();
     const list = await service.createList(USER_A, listInput());
-    database.state.botUsage = [usage(list.id)];
     await expectHttpError(service.deleteList(USER_B, list.id), NotFoundException, 'LIST_NOT_FOUND');
     expect(database.state.lists[0]?.deleted_at).toBeNull();
   });

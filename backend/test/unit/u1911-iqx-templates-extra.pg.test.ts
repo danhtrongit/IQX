@@ -123,13 +123,13 @@ describe.skipIf(!URL)('IQX templates extra acceptance on PostgreSQL (update 19-1
     for (const indicator of Object.values(content.definition.indicators))
       indicator.sell.enabled = false;
     const refused = await rejection(
-      service.publish(item!.id, { content, reason: 'QA', expected_version: 1 }, audit),
+      service.publish(item!.id, { content, reason: 'QA', expected_version: item!.version }, audit),
     );
     expect(refused).toMatchObject({ status: 422, body: { code: 'IQX_TEMPLATE_INVALID' } });
     expect(refused.body.details).toEqual(
       expect.arrayContaining([expect.objectContaining({ field: 'definition.sell' })]),
     );
-    expect((await service.adminDetail(item!.id)).current_version).toBe(1);
+    expect((await service.adminDetail(item!.id)).current_version).toBe(item!.version);
     expect(await publishAudits(item!.id)).toBe(0);
   });
 
@@ -139,7 +139,7 @@ describe.skipIf(!URL)('IQX templates extra acceptance on PostgreSQL (update 19-1
     const missing = await rejection(
       service.publish(
         second!.id,
-        { content: { ...content, when_wrong: '  ' }, reason: 'QA', expected_version: 1 },
+        { content: { ...content, when_wrong: '  ' }, reason: 'QA', expected_version: second!.version },
         audit,
       ),
     );
@@ -150,7 +150,7 @@ describe.skipIf(!URL)('IQX templates extra acceptance on PostgreSQL (update 19-1
         {
           content: { ...content, name: String(first!.content.name).toUpperCase() },
           reason: 'QA',
-          expected_version: 1,
+          expected_version: second!.version,
         },
         audit,
       ),

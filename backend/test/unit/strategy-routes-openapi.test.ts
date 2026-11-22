@@ -82,7 +82,7 @@ describe('Strategy routes OpenAPI contract', () => {
     expect(JSON.stringify(run.requestBody)).toContain('"period"');
   });
 
-  it('documents the six backtest KPIs by their spec names, with closed_trade_count', () => {
+  it('documents the seven basket KPIs (spec v2.0 §4.7) and the legacy flag', () => {
     const get = (document.paths['/api/v2/strategy/backtests/{id}'] as Record<string, Operation>)
       .get!;
     const schema = JSON.stringify(get.responses?.['200']?.content?.['application/json']?.schema);
@@ -90,12 +90,16 @@ describe('Strategy routes OpenAPI contract', () => {
       'total_return_pct',
       'annualized_return_pct',
       'max_drawdown_pct',
-      'closed_trade_count',
+      'closed_trades',
       'win_rate_pct',
-      'buy_hold_return_pct',
+      'basket_buy_hold_pct',
+      'vnindex_pct',
+      'legacy',
+      'per_symbol',
+      'open_positions',
+      'skipped_orders',
+      'basket_buy_hold',
     ])
       expect(schema).toContain(name);
-    expect(schema).toContain('Lợi nhuận danh mục (%)');
-    expect(schema).toContain('open_position_count');
   });
 });

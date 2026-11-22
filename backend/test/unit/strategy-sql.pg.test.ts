@@ -503,66 +503,8 @@ describe.skipIf(!URL)('Strategy SQL against PostgreSQL', () => {
       snapshot.id,
     );
 
-    // The Bot buys from the list => cannot delete the list or its snapshot (spec 8.7).
-    const rev = (revision: number, patch: Record<string, unknown>) => ({
-      listId: list.id,
-      revision,
-      kind: 'custom',
-      status: 'effective',
-      session: '2026-01-05',
-      ...patch,
-    });
-    const insertRevision = async (value: ReturnType<typeof rev>) =>
-      pool.query(
-        `INSERT INTO bot_universe_revisions
-           (user_id, bot_account_id, revision, kind, saved_list_id, list_as_of, name, tickers,
-            requested_at, effective_session, status, idempotency_key, request_hash, cancelled_at)
-         VALUES ($1, $2, $3, $4, $5, '2026-02-01', $6, $7::text[], now(), $8, $9, $10, $11, $12)`,
-        [
-          admin,
-          botAccount,
-          value.revision,
-          value.kind,
-          value.kind === 'custom' ? value.listId : null,
-          `${NAME_PREFIX} src ${value.revision}`,
-          value.kind === 'custom' ? ['PGA'] : null,
-          value.status === 'calendar_unavailable' ? null : value.session,
-          value.status,
-          `${NAME_PREFIX}-idem-${randomUUID()}`,
-          '8'.repeat(64),
-          value.status === 'cancelled' ? new Date() : null,
-        ],
-      );
-    const today = (iso: string) => new Date(`${iso}T05:00:00Z`);
-    await insertRevision(rev(1, { status: 'pending', session: '2026-02-02' }));
-    await expect(lists.deleteList(admin, list.id, today('2026-02-03'))).rejects.toMatchObject({
-      response: { code: 'LIST_IN_USE_BY_BOT', details: [{ role: 'effective', revision: 1 }] },
-    });
-    await expect(
-      results.deleteSnapshot(admin, list.result_snapshot_id!, today('2026-02-03')),
-    ).rejects.toMatchObject({
-      response: { code: 'LIST_IN_USE_BY_BOT' },
-    });
-    // Before its effective session the same revision is pending, and still blocks.
-    await expect(lists.deleteList(admin, list.id, today('2026-02-01'))).rejects.toMatchObject({
-      response: { details: [{ role: 'pending' }] },
-    });
-    // A newer revision to VN30 that has taken effect releases the list ...
-    await insertRevision(rev(2, { kind: 'vn30', status: 'pending', session: '2026-02-10' }));
-    await expect(lists.deleteList(admin, list.id, today('2026-02-05'))).rejects.toMatchObject({
-      response: { details: [{ role: 'effective', revision: 1 }] },
-    });
-    await lists.deleteList(admin, list.id, today('2026-02-10'));
-    // ... and a cancelled / superseded revision never blocks.
-    const other = await results.createListFromResult(admin, {
-      name: `${NAME_PREFIX} other`,
-      run_id: id,
-      selection: { mode: 'all' },
-      visibility: 'saved',
-    });
-    await insertRevision(rev(3, { listId: other.id, status: 'cancelled', session: '2026-03-01' }));
-    await insertRevision(rev(4, { listId: other.id, status: 'superseded', session: '2026-03-02' }));
-    await lists.deleteList(admin, other.id, today('2026-02-10'));
+    // Update 22-11 (§2.2, §13): strategies copy their symbols, so nothing blocks a delete.
+    await lists.deleteList(admin, list.id);
     // Soft delete only: the row and its provenance survive.
     const [kept] = (
       await pool.query(`SELECT deleted_at, result_snapshot_id FROM list_snapshots WHERE id = $1`, [

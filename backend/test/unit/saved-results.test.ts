@@ -712,32 +712,14 @@ describe('SavedResultsService', () => {
     expect(database.locks).toBe(2);
   });
 
-  it('refuses to delete a snapshot whose list is the Bot buy source, then soft-deletes once released', async () => {
+  it('soft-deletes a snapshot even when its list fed a strategy (update 22-11 §2.2)', async () => {
     const { database, service } = setup();
     const list = await service.createListFromResult(
       USER_A,
       listFromResultSchema.parse({ name: 'L', run_id: RUN_ID, selection: { mode: 'all' } }),
     );
-    database.usage = [
-      {
-        revision: 4,
-        role: 'effective',
-        status: 'effective',
-        effective_session: '2026-02-02',
-        source_name: 'L',
-        saved_list_id: list.id,
-      },
-    ];
-    await expect(
-      service.deleteSnapshot(USER_A, list.result_snapshot_id!, new Date('2026-02-03T03:00:00Z')),
-    ).rejects.toMatchObject({
-      response: { code: 'LIST_IN_USE_BY_BOT', details: [{ revision: 4, role: 'effective' }] },
-    });
-    expect(database.snapshots[0]!.deleted_at).toBeNull();
-    database.usage = [];
     await service.deleteSnapshot(USER_A, list.result_snapshot_id!);
     expect(database.snapshots[0]!.deleted_at).toBeInstanceOf(Date);
-    expect(database.locks).toBe(2);
     // The list keeps its evidence reference; the snapshot is only hidden.
     expect(database.lists[0]!.result_snapshot_id).toBe(list.result_snapshot_id);
     await expect(service.getSnapshot(USER_A, list.result_snapshot_id!)).rejects.toBeInstanceOf(

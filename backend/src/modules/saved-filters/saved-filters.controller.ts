@@ -177,8 +177,7 @@ export class SavedFiltersController {
   @HttpCode(204)
   @ApiOperation({
     operationId: 'deleteStrategySavedList',
-    summary:
-      'Soft-delete a list; 409 LIST_IN_USE_BY_BOT while the Bot uses it as a pending or effective buy source',
+    summary: 'Soft-delete a list (strategies keep their copied symbols)',
   })
   @ApiNoContentResponse({ description: 'Đã xóa danh sách' })
   async deleteList(

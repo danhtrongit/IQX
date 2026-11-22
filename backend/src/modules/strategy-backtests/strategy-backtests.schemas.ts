@@ -1,597 +1,236 @@
 import { z } from 'zod';
 
-import type { RuleOp } from '../quant/v2/index.js';
-import {
-  indicatorConfigSchema,
-  maxHoldingSchema,
-} from '../strategy-config/strategy-config.schemas.js';
-
-/** Longest requested range (inclusive days), same bound as the legacy backtest. */
-const MAX_RANGE_DAYS = 3653;
+/**
+ * Backtest theo rổ (spec Bot và Chiến lược v2.0 §4.7–4.9, §10.3; PLAN §6.1). Every run is a basket
+ * run of one strategy version (IQX, mine, or the unsaved draft) over the price store. Runs stored
+ * before update 22-11 (one symbol, shared config) are `legacy` and read-only.
+ *
+ * Money (VND) is a decimal string everywhere in responses (the engine computes in bigint).
+ */
 
 const isoDate = z.iso.date();
-const symbol = z
-  .string()
-  .trim()
-  .min(1)
-  .max(20)
-  .regex(/^[A-Za-z0-9._-]+$/)
-  .transform((value) => value.toUpperCase());
-const paramPathSchema = z.strictObject({
-  indicator: z.string().regex(/^[a-z0-9_]{1,64}$/),
-  side: z.enum(['buy', 'sell']),
-  /**
-   * Condition row of a row-based indicator (`ma.price_cross`) whose numeric field `key` is swept;
-   * absent for Volume, whose `key` is a side param. The engine rejects a path it cannot find.
-   */
-  rule: z
-    .string()
-    .regex(/^[a-z0-9_]{1,64}\.[a-z0-9_]{1,64}$/)
-    .optional(),
-  key: z.string().min(1).max(64),
-});
-export const strategyOriginSchema = z.strictObject({
-  type: z.literal('iqx_strategy'),
-  id: z.uuid(),
-  version: z.number().int().min(1),
+const timestamp = z.string();
+const hashSchema = z.string().regex(/^[a-f0-9]{64}$/);
+const money = z.string().regex(/^-?\d+$/);
+
+/** Body fields of the pre-22-11 single-symbol Backtest: refused with 422 STRATEGY_INVALID. */
+export const LEGACY_BACKTEST_FIELDS = [
+  'shared_revision',
+  'symbol',
+  'assumptions',
+  'research',
+  'system',
+  'draft',
+  'origin',
+] as const;
+
+const contentInput = z.object({
+  universe: z.record(z.string(), z.unknown()),
+  indicators: z.record(z.string(), z.unknown()),
+  max_holding: z.number(),
+  sell_only: z.boolean().optional(),
 });
 
-const gridValuesSchema = z.array(z.number().finite()).min(1).max(100);
-
-const researchSchema = z.discriminatedUnion('kind', [
+export const backtestStrategyRefSchema = z.discriminatedUnion('source', [
   z.strictObject({
-    kind: z.literal('sensitivity'),
-    path: paramPathSchema,
-    values: gridValuesSchema,
+    source: z.literal('iqx'),
+    /** Template uuid (or slug). */
+    id: z.string().min(1).max(64),
+    version: z.number().int().min(1).optional(),
   }),
-  z.strictObject({ kind: z.literal('out_of_sample'), split_date: isoDate }),
   z.strictObject({
-    kind: z.literal('walk_forward'),
-    path: paramPathSchema,
-    values: gridValuesSchema,
-    train_bars: z.number().int().min(1).max(3500),
-    test_bars: z.number().int().min(1).max(3500),
-    step_bars: z.number().int().min(1).max(3500),
-    criterion: z.enum(['net_return', 'cagr', 'profit_factor']),
-    min_trades: z.number().int().min(0).max(1000),
+    source: z.literal('user'),
+    id: z.uuid(),
+    version: z.number().int().min(1).optional(),
+  }),
+  z.strictObject({
+    source: z.literal('draft'),
+    content: contentInput,
+    /** The saved version the draft was opened from (labels + "Lần chạy đã lưu" filter). */
+    base: z
+      .strictObject({ id: z.uuid(), version: z.number().int().min(1) })
+      .nullable()
+      .optional(),
   }),
 ]);
-export type BacktestResearchInput = z.infer<typeof researchSchema>;
+export type BacktestStrategyRef = z.infer<typeof backtestStrategyRefSchema>;
 
 /**
- * CONTRACTS §4.1 frozen `system` payload. Ranges are repeated here for early
- * 4xx and OpenAPI; the engine's `validateSystemOptions` stays authoritative
- * (cross-field rules and the recursive `logic` tree).
+ * Loose on purpose: a body with legacy fields (`symbol`, `shared_revision`, …) must reach the
+ * service, which answers 422 STRATEGY_INVALID (PLAN §6.1 "Removed") instead of a generic 400.
  */
-const systemSchema = z.strictObject({
-  symbols: z.array(symbol).min(2).max(30).optional(),
-  universe: z
-    .strictObject({
-      list_id: z.uuid().optional(),
-      market: z.enum(['HOSE', 'HNX', 'UPCOM', 'ALL']).optional(),
-    })
-    .refine((value) => value.list_id !== undefined || value.market !== undefined, {
-      message: 'Cần chọn danh sách hoặc sàn cho rổ cổ phiếu',
-    })
-    .optional(),
-  ranking: z
-    .strictObject({
-      key: z.enum(['roc_20', 'rs_market', 'relative_volume', 'distance_52w_high']),
-      direction: z.enum(['desc', 'asc']),
-    })
-    .optional(),
-  logic: z
-    .looseObject({ type: z.enum(['indicator', 'and', 'or', 'not']) })
-    .optional()
-    .describe('LogicNode over buy-side indicator ids (depth ≤ 4, children ≤ 16)'),
-  priority: z.literal('exit_first').optional(),
-  cooldown_bars: z.number().int().min(1).max(60).optional(),
-  sizing: z
-    .discriminatedUnion('mode', [
-      z.strictObject({ mode: z.literal('pct_nav'), pct: z.number().finite().min(1).max(100) }),
-      z.strictObject({
-        mode: z.literal('fixed_amount'),
-        amount_vnd: z.number().finite().min(1_000_000),
-      }),
-    ])
-    .optional(),
-  max_positions: z.number().int().min(1).max(30).optional(),
-  exits: z
-    .strictObject({
-      stop_loss_pct: z.number().finite().min(0.5).max(50).optional(),
-      take_profit_pct: z.number().finite().min(0.5).max(200).optional(),
-      trailing_pct: z.number().finite().min(0.5).max(50).optional(),
-      max_holding: z.number().int().min(1).max(250).optional(),
-    })
-    .optional(),
-  max_symbol_weight_pct: z.number().finite().min(1).max(100).optional(),
-  max_sector_weight_pct: z.number().finite().min(1).max(100).optional(),
-  max_correlation: z.number().finite().min(0).max(1).optional(),
-  correlation_lookback: z.number().int().min(20).max(250).optional(),
-  rebalance: z.strictObject({ every_bars: z.number().int().min(5).max(250) }).optional(),
-  portfolio_drawdown_stop_pct: z.number().finite().min(1).max(90).optional(),
+export const backtestRunBodySchema = z.looseObject({
+  idempotency_key: z.string().min(8).max(128),
+  strategy: backtestStrategyRefSchema,
+  start: isoDate,
+  end: isoDate,
+  /**
+   * Quản trị › Mẫu IQX "Chạy để thử" (§7.2): the draft runs and answers like any run but is NOT
+   * stored. Draft only.
+   */
+  trial: z.boolean().optional(),
 });
-export type BacktestSystemInput = z.infer<typeof systemSchema>;
-
-export const backtestRunBodySchema = z
-  .strictObject({
-    idempotency_key: z.string().min(8).max(128),
-    /** 0 only with `draft`: an account that never saved runs the draft over the registry defaults. */
-    shared_revision: z.number().int().min(0),
-    symbol,
-    start: isoDate,
-    end: isoDate,
-    assumptions: z
-      .strictObject({
-        capital: z.number().finite().min(1_000_000).max(1_000_000_000_000).optional(),
-        fee_preset: z.enum(['standard', 'none']).default('standard'),
-        execution: z.enum(['next_open', 'same_close']).default('next_open'),
-      })
-      .prefault({}),
-    research: researchSchema.optional(),
-    system: systemSchema.optional(),
-    /**
-     * Backtest bản nháp (spec Tab IQX §3.3): indicators replacing those of `shared_revision` for
-     * this run only. Validated like a saved PATCH; nothing is written to the shared config.
-     * `max_holding` (Giữ tối đa) replaces the saved one when present (null = no time exit);
-     * absent keeps the saved one. `indicators` may be empty only when `max_holding` is sent.
-     */
-    draft: z
-      .strictObject({
-        indicators: z.record(z.string().regex(/^[a-z0-9_]{1,64}$/), indicatorConfigSchema),
-        max_holding: maxHoldingSchema.nullable().optional(),
-      })
-      .refine(
-        (value) => Object.keys(value.indicators).length > 0 || value.max_holding !== undefined,
-        { path: ['indicators'], message: 'Cần ít nhất một chỉ báo.' },
-      )
-      .optional(),
-    /** The Chiến lược IQX the draft started from (display and statistics only). */
-    origin: strategyOriginSchema.optional(),
-    /**
-     * Soạn thử Chiến lược IQX (Quản trị › Mẫu IQX §5.3): the draft runs and answers like any run but is
-     * NOT stored, so the admin's own run history never changes. Only with `draft`.
-     */
-    trial: z.boolean().optional(),
-  })
-  .superRefine((value, context) => {
-    if (value.origin && !value.draft)
-      context.addIssue({
-        code: 'custom',
-        path: ['origin'],
-        message: 'Nguồn Chiến lược IQX chỉ đi kèm bản nháp.',
-      });
-    if (value.trial && !value.draft)
-      context.addIssue({
-        code: 'custom',
-        path: ['trial'],
-        message: 'Chạy thử không lưu chỉ dùng cho bản nháp.',
-      });
-    if (value.shared_revision === 0 && !value.draft)
-      context.addIssue({
-        code: 'custom',
-        path: ['shared_revision'],
-        message: 'Chọn phiên bản cấu hình đã lưu (từ 1).',
-      });
-    const start = Date.parse(value.start),
-      end = Date.parse(value.end);
-    if (start >= end)
-      context.addIssue({
-        code: 'custom',
-        path: ['end'],
-        message: 'Ngày kết thúc phải sau ngày bắt đầu',
-      });
-    if ((end - start) / 86_400_000 > MAX_RANGE_DAYS)
-      context.addIssue({ code: 'custom', path: ['end'], message: 'Khoảng backtest tối đa 10 năm' });
-    if (
-      value.research?.kind === 'out_of_sample' &&
-      (value.research.split_date <= value.start || value.research.split_date > value.end)
-    )
-      context.addIssue({
-        code: 'custom',
-        path: ['research', 'split_date'],
-        message: 'Ngày tách phải nằm trong khoảng backtest',
-      });
-  });
 export type BacktestRunBody = z.infer<typeof backtestRunBodySchema>;
 
 export const backtestRunIdSchema = z.uuid();
 
 export const backtestListQuerySchema = z.object({
+  strategy_source: z.enum(['iqx', 'user', 'draft']).optional(),
+  /** Matches the run's strategy id (a draft run carries the id of the version it was edited from). */
+  strategy_id: z.string().min(1).max(64).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 export type BacktestListQuery = z.infer<typeof backtestListQuerySchema>;
 
-// ---------------------------------------------------------------------------
-// Responses (OpenAPI only; the engine types are the runtime source of truth).
-
-const runKindSchema = z.enum([
-  'single',
-  'sensitivity',
-  'out_of_sample',
-  'walk_forward',
-  'portfolio',
-]);
-const runStatusSchema = z.enum(['succeeded', 'failed']);
-const hashSchema = z.string().regex(/^[a-f0-9]{64}$/);
-
-/**
- * Engine-native KPI record. Only the advanced system (portfolio) result still exposes it; the
- * single-symbol Strategy backtest returns `strategyKpisSchema` (spec §6.6, exactly six KPIs).
- */
-const engineKpisSchema = z.object({
-  net_return: z.number(),
-  cagr: z.number(),
-  max_drawdown: z.number(),
-  n_trades: z.number().int(),
-  n_wins: z.number().int(),
-  win_rate: z.number().nullable(),
-  buy_hold_return: z.number(),
-  market_return: z.number().nullable(),
-  profit_factor: z.number().nullable(),
+export const backtestTradesQuerySchema = z.object({
+  offset: z.coerce.number().int().min(0).default(0),
+  limit: z.coerce.number().int().min(1).max(500).default(20),
 });
+export type BacktestTradesQuery = z.infer<typeof backtestTradesQuerySchema>;
 
-/** Six KPIs of spec §6.6. Every `*_pct` is in percentage points (12.3 = 12.3%, never a ratio). */
-export const strategyKpisSchema = z.object({
+// ---------------------------------------------------------------------------
+// Responses
+
+const exitReasonSchema = z.enum(['indicator', 'max_holding']);
+const skipCodeSchema = z.enum([
+  'session_buy_limit',
+  'insufficient_cash',
+  'budget_below_lot',
+  'symbol_cap',
+]);
+
+export const basketKpisSchema = z.object({
   total_return_pct: z.number(),
+  /** null (`—`) below 60 sessions. */
   annualized_return_pct: z.number().nullable(),
   max_drawdown_pct: z.number(),
-  closed_trade_count: z.number().int(),
+  closed_trades: z.number().int(),
   win_rate_pct: z.number().nullable(),
-  buy_hold_return_pct: z.number(),
-});
-
-const curvePointSchema = z.object({
-  date: isoDate,
-  value: z.number(),
-  return_pct: z.number(),
-  buy_hold_pct: z.number(),
-  market_pct: z.number().nullable(),
-  phase: z.literal('before_first_execution').optional(),
-});
-
-const closedTradeSchema = z.object({
-  number: z.number().int(),
-  qty: z.number(),
-  entry_date: isoDate,
-  entry_signal_date: isoDate,
-  entry_price: z.number(),
-  exit_date: isoDate,
-  exit_signal_date: isoDate,
-  exit_price: z.number(),
-  hold: z.number().int(),
-  pnl: z.number(),
-  pnl_pct: z.number(),
-  exit_reason: z.string(),
-  concurrent_reasons: z.array(z.string()).optional(),
-});
-
-const openPositionSchema = z.object({
-  qty: z.number(),
-  price: z.number(),
-  cost: z.number(),
-  index: z.number().int(),
-  date: isoDate,
-  signal_date: isoDate,
-  last_price: z.number(),
-  market_value: z.number(),
-  unrealized_pnl: z.number(),
-});
-
-/**
- * Every operator an evidence row can report: the comparison/cross ops and Bollinger/OBV actions of
- * the condition rows (`iqx-rules-4.0`) plus the membership ops of runs stored before. The type
- * check below fails the build when the engine gains an operator that is not listed here.
- */
-const RULE_EVIDENCE_OPS = [
-  '>',
-  '<',
-  'cross_up',
-  'cross_down',
-  'reenter_lower',
-  'reenter_upper',
-  'break_upper',
-  'break_lower',
-  'cross_up_middle',
-  'cross_down_middle',
-  'break_high',
-  'break_low',
-  '∈',
-  '∉',
-] as const satisfies readonly RuleOp[];
-const _everyRuleOpListed: Exclude<RuleOp, (typeof RULE_EVIDENCE_OPS)[number]> extends never
-  ? true
-  : never = true;
-
-/**
- * One evaluated condition row. Runs stored before `iqx-rules-4.0` keep their evidence as it was
- * written (`id` = registry rule id `r1`, `op` = `>` `<` `∈` `∉` or a Bollinger action, no
- * `values`); this shape accepts both.
- */
-export const ruleEvidenceSchema = z.object({
-  /** Row id (`rsi.level`); `r1`/`r2`… on runs stored before `iqx-rules-4.0`. */
-  id: z.string(),
-  indicator: z.string(),
-  side: z.enum(['buy', 'sell']),
-  /** The row's `op`, its `action` (Bollinger/OBV), or `>`/`<` for a direction (lên/tăng/mở rộng). */
-  op: z.enum(RULE_EVIDENCE_OPS),
-  lhs: z.number().nullable(),
-  rhs: z.number().nullable(),
-  rhs_lower: z.number().nullable().optional(),
-  rhs_upper: z.number().nullable().optional(),
-  /** true / false / null (= not evaluable: missing data, never a pass). */
-  result: z.boolean().nullable(),
-  missing: z.boolean(),
-  previous_lhs: z.number().nullable().optional(),
-  previous_rhs: z.number().nullable().optional(),
-  /** The row's own stored values (periods, threshold, op…); absent on runs stored before V3. */
-  values: z.record(z.string(), z.union([z.number(), z.string()])).optional(),
-});
-
-const conditionEvidenceSchema = z.object({
-  indicator_ids: z.array(z.string()),
-  rules: z.array(ruleEvidenceSchema),
-});
-
-/** Closed trade (§6.8): signal date ≠ fill date, price, fees, quantity, net cash, condition values. */
-export const closedTradeViewSchema = closedTradeSchema.extend({
-  entry_fee: z.number(),
-  entry_total: z.number(),
-  exit_gross: z.number(),
-  exit_fee_tax: z.number(),
-  exit_net: z.number(),
-  outcome: z.enum(['win', 'loss', 'flat']),
-  entry_conditions: conditionEvidenceSchema.nullable(),
-  exit_conditions: conditionEvidenceSchema.nullable(),
-});
-
-const openPositionViewSchema = openPositionSchema.extend({
-  unrealized_pnl_basis: z.literal('market_value_at_last_close_minus_entry_total_before_sell_costs'),
-  entry_conditions: conditionEvidenceSchema.nullable(),
-});
-
-const pendingOrderViewSchema = z.object({
-  action: z.enum(['buy', 'sell']),
-  signal_date: z.string(),
-  reason: z.literal('end_of_range'),
-  /** Sell of a run with a Giữ tối đa: `sell_consensus` or `max_holding` (same codes as a trade). */
-  exit_reason: z.string().optional(),
-  note: z.string(),
-  evidence: conditionEvidenceSchema.nullable(),
-});
-
-const chartSeriesSchema = z.object({
-  id: z.enum(['strategy', 'buy_hold', 'market']),
-  label: z.string(),
-  field: z.enum(['return_pct', 'buy_hold_pct', 'market_pct']),
-  available: z.boolean(),
-  end_value_pct: z.number().nullable(),
-  unavailable_reason: z.string().nullable(),
-});
-
-const simulationSchema = z.object({
-  contract: z.literal('iqx-strategy-backtest-1.0'),
-  execution: z.enum(['next_open', 'same_close']),
-  execution_label: z.string(),
-  fill_price: z.string(),
-  caveat: z.string(),
-  signal_after_open_fill: z.boolean(),
-  position_policy: z.literal('single_symbol_long_only_one_position'),
-  sizing: z.literal('all_available_cash_including_buy_fee_rounded_down_to_lot'),
-  exits: z.enum([
-    'none: no stop, take-profit, trailing or max holding',
-    'max_holding_only: no stop, take-profit or trailing',
-  ]),
-  /** Giữ tối đa (phiên) applied by the run; null/absent = no time exit. */
-  max_holding: z.number().int().nullable().optional(),
-  min_held_bars: z.number().int(),
-  min_held_bars_status: z.literal('carried_over_from_reference_engine_pending_product_decision'),
-  fee_model: z.literal('buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate'),
-  settlement: z.literal('not_modelled'),
-  liquidity: z.literal('not_modelled'),
-  slippage: z.literal('not_modelled'),
-  price_adjustment: z.enum(['provider_adjusted', 'not_confirmed']),
-  annualization_sessions: z.literal(252),
-  buy_hold_basis: z.literal('close_ratio_before_fees_and_dividends'),
-});
-
-const runOptionsSchema = z.object({
-  capital: z.number(),
-  fee_buy: z.number(),
-  fee_sell: z.number(),
-  lot: z.number().int(),
-  execution: z.enum(['next_open', 'same_close']),
-  min_held_bars: z.number().int(),
-  start: isoDate,
-  end: isoDate,
-});
-
-const configSchema = z.looseObject({
-  schema_version: z.string(),
-  indicators: z.record(z.string(), z.unknown()),
-  /** Giữ tối đa (phiên) of the run's config; absent/null = no time exit. */
-  max_holding: z.number().int().nullable().optional(),
-});
-
-const executionProfileSchema = z.object({
-  stop_loss: z.literal('none'),
-  take_profit_pct: z.null(),
-  /** Giữ tối đa (phiên) of the run's config; null = no time exit. */
-  max_holding: z.number().int().nullable(),
-  trailing: z.literal('none'),
-  position_size: z.literal('all_cash'),
-  lot_size: z.number().int(),
-  min_held_bars: z.number().int(),
+  basket_buy_hold_pct: z.number(),
+  vnindex_pct: z.number().nullable(),
 });
 
 export const dataWarningSchema = z.object({
   code: z.string(),
   message: z.string(),
   symbols: z.array(z.string()).optional(),
-  indicators: z.array(z.string()).optional(),
 });
 
-/** "Mua và giữ {mã}" of a run (spec Tab IQX §3.5); absent on runs stored before it. */
-export const buyAndHoldSchema = z.object({
-  basis: z.literal('iqx-buy-hold-1.0'),
-  entry_date: isoDate.nullable(),
-  entry_price: z.number().nullable(),
-  qty: z.number(),
-  buy_fee: z.number(),
-  cash_left: z.number(),
-  capital: z.number(),
-  end_value: z.number(),
-  return_pct: z.number(),
-  curve: z.array(z.object({ date: isoDate, value: z.number(), return_pct: z.number() })),
-});
-
-/** Nhãn nguồn of a run: the saved revision, or the draft (from a Chiến lược IQX or not). */
-export const runSourceSchema = z.object({
-  kind: z.enum(['saved', 'draft']),
-  label: z.string(),
-  origin: z
-    .object({
-      type: z.literal('iqx_strategy'),
-      id: z.uuid(),
-      version: z.number().int(),
-      name: z.string(),
-    })
-    .nullable(),
-});
-
-const runSnapshotSchema = z.object({
-  config: configSchema,
-  options: runOptionsSchema,
-  actual_start: isoDate,
-  actual_end: isoDate,
-  bar_count: z.number().int(),
-  shared_revision: z.number().int(),
-  revision_saved_at: z.string(),
-  config_hash: hashSchema,
+export const basketTradeSchema = z.object({
   symbol: z.string(),
+  qty: z.number().int(),
+  entry_session: isoDate,
+  entry_price_vnd: money,
+  entry_cost_vnd: money,
+  exit_session: isoDate,
+  price_vnd: money,
+  gross_vnd: money,
+  fee_vnd: money,
+  tax_vnd: money,
+  net_vnd: money,
+  pnl_vnd: money,
+  pnl_pct: z.number(),
+  exit_reason: exitReasonSchema,
+  exit_reasons: z.array(exitReasonSchema),
+  holding_sessions: z.number().int(),
+  counted_sessions: z.number().int(),
+  max_holding_at_exit: z.number().int(),
+});
+
+const strategyRefViewSchema = z.object({
+  source: z.enum(['iqx', 'user', 'draft']),
+  id: z.string().nullable(),
+  version: z.number().int().nullable(),
+});
+
+export const basketSnapshotSchema = z.object({
+  strategy_ref: strategyRefViewSchema,
+  strategy_label: z.string(),
+  version_label: z.string().nullable(),
+  /** `Kết quả · {label}` (§4.7). */
+  result_label: z.string(),
+  subtitle: z.string(),
+  content: z.record(z.string(), z.unknown()),
+  config_hash: hashSchema,
+  universe_label: z.string(),
+  universe_resolved: z.array(z.string()),
+  excluded_symbols: z.array(z.string()),
   requested_start: isoDate,
   requested_end: isoDate,
-  data_source: z.string(),
-  data_source_priority: z.number().nullable(),
+  data_store: z.literal('flashback_vn100'),
+  data_as_of: isoDate.nullable(),
+  data_hash: z.string(),
+  price_unit: z.literal('VND'),
   adjusted: z.boolean(),
-  skipped_rows: z.number().int(),
-  data_hash: hashSchema,
-  benchmark: z.object({
-    symbol: z.literal('VNINDEX'),
-    available: z.boolean(),
-    source: z.string().nullable(),
+  rules_version: z.string(),
+  fee_rules: z.object({
+    buy_fee_bps: z.number(),
+    sell_fee_bps: z.number(),
+    sell_tax_bps: z.number(),
+    lot_size: z.number(),
   }),
-  warmup_sessions_requested: z.number().int(),
-  warmup_bars: z.number().int(),
-  fee_preset: z.enum(['standard', 'none']),
-  fees: z.object({ buy: z.number(), sell: z.number() }),
-  lot_size: z.number().int(),
-  execution: z.enum(['next_open', 'same_close']),
-  capital: z.number(),
-  execution_profile: z.literal('CLEAN_TECH_2.0'),
-  profile: executionProfileSchema,
-  slippage: z.literal('not_modelled'),
-  open_position_policy: z.literal('mark_to_market_last_close'),
-  /** Strategy-spec execution profile (§6.1-§6.3) recorded with every run; absent on pre-v1 runs. */
-  simulation: simulationSchema.optional(),
-  versions: z.object({
-    schema_version: z.string(),
-    calculation_version: z.string(),
-    rule_version: z.string(),
-    engine_version: z.string(),
-    formula_version: z.string(),
-  }),
-  data_warnings: z.array(dataWarningSchema),
-  /** Absent on runs stored before the tab IQX: shown as "—", never recomputed. */
-  buy_and_hold: buyAndHoldSchema.nullable().optional(),
-  /** Absent on runs stored before the draft backtest: a run of the saved revision. */
-  source: runSourceSchema.optional(),
-  research: z.record(z.string(), z.unknown()).nullable(),
-  system: z
-    .object({
-      options: z.record(z.string(), z.unknown()),
-      symbols: z.array(z.string()),
-      excluded_symbols: z.array(z.string()),
-      universe: z.record(z.string(), z.unknown()).nullable(),
-      universe_policy: z.literal('explicit_symbols'),
-      sectors: z.record(z.string(), z.string().nullable()).nullable(),
-      data_hash: hashSchema,
-      profile: z.record(z.string(), z.unknown()),
-    })
-    .nullable(),
+  initial_cash_vnd: money,
+  warnings: z.array(dataWarningSchema),
 });
 
-const runResultSchema = z.object({
-  schema_version: z.string(),
-  engine_version: z.string(),
-  calculation_version: z.string(),
-  rule_version: z.string(),
-  formula_version: z.string(),
-  profile: executionProfileSchema,
-  snapshot: runSnapshotSchema,
-  initial: curvePointSchema,
-  /** Full curve, never down-sampled; KPIs are computed on it. Prepend `initial` for the 0% origin. */
-  curve: z.array(curvePointSchema),
-  /** Full trade history of the run (also paged by GET /:id/trades). */
-  trades: z.array(closedTradeViewSchema),
-  open_position: openPositionViewSchema.nullable(),
-  cash: z.number(),
-  canceled: z.array(
+export const basketResultSchema = z.object({
+  sessions: z.number().int(),
+  start_session: isoDate.nullable(),
+  end_session: isoDate.nullable(),
+  initial_cash_vnd: money,
+  final_nav_vnd: money,
+  cash_end_vnd: money,
+  kpis: basketKpisSchema,
+  curve: z.array(
     z.object({
-      reason: z.literal('end_of_range'),
-      action: z.enum(['buy', 'sell']),
-      signalIndex: z.number().int(),
-      exit_reason: z.string().optional(),
-      concurrent_reasons: z.array(z.string()).optional(),
+      date: isoDate,
+      nav_vnd: money,
+      strategy: z.number(),
+      basket: z.number(),
+      vnindex: z.number().nullable(),
     }),
   ),
-  contract: z.literal('iqx-strategy-backtest-1.0'),
-  /** Exactly the six KPIs of spec §6.6 (percentage points). */
-  kpis: strategyKpisSchema,
-  kpi_basis: z.record(z.string(), z.unknown()),
-  counts: z.object({
-    buy_count: z.number().int(),
-    closed_trade_count: z.number().int(),
-    open_position_count: z.number().int(),
-    pending_order_count: z.number().int(),
+  trades: z.array(basketTradeSchema),
+  time_exits: z.number().int(),
+  per_symbol: z.array(
+    z.object({
+      symbol: z.string(),
+      closed_trades: z.number().int(),
+      wins: z.number().int(),
+      realized_pnl_vnd: money,
+      unrealized_pnl_vnd: money,
+      contribution_pct: z.number(),
+    }),
+  ),
+  open_positions: z.array(
+    z.object({
+      symbol: z.string(),
+      entry_session: isoDate,
+      entry_price_vnd: money,
+      qty: z.number().int(),
+      last_close_vnd: money,
+      holding_sessions: z.number().int(),
+      counted_sessions: z.number().int(),
+      max_holding: z.number().int(),
+      unrealized_pnl_vnd: money,
+      unrealized_pct: z.number(),
+    }),
+  ),
+  skipped_orders: z.object({
+    counts: z.partialRecord(skipCodeSchema, z.number().int()),
+    total: z.number().int(),
+    items: z.array(
+      z.object({ date: isoDate, symbol: z.string(), code: skipCodeSchema, message: z.string() }),
+    ),
   }),
-  /** Engine figures that are not KPIs of the Strategy page. */
-  supplementary: z.object({
-    winning_trade_count: z.number().int(),
-    profit_factor: z.number().nullable(),
-  }),
-  chart: z.object({
-    title: z.literal('Lợi nhuận danh mục (%)'),
-    unit: z.literal('percent_points'),
-    baseline_field: z.literal('initial'),
-    series: z.array(chartSeriesSchema),
-    point_count: z.number().int(),
-  }),
-  pending_orders: z.array(pendingOrderViewSchema),
+  basket_buy_hold: z.object({ symbols: z.array(z.string()), return_pct: z.number() }),
 });
 
-const researchResultSchema = z
-  .looseObject({
-    type: z.enum(['sensitivity', 'out_of_sample_fixed_config', 'walk_forward_windows']),
-    data_hash: hashSchema,
-  })
-  .describe(
-    'Advanced engine output: sensitivity {candidates}, out_of_sample {train,test,attempt}, walk_forward {windows}',
-  );
-
-const systemResultSchema = z.object({
-  curve: z.array(curvePointSchema),
-  trades: z.array(closedTradeSchema.extend({ symbol: z.string(), partial: z.boolean() })),
-  positions_open: z.array(
-    openPositionSchema.extend({
-      symbol: z.string(),
-      sector: z.string().nullable(),
-      peak_close: z.number(),
-    }),
-  ),
-  kpis: engineKpisSchema,
-  ledger_size: z.number().int(),
-  applied: z.array(z.string()),
+/** KPIs shown for a pre-22-11 run ("Cấu hình cũ · Xem số liệu", §4.9). */
+export const legacyKpisSchema = z.object({
+  total_return_pct: z.number(),
+  max_drawdown_pct: z.number(),
+  closed_trades: z.number().int(),
 });
 
 const runErrorSchema = z.object({
@@ -603,56 +242,58 @@ const runErrorSchema = z.object({
 
 export const backtestRunResponseSchema = z.object({
   run_id: z.uuid(),
-  status: runStatusSchema,
-  kind: runKindSchema,
-  shared_revision: z.number().int(),
-  created_at: z.string(),
-  request: z.record(z.string(), z.unknown()),
-  snapshot: runSnapshotSchema.nullable(),
-  result: runResultSchema.nullable(),
-  research_result: researchResultSchema.nullable(),
-  system_result: systemResultSchema.nullable(),
-  data_warnings: z.array(dataWarningSchema),
+  status: z.enum(['succeeded', 'failed']),
+  legacy: z.boolean(),
+  /** Run not stored (admin "Chạy để thử"). */
+  trial: z.boolean(),
+  created_at: timestamp,
+  snapshot: basketSnapshotSchema.nullable(),
+  result: basketResultSchema.nullable(),
+  /** Legacy runs only. */
+  legacy_view: z
+    .object({
+      kind: z.string(),
+      symbol: z.string().nullable(),
+      start: isoDate.nullable(),
+      end: isoDate.nullable(),
+      kpis: legacyKpisSchema.nullable(),
+      note: z.string(),
+    })
+    .nullable(),
   error: runErrorSchema.nullable(),
 });
 
-export const backtestRunListSchema = z.object({
-  items: z.array(
-    z.object({
-      run_id: z.uuid(),
-      kind: runKindSchema,
-      status: runStatusSchema,
-      shared_revision: z.number().int(),
-      symbol: z.string(),
-      start: isoDate,
-      end: isoDate,
-      created_at: z.string(),
-      config_hash: hashSchema,
-      kpis: strategyKpisSchema.nullable(),
-      error_code: z.string().nullable(),
-    }),
-  ),
+export const backtestRunListItemSchema = z.object({
+  run_id: z.uuid(),
+  created_at: timestamp,
+  legacy: z.boolean(),
+  status: z.enum(['succeeded', 'failed']),
+  strategy_source: z.enum(['iqx', 'user', 'draft']).nullable(),
+  strategy_id: z.string().nullable(),
+  strategy_version: z.number().int().nullable(),
+  strategy_label: z.string(),
+  version_label: z.string().nullable(),
+  universe_label: z.string(),
+  start: isoDate.nullable(),
+  end: isoDate.nullable(),
+  config_hash: hashSchema,
+  kpis: z
+    .object({
+      total_return_pct: z.number(),
+      max_drawdown_pct: z.number(),
+      closed_trades: z.number().int(),
+    })
+    .nullable(),
 });
 
-export const backtestTradesQuerySchema = z.object({
-  offset: z.coerce.number().int().min(0).default(0),
-  limit: z.coerce.number().int().min(1).max(500).default(100),
-});
-export type BacktestTradesQuery = z.infer<typeof backtestTradesQuerySchema>;
+export const backtestRunListSchema = z.object({ items: z.array(backtestRunListItemSchema) });
 
-/** One page of the complete trade history; `total` is the whole run, not the page. */
+/** One page of the trades, newest exit first; `total` counts the whole run. */
 export const backtestTradesResponseSchema = z.object({
   run_id: z.uuid(),
   total: z.number().int(),
   offset: z.number().int(),
   limit: z.number().int(),
-  counts: z.object({
-    buy_count: z.number().int(),
-    closed_trade_count: z.number().int(),
-    open_position_count: z.number().int(),
-    pending_order_count: z.number().int(),
-  }),
-  items: z.array(closedTradeViewSchema),
-  open_position: openPositionViewSchema.nullable(),
-  pending_orders: z.array(pendingOrderViewSchema),
+  time_exits: z.number().int(),
+  items: z.array(basketTradeSchema),
 });

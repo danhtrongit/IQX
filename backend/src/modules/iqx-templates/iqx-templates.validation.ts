@@ -39,6 +39,8 @@ export type IqxFilterContent = {
 };
 
 export type IqxStrategyDefinition = {
+  /** Rổ của chiến lược IQX: chỉ VN30 hoặc VN100 (spec Bot và Chiến lược v2.0 §7.1). */
+  universe: { type: 'vn30' | 'vn100' };
   indicators: Record<string, IndicatorConfig>;
   max_holding: number;
 };
@@ -134,8 +136,8 @@ const isSideOn = (indicator: IndicatorConfig | undefined, side: 'buy' | 'sell'):
 
 /**
  * The Bot condition validator (`validateConfig`, both tabs, every row) over the registry defaults
- * with the template's indicators merged in exactly like a saved PATCH, plus §5.4: one switched-on
- * Mua row, one switched-on Bán row, Giữ tối đa 3–250.
+ * with the template's indicators merged in exactly like a saved PATCH, plus §5.4 / v2.0 §7.2: one
+ * switched-on Mua row, one switched-on Bán row, Giữ tối đa 3–250, basket VN30 or VN100.
  */
 export function validateStrategyDefinition(
   definition: unknown,
@@ -155,8 +157,18 @@ export function validateStrategyDefinition(
       field: 'definition.max_holding',
       message: `Giữ tối đa phải từ ${IQX_MAX_HOLDING.min} đến ${IQX_MAX_HOLDING.max} phiên, số nguyên.`,
     });
+  const universe = record.universe as { type?: unknown } | undefined;
+  const universeType =
+    universe &&
+    typeof universe === 'object' &&
+    Object.keys(universe).length === 1 &&
+    (universe.type === 'vn30' || universe.type === 'vn100')
+      ? universe.type
+      : null;
+  if (!universeType)
+    errors.push({ field: 'definition.universe', message: 'Rổ mã: chọn VN30 hoặc VN100.' });
   for (const key of Object.keys(record)) {
-    if (key !== 'indicators' && key !== 'max_holding')
+    if (key !== 'indicators' && key !== 'max_holding' && key !== 'universe')
       errors.push({ field: `definition.${key}`, message: `Trường không hợp lệ: ${key}.` });
   }
   const raw = record.indicators;
@@ -210,7 +222,14 @@ export function validateStrategyDefinition(
   // Only the indicators the template carries; normalised exactly as a saved PATCH would store them.
   const stored: Record<string, IndicatorConfig> = {};
   for (const id of Object.keys(indicators)) stored[id] = merged.indicators[id]!;
-  return { ok: true, definition: { indicators: stored, max_holding: maxHolding as number } };
+  return {
+    ok: true,
+    definition: {
+      universe: { type: universeType! },
+      indicators: stored,
+      max_holding: maxHolding as number,
+    },
+  };
 }
 
 /** Full check of a template's content for publish (§5.3, §5.4), pair slug excluded (needs the DB). */

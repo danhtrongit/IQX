@@ -46,6 +46,9 @@ import {
   iqxTemplateIdSchema,
   iqxUsedBodySchema,
   iqxUsedResponseSchema,
+  iqxUserVersionDetailSchema,
+  iqxUserVersionListSchema,
+  iqxVersionParamSchema,
   type IqxCreateBody,
   type IqxDraftBody,
   type IqxKindQuery,
@@ -77,8 +80,38 @@ export class IqxTemplatesController {
     summary: 'Bộ lọc IQX hoặc Chiến lược IQX đang hiện, phiên bản hiện hành',
   })
   @ApiOkResponse({ schema: openApi(iqxPublishedListSchema) })
-  list(@Query({ schema: iqxKindQuerySchema }) query: IqxKindQuery) {
-    return this.templates.listPublished(query.kind);
+  list(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query({ schema: iqxKindQuerySchema }) query: IqxKindQuery,
+  ) {
+    return this.templates.listPublished(query.kind, user.id);
+  }
+
+  @Get(':id/versions')
+  @ApiOperation({
+    operationId: 'listStrategyIqxTemplateVersions',
+    summary: 'Lịch sử phiên bản của một Chiến lược IQX (đã ẩn: chỉ khi Bot đang dùng)',
+  })
+  @ApiOkResponse({ schema: openApi(iqxUserVersionListSchema) })
+  versions(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', { schema: iqxTemplateIdSchema }) id: string,
+  ) {
+    return this.templates.userVersions(user.id, id);
+  }
+
+  @Get(':id/versions/:version')
+  @ApiOperation({
+    operationId: 'getStrategyIqxTemplateVersion',
+    summary: 'Nội dung một phiên bản Chiến lược IQX',
+  })
+  @ApiOkResponse({ schema: openApi(iqxUserVersionDetailSchema) })
+  version(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', { schema: iqxTemplateIdSchema }) id: string,
+    @Param('version', { schema: iqxVersionParamSchema }) version: number,
+  ) {
+    return this.templates.userVersion(user.id, id, Number(version));
   }
 
   @Post(':id/used')

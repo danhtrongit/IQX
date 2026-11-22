@@ -1,6 +1,9 @@
+import { HttpException } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { ACADEMY_GRANTS } from '../../src/modules/academy/academy.ports.js';
+import { sharedConfigPatchSchema } from '../../src/modules/strategy-config/strategy-config.schemas.js';
+import { SharedConfigService } from '../../src/modules/strategy-config/strategy-config.service.js';
 import {
   defaultConfig,
   type IndicatorConfig,
@@ -50,13 +53,31 @@ describe('system acceptance: shared-config effective read and error details (HTT
 
   const get = (url: string) =>
     stack.app.inject({ method: 'GET', url, headers: authHeader(user.accessToken) });
-  const patch = (payload: Json) =>
-    stack.app.inject({
-      method: 'PATCH',
-      url: '/api/v2/strategy/shared-config',
-      headers: authHeader(user.accessToken),
-      payload,
-    });
+  /**
+   * PATCH /shared-config is retired (update 22-11 → 410, see strategies.system.spec.ts). The save
+   * service still exists (conversion, alerts history), so these cases call it directly and shape
+   * the answer like the API exception filter did.
+   */
+  const saveAs = async (userId: string, payload: Json) => {
+    const respond = (statusCode: number, body: unknown) => ({ statusCode, json: () => body as Json });
+    try {
+      const body = await stack.app
+        .get(SharedConfigService, { strict: false })
+        .save(userId, sharedConfigPatchSchema.parse(payload));
+      return respond(200, body);
+    } catch (error) {
+      if (!(error instanceof HttpException)) throw error;
+      const body = error.getResponse() as Json;
+      return respond(error.getStatus(), {
+        error: {
+          code: body.code,
+          message: body.message,
+          ...(Array.isArray(body.details) ? { details: body.details } : {}),
+        },
+      });
+    }
+  };
+  const patch = (payload: Json) => saveAs(user.id, payload);
 
   function indicator(id: string, mutate: (value: IndicatorConfig) => void = () => undefined) {
     const value = structuredClone(defaultConfig().indicators[id]!);
@@ -203,36 +224,10 @@ describe('system acceptance: shared-config effective read and error details (HTT
     expect(byId.get('volume')!.buy.params).toEqual(volume.params);
   });
 
-  it('E06 refuses the old side-level params format of the 15 with 422 (never mapped)', async () => {
-    const old = await patch({
-      expected_revision: 2,
-      idempotency_key: 'http-config-key-0006',
-      indicators: {
-        rsi: {
-          master_enabled: true,
-          buy: { enabled: true, params: { period: 14, level: 30 }, rules: [] },
-          sell: { enabled: false, params: { period: 14, level: 70 }, rules: [] },
-        },
-      },
-    });
-    expect(old.statusCode).toBe(422);
-    expect(old.json().error).toMatchObject({
-      code: 'VALIDATION_ERROR',
-      details: [
-        {
-          path: ['indicators', 'rsi'],
-          message:
-            'Định dạng điều kiện cũ không còn được hỗ trợ. Tải lại để dùng mẫu điều kiện mới.',
-        },
-      ],
-    });
-    expect(((await get('/api/v2/strategy/shared-config')).json() as Json).saved_revision).toBe(2);
-  });
-
   it('E07 reads an outdated revision as the V3 defaults; saving resumes the paused Bot', async () => {
     const owner = await registerAndLogin(stack.app, 'shared-config-v3');
-    const as = (method: 'GET' | 'PATCH', url: string, payload?: Json) =>
-      stack.app.inject({ method, url, headers: authHeader(owner.accessToken), payload });
+    const as = (method: 'GET', url: string) =>
+      stack.app.inject({ method, url, headers: authHeader(owner.accessToken) });
     // A SPEC V2 (`iqx-rules-3.0`) document as the migration would find it, in force since 2020.
     const v2 = {
       schema_version: '2.0',
@@ -282,7 +277,7 @@ describe('system acceptance: shared-config effective read and error details (HTT
     const listed = (await as('GET', '/api/v2/strategy/shared-config/revisions')).json() as Json[];
     expect(listed).toMatchObject([{ revision: 1, legacy: true, outdated: true }]);
 
-    const saved = await as('PATCH', '/api/v2/strategy/shared-config', {
+    const saved = await saveAs(owner.id, {
       expected_revision: 1,
       idempotency_key: 'http-config-v3-0001',
       indicators: { rsi: state.config.indicators.rsi },
@@ -300,7 +295,7 @@ describe('system acceptance: shared-config effective read and error details (HTT
     expect(after).toMatchObject({ saved_revision: 2, outdated: false, legacy: null });
 
     // A later save never moves the resolved pause.
-    await as('PATCH', '/api/v2/strategy/shared-config', {
+    await saveAs(owner.id, {
       expected_revision: 2,
       idempotency_key: 'http-config-v3-0002',
       indicators: {

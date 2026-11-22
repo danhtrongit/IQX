@@ -12,7 +12,6 @@ import { criteriaOf, readStoredDefinition } from '../screener/screener.definitio
 import { EMPTY_MARKET_VALUES } from '../screener/screener.market.js';
 import type { ScreenerRow } from '../screener/screener.schemas.js';
 import { vnDate } from '../strategy-config/strategy-config.calendar.js';
-import { findBotUsage, listInUseByBot } from './saved-filters.bot-usage.js';
 import type { FilterDefinition } from './saved-filters.definition.js';
 import { canonicalHash } from './saved-filters.hash.js';
 import type {
@@ -247,30 +246,14 @@ export class SavedResultsService {
     });
   }
 
-  /** Soft delete; refused while a list made from the snapshot is the Bot's pending/effective source. */
-  async deleteSnapshot(userId: string, snapshotId: string, now: Date = new Date()): Promise<void> {
+  /** Soft delete (strategies copy their symbols, §2.2: nothing blocks it). */
+  async deleteSnapshot(userId: string, snapshotId: string): Promise<void> {
     await this.database.transaction(async (client) => {
-      await client.query(
-        `SELECT pg_advisory_xact_lock(hashtext('bot_universe_revisions:' || $1::text))`,
-        [userId],
-      );
       const [owned] = await client.query<{ id: string }>(
         `SELECT id FROM result_snapshots WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
         [snapshotId, userId],
       );
       if (!owned) throw snapshotNotFound();
-      const lists = await client.query<{ id: string }>(
-        `SELECT id FROM list_snapshots
-          WHERE result_snapshot_id = $1 AND user_id = $2 AND deleted_at IS NULL`,
-        [snapshotId, userId],
-      );
-      const usage = await findBotUsage(
-        client,
-        userId,
-        lists.map((list) => list.id),
-        vnDate(now),
-      );
-      if (usage.length) throw listInUseByBot(usage);
       await client.query(
         `UPDATE result_snapshots SET deleted_at = now()
           WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
