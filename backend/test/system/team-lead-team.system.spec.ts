@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 
-import { ACADEMY_V4_CATALOG_VERSION } from '../../src/modules/academy/content/v4/schema.js';
+import { ACADEMY_V5_CATALOG_VERSION } from '../../src/modules/academy/content/v5/schema.js';
 import { academyV4Fixture } from '../unit/academy-v4-fixture.js';
 import {
   authHeader,
@@ -220,7 +220,7 @@ describe('system acceptance: team lead area (team/*)', () => {
                  '{"reward": {"status": "credited", "delta": 5, "balance_after": 5}}'::jsonb)`,
         [active.id, item(id).lesson_key, catalogVersion, id],
       );
-    await complete('ch01-l01', ACADEMY_V4_CATALOG_VERSION);
+    await complete('ch01-l01', ACADEMY_V5_CATALOG_VERSION);
     // Carried from the 13-chapter catalog, where RSI was ch01-l01.
     await complete('ch04-l06', 'iqx-academy-outline-13ch-71lessons-v1');
     const l2 = item('ch01-l02');
@@ -234,7 +234,7 @@ describe('system acceptance: team lead area (team/*)', () => {
         active.id,
         l2.id,
         l2.lesson_key,
-        ACADEMY_V4_CATALOG_VERSION,
+        ACADEMY_V5_CATALOG_VERSION,
         l2.lesson?.content_version ?? 'v3',
         l2.bank.questions.map((question) => question.id),
       ],

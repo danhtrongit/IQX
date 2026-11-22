@@ -6,15 +6,19 @@ import {
 } from '../../src/modules/academy/academy.content.js';
 import { academyV4Fixture } from './academy-v4-fixture.js';
 
-describe('academy boot on the real content/v4', () => {
-  it('loads, validates and memoizes 129 items with 116 required lessons in 12 chapters', () => {
-    expect(ACADEMY_CONTENT_DIR).toMatch(/src\/modules\/academy\/content\/v4$/);
+describe('academy boot on the real content/v5', () => {
+  it('loads, validates and memoizes 221 items with 203 required lessons in 17 chapters', () => {
+    expect(ACADEMY_CONTENT_DIR).toMatch(/src\/modules\/academy\/content\/v5$/);
     const content = loadAcademyContent();
     expect(loadAcademyContent()).toBe(content);
-    expect(content.items.size).toBe(129);
-    expect(content.requiredTotal).toBe(116);
-    expect(content.catalog.chapters.filter((chapter) => chapter.published)).toHaveLength(12);
-    expect(content.itemsByMetricKey.size).toBe(62);
+    expect(content.items.size).toBe(221);
+    expect(content.requiredTotal).toBe(203);
+    expect(content.catalog.chapters.filter((chapter) => chapter.published)).toHaveLength(17);
+    // 149 metric lessons over 90 metric keys; (metric_key, nganh) is unique.
+    expect(content.itemsByMetricKey.size).toBe(90);
+    expect([...content.itemsByMetricKey.values()].flat()).toHaveLength(149);
+    expect(content.itemByMetricNganh.size).toBe(149);
+    expect(content.itemsByMetricKey.get('roe')!.map((item) => item.id)).toEqual(['ch08-l11', 'ch10-l13', 'ch11-l13', 'ch12-l10']);
   });
 
   it('matches the test fixture item for item', () => {

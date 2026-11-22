@@ -35,7 +35,7 @@ import {
 } from './academy.config.js';
 import { ACADEMY_CONTENT, type AcademyContent, type AcademyContentSource } from './academy.content.types.js';
 import type { AcademyConfigPort } from './academy.ports.js';
-import { chapterIdOf } from './content/v4/schema.js';
+import { chapterIdOf } from './content/v5/schema.js';
 
 const dataOf = (row: AcademyConfigData): { mode: AcademyConfigData['mode']; chapter_ids: string[] } => ({
   mode: row.mode,
@@ -386,7 +386,7 @@ function configNotFound(): NotFoundException {
   });
 }
 
-/** The 12 chapters of the catalog as the edit screen lists them (original order and numbers). */
+/** The 17 chapters of the catalog as the edit screen lists them (original order and numbers). */
 function catalogChapters(content: AcademyContent) {
   return content.catalog.chapters
     .filter((chapter) => chapter.published)

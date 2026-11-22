@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
 import type { AcademyConfigData } from './academy.config.js';
-import type { AcademyAccessMode } from './content/v4/schema.js';
+import type { AcademyAccessMode } from './content/v5/schema.js';
 
 export type AcademyConfigOwner = 'default' | 'leader';
 

@@ -4,10 +4,10 @@ import type {
   CatalogItem,
   LessonFile,
   SequenceItem,
-} from './content/v4/schema.js';
+} from './content/v5/schema.js';
 
 /**
- * Loader output of Học viện v4 (design §1.2). `academy.content.ts` implements
+ * Loader output of Học viện v5 (design §1.2). `academy.content.ts` implements
  * `buildAcademyContent` / `loadAcademyContent` against these types; the service, the deep link and the
  * staff progress reader consume exactly these fields.
  */
@@ -32,16 +32,21 @@ export interface AcademyContent {
   items: ReadonlyMap<string, AcademyItem>;
   /** By lesson_key. */
   itemsByKey: ReadonlyMap<string, AcademyItem>;
-  /** By `metric_key` (chapter 8-12 lessons, spec v4 §5.1). */
-  itemsByMetricKey: ReadonlyMap<string, AcademyItem>;
-  /** Required lessons of published chapters (116). */
+  /**
+   * By `metric_key`: every metric lesson (chapters 8-17) teaching it, in catalog order (spec v5 §5.1: one key may
+   * have a lesson per industry, e.g. `roe` in Chương 8, 10, 11 and 12).
+   */
+  itemsByMetricKey: ReadonlyMap<string, readonly AcademyItem[]>;
+  /** By `"<metric_key>|<nganh>"` (unique per catalog, spec v5 §5.1). */
+  itemByMetricNganh: ReadonlyMap<string, AcademyItem>;
+  /** Required lessons of published chapters (203). */
   requiredTotal: number;
   /** lesson_key -> name of keys no longer in the catalog (shop ledger labels). */
   retired: ReadonlyMap<string, string>;
 }
 
 /**
- * Raw parsed JSON of `content/v4`, validated by `buildAcademyContent` (catalog.json,
+ * Raw parsed JSON of `content/v5`, validated by `buildAcademyContent` (catalog.json,
  * lessons/*.vi.json, questions/*.private.json, retired-lessons.json).
  */
 export interface AcademyContentFiles {
@@ -54,7 +59,7 @@ export interface AcademyContentFiles {
 /** Pure; throws on any inconsistency between catalog, lesson files and banks. */
 export type BuildAcademyContent = (files: AcademyContentFiles) => AcademyContent;
 
-/** Memoized reader of `content/v4` (the default `ACADEMY_CONTENT` provider). */
+/** Memoized reader of `content/v5` (the default `ACADEMY_CONTENT` provider). */
 export type AcademyContentSource = () => AcademyContent;
 
 /**

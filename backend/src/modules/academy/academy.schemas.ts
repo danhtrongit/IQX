@@ -13,11 +13,11 @@ import {
   scenarioChoiceRequestSchema,
   scenarioChoiceResponseSchema,
   submitRequestSchema,
-} from './content/v4/schema.js';
+} from './content/v5/schema.js';
 
 /**
- * HTTP contract of `api/v2/academy` (Học viện v4). Every wire shape is defined once in
- * `content/v4/schema.ts` §6 and re-exported here; this module only adds the path params and the
+ * HTTP contract of `api/v2/academy` (Học viện v5). Every wire shape is defined once in
+ * `content/v5/schema.ts` §6 and re-exported here; this module only adds the path params and the
  * inferred request types the controller and service use.
  */
 export {
@@ -48,7 +48,7 @@ export {
   scenarioChoiceResponseSchema,
   submitRequestSchema,
   submitResponseSchema,
-} from './content/v4/schema.js';
+} from './content/v5/schema.js';
 export type {
   AcademyErrorCode,
   CatalogItemResponse,
@@ -61,10 +61,10 @@ export type {
   PublicQuestion,
   RewardResult,
   SubmitResponse,
-} from './content/v4/schema.js';
+} from './content/v5/schema.js';
 
 /** `:lessonId` path param: any item id (lesson, practice or chapter exam). */
-export { itemIdSchema as lessonIdParamSchema } from './content/v4/schema.js';
+export { itemIdSchema as lessonIdParamSchema } from './content/v5/schema.js';
 export const attemptIdParamSchema = z.uuid();
 
 export type AttemptCreateRequest = z.infer<typeof attemptCreateRequestSchema>;

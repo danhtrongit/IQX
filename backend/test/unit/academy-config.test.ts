@@ -67,16 +67,16 @@ const keyOf = (itemId: string) => item(itemId).lesson_key;
 
 describe('academy config rules (v4.1 §1.2, §2, §3)', () => {
   it('stores chapters as fixed ids in catalog order, collapses duplicates, refuses an empty or unknown list', () => {
-    expect(ALL).toEqual(Array.from({ length: 12 }, (_, i) => `ch${String(i + 1).padStart(2, '0')}`));
+    expect(ALL).toEqual(Array.from({ length: 17 }, (_, i) => `ch${String(i + 1).padStart(2, '0')}`));
     expect(normalizeChapterIds(content, ['ch04', 'ch01', 'ch04'])).toEqual({
       ok: true,
       chapter_ids: ['ch01', 'ch04'],
     });
     expect(normalizeChapterIds(content, [])).toEqual({ ok: false, reason: 'empty', unknown: [] });
-    expect(normalizeChapterIds(content, ['ch01', 'ch13', 'x'])).toEqual({
+    expect(normalizeChapterIds(content, ['ch01', 'ch18', 'x'])).toEqual({
       ok: false,
       reason: 'unknown',
-      unknown: ['ch13', 'x'],
+      unknown: ['ch18', 'x'],
     });
   });
 
@@ -101,10 +101,10 @@ describe('academy config rules (v4.1 §1.2, §2, §3)', () => {
     expect(programFor().chapters.map((chapter) => chapter.display_no)).toEqual(ALL.map((_, i) => i + 1));
   });
 
-  it('counts N over the required lessons of the config chapters only: 116, group A 106, no practice (§2.4)', () => {
-    expect(programFor().requiredTotal).toBe(116);
-    expect(programFor({ chapter_ids: GROUP_A }).requiredTotal).toBe(106);
-    expect(programFor({ chapter_ids: GROUP_B }).requiredTotal).toBe(116 - content.catalog.chapters[2]!.lesson_count);
+  it('counts N over the required lessons of the config chapters only: 203, group A 193, no practice (§2.4)', () => {
+    expect(programFor().requiredTotal).toBe(203);
+    expect(programFor({ chapter_ids: GROUP_A }).requiredTotal).toBe(193);
+    expect(programFor({ chapter_ids: GROUP_B }).requiredTotal).toBe(203 - content.catalog.chapters[2]!.lesson_count);
     expect(programFor({ chapter_ids: ['ch01'] }).requiredTotal).toBe(10);
   });
 
@@ -154,7 +154,7 @@ describe('academy config rules (v4.1 §1.2, §2, §3)', () => {
 
   it('stores the exam name and intro as templates with {n} and fills the learner number in (§2.3)', () => {
     const exams = [...content.items.values()].filter((entry) => entry.kind === 'chapter_exam');
-    expect(exams).toHaveLength(12);
+    expect(exams).toHaveLength(17);
     for (const exam of exams) {
       expect(exam.name, exam.id).toBe('Bài thi Chương {n}');
       expect(exam.intro, exam.id).toContain('{n}');
@@ -194,13 +194,13 @@ describe('academy content never names a chapter number (v4.1 §5, §10.8)', () =
 });
 
 describe('academy learner program (v4.1 §2, §3, §4)', () => {
-  it('serves group A the chapters renumbered, with fixed ids and N = 106 (§2.3, §10.3)', async () => {
+  it('serves group A the chapters renumbered, with fixed ids and N = 193 (§2.3, §10.3)', async () => {
     const { service } = setup({ configs: configPort({ chapter_ids: GROUP_A }, [USER]) });
     const catalog = await service.catalog(USER);
     expect(catalogResponseSchema.parse(catalog)).toEqual(catalog);
     expect(catalog.mode).toBe('free');
-    expect(catalog.required_total).toBe(106);
-    expect(catalog.chapters).toHaveLength(11);
+    expect(catalog.required_total).toBe(193);
+    expect(catalog.chapters).toHaveLength(16);
     expect(catalog.chapters.slice(0, 3).map((chapter) => [chapter.chapter_id, chapter.display_no, chapter.title])).toEqual([
       ['ch01', 1, 'Nền tảng'],
       ['ch03', 2, 'Thương hiệu cá nhân'],
@@ -218,9 +218,9 @@ describe('academy learner program (v4.1 §2, §3, §4)', () => {
     expect(catalog.retired_lessons.map((entry) => entry.lesson_key)).toContain(keyOf('ch02-l01'));
     expect(catalog.retired_lessons.map((entry) => entry.lesson_key)).not.toContain(keyOf('ch03-l01'));
 
-    // Another learner of the same service has the default config: 12 chapters, the catalog numbers.
+    // Another learner of the same service has the default config: 17 chapters, the catalog numbers.
     const other = await service.catalog(OTHER_USER);
-    expect(other.required_total).toBe(116);
+    expect(other.required_total).toBe(203);
     expect(other.chapters.find((chapter) => chapter.chapter_id === 'ch03')?.display_no).toBe(3);
   });
 
@@ -229,7 +229,7 @@ describe('academy learner program (v4.1 §2, §3, §4)', () => {
     memory.complete(USER, [keyOf('ch01-l01'), keyOf('ch03-l01'), keyOf('ch02-l01')]);
     const progress = await service.progress(USER);
     expect(progressResponseSchema.parse(progress)).toEqual(progress);
-    expect(progress.course_total).toBe(106);
+    expect(progress.course_total).toBe(193);
     // The lesson of the removed chapter is not counted and not listed.
     expect(progress.course_done).toBe(2);
     expect(progress.items.some((entry) => entry.id.startsWith('ch02-'))).toBe(false);
@@ -259,7 +259,7 @@ describe('academy learner program (v4.1 §2, §3, §4)', () => {
       await expect(start(service, id, `key-${id}`), id).rejects.toMatchObject(missing);
     }
     // An unknown id stays a plain 404, a different thing from "not in your program".
-    await expect(service.lesson(USER, 'ch14-l01')).rejects.toMatchObject({
+    await expect(service.lesson(USER, 'ch18-l01')).rejects.toMatchObject({
       status: 404,
       response: { code: 'LESSON_NOT_FOUND' },
     });
@@ -339,11 +339,11 @@ describe('academy config change while learning (v4.1 §7, §10.7)', () => {
     const { service, memory, rewards } = setup({ configs: configPort(live) });
     await pass(service, 'ch05-l01', 'key-keep-1');
     expect(rewards?.balance).toBe(100);
-    expect(await service.progress(USER)).toMatchObject({ course_done: 1, course_total: 116 });
+    expect(await service.progress(USER)).toMatchObject({ course_done: 1, course_total: 203 });
 
     live.chapter_ids = NO_CH05;
     const hidden = await service.progress(USER);
-    expect(hidden).toMatchObject({ course_done: 0, course_total: 116 - content.catalog.chapters[4]!.lesson_count });
+    expect(hidden).toMatchObject({ course_done: 0, course_total: 203 - content.catalog.chapters[4]!.lesson_count });
     expect(hidden.items.some((entry) => entry.id === 'ch05-l01')).toBe(false);
     // Nothing was deleted, moved or paid again.
     expect(memory.completionRows.filter((row) => row.lesson_key === keyOf('ch05-l01'))).toHaveLength(1);
@@ -355,7 +355,7 @@ describe('academy config change while learning (v4.1 §7, §10.7)', () => {
 
     live.chapter_ids = ALL;
     const back = await service.progress(USER);
-    expect(back).toMatchObject({ course_done: 1, course_total: 116 });
+    expect(back).toMatchObject({ course_done: 1, course_total: 203 });
     expect(back.items.find((entry) => entry.id === 'ch05-l01')?.state).toBe('passed');
     expect(await service.lesson(USER, 'ch05-l01')).toMatchObject({ state: 'passed' });
     expect(rewards?.balance).toBe(100);
@@ -678,7 +678,7 @@ describe('academy config admin (v4.1 §1.3, §1.4, §8.3, §10.1)', () => {
     const fake = new FakeConfigs();
     fake.own(LEAD_A, { mode: 'sequential', chapter_ids: GROUP_A });
     const list = await configService(fake).list();
-    expect(list.catalog_chapters).toHaveLength(12);
+    expect(list.catalog_chapters).toHaveLength(17);
     expect(list.catalog_chapters.find((chapter) => chapter.chapter_id === 'ch03')).toMatchObject({
       no: 3,
       title: 'Thương hiệu cá nhân',
@@ -689,10 +689,10 @@ describe('academy config admin (v4.1 §1.3, §1.4, §8.3, §10.1)', () => {
       ['leader', 'Lead A', false],
       ['leader', 'Lead B', true],
     ]);
-    expect(list.items[0]).toMatchObject({ id: DEFAULT_ID, mode: 'free', chapter_count: 12, chapter_total: 12, required_total: 116 });
-    expect(list.items[1]).toMatchObject({ mode: 'sequential', chapter_count: 11, chapter_total: 12, required_total: 106, user_count: 2 });
+    expect(list.items[0]).toMatchObject({ id: DEFAULT_ID, mode: 'free', chapter_count: 17, chapter_total: 17, required_total: 203 });
+    expect(list.items[1]).toMatchObject({ mode: 'sequential', chapter_count: 16, chapter_total: 17, required_total: 193, user_count: 2 });
     // A lead without an own config shows the default's content and no config row to edit.
-    expect(list.items[2]).toMatchObject({ id: null, mode: 'free', chapter_count: 12, user_count: 2 });
+    expect(list.items[2]).toMatchObject({ id: null, mode: 'free', chapter_count: 17, user_count: 2 });
   });
 
   it('creates an own config for a lead: validated, logged with before and after, audited; once only', async () => {
@@ -730,7 +730,7 @@ describe('academy config admin (v4.1 §1.3, §1.4, §8.3, §10.1)', () => {
     const configs = configService(fake);
     const own = await configs.create({ leader_id: LEAD_A, mode: 'free', chapter_ids: ['ch01'] }, audit);
     const logsBefore = fake.logRows.length;
-    for (const chapterIds of [[], ['ch13'], ['ch01', 'ch99']]) {
+    for (const chapterIds of [[], ['ch18'], ['ch01', 'ch99']]) {
       await expect(configs.update(own.id!, { mode: 'free', chapter_ids: chapterIds }, audit)).rejects.toMatchObject({
         status: 422,
         response: { code: 'ACADEMY_CONFIG_INVALID' },
@@ -748,7 +748,7 @@ describe('academy config admin (v4.1 §1.3, §1.4, §8.3, §10.1)', () => {
     const fake = new FakeConfigs();
     const configs = configService(fake);
     const saved = await configs.update(DEFAULT_ID, { mode: 'sequential', chapter_ids: GROUP_A }, audit);
-    expect(saved).toMatchObject({ owner_type: 'default', mode: 'sequential', chapter_count: 11 });
+    expect(saved).toMatchObject({ owner_type: 'default', mode: 'sequential', chapter_count: 16 });
     expect(fake.logRows).toEqual([
       {
         config_id: DEFAULT_ID,
@@ -778,7 +778,7 @@ describe('academy config admin (v4.1 §1.3, §1.4, §8.3, §10.1)', () => {
     const configs = configService(fake);
     const own = await configs.create({ leader_id: LEAD_A, mode: 'sequential', chapter_ids: GROUP_A }, audit);
     const back = await configs.remove(own.id!, audit);
-    expect(back).toMatchObject({ id: null, inherits_default: true, mode: 'free', chapter_count: 12 });
+    expect(back).toMatchObject({ id: null, inherits_default: true, mode: 'free', chapter_count: 17 });
     expect(fake.configs.map((row) => row.owner_type)).toEqual(['default']);
     expect(fake.logRows.at(-1)).toMatchObject({
       action: 'delete',
@@ -820,7 +820,7 @@ describe('academy config admin (v4.1 §1.3, §1.4, §8.3, §10.1)', () => {
   it('previews a config as its group will see it: renumbered chapters, N and the Dashboard warnings (§1.4, §4)', () => {
     const configs = configService(new FakeConfigs());
     const a = configs.preview({ mode: 'sequential', chapter_ids: GROUP_A });
-    expect(a).toMatchObject({ mode: 'sequential', chapter_count: 11, chapter_total: 12, required_total: 106 });
+    expect(a).toMatchObject({ mode: 'sequential', chapter_count: 16, chapter_total: 17, required_total: 193 });
     expect(a.chapters.slice(0, 3).map((chapter) => [chapter.chapter_id, chapter.display_no, chapter.title])).toEqual([
       ['ch01', 1, 'Nền tảng'],
       ['ch03', 2, 'Thương hiệu cá nhân'],
@@ -844,6 +844,11 @@ describe('academy config admin (v4.1 §1.3, §1.4, §8.3, §10.1)', () => {
       'ch10',
       'ch11',
       'ch12',
+      'ch13',
+      'ch14',
+      'ch15',
+      'ch16',
+      'ch17',
     ]);
   });
 
@@ -854,12 +859,12 @@ describe('academy config admin (v4.1 §1.3, §1.4, §8.3, §10.1)', () => {
       has_own_config: false,
       read_only: true,
       mode: 'free',
-      chapter_count: 12,
-      required_total: 116,
+      chapter_count: 17,
+      required_total: 203,
     });
     fake.own(LEAD_B, { mode: 'sequential', chapter_ids: GROUP_A });
     const own = await configs.teamConfig(LEAD_B);
-    expect(own).toMatchObject({ has_own_config: true, read_only: true, mode: 'sequential', chapter_count: 11, required_total: 106 });
+    expect(own).toMatchObject({ has_own_config: true, read_only: true, mode: 'sequential', chapter_count: 16, required_total: 193 });
     expect(own.chapters[1]).toMatchObject({ chapter_id: 'ch03', display_no: 2, title: 'Thương hiệu cá nhân' });
   });
 });

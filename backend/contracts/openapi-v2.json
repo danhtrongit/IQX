@@ -1261,6 +1261,73 @@
           {
             "additionalProperties": false,
             "properties": {
+              "lead": {
+                "maxLength": 6000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "links": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "label": {
+                      "maxLength": 4000,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "metric_key": {
+                      "pattern": "^[a-z][a-z0-9_]{1,39}$",
+                      "type": "string"
+                    },
+                    "nganh": {
+                      "enum": [
+                        "chung",
+                        "thuong",
+                        "nh",
+                        "ck",
+                        "bh",
+                        "bds",
+                        "dk",
+                        "bl",
+                        "dien",
+                        "vl"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "metric_key",
+                    "nganh"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 8,
+                "minItems": 1,
+                "type": "array"
+              },
+              "tail": {
+                "maxLength": 6000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "lesson_links"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "lead",
+              "links"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
               "best_option": {
                 "anyOf": [
                   {
@@ -5341,6 +5408,461 @@
               "alt"
             ],
             "type": "object"
+          },
+          {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "fig": {
+                    "enum": [
+                      "formula"
+                    ],
+                    "type": "string"
+                  },
+                  "height": {
+                    "maximum": 600,
+                    "minimum": 80,
+                    "type": "integer"
+                  },
+                  "items": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "hl": {
+                          "type": "boolean"
+                        },
+                        "notes": {
+                          "items": {
+                            "maxLength": 400,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "maxItems": 4,
+                          "type": "array"
+                        },
+                        "size": {
+                          "exclusiveMinimum": true,
+                          "maximum": 48,
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "t": {
+                          "maxLength": 400,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "tone": {
+                          "enum": [
+                            "price",
+                            "p1",
+                            "p2",
+                            "p3",
+                            "p4",
+                            "p5",
+                            "pos",
+                            "neg",
+                            "warn",
+                            "info",
+                            "neutral"
+                          ],
+                          "type": "string"
+                        },
+                        "v": {
+                          "maxLength": 400,
+                          "minLength": 1,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "t",
+                        "v",
+                        "tone"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 5,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "figure"
+                    ],
+                    "type": "string"
+                  },
+                  "ops": {
+                    "items": {
+                      "maxLength": 16,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "maxItems": 4,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "fig",
+                  "items",
+                  "ops",
+                  "height"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "decimals": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "fig": {
+                    "enum": [
+                      "hbar"
+                    ],
+                    "type": "string"
+                  },
+                  "items": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "label": {
+                          "maxLength": 400,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "tone": {
+                          "enum": [
+                            "price",
+                            "p1",
+                            "p2",
+                            "p3",
+                            "p4",
+                            "p5",
+                            "pos",
+                            "neg",
+                            "warn",
+                            "info",
+                            "neutral"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "value",
+                        "tone"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "figure"
+                    ],
+                    "type": "string"
+                  },
+                  "label_width": {
+                    "maximum": 500,
+                    "minimum": 60,
+                    "type": "integer"
+                  },
+                  "max": {
+                    "type": "number"
+                  },
+                  "note": {
+                    "maxLength": 400,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "row_height": {
+                    "maximum": 80,
+                    "minimum": 16,
+                    "type": "integer"
+                  },
+                  "title": {
+                    "maxLength": 400,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "unit": {
+                    "maxLength": 16,
+                    "minLength": 0,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "fig",
+                  "items",
+                  "decimals",
+                  "unit"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "decimals": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "fig": {
+                    "enum": [
+                      "stack"
+                    ],
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "figure"
+                    ],
+                    "type": "string"
+                  },
+                  "note": {
+                    "maxLength": 400,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "parts": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "label": {
+                          "maxLength": 400,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "tone": {
+                          "enum": [
+                            "price",
+                            "p1",
+                            "p2",
+                            "p3",
+                            "p4",
+                            "p5",
+                            "pos",
+                            "neg",
+                            "warn",
+                            "info",
+                            "neutral"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {
+                          "minimum": 0,
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "value",
+                        "tone"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 8,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "title": {
+                    "maxLength": 400,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "unit": {
+                    "maxLength": 16,
+                    "minLength": 0,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "fig",
+                  "parts",
+                  "decimals",
+                  "unit"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "decimals": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "fig": {
+                    "enum": [
+                      "wf"
+                    ],
+                    "type": "string"
+                  },
+                  "height": {
+                    "maximum": 600,
+                    "minimum": 120,
+                    "type": "integer"
+                  },
+                  "items": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "label": {
+                          "maxLength": 400,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "step": {
+                          "enum": [
+                            "base",
+                            "plus",
+                            "minus",
+                            "total"
+                          ],
+                          "type": "string"
+                        },
+                        "tone": {
+                          "enum": [
+                            "price",
+                            "p1",
+                            "p2",
+                            "p3",
+                            "p4",
+                            "p5",
+                            "pos",
+                            "neg",
+                            "warn",
+                            "info",
+                            "neutral"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "value",
+                        "step"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 10,
+                    "minItems": 2,
+                    "type": "array"
+                  },
+                  "kind": {
+                    "enum": [
+                      "figure"
+                    ],
+                    "type": "string"
+                  },
+                  "title": {
+                    "maxLength": 400,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "unit": {
+                    "maxLength": 16,
+                    "minLength": 0,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "fig",
+                  "items",
+                  "decimals",
+                  "unit"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "fig": {
+                    "enum": [
+                      "lines"
+                    ],
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "figure"
+                    ],
+                    "type": "string"
+                  },
+                  "rows": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "maxLength": 400,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "line": {
+                          "maxLength": 400,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "report": {
+                          "maxLength": 400,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "tone": {
+                          "enum": [
+                            "price",
+                            "p1",
+                            "p2",
+                            "p3",
+                            "p4",
+                            "p5",
+                            "pos",
+                            "neg",
+                            "warn",
+                            "info",
+                            "neutral"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "report",
+                        "line"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 12,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "title": {
+                    "maxLength": 400,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "fig",
+                  "rows"
+                ],
+                "type": "object"
+              }
+            ]
           }
         ]
       },
@@ -35149,7 +35671,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 918 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 924 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -73831,6 +74353,10 @@
                                 "name": {
                                   "type": "string"
                                 },
+                                "nganh": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
                                 "optional": {
                                   "type": "boolean"
                                 },
@@ -73863,6 +74389,7 @@
                                 "optional",
                                 "question_count",
                                 "metric_key",
+                                "nganh",
                                 "has_scenario",
                                 "intro",
                                 "content_version"
@@ -74095,6 +74622,10 @@
                         "name": {
                           "type": "string"
                         },
+                        "nganh": {
+                          "nullable": true,
+                          "type": "string"
+                        },
                         "optional": {
                           "type": "boolean"
                         },
@@ -74257,6 +74788,7 @@
                         "optional",
                         "question_count",
                         "metric_key",
+                        "nganh",
                         "has_scenario",
                         "intro",
                         "content_version",
@@ -74337,6 +74869,10 @@
                         "name": {
                           "type": "string"
                         },
+                        "nganh": {
+                          "nullable": true,
+                          "type": "string"
+                        },
                         "optional": {
                           "type": "boolean"
                         },
@@ -74377,6 +74913,7 @@
                         "optional",
                         "question_count",
                         "metric_key",
+                        "nganh",
                         "has_scenario",
                         "intro",
                         "content_version",
@@ -75385,6 +75922,15 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "nganh",
+            "required": false,
+            "schema": {
+              "maxLength": 16,
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -75434,6 +75980,10 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "nganh": {
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "title": {
                       "nullable": true,
                       "type": "string"
@@ -75449,6 +75999,7 @@
                     "locked",
                     "lesson_key",
                     "metric_key",
+                    "nganh",
                     "chapter_id",
                     "chapter_display_no",
                     "title",
@@ -75517,7 +76068,7 @@
             "bearer": []
           }
         ],
-        "summary": "Deep link to the lesson of a metric among the learner’s chapters (the \"Học\" button): by metric_key, else exact lesson title, else a title starting with \"name ·\"; lesson_id and locked (sequential mode, not yet its turn). Never an error: found=false answers with the lesson the learner was last on",
+        "summary": "Deep link to the lesson of a metric among the learner’s chapters (the \"Học\" button), optionally for an industry (nganh, unknown codes ignored): by (metric_key, nganh), then Chương 8, then any chapter; else by lesson title (exact or \"name ·\") in the industry chapter, Chương 8, then every chapter; lesson_id and locked (sequential mode, not yet its turn). Never an error: found=false answers with the lesson the learner was last on",
         "tags": [
           "Academy"
         ],
@@ -138339,6 +138890,700 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/me/notification-settings": {
+      "get": {
+        "operationId": "notificationSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "channels": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "email": {
+                          "type": "boolean"
+                        },
+                        "web": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "web",
+                        "email"
+                      ],
+                      "type": "object"
+                    },
+                    "email_available": {
+                      "type": "boolean"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "types": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "bot_trades": {
+                          "type": "boolean"
+                        },
+                        "bulletin": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "bulletin",
+                        "bot_trades"
+                      ],
+                      "type": "object"
+                    },
+                    "updated_at": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "types",
+                    "channels",
+                    "email_available",
+                    "updated_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Notification settings of the account (master, Bản tin cuối phiên, Bot giao dịch, email channel); defaults when never saved",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      },
+      "put": {
+        "operationId": "notificationSaveSettings",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "channels": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "email": {
+                        "type": "boolean"
+                      },
+                      "web": {
+                        "enum": [
+                          true
+                        ],
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "email"
+                    ],
+                    "type": "object"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "types": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "bot_trades": {
+                        "type": "boolean"
+                      },
+                      "bulletin": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "bulletin",
+                      "bot_trades"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "types",
+                  "channels"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "channels": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "email": {
+                          "type": "boolean"
+                        },
+                        "web": {
+                          "enum": [
+                            true
+                          ],
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "web",
+                        "email"
+                      ],
+                      "type": "object"
+                    },
+                    "email_available": {
+                      "type": "boolean"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "types": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "bot_trades": {
+                          "type": "boolean"
+                        },
+                        "bulletin": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "bulletin",
+                        "bot_trades"
+                      ],
+                      "type": "object"
+                    },
+                    "updated_at": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "types",
+                    "channels",
+                    "email_available",
+                    "updated_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Save notification settings (applies immediately); email on without a verified email → 422 EMAIL_UNVERIFIED",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/me/notifications": {
+      "get": {
+        "operationId": "notificationList",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "body": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                            "type": "string"
+                          },
+                          "link": {
+                            "type": "string"
+                          },
+                          "read_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "trade_date": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "enum": [
+                              "bulletin",
+                              "bot_trades"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "type",
+                          "trade_date",
+                          "title",
+                          "body",
+                          "link",
+                          "read_at",
+                          "created_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "unread_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "unread_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Latest notifications of the account (max 50, newest first) and the unread count",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/me/notifications/read": {
+      "post": {
+        "operationId": "notificationMarkRead",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "all": {
+                        "enum": [
+                          true
+                        ],
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "all"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "unread_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "unread_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark one notification ({id}) or all ({all:true}) as read",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/me/notifications/unread-count": {
+      "get": {
+        "operationId": "notificationUnreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "unread_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "unread_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unread notification count",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/media/{token}": {
       "get": {
         "operationId": "MediaController_download",
@@ -138434,6 +139679,113 @@
         ],
         "x-auth-level": "public",
         "x-response-schema-status": "v2-declared"
+      }
+    },
+    "/api/v2/notifications/unsubscribe": {
+      "post": {
+        "operationId": "notificationUnsubscribe",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "token": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "unsubscribed",
+                        "already_used"
+                      ],
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "bulletin",
+                        "bot_trades"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Turn off one notification type from the signed single-use email token; reusing it → already_used; bad token → 400 TOKEN_INVALID",
+        "tags": [
+          "Thông báo"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
       }
     },
     "/api/v2/portfolio-manager/analyze": {
@@ -198243,11 +199595,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 700,
+    "authenticatedOperations": 705,
     "noContentResponses": 18,
-    "operations": 936,
-    "publicOperations": 236,
-    "responseSchemas": 918,
+    "operations": 942,
+    "publicOperations": 237,
+    "responseSchemas": 924,
     "untypedResponses": 0
   }
 }

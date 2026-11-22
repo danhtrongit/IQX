@@ -1,6 +1,6 @@
 import { randomInt } from 'node:crypto';
 
-import { toPublicQuestion, type BankQuestion, type PublicQuestion } from './content/v4/schema.js';
+import { toPublicQuestion, type BankQuestion, type PublicQuestion } from './content/v5/schema.js';
 
 export type OptionOrders = Record<string, string[]>;
 export type RandomInt = (maxExclusive: number) => number;

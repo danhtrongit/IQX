@@ -40,14 +40,14 @@ import {
 } from '../../src/modules/academy/academy.schemas.js';
 import { AcademyService, buildProgress } from '../../src/modules/academy/academy.service.js';
 import {
-  ACADEMY_V4_CATALOG_VERSION,
+  ACADEMY_V5_CATALOG_VERSION,
   NOTES_KEY_MAX,
   itemIdSchema,
   nextRequiredItemId,
   scenarioOf,
   type AcademyAccessMode,
   type LessonFile,
-} from '../../src/modules/academy/content/v4/schema.js';
+} from '../../src/modules/academy/content/v5/schema.js';
 import type { Environment } from '../../src/platform/config/environment.js';
 import { LESSON_REWARD_PORT } from '../../src/platform/ports/lesson-reward.port.js';
 import {
@@ -143,14 +143,14 @@ function contentWithBigPractice(): AcademyContent {
   return { ...content, items, itemsByKey };
 }
 
-describe('academy v4 catalog', () => {
-  it('serves 12 published chapters, 116 required lessons, 12 exams and the optional practice', async () => {
+describe('academy v5 catalog', () => {
+  it('serves 17 published chapters, 203 required lessons, 17 exams and the optional practice', async () => {
     const { service } = setup();
     const catalog = await service.catalog(USER);
     expect(catalogResponseSchema.parse(catalog)).toEqual(catalog);
-    expect(catalog.catalog_version).toBe(ACADEMY_V4_CATALOG_VERSION);
+    expect(catalog.catalog_version).toBe(ACADEMY_V5_CATALOG_VERSION);
     expect(catalog.mode).toBe('free');
-    expect(catalog.required_total).toBe(116);
+    expect(catalog.required_total).toBe(203);
     expect(catalog.chapters.map((chapter) => [chapter.display_no, chapter.lesson_count])).toEqual([
       [1, 10],
       [2, 10],
@@ -161,9 +161,14 @@ describe('academy v4 catalog', () => {
       [7, 7],
       [8, 17],
       [9, 16],
-      [10, 11],
-      [11, 10],
-      [12, 8],
+      [10, 15],
+      [11, 14],
+      [12, 11],
+      [13, 19],
+      [14, 15],
+      [15, 13],
+      [16, 15],
+      [17, 14],
     ]);
     expect(catalog.chapters.map((chapter) => chapter.title)).toEqual([
       'Nền tảng',
@@ -178,10 +183,15 @@ describe('academy v4 catalog', () => {
       'Phân tích ngân hàng',
       'Phân tích công ty chứng khoán',
       'Phân tích công ty bảo hiểm',
+      'Phân tích công ty bất động sản',
+      'Phân tích doanh nghiệp dầu khí',
+      'Phân tích bán lẻ và hàng tiêu dùng',
+      'Phân tích điện và tiện ích',
+      'Phân tích vật liệu cơ bản',
     ]);
     const items = catalog.chapters.flatMap((chapter) => chapter.items);
-    expect(items).toHaveLength(129);
-    expect(items.filter((entry) => entry.kind === 'chapter_exam')).toHaveLength(12);
+    expect(items).toHaveLength(221);
+    expect(items.filter((entry) => entry.kind === 'chapter_exam')).toHaveLength(17);
     const practice = items.filter((entry) => entry.optional);
     expect(practice.map((entry) => [entry.id, entry.kind, entry.position])).toEqual([
       ['ch03-practice', 'practice', null],
@@ -203,16 +213,20 @@ describe('academy v4 catalog', () => {
       expect(entry.chapter_id).toBe(entry.id.slice(0, 4));
       if (entry.kind === 'chapter_exam') {
         const cc = entry.id.slice(0, 4);
-        // Chapters 1-7 keep their v3.3 exam keys; the exams of chapters 8-12 are new (spec §5.3.2).
-        expect(entry.lesson_key).toBe(chapter <= 7 ? `exam:${cc}` : `exam:${cc}-v4`);
+        // Chapters 1-7 keep their v3.3 exam keys, chapters 8-12 their v4 keys (plan v5 D3); 13-17 are new (D9).
+        expect(entry.lesson_key).toBe(
+          chapter <= 7 ? `exam:${cc}` : chapter <= 12 ? `exam:${cc}-v4` : `exam:${cc}-v5`,
+        );
         expect(entry.question_count).toBe(chapter <= 3 ? 20 : 30);
         expect(entry.intro).toMatch(/^Bài thi gồm \d+ câu hỏi/);
         expect(entry.name).toBe(`Bài thi Chương ${chapter}`);
         expect(entry.content_version).toBeNull();
         expect(entry.position).toBeNull();
         expect(entry.metric_key).toBeNull();
+        expect(entry.nganh).toBeNull();
       } else {
-        expect(entry.lesson_key).toMatch(/^(concept|technical|fundamental):[a-z0-9_]+$/);
+        // v5 per-industry lessons are `fundamental:<metric_key>-<nganh>` (plan v5 D8).
+        expect(entry.lesson_key).toMatch(/^(concept|technical|fundamental):[a-z0-9_]+(?:-[a-z]+)?$/);
         expect(entry.question_count).toBe(chapter <= 3 ? 3 : 5);
         expect(entry.intro).toBeNull();
         expect(entry.content_version).toMatch(/^[0-9a-f]{16}$/);
@@ -223,10 +237,13 @@ describe('academy v4 catalog', () => {
       'Bài thi gồm 20 câu hỏi về toàn bộ kiến thức Chương 1.',
     );
     expect(items.find((entry) => entry.id === 'ch04-l03')?.position).toBe(3);
-    expect(items.find((entry) => entry.id === 'ch12-l08')?.position).toBe(8);
+    // Chapters 10-12 got lessons inserted: ids are kept, positions follow the v5 order (plan v5 D7).
+    expect(items.find((entry) => entry.id === 'ch12-l08')?.position).toBe(10);
+    expect(items.find((entry) => entry.id === 'ch10-l12')?.position).toBe(1);
+    expect(items.find((entry) => entry.id === 'ch10-l01')?.position).toBe(2);
   });
 
-  it('names the dashboard metric of every chapter 8-12 lesson (metric_key, spec v4 §5.1)', async () => {
+  it('names the dashboard metric and industry of every chapter 8-17 lesson (metric_key, nganh, spec v5 §5.1)', async () => {
     const items = (await setup().service.catalog(USER)).chapters.flatMap(
       (chapter) => chapter.items,
     );
@@ -284,54 +301,49 @@ describe('academy v4 catalog', () => {
       [
         10,
         [
+          'revenue_yoy',
           'nim',
           'yield_cost',
           'cir',
           'non_interest_share',
           'ppop_growth',
+          'roe',
+          'roa',
           'credit_cost',
           'provision_to_loans',
           'credit_deposit_growth',
           'ldr',
           'accrued_to_loans',
           'equity_to_assets',
+          'pb',
         ],
       ],
-      [
-        11,
-        [
-          'revenue_mix',
-          'operating_margin',
-          'margin_loan_growth',
-          'margin_loan_to_equity',
-          'margin_loan_yield',
-          'brokerage_margin',
-          'prop_asset_share',
-          'prop_return',
-          'opex_to_revenue',
-          'borrowings_to_equity',
-        ],
-      ],
-      [
-        12,
-        [
-          'gwp_growth',
-          'retention_ratio',
-          'loss_ratio',
-          'expense_ratio',
-          'combined_ratio',
-          'investment_yield',
-          'profit_mix',
-          'reserves_to_equity',
-        ],
-      ],
+      ...[...byChapter].slice(3),
     ]);
-    // The lesson key stays `fundamental:<metric_key>`: it is the durable identity, so completions carry over.
-    for (const entry of items.filter((candidate) => candidate.metric_key !== null))
-      expect(entry.lesson_key).toBe(`fundamental:${entry.metric_key}`);
-    expect(
-      new Set(items.flatMap((entry) => (entry.metric_key ? [entry.metric_key] : []))).size,
-    ).toBe(62);
+    expect([...byChapter].slice(3).map(([no, keys]) => [no, keys.length])).toEqual([
+      [11, 14],
+      [12, 11],
+      [13, 19],
+      [14, 15],
+      [15, 13],
+      [16, 15],
+      [17, 14],
+    ]);
+    const codes = ['chung', 'thuong', 'nh', 'ck', 'bh', 'bds', 'dk', 'bl', 'dien', 'vl'];
+    for (const entry of items) {
+      const no = entry.chapter_display_no;
+      expect(entry.nganh, entry.id).toBe(entry.metric_key === null ? null : codes[no - 8]);
+    }
+    // The lesson key stays `fundamental:<metric_key>` for the 62 v4 lessons: it is the durable identity, so
+    // completions carry over; a lesson added in v5 is `fundamental:<metric_key>-<nganh>` (plan v5 D8).
+    const metricItems = items.filter((candidate) => candidate.metric_key !== null);
+    for (const entry of metricItems)
+      expect([`fundamental:${entry.metric_key}`, `fundamental:${entry.metric_key}-${entry.nganh}`]).toContain(
+        entry.lesson_key,
+      );
+    expect(metricItems.filter((entry) => entry.lesson_key === `fundamental:${entry.metric_key}`)).toHaveLength(62);
+    expect(metricItems).toHaveLength(149);
+    expect(new Set(metricItems.map((entry) => entry.metric_key)).size).toBe(90);
   });
 
   it('the 33 metric lessons moved from v3.3 chapters 8-13 keep their keys (carry-over, spec §5.3)', () => {
@@ -379,7 +391,7 @@ describe('academy v4 catalog', () => {
   });
 });
 
-describe('academy v4 free learning and progress (spec §4.1)', () => {
+describe('academy v5 free learning and progress (spec §4.1)', () => {
   const states = (keys: string[], mode: AcademyAccessMode = 'free') =>
     new Map(
       buildProgress(
@@ -395,20 +407,20 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
       keys.map((key) => completion(key)),
     );
 
-  it('a new user has every item open, exams and the practice included, and 0 / 116', () => {
+  it('a new user has every item open, exams and the practice included, and 0 / 203', () => {
     const progress = progressOf([]);
     expect(progressResponseSchema.parse(progress)).toEqual(progress);
-    expect(progress.items).toHaveLength(129);
+    expect(progress.items).toHaveLength(221);
     expect(progress.items.every((entry) => entry.state === 'open')).toBe(true);
     expect(progress).toMatchObject({
       course_done: 0,
-      course_total: 116,
+      course_total: 203,
       current_item_id: 'ch01-l01',
       next_item_id: 'ch01-l01',
       access_mode: 'free',
     });
     expect(progress.chapters.map((chapter) => chapter.total)).toEqual([
-      10, 10, 9, 10, 4, 4, 7, 17, 16, 11, 10, 8,
+      10, 10, 9, 10, 4, 4, 7, 17, 16, 15, 14, 11, 19, 15, 13, 15, 14,
     ]);
     // Spec v4 §4.2: a progress response carries no capability any more.
     expect(progress).not.toHaveProperty('granted_capabilities');
@@ -419,11 +431,11 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
     expect(result.get('ch04-l06')).toBe('passed');
     expect(result.get('ch08-l11')).toBe('passed');
     expect([...result.values()].filter((state) => state === 'passed')).toHaveLength(2);
-    expect([...result.values()].filter((state) => state === 'open')).toHaveLength(127);
+    expect([...result.values()].filter((state) => state === 'open')).toHaveLength(219);
     expect([...result.values()]).not.toContain('locked');
   });
 
-  it('x / 116 counts required lessons passed in any order; exams and the practice never count', () => {
+  it('x / 203 counts required lessons passed in any order; exams and the practice never count', () => {
     const progress = progressOf([
       'fundamental:nim',
       'technical:rsi',
@@ -440,7 +452,7 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
     expect(progress.chapters.find((chapter) => chapter.display_no === 10)).toMatchObject({
       chapter_id: 'ch10',
       done: 1,
-      total: 11,
+      total: 15,
       exam_passed: false,
     });
   });
@@ -448,7 +460,7 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
   it('counts every published lesson once and reports null current when all is passed', () => {
     const progress = progressOf([...content.items.values()].map((entry) => entry.lesson_key));
     expect(progress).toMatchObject({
-      course_done: 116,
+      course_done: 203,
       current_item_id: null,
       next_item_id: null,
     });
@@ -530,7 +542,7 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
   });
 });
 
-describe('academy v4 item content', () => {
+describe('academy v5 item content', () => {
   it('serves any item to anybody: lessons, exams and the practice are open; unknown is 404', async () => {
     const { service } = setup();
     const lesson = await service.lesson(USER, 'ch01-l01');
@@ -551,7 +563,7 @@ describe('academy v4 item content', () => {
       metric_key: 'nim',
       lesson_key: 'fundamental:nim',
     });
-    for (const id of ['ch99-l01', 'ch13-l01', 'ch13-exam'])
+    for (const id of ['ch99-l01', 'ch18-l01', 'ch18-exam', 'ch13-l20'])
       await expect(service.lesson(USER, id), id).rejects.toMatchObject({
         status: 404,
         response: { code: 'LESSON_NOT_FOUND' },
@@ -600,7 +612,7 @@ describe('academy v4 item content', () => {
   });
 });
 
-describe('academy v4 scenario choice', () => {
+describe('academy v5 scenario choice', () => {
   it('requires a choice before the quiz, stores it once and returns the first choice on replay', async () => {
     const { service, memory } = setup();
     memory.complete(USER, keysBefore('ch02-l01'));
@@ -667,7 +679,7 @@ describe('academy v4 scenario choice', () => {
   });
 });
 
-describe('academy v4 practice notes', () => {
+describe('academy v5 practice notes', () => {
   it('is only available for lessons with interactive blocks; the sequential mode keeps the lock', async () => {
     const { service, memory } = setup();
     await expect(service.lessonNotes(USER, 'ch01-l01')).rejects.toMatchObject({
@@ -797,7 +809,7 @@ describe('academy v4 practice notes', () => {
   });
 });
 
-describe('academy v4 attempts and grading', () => {
+describe('academy v5 attempts and grading', () => {
   const cases: Array<[string, number, boolean]> = [
     ['ch01-l01', 2, false],
     ['ch01-l01', 3, true],
@@ -926,7 +938,7 @@ describe('academy v4 attempts and grading', () => {
     expect((await service.progress(USER)).course_done).toBe(before);
   });
 
-  it('QA-08: 116 lessons pay 11.600 xu, the practice makes 11.700, exams pay nothing', async () => {
+  it('QA-08: 203 lessons pay 20.300 xu, the practice makes 20.400, exams pay nothing', async () => {
     const { service, memory } = setup();
     const paid = { lesson: 0, practice: 0, exam: 0 };
     let lessons = 0;
@@ -942,9 +954,9 @@ describe('academy v4 attempts and grading', () => {
         lessons += 1;
       }
     }
-    expect(lessons).toBe(116);
-    expect(paid.lesson).toBe(11600);
-    expect(paid.lesson + paid.practice).toBe(11700);
+    expect(lessons).toBe(203);
+    expect(paid.lesson).toBe(20300);
+    expect(paid.lesson + paid.practice).toBe(20400);
     expect(paid.exam).toBe(0);
   });
 
@@ -1032,7 +1044,7 @@ describe('academy v4 attempts and grading', () => {
       status: 404,
       response: { code: 'LESSON_NOT_FOUND' },
     });
-    await expect(start(service, 'ch13-l01')).rejects.toMatchObject({
+    await expect(start(service, 'ch18-l01')).rejects.toMatchObject({
       status: 404,
       response: { code: 'LESSON_NOT_FOUND' },
     });
@@ -1150,7 +1162,7 @@ describe('academy v4 attempts and grading', () => {
   });
 });
 
-describe('academy v4 responses never carry answers', () => {
+describe('academy v5 responses never carry answers', () => {
   it('walks every response and checks the exact keys of attempt, resume, draft, submit and history', async () => {
     const { service, memory } = setup();
     const responses: unknown[] = [await service.catalog(USER), await service.progress(USER)];
@@ -1278,12 +1290,12 @@ describe('academy SQL store (v3.3)', () => {
     });
     expect(statements[0]!.text).toMatch(/lesson_key, kind, catalog_version, content_version/);
     expect(statements[0]!.values).toEqual(expect.arrayContaining(['chapter_exam', null]));
-    await store.attemptStats(USER, 'exam:ch01', ACADEMY_CATALOG_VERSION);
+    await store.attemptStats(USER, 'exam:ch01', [ACADEMY_CATALOG_VERSION]);
     await store.submittedAttempts(USER, 'exam:ch01', ACADEMY_CATALOG_VERSION, 20, 0);
-    await store.attemptStatsAll(USER, ACADEMY_CATALOG_VERSION);
+    await store.attemptStatsAll(USER, [ACADEMY_CATALOG_VERSION]);
     for (const statement of statements.slice(1)) {
-      expect(statement.text).toMatch(/catalog_version = \$/);
-      expect(statement.values).toContain(ACADEMY_CATALOG_VERSION);
+      expect(statement.text).toMatch(/catalog_version = (?:\$|any\(\$)/);
+      expect((statement.values ?? []).flat()).toContain(ACADEMY_CATALOG_VERSION);
     }
     expect(statements[3]!.text).toMatch(/group by lesson_key/);
   });

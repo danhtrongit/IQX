@@ -13,7 +13,7 @@ import {
   scenarioOf,
   type BankFile,
   type LessonFile,
-} from './content/v4/schema.js';
+} from './content/v5/schema.js';
 
 export type {
   AcademyContent,
@@ -24,13 +24,16 @@ export type {
 export { ACADEMY_CONTENT } from './academy.content.types.js';
 
 /**
- * Học viện v4 content loader (design §1.2). `content/v4` holds the catalog (12 chapters, all
+ * Học viện v5 content loader (design §1.2). `content/v5` holds the catalog (17 chapters, all
  * published), one public lesson file per lesson and practice, one PRIVATE question bank per
  * quizzable item and the names of retired lesson keys. Everything is validated against
- * `content/v4/schema.ts` and cross-checked here; any inconsistency stops the boot.
+ * `content/v5/schema.ts` and cross-checked here; any inconsistency stops the boot.
  * Banks never leave the server: only `toPublicQuestion` projections are served.
  */
-export const ACADEMY_CONTENT_DIR = join(dirname(fileURLToPath(import.meta.url)), 'content', 'v4');
+export const ACADEMY_CONTENT_DIR = join(dirname(fileURLToPath(import.meta.url)), 'content', 'v5');
+
+/** Key of `AcademyContent.itemByMetricNganh`. */
+export const metricNganhKey = (metricKey: string, nganh: string): string => `${metricKey}|${nganh}`;
 
 function fail(message: string): never {
   throw new Error(`Invalid academy content: ${message}`);
@@ -56,7 +59,8 @@ export function buildAcademyContent(files: AcademyContentFiles): AcademyContent 
 
   const items = new Map<string, AcademyItem>();
   const itemsByKey = new Map<string, AcademyItem>();
-  const itemsByMetricKey = new Map<string, AcademyItem>();
+  const itemsByMetricKey = new Map<string, AcademyItem[]>();
+  const itemByMetricNganh = new Map<string, AcademyItem>();
   let requiredTotal = 0;
   for (const chapter of catalog.chapters) {
     if (!chapter.published) continue;
@@ -102,7 +106,14 @@ export function buildAcademyContent(files: AcademyContentFiles): AcademyContent 
       deepFreeze(item);
       items.set(item.id, item);
       itemsByKey.set(item.lesson_key, item);
-      if (item.metric_key !== null) itemsByMetricKey.set(item.metric_key, item);
+      if (item.metric_key !== null) {
+        const list = itemsByMetricKey.get(item.metric_key) ?? [];
+        list.push(item);
+        itemsByMetricKey.set(item.metric_key, list);
+        const pair = metricNganhKey(item.metric_key, item.nganh ?? '');
+        if (itemByMetricNganh.has(pair)) fail(`${item.id} duplicates (metric_key, nganh) ${pair}`);
+        itemByMetricNganh.set(pair, item);
+      }
     }
   }
   for (const id of lessons.keys())
@@ -128,6 +139,7 @@ export function buildAcademyContent(files: AcademyContentFiles): AcademyContent 
     items,
     itemsByKey,
     itemsByMetricKey,
+    itemByMetricNganh,
     requiredTotal,
     retired,
   });
@@ -142,7 +154,7 @@ const jsonFiles = (directory: string, suffix: string): unknown[] =>
     .sort()
     .map((name) => readJson(directory, name));
 
-/** Reads `content/v4` from disk (no memo). */
+/** Reads `content/v5` from disk (no memo). */
 export function readAcademyContentFiles(): AcademyContentFiles {
   return {
     catalog: readJson('catalog.json'),
@@ -154,7 +166,7 @@ export function readAcademyContentFiles(): AcademyContentFiles {
 
 let cached: AcademyContent | null = null;
 
-/** Memoized `content/v4` (the default `ACADEMY_CONTENT` provider). */
+/** Memoized `content/v5` (the default `ACADEMY_CONTENT` provider). */
 export function loadAcademyContent(): AcademyContent {
   cached ??= buildAcademyContent(readAcademyContentFiles());
   return cached;
