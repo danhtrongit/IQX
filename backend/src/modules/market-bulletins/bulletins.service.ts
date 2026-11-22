@@ -2,14 +2,20 @@ import { createHash } from 'node:crypto';
 
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
+  Optional,
   UnprocessableEntityException,
 } from '@nestjs/common';
 
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
 import { vnToday } from '../market-integration/integration.utils.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import {
+  BULLETIN_NOTIFIER,
+  type BulletinNotifier,
+} from '../notifications/notification-writer.port.js';
 import { recordAudit, type AuditContext } from '../users/audit.js';
 import { runBulletinChecks } from './bulletin-checks.js';
 import { BulletinDataService } from './bulletin-data.service.js';
@@ -199,6 +205,9 @@ export class MarketBulletinsService {
     private readonly repository: BulletinRepository,
     private readonly data: BulletinDataService,
     private readonly tracking: BulletinTrackingService,
+    @Optional()
+    @Inject(BULLETIN_NOTIFIER)
+    private readonly notifier?: BulletinNotifier,
   ) {}
 
   // ───────────── danh sách ─────────────
@@ -490,6 +499,17 @@ export class MarketBulletinsService {
         history,
       });
       const added = await this.tracking.addFromBulletin(tx, date, currentSlots);
+      // Thông báo "Bản tin cuối phiên" (update 22-11 §8.1): chỉ lần Public đầu tiên, cùng commit.
+      // Public lại hoặc gỡ không gửi thêm; notifier tự cô lập lỗi nên không làm hỏng Public.
+      if (first && this.notifier)
+        await this.notifier.bulletinPublished(tx, {
+          tradeDate: date,
+          close: model.close,
+          change: model.change,
+          changePct: model.changePct,
+          volume: Number.isFinite(model.volume) ? model.volume : null,
+          pickCount: summary.pick_count,
+        });
       await recordAudit(tx, audit, {
         action: action === 'publish' ? 'bulletin.publish' : 'bulletin.republish',
         targetEntity: 'market_bulletin',

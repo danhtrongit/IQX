@@ -9,6 +9,7 @@ const productionSettings = {
   REDIS_URL: 'redis://localhost:6379',
   JWT_SECRET_KEY: 'a'.repeat(32),
   JWT_REFRESH_SECRET_KEY: 'b'.repeat(32),
+  NOTIFICATION_TOKEN_SECRET: 'n'.repeat(32),
 };
 
 const providerUrls = [
@@ -102,6 +103,12 @@ describe('environment boundary', () => {
       ).toThrow(key);
     }
   });
+  it('requires NOTIFICATION_TOKEN_SECRET in production (email unsubscribe links)', () => {
+    const { NOTIFICATION_TOKEN_SECRET: _secret, ...withoutSecret } = productionSettings;
+    expect(() => parseEnvironment(withoutSecret)).toThrow('NOTIFICATION_TOKEN_SECRET');
+    expect(parseEnvironment({}).NOTIFICATION_TOKEN_SECRET).toBeUndefined();
+  });
+
   it('keeps optional provider URLs absent in valid production defaults', () => {
     const env = parseEnvironment(productionSettings);
     for (const [key] of providerUrls) expect(env[key]).toBeUndefined();
