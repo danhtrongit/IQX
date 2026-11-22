@@ -72,6 +72,15 @@ describe("FigureChart (spec Học viện v5 §2.5)", () => {
     expect(texts).toEqual(expect.arrayContaining(["TOI quý này", "34.329 tỷ", "so với", "=", "35,6%", "So với cùng kỳ"]))
   })
 
+  it("formula: the `arrow` operator is a drawn arrow, never typed", () => {
+    const model = { ...FIGURE_FORMULA, ops: ["arrow", "="] } as FigureChartModel
+    for (const width of [358, 760]) {
+      const { container } = draw(model, width)
+      expect(container.querySelector('path[data-op="arrow"]')).not.toBeNull()
+      expect([...container.querySelectorAll("text")].map((node) => node.textContent)).not.toContain("arrow")
+    }
+  })
+
   it("hbar: value labels with unit and decimals, a zero line for negative values, the note", () => {
     const { container } = draw(
       { ...FIGURE_HBAR, items: [...("items" in FIGURE_HBAR ? FIGURE_HBAR.items : []), { label: "Lỗ", value: -0.8, tone: "neg" }] } as FigureChartModel,

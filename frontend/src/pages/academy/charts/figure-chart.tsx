@@ -57,12 +57,35 @@ function titleBlock(title: string | null | undefined, width: number): { height: 
 
 // ---------------------------------------------------------------------------------------------- formula
 
+/** `ops` token drawn as an arrow (the mockup's typed arrow glyph; glyphs are banned in chart text). */
+const ARROW_OP = "arrow"
+
+/** Arrow between two formula boxes: pointing right when they sit side by side, down when stacked. */
+function FormulaArrow({ cx, cy, horizontal }: { cx: number; cy: number; horizontal: boolean }) {
+  const half = 10
+  const head = 6
+  const path = horizontal
+    ? `M${cx - half},${cy} H${cx + half} M${cx + half - head},${cy - head} L${cx + half},${cy} L${cx + half - head},${cy + head}`
+    : `M${cx},${cy - half} V${cy + half} M${cx - head},${cy + half - head} L${cx},${cy + half} L${cx + head},${cy + half - head}`
+  return (
+    <path
+      d={path}
+      data-op="arrow"
+      fill="none"
+      strokeWidth={2.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={TONE_STROKE.warn}
+    />
+  )
+}
+
 function formulaLayout(model: Fig<"formula">, width: number): Layout {
   const p = pad(width)
   const items = model.items
   const n = items.length
   const ops = model.ops ?? []
-  const opWidth = Math.max(32, ...ops.map((op) => textWidth(op, 18) + 14))
+  const opWidth = Math.max(32, ...ops.map((op) => (op === ARROW_OP ? 32 : textWidth(op, 18) + 14)))
   const gap = ops.length ? opWidth : 12
   const inner = width - 2 * p
   const wideBox = (inner - (n - 1) * gap) / n
@@ -130,9 +153,13 @@ function formulaLayout(model: Fig<"formula">, width: number): Layout {
       const ox = horizontal ? x + boxWidth + gap / 2 : width / 2
       const oy = horizontal ? 12 + Math.max(tallest, fixed) / 2 + 7 : top + h + opRow / 2 + 7
       nodes.push(
-        <text key={`op-${index}`} x={ox} y={oy} textAnchor="middle" className={cn(textFill("warn"), "text-[18px] font-extrabold")}>
-          {op}
-        </text>,
+        op === ARROW_OP ? (
+          <FormulaArrow key={`op-${index}`} cx={ox} cy={oy - 7} horizontal={horizontal} />
+        ) : (
+          <text key={`op-${index}`} x={ox} y={oy} textAnchor="middle" className={cn(textFill("warn"), "text-[18px] font-extrabold")}>
+            {op}
+          </text>
+        ),
       )
     }
     if (!horizontal) y = top + h + (index < n - 1 ? (op ? opRow : 10) : 0)
