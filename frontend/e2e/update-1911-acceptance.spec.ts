@@ -50,12 +50,12 @@ test.describe("Bố cục v1.3 · máy tính", () => {
     await shot(page, "N01-header-1440")
   })
 
-  test("N02 LUYỆN TẬP: rail Candle Dojo · Học viện · Bot · Giao dịch · Dashboard phân tích; không Insight, Shop, Flashback", async ({ page }) => {
+  test("N02 LUYỆN TẬP: rail Candle Dojo · Học viện · Bot · Giao dịch · Dashboard phân tích · Toàn cảnh thị trường; không Insight, Shop, Flashback", async ({ page }) => {
     await page.goto("/luyen-tap")
     // Default tool (DEV-NOTES §2.4 decision): Candle Dojo.
     await expect(tool(page, "candle-dojo")).toHaveAttribute("aria-pressed", "true")
-    expect(await railIds(page)).toEqual(["candle-dojo", "hoc-vien", "bot", "giao-dich", "phan-tich"])
-    await expect(rail(page).locator("[data-tool]")).toHaveText(["Candle Dojo", "Học viện", "Bot", "Giao dịch", "Dashboard phân tích"])
+    expect(await railIds(page)).toEqual(["candle-dojo", "hoc-vien", "bot", "giao-dich", "phan-tich", "toan-canh"])
+    await expect(rail(page).locator("[data-tool]")).toHaveText(["Candle Dojo", "Học viện", "Bot", "Giao dịch", "Dashboard phân tích", "Toàn cảnh thị trường"])
     await expect(rail(page).getByText(/Insight|Shop|Flashback/)).toHaveCount(0)
     // Candle Dojo has no panel: the main area takes the full width.
     await expect(frame(page)).toHaveAttribute("data-panel-hidden", "true")

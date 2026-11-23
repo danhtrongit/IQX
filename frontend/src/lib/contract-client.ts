@@ -2,7 +2,7 @@ import { api, apiResponse } from "./api"
 import type { ApiOperation, ApiRequestFor, ApiResponseFor } from "./contract-types"
 
 type Request<K extends ApiOperation> = Omit<ApiRequestFor<K>, "url">
-type TransportOptions = Pick<RequestInit, "signal" | "headers" | "cache">
+type TransportOptions = Pick<RequestInit, "signal" | "headers" | "cache" | "keepalive">
 
 /** Serialize an OpenAPI operation through the one authenticated HTTP boundary. */
 function serialize<K extends ApiOperation>(key: K, request: Request<K>, options: TransportOptions) {

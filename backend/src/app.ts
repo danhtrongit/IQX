@@ -59,6 +59,7 @@ import { SavedFiltersModule } from './modules/saved-filters/saved-filters.module
 import { ShopModule } from './modules/shop/shop.module.js';
 import { CandleDojoModule } from './modules/candle-dojo/candle-dojo.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
+import { MarketOverviewModule } from './modules/market-overview/index.js';
 import { FlashbackModule } from './modules/flashback/flashback.module.js';
 import { WorkspaceModule } from './modules/workspace/workspace.module.js';
 import { ResearchModule } from './modules/research/index.js';
@@ -112,6 +113,7 @@ export function createApiModule(
       ShopModule,
       CandleDojoModule,
       DashboardModule,
+      MarketOverviewModule,
       WorkspaceModule,
       FlashbackModule,
       ResearchModule,

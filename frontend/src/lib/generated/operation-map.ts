@@ -18,6 +18,7 @@ export interface OperationMap {
   "DELETE /api/v2/strategy/lists/{listId}": { request: T.DeleteStrategySavedListData; response: T.DeleteStrategySavedListResponses[keyof T.DeleteStrategySavedListResponses] }
   "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: T.DeleteStrategyResultSnapshotData; response: T.DeleteStrategyResultSnapshotResponses[keyof T.DeleteStrategyResultSnapshotResponses] }
   "DELETE /api/v2/strategy/strategies/{id}": { request: T.StrategyDeleteData; response: T.StrategyDeleteResponses[keyof T.StrategyDeleteResponses] }
+  "DELETE /api/v2/toan-canh/pages/{id}": { request: T.MarketOverviewDeletePageData; response: T.MarketOverviewDeletePageResponses[keyof T.MarketOverviewDeletePageResponses] }
   "DELETE /api/v2/trading-floor/posts/comments/{commentId}": { request: T.TradingFloorPostCommentDeleteData; response: T.TradingFloorPostCommentDeleteResponses[keyof T.TradingFloorPostCommentDeleteResponses] }
   "DELETE /api/v2/trading-floor/saco/posts/{id}": { request: T.TradingFloorSacoPostDeleteData; response: T.TradingFloorSacoPostDeleteResponses[keyof T.TradingFloorSacoPostDeleteResponses] }
   "DELETE /api/v2/users/{userId}": { request: T.UsersControllerRemove1Data; response: T.UsersControllerRemove1Responses[keyof T.UsersControllerRemove1Responses] }
@@ -314,6 +315,9 @@ export interface OperationMap {
   "GET /api/v2/team/users": { request: T.TeamControllerUsers1Data; response: T.TeamControllerUsers1Responses[keyof T.TeamControllerUsers1Responses] }
   "GET /api/v2/team/users/{userId}": { request: T.TeamControllerUser1Data; response: T.TeamControllerUser1Responses[keyof T.TeamControllerUser1Responses] }
   "GET /api/v2/team/users/{userId}/login-history": { request: T.TeamControllerLoginHistory1Data; response: T.TeamControllerLoginHistory1Responses[keyof T.TeamControllerLoginHistory1Responses] }
+  "GET /api/v2/toan-canh/pages": { request: T.MarketOverviewListPagesData; response: T.MarketOverviewListPagesResponses[keyof T.MarketOverviewListPagesResponses] }
+  "GET /api/v2/toan-canh/template": { request: T.MarketOverviewTemplateData; response: T.MarketOverviewTemplateResponses[keyof T.MarketOverviewTemplateResponses] }
+  "GET /api/v2/toan-canh/widgets/{widget}": { request: T.MarketOverviewWidgetDataData; response: T.MarketOverviewWidgetDataResponses[keyof T.MarketOverviewWidgetDataResponses] }
   "GET /api/v2/trading-floor/chat/convs/{id}": { request: T.FloorChatConversationData; response: T.FloorChatConversationResponses[keyof T.FloorChatConversationResponses] }
   "GET /api/v2/trading-floor/chat/images/{imageId}": { request: T.FloorChatImageData; response: T.FloorChatImageResponses[keyof T.FloorChatImageResponses] }
   "GET /api/v2/trading-floor/chat/inbox": { request: T.FloorChatInboxData; response: T.FloorChatInboxResponses[keyof T.FloorChatInboxResponses] }
@@ -367,6 +371,7 @@ export interface OperationMap {
   "PATCH /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertUpdateData; response: T.StrategyAlertUpdateResponses[keyof T.StrategyAlertUpdateResponses] }
   "PATCH /api/v2/strategy/shared-config": { request: T.StrategyConfigPatchSharedConfigData; response: T.StrategyConfigPatchSharedConfigResponses[keyof T.StrategyConfigPatchSharedConfigResponses] }
   "PATCH /api/v2/strategy/strategies/{id}": { request: T.StrategyRenameData; response: T.StrategyRenameResponses[keyof T.StrategyRenameResponses] }
+  "PATCH /api/v2/toan-canh/pages/order": { request: T.MarketOverviewReorderPagesData; response: T.MarketOverviewReorderPagesResponses[keyof T.MarketOverviewReorderPagesResponses] }
   "PATCH /api/v2/trading-floor/manage/sacos/{id}": { request: T.FloorManageSacoUpdateData; response: T.FloorManageSacoUpdateResponses[keyof T.FloorManageSacoUpdateResponses] }
   "PATCH /api/v2/users/{userId}": { request: T.UsersControllerUpdate1Data; response: T.UsersControllerUpdate1Responses[keyof T.UsersControllerUpdate1Responses] }
   "PATCH /api/v2/users/me": { request: T.UsersControllerUpdateMe1Data; response: T.UsersControllerUpdateMe1Responses[keyof T.UsersControllerUpdateMe1Responses] }
@@ -535,6 +540,7 @@ export interface OperationMap {
   "POST /api/v2/strategy/strategies/{id}/versions/{version}/restore": { request: T.StrategyVersionRestoreData; response: T.StrategyVersionRestoreResponses[keyof T.StrategyVersionRestoreResponses] }
   "POST /api/v2/team/users/{userId}/remove": { request: T.TeamControllerRemove1Data; response: T.TeamControllerRemove1Responses[keyof T.TeamControllerRemove1Responses] }
   "POST /api/v2/telegram/webhook/{secret}": { request: T.TelegramControllerWebhook1Data; response: T.TelegramControllerWebhook1Responses[keyof T.TelegramControllerWebhook1Responses] }
+  "POST /api/v2/toan-canh/pages": { request: T.MarketOverviewCreatePageData; response: T.MarketOverviewCreatePageResponses[keyof T.MarketOverviewCreatePageResponses] }
   "POST /api/v2/trading-floor/chat/convs/{id}/images": { request: T.FloorChatSendImageData; response: T.FloorChatSendImageResponses[keyof T.FloorChatSendImageResponses] }
   "POST /api/v2/trading-floor/chat/convs/{id}/messages/{messageId}/recall": { request: T.FloorChatRecallData; response: T.FloorChatRecallResponses[keyof T.FloorChatRecallResponses] }
   "POST /api/v2/trading-floor/chat/convs/{id}/read": { request: T.FloorChatReadData; response: T.FloorChatReadResponses[keyof T.FloorChatReadResponses] }
@@ -594,6 +600,8 @@ export interface OperationMap {
   "PUT /api/v2/me/notification-settings": { request: T.NotificationSaveSettingsData; response: T.NotificationSaveSettingsResponses[keyof T.NotificationSaveSettingsResponses] }
   "PUT /api/v2/shop/active-mascot": { request: T.SetShopActiveMascotData; response: T.SetShopActiveMascotResponses[keyof T.SetShopActiveMascotResponses] }
   "PUT /api/v2/strategy/filters/{filterId}": { request: T.UpdateStrategySavedFilterData; response: T.UpdateStrategySavedFilterResponses[keyof T.UpdateStrategySavedFilterResponses] }
+  "PUT /api/v2/toan-canh/pages/{id}": { request: T.MarketOverviewUpdatePageData; response: T.MarketOverviewUpdatePageResponses[keyof T.MarketOverviewUpdatePageResponses] }
+  "PUT /api/v2/toan-canh/preferences": { request: T.MarketOverviewUpdatePreferencesData; response: T.MarketOverviewUpdatePreferencesResponses[keyof T.MarketOverviewUpdatePreferencesResponses] }
   "PUT /api/v2/trading-floor/manage/than-tai/hanh/{hanh}": { request: T.ThanTaiAdminHanhUpdateData; response: T.ThanTaiAdminHanhUpdateResponses[keyof T.ThanTaiAdminHanhUpdateResponses] }
   "PUT /api/v2/trading-floor/manage/than-tai/la/{id}": { request: T.ThanTaiAdminLaUpdateData; response: T.ThanTaiAdminLaUpdateResponses[keyof T.ThanTaiAdminLaUpdateResponses] }
   "PUT /api/v2/trading-floor/manage/than-tai/que/{id}": { request: T.ThanTaiAdminQueUpdateData; response: T.ThanTaiAdminQueUpdateResponses[keyof T.ThanTaiAdminQueUpdateResponses] }
@@ -619,6 +627,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "DELETE /api/v2/strategy/lists/{listId}": { request: "DeleteStrategySavedListData", response: "DeleteStrategySavedListResponses" },
   "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: "DeleteStrategyResultSnapshotData", response: "DeleteStrategyResultSnapshotResponses" },
   "DELETE /api/v2/strategy/strategies/{id}": { request: "StrategyDeleteData", response: "StrategyDeleteResponses" },
+  "DELETE /api/v2/toan-canh/pages/{id}": { request: "MarketOverviewDeletePageData", response: "MarketOverviewDeletePageResponses" },
   "DELETE /api/v2/trading-floor/posts/comments/{commentId}": { request: "TradingFloorPostCommentDeleteData", response: "TradingFloorPostCommentDeleteResponses" },
   "DELETE /api/v2/trading-floor/saco/posts/{id}": { request: "TradingFloorSacoPostDeleteData", response: "TradingFloorSacoPostDeleteResponses" },
   "DELETE /api/v2/users/{userId}": { request: "UsersControllerRemove1Data", response: "UsersControllerRemove1Responses" },
@@ -915,6 +924,9 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/team/users": { request: "TeamControllerUsers1Data", response: "TeamControllerUsers1Responses" },
   "GET /api/v2/team/users/{userId}": { request: "TeamControllerUser1Data", response: "TeamControllerUser1Responses" },
   "GET /api/v2/team/users/{userId}/login-history": { request: "TeamControllerLoginHistory1Data", response: "TeamControllerLoginHistory1Responses" },
+  "GET /api/v2/toan-canh/pages": { request: "MarketOverviewListPagesData", response: "MarketOverviewListPagesResponses" },
+  "GET /api/v2/toan-canh/template": { request: "MarketOverviewTemplateData", response: "MarketOverviewTemplateResponses" },
+  "GET /api/v2/toan-canh/widgets/{widget}": { request: "MarketOverviewWidgetDataData", response: "MarketOverviewWidgetDataResponses" },
   "GET /api/v2/trading-floor/chat/convs/{id}": { request: "FloorChatConversationData", response: "FloorChatConversationResponses" },
   "GET /api/v2/trading-floor/chat/images/{imageId}": { request: "FloorChatImageData", response: "FloorChatImageResponses" },
   "GET /api/v2/trading-floor/chat/inbox": { request: "FloorChatInboxData", response: "FloorChatInboxResponses" },
@@ -968,6 +980,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PATCH /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertUpdateData", response: "StrategyAlertUpdateResponses" },
   "PATCH /api/v2/strategy/shared-config": { request: "StrategyConfigPatchSharedConfigData", response: "StrategyConfigPatchSharedConfigResponses" },
   "PATCH /api/v2/strategy/strategies/{id}": { request: "StrategyRenameData", response: "StrategyRenameResponses" },
+  "PATCH /api/v2/toan-canh/pages/order": { request: "MarketOverviewReorderPagesData", response: "MarketOverviewReorderPagesResponses" },
   "PATCH /api/v2/trading-floor/manage/sacos/{id}": { request: "FloorManageSacoUpdateData", response: "FloorManageSacoUpdateResponses" },
   "PATCH /api/v2/users/{userId}": { request: "UsersControllerUpdate1Data", response: "UsersControllerUpdate1Responses" },
   "PATCH /api/v2/users/me": { request: "UsersControllerUpdateMe1Data", response: "UsersControllerUpdateMe1Responses" },
@@ -1136,6 +1149,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/strategy/strategies/{id}/versions/{version}/restore": { request: "StrategyVersionRestoreData", response: "StrategyVersionRestoreResponses" },
   "POST /api/v2/team/users/{userId}/remove": { request: "TeamControllerRemove1Data", response: "TeamControllerRemove1Responses" },
   "POST /api/v2/telegram/webhook/{secret}": { request: "TelegramControllerWebhook1Data", response: "TelegramControllerWebhook1Responses" },
+  "POST /api/v2/toan-canh/pages": { request: "MarketOverviewCreatePageData", response: "MarketOverviewCreatePageResponses" },
   "POST /api/v2/trading-floor/chat/convs/{id}/images": { request: "FloorChatSendImageData", response: "FloorChatSendImageResponses" },
   "POST /api/v2/trading-floor/chat/convs/{id}/messages/{messageId}/recall": { request: "FloorChatRecallData", response: "FloorChatRecallResponses" },
   "POST /api/v2/trading-floor/chat/convs/{id}/read": { request: "FloorChatReadData", response: "FloorChatReadResponses" },
@@ -1195,6 +1209,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PUT /api/v2/me/notification-settings": { request: "NotificationSaveSettingsData", response: "NotificationSaveSettingsResponses" },
   "PUT /api/v2/shop/active-mascot": { request: "SetShopActiveMascotData", response: "SetShopActiveMascotResponses" },
   "PUT /api/v2/strategy/filters/{filterId}": { request: "UpdateStrategySavedFilterData", response: "UpdateStrategySavedFilterResponses" },
+  "PUT /api/v2/toan-canh/pages/{id}": { request: "MarketOverviewUpdatePageData", response: "MarketOverviewUpdatePageResponses" },
+  "PUT /api/v2/toan-canh/preferences": { request: "MarketOverviewUpdatePreferencesData", response: "MarketOverviewUpdatePreferencesResponses" },
   "PUT /api/v2/trading-floor/manage/than-tai/hanh/{hanh}": { request: "ThanTaiAdminHanhUpdateData", response: "ThanTaiAdminHanhUpdateResponses" },
   "PUT /api/v2/trading-floor/manage/than-tai/la/{id}": { request: "ThanTaiAdminLaUpdateData", response: "ThanTaiAdminLaUpdateResponses" },
   "PUT /api/v2/trading-floor/manage/than-tai/que/{id}": { request: "ThanTaiAdminQueUpdateData", response: "ThanTaiAdminQueUpdateResponses" },

@@ -15,7 +15,7 @@ import {
 
 /** URL params owned by one section; everything else (symbol, tour...) is shared by both. */
 const SECTION_PARAMS: Record<WorkspaceSection, readonly string[]> = {
-  practice: [TOOL_PARAM, TRADING_TAB_PARAM, "content", "lesson", "practice"],
+  practice: [TOOL_PARAM, TRADING_TAB_PARAM, "content", "lesson", "practice", "page"],
   flashback: [TOOL_PARAM],
 }
 const ALL_SECTION_PARAMS = [...new Set([...SECTION_PARAMS.practice, ...SECTION_PARAMS.flashback, "analysis", "view", "metric"])]
@@ -114,6 +114,9 @@ function isSectionTool(section: WorkspaceSection, tool: string | null): boolean 
 export function withTool(current: URLSearchParams, tool: string, saved: SectionMemory | undefined, tab?: TradingTab): URLSearchParams {
   let next = new URLSearchParams(current)
   next.set(TOOL_PARAM, tool)
+  if (tool !== PRACTICE_TOOL.marketOverview) {
+    next.delete("page")
+  }
   if (tool !== PRACTICE_TOOL.trading) {
     next.delete(TRADING_TAB_PARAM)
     next.delete("content")

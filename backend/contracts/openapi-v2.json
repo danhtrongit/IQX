@@ -35671,7 +35671,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 928 typed response bodies, 19 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 936 typed response bodies, 19 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -172083,6 +172083,3533 @@
         "x-response-schema-status": "legacy-mapped"
       }
     },
+    "/api/v2/toan-canh/pages": {
+      "get": {
+        "operationId": "marketOverviewListPages",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "lastActivePageId": {
+                      "type": "string"
+                    },
+                    "maxPages": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "pages": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "items": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "h": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "state": {
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  },
+                                  "type": "object"
+                                },
+                                "uid": {
+                                  "type": "string"
+                                },
+                                "w": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "widget": {
+                                  "enum": [
+                                    "index_chart",
+                                    "market_breadth",
+                                    "market_liquidity",
+                                    "foreign_flow",
+                                    "vnindex_impact",
+                                    "market_heatmap",
+                                    "featured_stocks",
+                                    "sector_performance",
+                                    "sector_rotation",
+                                    "derivatives_summary",
+                                    "vn30f_vs_vn30",
+                                    "futures_table",
+                                    "world_indices",
+                                    "commodities_fx",
+                                    "events_calendar",
+                                    "market_news"
+                                  ],
+                                  "type": "string"
+                                },
+                                "x": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "y": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "uid",
+                                "widget",
+                                "x",
+                                "y",
+                                "w",
+                                "h",
+                                "state"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "order": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "version",
+                          "id",
+                          "name",
+                          "order",
+                          "items",
+                          "updatedAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "pages",
+                    "lastActivePageId",
+                    "maxPages"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List authenticated user custom \"Toàn cảnh thị trường\" pages and last active page ID",
+        "tags": [
+          "Market Overview"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      },
+      "post": {
+        "operationId": "marketOverviewCreatePage",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "duplicateFromPageId": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "items": {
+                    "items": {
+                      "properties": {
+                        "h": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "state": {
+                          "additionalProperties": {},
+                          "type": "object"
+                        },
+                        "uid": {
+                          "maxLength": 64,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "w": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "widget": {
+                          "enum": [
+                            "index_chart",
+                            "market_breadth",
+                            "market_liquidity",
+                            "foreign_flow",
+                            "vnindex_impact",
+                            "market_heatmap",
+                            "featured_stocks",
+                            "sector_performance",
+                            "sector_rotation",
+                            "derivatives_summary",
+                            "vn30f_vs_vn30",
+                            "futures_table",
+                            "world_indices",
+                            "commodities_fx",
+                            "events_calendar",
+                            "market_news"
+                          ],
+                          "type": "string"
+                        },
+                        "x": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "y": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "uid",
+                        "widget",
+                        "x",
+                        "y",
+                        "w",
+                        "h"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "h": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "state": {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "type": "object"
+                          },
+                          "uid": {
+                            "type": "string"
+                          },
+                          "w": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "widget": {
+                            "enum": [
+                              "index_chart",
+                              "market_breadth",
+                              "market_liquidity",
+                              "foreign_flow",
+                              "vnindex_impact",
+                              "market_heatmap",
+                              "featured_stocks",
+                              "sector_performance",
+                              "sector_rotation",
+                              "derivatives_summary",
+                              "vn30f_vs_vn30",
+                              "futures_table",
+                              "world_indices",
+                              "commodities_fx",
+                              "events_calendar",
+                              "market_news"
+                            ],
+                            "type": "string"
+                          },
+                          "x": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "y": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "uid",
+                          "widget",
+                          "x",
+                          "y",
+                          "w",
+                          "h",
+                          "state"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "order": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "id",
+                    "name",
+                    "order",
+                    "items",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new custom page or duplicate an existing user page (max 8 pages)",
+        "tags": [
+          "Market Overview"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/toan-canh/pages/order": {
+      "patch": {
+        "operationId": "marketOverviewReorderPages",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "pageIds": {
+                    "items": {
+                      "maxLength": 64,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "maxItems": 8,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "pageIds"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "pages": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "items": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "h": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "state": {
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  },
+                                  "type": "object"
+                                },
+                                "uid": {
+                                  "type": "string"
+                                },
+                                "w": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "widget": {
+                                  "enum": [
+                                    "index_chart",
+                                    "market_breadth",
+                                    "market_liquidity",
+                                    "foreign_flow",
+                                    "vnindex_impact",
+                                    "market_heatmap",
+                                    "featured_stocks",
+                                    "sector_performance",
+                                    "sector_rotation",
+                                    "derivatives_summary",
+                                    "vn30f_vs_vn30",
+                                    "futures_table",
+                                    "world_indices",
+                                    "commodities_fx",
+                                    "events_calendar",
+                                    "market_news"
+                                  ],
+                                  "type": "string"
+                                },
+                                "x": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "y": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "uid",
+                                "widget",
+                                "x",
+                                "y",
+                                "w",
+                                "h",
+                                "state"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "order": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "version",
+                          "id",
+                          "name",
+                          "order",
+                          "items",
+                          "updatedAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "pages"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Persist reordered sequence of user custom pages",
+        "tags": [
+          "Market Overview"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/toan-canh/pages/{id}": {
+      "delete": {
+        "operationId": "marketOverviewDeletePage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "deleted": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "lastActivePageId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "deleted",
+                    "id",
+                    "lastActivePageId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a user custom page and reconcile last active page preference",
+        "tags": [
+          "Market Overview"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      },
+      "put": {
+        "operationId": "marketOverviewUpdatePage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "items": {
+                    "items": {
+                      "properties": {
+                        "h": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "state": {
+                          "additionalProperties": {},
+                          "type": "object"
+                        },
+                        "uid": {
+                          "maxLength": 64,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "w": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "widget": {
+                          "enum": [
+                            "index_chart",
+                            "market_breadth",
+                            "market_liquidity",
+                            "foreign_flow",
+                            "vnindex_impact",
+                            "market_heatmap",
+                            "featured_stocks",
+                            "sector_performance",
+                            "sector_rotation",
+                            "derivatives_summary",
+                            "vn30f_vs_vn30",
+                            "futures_table",
+                            "world_indices",
+                            "commodities_fx",
+                            "events_calendar",
+                            "market_news"
+                          ],
+                          "type": "string"
+                        },
+                        "x": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "y": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "uid",
+                        "widget",
+                        "x",
+                        "y",
+                        "w",
+                        "h"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "h": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "state": {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "type": "object"
+                          },
+                          "uid": {
+                            "type": "string"
+                          },
+                          "w": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "widget": {
+                            "enum": [
+                              "index_chart",
+                              "market_breadth",
+                              "market_liquidity",
+                              "foreign_flow",
+                              "vnindex_impact",
+                              "market_heatmap",
+                              "featured_stocks",
+                              "sector_performance",
+                              "sector_rotation",
+                              "derivatives_summary",
+                              "vn30f_vs_vn30",
+                              "futures_table",
+                              "world_indices",
+                              "commodities_fx",
+                              "events_calendar",
+                              "market_news"
+                            ],
+                            "type": "string"
+                          },
+                          "x": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "y": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "uid",
+                          "widget",
+                          "x",
+                          "y",
+                          "w",
+                          "h",
+                          "state"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "order": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "id",
+                    "name",
+                    "order",
+                    "items",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update custom page name, 12-column widget layout, and per-widget states",
+        "tags": [
+          "Market Overview"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/toan-canh/preferences": {
+      "put": {
+        "operationId": "marketOverviewUpdatePreferences",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "lastActivePageId": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "lastActivePageId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "lastActivePageId": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "lastActivePageId",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Save the user last active tab ID (\"thi-truong\" or a custom page ID)",
+        "tags": [
+          "Market Overview"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/toan-canh/template": {
+      "get": {
+        "operationId": "marketOverviewTemplate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "catalog": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "defaultH": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "defaultState": {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "type": "object"
+                          },
+                          "defaultW": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "group": {
+                            "enum": [
+                              "indices",
+                              "stocks",
+                              "sectors",
+                              "derivatives",
+                              "global",
+                              "events_news"
+                            ],
+                            "type": "string"
+                          },
+                          "groupLabel": {
+                            "type": "string"
+                          },
+                          "inTemplate": {
+                            "type": "boolean"
+                          },
+                          "keywords": {
+                            "type": "string"
+                          },
+                          "minH": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "minW": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "enum": [
+                              "index_chart",
+                              "market_breadth",
+                              "market_liquidity",
+                              "foreign_flow",
+                              "vnindex_impact",
+                              "market_heatmap",
+                              "featured_stocks",
+                              "sector_performance",
+                              "sector_rotation",
+                              "derivatives_summary",
+                              "vn30f_vs_vn30",
+                              "futures_table",
+                              "world_indices",
+                              "commodities_fx",
+                              "events_calendar",
+                              "market_news"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "name",
+                          "group",
+                          "groupLabel",
+                          "defaultW",
+                          "defaultH",
+                          "minW",
+                          "minH",
+                          "inTemplate",
+                          "keywords",
+                          "defaultState"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "groups": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "enum": [
+                              "indices",
+                              "stocks",
+                              "sectors",
+                              "derivatives",
+                              "global",
+                              "events_news"
+                            ],
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "id": {
+                      "enum": [
+                        "thi-truong"
+                      ],
+                      "type": "string"
+                    },
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "h": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "state": {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "type": "object"
+                          },
+                          "uid": {
+                            "type": "string"
+                          },
+                          "w": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "widget": {
+                            "enum": [
+                              "index_chart",
+                              "market_breadth",
+                              "market_liquidity",
+                              "foreign_flow",
+                              "vnindex_impact",
+                              "market_heatmap",
+                              "featured_stocks",
+                              "sector_performance",
+                              "sector_rotation",
+                              "derivatives_summary",
+                              "vn30f_vs_vn30",
+                              "futures_table",
+                              "world_indices",
+                              "commodities_fx",
+                              "events_calendar",
+                              "market_news"
+                            ],
+                            "type": "string"
+                          },
+                          "x": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "y": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "uid",
+                          "widget",
+                          "x",
+                          "y",
+                          "w",
+                          "h",
+                          "state"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "limits": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "cols": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "maxHeight": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "maxPageNameLength": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "maxPages": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "maxWidgetsPerPage": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "cols",
+                        "maxHeight",
+                        "maxPages",
+                        "maxWidgetsPerPage",
+                        "maxPageNameLength"
+                      ],
+                      "type": "object"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "readonly": {
+                      "enum": [
+                        true
+                      ],
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "id",
+                    "name",
+                    "readonly",
+                    "items",
+                    "catalog",
+                    "groups",
+                    "limits",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Server-driven read-only \"Thị trường\" template layout (13 curated widgets), full 16-widget catalog, groups, and grid limits",
+        "tags": [
+          "Market Overview"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/toan-canh/widgets/{widget}": {
+      "get": {
+        "operationId": "marketOverviewWidgetData",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "widget",
+            "required": true,
+            "schema": {
+              "enum": [
+                "index_chart",
+                "market_breadth",
+                "market_liquidity",
+                "foreign_flow",
+                "vnindex_impact",
+                "market_heatmap",
+                "featured_stocks",
+                "sector_performance",
+                "sector_rotation",
+                "derivatives_summary",
+                "vn30f_vs_vn30",
+                "futures_table",
+                "world_indices",
+                "commodities_fx",
+                "events_calendar",
+                "market_news"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "index",
+            "required": false,
+            "schema": {
+              "enum": [
+                "VNINDEX",
+                "VN30",
+                "HNX",
+                "UPCOM",
+                "VN30F1M"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "range",
+            "required": false,
+            "schema": {
+              "enum": [
+                "intraday",
+                "1m",
+                "3m",
+                "1y"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "exchange",
+            "required": false,
+            "schema": {
+              "enum": [
+                "HOSE",
+                "HNX",
+                "UPCOM"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tab",
+            "required": false,
+            "schema": {
+              "enum": [
+                "foreign",
+                "prop",
+                "gainers",
+                "losers",
+                "liquidity",
+                "vol_spike",
+                "price",
+                "flow",
+                "energy_metals",
+                "agri",
+                "gold_fx"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "required": false,
+            "schema": {
+              "enum": [
+                "stock",
+                "sector"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sizeBy",
+            "required": false,
+            "schema": {
+              "enum": [
+                "market_cap",
+                "value"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period",
+            "required": false,
+            "schema": {
+              "enum": [
+                "today",
+                "1w",
+                "1m",
+                "ytd"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "enum": [
+                "all",
+                "cash",
+                "other"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "cards": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "change": {
+                                    "type": "number"
+                                  },
+                                  "changePct": {
+                                    "type": "number"
+                                  },
+                                  "code": {
+                                    "enum": [
+                                      "VNINDEX",
+                                      "VN30",
+                                      "HNX",
+                                      "UPCOM",
+                                      "VN30F1M"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "type": "number"
+                                  },
+                                  "refPrice": {
+                                    "type": "number"
+                                  },
+                                  "sparkline": {
+                                    "items": {
+                                      "type": "number"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "valueBillion": {
+                                    "type": "number"
+                                  },
+                                  "volume": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "name",
+                                  "price",
+                                  "refPrice",
+                                  "change",
+                                  "changePct",
+                                  "volume",
+                                  "valueBillion",
+                                  "sparkline"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "selected": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "change": {
+                                  "type": "number"
+                                },
+                                "changePct": {
+                                  "type": "number"
+                                },
+                                "code": {
+                                  "enum": [
+                                    "VNINDEX",
+                                    "VN30",
+                                    "HNX",
+                                    "UPCOM",
+                                    "VN30F1M"
+                                  ],
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "points": {
+                                  "items": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "isUp": {
+                                        "type": "boolean"
+                                      },
+                                      "t": {
+                                        "type": "string"
+                                      },
+                                      "v": {
+                                        "type": "number"
+                                      },
+                                      "vol": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "t",
+                                      "v",
+                                      "vol",
+                                      "isUp"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                },
+                                "price": {
+                                  "type": "number"
+                                },
+                                "range": {
+                                  "enum": [
+                                    "intraday",
+                                    "3m",
+                                    "1y"
+                                  ],
+                                  "type": "string"
+                                },
+                                "refPrice": {
+                                  "type": "number"
+                                },
+                                "valueBillion": {
+                                  "type": "number"
+                                },
+                                "volume": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "code",
+                                "name",
+                                "price",
+                                "refPrice",
+                                "change",
+                                "changePct",
+                                "volume",
+                                "valueBillion",
+                                "range",
+                                "points"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "cards",
+                            "selected"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "index_chart"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "exchanges": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "advancing": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "advancingTotal": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "ceiling": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "declining": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "decliningTotal": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "exchange": {
+                                    "enum": [
+                                      "HOSE",
+                                      "HNX",
+                                      "UPCOM"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "floor": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "total": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "unchanged": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "exchange",
+                                  "ceiling",
+                                  "advancing",
+                                  "unchanged",
+                                  "declining",
+                                  "floor",
+                                  "total",
+                                  "advancingTotal",
+                                  "decliningTotal"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "exchanges"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "market_breadth"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "currentValueBillion": {
+                              "type": "number"
+                            },
+                            "exchange": {
+                              "enum": [
+                                "HOSE",
+                                "HNX",
+                                "UPCOM"
+                              ],
+                              "type": "string"
+                            },
+                            "pctVsAvg20SameTime": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "pctVsPrevSameTime": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "points": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "avg20": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "prev": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "t": {
+                                    "type": "string"
+                                  },
+                                  "today": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "t",
+                                  "today",
+                                  "prev",
+                                  "avg20"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "exchange",
+                            "currentValueBillion",
+                            "pctVsPrevSameTime",
+                            "pctVsAvg20SameTime",
+                            "points"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "market_liquidity"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "buyBillion": {
+                              "type": "number"
+                            },
+                            "exchange": {
+                              "enum": [
+                                "HOSE",
+                                "HNX",
+                                "UPCOM"
+                              ],
+                              "type": "string"
+                            },
+                            "netBillion": {
+                              "type": "number"
+                            },
+                            "propSupported": {
+                              "type": "boolean"
+                            },
+                            "sellBillion": {
+                              "type": "number"
+                            },
+                            "sessions": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "buyBillion": {
+                                    "type": "number"
+                                  },
+                                  "date": {
+                                    "type": "string"
+                                  },
+                                  "netBillion": {
+                                    "type": "number"
+                                  },
+                                  "sellBillion": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "date",
+                                  "netBillion",
+                                  "buyBillion",
+                                  "sellBillion"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "tab": {
+                              "enum": [
+                                "foreign",
+                                "prop"
+                              ],
+                              "type": "string"
+                            },
+                            "topBuy": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "netBillion": {
+                                    "type": "number"
+                                  },
+                                  "symbol": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "symbol",
+                                  "netBillion"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "topSell": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "netBillion": {
+                                    "type": "number"
+                                  },
+                                  "symbol": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "symbol",
+                                  "netBillion"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "exchange",
+                            "tab",
+                            "propSupported",
+                            "netBillion",
+                            "buyBillion",
+                            "sellBillion",
+                            "sessions",
+                            "topBuy",
+                            "topSell"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "foreign_flow"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "delta": {
+                              "type": "number"
+                            },
+                            "indexChange": {
+                              "type": "number"
+                            },
+                            "negative": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "changePct": {
+                                    "type": "number"
+                                  },
+                                  "impact": {
+                                    "type": "number"
+                                  },
+                                  "price": {
+                                    "type": "number"
+                                  },
+                                  "symbol": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "symbol",
+                                  "impact",
+                                  "price",
+                                  "changePct"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "positive": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "changePct": {
+                                    "type": "number"
+                                  },
+                                  "impact": {
+                                    "type": "number"
+                                  },
+                                  "price": {
+                                    "type": "number"
+                                  },
+                                  "symbol": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "symbol",
+                                  "impact",
+                                  "price",
+                                  "changePct"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "sumDn": {
+                              "type": "number"
+                            },
+                            "sumUp": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "sumUp",
+                            "sumDn",
+                            "indexChange",
+                            "delta",
+                            "positive",
+                            "negative"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "vnindex_impact"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "mode": {
+                              "enum": [
+                                "stock",
+                                "sector"
+                              ],
+                              "type": "string"
+                            },
+                            "sectors": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "changePct": {
+                                    "type": "number"
+                                  },
+                                  "code": {
+                                    "type": "string"
+                                  },
+                                  "marketCapBillion": {
+                                    "type": "number"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "stocks": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "ceilingPrice": {
+                                          "type": "number"
+                                        },
+                                        "changePct": {
+                                          "type": "number"
+                                        },
+                                        "exchange": {
+                                          "type": "string"
+                                        },
+                                        "floorPrice": {
+                                          "type": "number"
+                                        },
+                                        "isCeiling": {
+                                          "type": "boolean"
+                                        },
+                                        "isFloor": {
+                                          "type": "boolean"
+                                        },
+                                        "marketCapBillion": {
+                                          "type": "number"
+                                        },
+                                        "price": {
+                                          "type": "number"
+                                        },
+                                        "refPrice": {
+                                          "type": "number"
+                                        },
+                                        "symbol": {
+                                          "type": "string"
+                                        },
+                                        "valueBillion": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "symbol",
+                                        "exchange",
+                                        "price",
+                                        "refPrice",
+                                        "ceilingPrice",
+                                        "floorPrice",
+                                        "changePct",
+                                        "marketCapBillion",
+                                        "valueBillion",
+                                        "isCeiling",
+                                        "isFloor"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "valueBillion": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "name",
+                                  "changePct",
+                                  "marketCapBillion",
+                                  "valueBillion",
+                                  "stocks"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "sizeBy": {
+                              "enum": [
+                                "market_cap",
+                                "value"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "mode",
+                            "sizeBy",
+                            "sectors"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "market_heatmap"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "rows": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "ceilingPrice": {
+                                    "type": "number"
+                                  },
+                                  "changePct": {
+                                    "type": "number"
+                                  },
+                                  "exchange": {
+                                    "type": "string"
+                                  },
+                                  "floorPrice": {
+                                    "type": "number"
+                                  },
+                                  "foreignNetBillion": {
+                                    "type": "number"
+                                  },
+                                  "price": {
+                                    "type": "number"
+                                  },
+                                  "refPrice": {
+                                    "type": "number"
+                                  },
+                                  "symbol": {
+                                    "type": "string"
+                                  },
+                                  "valueBillion": {
+                                    "type": "number"
+                                  },
+                                  "volRatio20d": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "symbol",
+                                  "exchange",
+                                  "price",
+                                  "refPrice",
+                                  "ceilingPrice",
+                                  "floorPrice",
+                                  "changePct",
+                                  "valueBillion",
+                                  "foreignNetBillion",
+                                  "volRatio20d"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "tab": {
+                              "enum": [
+                                "gainers",
+                                "losers",
+                                "liquidity",
+                                "foreign",
+                                "vol_spike"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tab",
+                            "rows"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "featured_stocks"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "period": {
+                              "enum": [
+                                "today",
+                                "1w",
+                                "1m",
+                                "ytd"
+                              ],
+                              "type": "string"
+                            },
+                            "rows": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "advancing": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "changePct": {
+                                    "type": "number"
+                                  },
+                                  "code": {
+                                    "type": "string"
+                                  },
+                                  "declining": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "unchanged": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "valueBillion": {
+                                    "type": "number"
+                                  },
+                                  "valueRatio20d": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "valueSharePct": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "name",
+                                  "changePct",
+                                  "advancing",
+                                  "declining",
+                                  "unchanged",
+                                  "valueSharePct",
+                                  "valueRatio20d",
+                                  "valueBillion"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "tab": {
+                              "enum": [
+                                "price",
+                                "flow"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "period",
+                            "tab",
+                            "rows"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "sector_performance"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "domain": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "maxMomentum": {
+                                  "type": "number"
+                                },
+                                "maxRatio": {
+                                  "type": "number"
+                                },
+                                "minMomentum": {
+                                  "type": "number"
+                                },
+                                "minRatio": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "minRatio",
+                                "maxRatio",
+                                "minMomentum",
+                                "maxMomentum"
+                              ],
+                              "type": "object"
+                            },
+                            "sectors": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "code": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "quadrant": {
+                                    "enum": [
+                                      "leading",
+                                      "weakening",
+                                      "lagging",
+                                      "improving"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "trail": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "rsMomentum": {
+                                          "type": "number"
+                                        },
+                                        "rsRatio": {
+                                          "type": "number"
+                                        },
+                                        "week": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "week",
+                                        "rsRatio",
+                                        "rsMomentum"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "name",
+                                  "quadrant",
+                                  "trail"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "weekEnding": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "weekEnding",
+                            "domain",
+                            "sectors"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "sector_rotation"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "basis": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "change": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "changePct": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "contract": {
+                              "type": "string"
+                            },
+                            "expiryDate": {
+                              "type": "string"
+                            },
+                            "foreignNetContracts": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "price": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "refPrice": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "remainingSessions": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "valueBillion": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "vn30Change": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "vn30ChangePct": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "vn30Price": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "volume": {
+                              "nullable": true,
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "contract",
+                            "price",
+                            "refPrice",
+                            "change",
+                            "changePct",
+                            "vn30Price",
+                            "vn30Change",
+                            "vn30ChangePct",
+                            "basis",
+                            "volume",
+                            "valueBillion",
+                            "foreignNetContracts",
+                            "expiryDate",
+                            "remainingSessions"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "derivatives_summary"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "latestBasis": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "latestVn30": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "latestVn30f": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "points": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "basis": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "t": {
+                                    "type": "string"
+                                  },
+                                  "vn30": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "vn30f": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "t",
+                                  "vn30",
+                                  "vn30f",
+                                  "basis"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "range": {
+                              "enum": [
+                                "intraday",
+                                "1m",
+                                "3m"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "range",
+                            "latestVn30",
+                            "latestVn30f",
+                            "latestBasis",
+                            "points"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "vn30f_vs_vn30"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "groups": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "contracts": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "basis": {
+                                          "nullable": true,
+                                          "type": "number"
+                                        },
+                                        "changePct": {
+                                          "nullable": true,
+                                          "type": "number"
+                                        },
+                                        "code": {
+                                          "type": "string"
+                                        },
+                                        "displayCode": {
+                                          "type": "string"
+                                        },
+                                        "expiryDate": {
+                                          "type": "string"
+                                        },
+                                        "foreignNetBillion": {
+                                          "nullable": true,
+                                          "type": "number"
+                                        },
+                                        "price": {
+                                          "nullable": true,
+                                          "type": "number"
+                                        },
+                                        "refPrice": {
+                                          "nullable": true,
+                                          "type": "number"
+                                        },
+                                        "remainingSessions": {
+                                          "maximum": 9007199254740991,
+                                          "minimum": -9007199254740991,
+                                          "type": "integer"
+                                        },
+                                        "valueBillion": {
+                                          "nullable": true,
+                                          "type": "number"
+                                        },
+                                        "volume": {
+                                          "nullable": true,
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "code",
+                                        "displayCode",
+                                        "expiryDate",
+                                        "remainingSessions",
+                                        "price",
+                                        "refPrice",
+                                        "changePct",
+                                        "basis",
+                                        "volume",
+                                        "valueBillion",
+                                        "foreignNetBillion"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "spotChangePct": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "spotPrice": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "underlying": {
+                                    "enum": [
+                                      "VN30",
+                                      "VN100"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "underlying",
+                                  "spotPrice",
+                                  "spotChangePct",
+                                  "contracts"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "groups"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "futures_table"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "rows": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "changePct": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "code": {
+                                    "type": "string"
+                                  },
+                                  "country": {
+                                    "type": "string"
+                                  },
+                                  "isOpen": {
+                                    "type": "boolean"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "updatedAt": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "name",
+                                  "country",
+                                  "isOpen",
+                                  "price",
+                                  "changePct",
+                                  "updatedAt"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "rows"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "world_indices"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "rows": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "changePct": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "code": {
+                                    "type": "string"
+                                  },
+                                  "mappedSectorChangePct": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "mappedSectorName": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "name",
+                                  "unit",
+                                  "price",
+                                  "changePct",
+                                  "mappedSectorName",
+                                  "mappedSectorChangePct"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "tab": {
+                              "enum": [
+                                "energy_metals",
+                                "agri",
+                                "gold_fx"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tab",
+                            "rows"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "commodities_fx"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "filter": {
+                              "enum": [
+                                "all",
+                                "cash",
+                                "other"
+                              ],
+                              "type": "string"
+                            },
+                            "rows": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cashPerShare": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "changePct": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "dividendYieldPct": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "eventType": {
+                                    "enum": [
+                                      "cash",
+                                      "other"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "exDate": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "symbol": {
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "exDate",
+                                  "symbol",
+                                  "price",
+                                  "changePct",
+                                  "eventType",
+                                  "title",
+                                  "cashPerShare",
+                                  "dividendYieldPct"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "filter",
+                            "rows"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "events_calendar"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "asOf": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "rows": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "category": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "publishedAt": {
+                                    "type": "string"
+                                  },
+                                  "slug": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "source": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "url": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "slug",
+                                  "url",
+                                  "category",
+                                  "title",
+                                  "publishedAt",
+                                  "source"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "enabled",
+                            "rows"
+                          ],
+                          "type": "object"
+                        },
+                        "isMarketOpen": {
+                          "type": "boolean"
+                        },
+                        "sessionDate": {
+                          "type": "string"
+                        },
+                        "stale": {
+                          "type": "boolean"
+                        },
+                        "widget": {
+                          "enum": [
+                            "market_news"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "widget",
+                        "asOf",
+                        "sessionDate",
+                        "isMarketOpen",
+                        "stale",
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Fetch cached market snapshot data for a single \"Toàn cảnh thị trường\" widget",
+        "tags": [
+          "Market Overview"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/trading-floor/chat/convs/{id}": {
       "get": {
         "operationId": "floorChatConversation",
@@ -186852,11 +190379,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 710,
+    "authenticatedOperations": 716,
     "noContentResponses": 19,
-    "operations": 947,
-    "publicOperations": 237,
-    "responseSchemas": 928,
+    "operations": 955,
+    "publicOperations": 239,
+    "responseSchemas": 936,
     "untypedResponses": 0
   }
 }

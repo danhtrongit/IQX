@@ -82,6 +82,11 @@
       "requestType": "StrategyDeleteData",
       "responseType": "StrategyDeleteResponses"
     },
+    "DELETE /api/v2/toan-canh/pages/{id}": {
+      "operationId": "marketOverviewDeletePage",
+      "requestType": "MarketOverviewDeletePageData",
+      "responseType": "MarketOverviewDeletePageResponses"
+    },
     "DELETE /api/v2/trading-floor/posts/comments/{commentId}": {
       "operationId": "tradingFloorPostCommentDelete",
       "requestType": "TradingFloorPostCommentDeleteData",
@@ -1562,6 +1567,21 @@
       "requestType": "TeamControllerLoginHistory1Data",
       "responseType": "TeamControllerLoginHistory1Responses"
     },
+    "GET /api/v2/toan-canh/pages": {
+      "operationId": "marketOverviewListPages",
+      "requestType": "MarketOverviewListPagesData",
+      "responseType": "MarketOverviewListPagesResponses"
+    },
+    "GET /api/v2/toan-canh/template": {
+      "operationId": "marketOverviewTemplate",
+      "requestType": "MarketOverviewTemplateData",
+      "responseType": "MarketOverviewTemplateResponses"
+    },
+    "GET /api/v2/toan-canh/widgets/{widget}": {
+      "operationId": "marketOverviewWidgetData",
+      "requestType": "MarketOverviewWidgetDataData",
+      "responseType": "MarketOverviewWidgetDataResponses"
+    },
     "GET /api/v2/trading-floor/chat/convs/{id}": {
       "operationId": "floorChatConversation",
       "requestType": "FloorChatConversationData",
@@ -1826,6 +1846,11 @@
       "operationId": "strategyRename",
       "requestType": "StrategyRenameData",
       "responseType": "StrategyRenameResponses"
+    },
+    "PATCH /api/v2/toan-canh/pages/order": {
+      "operationId": "marketOverviewReorderPages",
+      "requestType": "MarketOverviewReorderPagesData",
+      "responseType": "MarketOverviewReorderPagesResponses"
     },
     "PATCH /api/v2/trading-floor/manage/sacos/{id}": {
       "operationId": "floorManageSacoUpdate",
@@ -2667,6 +2692,11 @@
       "requestType": "TelegramControllerWebhook1Data",
       "responseType": "TelegramControllerWebhook1Responses"
     },
+    "POST /api/v2/toan-canh/pages": {
+      "operationId": "marketOverviewCreatePage",
+      "requestType": "MarketOverviewCreatePageData",
+      "responseType": "MarketOverviewCreatePageResponses"
+    },
     "POST /api/v2/trading-floor/chat/convs/{id}/images": {
       "operationId": "floorChatSendImage",
       "requestType": "FloorChatSendImageData",
@@ -2961,6 +2991,16 @@
       "operationId": "updateStrategySavedFilter",
       "requestType": "UpdateStrategySavedFilterData",
       "responseType": "UpdateStrategySavedFilterResponses"
+    },
+    "PUT /api/v2/toan-canh/pages/{id}": {
+      "operationId": "marketOverviewUpdatePage",
+      "requestType": "MarketOverviewUpdatePageData",
+      "responseType": "MarketOverviewUpdatePageResponses"
+    },
+    "PUT /api/v2/toan-canh/preferences": {
+      "operationId": "marketOverviewUpdatePreferences",
+      "requestType": "MarketOverviewUpdatePreferencesData",
+      "responseType": "MarketOverviewUpdatePreferencesResponses"
     },
     "PUT /api/v2/trading-floor/manage/than-tai/hanh/{hanh}": {
       "operationId": "thanTaiAdminHanhUpdate",

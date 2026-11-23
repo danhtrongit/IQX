@@ -60,6 +60,7 @@ const TOOL_TARGETS: Record<string, ToolTarget> = {
   [PRACTICE_TOOL.bot]: practice(PRACTICE_TOOL.bot),
   [PRACTICE_TOOL.trading]: practice(PRACTICE_TOOL.trading),
   [PRACTICE_TOOL.dashboard]: practice(PRACTICE_TOOL.dashboard),
+  [PRACTICE_TOOL.marketOverview]: practice(PRACTICE_TOOL.marketOverview),
   [FLASHBACK_TOOL.flashback]: flashback(FLASHBACK_TOOL.flashback),
   [FLASHBACK_TOOL.shop]: flashback(FLASHBACK_TOOL.shop),
   trading: practice(PRACTICE_TOOL.trading, "dat-lenh"),
@@ -163,6 +164,10 @@ export function resolveWorkspaceLocation(pathname: string, search: string): { pa
   if (params.has("analysis")) {
     changed = true
     params.delete("analysis")
+  }
+  if (target?.tool !== PRACTICE_TOOL.marketOverview && params.has("page")) {
+    changed = true
+    params.delete("page")
   }
 
   const section = target?.section ?? routeSection ?? "practice"

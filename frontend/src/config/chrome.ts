@@ -1,3 +1,4 @@
+import { createElement, forwardRef } from "react"
 import {
   ArrowLeftRight,
   BookOpen,
@@ -10,7 +11,49 @@ import {
   Swords,
   TrendingUp,
   type LucideIcon,
+  type LucideProps,
 } from "lucide-react"
+
+const MarketOverviewIcon: LucideIcon = forwardRef<SVGSVGElement, LucideProps>(
+  function MarketOverviewIcon(
+    {
+      color = "currentColor",
+      size = 24,
+      strokeWidth = 1.8,
+      absoluteStrokeWidth,
+      className,
+      children,
+      ...props
+    },
+    ref,
+  ) {
+    const resolvedStrokeWidth = absoluteStrokeWidth
+      ? (Number(strokeWidth) * 24) / Number(size)
+      : strokeWidth
+
+    return createElement(
+      "svg",
+      {
+        ref,
+        xmlns: "http://www.w3.org/2000/svg",
+        width: size,
+        height: size,
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: color,
+        strokeWidth: resolvedStrokeWidth,
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        className,
+        ...props,
+      },
+      createElement("rect", { x: 3, y: 4, width: 18, height: 16, rx: 2 }),
+      createElement("path", { d: "M3 9h18M9 9v11" }),
+      createElement("path", { d: "M13 14l2-2 2 2 2-3" }),
+      children,
+    )
+  },
+)
 
 export type RailItem = {
   id: string
@@ -63,6 +106,7 @@ export const PRACTICE_TOOL = {
   bot: "bot",
   trading: "giao-dich",
   dashboard: "phan-tich",
+  marketOverview: "toan-canh",
   insight: "insight",
 } as const
 
@@ -71,7 +115,7 @@ export const FLASHBACK_TOOL = { flashback: "flashback", shop: "shop" } as const
 
 /**
  * LUYỆN TẬP rail, top to bottom (layout v1.3 §2.2): Candle Dojo · Học viện · Bot · Giao dịch ·
- * Dashboard phân tích. Candle Dojo is the default tool. Insight is hidden (code, route and data kept;
+ * Dashboard phân tích · Toàn cảnh thị trường. Candle Dojo is the default tool. Insight is hidden (code, route and data kept;
  * `hidden: false` brings it back as a main-area tool of Giao dịch). Săn mã and Mẫu nến stay hidden and
  * their links land on Giao dịch.
  */
@@ -84,6 +128,7 @@ export const practiceChrome: RouteChrome = {
     { id: PRACTICE_TOOL.bot, label: "Bot", icon: Bot, affects: "sidebar" },
     { id: PRACTICE_TOOL.trading, label: "Giao dịch", icon: ArrowLeftRight, affects: "sidebar" },
     { id: PRACTICE_TOOL.dashboard, label: "Dashboard phân tích", icon: LayoutDashboard, affects: "sidebar" },
+    { id: PRACTICE_TOOL.marketOverview, label: "Toàn cảnh thị trường", icon: MarketOverviewIcon, affects: "sidebar" },
     { id: PRACTICE_TOOL.insight, label: "Insight", icon: TrendingUp, affects: "left", hidden: true },
     { id: "hunt", label: "Săn mã", icon: ScanSearch, affects: "sidebar", hidden: true },
     { id: "patterns", label: "Mẫu nến", icon: ChartCandlestick, affects: "sidebar", hidden: true },

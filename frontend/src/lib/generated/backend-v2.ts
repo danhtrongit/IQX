@@ -62828,6 +62828,1032 @@ export type TelegramControllerWebhook1Responses = {
 export type TelegramControllerWebhook1Response =
   TelegramControllerWebhook1Responses[keyof TelegramControllerWebhook1Responses];
 
+export type MarketOverviewListPagesData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/toan-canh/pages";
+};
+
+export type MarketOverviewListPagesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MarketOverviewListPagesError =
+  MarketOverviewListPagesErrors[keyof MarketOverviewListPagesErrors];
+
+export type MarketOverviewListPagesResponses = {
+  200: {
+    lastActivePageId: string;
+    maxPages: number;
+    pages: Array<{
+      id: string;
+      items: Array<{
+        h: number;
+        state: {
+          [key: string]: string;
+        };
+        uid: string;
+        w: number;
+        widget:
+          | "index_chart"
+          | "market_breadth"
+          | "market_liquidity"
+          | "foreign_flow"
+          | "vnindex_impact"
+          | "market_heatmap"
+          | "featured_stocks"
+          | "sector_performance"
+          | "sector_rotation"
+          | "derivatives_summary"
+          | "vn30f_vs_vn30"
+          | "futures_table"
+          | "world_indices"
+          | "commodities_fx"
+          | "events_calendar"
+          | "market_news";
+        x: number;
+        y: number;
+      }>;
+      name: string;
+      order: number;
+      updatedAt: string;
+      version: number;
+    }>;
+  };
+};
+
+export type MarketOverviewListPagesResponse =
+  MarketOverviewListPagesResponses[keyof MarketOverviewListPagesResponses];
+
+export type MarketOverviewCreatePageData = {
+  body: {
+    duplicateFromPageId?: string;
+    items?: Array<{
+      h: number;
+      state?: {
+        [key: string]: unknown;
+      };
+      uid: string;
+      w: number;
+      widget:
+        | "index_chart"
+        | "market_breadth"
+        | "market_liquidity"
+        | "foreign_flow"
+        | "vnindex_impact"
+        | "market_heatmap"
+        | "featured_stocks"
+        | "sector_performance"
+        | "sector_rotation"
+        | "derivatives_summary"
+        | "vn30f_vs_vn30"
+        | "futures_table"
+        | "world_indices"
+        | "commodities_fx"
+        | "events_calendar"
+        | "market_news";
+      x: number;
+      y: number;
+    }>;
+    name?: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/toan-canh/pages";
+};
+
+export type MarketOverviewCreatePageErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MarketOverviewCreatePageError =
+  MarketOverviewCreatePageErrors[keyof MarketOverviewCreatePageErrors];
+
+export type MarketOverviewCreatePageResponses = {
+  200: {
+    id: string;
+    items: Array<{
+      h: number;
+      state: {
+        [key: string]: string;
+      };
+      uid: string;
+      w: number;
+      widget:
+        | "index_chart"
+        | "market_breadth"
+        | "market_liquidity"
+        | "foreign_flow"
+        | "vnindex_impact"
+        | "market_heatmap"
+        | "featured_stocks"
+        | "sector_performance"
+        | "sector_rotation"
+        | "derivatives_summary"
+        | "vn30f_vs_vn30"
+        | "futures_table"
+        | "world_indices"
+        | "commodities_fx"
+        | "events_calendar"
+        | "market_news";
+      x: number;
+      y: number;
+    }>;
+    name: string;
+    order: number;
+    updatedAt: string;
+    version: number;
+  };
+};
+
+export type MarketOverviewCreatePageResponse =
+  MarketOverviewCreatePageResponses[keyof MarketOverviewCreatePageResponses];
+
+export type MarketOverviewReorderPagesData = {
+  body: {
+    pageIds: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/toan-canh/pages/order";
+};
+
+export type MarketOverviewReorderPagesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MarketOverviewReorderPagesError =
+  MarketOverviewReorderPagesErrors[keyof MarketOverviewReorderPagesErrors];
+
+export type MarketOverviewReorderPagesResponses = {
+  200: {
+    pages: Array<{
+      id: string;
+      items: Array<{
+        h: number;
+        state: {
+          [key: string]: string;
+        };
+        uid: string;
+        w: number;
+        widget:
+          | "index_chart"
+          | "market_breadth"
+          | "market_liquidity"
+          | "foreign_flow"
+          | "vnindex_impact"
+          | "market_heatmap"
+          | "featured_stocks"
+          | "sector_performance"
+          | "sector_rotation"
+          | "derivatives_summary"
+          | "vn30f_vs_vn30"
+          | "futures_table"
+          | "world_indices"
+          | "commodities_fx"
+          | "events_calendar"
+          | "market_news";
+        x: number;
+        y: number;
+      }>;
+      name: string;
+      order: number;
+      updatedAt: string;
+      version: number;
+    }>;
+  };
+};
+
+export type MarketOverviewReorderPagesResponse =
+  MarketOverviewReorderPagesResponses[keyof MarketOverviewReorderPagesResponses];
+
+export type MarketOverviewDeletePageData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/toan-canh/pages/{id}";
+};
+
+export type MarketOverviewDeletePageErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MarketOverviewDeletePageError =
+  MarketOverviewDeletePageErrors[keyof MarketOverviewDeletePageErrors];
+
+export type MarketOverviewDeletePageResponses = {
+  200: {
+    deleted: boolean;
+    id: string;
+    lastActivePageId: string;
+  };
+};
+
+export type MarketOverviewDeletePageResponse =
+  MarketOverviewDeletePageResponses[keyof MarketOverviewDeletePageResponses];
+
+export type MarketOverviewUpdatePageData = {
+  body: {
+    items?: Array<{
+      h: number;
+      state?: {
+        [key: string]: unknown;
+      };
+      uid: string;
+      w: number;
+      widget:
+        | "index_chart"
+        | "market_breadth"
+        | "market_liquidity"
+        | "foreign_flow"
+        | "vnindex_impact"
+        | "market_heatmap"
+        | "featured_stocks"
+        | "sector_performance"
+        | "sector_rotation"
+        | "derivatives_summary"
+        | "vn30f_vs_vn30"
+        | "futures_table"
+        | "world_indices"
+        | "commodities_fx"
+        | "events_calendar"
+        | "market_news";
+      x: number;
+      y: number;
+    }>;
+    name?: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/toan-canh/pages/{id}";
+};
+
+export type MarketOverviewUpdatePageErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MarketOverviewUpdatePageError =
+  MarketOverviewUpdatePageErrors[keyof MarketOverviewUpdatePageErrors];
+
+export type MarketOverviewUpdatePageResponses = {
+  200: {
+    id: string;
+    items: Array<{
+      h: number;
+      state: {
+        [key: string]: string;
+      };
+      uid: string;
+      w: number;
+      widget:
+        | "index_chart"
+        | "market_breadth"
+        | "market_liquidity"
+        | "foreign_flow"
+        | "vnindex_impact"
+        | "market_heatmap"
+        | "featured_stocks"
+        | "sector_performance"
+        | "sector_rotation"
+        | "derivatives_summary"
+        | "vn30f_vs_vn30"
+        | "futures_table"
+        | "world_indices"
+        | "commodities_fx"
+        | "events_calendar"
+        | "market_news";
+      x: number;
+      y: number;
+    }>;
+    name: string;
+    order: number;
+    updatedAt: string;
+    version: number;
+  };
+};
+
+export type MarketOverviewUpdatePageResponse =
+  MarketOverviewUpdatePageResponses[keyof MarketOverviewUpdatePageResponses];
+
+export type MarketOverviewUpdatePreferencesData = {
+  body: {
+    lastActivePageId: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/toan-canh/preferences";
+};
+
+export type MarketOverviewUpdatePreferencesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MarketOverviewUpdatePreferencesError =
+  MarketOverviewUpdatePreferencesErrors[keyof MarketOverviewUpdatePreferencesErrors];
+
+export type MarketOverviewUpdatePreferencesResponses = {
+  200: {
+    lastActivePageId: string;
+    updatedAt: string;
+  };
+};
+
+export type MarketOverviewUpdatePreferencesResponse =
+  MarketOverviewUpdatePreferencesResponses[keyof MarketOverviewUpdatePreferencesResponses];
+
+export type MarketOverviewTemplateData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/toan-canh/template";
+};
+
+export type MarketOverviewTemplateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MarketOverviewTemplateError =
+  MarketOverviewTemplateErrors[keyof MarketOverviewTemplateErrors];
+
+export type MarketOverviewTemplateResponses = {
+  200: {
+    catalog: Array<{
+      defaultH: number;
+      defaultState: {
+        [key: string]: string;
+      };
+      defaultW: number;
+      group:
+        | "indices"
+        | "stocks"
+        | "sectors"
+        | "derivatives"
+        | "global"
+        | "events_news";
+      groupLabel: string;
+      inTemplate: boolean;
+      keywords: string;
+      minH: number;
+      minW: number;
+      name: string;
+      slug:
+        | "index_chart"
+        | "market_breadth"
+        | "market_liquidity"
+        | "foreign_flow"
+        | "vnindex_impact"
+        | "market_heatmap"
+        | "featured_stocks"
+        | "sector_performance"
+        | "sector_rotation"
+        | "derivatives_summary"
+        | "vn30f_vs_vn30"
+        | "futures_table"
+        | "world_indices"
+        | "commodities_fx"
+        | "events_calendar"
+        | "market_news";
+    }>;
+    groups: Array<{
+      id:
+        | "indices"
+        | "stocks"
+        | "sectors"
+        | "derivatives"
+        | "global"
+        | "events_news";
+      label: string;
+    }>;
+    id: "thi-truong";
+    items: Array<{
+      h: number;
+      state: {
+        [key: string]: string;
+      };
+      uid: string;
+      w: number;
+      widget:
+        | "index_chart"
+        | "market_breadth"
+        | "market_liquidity"
+        | "foreign_flow"
+        | "vnindex_impact"
+        | "market_heatmap"
+        | "featured_stocks"
+        | "sector_performance"
+        | "sector_rotation"
+        | "derivatives_summary"
+        | "vn30f_vs_vn30"
+        | "futures_table"
+        | "world_indices"
+        | "commodities_fx"
+        | "events_calendar"
+        | "market_news";
+      x: number;
+      y: number;
+    }>;
+    limits: {
+      cols: number;
+      maxHeight: number;
+      maxPageNameLength: number;
+      maxPages: number;
+      maxWidgetsPerPage: number;
+    };
+    name: string;
+    readonly: true;
+    updatedAt: string;
+    version: number;
+  };
+};
+
+export type MarketOverviewTemplateResponse =
+  MarketOverviewTemplateResponses[keyof MarketOverviewTemplateResponses];
+
+export type MarketOverviewWidgetDataData = {
+  body?: never;
+  path: {
+    widget:
+      | "index_chart"
+      | "market_breadth"
+      | "market_liquidity"
+      | "foreign_flow"
+      | "vnindex_impact"
+      | "market_heatmap"
+      | "featured_stocks"
+      | "sector_performance"
+      | "sector_rotation"
+      | "derivatives_summary"
+      | "vn30f_vs_vn30"
+      | "futures_table"
+      | "world_indices"
+      | "commodities_fx"
+      | "events_calendar"
+      | "market_news";
+  };
+  query?: {
+    index?: "VNINDEX" | "VN30" | "HNX" | "UPCOM" | "VN30F1M";
+    range?: "intraday" | "1m" | "3m" | "1y";
+    exchange?: "HOSE" | "HNX" | "UPCOM";
+    tab?:
+      | "foreign"
+      | "prop"
+      | "gainers"
+      | "losers"
+      | "liquidity"
+      | "vol_spike"
+      | "price"
+      | "flow"
+      | "energy_metals"
+      | "agri"
+      | "gold_fx";
+    mode?: "stock" | "sector";
+    sizeBy?: "market_cap" | "value";
+    period?: "today" | "1w" | "1m" | "ytd";
+    filter?: "all" | "cash" | "other";
+  };
+  url: "/api/v2/toan-canh/widgets/{widget}";
+};
+
+export type MarketOverviewWidgetDataErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MarketOverviewWidgetDataError =
+  MarketOverviewWidgetDataErrors[keyof MarketOverviewWidgetDataErrors];
+
+export type MarketOverviewWidgetDataResponses = {
+  200:
+    | {
+        asOf: string;
+        data: {
+          cards: Array<{
+            change: number;
+            changePct: number;
+            code: "VNINDEX" | "VN30" | "HNX" | "UPCOM" | "VN30F1M";
+            name: string;
+            price: number;
+            refPrice: number;
+            sparkline: Array<number>;
+            valueBillion: number;
+            volume: number;
+          }>;
+          selected: {
+            change: number;
+            changePct: number;
+            code: "VNINDEX" | "VN30" | "HNX" | "UPCOM" | "VN30F1M";
+            name: string;
+            points: Array<{
+              isUp: boolean;
+              t: string;
+              v: number;
+              vol: number;
+            }>;
+            price: number;
+            range: "intraday" | "3m" | "1y";
+            refPrice: number;
+            valueBillion: number;
+            volume: number;
+          };
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "index_chart";
+      }
+    | {
+        asOf: string;
+        data: {
+          exchanges: Array<{
+            advancing: number;
+            advancingTotal: number;
+            ceiling: number;
+            declining: number;
+            decliningTotal: number;
+            exchange: "HOSE" | "HNX" | "UPCOM";
+            floor: number;
+            total: number;
+            unchanged: number;
+          }>;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "market_breadth";
+      }
+    | {
+        asOf: string;
+        data: {
+          currentValueBillion: number;
+          exchange: "HOSE" | "HNX" | "UPCOM";
+          pctVsAvg20SameTime: number | null;
+          pctVsPrevSameTime: number | null;
+          points: Array<{
+            avg20: number | null;
+            prev: number | null;
+            t: string;
+            today: number | null;
+          }>;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "market_liquidity";
+      }
+    | {
+        asOf: string;
+        data: {
+          buyBillion: number;
+          exchange: "HOSE" | "HNX" | "UPCOM";
+          netBillion: number;
+          propSupported: boolean;
+          sellBillion: number;
+          sessions: Array<{
+            buyBillion: number;
+            date: string;
+            netBillion: number;
+            sellBillion: number;
+          }>;
+          tab: "foreign" | "prop";
+          topBuy: Array<{
+            netBillion: number;
+            symbol: string;
+          }>;
+          topSell: Array<{
+            netBillion: number;
+            symbol: string;
+          }>;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "foreign_flow";
+      }
+    | {
+        asOf: string;
+        data: {
+          delta: number;
+          indexChange: number;
+          negative: Array<{
+            changePct: number;
+            impact: number;
+            price: number;
+            symbol: string;
+          }>;
+          positive: Array<{
+            changePct: number;
+            impact: number;
+            price: number;
+            symbol: string;
+          }>;
+          sumDn: number;
+          sumUp: number;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "vnindex_impact";
+      }
+    | {
+        asOf: string;
+        data: {
+          mode: "stock" | "sector";
+          sectors: Array<{
+            changePct: number;
+            code: string;
+            marketCapBillion: number;
+            name: string;
+            stocks: Array<{
+              ceilingPrice: number;
+              changePct: number;
+              exchange: string;
+              floorPrice: number;
+              isCeiling: boolean;
+              isFloor: boolean;
+              marketCapBillion: number;
+              price: number;
+              refPrice: number;
+              symbol: string;
+              valueBillion: number;
+            }>;
+            valueBillion: number;
+          }>;
+          sizeBy: "market_cap" | "value";
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "market_heatmap";
+      }
+    | {
+        asOf: string;
+        data: {
+          rows: Array<{
+            ceilingPrice: number;
+            changePct: number;
+            exchange: string;
+            floorPrice: number;
+            foreignNetBillion: number;
+            price: number;
+            refPrice: number;
+            symbol: string;
+            valueBillion: number;
+            volRatio20d: number | null;
+          }>;
+          tab: "gainers" | "losers" | "liquidity" | "foreign" | "vol_spike";
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "featured_stocks";
+      }
+    | {
+        asOf: string;
+        data: {
+          period: "today" | "1w" | "1m" | "ytd";
+          rows: Array<{
+            advancing: number;
+            changePct: number;
+            code: string;
+            declining: number;
+            name: string;
+            unchanged: number;
+            valueBillion: number;
+            valueRatio20d: number | null;
+            valueSharePct: number;
+          }>;
+          tab: "price" | "flow";
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "sector_performance";
+      }
+    | {
+        asOf: string;
+        data: {
+          domain: {
+            maxMomentum: number;
+            maxRatio: number;
+            minMomentum: number;
+            minRatio: number;
+          };
+          sectors: Array<{
+            code: string;
+            name: string;
+            quadrant: "leading" | "weakening" | "lagging" | "improving";
+            trail: Array<{
+              rsMomentum: number;
+              rsRatio: number;
+              week: string;
+            }>;
+          }>;
+          weekEnding: string;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "sector_rotation";
+      }
+    | {
+        asOf: string;
+        data: {
+          basis: number | null;
+          change: number | null;
+          changePct: number | null;
+          contract: string;
+          expiryDate: string;
+          foreignNetContracts: number | null;
+          price: number | null;
+          refPrice: number | null;
+          remainingSessions: number;
+          valueBillion: number | null;
+          vn30Change: number | null;
+          vn30ChangePct: number | null;
+          vn30Price: number | null;
+          volume: number | null;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "derivatives_summary";
+      }
+    | {
+        asOf: string;
+        data: {
+          latestBasis: number | null;
+          latestVn30: number | null;
+          latestVn30f: number | null;
+          points: Array<{
+            basis: number | null;
+            t: string;
+            vn30: number | null;
+            vn30f: number | null;
+          }>;
+          range: "intraday" | "1m" | "3m";
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "vn30f_vs_vn30";
+      }
+    | {
+        asOf: string;
+        data: {
+          groups: Array<{
+            contracts: Array<{
+              basis: number | null;
+              changePct: number | null;
+              code: string;
+              displayCode: string;
+              expiryDate: string;
+              foreignNetBillion: number | null;
+              price: number | null;
+              refPrice: number | null;
+              remainingSessions: number;
+              valueBillion: number | null;
+              volume: number | null;
+            }>;
+            spotChangePct: number | null;
+            spotPrice: number | null;
+            underlying: "VN30" | "VN100";
+          }>;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "futures_table";
+      }
+    | {
+        asOf: string;
+        data: {
+          rows: Array<{
+            changePct: number | null;
+            code: string;
+            country: string;
+            isOpen: boolean;
+            name: string;
+            price: number | null;
+            updatedAt: string | null;
+          }>;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "world_indices";
+      }
+    | {
+        asOf: string;
+        data: {
+          rows: Array<{
+            changePct: number | null;
+            code: string;
+            mappedSectorChangePct: number | null;
+            mappedSectorName: string | null;
+            name: string;
+            price: number | null;
+            unit: string;
+          }>;
+          tab: "energy_metals" | "agri" | "gold_fx";
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "commodities_fx";
+      }
+    | {
+        asOf: string;
+        data: {
+          filter: "all" | "cash" | "other";
+          rows: Array<{
+            cashPerShare: number | null;
+            changePct: number | null;
+            dividendYieldPct: number | null;
+            eventType: "cash" | "other";
+            exDate: string;
+            id: string;
+            price: number | null;
+            symbol: string;
+            title: string;
+          }>;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "events_calendar";
+      }
+    | {
+        asOf: string;
+        data: {
+          enabled: boolean;
+          rows: Array<{
+            category: string;
+            id: string;
+            publishedAt: string;
+            slug: string | null;
+            source: string | null;
+            title: string;
+            url: string | null;
+          }>;
+        };
+        isMarketOpen: boolean;
+        sessionDate: string;
+        stale: boolean;
+        widget: "market_news";
+      };
+};
+
+export type MarketOverviewWidgetDataResponse =
+  MarketOverviewWidgetDataResponses[keyof MarketOverviewWidgetDataResponses];
+
 export type FloorChatConversationData = {
   body?: never;
   path: {

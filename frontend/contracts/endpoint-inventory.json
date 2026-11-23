@@ -3716,6 +3716,110 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/demo-trading/market-overview/api.ts",
+      "line": 783,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/toan-canh/template",
+      "method": "GET",
+      "route": "/api/v2/toan-canh/template",
+      "matchedOperation": "GET /api/v2/toan-canh/template",
+      "matchedOperations": [
+        "GET /api/v2/toan-canh/template"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/market-overview/api.ts",
+      "line": 831,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/toan-canh/pages",
+      "method": "GET",
+      "route": "/api/v2/toan-canh/pages",
+      "matchedOperation": "GET /api/v2/toan-canh/pages",
+      "matchedOperations": [
+        "GET /api/v2/toan-canh/pages"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/market-overview/api.ts",
+      "line": 860,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/toan-canh/pages",
+      "method": "POST",
+      "route": "/api/v2/toan-canh/pages",
+      "matchedOperation": "POST /api/v2/toan-canh/pages",
+      "matchedOperations": [
+        "POST /api/v2/toan-canh/pages"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/market-overview/api.ts",
+      "line": 895,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/toan-canh/pages/{id}",
+      "method": "PUT",
+      "route": "/api/v2/toan-canh/pages/{id}",
+      "matchedOperation": "PUT /api/v2/toan-canh/pages/{id}",
+      "matchedOperations": [
+        "PUT /api/v2/toan-canh/pages/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/market-overview/api.ts",
+      "line": 908,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/toan-canh/pages/{id}",
+      "method": "DELETE",
+      "route": "/api/v2/toan-canh/pages/{id}",
+      "matchedOperation": "DELETE /api/v2/toan-canh/pages/{id}",
+      "matchedOperations": [
+        "DELETE /api/v2/toan-canh/pages/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/market-overview/api.ts",
+      "line": 919,
+      "callee": "requestOperation",
+      "raw": "PATCH /api/v2/toan-canh/pages/order",
+      "method": "PATCH",
+      "route": "/api/v2/toan-canh/pages/order",
+      "matchedOperation": "PATCH /api/v2/toan-canh/pages/order",
+      "matchedOperations": [
+        "PATCH /api/v2/toan-canh/pages/order"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/market-overview/api.ts",
+      "line": 931,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/toan-canh/preferences",
+      "method": "PUT",
+      "route": "/api/v2/toan-canh/preferences",
+      "matchedOperation": "PUT /api/v2/toan-canh/preferences",
+      "matchedOperations": [
+        "PUT /api/v2/toan-canh/preferences"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/market-overview/api.ts",
+      "line": 944,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/toan-canh/widgets/{widget}",
+      "method": "GET",
+      "route": "/api/v2/toan-canh/widgets/{widget}",
+      "matchedOperation": "GET /api/v2/toan-canh/widgets/{widget}",
+      "matchedOperations": [
+        "GET /api/v2/toan-canh/widgets/{widget}"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/demo-trading/portfolio/api.ts",
       "line": 131,
       "callee": "api",
@@ -4995,7 +5099,7 @@
     },
     {
       "file": "src/pages/strategy/shared/bot-schedule.ts",
-      "line": 78,
+      "line": 77,
       "callee": "api",
       "raw": "/bot/schedule",
       "method": "GET",
@@ -5008,7 +5112,7 @@
     },
     {
       "file": "src/pages/strategy/shared/bot-schedule.ts",
-      "line": 84,
+      "line": 83,
       "callee": "api",
       "raw": "/bot/schedule/next/impact?{query}",
       "method": "GET",
@@ -5021,7 +5125,7 @@
     },
     {
       "file": "src/pages/strategy/shared/bot-schedule.ts",
-      "line": 89,
+      "line": 88,
       "callee": "api",
       "raw": "/bot/schedule/next",
       "method": "PUT",
@@ -5034,7 +5138,7 @@
     },
     {
       "file": "src/pages/strategy/shared/bot-schedule.ts",
-      "line": 94,
+      "line": 93,
       "callee": "api",
       "raw": "/bot/schedule/next/keep-last",
       "method": "POST",

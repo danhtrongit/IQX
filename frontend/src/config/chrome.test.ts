@@ -5,13 +5,14 @@ import { HEADER_NAV, INSIGHT_ENABLED, flashbackChrome, practiceChrome, sectionOf
 const visible = (items: typeof practiceChrome.items) => items.filter((item) => !item.hidden).map((item) => [item.id, item.label])
 
 describe("workspace chrome (layout v1.3)", () => {
-  it("lists the LUYỆN TẬP rail in order: Candle Dojo, Học viện, Bot, Giao dịch, Dashboard phân tích", () => {
+  it("lists the LUYỆN TẬP rail in order: Candle Dojo, Học viện, Bot, Giao dịch, Dashboard phân tích, Toàn cảnh thị trường", () => {
     expect(visible(practiceChrome.items)).toEqual([
       ["candle-dojo", "Candle Dojo"],
       ["hoc-vien", "Học viện"],
       ["bot", "Bot"],
       ["giao-dich", "Giao dịch"],
       ["phan-tich", "Dashboard phân tích"],
+      ["toan-canh", "Toàn cảnh thị trường"],
     ])
     expect(practiceChrome.param).toBe("tool")
     expect(practiceChrome.defaultId).toBe("candle-dojo")
@@ -35,7 +36,7 @@ describe("workspace chrome (layout v1.3)", () => {
   })
 
   it("maps tools and paths to sections", () => {
-    for (const id of ["candle-dojo", "hoc-vien", "bot", "giao-dich", "phan-tich", "insight", "hunt"]) expect(sectionOfTool(id)).toBe("practice")
+    for (const id of ["candle-dojo", "hoc-vien", "bot", "giao-dich", "phan-tich", "toan-canh", "insight", "hunt"]) expect(sectionOfTool(id)).toBe("practice")
     for (const id of ["flashback", "shop"]) expect(sectionOfTool(id)).toBe("flashback")
     for (const id of ["trading", "academy", "unknown", null]) expect(sectionOfTool(id)).toBeNull()
     expect(sectionOfPath("/luyen-tap")).toBe("practice")

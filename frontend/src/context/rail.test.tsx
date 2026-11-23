@@ -30,6 +30,7 @@ describe("rail selection through the URL", () => {
     ["/luyen-tap?tool=giao-dich&tab=danh-muc", "giao-dich"],
     ["/luyen-tap?tool=hoc-vien", "hoc-vien"],
     ["/luyen-tap?tool=phan-tich", "phan-tich"],
+    ["/luyen-tap?tool=toan-canh", "toan-canh"],
     // Hidden tools are never active: they fall back to the default tool.
     ["/luyen-tap?tool=hunt", "candle-dojo"],
     // Insight replaces the main area, it is not a panel tool.

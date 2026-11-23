@@ -18,6 +18,8 @@ describe("workspaceMemory", () => {
     expect(workspaceMemory.get().flashback?.params).toBe("tool=shop")
     workspaceMemory.remember("practice", "?tool=bot&lesson=ch01-l01&practice=p1&symbol=VNM")
     expect(workspaceMemory.get().practice?.params).toBe("tool=bot&lesson=ch01-l01&practice=p1")
+    workspaceMemory.remember("practice", "?tool=toan-canh&page=pg_1&symbol=VNM")
+    expect(workspaceMemory.get().practice?.params).toBe("tool=toan-canh&page=pg_1")
   })
 
   it("remembers the Giao dịch tabs (main area and panel) only while Giao dịch is open, never Insight", () => {
@@ -81,6 +83,15 @@ describe("withTool", () => {
       .toBe("tool=hoc-vien&symbol=FPT&lesson=x")
   })
 
+  it("drops the Toàn cảnh thị trường page param when switching to another tool", () => {
+    expect(withTool(params("tool=toan-canh&page=pg_1&symbol=FPT"), "bot", undefined).toString())
+      .toBe("tool=bot&symbol=FPT")
+    expect(withTool(params("tool=toan-canh&page=pg_1&symbol=FPT"), "giao-dich", undefined).toString())
+      .toBe("tool=giao-dich&symbol=FPT&tab=dat-lenh")
+    expect(withTool(params("tool=toan-canh&page=pg_1&symbol=FPT"), "toan-canh", undefined).toString())
+      .toBe("tool=toan-canh&page=pg_1&symbol=FPT")
+  })
+
   it("brings Giao dịch back with its remembered tabs", () => {
     const saved = { tradingTab: "tin-tuc" as const, lastTab: "board" as const }
     expect(withTool(params("tool=bot&symbol=FPT"), "giao-dich", saved).toString()).toBe("tool=giao-dich&symbol=FPT&tab=tin-tuc&content=board")
@@ -103,6 +114,8 @@ describe("sectionSearch", () => {
   it("keeps shared params and drops the other section's own params", () => {
     expect(sectionSearch("flashback", "?tool=giao-dich&tab=danh-muc&content=board&symbol=VNM&tour=bantin&analysis=stock", {}))
       .toBe("?tool=flashback&symbol=VNM&tour=bantin")
+    expect(sectionSearch("flashback", "?tool=toan-canh&page=pg_1&symbol=VNM", {}))
+      .toBe("?tool=flashback&symbol=VNM")
     expect(sectionSearch("practice", "?tool=shop&symbol=VNM", {})).toBe("?tool=candle-dojo&symbol=VNM")
   })
 

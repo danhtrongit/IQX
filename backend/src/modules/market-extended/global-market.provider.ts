@@ -2,7 +2,7 @@ import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { MarketHttpClient } from './market-http.client.js';
 import { asRecord, finiteNumber, isRecord, type SourceResult } from './market-extended.types.js';
 
-const MSN_SECID: Record<string, string> = {
+export const MSN_SECID: Record<string, string> = {
   INX: 'a33k6h',
   DJI: 'a6qja2',
   USA30: 'a6qja2',
@@ -17,6 +17,11 @@ const MSN_SECID: Record<string, string> = {
   HSI: 'ah7etc',
   SENSEX: 'ahkucw',
   VNI: 'aqk2nm',
+  KOSPI: 'ajsd6h',
+  KS11: 'ajsd6h',
+  ASX200: 'aaawc7',
+  AXJO: 'aaawc7',
+  XJO: 'aaawc7',
   BTC: 'c2111',
   BTCUSDT: 'c2111',
   ETH: 'c2112',
@@ -37,6 +42,9 @@ const MSN_SECID: Record<string, string> = {
   XAUUSD: 'ck48ur',
   XAGUSD: 'ck48xm',
 };
+const SIMPLIZE_GLOBAL_TICKER: Record<string, string> = {
+  DXY: 'TVC:DXY',
+};
 const BINANCE_HOSTS = [
   'https://api.binance.com',
   'https://api-gcp.binance.com',
@@ -52,7 +60,19 @@ function chartRows(raw: unknown, currency: boolean) {
   const times = Array.isArray(series.timeStamps) ? series.timeStamps : [];
   const get = (field: string, index: number) =>
     Array.isArray(series[field]) ? (series[field] as unknown[])[index] : undefined;
-  return times.flatMap((value, index) => {
+  const rows: Array<{
+    time: string;
+    timestamp: number;
+    open: unknown;
+    high: unknown;
+    low: unknown;
+    close: unknown;
+    previous_close: number | null;
+    volume: unknown;
+  }> = [];
+  let prevClose: number | null = null;
+  for (let index = 0; index < times.length; index += 1) {
+    const value = times[index];
     const date = new Date(String(value));
     const open = get('openPrices', index);
     const high = get('pricesHigh', index);
@@ -61,21 +81,24 @@ function chartRows(raw: unknown, currency: boolean) {
       !Number.isFinite(date.getTime()) ||
       [open, high, low].some((v) => v === undefined || v === -99999901)
     )
-      return [];
+      continue;
     const timestamp = Math.floor(date.getTime() / 1000);
+    const close = get('prices', index);
     const volume = get('volumes', index);
-    return [
-      {
-        time: date.toISOString().slice(0, 10),
-        timestamp,
-        open,
-        high,
-        low,
-        close: get('prices', index),
-        volume: currency || volume === -99999901 ? null : volume,
-      },
-    ];
-  });
+    rows.push({
+      time: date.toISOString().slice(0, 10),
+      timestamp,
+      open,
+      high,
+      low,
+      close,
+      previous_close: prevClose,
+      volume: currency || volume === -99999901 ? null : volume,
+    });
+    const numericClose = finiteNumber(close);
+    if (numericClose !== null) prevClose = numericClose;
+  }
+  return rows;
 }
 
 @Injectable()
@@ -225,13 +248,66 @@ export class GlobalMarketProvider {
     };
   }
 
+  private async simplizeGlobal(
+    ticker: string,
+    start: string | undefined,
+    end: string | undefined,
+  ): Promise<SourceResult<unknown>> {
+    const sourceUrl = 'https://api.simplize.vn/api/historical/prices/ohlcv';
+    const fromSec = Math.floor(new Date(`${start ?? '2000-01-01'}T00:00:00Z`).getTime() / 1000);
+    const toSec = Math.floor(
+      new Date(`${end ?? new Date().toISOString().slice(0, 10)}T23:59:59Z`).getTime() / 1000,
+    );
+    const root = await this.http.json(sourceUrl, 'GET', {
+      query: { ticker, interval: '1d', type: 'commodity', from: fromSec, to: toSec },
+    });
+    const raw = isRecord(root) && Array.isArray(root.data) ? root.data : [];
+    const parsed = raw
+      .flatMap((entry) => {
+        if (!Array.isArray(entry)) return [];
+        const ts = finiteNumber(entry[0]);
+        const open = finiteNumber(entry[1]);
+        const high = finiteNumber(entry[2]);
+        const low = finiteNumber(entry[3]);
+        const close = finiteNumber(entry[4]);
+        if (ts === null || open === null || high === null || low === null || close === null) {
+          return [];
+        }
+        return [
+          {
+            time: new Date(ts * 1000).toISOString().slice(0, 10),
+            timestamp: Math.floor(ts),
+            open,
+            high,
+            low,
+            close,
+            volume: null as number | null,
+          },
+        ];
+      })
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    let prevClose: number | null = null;
+    const data = parsed.map((bar) => {
+      const row = { ...bar, previous_close: prevClose };
+      prevClose = bar.close;
+      return row;
+    });
+    return { sourceUrl, data };
+  }
+
   private async msnChart(
     symbol: string,
     start: string | undefined,
     end: string | undefined,
     currency: boolean,
   ): Promise<SourceResult<unknown>> {
-    const secid = MSN_SECID[symbol];
+    const normalized = symbol.trim().toUpperCase();
+    const simplizeTicker = SIMPLIZE_GLOBAL_TICKER[normalized];
+    if (simplizeTicker) {
+      return this.simplizeGlobal(simplizeTicker, start, end);
+    }
+    const secid = MSN_SECID[symbol] ?? MSN_SECID[normalized];
     if (!secid)
       throw new UnprocessableEntityException({
         code: 'VALIDATION_ERROR',
@@ -243,7 +319,7 @@ export class GlobalMarketProvider {
       query: {
         apikey,
         StartTime: `${start ?? '2000-01-01'}T17:00:00.000Z`,
-        EndTime: `${end ?? new Date().toISOString().slice(0, 10)}T16:59:00.858Z`,
+        EndTime: `${end ?? new Date().toISOString().slice(0, 10)}T23:59:59.999Z`,
         timeframe: 1,
         ocid: 'finance-utils-peregrine',
         cm: 'vi-vn',

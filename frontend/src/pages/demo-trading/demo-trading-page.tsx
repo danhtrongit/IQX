@@ -40,6 +40,7 @@ import { useWorkspace } from "./workspace/use-workspace"
 const ChartPage = lazy(() => import("@/pages/charts/chart-page").then((module) => ({ default: module.ChartPage })))
 const PriceBoardPage = lazy(() => import("@/pages/securities/price-board/price-board-page").then((module) => ({ default: module.PriceBoardPage })))
 const MarketWorkspacePage = lazy(() => import("@/pages/market-workspace/market-workspace-page").then((module) => ({ default: module.MarketWorkspacePage })))
+const MarketOverviewPage = lazy(() => import("./market-overview/market-overview-page").then((module) => ({ default: module.MarketOverviewPage })))
 
 const CONTENT_TABS: { id: DemoTab; label: string }[] = [
   { id: "chart", label: "Biểu đồ" },
@@ -197,8 +198,11 @@ function DemoWorkspace({ section }: { section: WorkspaceSection }) {
     },
   }
 
-  // Dashboard phân tích and Candle Dojo fill the main area; Flashback shows its panel only in a match.
-  const panelLess = activeId === PRACTICE_TOOL.dashboard || activeId === PRACTICE_TOOL.dojo
+  // Dashboard phân tích, Candle Dojo, and Toàn cảnh thị trường fill the main area; Flashback shows its panel only in a match.
+  const panelLess =
+    activeId === PRACTICE_TOOL.dashboard ||
+    activeId === PRACTICE_TOOL.dojo ||
+    activeId === PRACTICE_TOOL.marketOverview
 
   function panel() {
     switch (activeId) {
@@ -208,23 +212,32 @@ function DemoWorkspace({ section }: { section: WorkspaceSection }) {
       case "patterns": return <PatternsPanel symbol={symbol} />
       case PRACTICE_TOOL.bot: return <BotPanel />
       case PRACTICE_TOOL.dojo:
-      case PRACTICE_TOOL.dashboard: return null
+      case PRACTICE_TOOL.dashboard:
+      case PRACTICE_TOOL.marketOverview: return null
       case FLASHBACK_TOOL.shop: return <ShopPanel onNavigate={navigatePanel} />
       case FLASHBACK_TOOL.flashback: return <FlashbackPanel />
       default: return <AcademyPanel />
     }
   }
 
-  const main = trading || activeId === PRACTICE_TOOL.dashboard
+  const main = activeId === PRACTICE_TOOL.marketOverview
     ? (
-      <ContentTabs active={trading ? content : "dashboard"} onSelect={selectContent}>
-        {!trading ? <AnalysisDashboard symbol={symbol} tabsSlot={<ContentTabBar />} />
-          : content === "chart" ? <ChartPage embedded />
-            : content === "board" ? <PriceBoardPage embedded />
-              : <MarketWorkspacePage embedded view={content === "insight" ? "stock" : "market"} />}
-      </ContentTabs>
+      <section aria-label={activeItem?.label ?? "Toàn cảnh thị trường"} className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <Suspense fallback={<ContentFallback />}>
+          <MarketOverviewPage />
+        </Suspense>
+      </section>
     )
-    : <ToolSection toolId={activeId} label={activeItem?.label ?? chrome.items[0].label} mascotId={mascotId} onNavigate={navigatePanel} />
+    : trading || activeId === PRACTICE_TOOL.dashboard
+      ? (
+        <ContentTabs active={trading ? content : "dashboard"} onSelect={selectContent}>
+          {!trading ? <AnalysisDashboard symbol={symbol} tabsSlot={<ContentTabBar />} />
+            : content === "chart" ? <ChartPage embedded />
+              : content === "board" ? <PriceBoardPage embedded />
+                : <MarketWorkspacePage embedded view={content === "insight" ? "stock" : "market"} />}
+        </ContentTabs>
+      )
+      : <ToolSection toolId={activeId} label={activeItem?.label ?? chrome.items[0].label} mascotId={mascotId} onNavigate={navigatePanel} />
 
   const frameProps: ComponentProps<typeof WorkspaceFrame> = {
     panelLabel: trading ? TRADING_PANEL_TITLE : activeItem?.label ?? chrome.items[0].label,

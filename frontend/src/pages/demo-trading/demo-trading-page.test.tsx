@@ -123,6 +123,20 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
   }
   if (path.startsWith("/fundamental/")) return { symbol: "FPT", nganh: "thuong", per: "q", charts: {} }
   if (path.startsWith("/valuation/")) return { symbol: "FPT", nganh: "thuong", dates: [], charts: {} }
+  if (path === "/toan-canh/pages") return { pages: [], lastActivePageId: "thi-truong", maxPages: 8 }
+  if (path === "/toan-canh/template") {
+    return {
+      id: "thi-truong",
+      name: "Thị trường",
+      version: 1,
+      readonly: true,
+      updatedAt: "2026-11-19T00:00:00+07:00",
+      items: [],
+      catalog: [],
+      groups: [],
+      limits: { cols: 12, maxHeight: 18, maxPageNameLength: 30, maxPages: 8, maxWidgetsPerPage: 40 },
+    }
+  }
   return {}
 }
 
@@ -195,7 +209,7 @@ const pressed = () => within(rail()).getAllByRole("button").filter((button) => b
 const tradingTabs = () => within(panel()).getByRole("tablist", { name: "Giao dịch" })
 /** Giao dịch tabs whose content is on screen (the others stay mounted but hidden). */
 const shownTradingPanels = () => [...panel().querySelectorAll<HTMLElement>("[data-trading-panel]")].filter((node) => !node.hidden).map((node) => node.dataset.tradingPanel)
-const PRACTICE_RAIL = ["Candle Dojo", "Học viện", "Bot", "Giao dịch", "Dashboard phân tích"]
+const PRACTICE_RAIL = ["Candle Dojo", "Học viện", "Bot", "Giao dịch", "Dashboard phân tích", "Toàn cảnh thị trường"]
 
 describe("LUYỆN TẬP for a brand-new user", () => {
   it("opens on Candle Dojo with the LUYỆN TẬP rail, full width and nothing locked", async () => {
@@ -431,6 +445,23 @@ describe("LUYỆN TẬP layout behaviour", () => {
     await user.click(within(tabs).getByRole("tab", { name: "Bảng giá" }))
     expect(where(router)).toBe("/luyen-tap?tool=giao-dich&symbol=FPT&tab=dat-lenh&content=board")
     await waitFor(() => expect(pressed()).toEqual(["Giao dịch"]))
+  })
+
+  it("Toàn cảnh thị trường opens full-width with no panel and clicking Giao dịch restores trading cleanly", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/luyen-tap?tool=giao-dich&tab=dat-lenh&symbol=FPT")
+    await user.click(within(rail()).getByRole("button", { name: "Toàn cảnh thị trường" }))
+    expect(where(router)).toMatch(/^\/luyen-tap\?tool=toan-canh/)
+    await waitFor(() => expect(pressed()).toEqual(["Toàn cảnh thị trường"]))
+    expect(frame().getAttribute("data-panel-hidden")).toBe("true")
+    expect(await screen.findByTestId("market-overview-page", undefined, { timeout: 5000 })).toBeTruthy()
+    expect(screen.getByRole("tab", { name: "Thị trường" })).toBeTruthy()
+
+    await user.click(within(rail()).getByRole("button", { name: "Giao dịch" }))
+    await waitFor(() => expect(pressed()).toEqual(["Giao dịch"]))
+    expect(frame().getAttribute("data-panel-hidden")).toBe("false")
+    expect(new URLSearchParams(router.state.location.search).has("page")).toBe(false)
+    expect(screen.getByRole("tablist", { name: "Nội dung giao dịch" })).toBeTruthy()
   })
 
   it("Học viện collapses on a second click and its collapsed state is its own", async () => {
