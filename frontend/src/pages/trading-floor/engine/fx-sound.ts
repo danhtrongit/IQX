@@ -60,7 +60,10 @@ export function playFx(key: FxSoundKey, volume = 1): void {
   if (!audio) return
   audio.volume = Math.max(0, Math.min(1, BASE_VOLUME * volume))
   audio.currentTime = 0
-  void audio.play().catch(() => undefined)
+  const result = audio.play() as Promise<void> | undefined
+  if (result && typeof result.catch === "function") {
+    void result.catch(() => undefined)
+  }
 }
 
 /** Quieter the farther another player stands from ours (never below a quarter). */

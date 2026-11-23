@@ -10,7 +10,7 @@ import {
   type ChibiSceneHost,
 } from "@/lib/chibi-3d/scene-host.ts"
 
-import { ui } from "../bridge.ts"
+import { toast, ui } from "../bridge.ts"
 import { startChat } from "../net/chat.ts"
 import { startLeaderboard } from "../net/leaderboard.ts"
 import { startMarket } from "../net/market.ts"
@@ -63,14 +63,30 @@ export function startFloor(
       container,
       world: FLOOR_WORLD_CONFIG,
       backgroundHex: 0x0c111b,
-      fov: 34,
-      pitchDeg: 52,
-      baseDistance: 17.5,
+      fov: 36,
+      pitchDeg: 48,
+      baseDistance: 21.6,
       minZoom: 0.72,
       maxZoom: 2.3,
-      initialZoom: 1.0,
+      initialZoom: 0.94,
       cameraLerp: 0.14,
       boundsMargin: 0.6,
+      northMargin: 4.7,
+      southMargin: 0.9,
+      onResize: () => {
+        controller?.handleResize()
+      },
+      onContextLost: () => {
+        if (!disposed) {
+          toast("Đồ họa 3D tạm gián đoạn, đang khôi phục…", "warn")
+        }
+      },
+      onContextRestored: () => {
+        if (!disposed) {
+          controller?.handleContextRestored()
+          toast("Đã khôi phục đồ họa 3D", "good", 2600)
+        }
+      },
     })
 
     if (disposed) {

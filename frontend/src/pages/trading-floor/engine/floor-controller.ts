@@ -16,6 +16,7 @@ import {
   logicalToWorld,
   resolveOutfitHex,
   type ChibiAnimMode,
+  type ChibiCharacterSpec,
   type ChibiRig,
 } from "@/lib/chibi-3d/types.ts"
 
@@ -73,6 +74,7 @@ import {
 } from "./layout.ts"
 import type { NavGrid, Point } from "./nav.ts"
 import { OverlayLayer, type ScreenBox } from "./overlay-layer.ts"
+import { prefersReducedMotion } from "./reduced-motion.ts"
 
 const FACINGS: readonly Facing[] = ["e", "se", "s", "sw", "w", "nw", "n", "ne"]
 const NEAR = 84
@@ -84,6 +86,12 @@ const GRAB_CHECK_MS = 100
 const GRAB_REACH = 40
 const GRAB_RETRY_MS = 1500
 const MIN_TOUCH_TARGET_PX = 44
+const MAX_FULL_RATE_PEERS_LITE = 6
+const FAR_PEER_DIST_LITE = 480
+const VERY_FAR_PEER_DIST_LITE = 850
+const FAR_PEER_DIST_DESKTOP = 900
+
+type CharacterSpecWithLite = ChibiCharacterSpec & { lite?: boolean }
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v))
@@ -96,10 +104,48 @@ export function facingOf(dx: number, dy: number): Facing {
   return FACINGS[i]!
 }
 
+/**
+ * Computes responsive zoom so desktop viewports frame LED board, Thần Tài altar, SACO board,
+ * Lounge and Vinh danh without dead void bands, while portrait phones center tightly on the player.
+ */
+export function computeResponsiveZoom(
+  userZoom: number,
+  width: number,
+  height: number,
+  minFillZoom = 0.72
+): number {
+  const aspect = width / Math.max(1, height)
+  const baseFactor = aspect < 0.72 ? 1.18 : aspect < 1.12 ? 1.04 : 0.94
+  const floorZoom = clamp(minFillZoom * 0.96, 0.72, 1.35)
+  return clamp(userZoom * baseFactor, floorZoom, 2.3)
+}
+
+/**
+ * True when a Meta/Control/Alt key is pressed or released: macOS drops `keyup` of other held keys
+ * while Command is down, so we clear all held movement keys whenever these modifiers are involved.
+ */
+export function isModifierResetEvent(e: {
+  code?: string
+  metaKey?: boolean
+  ctrlKey?: boolean
+  altKey?: boolean
+}): boolean {
+  return (
+    Boolean(e.metaKey || e.ctrlKey || e.altKey) ||
+    e.code === "MetaLeft" ||
+    e.code === "MetaRight" ||
+    e.code === "ControlLeft" ||
+    e.code === "ControlRight" ||
+    e.code === "AltLeft" ||
+    e.code === "AltRight"
+  )
+}
+
 function keysFree(): boolean {
   return (
     !ui.panel.get() &&
     !ui.posts.get().open &&
+    !ui.loginPrompt.get() &&
     !typing() &&
     !appDialogOpen()
   )
@@ -139,6 +185,8 @@ interface RemotePeerActor {
   reportedAtMs: number
   sacoId?: string
   animOverride: AnimOverride | null
+  rigAccumDt: number
+  rigInitialized: boolean
 }
 
 export class FloorController {
@@ -169,6 +217,7 @@ export class FloorController {
   private pinchStartDist = 0
   private pinchStartZoom = 1
   private pinchMoved = false
+  private lastTouchDownMs = 0
 
   private readonly disposers: (() => void)[] = []
   private disposed = false
@@ -177,8 +226,12 @@ export class FloorController {
     this.host = host
     this.nav = buildFloorNavGrid()
     this.overlay = new OverlayLayer(container)
-    this.world3d = new FloorWorld3D(host.scene, this.overlay)
-    this.fx3d = new FloorFx3D(host.scene, FLOOR_WORLD_CONFIG, this.overlay)
+    this.world3d = new FloorWorld3D(host.scene, this.overlay, {
+      lite: host.lite,
+    })
+    this.fx3d = new FloorFx3D(host.scene, FLOOR_WORLD_CONFIG, this.overlay, {
+      lite: host.lite,
+    })
 
     for (const h of this.world3d.hotspots) {
       this.hotspotByRoot.set(h.root, h.interact)
@@ -186,7 +239,7 @@ export class FloorController {
     }
 
     this.applyZoom(true)
-    host.followLogical(1024, 620, true)
+    host.followLogical(1024, 580, true)
 
     this.setupInput()
     this.bindWorldData()
@@ -203,6 +256,33 @@ export class FloorController {
     }
   }
 
+  private createCharacterRig(
+    avatarId: string,
+    outfitColorHex: string | null
+  ): ChibiRig {
+    const spec: CharacterSpecWithLite = {
+      avatarId,
+      outfitColorHex,
+      lite: this.host.lite,
+    }
+    return createChibiCharacter(spec)
+  }
+
+  /** Called by `ChibiSceneHost` ResizeObserver so framing stays filled across layout shifts. */
+  handleResize(): void {
+    if (this.disposed) return
+    this.applyZoom(false)
+  }
+
+  /** Re-uploads procedural wall textures after WebGL context restoration. */
+  handleContextRestored(): void {
+    if (this.disposed) return
+    this.world3d.refreshDynamicTextures()
+    if (this.host.isPaused()) {
+      this.renderStaticBackdropFrame()
+    }
+  }
+
   private renderStaticBackdropFrame(): void {
     if (this.disposed) return
     const projectLogical = (lx: number, ly: number, heightWorld: number) =>
@@ -212,9 +292,9 @@ export class FloorController {
   }
 
   private effectiveZoom(): number {
-    const { width } = this.host.getViewportSize()
-    const mobileBoost = width < 600 ? 1.24 : 1.0
-    return clamp(this.userZoom * mobileBoost, 0.72, 2.3)
+    const { width, height } = this.host.getViewportSize()
+    const minFillZoom = this.host.getClampBounds(1).minFillZoom
+    return computeResponsiveZoom(this.userZoom, width, height, minFillZoom)
   }
 
   private applyZoom(instant = false): void {
@@ -256,10 +336,7 @@ export class FloorController {
         const { x, y, facing, moving, animOverride } = this.player
         this.host.scene.remove(this.player.rig.root)
         this.player.rig.dispose()
-        const rig = createChibiCharacter({
-          avatarId,
-          outfitColorHex: outfitHex,
-        })
+        const rig = this.createCharacterRig(avatarId, outfitHex)
         this.host.scene.add(rig.root)
         this.player = {
           rig,
@@ -286,10 +363,7 @@ export class FloorController {
     }
 
     const at = this.spawnPoint()
-    const rig = createChibiCharacter({
-      avatarId,
-      outfitColorHex: outfitHex,
-    })
+    const rig = this.createCharacterRig(avatarId, outfitHex)
     this.host.scene.add(rig.root)
     this.player = {
       rig,
@@ -345,10 +419,7 @@ export class FloorController {
     if (isSelf(p.id) || this.disposed) return
     this.removePeer(p.id)
     const avatarId = normalizeAvatarId(p.avatar) ?? "male01"
-    const rig = createChibiCharacter({
-      avatarId,
-      outfitColorHex: resolveOutfitHex(p.color),
-    })
+    const rig = this.createCharacterRig(avatarId, resolveOutfitHex(p.color))
     this.host.scene.add(rig.root)
     const actor: RemotePeerActor = {
       id: p.id,
@@ -366,6 +437,8 @@ export class FloorController {
       reportedAtMs: performance.now(),
       sacoId: p.sacoId,
       animOverride: null,
+      rigAccumDt: 0,
+      rigInitialized: false,
     }
     this.setActorPosition(actor, p.x, p.y)
     this.peers.set(p.id, actor)
@@ -403,13 +476,11 @@ export class FloorController {
     if (existing.avatarId !== avatarId) {
       this.host.scene.remove(existing.rig.root)
       existing.rig.dispose()
-      const rig = createChibiCharacter({
-        avatarId,
-        outfitColorHex: resolveOutfitHex(p.color),
-      })
+      const rig = this.createCharacterRig(avatarId, resolveOutfitHex(p.color))
       this.host.scene.add(rig.root)
       existing.rig = rig
       existing.avatarId = avatarId
+      existing.rigInitialized = false
       this.setActorPosition(existing, existing.x, existing.y)
     } else {
       existing.rig.setOutfitColor(resolveOutfitHex(p.color))
@@ -434,13 +505,39 @@ export class FloorController {
 
   // ---------- Input & Hit-Testing ----------
 
+  /** Clears all held movement keys and cancels any active click-to-walk target. */
+  private stopMovementAndTarget(): void {
+    this.heldKeys.clear()
+    const hadWalk = this.path.length > 0 || this.pending !== null
+    this.path = []
+    this.pending = null
+    const me = this.player
+    if (me && (this.lastSent.moving || hadWalk || me.moving)) {
+      me.moving = false
+      sendState({ x: me.x, y: me.y, facing: me.facing, moving: false })
+      this.lastSent = {
+        t: performance.now(),
+        facing: me.facing,
+        moving: false,
+      }
+    }
+  }
+
   private setupInput(): void {
     const dom = this.host.renderer.domElement
 
     const onKeyDown = (e: KeyboardEvent): void => {
-      if (!keysFree()) return
+      if (isModifierResetEvent(e)) {
+        this.heldKeys.clear()
+        return
+      }
+      if (!keysFree()) {
+        this.heldKeys.clear()
+        return
+      }
       const code = e.code
       if (code === "KeyE") {
+        if (e.repeat) return
         const hint = ui.hint.get()
         if (hint) {
           e.preventDefault()
@@ -467,23 +564,15 @@ export class FloorController {
     }
 
     const onKeyUp = (e: KeyboardEvent): void => {
+      if (isModifierResetEvent(e)) {
+        this.heldKeys.clear()
+        return
+      }
       this.heldKeys.delete(e.code)
     }
 
     const pauseMovement = (): void => {
-      this.heldKeys.clear()
-      const me = this.player
-      if (me && (this.lastSent.moving || this.path.length > 0)) {
-        this.path = []
-        this.pending = null
-        me.moving = false
-        sendState({ x: me.x, y: me.y, facing: me.facing, moving: false })
-        this.lastSent = {
-          t: performance.now(),
-          facing: me.facing,
-          moving: false,
-        }
-      }
+      this.stopMovementAndTarget()
     }
 
     const onVisibility = (): void => {
@@ -491,7 +580,14 @@ export class FloorController {
     }
 
     const onWheel = (e: WheelEvent): void => {
-      if (ui.panel.get() || ui.posts.get().open || appDialogOpen()) return
+      if (
+        ui.panel.get() ||
+        ui.posts.get().open ||
+        ui.loginPrompt.get() ||
+        appDialogOpen()
+      ) {
+        return
+      }
       e.preventDefault()
       const factor = e.deltaY > 0 ? 0.91 : 1.1
       this.userZoom = clamp(this.userZoom * factor, 0.72, 2.2)
@@ -509,8 +605,14 @@ export class FloorController {
           )
           this.pinchStartZoom = this.userZoom
           this.pinchMoved = true
+          // Cancel a walk accidentally triggered by the first finger of a pinch gesture
+          if (performance.now() - this.lastTouchDownMs < 180) {
+            this.path = []
+            this.pending = null
+          }
           return
         }
+        this.lastTouchDownMs = performance.now()
         this.pinchMoved = false
       } else if (e.button !== 0) {
         return
@@ -520,6 +622,7 @@ export class FloorController {
         !this.player ||
         ui.panel.get() ||
         ui.posts.get().open ||
+        ui.loginPrompt.get() ||
         appDialogOpen()
       ) {
         return
@@ -637,6 +740,7 @@ export class FloorController {
     window.addEventListener("keydown", onKeyDown)
     window.addEventListener("keyup", onKeyUp)
     window.addEventListener("blur", pauseMovement)
+    window.addEventListener("pagehide", pauseMovement)
     document.addEventListener("visibilitychange", onVisibility)
     window.addEventListener("resize", onResize)
     dom.addEventListener("wheel", onWheel, { passive: false })
@@ -649,6 +753,7 @@ export class FloorController {
       window.removeEventListener("keydown", onKeyDown)
       window.removeEventListener("keyup", onKeyUp)
       window.removeEventListener("blur", pauseMovement)
+      window.removeEventListener("pagehide", pauseMovement)
       document.removeEventListener("visibilitychange", onVisibility)
       window.removeEventListener("resize", onResize)
       dom.removeEventListener("wheel", onWheel)
@@ -800,6 +905,15 @@ export class FloorController {
   private bindCommandsAndPresence(): void {
     this.spawnOrUpdatePlayer(ui.profile.get())
     this.disposers.push(
+      ui.panel.subscribe((panel) => {
+        if (panel) this.stopMovementAndTarget()
+      }),
+      ui.posts.subscribe((posts) => {
+        if (posts.open) this.stopMovementAndTarget()
+      }),
+      ui.loginPrompt.subscribe((prompt) => {
+        if (prompt !== null) this.stopMovementAndTarget()
+      }),
       ui.profile.subscribe((p) => {
         if (p) {
           this.spawnOrUpdatePlayer(p)
@@ -1007,20 +1121,51 @@ export class FloorController {
     if (this.disposed) return
     this.elapsedS = elapsedS
     const nowMs = performance.now()
+    const reducedMotion = prefersReducedMotion()
 
     if (this.player) {
-      this.stepPlayer(this.player, dt, nowMs)
+      this.stepPlayer(this.player, dt, nowMs, reducedMotion)
       this.checkCoinAutoGrab(this.player, nowMs)
       this.host.followLogical(this.player.x, this.player.y)
     }
 
-    for (const peer of this.peers.values()) {
-      this.stepPeer(peer, dt, nowMs)
+    // Prioritize near peers for full-rate animation and throttle far peers (especially in lite mode)
+    const refX = this.player?.x ?? 1024
+    const refY = this.player?.y ?? 540
+    let fullRatePeers: Set<string> | null = null
+    if (this.host.lite && this.peers.size > MAX_FULL_RATE_PEERS_LITE) {
+      const ranked = [...this.peers.values()]
+        .map((peer) => ({
+          id: peer.id,
+          dist: Math.hypot(peer.x - refX, peer.y - refY),
+        }))
+        .sort((a, b) => a.dist - b.dist)
+      fullRatePeers = new Set(
+        ranked.slice(0, MAX_FULL_RATE_PEERS_LITE).map((item) => item.id)
+      )
     }
 
-    // Update FX & apply brief local camera shake if active
+    for (const peer of this.peers.values()) {
+      const dist = Math.hypot(peer.x - refX, peer.y - refY)
+      let rigIntervalS = 0
+      if (this.host.lite) {
+        const withinQuota = fullRatePeers === null || fullRatePeers.has(peer.id)
+        if (dist > VERY_FAR_PEER_DIST_LITE) {
+          rigIntervalS = 0.2
+        } else if (!withinQuota || dist > FAR_PEER_DIST_LITE) {
+          rigIntervalS = 0.1
+        }
+      } else if (dist > FAR_PEER_DIST_DESKTOP) {
+        rigIntervalS = 0.066
+      }
+      this.stepPeer(peer, dt, nowMs, reducedMotion, rigIntervalS)
+    }
+
+    // Update FX & apply brief local camera shake if active (suppressed under reduced-motion)
     this.fx3d.update(dt)
-    const shake = this.fx3d.getCameraShakeOffset()
+    const shake = reducedMotion
+      ? { x: 0, y: 0, z: 0 }
+      : this.fx3d.getCameraShakeOffset()
     this.host.setCameraShake(shake.x, shake.y, shake.z)
 
     // Update world NPCs, sparkles, statues & Thần Tài greetings
@@ -1085,8 +1230,18 @@ export class FloorController {
     return { anim: moving ? "walk" : "idle", activeOverride: null }
   }
 
-  private stepPlayer(me: PlayerActor, dt: number, nowMs: number): void {
+  private stepPlayer(
+    me: PlayerActor,
+    dt: number,
+    nowMs: number,
+    reducedMotion: boolean
+  ): void {
     const blocked = !keysFree()
+    if (blocked && (this.path.length > 0 || this.pending !== null || this.heldKeys.size > 0)) {
+      this.path = []
+      this.pending = null
+      this.heldKeys.clear()
+    }
     let vx = 0
     let vy = 0
     if (!blocked) {
@@ -1154,13 +1309,16 @@ export class FloorController {
 
     const { anim, activeOverride } = this.resolveAnim(moving, me.animOverride)
     me.animOverride = activeOverride
+    const animTime = activeOverride
+      ? Math.max(0, this.elapsedS - activeOverride.startedAtS)
+      : reducedMotion && anim === "idle"
+        ? 0
+        : undefined
     me.rig.update(dt, {
       anim,
       facingRad: facingToRadians(me.facing),
-      moveFactor: moving ? 1 : 0,
-      animTime: activeOverride
-        ? Math.max(0, this.elapsedS - activeOverride.startedAtS)
-        : undefined,
+      moveFactor: reducedMotion ? 0 : moving ? 1 : 0,
+      animTime,
     })
 
     const changed =
@@ -1171,7 +1329,13 @@ export class FloorController {
     }
   }
 
-  private stepPeer(peer: RemotePeerActor, dt: number, nowMs: number): void {
+  private stepPeer(
+    peer: RemotePeerActor,
+    dt: number,
+    nowMs: number,
+    reducedMotion: boolean,
+    rigIntervalS: number
+  ): void {
     let backlog = 0
     let px = peer.x
     let py = peer.y
@@ -1221,13 +1385,34 @@ export class FloorController {
       peer.animOverride
     )
     peer.animOverride = activeOverride
-    peer.rig.update(dt, {
+
+    peer.rigAccumDt += dt
+    if (
+      peer.rigInitialized &&
+      rigIntervalS > 0 &&
+      !activeOverride &&
+      peer.rigAccumDt < rigIntervalS
+    ) {
+      return
+    }
+    const stepDt = peer.rigAccumDt
+    peer.rigAccumDt = 0
+    peer.rigInitialized = true
+
+    const animTime = activeOverride
+      ? Math.max(0, this.elapsedS - activeOverride.startedAtS)
+      : reducedMotion && anim === "idle"
+        ? 0
+        : undefined
+    peer.rig.update(stepDt, {
       anim,
       facingRad: facingToRadians(peer.facing),
-      moveFactor: walking ? clamp(peer.speed / WALK_SPEED, 0.75, 1.4) : 0,
-      animTime: activeOverride
-        ? Math.max(0, this.elapsedS - activeOverride.startedAtS)
-        : undefined,
+      moveFactor: reducedMotion
+        ? 0
+        : walking
+          ? clamp(peer.speed / WALK_SPEED, 0.75, 1.4)
+          : 0,
+      animTime,
     })
   }
 

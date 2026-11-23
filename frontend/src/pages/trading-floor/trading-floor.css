@@ -9,9 +9,9 @@
   --panel: #131a28;
   --raise: #1a2335;
   --line: #29334a;
-  --fg: #e8ecf4;
-  --muted: #b4c2d8;
-  --dim: #9aa9c4;
+  --fg: #f1f5f9;
+  --muted: #c9d6e4;
+  --dim: #c9d6e4;
   --accent: #e3b341;
   --accent-2: #f6d27a;
   --good: #32d74b;
@@ -23,6 +23,8 @@
   --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: 0px;
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
   color-scheme: dark;
   position: relative;
   isolation: isolate;
@@ -34,6 +36,7 @@
   line-height: 1.45;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
+  overflow: hidden;
 }
 .tf-root * {
   box-sizing: border-box;
@@ -179,15 +182,15 @@
 .tf-root .chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(12, 17, 27, 0.78);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: 999px;
-  padding: 7px 14px;
-  min-height: 38px;
-  font-size: 14px;
+  padding: 5px 12px;
+  min-height: 36px;
+  font-size: 13.5px;
   white-space: nowrap;
 }
 .tf-root .badge {
@@ -240,22 +243,28 @@
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: calc(12px + var(--safe-t)) calc(12px + var(--safe-r))
+    calc(12px + var(--safe-b)) calc(12px + var(--safe-l));
   background: radial-gradient(
     ellipse at top,
     rgba(12, 17, 27, 0.55),
     rgba(12, 17, 27, 0.92)
   );
+  overflow: hidden;
 }
 .tf-root .join {
   width: min(560px, 100%);
+  min-width: 0;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 18px;
-  padding: 24px 22px;
+  padding: 22px 20px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-  max-height: calc(100cqh - 32px);
-  overflow: auto;
+  max-height: calc(100% - 8px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .tf-root .join h1 {
   font-size: 30px;
@@ -474,27 +483,34 @@
   outline-offset: 2px;
 }
 @media (max-width: 480px) {
+  .tf-root .join-backdrop {
+    padding: 8px calc(8px + var(--safe-r)) calc(8px + var(--safe-b))
+      calc(8px + var(--safe-l));
+  }
   .tf-root .join {
-    padding: 18px 14px;
+    padding: 16px 14px;
+    border-radius: 16px;
   }
   .tf-root .join h1 {
-    font-size: 25px;
+    font-size: 23px;
   }
   .tf-root .join-preview {
     flex-direction: column;
     align-items: center;
+    padding: 10px;
+    gap: 10px;
   }
   .tf-root .preview-stage {
-    width: 76px;
-    height: 76px;
-  }
-  .tf-root .preview-stage.preview-stage-3d {
-    width: 156px;
-    height: 156px;
-  }
-  .tf-root .preview-canvas {
     width: 72px;
     height: 72px;
+  }
+  .tf-root .preview-stage.preview-stage-3d {
+    width: 128px;
+    height: 128px;
+  }
+  .tf-root .preview-canvas {
+    width: 68px;
+    height: 68px;
   }
   .tf-root .swatch {
     width: 28px;
@@ -502,6 +518,43 @@
   }
   .tf-root .avatars {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+}
+/* Compact short-height viewports (e.g. 390px landscape phones): keep JoinScreen scrollable & unclipped. */
+@media (max-height: 540px) {
+  .tf-root .join-backdrop {
+    padding: 6px calc(10px + var(--safe-r)) calc(6px + var(--safe-b))
+      calc(10px + var(--safe-l));
+  }
+  .tf-root .join {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+  .tf-root .join h1 {
+    font-size: 20px;
+    margin: 2px 0 4px;
+  }
+  .tf-root .join > .muted {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .tf-root .field {
+    margin: 8px 0;
+  }
+  .tf-root .join-preview {
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 10px;
+    gap: 10px;
+    margin: 8px 0;
+  }
+  .tf-root .preview-stage.preview-stage-3d {
+    width: 104px;
+    height: 104px;
+  }
+  .tf-root .row-end {
+    margin-top: 10px;
   }
 }
 /* ---------- HUD ---------- */
@@ -517,8 +570,8 @@
 .tf-root .hud-top {
   position: absolute;
   top: calc(10px + var(--safe-t));
-  left: 12px;
-  right: 12px;
+  left: calc(12px + var(--safe-l));
+  right: calc(12px + var(--safe-r));
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -589,12 +642,12 @@
     display: none;
   }
 }
-@media (max-width: 380px) {
+@media (max-width: 420px) {
   .tf-root .hud-top .brand b {
     display: none;
   }
   .tf-root .hud-top .me {
-    max-width: 100px;
+    max-width: 108px;
   }
 }
 .tf-root .hint {
@@ -633,10 +686,10 @@
 }
 .tf-root .shortcuts {
   position: absolute;
-  left: 12px;
-  bottom: calc(14px + var(--safe-b));
+  left: calc(12px + var(--safe-l));
+  bottom: calc(12px + var(--safe-b));
   display: flex;
-  gap: 8px;
+  gap: 6px;
   background: rgba(12, 17, 27, 0.78);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -645,7 +698,7 @@
   padding: 4px;
   /* Cùng chiều cao với nút Chat SACO ở góc phải để hai cụm thẳng hàng. */
   box-sizing: border-box;
-  height: 56px;
+  height: 54px;
   align-items: center;
 }
 .tf-root .shortcut {
@@ -654,7 +707,7 @@
   align-content: center;
   gap: 2px;
   min-width: 60px;
-  height: 46px;
+  height: 44px;
   padding: 2px 8px;
   border: 0;
   border-radius: 12px;
@@ -671,9 +724,9 @@
 }
 .tf-root .emote-wrap {
   position: absolute;
-  right: 12px;
+  right: calc(12px + var(--safe-r));
   align-items: end;
-  bottom: calc(14px + var(--safe-b));
+  bottom: calc(12px + var(--safe-b));
   display: grid;
   justify-items: end;
   gap: 8px;
@@ -720,20 +773,26 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(22px + var(--safe-b));
+  bottom: calc(20px + var(--safe-b));
   color: var(--muted);
   font-size: 12px;
-  background: rgba(12, 17, 27, 0.6);
+  white-space: nowrap;
+  background: rgba(12, 17, 27, 0.68);
   padding: 4px 12px;
   border-radius: 999px;
   pointer-events: none;
+}
+@media (pointer: coarse), (hover: none), (max-width: 980px) {
+  .tf-root .help {
+    display: none;
+  }
 }
 /* ---------- quick chat ---------- */
 /* Bottom-left beside FxBar and above the shortcuts: zero overlap with FxBar mute button or .hint pill. */
 .tf-root .quick-chat {
   position: absolute;
-  left: 84px;
-  bottom: calc(86px + var(--safe-b));
+  left: calc(84px + var(--safe-l));
+  bottom: calc(82px + var(--safe-b));
   width: min(340px, calc(50cqw - 180px));
   display: grid;
   gap: 6px;
@@ -842,12 +901,12 @@
 /* Top-right on wide screens, clear of the centred panels; top-centre on phones, above the bottom sheet. */
 .tf-root .toasts {
   position: absolute;
-  top: calc(62px + var(--safe-t));
-  right: 12px;
+  top: calc(56px + var(--safe-t));
+  right: calc(12px + var(--safe-r));
   z-index: 20;
   display: grid;
   gap: 8px;
-  width: min(380px, calc(100cqw - 24px));
+  width: min(380px, calc(100cqw - 24px - var(--safe-l) - var(--safe-r)));
   pointer-events: none;
 }
 @media (max-width: 640px) {
@@ -986,64 +1045,73 @@
     display: none;
   }
   .tf-root .hud-top {
-    left: 8px;
-    right: 8px;
+    top: calc(8px + var(--safe-t));
+    left: calc(8px + var(--safe-l));
+    right: calc(8px + var(--safe-r));
+    gap: 6px;
   }
   .tf-root .hud-right {
     flex-wrap: nowrap;
-    gap: 6px;
+    gap: 5px;
     min-width: 0;
   }
   .tf-root .chip {
-    padding: 6px 11px;
-    font-size: 13px;
+    min-height: 34px;
+    padding: 5px 9px;
+    font-size: 12.5px;
+    gap: 5px;
   }
   .tf-root .me {
-    max-width: 116px;
+    max-width: 114px;
     gap: 4px;
   }
-  /* Four shortcuts must stay clear of the Chat SACO button at the right edge on a 360px phone. */
+  /* Four shortcuts must stay clear of the Chat SACO button at the right edge on a 390px phone. */
   .tf-root .shortcuts {
     gap: 2px;
     padding: 3px;
-    left: 8px;
+    left: calc(8px + var(--safe-l));
+    bottom: calc(10px + var(--safe-b));
+    height: 50px;
   }
   .tf-root .shortcut {
-    min-width: 48px;
+    min-width: 52px;
+    height: 44px;
     padding: 2px 4px;
   }
   .tf-root .shortcut small {
     font-size: 10px;
   }
+  .tf-root .emote-wrap {
+    right: calc(8px + var(--safe-r));
+    bottom: calc(10px + var(--safe-b));
+  }
   .tf-root .hint {
-    bottom: calc(80px + var(--safe-b));
+    left: 50%;
+    bottom: calc(68px + var(--safe-b));
     min-height: 44px;
-    padding: 8px 10px 8px 16px;
-    font-size: 14px;
-    max-width: calc(100cqw - 74px);
+    padding: 8px 10px 8px 14px;
+    font-size: 13.5px;
+    gap: 8px;
+    max-width: calc(100cqw - 120px - var(--safe-l) - var(--safe-r));
   }
   .tf-root .quick-chat {
-    bottom: calc(134px + var(--safe-b));
-  }
-}
-@media (max-width: 480px) {
-  .tf-root .hint {
-    left: calc(50% + 22px);
-    max-width: calc(100cqw - 72px);
-  }
-  .tf-root .quick-chat {
-    left: 62px;
-    width: min(316px, calc(100cqw - 72px));
-    bottom: calc(134px + var(--safe-b));
+    left: calc(8px + var(--safe-l));
+    bottom: calc(122px + var(--safe-b));
+    width: min(310px, calc(100cqw - 74px - var(--safe-l) - var(--safe-r)));
   }
   .tf-root .quick-chat .qc-lines {
     font-size: 12px;
     line-height: 1.35;
   }
   .tf-root .quick-chat.open {
-    left: 10px;
-    bottom: calc(80px + var(--safe-b));
-    width: calc(100cqw - 20px);
+    left: calc(8px + var(--safe-l));
+    bottom: calc(68px + var(--safe-b));
+    width: calc(100cqw - 16px - var(--safe-l) - var(--safe-r));
+  }
+}
+@media (max-width: 480px) {
+  .tf-root .shortcut {
+    min-width: 48px;
   }
 }
 /* ---------- Thần Tài ---------- */
@@ -2441,7 +2509,7 @@
 }
 .tf-root .chat-pill {
   box-sizing: border-box;
-  height: 56px;
+  height: 54px;
   background: linear-gradient(180deg, #f6d27a, #d9a73a);
   color: #23170a;
   border: 0;
@@ -2468,18 +2536,19 @@
   background: var(--good);
   box-shadow: 0 0 8px var(--good);
 }
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .tf-root .pill {
-    padding: 5px;
+    padding: 4px;
     min-height: 0;
   }
   .tf-root .chat-pill {
-    width: 56px;
+    width: 50px;
+    height: 50px;
     justify-content: center;
   }
   .tf-root .chat-pill .pill-ico {
-    width: 46px;
-    height: 46px;
+    width: 42px;
+    height: 42px;
   }
   .tf-root .pill-label {
     display: none;
@@ -2590,11 +2659,14 @@
 /* ---------- Xả xui · Gáy · Tán lộc (FxBar.tsx) ---------- */
 .tf-root .fx-bar {
   position: absolute;
-  left: 12px;
-  bottom: calc(14px + 56px + 10px + var(--safe-b));
+  left: calc(12px + var(--safe-l));
+  bottom: calc(12px + 54px + 10px + var(--safe-b));
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.tf-root .fx-bar--expanded {
+  z-index: 17;
 }
 .tf-root .fx-btn {
   box-sizing: border-box;
@@ -2612,6 +2684,10 @@
   -webkit-backdrop-filter: blur(8px);
   color: var(--fg);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+}
+.tf-root .fx-btn.fx-toggle {
+  color: var(--accent-2);
+  border-color: rgba(227, 179, 65, 0.45);
 }
 .tf-root .fx-btn small {
   font-size: 11px;
@@ -2722,21 +2798,34 @@
 .tf-root .fx-go:disabled {
   opacity: 0.45;
 }
-@media (max-width: 480px) {
+@media (max-width: 640px), (max-height: 500px) {
   .tf-root .fx-bar {
-    left: 8px;
+    left: calc(8px + var(--safe-l));
+    bottom: calc(68px + var(--safe-b));
     gap: 6px;
   }
   .tf-root .fx-btn {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
   }
   .tf-root .fx-btn small {
     display: none;
   }
   .tf-root .fx-pop {
-    left: 54px;
-    width: min(300px, calc(100cqw - 70px));
+    left: 52px;
+    width: min(296px, calc(100cqw - 68px - var(--safe-l) - var(--safe-r)));
+  }
+}
+@media (max-height: 500px) {
+  .tf-root .fx-bar.fx-bar--expanded {
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+  .tf-root .fx-pop {
+    left: 0;
+    bottom: 52px;
+    width: min(300px, calc(100cqw - 24px - var(--safe-l) - var(--safe-r)));
   }
 }
 

@@ -6,6 +6,7 @@
 import type { ProjectedPoint } from "@/lib/chibi-3d/types.ts"
 
 import type { NameBadge } from "../net/types.ts"
+import { prefersReducedMotion } from "./reduced-motion.ts"
 import { liftTags, type TagBox } from "./tags.ts"
 
 export type NameplateKind = "self" | "peer" | "npc"
@@ -519,6 +520,8 @@ export class OverlayLayer {
       }
     }
 
+    const reducedMotion = prefersReducedMotion()
+
     // 3. Project & animate FX banners
     for (let i = this.banners.length - 1; i >= 0; i -= 1) {
       const b = this.banners[i]!
@@ -534,15 +537,16 @@ export class OverlayLayer {
         continue
       }
       const riseT = Math.min(1, age / 500)
-      const risePx = 22 * (1 - (1 - riseT) * (1 - riseT))
+      const risePx = reducedMotion ? 10 : 22 * (1 - (1 - riseT) * (1 - riseT))
       const alpha =
         age < 180
           ? age / 180
           : age > b.stayMs
             ? Math.max(0, 1 - (age - b.stayMs) / b.fadeMs)
             : 1
-      const popScale =
-        age < 140
+      const popScale = reducedMotion
+        ? 1
+        : age < 140
           ? 0.72 + (age / 140) * 0.34
           : age < 250
             ? 1.06 - ((age - 140) / 110) * 0.06
@@ -567,7 +571,7 @@ export class OverlayLayer {
         continue
       }
       const t = age / p.durationMs
-      const floatPx = 38 * (1 - (1 - t) * (1 - t))
+      const floatPx = reducedMotion ? 12 : 38 * (1 - (1 - t) * (1 - t))
       const alpha = t < 0.55 ? 1 : Math.max(0, 1 - (t - 0.55) / 0.45)
       p.el.style.display = "block"
       p.el.style.opacity = alpha.toFixed(3)

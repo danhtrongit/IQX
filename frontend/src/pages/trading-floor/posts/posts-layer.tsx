@@ -43,8 +43,13 @@ function PostsBoard({
   const top = posts.slice(0, BOARD_ROWS)
   const compact = useCompactScreen()
   // Trên điện thoại bảng mặc định thu gọn thành một dải tiêu đề để không che sàn; màn rộng mặc định mở.
-  // Chạm dải tiêu đề của bảng đang mở để thu lại như lúc đầu.
+  // Tự động thu gọn khi xoay/thu nhỏ màn hình sang điện thoại.
   const [expanded, setExpanded] = useState(!compact)
+  const [prevCompact, setPrevCompact] = useState(compact)
+  if (prevCompact !== compact) {
+    setPrevCompact(compact)
+    setExpanded(!compact)
+  }
   if (!expanded) {
     return (
       <button
@@ -113,9 +118,15 @@ function PostsBoard({
 function useCompactScreen(): boolean {
   const query = "(max-width: 640px)"
   const [compact, setCompact] = useState(
-    () => typeof window !== "undefined" && window.matchMedia(query).matches
+    () =>
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia(query).matches
   )
   useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return
+    }
     const media = window.matchMedia(query)
     const onChange = () => setCompact(media.matches)
     media.addEventListener("change", onChange)
