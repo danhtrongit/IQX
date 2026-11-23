@@ -4276,7 +4276,7 @@
     },
     {
       "file": "src/pages/notifications/api.ts",
-      "line": 62,
+      "line": 81,
       "callee": "api",
       "raw": "/me/notification-settings",
       "method": "GET",
@@ -4289,7 +4289,7 @@
     },
     {
       "file": "src/pages/notifications/api.ts",
-      "line": 66,
+      "line": 85,
       "callee": "api",
       "raw": "/me/notification-settings",
       "method": "PUT",
@@ -4302,7 +4302,7 @@
     },
     {
       "file": "src/pages/notifications/api.ts",
-      "line": 70,
+      "line": 89,
       "callee": "api",
       "raw": "/me/notifications?limit={NOTIFICATION_LIST_LIMIT}",
       "method": "GET",
@@ -4315,7 +4315,7 @@
     },
     {
       "file": "src/pages/notifications/api.ts",
-      "line": 74,
+      "line": 93,
       "callee": "api",
       "raw": "/me/notifications/unread-count",
       "method": "GET",
@@ -4328,7 +4328,7 @@
     },
     {
       "file": "src/pages/notifications/api.ts",
-      "line": 78,
+      "line": 97,
       "callee": "api",
       "raw": "/me/notifications/read",
       "method": "POST",
@@ -4341,7 +4341,7 @@
     },
     {
       "file": "src/pages/notifications/api.ts",
-      "line": 82,
+      "line": 101,
       "callee": "api",
       "raw": "/notifications/unsubscribe",
       "method": "POST",
@@ -4349,6 +4349,487 @@
       "matchedOperation": "POST /api/v2/notifications/unsubscribe",
       "matchedOperations": [
         "POST /api/v2/notifications/unsubscribe"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 71,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/me",
+      "method": "GET",
+      "route": "/api/v2/office/me",
+      "matchedOperation": "GET /api/v2/office/me",
+      "matchedOperations": [
+        "GET /api/v2/office/me"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 74,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/attendance/today",
+      "method": "GET",
+      "route": "/api/v2/office/attendance/today",
+      "matchedOperation": "GET /api/v2/office/attendance/today",
+      "matchedOperations": [
+        "GET /api/v2/office/attendance/today"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 77,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/attendance/check-in",
+      "method": "POST",
+      "route": "/api/v2/office/attendance/check-in",
+      "matchedOperation": "POST /api/v2/office/attendance/check-in",
+      "matchedOperations": [
+        "POST /api/v2/office/attendance/check-in"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 83,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/leaderboard",
+      "method": "GET",
+      "route": "/api/v2/office/leaderboard",
+      "matchedOperation": "GET /api/v2/office/leaderboard",
+      "matchedOperations": [
+        "GET /api/v2/office/leaderboard"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 92,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/tasks",
+      "method": "GET",
+      "route": "/api/v2/office/tasks",
+      "matchedOperation": "GET /api/v2/office/tasks",
+      "matchedOperations": [
+        "GET /api/v2/office/tasks"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 95,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/tasks/{id}/submit",
+      "method": "POST",
+      "route": "/api/v2/office/tasks/{id}/submit",
+      "matchedOperation": "POST /api/v2/office/tasks/{id}/submit",
+      "matchedOperations": [
+        "POST /api/v2/office/tasks/{id}/submit"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 103,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/assignments",
+      "method": "GET",
+      "route": "/api/v2/office/assignments",
+      "matchedOperation": "GET /api/v2/office/assignments",
+      "matchedOperations": [
+        "GET /api/v2/office/assignments"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 106,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/assignments",
+      "method": "POST",
+      "route": "/api/v2/office/assignments",
+      "matchedOperation": "POST /api/v2/office/assignments",
+      "matchedOperations": [
+        "POST /api/v2/office/assignments"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 112,
+      "callee": "requestOperation",
+      "raw": "PATCH /api/v2/office/assignments/{id}",
+      "method": "PATCH",
+      "route": "/api/v2/office/assignments/{id}",
+      "matchedOperation": "PATCH /api/v2/office/assignments/{id}",
+      "matchedOperations": [
+        "PATCH /api/v2/office/assignments/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 118,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/office/assignments/{id}",
+      "method": "DELETE",
+      "route": "/api/v2/office/assignments/{id}",
+      "matchedOperation": "DELETE /api/v2/office/assignments/{id}",
+      "matchedOperations": [
+        "DELETE /api/v2/office/assignments/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 123,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/review",
+      "method": "GET",
+      "route": "/api/v2/office/review",
+      "matchedOperation": "GET /api/v2/office/review",
+      "matchedOperations": [
+        "GET /api/v2/office/review"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 126,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/tasks/approve",
+      "method": "POST",
+      "route": "/api/v2/office/tasks/approve",
+      "matchedOperation": "POST /api/v2/office/tasks/approve",
+      "matchedOperations": [
+        "POST /api/v2/office/tasks/approve"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 129,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/tasks/{id}/return",
+      "method": "POST",
+      "route": "/api/v2/office/tasks/{id}/return",
+      "matchedOperation": "POST /api/v2/office/tasks/{id}/return",
+      "matchedOperations": [
+        "POST /api/v2/office/tasks/{id}/return"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 135,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/progress",
+      "method": "GET",
+      "route": "/api/v2/office/progress",
+      "matchedOperation": "GET /api/v2/office/progress",
+      "matchedOperations": [
+        "GET /api/v2/office/progress"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 140,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/proposals",
+      "method": "GET",
+      "route": "/api/v2/office/proposals",
+      "matchedOperation": "GET /api/v2/office/proposals",
+      "matchedOperations": [
+        "GET /api/v2/office/proposals"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 143,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/proposals",
+      "method": "POST",
+      "route": "/api/v2/office/proposals",
+      "matchedOperation": "POST /api/v2/office/proposals",
+      "matchedOperations": [
+        "POST /api/v2/office/proposals"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 146,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/proposals/team",
+      "method": "GET",
+      "route": "/api/v2/office/proposals/team",
+      "matchedOperation": "GET /api/v2/office/proposals/team",
+      "matchedOperations": [
+        "GET /api/v2/office/proposals/team"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 149,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/proposals/{id}/seen",
+      "method": "POST",
+      "route": "/api/v2/office/proposals/{id}/seen",
+      "matchedOperation": "POST /api/v2/office/proposals/{id}/seen",
+      "matchedOperations": [
+        "POST /api/v2/office/proposals/{id}/seen"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 154,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/proposals/{id}/reply",
+      "method": "POST",
+      "route": "/api/v2/office/proposals/{id}/reply",
+      "matchedOperation": "POST /api/v2/office/proposals/{id}/reply",
+      "matchedOperations": [
+        "POST /api/v2/office/proposals/{id}/reply"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 162,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/notes",
+      "method": "GET",
+      "route": "/api/v2/office/notes",
+      "matchedOperation": "GET /api/v2/office/notes",
+      "matchedOperations": [
+        "GET /api/v2/office/notes"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 167,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/notes",
+      "method": "POST",
+      "route": "/api/v2/office/notes",
+      "matchedOperation": "POST /api/v2/office/notes",
+      "matchedOperations": [
+        "POST /api/v2/office/notes"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 173,
+      "callee": "requestOperation",
+      "raw": "PATCH /api/v2/office/notes/{id}",
+      "method": "PATCH",
+      "route": "/api/v2/office/notes/{id}",
+      "matchedOperation": "PATCH /api/v2/office/notes/{id}",
+      "matchedOperations": [
+        "PATCH /api/v2/office/notes/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 179,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/office/notes/{id}",
+      "method": "DELETE",
+      "route": "/api/v2/office/notes/{id}",
+      "matchedOperation": "DELETE /api/v2/office/notes/{id}",
+      "matchedOperations": [
+        "DELETE /api/v2/office/notes/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 189,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/members",
+      "method": "GET",
+      "route": "/api/v2/office/members",
+      "matchedOperation": "GET /api/v2/office/members",
+      "matchedOperations": [
+        "GET /api/v2/office/members"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 199,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/members/{userId}",
+      "method": "GET",
+      "route": "/api/v2/office/members/{userId}",
+      "matchedOperation": "GET /api/v2/office/members/{userId}",
+      "matchedOperations": [
+        "GET /api/v2/office/members/{userId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 209,
+      "callee": "requestOperation",
+      "raw": "PATCH /api/v2/office/members/{userId}",
+      "method": "PATCH",
+      "route": "/api/v2/office/members/{userId}",
+      "matchedOperation": "PATCH /api/v2/office/members/{userId}",
+      "matchedOperations": [
+        "PATCH /api/v2/office/members/{userId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 218,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/members/{userId}/notes",
+      "method": "GET",
+      "route": "/api/v2/office/members/{userId}/notes",
+      "matchedOperation": "GET /api/v2/office/members/{userId}/notes",
+      "matchedOperations": [
+        "GET /api/v2/office/members/{userId}/notes"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 228,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/members/{userId}/notes",
+      "method": "POST",
+      "route": "/api/v2/office/members/{userId}/notes",
+      "matchedOperation": "POST /api/v2/office/members/{userId}/notes",
+      "matchedOperations": [
+        "POST /api/v2/office/members/{userId}/notes"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 237,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/office/members/{userId}/notes/{noteId}",
+      "method": "DELETE",
+      "route": "/api/v2/office/members/{userId}/notes/{noteId}",
+      "matchedOperation": "DELETE /api/v2/office/members/{userId}/notes/{noteId}",
+      "matchedOperations": [
+        "DELETE /api/v2/office/members/{userId}/notes/{noteId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 244,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/meetings",
+      "method": "GET",
+      "route": "/api/v2/office/meetings",
+      "matchedOperation": "GET /api/v2/office/meetings",
+      "matchedOperations": [
+        "GET /api/v2/office/meetings"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 247,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/meetings",
+      "method": "POST",
+      "route": "/api/v2/office/meetings",
+      "matchedOperation": "POST /api/v2/office/meetings",
+      "matchedOperations": [
+        "POST /api/v2/office/meetings"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 253,
+      "callee": "requestOperation",
+      "raw": "PATCH /api/v2/office/meetings/{id}",
+      "method": "PATCH",
+      "route": "/api/v2/office/meetings/{id}",
+      "matchedOperation": "PATCH /api/v2/office/meetings/{id}",
+      "matchedOperations": [
+        "PATCH /api/v2/office/meetings/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 259,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/office/meetings/{id}",
+      "method": "DELETE",
+      "route": "/api/v2/office/meetings/{id}",
+      "matchedOperation": "DELETE /api/v2/office/meetings/{id}",
+      "matchedOperations": [
+        "DELETE /api/v2/office/meetings/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 266,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/office/documents",
+      "method": "GET",
+      "route": "/api/v2/office/documents",
+      "matchedOperation": "GET /api/v2/office/documents",
+      "matchedOperations": [
+        "GET /api/v2/office/documents"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 276,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/office/documents",
+      "method": "POST",
+      "route": "/api/v2/office/documents",
+      "matchedOperation": "POST /api/v2/office/documents",
+      "matchedOperations": [
+        "POST /api/v2/office/documents"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 280,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/office/documents/{id}",
+      "method": "DELETE",
+      "route": "/api/v2/office/documents/{id}",
+      "matchedOperation": "DELETE /api/v2/office/documents/{id}",
+      "matchedOperations": [
+        "DELETE /api/v2/office/documents/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/office/api.ts",
+      "line": 289,
+      "callee": "requestOperationResponse",
+      "raw": "GET /api/v2/office/documents/{id}/download",
+      "method": "GET",
+      "route": "/api/v2/office/documents/{id}/download",
+      "matchedOperation": "GET /api/v2/office/documents/{id}/download",
+      "matchedOperations": [
+        "GET /api/v2/office/documents/{id}/download"
       ],
       "classification": "api-call"
     },
@@ -5189,17 +5670,6 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/trading-floor/engine/assets.ts",
-      "line": 63,
-      "callee": "fetch",
-      "raw": "{ASSET_ROOT}manifest.json",
-      "method": "GET",
-      "route": null,
-      "matchedOperation": null,
-      "matchedOperations": [],
-      "classification": "external-or-dynamic"
-    },
-    {
       "file": "src/pages/trading-floor/net/api.ts",
       "line": 65,
       "callee": "apiUpload",
@@ -5816,17 +6286,6 @@
       "matchedOperation": null,
       "matchedOperations": [],
       "classification": "asset-fetch"
-    },
-    {
-      "file": "src/pages/trading-floor/engine/assets.ts",
-      "line": 63,
-      "callee": "fetch",
-      "raw": "{ASSET_ROOT}manifest.json",
-      "method": "GET",
-      "route": null,
-      "matchedOperation": null,
-      "matchedOperations": [],
-      "classification": "external-or-dynamic"
     },
     {
       "file": "src/pages/trading-floor/net/api.ts",

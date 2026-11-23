@@ -9,12 +9,28 @@ import type {
   BulletinPublishedInput,
 } from './notification-writer.port.js';
 
-export const NOTIFICATION_TYPES = ['bulletin', 'bot_trades'] as const;
+export const OFFICE_NOTIFICATION_TYPES = [
+  'office_task_assigned',
+  'office_task_approved',
+  'office_task_returned',
+  'office_task_submitted',
+  'office_proposal_sent',
+  'office_proposal_replied',
+] as const;
+export type OfficeNotificationType = (typeof OFFICE_NOTIFICATION_TYPES)[number];
+
+export const NOTIFICATION_TYPES = ['bulletin', 'bot_trades', ...OFFICE_NOTIFICATION_TYPES] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
 export const NOTIFICATION_TYPE_LABEL: Record<NotificationType, string> = {
   bulletin: 'Bản tin cuối phiên',
   bot_trades: 'Bot giao dịch',
+  office_task_assigned: 'Văn phòng · Nhiệm vụ mới',
+  office_task_approved: 'Văn phòng · Duyệt nhiệm vụ',
+  office_task_returned: 'Văn phòng · Trả lại nhiệm vụ',
+  office_task_submitted: 'Văn phòng · Chờ xác nhận',
+  office_proposal_sent: 'Văn phòng · Đề xuất mới',
+  office_proposal_replied: 'Văn phòng · Trả lời đề xuất',
 };
 
 /** Chỗ đặt link "Tắt thông báo này"; dispatcher thay bằng URL có token khi gửi. */

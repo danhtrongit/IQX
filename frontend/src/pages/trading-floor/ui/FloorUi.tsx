@@ -13,7 +13,7 @@ import { useThanTaiAutoOpen } from "./than-tai/use-auto-open.ts"
 
 const noop = (): void => undefined
 
-/** Everything HTML that sits over the Phaser canvas: HUD, sheets, overlays, toasts. */
+/** Everything HTML that sits over the Three.js 3D canvas: HUD, sheets, overlays, toasts. */
 export function FloorUi({ suggestedName }: { suggestedName: string }) {
   const profile = useStore(ui.profile)
   const panel = useStore(ui.panel)

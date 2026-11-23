@@ -37,9 +37,13 @@ import { TradingModule } from '../modules/trading/trading.module.js';
 import { TradingRightsService } from '../modules/trading/rights.service.js';
 import { ResearchDailyJob, ResearchModule } from '../modules/research/index.js';
 import { FlashbackJob } from '../modules/flashback/flashback.job.js';
-import { FlashbackDatasetJob, requestedByFromJobId } from '../modules/flashback/flashback-dataset.job.js';
+import {
+  FlashbackDatasetJob,
+  requestedByFromJobId,
+} from '../modules/flashback/flashback-dataset.job.js';
 import { FlashbackRoomsJob } from '../modules/flashback/flashback-rooms.job.js';
 import { FlashbackModule } from '../modules/flashback/flashback.module.js';
+import { OfficeCronService, OfficeJobsModule } from '../modules/office/index.js';
 import {
   RuntimeModule,
   type JobOutcome,
@@ -114,6 +118,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly marketBulletins?: MarketBulletinsJob,
     private readonly emailDispatcher?: NotificationEmailDispatcher,
     private readonly priceStore?: PriceStoreService,
+    private readonly officeCron?: OfficeCronService,
   ) {}
 
   handlers(): RuntimeJobHandlers {
@@ -171,7 +176,10 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
         }
         // A failed fetch must surface as a failed job; the Bot run retries once for today.
         if (result.status === 'unavailable') throw new Error(result.reason);
-        return this.complete({ ...result, baskets: await this.captureScreenerBaskets(ictDate(scheduledFor)) });
+        return this.complete({
+          ...result,
+          baskets: await this.captureScreenerBaskets(ictDate(scheduledFor)),
+        });
       },
       'market.daily-bars': async ({ scheduledFor }) => {
         if (!this.dailyBars) return { status: 'skipped', reason: 'daily-bars-unavailable' };
@@ -190,7 +198,8 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
           : this.complete(outcome);
       },
       'market.bulletin-draft': async ({ scheduledFor }) => {
-        if (!this.marketBulletins) return { status: 'skipped', reason: 'market-bulletins-unavailable' };
+        if (!this.marketBulletins)
+          return { status: 'skipped', reason: 'market-bulletins-unavailable' };
         return this.marketBulletins.run(scheduledFor);
       },
       'bot.session-eod': async ({ scheduledFor }) => {
@@ -221,7 +230,9 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
           return { status: 'skipped', reason: 'up-to-date', detail };
         }
         if (result.status === 'failed') {
-          throw new Error(`price-store refresh failed: ${JSON.stringify(result.failed.slice(0, 5))}`);
+          throw new Error(
+            `price-store refresh failed: ${JSON.stringify(result.failed.slice(0, 5))}`,
+          );
         }
         return { status: 'completed', detail };
       },
@@ -244,6 +255,22 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
         this.snapshotWave(2, ictDate(scheduledFor)),
       'market.snapshot-wave-3': async ({ scheduledFor }) =>
         this.snapshotWave(3, ictDate(scheduledFor)),
+      'office.expire-daily': async ({ scheduledFor }) => {
+        if (!this.officeCron) return { status: 'skipped', reason: 'office-cron-unavailable' };
+        return this.officeCron.expireDaily(scheduledFor);
+      },
+      'office.spawn-daily-repeats': async ({ scheduledFor }) => {
+        if (!this.officeCron) return { status: 'skipped', reason: 'office-cron-unavailable' };
+        return this.officeCron.spawnDailyRepeats(scheduledFor);
+      },
+      'office.monthly-rollover': async ({ scheduledFor }) => {
+        if (!this.officeCron) return { status: 'skipped', reason: 'office-cron-unavailable' };
+        return this.officeCron.monthlyRollover(scheduledFor);
+      },
+      'office.lock-attendance': async ({ scheduledFor }) => {
+        if (!this.officeCron) return { status: 'skipped', reason: 'office-cron-unavailable' };
+        return this.officeCron.lockAttendance(scheduledFor);
+      },
     };
   }
 
@@ -644,6 +671,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     MarketBulletinsModule,
     UserNotificationsModule,
     PriceStoreModule,
+    OfficeJobsModule,
   ],
   providers: [DomainRuntimeJobs],
   exports: [DomainRuntimeJobs],

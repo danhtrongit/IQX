@@ -56,7 +56,8 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     },
     {
       name: 'reports.premarket',
-      description: 'Generate the pre-market report (retired by Bản tin v4: off unless JOB_REPORTS_PREMARKET_ENABLED=true)',
+      description:
+        'Generate the pre-market report (retired by Bản tin v4: off unless JOB_REPORTS_PREMARKET_ENABLED=true)',
       everyMs: 900_000,
       tradingDay: true,
       enabled: enabled('reports.premarket', false),
@@ -84,7 +85,8 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     },
     {
       name: 'reports.midday',
-      description: 'Generate the midday report (retired by Bản tin v4: off unless JOB_REPORTS_MIDDAY_ENABLED=true)',
+      description:
+        'Generate the midday report (retired by Bản tin v4: off unless JOB_REPORTS_MIDDAY_ENABLED=true)',
       everyMs: 900_000,
       tradingDay: true,
       enabled: enabled('reports.midday', false),
@@ -210,8 +212,7 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     },
     {
       name: 'flashback.rooms-sweep',
-      description:
-        'Flashback v2 Phòng chơi: chốt ván hết giờ, trả xu, đóng phòng chờ quá 30 phút',
+      description: 'Flashback v2 Phòng chơi: chốt ván hết giờ, trả xu, đóng phòng chờ quá 30 phút',
       everyMs: 15_000,
       tradingDay: false,
       enabled: enabled('flashback.rooms-sweep'),
@@ -223,6 +224,38 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       pattern: '0 15 3 * * *',
       tradingDay: false,
       enabled: enabled('flashback.dataset-refresh'),
+    },
+    {
+      name: 'office.expire-daily',
+      description:
+        'Khu Văn phòng: 00:00 hằng ngày chuyển nhiệm vụ ngày hôm trước chưa duyệt sang expired và dọn thông báo văn phòng quá 30 ngày',
+      pattern: '0 0 0 * * *',
+      tradingDay: false,
+      enabled: enabled('office.expire-daily'),
+    },
+    {
+      name: 'office.spawn-daily-repeats',
+      description:
+        'Khu Văn phòng: 00:01 Thứ Hai – Thứ Sáu tạo bản nhiệm vụ ngày lặp lại (bỏ qua ngày lễ Việt Nam)',
+      pattern: '0 1 0 * * 1-5',
+      tradingDay: false,
+      enabled: enabled('office.spawn-daily-repeats'),
+    },
+    {
+      name: 'office.monthly-rollover',
+      description:
+        'Khu Văn phòng: 00:00 ngày 1 hằng tháng hết hạn nhiệm vụ tháng và KPI chưa duyệt của tháng trước',
+      pattern: '0 0 0 1 * *',
+      tradingDay: false,
+      enabled: enabled('office.monthly-rollover'),
+    },
+    {
+      name: 'office.lock-attendance',
+      description:
+        'Khu Văn phòng: 12:00 Thứ Hai – Thứ Sáu phát đồng bộ khoá điểm danh trong ngày tới các văn phòng trực tuyến',
+      pattern: '0 0 12 * * 1-5',
+      tradingDay: false,
+      enabled: enabled('office.lock-attendance'),
     },
   ];
 }

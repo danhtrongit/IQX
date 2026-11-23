@@ -27,6 +27,10 @@ export const RUNTIME_JOB_NAMES = [
   'flashback.dataset-refresh',
   'strategy.price-store-refresh',
   'notifications.email-dispatch',
+  'office.expire-daily',
+  'office.spawn-daily-repeats',
+  'office.monthly-rollover',
+  'office.lock-attendance',
 ] as const;
 
 export type RuntimeJobName = (typeof RUNTIME_JOB_NAMES)[number];

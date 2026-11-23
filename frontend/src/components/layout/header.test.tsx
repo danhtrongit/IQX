@@ -60,6 +60,7 @@ const SHARED_NAV = [
   ["Flashback", "/flashback?tool=flashback"],
   ["Chiến lược", "/chien-luoc"],
   ["Khu giao dịch", "/khu-giao-dich"],
+  ["Văn phòng", "/van-phong"],
 ] as const
 
 describe("Header", () => {
@@ -235,5 +236,23 @@ describe("Header", () => {
     expect(logoMark).toBeTruthy()
     const logoImg = logoMark.querySelector("img")
     expect(logoImg?.getAttribute("src")).toContain("logo-mark")
+  })
+
+  it("skips the global 'd' theme shortcut while a 3D WASD world is mounted", async () => {
+    const user = userEvent.setup()
+    const worldRoot = document.createElement("div")
+    worldRoot.setAttribute("data-wasd-world", "true")
+    document.body.appendChild(worldRoot)
+    try {
+      renderHeader("/khu-giao-dich")
+      const header = screen.getByRole("banner")
+      expect(within(header).getByRole("button", { name: "Chế độ sáng" })).toBeTruthy()
+      await user.keyboard("d")
+      expect(within(header).getByRole("button", { name: "Chế độ sáng" })).toBeTruthy()
+    } finally {
+      worldRoot.remove()
+    }
+    await user.keyboard("d")
+    expect(within(screen.getByRole("banner")).getByRole("button", { name: "Chế độ tối" })).toBeTruthy()
   })
 })

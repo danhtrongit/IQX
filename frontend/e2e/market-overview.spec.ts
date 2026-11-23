@@ -3,6 +3,7 @@
  * covering all Specification §4.5 acceptance criteria in real Chromium.
  */
 import { mkdirSync } from "node:fs"
+import os from "node:os"
 import path from "node:path"
 
 import type { Locator, Page } from "@playwright/test"
@@ -13,7 +14,8 @@ import { json, mockMember } from "./u1911-support"
 test.describe.configure({ timeout: 90_000 })
 
 const SCREENSHOT_DIR =
-  "/Users/danhtrongit/.gemini/antigravity/brain/3e8611d0-9c4a-4248-a01d-18f5ef46da39/scratch/e2e_screenshots"
+  process.env.E2E_SCREENSHOT_DIR ||
+  path.join(os.tmpdir(), "iqx-market-overview-screenshots")
 mkdirSync(SCREENSHOT_DIR, { recursive: true })
 
 type WidgetSlug =

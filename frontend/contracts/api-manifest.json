@@ -52,6 +52,31 @@
       "requestType": "DeleteChartDrawingV2Data",
       "responseType": "DeleteChartDrawingV2Responses"
     },
+    "DELETE /api/v2/office/assignments/{id}": {
+      "operationId": "officeDeleteAssignment",
+      "requestType": "OfficeDeleteAssignmentData",
+      "responseType": "OfficeDeleteAssignmentResponses"
+    },
+    "DELETE /api/v2/office/documents/{id}": {
+      "operationId": "officeDeleteDocument",
+      "requestType": "OfficeDeleteDocumentData",
+      "responseType": "OfficeDeleteDocumentResponses"
+    },
+    "DELETE /api/v2/office/meetings/{id}": {
+      "operationId": "officeDeleteMeeting",
+      "requestType": "OfficeDeleteMeetingData",
+      "responseType": "OfficeDeleteMeetingResponses"
+    },
+    "DELETE /api/v2/office/members/{userId}/notes/{noteId}": {
+      "operationId": "officeDeleteMemberNote",
+      "requestType": "OfficeDeleteMemberNoteData",
+      "responseType": "OfficeDeleteMemberNoteResponses"
+    },
+    "DELETE /api/v2/office/notes/{id}": {
+      "operationId": "officeDeleteStickyNote",
+      "requestType": "OfficeDeleteStickyNoteData",
+      "responseType": "OfficeDeleteStickyNoteResponses"
+    },
     "DELETE /api/v2/premium/admin/plans/{plan_id}": {
       "operationId": "adminDeletePremiumPlan_delete_api_v2_premium_admin_plans_plan_id",
       "requestType": "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData",
@@ -1357,6 +1382,86 @@
       "requestType": "MediaControllerDownloadData",
       "responseType": "MediaControllerDownloadResponses"
     },
+    "GET /api/v2/office/assignments": {
+      "operationId": "officeListAssignments",
+      "requestType": "OfficeListAssignmentsData",
+      "responseType": "OfficeListAssignmentsResponses"
+    },
+    "GET /api/v2/office/attendance/today": {
+      "operationId": "officeAttendanceToday",
+      "requestType": "OfficeAttendanceTodayData",
+      "responseType": "OfficeAttendanceTodayResponses"
+    },
+    "GET /api/v2/office/documents": {
+      "operationId": "officeListDocuments",
+      "requestType": "OfficeListDocumentsData",
+      "responseType": "OfficeListDocumentsResponses"
+    },
+    "GET /api/v2/office/documents/{id}/download": {
+      "operationId": "officeDownloadDocument",
+      "requestType": "OfficeDownloadDocumentData",
+      "responseType": "OfficeDownloadDocumentResponses"
+    },
+    "GET /api/v2/office/leaderboard": {
+      "operationId": "officeLeaderboard",
+      "requestType": "OfficeLeaderboardData",
+      "responseType": "OfficeLeaderboardResponses"
+    },
+    "GET /api/v2/office/me": {
+      "operationId": "officeMe",
+      "requestType": "OfficeMeData",
+      "responseType": "OfficeMeResponses"
+    },
+    "GET /api/v2/office/meetings": {
+      "operationId": "officeListMeetings",
+      "requestType": "OfficeListMeetingsData",
+      "responseType": "OfficeListMeetingsResponses"
+    },
+    "GET /api/v2/office/members": {
+      "operationId": "officeListMembers",
+      "requestType": "OfficeListMembersData",
+      "responseType": "OfficeListMembersResponses"
+    },
+    "GET /api/v2/office/members/{userId}": {
+      "operationId": "officeGetMemberProfile",
+      "requestType": "OfficeGetMemberProfileData",
+      "responseType": "OfficeGetMemberProfileResponses"
+    },
+    "GET /api/v2/office/members/{userId}/notes": {
+      "operationId": "officeListMemberNotes",
+      "requestType": "OfficeListMemberNotesData",
+      "responseType": "OfficeListMemberNotesResponses"
+    },
+    "GET /api/v2/office/notes": {
+      "operationId": "officeListStickyNotes",
+      "requestType": "OfficeListStickyNotesData",
+      "responseType": "OfficeListStickyNotesResponses"
+    },
+    "GET /api/v2/office/progress": {
+      "operationId": "officeProgress",
+      "requestType": "OfficeProgressData",
+      "responseType": "OfficeProgressResponses"
+    },
+    "GET /api/v2/office/proposals": {
+      "operationId": "officeListMyProposals",
+      "requestType": "OfficeListMyProposalsData",
+      "responseType": "OfficeListMyProposalsResponses"
+    },
+    "GET /api/v2/office/proposals/team": {
+      "operationId": "officeListTeamProposals",
+      "requestType": "OfficeListTeamProposalsData",
+      "responseType": "OfficeListTeamProposalsResponses"
+    },
+    "GET /api/v2/office/review": {
+      "operationId": "officeListReview",
+      "requestType": "OfficeListReviewData",
+      "responseType": "OfficeListReviewResponses"
+    },
+    "GET /api/v2/office/tasks": {
+      "operationId": "officeListMyTasks",
+      "requestType": "OfficeListMyTasksData",
+      "responseType": "OfficeListMyTasksResponses"
+    },
     "GET /api/v2/portfolio-manager/report": {
       "operationId": "getPortfolioReportV2",
       "requestType": "GetPortfolioReportV2Data",
@@ -1826,6 +1931,26 @@
       "operationId": "setCap8DynamicStopV2",
       "requestType": "SetCap8DynamicStopV2Data",
       "responseType": "SetCap8DynamicStopV2Responses"
+    },
+    "PATCH /api/v2/office/assignments/{id}": {
+      "operationId": "officeUpdateAssignment",
+      "requestType": "OfficeUpdateAssignmentData",
+      "responseType": "OfficeUpdateAssignmentResponses"
+    },
+    "PATCH /api/v2/office/meetings/{id}": {
+      "operationId": "officeUpdateMeeting",
+      "requestType": "OfficeUpdateMeetingData",
+      "responseType": "OfficeUpdateMeetingResponses"
+    },
+    "PATCH /api/v2/office/members/{userId}": {
+      "operationId": "officeUpdateMemberProfile",
+      "requestType": "OfficeUpdateMemberProfileData",
+      "responseType": "OfficeUpdateMemberProfileResponses"
+    },
+    "PATCH /api/v2/office/notes/{id}": {
+      "operationId": "officeUpdateStickyNote",
+      "requestType": "OfficeUpdateStickyNoteData",
+      "responseType": "OfficeUpdateStickyNoteResponses"
     },
     "PATCH /api/v2/premium/admin/plans/{plan_id}": {
       "operationId": "adminUpdatePremiumPlan_patch_api_v2_premium_admin_plans_plan_id",
@@ -2576,6 +2701,66 @@
       "operationId": "notificationUnsubscribe",
       "requestType": "NotificationUnsubscribeData",
       "responseType": "NotificationUnsubscribeResponses"
+    },
+    "POST /api/v2/office/assignments": {
+      "operationId": "officeCreateAssignment",
+      "requestType": "OfficeCreateAssignmentData",
+      "responseType": "OfficeCreateAssignmentResponses"
+    },
+    "POST /api/v2/office/attendance/check-in": {
+      "operationId": "officeAttendanceCheckIn",
+      "requestType": "OfficeAttendanceCheckInData",
+      "responseType": "OfficeAttendanceCheckInResponses"
+    },
+    "POST /api/v2/office/documents": {
+      "operationId": "officeUploadDocument",
+      "requestType": "OfficeUploadDocumentData",
+      "responseType": "OfficeUploadDocumentResponses"
+    },
+    "POST /api/v2/office/meetings": {
+      "operationId": "officeCreateMeeting",
+      "requestType": "OfficeCreateMeetingData",
+      "responseType": "OfficeCreateMeetingResponses"
+    },
+    "POST /api/v2/office/members/{userId}/notes": {
+      "operationId": "officeCreateMemberNote",
+      "requestType": "OfficeCreateMemberNoteData",
+      "responseType": "OfficeCreateMemberNoteResponses"
+    },
+    "POST /api/v2/office/notes": {
+      "operationId": "officeCreateStickyNote",
+      "requestType": "OfficeCreateStickyNoteData",
+      "responseType": "OfficeCreateStickyNoteResponses"
+    },
+    "POST /api/v2/office/proposals": {
+      "operationId": "officeCreateProposal",
+      "requestType": "OfficeCreateProposalData",
+      "responseType": "OfficeCreateProposalResponses"
+    },
+    "POST /api/v2/office/proposals/{id}/reply": {
+      "operationId": "officeReplyProposal",
+      "requestType": "OfficeReplyProposalData",
+      "responseType": "OfficeReplyProposalResponses"
+    },
+    "POST /api/v2/office/proposals/{id}/seen": {
+      "operationId": "officeMarkProposalSeen",
+      "requestType": "OfficeMarkProposalSeenData",
+      "responseType": "OfficeMarkProposalSeenResponses"
+    },
+    "POST /api/v2/office/tasks/{id}/return": {
+      "operationId": "officeReturnTask",
+      "requestType": "OfficeReturnTaskData",
+      "responseType": "OfficeReturnTaskResponses"
+    },
+    "POST /api/v2/office/tasks/{id}/submit": {
+      "operationId": "officeSubmitTask",
+      "requestType": "OfficeSubmitTaskData",
+      "responseType": "OfficeSubmitTaskResponses"
+    },
+    "POST /api/v2/office/tasks/approve": {
+      "operationId": "officeApproveTasks",
+      "requestType": "OfficeApproveTasksData",
+      "responseType": "OfficeApproveTasksResponses"
     },
     "POST /api/v2/portfolio-manager/analyze": {
       "operationId": "analyzePortfolioV2",

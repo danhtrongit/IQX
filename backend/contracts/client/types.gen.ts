@@ -52882,7 +52882,15 @@ export type NotificationListResponses = {
       read_at: string | null;
       title: string;
       trade_date: string;
-      type: "bulletin" | "bot_trades";
+      type:
+        | "bulletin"
+        | "bot_trades"
+        | "office_task_assigned"
+        | "office_task_approved"
+        | "office_task_returned"
+        | "office_task_submitted"
+        | "office_proposal_sent"
+        | "office_proposal_replied";
     }>;
     unread_count: number;
   };
@@ -53061,12 +53069,2172 @@ export type NotificationUnsubscribeError =
 export type NotificationUnsubscribeResponses = {
   200: {
     status: "unsubscribed" | "already_used";
-    type: "bulletin" | "bot_trades";
+    type:
+      | "bulletin"
+      | "bot_trades"
+      | "office_task_assigned"
+      | "office_task_approved"
+      | "office_task_returned"
+      | "office_task_submitted"
+      | "office_proposal_sent"
+      | "office_proposal_replied";
   };
 };
 
 export type NotificationUnsubscribeResponse =
   NotificationUnsubscribeResponses[keyof NotificationUnsubscribeResponses];
+
+export type OfficeListAssignmentsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/assignments";
+};
+
+export type OfficeListAssignmentsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListAssignmentsError =
+  OfficeListAssignmentsErrors[keyof OfficeListAssignmentsErrors];
+
+export type OfficeListAssignmentsResponses = {
+  200: {
+    items: Array<{
+      activeCount: number;
+      createdAt: string;
+      doneCount: number;
+      dueDate: string | null;
+      id: string;
+      isAllTeam: boolean;
+      kind: "day" | "month" | "kpi";
+      periodMonth: string;
+      points: number;
+      repeatDaily: boolean;
+      targetCount: number;
+      targetUserIds: Array<string>;
+      title: string;
+    }>;
+  };
+};
+
+export type OfficeListAssignmentsResponse =
+  OfficeListAssignmentsResponses[keyof OfficeListAssignmentsResponses];
+
+export type OfficeCreateAssignmentData = {
+  body: {
+    dueDate?: string | null;
+    kind: "day" | "month" | "kpi";
+    points: number;
+    repeatDaily?: boolean;
+    title: string;
+    userIds: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/assignments";
+};
+
+export type OfficeCreateAssignmentErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeCreateAssignmentError =
+  OfficeCreateAssignmentErrors[keyof OfficeCreateAssignmentErrors];
+
+export type OfficeCreateAssignmentResponses = {
+  200: {
+    activeCount: number;
+    createdAt: string;
+    doneCount: number;
+    dueDate: string | null;
+    id: string;
+    isAllTeam: boolean;
+    kind: "day" | "month" | "kpi";
+    periodMonth: string;
+    points: number;
+    repeatDaily: boolean;
+    targetCount: number;
+    targetUserIds: Array<string>;
+    title: string;
+  };
+};
+
+export type OfficeCreateAssignmentResponse =
+  OfficeCreateAssignmentResponses[keyof OfficeCreateAssignmentResponses];
+
+export type OfficeDeleteAssignmentData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/assignments/{id}";
+};
+
+export type OfficeDeleteAssignmentErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeDeleteAssignmentError =
+  OfficeDeleteAssignmentErrors[keyof OfficeDeleteAssignmentErrors];
+
+export type OfficeDeleteAssignmentResponses = {
+  200: {
+    deletedTaskCount: number;
+    ok: true;
+    retainedDoneCount: number;
+  };
+};
+
+export type OfficeDeleteAssignmentResponse =
+  OfficeDeleteAssignmentResponses[keyof OfficeDeleteAssignmentResponses];
+
+export type OfficeUpdateAssignmentData = {
+  body: {
+    dueDate?: string | null;
+    points?: number;
+    repeatDaily?: boolean;
+    title?: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/assignments/{id}";
+};
+
+export type OfficeUpdateAssignmentErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeUpdateAssignmentError =
+  OfficeUpdateAssignmentErrors[keyof OfficeUpdateAssignmentErrors];
+
+export type OfficeUpdateAssignmentResponses = {
+  200: {
+    activeCount: number;
+    createdAt: string;
+    doneCount: number;
+    dueDate: string | null;
+    id: string;
+    isAllTeam: boolean;
+    kind: "day" | "month" | "kpi";
+    periodMonth: string;
+    points: number;
+    repeatDaily: boolean;
+    targetCount: number;
+    targetUserIds: Array<string>;
+    title: string;
+  };
+};
+
+export type OfficeUpdateAssignmentResponse =
+  OfficeUpdateAssignmentResponses[keyof OfficeUpdateAssignmentResponses];
+
+export type OfficeAttendanceCheckInData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/attendance/check-in";
+};
+
+export type OfficeAttendanceCheckInErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeAttendanceCheckInError =
+  OfficeAttendanceCheckInErrors[keyof OfficeAttendanceCheckInErrors];
+
+export type OfficeAttendanceCheckInResponses = {
+  200: {
+    checkedInAt: string;
+    status: "ok" | "late";
+    timeLabel: string;
+    workDate: string;
+  };
+};
+
+export type OfficeAttendanceCheckInResponse =
+  OfficeAttendanceCheckInResponses[keyof OfficeAttendanceCheckInResponses];
+
+export type OfficeAttendanceTodayData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/attendance/today";
+};
+
+export type OfficeAttendanceTodayErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeAttendanceTodayError =
+  OfficeAttendanceTodayErrors[keyof OfficeAttendanceTodayErrors];
+
+export type OfficeAttendanceTodayResponses = {
+  200: {
+    counts: {
+      absent: number;
+      late: number;
+      ok: number;
+      total: number;
+    };
+    cutoffs: {
+      lock: string;
+      onTime: string;
+    };
+    isLocked: boolean;
+    isWorkday: boolean;
+    myCheckedInAt: string | null;
+    myStatus: "ok" | "late" | "absent";
+    roster: {
+      absent: Array<{
+        accentColor: string;
+        checkedInAt: string | null;
+        displayName: string;
+        isSelf: boolean;
+        status: "ok" | "late" | "absent";
+        timeLabel: string | null;
+        userId: string;
+      }>;
+      late: Array<{
+        accentColor: string;
+        checkedInAt: string | null;
+        displayName: string;
+        isSelf: boolean;
+        status: "ok" | "late" | "absent";
+        timeLabel: string | null;
+        userId: string;
+      }>;
+      ok: Array<{
+        accentColor: string;
+        checkedInAt: string | null;
+        displayName: string;
+        isSelf: boolean;
+        status: "ok" | "late" | "absent";
+        timeLabel: string | null;
+        userId: string;
+      }>;
+    };
+    showDotsForAll: boolean;
+    workDate: string;
+  };
+};
+
+export type OfficeAttendanceTodayResponse =
+  OfficeAttendanceTodayResponses[keyof OfficeAttendanceTodayResponses];
+
+export type OfficeListDocumentsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/documents";
+};
+
+export type OfficeListDocumentsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListDocumentsError =
+  OfficeListDocumentsErrors[keyof OfficeListDocumentsErrors];
+
+export type OfficeListDocumentsResponses = {
+  200: {
+    allowedExts: Array<"pdf" | "docx" | "xlsx" | "pptx" | "png" | "jpg">;
+    items: Array<{
+      createdAt: string;
+      downloadUrl: string;
+      fileExt: string;
+      fileName: string;
+      id: string;
+      mimeType: string;
+      sizeBytes: number;
+      title: string;
+    }>;
+    maxSizeBytes: number;
+  };
+};
+
+export type OfficeListDocumentsResponse =
+  OfficeListDocumentsResponses[keyof OfficeListDocumentsResponses];
+
+export type OfficeUploadDocumentData = {
+  body: {
+    file: Blob | File;
+    title?: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/documents";
+};
+
+export type OfficeUploadDocumentErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeUploadDocumentError =
+  OfficeUploadDocumentErrors[keyof OfficeUploadDocumentErrors];
+
+export type OfficeUploadDocumentResponses = {
+  200: {
+    createdAt: string;
+    downloadUrl: string;
+    fileExt: string;
+    fileName: string;
+    id: string;
+    mimeType: string;
+    sizeBytes: number;
+    title: string;
+  };
+};
+
+export type OfficeUploadDocumentResponse =
+  OfficeUploadDocumentResponses[keyof OfficeUploadDocumentResponses];
+
+export type OfficeDeleteDocumentData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/documents/{id}";
+};
+
+export type OfficeDeleteDocumentErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeDeleteDocumentError =
+  OfficeDeleteDocumentErrors[keyof OfficeDeleteDocumentErrors];
+
+export type OfficeDeleteDocumentResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type OfficeDeleteDocumentResponse =
+  OfficeDeleteDocumentResponses[keyof OfficeDeleteDocumentResponses];
+
+export type OfficeDownloadDocumentData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query: {
+    token: string;
+  };
+  url: "/api/v2/office/documents/{id}/download";
+};
+
+export type OfficeDownloadDocumentErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeDownloadDocumentError =
+  OfficeDownloadDocumentErrors[keyof OfficeDownloadDocumentErrors];
+
+export type OfficeDownloadDocumentResponses = {
+  /**
+   * Nội dung tệp tài liệu văn phòng
+   */
+  200: Blob | File;
+};
+
+export type OfficeDownloadDocumentResponse =
+  OfficeDownloadDocumentResponses[keyof OfficeDownloadDocumentResponses];
+
+export type OfficeLeaderboardData = {
+  body?: never;
+  path?: never;
+  query?: {
+    period?: string;
+  };
+  url: "/api/v2/office/leaderboard";
+};
+
+export type OfficeLeaderboardErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeLeaderboardError =
+  OfficeLeaderboardErrors[keyof OfficeLeaderboardErrors];
+
+export type OfficeLeaderboardResponses = {
+  200: {
+    bossName: string;
+    monthNumber: number;
+    myRank: {
+      points: number;
+      rank: number | null;
+    } | null;
+    nextResetDate: string;
+    nextResetLabel: string;
+    periodMonth: string;
+    teamName: string;
+    top3: Array<{
+      accentColor: string;
+      displayName: string;
+      points: number;
+      rank: number;
+      reachedAt: string;
+      userId: string;
+    }>;
+    totalRanked: number;
+  };
+};
+
+export type OfficeLeaderboardResponse =
+  OfficeLeaderboardResponses[keyof OfficeLeaderboardResponses];
+
+export type OfficeMeData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/me";
+};
+
+export type OfficeMeErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeMeError = OfficeMeErrors[keyof OfficeMeErrors];
+
+export type OfficeMeResponses = {
+  200: {
+    cutoffs: {
+      lock: string;
+      onTime: string;
+    };
+    hud:
+      | {
+          kind: "boss";
+          latestStaffName: string | null;
+          newProposalsCount: number;
+          pendingCount: number;
+          staffCount: number;
+          todayDoneCount: number;
+          todayTotalCount: number;
+        }
+      | {
+          kind: "staff";
+          monthlyPoints: number;
+          myAttendanceStatus: "ok" | "late" | "absent";
+          myCheckedInAt: string | null;
+          pendingCount: number;
+          returnedCount: number;
+          todayDoneCount: number;
+          todayTotalCount: number;
+        }
+      | null;
+    isAttendanceLocked: boolean;
+    isWorkday: boolean;
+    member: boolean;
+    members: Array<{
+      accentColor: string;
+      avatar: string | null;
+      avatarColor: string | null;
+      deskIndex: number | null;
+      displayName: string;
+      id: string;
+      online: boolean;
+      role: "boss" | "staff";
+      userId: string;
+    }>;
+    onlineCount: number;
+    onlineUserIds: Array<string>;
+    periodMonth: string;
+    role: "boss" | "staff" | "none";
+    self: {
+      accentColor: string;
+      avatar: string | null;
+      avatarColor: string | null;
+      deskIndex: number | null;
+      displayName: string;
+      id: string;
+      online: boolean;
+      role: "boss" | "staff";
+      userId: string;
+    } | null;
+    serverTime: string;
+    team: {
+      bossName: string;
+      bossUserId: string;
+      checkinLockCutoff: string;
+      checkinOnTimeCutoff: string;
+      id: string;
+      name: string;
+    } | null;
+    todayDate: string;
+  };
+};
+
+export type OfficeMeResponse = OfficeMeResponses[keyof OfficeMeResponses];
+
+export type OfficeListMeetingsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/meetings";
+};
+
+export type OfficeListMeetingsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListMeetingsError =
+  OfficeListMeetingsErrors[keyof OfficeListMeetingsErrors];
+
+export type OfficeListMeetingsResponses = {
+  200: {
+    nextWallMeeting: {
+      agenda: Array<string>;
+      createdAt: string;
+      durationMinutes: number;
+      id: string;
+      meetingUrl: string;
+      platform: string;
+      recurrenceWeekly: boolean;
+      startsAt: string;
+      title: string;
+      updatedAt: string;
+    } | null;
+    today: Array<{
+      agenda: Array<string>;
+      createdAt: string;
+      durationMinutes: number;
+      id: string;
+      meetingUrl: string;
+      platform: string;
+      recurrenceWeekly: boolean;
+      startsAt: string;
+      title: string;
+      updatedAt: string;
+    }>;
+    todayDate: string;
+    upcoming: Array<{
+      agenda: Array<string>;
+      createdAt: string;
+      durationMinutes: number;
+      id: string;
+      meetingUrl: string;
+      platform: string;
+      recurrenceWeekly: boolean;
+      startsAt: string;
+      title: string;
+      updatedAt: string;
+    }>;
+  };
+};
+
+export type OfficeListMeetingsResponse =
+  OfficeListMeetingsResponses[keyof OfficeListMeetingsResponses];
+
+export type OfficeCreateMeetingData = {
+  body: {
+    agenda?: Array<string>;
+    durationMinutes?: number;
+    meetingUrl: string;
+    platform?: string;
+    recurrenceWeekly?: boolean;
+    startsAt: string;
+    title: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/meetings";
+};
+
+export type OfficeCreateMeetingErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeCreateMeetingError =
+  OfficeCreateMeetingErrors[keyof OfficeCreateMeetingErrors];
+
+export type OfficeCreateMeetingResponses = {
+  200: {
+    agenda: Array<string>;
+    createdAt: string;
+    durationMinutes: number;
+    id: string;
+    meetingUrl: string;
+    platform: string;
+    recurrenceWeekly: boolean;
+    startsAt: string;
+    title: string;
+    updatedAt: string;
+  };
+};
+
+export type OfficeCreateMeetingResponse =
+  OfficeCreateMeetingResponses[keyof OfficeCreateMeetingResponses];
+
+export type OfficeDeleteMeetingData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/meetings/{id}";
+};
+
+export type OfficeDeleteMeetingErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeDeleteMeetingError =
+  OfficeDeleteMeetingErrors[keyof OfficeDeleteMeetingErrors];
+
+export type OfficeDeleteMeetingResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type OfficeDeleteMeetingResponse =
+  OfficeDeleteMeetingResponses[keyof OfficeDeleteMeetingResponses];
+
+export type OfficeUpdateMeetingData = {
+  body: {
+    agenda?: Array<string>;
+    durationMinutes?: number;
+    meetingUrl?: string;
+    platform?: string;
+    recurrenceWeekly?: boolean;
+    startsAt?: string;
+    title?: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/meetings/{id}";
+};
+
+export type OfficeUpdateMeetingErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeUpdateMeetingError =
+  OfficeUpdateMeetingErrors[keyof OfficeUpdateMeetingErrors];
+
+export type OfficeUpdateMeetingResponses = {
+  200: {
+    agenda: Array<string>;
+    createdAt: string;
+    durationMinutes: number;
+    id: string;
+    meetingUrl: string;
+    platform: string;
+    recurrenceWeekly: boolean;
+    startsAt: string;
+    title: string;
+    updatedAt: string;
+  };
+};
+
+export type OfficeUpdateMeetingResponse =
+  OfficeUpdateMeetingResponses[keyof OfficeUpdateMeetingResponses];
+
+export type OfficeListMembersData = {
+  body?: never;
+  path?: never;
+  query?: {
+    q?: string;
+  };
+  url: "/api/v2/office/members";
+};
+
+export type OfficeListMembersErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListMembersError =
+  OfficeListMembersErrors[keyof OfficeListMembersErrors];
+
+export type OfficeListMembersResponses = {
+  200: {
+    items: Array<{
+      accentColor: string;
+      displayName: string;
+      joinDate: string;
+      tenure: {
+        days: number;
+        label: string;
+        months: number;
+        years: number;
+      };
+      userId: string;
+    }>;
+    todayDate: string;
+  };
+};
+
+export type OfficeListMembersResponse =
+  OfficeListMembersResponses[keyof OfficeListMembersResponses];
+
+export type OfficeGetMemberProfileData = {
+  body?: never;
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/office/members/{userId}";
+};
+
+export type OfficeGetMemberProfileErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeGetMemberProfileError =
+  OfficeGetMemberProfileErrors[keyof OfficeGetMemberProfileErrors];
+
+export type OfficeGetMemberProfileResponses = {
+  200: {
+    accentColor: string;
+    bossName: string;
+    displayName: string;
+    email: string;
+    joinDate: string;
+    notes: Array<{
+      content: string;
+      createdAt: string;
+      id: string;
+    }>;
+    stats: {
+      attendanceAbsent: number;
+      attendanceLate: number;
+      attendanceOk: number;
+      monthlyPoints: number;
+      pendingCount: number;
+      tasksDone: number;
+      tasksTotal: number;
+    };
+    tenure: {
+      days: number;
+      label: string;
+      months: number;
+      years: number;
+    };
+    todayDate: string;
+    userId: string;
+  };
+};
+
+export type OfficeGetMemberProfileResponse =
+  OfficeGetMemberProfileResponses[keyof OfficeGetMemberProfileResponses];
+
+export type OfficeUpdateMemberProfileData = {
+  body: {
+    joinDate: string;
+  };
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/office/members/{userId}";
+};
+
+export type OfficeUpdateMemberProfileErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeUpdateMemberProfileError =
+  OfficeUpdateMemberProfileErrors[keyof OfficeUpdateMemberProfileErrors];
+
+export type OfficeUpdateMemberProfileResponses = {
+  200: {
+    accentColor: string;
+    bossName: string;
+    displayName: string;
+    email: string;
+    joinDate: string;
+    notes: Array<{
+      content: string;
+      createdAt: string;
+      id: string;
+    }>;
+    stats: {
+      attendanceAbsent: number;
+      attendanceLate: number;
+      attendanceOk: number;
+      monthlyPoints: number;
+      pendingCount: number;
+      tasksDone: number;
+      tasksTotal: number;
+    };
+    tenure: {
+      days: number;
+      label: string;
+      months: number;
+      years: number;
+    };
+    todayDate: string;
+    userId: string;
+  };
+};
+
+export type OfficeUpdateMemberProfileResponse =
+  OfficeUpdateMemberProfileResponses[keyof OfficeUpdateMemberProfileResponses];
+
+export type OfficeListMemberNotesData = {
+  body?: never;
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/office/members/{userId}/notes";
+};
+
+export type OfficeListMemberNotesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListMemberNotesError =
+  OfficeListMemberNotesErrors[keyof OfficeListMemberNotesErrors];
+
+export type OfficeListMemberNotesResponses = {
+  200: {
+    items: Array<{
+      content: string;
+      createdAt: string;
+      id: string;
+    }>;
+  };
+};
+
+export type OfficeListMemberNotesResponse =
+  OfficeListMemberNotesResponses[keyof OfficeListMemberNotesResponses];
+
+export type OfficeCreateMemberNoteData = {
+  body: {
+    content: string;
+  };
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/office/members/{userId}/notes";
+};
+
+export type OfficeCreateMemberNoteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeCreateMemberNoteError =
+  OfficeCreateMemberNoteErrors[keyof OfficeCreateMemberNoteErrors];
+
+export type OfficeCreateMemberNoteResponses = {
+  200: {
+    content: string;
+    createdAt: string;
+    id: string;
+  };
+};
+
+export type OfficeCreateMemberNoteResponse =
+  OfficeCreateMemberNoteResponses[keyof OfficeCreateMemberNoteResponses];
+
+export type OfficeDeleteMemberNoteData = {
+  body?: never;
+  path: {
+    userId: string;
+    noteId: string;
+  };
+  query?: never;
+  url: "/api/v2/office/members/{userId}/notes/{noteId}";
+};
+
+export type OfficeDeleteMemberNoteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeDeleteMemberNoteError =
+  OfficeDeleteMemberNoteErrors[keyof OfficeDeleteMemberNoteErrors];
+
+export type OfficeDeleteMemberNoteResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type OfficeDeleteMemberNoteResponse =
+  OfficeDeleteMemberNoteResponses[keyof OfficeDeleteMemberNoteResponses];
+
+export type OfficeListStickyNotesData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/notes";
+};
+
+export type OfficeListStickyNotesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListStickyNotesError =
+  OfficeListStickyNotesErrors[keyof OfficeListStickyNotesErrors];
+
+export type OfficeListStickyNotesResponses = {
+  200: {
+    items: Array<{
+      color: "y" | "p" | "b" | "g";
+      content: string;
+      createdAt: string;
+      id: string;
+      updatedAt: string;
+    }>;
+    maxNotes: number;
+  };
+};
+
+export type OfficeListStickyNotesResponse =
+  OfficeListStickyNotesResponses[keyof OfficeListStickyNotesResponses];
+
+export type OfficeCreateStickyNoteData = {
+  body: {
+    color?: "y" | "p" | "b" | "g";
+    content?: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/notes";
+};
+
+export type OfficeCreateStickyNoteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeCreateStickyNoteError =
+  OfficeCreateStickyNoteErrors[keyof OfficeCreateStickyNoteErrors];
+
+export type OfficeCreateStickyNoteResponses = {
+  200: {
+    color: "y" | "p" | "b" | "g";
+    content: string;
+    createdAt: string;
+    id: string;
+    updatedAt: string;
+  };
+};
+
+export type OfficeCreateStickyNoteResponse =
+  OfficeCreateStickyNoteResponses[keyof OfficeCreateStickyNoteResponses];
+
+export type OfficeDeleteStickyNoteData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/notes/{id}";
+};
+
+export type OfficeDeleteStickyNoteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeDeleteStickyNoteError =
+  OfficeDeleteStickyNoteErrors[keyof OfficeDeleteStickyNoteErrors];
+
+export type OfficeDeleteStickyNoteResponses = {
+  200: {
+    ok: true;
+  };
+};
+
+export type OfficeDeleteStickyNoteResponse =
+  OfficeDeleteStickyNoteResponses[keyof OfficeDeleteStickyNoteResponses];
+
+export type OfficeUpdateStickyNoteData = {
+  body: {
+    color?: "y" | "p" | "b" | "g";
+    content?: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/notes/{id}";
+};
+
+export type OfficeUpdateStickyNoteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeUpdateStickyNoteError =
+  OfficeUpdateStickyNoteErrors[keyof OfficeUpdateStickyNoteErrors];
+
+export type OfficeUpdateStickyNoteResponses = {
+  200: {
+    color: "y" | "p" | "b" | "g";
+    content: string;
+    createdAt: string;
+    id: string;
+    updatedAt: string;
+  };
+};
+
+export type OfficeUpdateStickyNoteResponse =
+  OfficeUpdateStickyNoteResponses[keyof OfficeUpdateStickyNoteResponses];
+
+export type OfficeProgressData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/progress";
+};
+
+export type OfficeProgressErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeProgressError =
+  OfficeProgressErrors[keyof OfficeProgressErrors];
+
+export type OfficeProgressResponses = {
+  200: {
+    items: Array<{
+      accentColor: string;
+      dayDone: number;
+      dayTotal: number;
+      displayName: string;
+      kpiDone: number;
+      kpiTotal: number;
+      monthDone: number;
+      monthTotal: number;
+      pendingCount: number;
+      points: number;
+      userId: string;
+    }>;
+    periodMonth: string;
+    todayDate: string;
+  };
+};
+
+export type OfficeProgressResponse =
+  OfficeProgressResponses[keyof OfficeProgressResponses];
+
+export type OfficeListMyProposalsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/proposals";
+};
+
+export type OfficeListMyProposalsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListMyProposalsError =
+  OfficeListMyProposalsErrors[keyof OfficeListMyProposalsErrors];
+
+export type OfficeListMyProposalsResponses = {
+  200: {
+    items: Array<{
+      content: string;
+      createdAt: string;
+      id: string;
+      repliedAt: string | null;
+      reply: string | null;
+      seenAt: string | null;
+      staffAccentColor: string;
+      staffName: string;
+      status: "sent" | "seen" | "replied";
+      userId: string;
+    }>;
+    unreadCount: number;
+  };
+};
+
+export type OfficeListMyProposalsResponse =
+  OfficeListMyProposalsResponses[keyof OfficeListMyProposalsResponses];
+
+export type OfficeCreateProposalData = {
+  body: {
+    content: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/proposals";
+};
+
+export type OfficeCreateProposalErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeCreateProposalError =
+  OfficeCreateProposalErrors[keyof OfficeCreateProposalErrors];
+
+export type OfficeCreateProposalResponses = {
+  200: {
+    content: string;
+    createdAt: string;
+    id: string;
+    repliedAt: string | null;
+    reply: string | null;
+    seenAt: string | null;
+    staffAccentColor: string;
+    staffName: string;
+    status: "sent" | "seen" | "replied";
+    userId: string;
+  };
+};
+
+export type OfficeCreateProposalResponse =
+  OfficeCreateProposalResponses[keyof OfficeCreateProposalResponses];
+
+export type OfficeListTeamProposalsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/proposals/team";
+};
+
+export type OfficeListTeamProposalsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListTeamProposalsError =
+  OfficeListTeamProposalsErrors[keyof OfficeListTeamProposalsErrors];
+
+export type OfficeListTeamProposalsResponses = {
+  200: {
+    items: Array<{
+      content: string;
+      createdAt: string;
+      id: string;
+      repliedAt: string | null;
+      reply: string | null;
+      seenAt: string | null;
+      staffAccentColor: string;
+      staffName: string;
+      status: "sent" | "seen" | "replied";
+      userId: string;
+    }>;
+    unreadCount: number;
+  };
+};
+
+export type OfficeListTeamProposalsResponse =
+  OfficeListTeamProposalsResponses[keyof OfficeListTeamProposalsResponses];
+
+export type OfficeReplyProposalData = {
+  body: {
+    reply: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/proposals/{id}/reply";
+};
+
+export type OfficeReplyProposalErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeReplyProposalError =
+  OfficeReplyProposalErrors[keyof OfficeReplyProposalErrors];
+
+export type OfficeReplyProposalResponses = {
+  200: {
+    content: string;
+    createdAt: string;
+    id: string;
+    repliedAt: string | null;
+    reply: string | null;
+    seenAt: string | null;
+    staffAccentColor: string;
+    staffName: string;
+    status: "sent" | "seen" | "replied";
+    userId: string;
+  };
+};
+
+export type OfficeReplyProposalResponse =
+  OfficeReplyProposalResponses[keyof OfficeReplyProposalResponses];
+
+export type OfficeMarkProposalSeenData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/proposals/{id}/seen";
+};
+
+export type OfficeMarkProposalSeenErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeMarkProposalSeenError =
+  OfficeMarkProposalSeenErrors[keyof OfficeMarkProposalSeenErrors];
+
+export type OfficeMarkProposalSeenResponses = {
+  200: {
+    content: string;
+    createdAt: string;
+    id: string;
+    repliedAt: string | null;
+    reply: string | null;
+    seenAt: string | null;
+    staffAccentColor: string;
+    staffName: string;
+    status: "sent" | "seen" | "replied";
+    userId: string;
+  };
+};
+
+export type OfficeMarkProposalSeenResponse =
+  OfficeMarkProposalSeenResponses[keyof OfficeMarkProposalSeenResponses];
+
+export type OfficeListReviewData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/review";
+};
+
+export type OfficeListReviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListReviewError =
+  OfficeListReviewErrors[keyof OfficeListReviewErrors];
+
+export type OfficeListReviewResponses = {
+  200: {
+    items: Array<{
+      assignmentId: string;
+      dueDate: string | null;
+      id: string;
+      kind: "day" | "month" | "kpi";
+      points: number;
+      staffAccentColor: string;
+      staffName: string;
+      submitNote: string | null;
+      submittedAt: string;
+      taskDate: string;
+      title: string;
+      userId: string;
+    }>;
+  };
+};
+
+export type OfficeListReviewResponse =
+  OfficeListReviewResponses[keyof OfficeListReviewResponses];
+
+export type OfficeListMyTasksData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/tasks";
+};
+
+export type OfficeListMyTasksErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeListMyTasksError =
+  OfficeListMyTasksErrors[keyof OfficeListMyTasksErrors];
+
+export type OfficeListMyTasksResponses = {
+  200: {
+    day: Array<{
+      approvedAt: string | null;
+      assignmentId: string;
+      createdAt: string;
+      dueDate: string | null;
+      id: string;
+      kind: "day" | "month" | "kpi";
+      overdue: boolean;
+      periodMonth: string;
+      points: number;
+      pointsSnapshot: number | null;
+      repeatDaily: boolean;
+      returnReason: string | null;
+      returnedAt: string | null;
+      status: "todo" | "pending" | "returned" | "done" | "expired";
+      submitNote: string | null;
+      submittedAt: string | null;
+      taskDate: string;
+      title: string;
+      userId: string;
+    }>;
+    kpi: Array<{
+      approvedAt: string | null;
+      assignmentId: string;
+      createdAt: string;
+      dueDate: string | null;
+      id: string;
+      kind: "day" | "month" | "kpi";
+      overdue: boolean;
+      periodMonth: string;
+      points: number;
+      pointsSnapshot: number | null;
+      repeatDaily: boolean;
+      returnReason: string | null;
+      returnedAt: string | null;
+      status: "todo" | "pending" | "returned" | "done" | "expired";
+      submitNote: string | null;
+      submittedAt: string | null;
+      taskDate: string;
+      title: string;
+      userId: string;
+    }>;
+    month: Array<{
+      approvedAt: string | null;
+      assignmentId: string;
+      createdAt: string;
+      dueDate: string | null;
+      id: string;
+      kind: "day" | "month" | "kpi";
+      overdue: boolean;
+      periodMonth: string;
+      points: number;
+      pointsSnapshot: number | null;
+      repeatDaily: boolean;
+      returnReason: string | null;
+      returnedAt: string | null;
+      status: "todo" | "pending" | "returned" | "done" | "expired";
+      submitNote: string | null;
+      submittedAt: string | null;
+      taskDate: string;
+      title: string;
+      userId: string;
+    }>;
+    monthlyPoints: number;
+    periodMonth: string;
+    todayDate: string;
+  };
+};
+
+export type OfficeListMyTasksResponse =
+  OfficeListMyTasksResponses[keyof OfficeListMyTasksResponses];
+
+export type OfficeApproveTasksData = {
+  body: {
+    ids: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/office/tasks/approve";
+};
+
+export type OfficeApproveTasksErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeApproveTasksError =
+  OfficeApproveTasksErrors[keyof OfficeApproveTasksErrors];
+
+export type OfficeApproveTasksResponses = {
+  200: {
+    approved: Array<{
+      points: number;
+      staffName: string;
+      taskId: string;
+      title: string;
+      totalMonthlyPoints: number;
+      userId: string;
+    }>;
+  };
+};
+
+export type OfficeApproveTasksResponse =
+  OfficeApproveTasksResponses[keyof OfficeApproveTasksResponses];
+
+export type OfficeReturnTaskData = {
+  body: {
+    reason: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/tasks/{id}/return";
+};
+
+export type OfficeReturnTaskErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeReturnTaskError =
+  OfficeReturnTaskErrors[keyof OfficeReturnTaskErrors];
+
+export type OfficeReturnTaskResponses = {
+  200: {
+    approvedAt: string | null;
+    assignmentId: string;
+    createdAt: string;
+    dueDate: string | null;
+    id: string;
+    kind: "day" | "month" | "kpi";
+    overdue: boolean;
+    periodMonth: string;
+    points: number;
+    pointsSnapshot: number | null;
+    repeatDaily: boolean;
+    returnReason: string | null;
+    returnedAt: string | null;
+    status: "todo" | "pending" | "returned" | "done" | "expired";
+    submitNote: string | null;
+    submittedAt: string | null;
+    taskDate: string;
+    title: string;
+    userId: string;
+  };
+};
+
+export type OfficeReturnTaskResponse =
+  OfficeReturnTaskResponses[keyof OfficeReturnTaskResponses];
+
+export type OfficeSubmitTaskData = {
+  body: {
+    note?: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/office/tasks/{id}/submit";
+};
+
+export type OfficeSubmitTaskErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type OfficeSubmitTaskError =
+  OfficeSubmitTaskErrors[keyof OfficeSubmitTaskErrors];
+
+export type OfficeSubmitTaskResponses = {
+  200: {
+    approvedAt: string | null;
+    assignmentId: string;
+    createdAt: string;
+    dueDate: string | null;
+    id: string;
+    kind: "day" | "month" | "kpi";
+    overdue: boolean;
+    periodMonth: string;
+    points: number;
+    pointsSnapshot: number | null;
+    repeatDaily: boolean;
+    returnReason: string | null;
+    returnedAt: string | null;
+    status: "todo" | "pending" | "returned" | "done" | "expired";
+    submitNote: string | null;
+    submittedAt: string | null;
+    taskDate: string;
+    title: string;
+    userId: string;
+  };
+};
+
+export type OfficeSubmitTaskResponse =
+  OfficeSubmitTaskResponses[keyof OfficeSubmitTaskResponses];
 
 export type AnalyzePortfolioV2Data = {
   body?: never;

@@ -1,35 +1,39 @@
 /**
- * Starts the whole floor inside `container`: market polling, chat, the hall of fame, the socket and the Phaser
- * game. Returns the function that tears all of it down (destroys the game, closes the socket, stops
- * every timer), so leaving the page and coming back, or React StrictMode's double mount, starts clean.
- *
- * `onError` is called once if the art or the game cannot start. This module is the only one that imports Phaser; the page loads it with a dynamic `import()` so the
- * game stays out of the main bundle.
+ * Starts the 3D Procedural Chibi Trading Floor inside `container`:
+ * publishes Chibi portraits into `ui.avatarImages`, starts market polling, chat, leaderboard,
+ * socket, waits for "Be Vietnam Pro" font, boots Three.js `ChibiSceneHost` + `FloorController`,
+ * and returns a clean teardown function that survives React StrictMode double-mount.
  */
-import * as Phaser from "phaser"
+import { buildAllChibiPortraits } from "@/lib/chibi-3d/portrait-renderer.ts"
+import {
+  createChibiSceneHost,
+  type ChibiSceneHost,
+} from "@/lib/chibi-3d/scene-host.ts"
 
-import { floorSocket } from "../net/socket.ts"
+import { ui } from "../bridge.ts"
 import { startChat } from "../net/chat.ts"
 import { startLeaderboard } from "../net/leaderboard.ts"
 import { startMarket } from "../net/market.ts"
-import {
-  liteDevice,
-  liteManifest,
-  loadAvatarArt,
-  renderRatio,
-} from "./assets.ts"
-import { OfficeScene } from "./OfficeScene.ts"
-import { stopRecolorWorker } from "./tintArt.ts"
+import { floorSocket } from "../net/socket.ts"
+import { FloorController } from "./floor-controller.ts"
+import { FLOOR_WORLD_CONFIG } from "./floor-world-3d.ts"
 
-/** Phaser draws text once, so the web font must be ready first or labels stay in the fallback font. */
+/** Canvas2D textures (LED wall, SACO board, signs) wait briefly for Be Vietnam Pro. */
 async function fontsReady(): Promise<void> {
+  if (
+    typeof document === "undefined" ||
+    !("fonts" in document) ||
+    typeof document.fonts?.load !== "function"
+  ) {
+    return
+  }
   await Promise.race([
     Promise.all(
       ["600 13px", "700 16px", "800 24px"].map((w) =>
-        document.fonts.load(`${w} "Be Vietnam Pro"`)
+        document.fonts.load(`${w} "Be Vietnam Pro"`).catch(() => undefined)
       )
     ),
-    new Promise((resolve) => setTimeout(resolve, 2500)),
+    new Promise<void>((resolve) => setTimeout(resolve, 2500)),
   ])
 }
 
@@ -38,76 +42,65 @@ export function startFloor(
   onError?: (error: unknown) => void
 ): () => void {
   let disposed = false
-  let game: Phaser.Game | null = null
-  let scene: OfficeScene | null = null
-  let observer: ResizeObserver | null = null
-  let onWindowResize: (() => void) | null = null
+  let host: ChibiSceneHost | null = null
+  let controller: FloorController | null = null
+
+  // Ensure crisp Chibi portraits are immediately available for JoinScreen & LeaderboardPanel.
+  if (Object.keys(ui.avatarImages.get()).length === 0) {
+    ui.avatarImages.set(buildAllChibiPortraits())
+  }
 
   const stopMarket = startMarket()
   const stopChat = startChat()
   const stopLeaderboard = startLeaderboard()
   floorSocket.start()
 
-  const lite = liteDevice()
-  const pixels = (css: number): number => Math.round(css * renderRatio())
-
   void (async () => {
     await fontsReady()
-    const manifest = await loadAvatarArt()
     if (disposed) return
-    const bounds = container.getBoundingClientRect()
-    scene = new OfficeScene(lite ? liteManifest(manifest) : manifest, lite)
-    game = new Phaser.Game({
-      type: Phaser.AUTO,
-      parent: container,
-      width: pixels(Math.max(1, bounds.width)),
-      height: pixels(Math.max(1, bounds.height)),
-      backgroundColor: "#0c111b",
-      antialias: true,
-      // Multisampling triples the canvas buffers; textures stay smooth without it.
-      antialiasGL: !lite,
-      banner: false,
-      // The floor has no sound, and Phaser must not grab focus from the HTML fields around it.
-      audio: { noAudio: true },
-      autoFocus: false,
-      // Smoothing averages frame time, which makes walking speed depend on frame rate.
-      fps: { smoothStep: false },
-      // One canvas pixel per rendered pixel; the camera zoom carries the render ratio.
-      scale: { mode: Phaser.Scale.NONE, zoom: 1 / renderRatio() },
-      scene: [scene],
+
+    host = createChibiSceneHost({
+      container,
+      world: FLOOR_WORLD_CONFIG,
+      backgroundHex: 0x0c111b,
+      fov: 34,
+      pitchDeg: 52,
+      baseDistance: 17.5,
+      minZoom: 0.72,
+      maxZoom: 2.3,
+      initialZoom: 1.0,
+      cameraLerp: 0.14,
+      boundsMargin: 0.6,
     })
-    // The canvas follows its container (the area under the IQX header), not the window.
-    const resize = (): void => {
-      if (!game) return
-      const rect = container.getBoundingClientRect()
-      if (rect.width < 1 || rect.height < 1) return
-      game.scale.resize(pixels(rect.width), pixels(rect.height))
-      game.scale.setZoom(1 / renderRatio())
+
+    if (disposed) {
+      host.dispose()
+      host = null
+      return
     }
-    observer = new ResizeObserver(resize)
-    observer.observe(container)
-    // Moving the window to a screen with another pixel ratio changes the zoom without resizing the container.
-    onWindowResize = resize
-    window.addEventListener("resize", resize)
-    if (import.meta.env.DEV) Object.assign(window, { __tradingFloor: game })
+
+    controller = new FloorController(host, container)
+    ui.ready.set(true)
+
+    if (import.meta.env.DEV) {
+      Object.assign(window, { __tradingFloor: { host, controller } })
+    }
   })().catch((error: unknown) => {
-    // Art or WebGL failed to load: the page shows a retry card instead of an endless loading screen.
     if (!disposed) onError?.(error)
   })
 
   return () => {
     disposed = true
-    observer?.disconnect()
-    if (onWindowResize) window.removeEventListener("resize", onWindowResize)
-    scene?.dispose()
+    controller?.dispose()
+    controller = null
+    host?.dispose()
+    host = null
     stopChat()
     stopLeaderboard()
     stopMarket()
     floorSocket.stop()
-    game?.destroy(true)
-    game = null
-    stopRecolorWorker()
-    scene = null
-    if (import.meta.env.DEV) Reflect.deleteProperty(window, "__tradingFloor")
+    if (import.meta.env.DEV) {
+      Reflect.deleteProperty(window, "__tradingFloor")
+    }
   }
 }

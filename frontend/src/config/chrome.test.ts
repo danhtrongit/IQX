@@ -45,7 +45,7 @@ describe("workspace chrome (layout v1.3)", () => {
     expect(sectionOfPath("/admin/flashback")).toBeNull()
   })
 
-  it("has GIỚI THIỆU · LUYỆN TẬP · FLASHBACK · CHIẾN LƯỢC in the header, then Khu giao dịch; Bài học hidden", () => {
+  it("has GIỚI THIỆU · LUYỆN TẬP · FLASHBACK · CHIẾN LƯỢC in the header, then Khu giao dịch and Văn phòng; Bài học hidden", () => {
     expect(HEADER_NAV.find((item) => item.label === "Bài học")).toMatchObject({ to: "/bai-hoc", hidden: true })
     expect(HEADER_NAV.filter((item) => !item.hidden).map((item) => [item.label, item.to])).toEqual([
       ["Giới thiệu", "/"],
@@ -53,6 +53,7 @@ describe("workspace chrome (layout v1.3)", () => {
       ["Flashback", "/flashback"],
       ["Chiến lược", "/chien-luoc"],
       ["Khu giao dịch", "/khu-giao-dich"],
+      ["Văn phòng", "/van-phong"],
     ])
     expect(HEADER_NAV.some((item) => /Demo Trading|Học viện/.test(item.label))).toBe(false)
   })

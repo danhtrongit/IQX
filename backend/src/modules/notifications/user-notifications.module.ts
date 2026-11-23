@@ -3,7 +3,11 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../platform/database/index.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { NotificationEmailDispatcher } from './notification-email.dispatcher.js';
-import { BULLETIN_NOTIFIER, NOTIFICATION_WRITER } from './notification-writer.port.js';
+import {
+  BULLETIN_NOTIFIER,
+  NOTIFICATION_WRITER,
+  OFFICE_NOTIFIER,
+} from './notification-writer.port.js';
 import { NotificationWriterService } from './notification-writer.service.js';
 import {
   NotificationUnsubscribeController,
@@ -27,12 +31,14 @@ import { UserNotificationsService } from './user-notifications.service.js';
     NotificationEmailDispatcher,
     { provide: NOTIFICATION_WRITER, useExisting: NotificationWriterService },
     { provide: BULLETIN_NOTIFIER, useExisting: NotificationWriterService },
+    { provide: OFFICE_NOTIFIER, useExisting: NotificationWriterService },
   ],
   exports: [
     UserNotificationsService,
     NotificationEmailDispatcher,
     NOTIFICATION_WRITER,
     BULLETIN_NOTIFIER,
+    OFFICE_NOTIFIER,
   ],
 })
 export class UserNotificationsModule {}

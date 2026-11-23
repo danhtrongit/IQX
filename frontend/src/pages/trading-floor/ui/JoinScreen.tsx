@@ -1,10 +1,12 @@
-import { Sparkles, User } from "lucide-react"
-import { useEffect, useRef, useState, type FormEvent } from "react"
+import { Sparkles } from "lucide-react"
+import { useMemo, useState, type FormEvent } from "react"
 
 import { useAuth } from "@/hooks/use-auth"
+import { ChibiAvatar3DPreview } from "@/lib/chibi-3d/ChibiAvatar3DPreview.tsx"
+import { renderChibiPortraitDataUrl } from "@/lib/chibi-3d/portrait-renderer.ts"
+import { resolveOutfitHex } from "@/lib/chibi-3d/types.ts"
 
 import { ui } from "../bridge.ts"
-import { recolorRgbaBuffer } from "../engine/recolor.ts"
 import { floorApi } from "../net/api.ts"
 import { getGuestToken, setGuestToken } from "../net/guest.ts"
 import { floorSocket } from "../net/socket.ts"
@@ -34,93 +36,6 @@ interface Props {
   onCancel?: () => void
 }
 
-const previewImgCache = new Map<string, Promise<HTMLImageElement | null>>()
-function loadImg(src: string): Promise<HTMLImageElement | null> {
-  const cached = previewImgCache.get(src)
-  if (cached) return cached
-  const p = new Promise<HTMLImageElement | null>((resolve) => {
-    const img = new Image()
-    img.crossOrigin = "anonymous"
-    img.onload = () => resolve(img)
-    img.onerror = () => resolve(null)
-    img.src = src
-  })
-  previewImgCache.set(src, p)
-  return p
-}
-
-function AvatarPreview({
-  imageSrc,
-  maskInfo,
-  color,
-  label,
-}: {
-  imageSrc?: string
-  maskInfo?: { mask: string; luma: number }
-  color: OutfitColorId
-  label: string
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const swatchHex = OUTFIT_COLORS.find((c) => c.id === color)?.hex ?? null
-  const maskSrc = maskInfo?.mask
-  const luma = maskInfo?.luma
-
-  useEffect(() => {
-    let cancelled = false
-    const canvas = canvasRef.current
-    if (!canvas || !imageSrc) return
-
-    void (async () => {
-      const baseImg = await loadImg(imageSrc)
-      if (cancelled || !baseImg) return
-      const w = baseImg.naturalWidth || baseImg.width
-      const h = baseImg.naturalHeight || baseImg.height
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext("2d", { willReadFrequently: true })
-      if (!ctx) return
-      ctx.clearRect(0, 0, w, h)
-      ctx.drawImage(baseImg, 0, 0, w, h)
-
-      if (swatchHex && maskSrc) {
-        const maskImg = await loadImg(maskSrc)
-        if (cancelled || !maskImg) return
-        const srcData = ctx.getImageData(0, 0, w, h)
-        const mc = document.createElement("canvas")
-        mc.width = w
-        mc.height = h
-        const mctx = mc.getContext("2d", { willReadFrequently: true })
-        if (!mctx) return
-        mctx.drawImage(maskImg, 0, 0, w, h)
-        const maskData = mctx.getImageData(0, 0, w, h)
-        srcData.data.set(
-          recolorRgbaBuffer(srcData.data, maskData.data, swatchHex, luma)
-        )
-        ctx.putImageData(srcData, 0, 0)
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [imageSrc, maskSrc, luma, swatchHex])
-
-  if (!imageSrc) {
-    return (
-      <div className="preview-stage">
-        <div className="avatar-ph" aria-hidden="true">
-          <User size={24} />
-        </div>
-      </div>
-    )
-  }
-  return (
-    <div className="preview-stage">
-      <canvas ref={canvasRef} className="preview-canvas" aria-label={label} />
-    </div>
-  )
-}
-
 /**
  * Name, character and outfit colour. First visit: one click enters with the suggested name. Later: edits
  * the profile. A visitor who is not signed in creates a guest character here (no account needed).
@@ -132,9 +47,8 @@ export function JoinScreen({
   onCancel,
 }: Props) {
   const images = useStore(ui.avatarImages)
-  const masks = useStore(ui.avatarMasks)
   const guest = useStore(ui.guest)
-  const { openAuth } = useAuth()
+  const { openAuth, user } = useAuth()
   const [name, setName] = useState(initial?.name ?? suggestedName ?? "")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
@@ -146,25 +60,27 @@ export function JoinScreen({
   const [picked, setAvatar] = useState<AvatarId>(initAvatar)
   const [color, setColor] = useState<OutfitColorId>(initial?.color ?? "default")
 
-  // Presets without art (before the manifest loads) are filtered out once any character art exists.
-  const { user } = useAuth()
-  const hasPlayableArt = AVATARS.some((a) => Boolean(images[a.id]))
   // Owner-only avatars appear only for their account (the server checks it too).
-  const choices = AVATARS.filter(
-    (a) =>
-      avatarAllowedFor(a.id, user?.username) &&
-      (!hasPlayableArt || images[a.id])
-  )
+  const choices = AVATARS.filter((a) => avatarAllowedFor(a.id, user?.username))
   const genderList = choices.filter((a) => a.gender === gender)
   const shownList = genderList.length ? genderList : choices
   const selected =
     shownList.find((a) => a.id === picked) ?? shownList[0] ?? AVATARS[0]
   const avatar = selected.id
 
+  const cardPortraits = useMemo(() => {
+    const out: Record<string, string> = {}
+    for (const a of AVATARS) {
+      out[a.id] = images[a.id] ?? renderChibiPortraitDataUrl(a.id)
+    }
+    return out
+  }, [images])
+
   const clean = name.trim().replace(/\s+/g, " ")
   const valid = clean.length >= NAME_MIN && clean.length <= NAME_MAX
   const activeSwatch =
     OUTFIT_COLORS.find((c) => c.id === color) ?? OUTFIT_COLORS[0]
+  const activeColorHex = resolveOutfitHex(color)
 
   const switchGender = (next: AvatarGender): void => {
     setGender(next)
@@ -236,12 +152,15 @@ export function JoinScreen({
         </label>
 
         <div className="join-preview">
-          <AvatarPreview
-            imageSrc={images[avatar]}
-            maskInfo={masks[avatar]}
-            color={color}
-            label={`${selected.label} · ${activeSwatch.label}`}
-          />
+          <div className="preview-stage preview-stage-3d">
+            <ChibiAvatar3DPreview
+              avatarId={avatar}
+              colorHex={activeColorHex}
+              size={184}
+              interactive
+              label={`${selected.label} · ${activeSwatch.label}`}
+            />
+          </div>
           <div className="color-picker">
             <div className="color-head">
               <span>Màu trang phục</span>
@@ -313,13 +232,7 @@ export function JoinScreen({
                   checked={avatar === a.id}
                   onChange={() => setAvatar(a.id)}
                 />
-                {images[a.id] ? (
-                  <img src={images[a.id]} alt="" />
-                ) : (
-                  <div className="avatar-ph" aria-hidden="true">
-                    <User size={24} />
-                  </div>
-                )}
+                <img src={cardPortraits[a.id]} alt="" />
                 <span>{a.label.replace(/^(Nam|Nữ)\s*·\s*/, "")}</span>
               </label>
             ))}

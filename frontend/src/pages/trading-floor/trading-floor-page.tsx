@@ -4,9 +4,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api"
+import { buildAllChibiPortraits } from "@/lib/chibi-3d/portrait-renderer.ts"
 
 import { resetBridge, toast, ui } from "./bridge.ts"
-import { loadAvatarArt } from "./engine/assets.ts"
 import { floorApi } from "./net/api.ts"
 import { getGuestToken, setGuestToken } from "./net/guest.ts"
 import { floorSocket } from "./net/socket.ts"
@@ -54,7 +54,7 @@ function Gate({
 }
 
 /**
- * The Phaser canvas plus the HTML layer. The floor starts in an effect through a dynamic import (Phaser
+ * The Three.js 3D canvas plus the HTML layer. The floor starts in an effect through a dynamic import (Three.js
  * stays out of the main bundle) and everything it started is undone on unmount, so React StrictMode's
  * double mount and navigating away and back both start clean.
  */
@@ -62,10 +62,13 @@ function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
   const stage = useRef<HTMLDivElement>(null)
   const [failed, setFailed] = useState(false)
 
-  // Before paint, so a returning player never sees the join card flash up.
+  // Before paint, so a returning player never sees the join card flash up and portraits are ready immediately.
   useLayoutEffect(() => {
     ui.guest.set(me.guest === true)
     ui.profile.set(me.profile)
+    if (Object.keys(ui.avatarImages.get()).length === 0) {
+      ui.avatarImages.set(buildAllChibiPortraits())
+    }
   }, [me])
 
   // The server forgot this guest (their token no longer matches): back to the join card for a new one.
@@ -85,8 +88,6 @@ function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
     if (!el) return
     let cancelled = false
     let stop: (() => void) | null = null
-    // The join card needs the character pictures before the canvas exists.
-    loadAvatarArt().catch(() => undefined)
     import("./engine/start-floor.ts")
       .then((m) => {
         if (!cancelled) stop = m.startFloor(el, () => setFailed(true))
@@ -208,7 +209,10 @@ export function TradingFloorPage() {
   )
 
   return (
-    <div className="tf-root relative h-full min-h-0 min-w-0 flex-1 overflow-hidden">
+    <div
+      className="tf-root relative h-full min-h-0 min-w-0 flex-1 overflow-hidden"
+      data-wasd-world="true"
+    >
       {content}
     </div>
   )

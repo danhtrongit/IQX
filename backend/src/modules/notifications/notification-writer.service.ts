@@ -19,6 +19,8 @@ import type {
   BulletinPublishedInput,
   NotificationWriteResult,
   NotificationWriter,
+  OfficeNotificationInput,
+  OfficeNotifier,
 } from './notification-writer.port.js';
 import {
   botTradesEmail,
@@ -52,7 +54,9 @@ const message = (error: unknown): string =>
   error instanceof Error ? error.message : 'unknown error';
 
 @Injectable()
-export class NotificationWriterService implements NotificationWriter, BulletinNotifier {
+export class NotificationWriterService
+  implements NotificationWriter, BulletinNotifier, OfficeNotifier
+{
   private readonly logger = new Logger(NotificationWriterService.name);
 
   constructor(
@@ -116,7 +120,7 @@ export class NotificationWriterService implements NotificationWriter, BulletinNo
     const [row] = await tx.query<{ id: string }>(
       `insert into user_notifications (user_id, type, trade_date, title, body, link, payload)
        values ($1, 'bot_trades', $2::date, $3, $4, $5, $6::jsonb)
-       on conflict (user_id, type, trade_date) do nothing
+       on conflict (user_id, type, trade_date) where type in ('bulletin', 'bot_trades') do nothing
        returning id`,
       [input.userId, input.tradeDate, text.title, text.body, text.link, JSON.stringify(payload)],
     );
@@ -168,7 +172,7 @@ export class NotificationWriterService implements NotificationWriter, BulletinNo
            left join user_notification_settings s on s.user_id = u.id
           where u.status = 'active' and u.deleted_at is null
             and coalesce(s.enabled, true) and coalesce(s.bulletin, true)
-         on conflict (user_id, type, trade_date) do nothing
+         on conflict (user_id, type, trade_date) where type in ('bulletin', 'bot_trades') do nothing
          returning id`,
         [input.tradeDate, text.title, text.body, text.link, JSON.stringify(payload)],
       ),
@@ -206,5 +210,38 @@ export class NotificationWriterService implements NotificationWriter, BulletinNo
       `Bulletin ${input.tradeDate}: ${ids.length} notifications, ${emails} emails queued`,
     );
     return { notified: ids.length };
+  }
+
+  async officeNotify(
+    tx: SqlClient,
+    input: OfficeNotificationInput,
+  ): Promise<{ created: boolean; notificationId?: string }> {
+    const result = await isolated(tx, async () => {
+      const [row] = await tx.query<{ id: string }>(
+        `insert into user_notifications (user_id, type, trade_date, title, body, link, payload)
+         select u.id, $2, $3::date, $4, $5, $6, $7::jsonb
+           from users u
+          where u.id = $1 and u.status = 'active' and u.deleted_at is null
+         returning id`,
+        [
+          input.userId,
+          input.type,
+          input.tradeDate,
+          input.title.slice(0, 200),
+          input.body.slice(0, 1000),
+          input.link.slice(0, 500),
+          JSON.stringify(input.payload ?? {}),
+        ],
+      );
+      return row?.id ?? null;
+    });
+    if (!result.ok) {
+      this.logger.error(
+        `Office notification failed for ${input.userId} (${input.type}): ${message(result.error)}`,
+      );
+      return { created: false };
+    }
+    if (!result.value) return { created: false };
+    return { created: true, notificationId: result.value };
   }
 }

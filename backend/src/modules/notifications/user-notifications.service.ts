@@ -180,6 +180,7 @@ export class UserNotificationsService {
         [emailId],
       );
       if (!row) throw tokenInvalid();
+      if (row.type !== 'bulletin' && row.type !== 'bot_trades') throw tokenInvalid();
       if (row.used) return { type: row.type, status: 'already_used' };
       await tx.query(
         'update user_notification_emails set unsubscribe_used_at = now() where id = $1',

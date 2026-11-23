@@ -1,6 +1,6 @@
 /**
  * SACO nhận định trong khu giao dịch: bảng cố định góc phải trên và bảng trượt bên phải
- * (danh sách hôm nay ↔ trang đọc bài). Giữ `world.posts` khớp máy chủ cho bảng tường Phaser.
+ * (danh sách hôm nay ↔ trang đọc bài). Giữ `world.posts` khớp máy chủ cho bảng tường Three.js 3D.
  */
 import { useEffect, useRef, useState, type KeyboardEvent } from "react"
 import { ChevronDown, ChevronRight, ChevronUp, X } from "lucide-react"
@@ -140,7 +140,7 @@ function PostsPanel({
   }, [postId])
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    // Phím gõ trong bảng trượt không được đi tới cảnh Phaser (WASD, E…).
+    // Phím gõ trong bảng trượt không được đi tới cảnh Three.js 3D (WASD, E…).
     event.stopPropagation()
     if (event.key === "Escape") closePosts()
   }

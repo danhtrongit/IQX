@@ -71,3 +71,32 @@ export interface BulletinNotifier {
   /** Gọi trong transaction Public lần đầu; Public lại hoặc gỡ thì không gọi. Không ném lỗi. */
   bulletinPublished(tx: SqlClient, input: BulletinPublishedInput): Promise<{ notified: number }>;
 }
+
+export type OfficeNotificationKind =
+  | 'office_task_assigned'
+  | 'office_task_approved'
+  | 'office_task_returned'
+  | 'office_task_submitted'
+  | 'office_proposal_sent'
+  | 'office_proposal_replied';
+
+export type OfficeNotificationInput = {
+  userId: string;
+  type: OfficeNotificationKind;
+  /** Ngày theo giờ Việt Nam (UTC+7), dạng `YYYY-MM-DD`. */
+  tradeDate: string;
+  title: string;
+  body: string;
+  link: string;
+  payload?: Record<string, unknown>;
+};
+
+export const OFFICE_NOTIFIER = Symbol('OFFICE_NOTIFIER');
+
+export interface OfficeNotifier {
+  /** Ghi thông báo Khu Văn phòng trong transaction của bên gọi, cô lập lỗi bằng SAVEPOINT. */
+  officeNotify(
+    tx: SqlClient,
+    input: OfficeNotificationInput,
+  ): Promise<{ created: boolean; notificationId?: string }>;
+}

@@ -12,6 +12,11 @@ export interface OperationMap {
   "DELETE /api/v2/backtest/strategies/{strategyId}": { request: T.QuantControllerDelete0Data; response: T.QuantControllerDelete0Responses[keyof T.QuantControllerDelete0Responses] }
   "DELETE /api/v2/cap5/watchlist/{symbol}": { request: T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData; response: T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses[keyof T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses] }
   "DELETE /api/v2/chart-drawings/{symbol}": { request: T.DeleteChartDrawingV2Data; response: T.DeleteChartDrawingV2Responses[keyof T.DeleteChartDrawingV2Responses] }
+  "DELETE /api/v2/office/assignments/{id}": { request: T.OfficeDeleteAssignmentData; response: T.OfficeDeleteAssignmentResponses[keyof T.OfficeDeleteAssignmentResponses] }
+  "DELETE /api/v2/office/documents/{id}": { request: T.OfficeDeleteDocumentData; response: T.OfficeDeleteDocumentResponses[keyof T.OfficeDeleteDocumentResponses] }
+  "DELETE /api/v2/office/meetings/{id}": { request: T.OfficeDeleteMeetingData; response: T.OfficeDeleteMeetingResponses[keyof T.OfficeDeleteMeetingResponses] }
+  "DELETE /api/v2/office/members/{userId}/notes/{noteId}": { request: T.OfficeDeleteMemberNoteData; response: T.OfficeDeleteMemberNoteResponses[keyof T.OfficeDeleteMemberNoteResponses] }
+  "DELETE /api/v2/office/notes/{id}": { request: T.OfficeDeleteStickyNoteData; response: T.OfficeDeleteStickyNoteResponses[keyof T.OfficeDeleteStickyNoteResponses] }
   "DELETE /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData; response: T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses] }
   "DELETE /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertDeleteData; response: T.StrategyAlertDeleteResponses[keyof T.StrategyAlertDeleteResponses] }
   "DELETE /api/v2/strategy/filters/{filterId}": { request: T.DeleteStrategySavedFilterData; response: T.DeleteStrategySavedFilterResponses[keyof T.DeleteStrategySavedFilterResponses] }
@@ -273,6 +278,22 @@ export interface OperationMap {
   "GET /api/v2/me/notifications": { request: T.NotificationListData; response: T.NotificationListResponses[keyof T.NotificationListResponses] }
   "GET /api/v2/me/notifications/unread-count": { request: T.NotificationUnreadCountData; response: T.NotificationUnreadCountResponses[keyof T.NotificationUnreadCountResponses] }
   "GET /api/v2/media/{token}": { request: T.MediaControllerDownloadData; response: T.MediaControllerDownloadResponses[keyof T.MediaControllerDownloadResponses] }
+  "GET /api/v2/office/assignments": { request: T.OfficeListAssignmentsData; response: T.OfficeListAssignmentsResponses[keyof T.OfficeListAssignmentsResponses] }
+  "GET /api/v2/office/attendance/today": { request: T.OfficeAttendanceTodayData; response: T.OfficeAttendanceTodayResponses[keyof T.OfficeAttendanceTodayResponses] }
+  "GET /api/v2/office/documents": { request: T.OfficeListDocumentsData; response: T.OfficeListDocumentsResponses[keyof T.OfficeListDocumentsResponses] }
+  "GET /api/v2/office/documents/{id}/download": { request: T.OfficeDownloadDocumentData; response: T.OfficeDownloadDocumentResponses[keyof T.OfficeDownloadDocumentResponses] }
+  "GET /api/v2/office/leaderboard": { request: T.OfficeLeaderboardData; response: T.OfficeLeaderboardResponses[keyof T.OfficeLeaderboardResponses] }
+  "GET /api/v2/office/me": { request: T.OfficeMeData; response: T.OfficeMeResponses[keyof T.OfficeMeResponses] }
+  "GET /api/v2/office/meetings": { request: T.OfficeListMeetingsData; response: T.OfficeListMeetingsResponses[keyof T.OfficeListMeetingsResponses] }
+  "GET /api/v2/office/members": { request: T.OfficeListMembersData; response: T.OfficeListMembersResponses[keyof T.OfficeListMembersResponses] }
+  "GET /api/v2/office/members/{userId}": { request: T.OfficeGetMemberProfileData; response: T.OfficeGetMemberProfileResponses[keyof T.OfficeGetMemberProfileResponses] }
+  "GET /api/v2/office/members/{userId}/notes": { request: T.OfficeListMemberNotesData; response: T.OfficeListMemberNotesResponses[keyof T.OfficeListMemberNotesResponses] }
+  "GET /api/v2/office/notes": { request: T.OfficeListStickyNotesData; response: T.OfficeListStickyNotesResponses[keyof T.OfficeListStickyNotesResponses] }
+  "GET /api/v2/office/progress": { request: T.OfficeProgressData; response: T.OfficeProgressResponses[keyof T.OfficeProgressResponses] }
+  "GET /api/v2/office/proposals": { request: T.OfficeListMyProposalsData; response: T.OfficeListMyProposalsResponses[keyof T.OfficeListMyProposalsResponses] }
+  "GET /api/v2/office/proposals/team": { request: T.OfficeListTeamProposalsData; response: T.OfficeListTeamProposalsResponses[keyof T.OfficeListTeamProposalsResponses] }
+  "GET /api/v2/office/review": { request: T.OfficeListReviewData; response: T.OfficeListReviewResponses[keyof T.OfficeListReviewResponses] }
+  "GET /api/v2/office/tasks": { request: T.OfficeListMyTasksData; response: T.OfficeListMyTasksResponses[keyof T.OfficeListMyTasksResponses] }
   "GET /api/v2/portfolio-manager/report": { request: T.GetPortfolioReportV2Data; response: T.GetPortfolioReportV2Responses[keyof T.GetPortfolioReportV2Responses] }
   "GET /api/v2/premium/admin/plans": { request: T.AdminListPremiumPlansGetApiV2PremiumAdminPlansData; response: T.AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses[keyof T.AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses] }
   "GET /api/v2/premium/me": { request: T.GetMyPremiumSubscriptionGetApiV2PremiumMeData; response: T.GetMyPremiumSubscriptionGetApiV2PremiumMeResponses[keyof T.GetMyPremiumSubscriptionGetApiV2PremiumMeResponses] }
@@ -367,6 +388,10 @@ export interface OperationMap {
   "PATCH /api/v2/cap4/task": { request: T.Cap4ControllerTask1Data; response: T.Cap4ControllerTask1Responses[keyof T.Cap4ControllerTask1Responses] }
   "PATCH /api/v2/cap5/task": { request: T.Cap5TaskPatchApiV2Cap5TaskData; response: T.Cap5TaskPatchApiV2Cap5TaskResponses[keyof T.Cap5TaskPatchApiV2Cap5TaskResponses] }
   "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": { request: T.SetCap8DynamicStopV2Data; response: T.SetCap8DynamicStopV2Responses[keyof T.SetCap8DynamicStopV2Responses] }
+  "PATCH /api/v2/office/assignments/{id}": { request: T.OfficeUpdateAssignmentData; response: T.OfficeUpdateAssignmentResponses[keyof T.OfficeUpdateAssignmentResponses] }
+  "PATCH /api/v2/office/meetings/{id}": { request: T.OfficeUpdateMeetingData; response: T.OfficeUpdateMeetingResponses[keyof T.OfficeUpdateMeetingResponses] }
+  "PATCH /api/v2/office/members/{userId}": { request: T.OfficeUpdateMemberProfileData; response: T.OfficeUpdateMemberProfileResponses[keyof T.OfficeUpdateMemberProfileResponses] }
+  "PATCH /api/v2/office/notes/{id}": { request: T.OfficeUpdateStickyNoteData; response: T.OfficeUpdateStickyNoteResponses[keyof T.OfficeUpdateStickyNoteResponses] }
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData; response: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses] }
   "PATCH /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertUpdateData; response: T.StrategyAlertUpdateResponses[keyof T.StrategyAlertUpdateResponses] }
   "PATCH /api/v2/strategy/shared-config": { request: T.StrategyConfigPatchSharedConfigData; response: T.StrategyConfigPatchSharedConfigResponses[keyof T.StrategyConfigPatchSharedConfigResponses] }
@@ -517,6 +542,18 @@ export interface OperationMap {
   "POST /api/v2/market/bulletins/{date}/slots/{slot}": { request: T.PushMarketBulletinSlotData; response: T.PushMarketBulletinSlotResponses[keyof T.PushMarketBulletinSlotResponses] }
   "POST /api/v2/me/notifications/read": { request: T.NotificationMarkReadData; response: T.NotificationMarkReadResponses[keyof T.NotificationMarkReadResponses] }
   "POST /api/v2/notifications/unsubscribe": { request: T.NotificationUnsubscribeData; response: T.NotificationUnsubscribeResponses[keyof T.NotificationUnsubscribeResponses] }
+  "POST /api/v2/office/assignments": { request: T.OfficeCreateAssignmentData; response: T.OfficeCreateAssignmentResponses[keyof T.OfficeCreateAssignmentResponses] }
+  "POST /api/v2/office/attendance/check-in": { request: T.OfficeAttendanceCheckInData; response: T.OfficeAttendanceCheckInResponses[keyof T.OfficeAttendanceCheckInResponses] }
+  "POST /api/v2/office/documents": { request: T.OfficeUploadDocumentData; response: T.OfficeUploadDocumentResponses[keyof T.OfficeUploadDocumentResponses] }
+  "POST /api/v2/office/meetings": { request: T.OfficeCreateMeetingData; response: T.OfficeCreateMeetingResponses[keyof T.OfficeCreateMeetingResponses] }
+  "POST /api/v2/office/members/{userId}/notes": { request: T.OfficeCreateMemberNoteData; response: T.OfficeCreateMemberNoteResponses[keyof T.OfficeCreateMemberNoteResponses] }
+  "POST /api/v2/office/notes": { request: T.OfficeCreateStickyNoteData; response: T.OfficeCreateStickyNoteResponses[keyof T.OfficeCreateStickyNoteResponses] }
+  "POST /api/v2/office/proposals": { request: T.OfficeCreateProposalData; response: T.OfficeCreateProposalResponses[keyof T.OfficeCreateProposalResponses] }
+  "POST /api/v2/office/proposals/{id}/reply": { request: T.OfficeReplyProposalData; response: T.OfficeReplyProposalResponses[keyof T.OfficeReplyProposalResponses] }
+  "POST /api/v2/office/proposals/{id}/seen": { request: T.OfficeMarkProposalSeenData; response: T.OfficeMarkProposalSeenResponses[keyof T.OfficeMarkProposalSeenResponses] }
+  "POST /api/v2/office/tasks/{id}/return": { request: T.OfficeReturnTaskData; response: T.OfficeReturnTaskResponses[keyof T.OfficeReturnTaskResponses] }
+  "POST /api/v2/office/tasks/{id}/submit": { request: T.OfficeSubmitTaskData; response: T.OfficeSubmitTaskResponses[keyof T.OfficeSubmitTaskResponses] }
+  "POST /api/v2/office/tasks/approve": { request: T.OfficeApproveTasksData; response: T.OfficeApproveTasksResponses[keyof T.OfficeApproveTasksResponses] }
   "POST /api/v2/portfolio-manager/analyze": { request: T.AnalyzePortfolioV2Data; response: T.AnalyzePortfolioV2Responses[keyof T.AnalyzePortfolioV2Responses] }
   "POST /api/v2/premium/admin/plans": { request: T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData; response: T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses[keyof T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses] }
   "POST /api/v2/premium/admin/users/{user_id}/grant": { request: T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData; response: T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses[keyof T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses] }
@@ -621,6 +658,11 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "DELETE /api/v2/backtest/strategies/{strategyId}": { request: "QuantControllerDelete0Data", response: "QuantControllerDelete0Responses" },
   "DELETE /api/v2/cap5/watchlist/{symbol}": { request: "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData", response: "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses" },
   "DELETE /api/v2/chart-drawings/{symbol}": { request: "DeleteChartDrawingV2Data", response: "DeleteChartDrawingV2Responses" },
+  "DELETE /api/v2/office/assignments/{id}": { request: "OfficeDeleteAssignmentData", response: "OfficeDeleteAssignmentResponses" },
+  "DELETE /api/v2/office/documents/{id}": { request: "OfficeDeleteDocumentData", response: "OfficeDeleteDocumentResponses" },
+  "DELETE /api/v2/office/meetings/{id}": { request: "OfficeDeleteMeetingData", response: "OfficeDeleteMeetingResponses" },
+  "DELETE /api/v2/office/members/{userId}/notes/{noteId}": { request: "OfficeDeleteMemberNoteData", response: "OfficeDeleteMemberNoteResponses" },
+  "DELETE /api/v2/office/notes/{id}": { request: "OfficeDeleteStickyNoteData", response: "OfficeDeleteStickyNoteResponses" },
   "DELETE /api/v2/premium/admin/plans/{plan_id}": { request: "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData", response: "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses" },
   "DELETE /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertDeleteData", response: "StrategyAlertDeleteResponses" },
   "DELETE /api/v2/strategy/filters/{filterId}": { request: "DeleteStrategySavedFilterData", response: "DeleteStrategySavedFilterResponses" },
@@ -882,6 +924,22 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/me/notifications": { request: "NotificationListData", response: "NotificationListResponses" },
   "GET /api/v2/me/notifications/unread-count": { request: "NotificationUnreadCountData", response: "NotificationUnreadCountResponses" },
   "GET /api/v2/media/{token}": { request: "MediaControllerDownloadData", response: "MediaControllerDownloadResponses" },
+  "GET /api/v2/office/assignments": { request: "OfficeListAssignmentsData", response: "OfficeListAssignmentsResponses" },
+  "GET /api/v2/office/attendance/today": { request: "OfficeAttendanceTodayData", response: "OfficeAttendanceTodayResponses" },
+  "GET /api/v2/office/documents": { request: "OfficeListDocumentsData", response: "OfficeListDocumentsResponses" },
+  "GET /api/v2/office/documents/{id}/download": { request: "OfficeDownloadDocumentData", response: "OfficeDownloadDocumentResponses" },
+  "GET /api/v2/office/leaderboard": { request: "OfficeLeaderboardData", response: "OfficeLeaderboardResponses" },
+  "GET /api/v2/office/me": { request: "OfficeMeData", response: "OfficeMeResponses" },
+  "GET /api/v2/office/meetings": { request: "OfficeListMeetingsData", response: "OfficeListMeetingsResponses" },
+  "GET /api/v2/office/members": { request: "OfficeListMembersData", response: "OfficeListMembersResponses" },
+  "GET /api/v2/office/members/{userId}": { request: "OfficeGetMemberProfileData", response: "OfficeGetMemberProfileResponses" },
+  "GET /api/v2/office/members/{userId}/notes": { request: "OfficeListMemberNotesData", response: "OfficeListMemberNotesResponses" },
+  "GET /api/v2/office/notes": { request: "OfficeListStickyNotesData", response: "OfficeListStickyNotesResponses" },
+  "GET /api/v2/office/progress": { request: "OfficeProgressData", response: "OfficeProgressResponses" },
+  "GET /api/v2/office/proposals": { request: "OfficeListMyProposalsData", response: "OfficeListMyProposalsResponses" },
+  "GET /api/v2/office/proposals/team": { request: "OfficeListTeamProposalsData", response: "OfficeListTeamProposalsResponses" },
+  "GET /api/v2/office/review": { request: "OfficeListReviewData", response: "OfficeListReviewResponses" },
+  "GET /api/v2/office/tasks": { request: "OfficeListMyTasksData", response: "OfficeListMyTasksResponses" },
   "GET /api/v2/portfolio-manager/report": { request: "GetPortfolioReportV2Data", response: "GetPortfolioReportV2Responses" },
   "GET /api/v2/premium/admin/plans": { request: "AdminListPremiumPlansGetApiV2PremiumAdminPlansData", response: "AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses" },
   "GET /api/v2/premium/me": { request: "GetMyPremiumSubscriptionGetApiV2PremiumMeData", response: "GetMyPremiumSubscriptionGetApiV2PremiumMeResponses" },
@@ -976,6 +1034,10 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PATCH /api/v2/cap4/task": { request: "Cap4ControllerTask1Data", response: "Cap4ControllerTask1Responses" },
   "PATCH /api/v2/cap5/task": { request: "Cap5TaskPatchApiV2Cap5TaskData", response: "Cap5TaskPatchApiV2Cap5TaskResponses" },
   "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": { request: "SetCap8DynamicStopV2Data", response: "SetCap8DynamicStopV2Responses" },
+  "PATCH /api/v2/office/assignments/{id}": { request: "OfficeUpdateAssignmentData", response: "OfficeUpdateAssignmentResponses" },
+  "PATCH /api/v2/office/meetings/{id}": { request: "OfficeUpdateMeetingData", response: "OfficeUpdateMeetingResponses" },
+  "PATCH /api/v2/office/members/{userId}": { request: "OfficeUpdateMemberProfileData", response: "OfficeUpdateMemberProfileResponses" },
+  "PATCH /api/v2/office/notes/{id}": { request: "OfficeUpdateStickyNoteData", response: "OfficeUpdateStickyNoteResponses" },
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData", response: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses" },
   "PATCH /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertUpdateData", response: "StrategyAlertUpdateResponses" },
   "PATCH /api/v2/strategy/shared-config": { request: "StrategyConfigPatchSharedConfigData", response: "StrategyConfigPatchSharedConfigResponses" },
@@ -1126,6 +1188,18 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/market/bulletins/{date}/slots/{slot}": { request: "PushMarketBulletinSlotData", response: "PushMarketBulletinSlotResponses" },
   "POST /api/v2/me/notifications/read": { request: "NotificationMarkReadData", response: "NotificationMarkReadResponses" },
   "POST /api/v2/notifications/unsubscribe": { request: "NotificationUnsubscribeData", response: "NotificationUnsubscribeResponses" },
+  "POST /api/v2/office/assignments": { request: "OfficeCreateAssignmentData", response: "OfficeCreateAssignmentResponses" },
+  "POST /api/v2/office/attendance/check-in": { request: "OfficeAttendanceCheckInData", response: "OfficeAttendanceCheckInResponses" },
+  "POST /api/v2/office/documents": { request: "OfficeUploadDocumentData", response: "OfficeUploadDocumentResponses" },
+  "POST /api/v2/office/meetings": { request: "OfficeCreateMeetingData", response: "OfficeCreateMeetingResponses" },
+  "POST /api/v2/office/members/{userId}/notes": { request: "OfficeCreateMemberNoteData", response: "OfficeCreateMemberNoteResponses" },
+  "POST /api/v2/office/notes": { request: "OfficeCreateStickyNoteData", response: "OfficeCreateStickyNoteResponses" },
+  "POST /api/v2/office/proposals": { request: "OfficeCreateProposalData", response: "OfficeCreateProposalResponses" },
+  "POST /api/v2/office/proposals/{id}/reply": { request: "OfficeReplyProposalData", response: "OfficeReplyProposalResponses" },
+  "POST /api/v2/office/proposals/{id}/seen": { request: "OfficeMarkProposalSeenData", response: "OfficeMarkProposalSeenResponses" },
+  "POST /api/v2/office/tasks/{id}/return": { request: "OfficeReturnTaskData", response: "OfficeReturnTaskResponses" },
+  "POST /api/v2/office/tasks/{id}/submit": { request: "OfficeSubmitTaskData", response: "OfficeSubmitTaskResponses" },
+  "POST /api/v2/office/tasks/approve": { request: "OfficeApproveTasksData", response: "OfficeApproveTasksResponses" },
   "POST /api/v2/portfolio-manager/analyze": { request: "AnalyzePortfolioV2Data", response: "AnalyzePortfolioV2Responses" },
   "POST /api/v2/premium/admin/plans": { request: "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData", response: "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses" },
   "POST /api/v2/premium/admin/users/{user_id}/grant": { request: "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData", response: "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses" },

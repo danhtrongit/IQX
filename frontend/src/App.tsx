@@ -77,6 +77,7 @@ const VTAccountDetailPage = lazyPage(() => import("@/pages/admin/trading/vt-acco
 const VTConfigPage = lazyPage(() => import("@/pages/admin/trading/vt-config-page").then(module => ({ default: module.VTConfigPage })))
 const CoursesPage = lazyPage(() => import("@/pages/admin/learning/courses-page").then(module => ({ default: module.CoursesPage })))
 const TradingFloorPage = lazyPage(() => import("@/pages/trading-floor/trading-floor-page").then(module => ({ default: module.TradingFloorPage })))
+const OfficePage = lazyPage(() => import("@/pages/office/office-page").then(module => ({ default: module.OfficePage })))
 const UnsubscribePage = lazyPage(() => import("@/pages/notifications/unsubscribe-page").then(module => ({ default: module.UnsubscribePage })))
 const AboutPage = lazyPage(() => import("@/pages/about/about-page").then(module => ({ default: module.AboutPage })))
 const CourseEditPage = lazyPage(() => import("@/pages/admin/learning/course-edit-page").then(module => ({ default: module.CourseEditPage })))
@@ -131,6 +132,7 @@ export const routes: RouteObject[] = [
       { path: "backtest/:symbol", Component: BacktestSymbolRedirect, handle: { chrome: emptyChrome } },
       { path: "thong-bao/tat", Component: UnsubscribePage, handle: { chrome: emptyChrome } },
       { path: "khu-giao-dich", Component: TradingFloorPage, handle: { chrome: emptyChrome } },
+      { path: "van-phong", Component: OfficePage, handle: { chrome: emptyChrome } },
       { path: "van-phong-ao", element: <Navigate to="/khu-giao-dich" replace />, handle: { chrome: emptyChrome } },
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug", Component: CourseDetailPage, handle: { chrome: emptyChrome } },

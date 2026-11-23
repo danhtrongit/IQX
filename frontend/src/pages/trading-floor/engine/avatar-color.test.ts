@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  buildAllChibiPortraits,
+  renderChibiPortraitDataUrl,
+} from "@/lib/chibi-3d/portrait-renderer.ts"
+import { resolveOutfitHex } from "@/lib/chibi-3d/types.ts"
+
+import {
   AVATARS,
   OUTFIT_COLORS,
   avatarAllowedFor,
@@ -9,7 +15,6 @@ import {
   nameBadges,
   normalizeAvatarId,
 } from "../net/types.ts"
-import { hexToRgb, recolorRgbaBuffer } from "./recolor.ts"
 
 describe("avatar catalogue and outfit colors", () => {
   it("provides 5 male and 5 female avatars to everyone", () => {
@@ -64,32 +69,29 @@ describe("avatar catalogue and outfit colors", () => {
   })
 })
 
-describe("recolorRgbaBuffer", () => {
-  it("parses 6-digit hex colors cleanly", () => {
-    expect(hexToRgb("#7c1f2c")).toEqual([124, 31, 44])
+describe("procedural Chibi outfit resolution and portraits", () => {
+  it("resolves every catalogue outfit color id to its canonical hex", () => {
+    for (const c of OUTFIT_COLORS) {
+      expect(resolveOutfitHex(c.id)).toBe(c.hex)
+    }
+    expect(resolveOutfitHex("default")).toBeNull()
+    expect(resolveOutfitHex("#7c1f2c")).toBe("#7c1f2c")
+    expect(resolveOutfitHex("not-a-color")).toBeNull()
   })
 
-  it("keeps transparent and unmasked pixels untouched while preserving luminance order in cloth", () => {
-    // 4 pixels: transparent, unmasked skin, dark fold cloth, bright highlight cloth
-    const src = new Uint8ClampedArray([
-      0, 0, 0, 0, 235, 190, 155, 255, 45, 50, 58, 255, 175, 180, 190, 255,
-    ])
-    const mask = new Uint8ClampedArray([
-      255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    ])
-
-    const out = recolorRgbaBuffer(src, mask, "#7c1f2c", 0.42)
-    // Transparent pixel stays transparent
-    expect([...out.slice(0, 4)]).toEqual([0, 0, 0, 0])
-    // Unmasked pixel stays identical
-    expect([...out.slice(4, 8)]).toEqual([235, 190, 155, 255])
-    // Dark cloth shifts toward deep burgundy (R > B, R > G)
-    expect(out[8]).toBeGreaterThan(out[9])
-    expect(out[8]).toBeGreaterThan(out[10])
-    expect(out[11]).toBe(255)
-    // Highlight cloth stays strictly brighter than dark fold
-    const darkLuma = out[8] + out[9] + out[10]
-    const brightLuma = out[12] + out[13] + out[14]
-    expect(brightLuma).toBeGreaterThan(darkLuma)
+  it("generates instant Chibi portrait data URLs for all 11 canonical avatars", () => {
+    const portraits = buildAllChibiPortraits()
+    expect(Object.keys(portraits).sort()).toEqual(
+      AVATARS.map((a) => a.id).sort()
+    )
+    for (const a of AVATARS) {
+      expect(portraits[a.id]).toMatch(/^data:image\/(png|svg\+xml)/)
+    }
+    const tinted = renderChibiPortraitDataUrl(
+      "male01",
+      resolveOutfitHex("burgundy")
+    )
+    expect(tinted).toMatch(/^data:image\/(png|svg\+xml)/)
+    expect(tinted).not.toBe(portraits.male01)
   })
 })

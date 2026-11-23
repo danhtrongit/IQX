@@ -76,6 +76,13 @@ function isEditableTarget(target: EventTarget | null) {
   return false
 }
 
+function isWasdWorldActive() {
+  return (
+    document.querySelector('[data-wasd-world="true"], .tf-root, .of-root') !==
+    null
+  )
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = "system",
@@ -151,7 +158,7 @@ export function ThemeProvider({
         return
       }
 
-      if (isEditableTarget(event.target)) {
+      if (isEditableTarget(event.target) || isWasdWorldActive()) {
         return
       }
 

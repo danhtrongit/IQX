@@ -1,16 +1,25 @@
 /**
- * Thông báo (spec Bot và Chiến lược v2.0 §8, PLAN §6.3): settings, the inbox behind the header bell
- * and the one-click unsubscribe of an email link.
- *
- * hand-typed per PLAN §6 (aligned with backend `user-notifications.schemas.ts`); switch to generated
- * types after contracts regen.
+ * Thông báo (spec Bot và Chiến lược v2.0 §8, Khu Văn phòng §12): settings, the inbox behind the
+ * header bell and the one-click unsubscribe of an email link.
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { useAuth } from "@/hooks/use-auth"
 import { api } from "@/lib/api"
+import type { NotificationListResponse } from "@/lib/generated/backend-v2"
 
-export type NotificationType = "bulletin" | "bot_trades"
+export const OFFICE_NOTIFICATION_TYPES = [
+  "office_task_assigned",
+  "office_task_approved",
+  "office_task_returned",
+  "office_proposal_replied",
+  "office_task_submitted",
+  "office_proposal_sent",
+] as const
+
+export type OfficeNotificationType = (typeof OFFICE_NOTIFICATION_TYPES)[number]
+
+export type NotificationType = NotificationListResponse["items"][number]["type"]
 
 export type NotificationSettings = {
   enabled: boolean
@@ -24,19 +33,9 @@ export type NotificationSettings = {
 
 export type NotificationSettingsInput = { enabled: boolean; types: NotificationSettings["types"]; channels: { email: boolean } }
 
-export type NotificationItem = {
-  id: string
-  type: NotificationType
-  trade_date: string
-  title: string
-  body: string
-  /** Bot: `/luyen-tap?tool=bot&bot_tab=lich-su`; bulletin: `/thi-truong?bt=ban-tin&date=YYYY-MM-DD`. */
-  link: string
-  read_at: string | null
-  created_at: string
-}
+export type NotificationItem = NotificationListResponse["items"][number]
 
-export type NotificationList = { items: NotificationItem[]; unread_count: number }
+export type NotificationList = NotificationListResponse
 
 export type UnsubscribeResult = { type: NotificationType; status: "unsubscribed" | "already_used" }
 
@@ -49,7 +48,27 @@ export const NOTIFICATION_SETTINGS_PATH = "/luyen-tap?tool=bot&focus=thong-bao"
 /** `focus` value the Bot panel answers by scrolling to its THÔNG BÁO card. */
 export const NOTIFICATION_FOCUS = "thong-bao"
 
-export const TYPE_LABEL: Record<NotificationType, string> = { bulletin: "Bản tin cuối phiên", bot_trades: "Bot giao dịch" }
+export const TYPE_LABEL: Record<NotificationType, string> = {
+  bulletin: "Bản tin cuối phiên",
+  bot_trades: "Bot giao dịch",
+  office_task_assigned: "Giao nhiệm vụ",
+  office_task_approved: "Duyệt nhiệm vụ",
+  office_task_returned: "Cần làm lại",
+  office_proposal_replied: "Trả lời đề xuất",
+  office_task_submitted: "Chờ xác nhận",
+  office_proposal_sent: "Đề xuất mới",
+}
+
+export const FALLBACK_LINK: Record<NotificationType, string> = {
+  bot_trades: "/luyen-tap?tool=bot&bot_tab=lich-su",
+  bulletin: "/thi-truong?bt=ban-tin",
+  office_task_assigned: "/van-phong?modal=mine",
+  office_task_approved: "/van-phong?modal=mine",
+  office_task_returned: "/van-phong?modal=mine",
+  office_proposal_replied: "/van-phong?modal=mine",
+  office_task_submitted: "/van-phong?modal=mgr",
+  office_proposal_sent: "/van-phong?modal=mgr",
+}
 
 export const notificationKeys = {
   all: (userId: string | undefined) => ["notifications", userId] as const,

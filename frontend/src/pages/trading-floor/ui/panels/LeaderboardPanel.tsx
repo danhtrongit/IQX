@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 
 import { useAuth } from "@/hooks/use-auth"
+import { renderChibiPortraitDataUrl } from "@/lib/chibi-3d/portrait-renderer.ts"
 
 import { avatarImage, ui, world } from "../../bridge.ts"
 import { refreshLeaderboard } from "../../net/leaderboard.ts"
@@ -158,7 +159,8 @@ function Row({
   images: Record<string, string>
   me: boolean
 }) {
-  const src = avatarImage(images, row.avatar)
+  const src =
+    avatarImage(images, row.avatar) ?? renderChibiPortraitDataUrl(row.avatar)
   return (
     <li
       className={cx(

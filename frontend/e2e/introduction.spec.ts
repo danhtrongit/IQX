@@ -33,7 +33,7 @@ test.describe("introduction landing", () => {
       await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", href)
     }
     // Layout v1.3 §1: no DEMO TRADING / HỌC VIỆN in the header.
-    await expect(nav.getByRole("link")).toHaveText(["Giới thiệu", "Luyện tập", "Flashback", "Chiến lược", "Khu giao dịch"])
+    await expect(nav.getByRole("link")).toHaveText(["Giới thiệu", "Luyện tập", "Flashback", "Chiến lược", "Khu giao dịch", "Văn phòng"])
     await expect(header.getByRole("link", { name: "Bắt đầu ngay" })).toHaveAttribute(
       "href",
       "/luyen-tap?tool=hoc-vien"

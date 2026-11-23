@@ -1,5 +1,5 @@
 /**
- * The only link between the Phaser world and the HTML screens.
+ * The only link between the Three.js 3D world and the HTML screens.
  * The game writes what the player is near and asks for panels; the UI writes profile, market
  * data and sends commands back. Neither side imports the other.
  *
@@ -125,10 +125,8 @@ export const ui = {
   toasts: new Store<Toast[]>([]),
   /** The game finished loading its art. */
   ready: new Store<boolean>(false),
-  /** Front-view picture of each character that has its own art, for the HTML screens. */
+  /** Front-view portrait data URL of each Chibi character for the HTML screens. */
   avatarImages: new Store<Record<string, string>>({}),
-  /** Cloth mask + median luminance per character, for the join screen's live recoloring. */
-  avatarMasks: new Store<Record<string, { mask: string; luma: number }>>({}),
   /** What was said on the floor since it was opened, oldest first (not stored anywhere). */
   chatLog: new Store<ChatLine[]>([]),
   /** Place in line while the hall is full (1 = next), null when on the floor. */

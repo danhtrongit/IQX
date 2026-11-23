@@ -65,6 +65,7 @@ import { WorkspaceModule } from './modules/workspace/workspace.module.js';
 import { ResearchModule } from './modules/research/index.js';
 import { SacoPostsModule } from './modules/trading-floor/saco-posts.module.js';
 import { TradingFloorModule } from './modules/trading-floor/trading-floor.module.js';
+import { OfficeModule } from './modules/office/index.js';
 
 @Module({})
 class ApiModule {}
@@ -122,6 +123,7 @@ export function createApiModule(
       TeamLeadsModule,
       SacoPostsModule,
       TradingFloorModule,
+      OfficeModule,
       DomainRuntimeModule.forApi(values.QUEUE_ENABLED),
       RealtimeModule.register({
         enabled: values.REALTIME_ENABLED,
