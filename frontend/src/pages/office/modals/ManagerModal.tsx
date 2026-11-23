@@ -369,8 +369,14 @@ export function ManagerModal({
       const result = await approveTasksMutation.mutateAsync(ids)
       setSelectedReviewIds((prev) => prev.filter((id) => !ids.includes(id)))
       const approvedList = result.approved ?? []
-      const count = approvedList.length || ids.length
-      if (count === 1) {
+      const skippedList = result.skipped ?? []
+      const count = approvedList.length
+      if (skippedList.length > 0) {
+        const reasons = Array.from(new Set(skippedList.map((item) => item.reason)))
+        onToast(
+          `Đã duyệt ${count} mục · bỏ qua ${skippedList.length} mục: ${reasons.join(" · ")}`
+        )
+      } else if (count === 1) {
         const firstApproved = approvedList[0]
         const fallbackItem = reviewItems.find((item) => item.id === ids[0])
         const staffName = firstApproved?.staffName ?? fallbackItem?.staffName ?? ""
