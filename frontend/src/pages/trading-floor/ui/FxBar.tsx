@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { Coins, Egg, Megaphone, Flame, Volume2, VolumeX } from "lucide-react"
+import {
+  Coins,
+  Egg,
+  Flame,
+  Megaphone,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react"
 
 import { useAuth } from "@/hooks/use-auth"
 import { formatXu, shopKeys } from "@/pages/demo-trading/shop/shop-model"
@@ -31,18 +40,43 @@ const COOLDOWN: Record<FxKind, number> = {
   khan: FX_KHAN_COOLDOWN_MS,
 }
 
+const COMPACT_FX_QUERY = "(max-width: 640px), (max-height: 500px)"
+
+function useCompactFxBar(): boolean {
+  const [compact, setCompact] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia(COMPACT_FX_QUERY).matches
+  )
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return
+    }
+    const media = window.matchMedia(COMPACT_FX_QUERY)
+    const onChange = () => setCompact(media.matches)
+    media.addEventListener("change", onChange)
+    return () => media.removeEventListener("change", onChange)
+  }, [])
+  return compact
+}
+
 export function FxBar() {
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const guest = useStore(ui.guest)
   const shop = useShopState()
   const soundOn = useStore(fxSoundOn)
+  const compact = useCompactFxBar()
+  const [barExpanded, setBarExpanded] = useState(false)
   const [cooldowns, setCooldowns] = useState({ xaxui: 0, gay: 0, khan: 0 })
   const [now, setNow] = useState(() => Date.now())
   const [open, setOpen] = useState<"gay" | "khan" | "rain" | null>(null)
   const [text, setText] = useState("")
   const [amount, setAmount] = useState(100)
   const barRef = useRef<HTMLDivElement>(null)
+
+  const showActions = !compact || barExpanded || open !== null
 
   useEffect(() => {
     const tick = setInterval(() => setNow(Date.now()), 500)
@@ -67,12 +101,18 @@ export function FxBar() {
   }, [queryClient, user])
 
   useEffect(() => {
-    if (!open) return
+    if (!open && !(compact && barExpanded)) return
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === "Escape") setOpen(null)
+      if (e.key === "Escape") {
+        setOpen(null)
+        setBarExpanded(false)
+      }
     }
     const onDown = (e: PointerEvent): void => {
-      if (!barRef.current?.contains(e.target as Node)) setOpen(null)
+      if (!barRef.current?.contains(e.target as Node)) {
+        setOpen(null)
+        setBarExpanded(false)
+      }
     }
     window.addEventListener("keydown", onKey)
     window.addEventListener("pointerdown", onDown)
@@ -80,7 +120,7 @@ export function FxBar() {
       window.removeEventListener("keydown", onKey)
       window.removeEventListener("pointerdown", onDown)
     }
-  }, [open])
+  }, [open, compact, barExpanded])
 
   const balance = shop.data?.wallet.balance
   const badWords = hasBadWords(text)
@@ -89,6 +129,7 @@ export function FxBar() {
   const xaxui = (): void => {
     if (needLogin("Đăng nhập để xả xui")) return
     commands.emit("fx", { kind: "xaxui" })
+    if (compact) setBarExpanded(false)
   }
 
   const toggle = (kind: "gay" | "khan" | "rain"): void => {
@@ -119,6 +160,7 @@ export function FxBar() {
     commands.emit("fx", { kind: open, text: text.trim() })
     setText("")
     setOpen(null)
+    if (compact) setBarExpanded(false)
   }
 
   const rainError = !(
@@ -137,6 +179,7 @@ export function FxBar() {
     if (rainError || balance == null) return
     commands.emit("rainGive", amount)
     setOpen(null)
+    if (compact) setBarExpanded(false)
   }
 
   const left = (until: number): number =>
@@ -144,68 +187,103 @@ export function FxBar() {
   const stop = (e: { stopPropagation: () => void }): void => e.stopPropagation()
 
   return (
-    <div className="fx-bar" role="toolbar" aria-label="Hành động" ref={barRef}>
-      <button
-        type="button"
-        className="fx-btn"
-        onClick={xaxui}
-        disabled={
-          cooldowns.xaxui > now ||
-          (!guest && balance != null && balance < FX_COSTS.xaxui)
-        }
-        title={
-          !guest && balance != null && balance < FX_COSTS.xaxui
-            ? `Cần ${FX_COSTS.xaxui} xu`
-            : `Xả xui · ${FX_COSTS.xaxui} xu`
-        }
-      >
-        <Egg size={20} />
-        <small>
-          {cooldowns.xaxui > now ? `${left(cooldowns.xaxui)}s` : "Xả xui"}
-        </small>
-      </button>
-      <button
-        type="button"
-        className={cx("fx-btn", open === "gay" && "on")}
-        onClick={() => toggle("gay")}
-        disabled={cooldowns.gay > now}
-        aria-expanded={open === "gay"}
-        title={`Gáy · ${FX_COSTS.gay} xu`}
-      >
-        <Megaphone size={20} />
-        <small>{cooldowns.gay > now ? `${left(cooldowns.gay)}s` : "Gáy"}</small>
-      </button>
-      <button
-        type="button"
-        className={cx("fx-btn", open === "khan" && "on")}
-        onClick={() => toggle("khan")}
-        disabled={cooldowns.khan > now}
-        aria-expanded={open === "khan"}
-        title={`Khấn Thần Tài · ${FX_COSTS.khan} xu`}
-      >
-        <Flame size={20} />
-        <small>
-          {cooldowns.khan > now ? `${left(cooldowns.khan)}s` : "Khấn"}
-        </small>
-      </button>
-      <button
-        type="button"
-        className={cx("fx-btn", "fx-gold", open === "rain" && "on")}
-        onClick={() => toggle("rain")}
-        aria-expanded={open === "rain"}
-        title="Tán lộc"
-      >
-        <Coins size={20} />
-        <small>Tán lộc</small>
-      </button>
-      <button
-        type="button"
-        className="fx-btn fx-sound"
-        onClick={() => setFxSound(!soundOn)}
-        aria-label={soundOn ? "Tắt tiếng" : "Bật tiếng"}
-      >
-        {soundOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
-      </button>
+    <div
+      className={cx(
+        "fx-bar",
+        compact && !showActions && "fx-bar--collapsed",
+        compact && showActions && "fx-bar--expanded"
+      )}
+      role="toolbar"
+      aria-label="Hành động"
+      ref={barRef}
+    >
+      {showActions && (
+        <>
+          <button
+            type="button"
+            className="fx-btn"
+            onClick={xaxui}
+            disabled={
+              cooldowns.xaxui > now ||
+              (!guest && balance != null && balance < FX_COSTS.xaxui)
+            }
+            title={
+              !guest && balance != null && balance < FX_COSTS.xaxui
+                ? `Cần ${FX_COSTS.xaxui} xu`
+                : `Xả xui · ${FX_COSTS.xaxui} xu`
+            }
+          >
+            <Egg size={20} />
+            <small>
+              {cooldowns.xaxui > now ? `${left(cooldowns.xaxui)}s` : "Xả xui"}
+            </small>
+          </button>
+          <button
+            type="button"
+            className={cx("fx-btn", open === "gay" && "on")}
+            onClick={() => toggle("gay")}
+            disabled={cooldowns.gay > now}
+            aria-expanded={open === "gay"}
+            title={`Gáy · ${FX_COSTS.gay} xu`}
+          >
+            <Megaphone size={20} />
+            <small>
+              {cooldowns.gay > now ? `${left(cooldowns.gay)}s` : "Gáy"}
+            </small>
+          </button>
+          <button
+            type="button"
+            className={cx("fx-btn", open === "khan" && "on")}
+            onClick={() => toggle("khan")}
+            disabled={cooldowns.khan > now}
+            aria-expanded={open === "khan"}
+            title={`Khấn Thần Tài · ${FX_COSTS.khan} xu`}
+          >
+            <Flame size={20} />
+            <small>
+              {cooldowns.khan > now ? `${left(cooldowns.khan)}s` : "Khấn"}
+            </small>
+          </button>
+          <button
+            type="button"
+            className={cx("fx-btn", "fx-gold", open === "rain" && "on")}
+            onClick={() => toggle("rain")}
+            aria-expanded={open === "rain"}
+            title="Tán lộc"
+          >
+            <Coins size={20} />
+            <small>Tán lộc</small>
+          </button>
+          <button
+            type="button"
+            className="fx-btn fx-sound"
+            onClick={() => setFxSound(!soundOn)}
+            aria-label={soundOn ? "Tắt tiếng" : "Bật tiếng"}
+          >
+            {soundOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
+          </button>
+        </>
+      )}
+
+      {compact && (
+        <button
+          type="button"
+          className={cx("fx-btn", "fx-toggle", showActions && "on")}
+          onClick={() => {
+            if (showActions) {
+              setOpen(null)
+              setBarExpanded(false)
+            } else {
+              setBarExpanded(true)
+            }
+          }}
+          aria-expanded={showActions}
+          aria-label={showActions ? "Thu gọn hành động" : "Mở hành động"}
+          title={showActions ? "Thu gọn hành động" : "Hành động"}
+        >
+          {showActions ? <X size={19} /> : <Sparkles size={19} />}
+        </button>
+      )}
 
       {(open === "gay" || open === "khan") && (
         <form className="fx-pop" onSubmit={submitText} onKeyDown={stop}>

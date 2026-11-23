@@ -4,10 +4,10 @@
 .tf-root .tf-posts-board {
   position: absolute;
   z-index: 15;
-  top: calc(56px + env(safe-area-inset-top, 0px));
-  right: 12px;
-  width: 300px;
-  max-width: calc(100% - 24px);
+  top: calc(52px + var(--safe-t, 0px));
+  right: calc(12px + var(--safe-r, 0px));
+  width: 268px;
+  max-width: calc(100% - 24px - var(--safe-l, 0px) - var(--safe-r, 0px));
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -369,14 +369,14 @@
 .tf-root .tf-posts-board-collapse {
   position: absolute;
   z-index: 16;
-  top: calc(56px + env(safe-area-inset-top, 0px));
-  right: 12px;
+  top: calc(52px + var(--safe-t, 0px));
+  right: calc(12px + var(--safe-r, 0px));
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  width: min(300px, calc(100% - 24px));
-  height: 44px;
-  padding: 0 12px;
+  width: min(268px, calc(100% - 24px - var(--safe-l, 0px) - var(--safe-r, 0px)));
+  height: 36px;
+  padding: 0 10px;
   border: 0;
   border-radius: 12px 12px 0 0;
   background: transparent;
@@ -391,7 +391,7 @@
 .tf-root .tf-posts-board-wrap .tf-posts-board-title {
   display: flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 36px;
 }
 .tf-root .tf-posts-board.tf-posts-board--collapsed {
   width: auto;
@@ -400,13 +400,35 @@
 .tf-root .tf-posts-board--collapsed .tf-posts-board-title {
   display: flex;
   align-items: center;
+  min-height: 36px;
 }
 @media (max-width: 640px) {
+  .tf-root .tf-posts-board,
+  .tf-root .tf-posts-board-collapse {
+    top: calc(50px + var(--safe-t, 0px));
+    right: calc(8px + var(--safe-r, 0px));
+  }
   .tf-root .tf-posts-board {
     left: auto;
-    right: 12px;
-    width: min(300px, calc(100% - 24px));
+    width: min(296px, calc(100cqw - 16px - var(--safe-l, 0px) - var(--safe-r, 0px)));
     max-width: none;
+  }
+  .tf-root .tf-posts-board-collapse {
+    width: min(296px, calc(100cqw - 16px - var(--safe-l, 0px) - var(--safe-r, 0px)));
+    height: 44px;
+  }
+  .tf-root .tf-posts-board-wrap .tf-posts-board-title {
+    min-height: 44px;
+  }
+  .tf-root .tf-posts-board.tf-posts-board--collapsed {
+    width: auto;
+    max-width: calc(100cqw - 16px - var(--safe-l, 0px) - var(--safe-r, 0px));
+  }
+  .tf-root .tf-posts-board--collapsed .tf-posts-board-title {
+    min-height: 36px;
+    padding: 4px 10px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
   }
   .tf-root .tf-posts-panel {
     left: 0;

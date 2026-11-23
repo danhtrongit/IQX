@@ -49,6 +49,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
   const connection = useStore(ui.connection)
   const hint = useStore(ui.hint)
   const panel = useStore(ui.panel)
+  const posts = useStore(ui.posts)
   const indices = useStore(world.indices)
   const inbox = useStore(chat.inbox)
   const userUnread = unreadAsUser(inbox)
@@ -117,7 +118,7 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
         </div>
       </div>
 
-      {hint && !panel && (
+      {hint && !panel && !posts.open && (
         <button
           type="button"
           className="hint"

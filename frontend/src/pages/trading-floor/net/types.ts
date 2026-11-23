@@ -4,7 +4,7 @@
  */
 export type Facing = "s" | "se" | "e" | "ne" | "n" | "sw" | "w" | "nw"
 
-/** Avatars a visitor can pick, each with baked art in `public/trading-floor/assets/characters`. */
+/** Avatars a visitor can pick (procedural 3D Chibi presets defined in `lib/chibi-3d`). */
 export const AVATARS = [
   { id: "male01", gender: "male", label: "Nam · Vest xám hiện đại" },
   { id: "male02", gender: "male", label: "Nam · Sơ mi xanh lịch lãm" },

@@ -1,9 +1,12 @@
 /**
  * Pure Three.js procedural 3D FX & Coin Rain manager for Khu Giao Dịch:
- * - Xả xui: 3D egg pop -> hop -> 10 flying shell shards + yolk splat + 10 rising grey smoke puffs + local shake + xaxui.mp3
- * - Gáy: 6-8 3D firework rockets -> dual-ring starbursts + golden willow climax + flash + dark-red/gold banner + rooster/firework.mp3
- * - Khấn: 3D gold incense bowl + 3 glowing sticks + curling smoke + bow 3x + warm gold aura + 20 rising sparks + bell.mp3
- * - Tán lộc (RainCoinManager): 24 decorative burst coins + spinning/bouncing/glinting 3D gold coins + grab pop + "+10 xu" + coins/coin.mp3
+ * - Xả xui: 3D egg pop -> hop -> bouncing shell shards + yolk splat + swirling grey smoke wisps + golden cleanse sparks + local shake + xaxui.mp3
+ * - Gáy: firework rockets -> air-drag starburst blooms + golden willow climax + fluttering confetti + flash + DOM banner + rooster/firework.mp3
+ * - Khấn: 3D gold incense bowl + 3 glowing sticks + swirling incense smoke + bow 3x + concentric gold lotus aura + spiraling sparks + bell.mp3
+ * - Tán lộc (RainCoinManager): bouncing fountain burst coins + spinning/glinting 3D gold coins + landing/grab rings + "+10 xu" + coins/coin.mp3
+ *
+ * Respects `lite` mode (lower segments & particle caps for mobile Safari) and `prefers-reduced-motion`
+ * (fewer/shorter particles, no camera shake, no strobe flashes).
  */
 import * as THREE from "three"
 
@@ -17,8 +20,14 @@ import {
 import type { Rain } from "../net/types.ts"
 import { playFx, type FxSoundKey } from "./fx-sound.ts"
 import type { OverlayLayer } from "./overlay-layer.ts"
+import { prefersReducedMotion } from "./reduced-motion.ts"
 
 const FIREWORK_COLORS = [0xffd84d, 0xff4d5a, 0xff6ec7, 0x4df3ff, 0x7cff50]
+const CONFETTI_COLORS = [0xffd84d, 0xfff1a8, 0xff5e6c, 0x34d399, 0x60a5fa]
+
+export interface FloorFx3DOptions {
+  lite?: boolean
+}
 
 interface ScheduledTask {
   atS: number
@@ -32,6 +41,11 @@ interface Particle3D {
   vy: number
   vz: number
   gravity: number
+  drag: number
+  bounce: number
+  swirlAmp: number
+  swirlFreq: number
+  swirlPhase: number
   spinX: number
   spinY: number
   spinZ: number
@@ -138,6 +152,7 @@ export class RainCoinManager {
   private readonly parent: THREE.Group
   private readonly world: WorldTransformConfig
   private readonly overlay: OverlayLayer
+  private readonly lite: boolean
   private readonly spawnSparks: (
     wx: number,
     wy: number,
@@ -146,6 +161,15 @@ export class RainCoinManager {
     color: number
   ) => void
   private readonly spawnBurstCoins: (wx: number, wy: number, wz: number) => void
+  private readonly spawnFloorRing: (
+    wx: number,
+    wz: number,
+    color: number,
+    startScale: number,
+    endScale: number,
+    life: number,
+    alpha: number
+  ) => void
 
   private readonly rains = new Map<
     string,
@@ -163,6 +187,7 @@ export class RainCoinManager {
     world: WorldTransformConfig,
     overlay: OverlayLayer,
     hooks: {
+      lite?: boolean
       spawnSparks: (
         wx: number,
         wy: number,
@@ -171,20 +196,32 @@ export class RainCoinManager {
         color: number
       ) => void
       spawnBurstCoins: (wx: number, wy: number, wz: number) => void
+      spawnFloorRing?: (
+        wx: number,
+        wz: number,
+        color: number,
+        startScale: number,
+        endScale: number,
+        life: number,
+        alpha: number
+      ) => void
     }
   ) {
     this.parent = parent
     this.world = world
     this.overlay = overlay
+    this.lite = hooks.lite ?? false
     this.spawnSparks = hooks.spawnSparks
     this.spawnBurstCoins = hooks.spawnBurstCoins
+    this.spawnFloorRing = hooks.spawnFloorRing ?? (() => undefined)
 
-    this.coinRimGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.055, 20)
+    const segs = this.lite ? 12 : 20
+    this.coinRimGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.055, segs)
     this.coinRimGeo.rotateX(Math.PI / 2)
-    this.coinFaceGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.062, 18)
+    this.coinFaceGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.062, segs)
     this.coinFaceGeo.rotateX(Math.PI / 2)
     this.coinHoleGeo = new THREE.BoxGeometry(0.085, 0.085, 0.068)
-    this.shadowGeo = new THREE.CircleGeometry(0.24, 16)
+    this.shadowGeo = new THREE.CircleGeometry(0.24, this.lite ? 10 : 16)
     this.shadowGeo.rotateX(-Math.PI / 2)
   }
 
@@ -266,7 +303,6 @@ export class RainCoinManager {
     root.add(shadowMesh, coinMesh)
     this.parent.add(root)
 
-    // Keep base targetOpacity via userData for clean transitions
     rimMat.userData.targetOpacity = targetOpacity
     faceMat.userData.targetOpacity = targetOpacity
     holeMat.userData.targetOpacity = targetOpacity
@@ -308,13 +344,18 @@ export class RainCoinManager {
     coin.timer = 0
     this.dyingCoins.push(coin)
 
+    const reduced = prefersReducedMotion()
+    const sparkCount = reduced ? 3 : this.lite ? 4 : 8
     this.spawnSparks(
       coin.wx,
       Math.max(0.32, coin.coinMesh.position.y),
       coin.wz,
-      6,
+      sparkCount,
       0xffe066
     )
+    if (!reduced) {
+      this.spawnFloorRing(coin.wx, coin.wz, 0xffe066, 0.35, 1.15, 0.34, 0.78)
+    }
     if (isSelfGrab) {
       playFx("coin")
       this.overlay.showPlusXu(coin.lx, coin.ly, 0.72, value)
@@ -404,7 +445,11 @@ export class RainCoinManager {
       if (rain.mine) continue
       for (const c of rain.coins.values()) {
         if (!c.coinMesh.visible) continue
-        const pt = projectLogical(c.lx, c.ly, Math.max(0.24, c.coinMesh.position.y))
+        const pt = projectLogical(
+          c.lx,
+          c.ly,
+          Math.max(0.24, c.coinMesh.position.y)
+        )
         if (!pt.visible) continue
         const d = Math.hypot(localX - pt.x, localY - pt.y)
         if (d < bestD) {
@@ -424,9 +469,10 @@ export class RainCoinManager {
 
   update(dt: number): void {
     if (this.disposed) return
+    const reduced = prefersReducedMotion()
     for (const rain of this.rains.values()) {
       for (const coin of rain.coins.values()) {
-        this.stepLiveCoin(coin, dt)
+        this.stepLiveCoin(coin, dt, reduced)
       }
     }
     for (let i = this.dyingCoins.length - 1; i >= 0; i -= 1) {
@@ -445,7 +491,7 @@ export class RainCoinManager {
     }
   }
 
-  private stepLiveCoin(coin: ActiveCoin, dt: number): void {
+  private stepLiveCoin(coin: ActiveCoin, dt: number, reduced: boolean): void {
     coin.timer += dt
     const shadowBase =
       (coin.shadowMat.userData.targetOpacity as number | undefined) ?? 0.36
@@ -464,16 +510,21 @@ export class RainCoinManager {
     coin.shadowMesh.visible = true
 
     if (coin.state === "falling") {
-      const t = Math.min(1, coin.timer / coin.fallS)
+      const fallDur = reduced ? coin.fallS * 0.55 : coin.fallS
+      const t = Math.min(1, coin.timer / fallDur)
       const easeIn = t * t
-      coin.coinMesh.position.y = 8.2 * (1 - easeIn) + 0.24 * easeIn
-      coin.coinMesh.rotation.y += dt * 7
+      const startY = reduced ? 2.4 : 8.2
+      coin.coinMesh.position.y = startY * (1 - easeIn) + 0.24 * easeIn
+      coin.coinMesh.rotation.y += dt * (reduced ? 2.2 : 7)
       this.setCoinOpacity(coin, Math.min(1, coin.timer / 0.16))
       coin.shadowMat.opacity = shadowBase * t
       coin.shadowMesh.scale.setScalar(0.35 + 0.65 * t)
       if (t >= 1) {
-        coin.state = "bouncing"
+        coin.state = reduced ? "idle" : "bouncing"
         coin.timer = 0
+        if (!this.lite && !reduced) {
+          this.spawnFloorRing(coin.wx, coin.wz, 0xffdf70, 0.24, 0.72, 0.28, 0.48)
+        }
       }
       return
     }
@@ -495,23 +546,27 @@ export class RainCoinManager {
     }
 
     // Idle spin + subtle bob + periodic sparkle glint
-    coin.spinPhase += dt * 2.5
+    coin.spinPhase += dt * (reduced ? 0.65 : 2.5)
     coin.coinMesh.rotation.y = coin.spinPhase
-    coin.coinMesh.position.y = 0.25 + Math.sin(coin.spinPhase * 1.4) * 0.04
+    coin.coinMesh.position.y = reduced
+      ? 0.25
+      : 0.25 + Math.sin(coin.spinPhase * 1.4) * 0.04
     this.setCoinOpacity(coin, 1)
     coin.shadowMat.opacity = shadowBase
     coin.shadowMesh.scale.setScalar(1)
 
-    coin.glintCooldown -= dt
-    if (coin.glintCooldown <= 0) {
-      coin.glintCooldown = randRange(1.9, 3.4)
-      this.spawnSparks(
-        coin.wx + randRange(-0.12, 0.12),
-        0.34,
-        coin.wz + randRange(-0.12, 0.12),
-        1,
-        0xfffbe0
-      )
+    if (!reduced) {
+      coin.glintCooldown -= dt
+      if (coin.glintCooldown <= 0) {
+        coin.glintCooldown = this.lite ? randRange(3.2, 5.4) : randRange(1.8, 3.2)
+        this.spawnSparks(
+          coin.wx + randRange(-0.12, 0.12),
+          0.34,
+          coin.wz + randRange(-0.12, 0.12),
+          1,
+          0xfffbe0
+        )
+      }
     }
   }
 
@@ -533,7 +588,6 @@ export class RainCoinManager {
       return t >= 1
     }
 
-    // Quiet fade out
     const t = Math.min(1, coin.timer / 0.22)
     this.setCoinOpacity(coin, 1 - t)
     coin.shadowMat.opacity = shadowBase * (1 - t)
@@ -563,6 +617,8 @@ export class FloorFx3D {
 
   private readonly world: WorldTransformConfig
   private readonly overlay: OverlayLayer
+  private readonly lite: boolean
+  private readonly maxParticles: number
   private readonly tasks: ScheduledTask[] = []
   private readonly particles: Particle3D[] = []
   private readonly rockets: FireworkRocket[] = []
@@ -573,19 +629,20 @@ export class FloorFx3D {
   private readonly flashLights: FlashLightFx[] = []
 
   // Shared lightweight procedural geometries (disposed cleanly in dispose())
-  private readonly sparkGeo = new THREE.OctahedronGeometry(0.085, 0)
-  private readonly smokeGeo = new THREE.SphereGeometry(0.14, 10, 8)
-  private readonly shardGeo = new THREE.TetrahedronGeometry(0.1, 0)
-  private readonly rocketGeo = new THREE.SphereGeometry(0.095, 8, 8)
-  private readonly burstCoinGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.04, 14)
-  private readonly ringGeo = new THREE.RingGeometry(0.32, 0.44, 32)
-  private readonly eggGeo = new THREE.SphereGeometry(0.16, 14, 12)
-  private readonly yolkPuddleGeo = new THREE.CircleGeometry(0.32, 18)
-  private readonly yolkCenterGeo = new THREE.SphereGeometry(0.14, 12, 10)
-  private readonly bowlGeo = new THREE.CylinderGeometry(0.16, 0.11, 0.15, 16)
-  private readonly bowlRimGeo = new THREE.TorusGeometry(0.16, 0.022, 8, 18)
-  private readonly stickGeo = new THREE.CylinderGeometry(0.011, 0.011, 0.56, 6)
-  private readonly emberGeo = new THREE.SphereGeometry(0.026, 8, 6)
+  private readonly sparkGeo: THREE.OctahedronGeometry
+  private readonly smokeGeo: THREE.SphereGeometry
+  private readonly shardGeo: THREE.TetrahedronGeometry
+  private readonly confettiGeo: THREE.PlaneGeometry
+  private readonly rocketGeo: THREE.SphereGeometry
+  private readonly burstCoinGeo: THREE.CylinderGeometry
+  private readonly ringGeo: THREE.RingGeometry
+  private readonly eggGeo: THREE.SphereGeometry
+  private readonly yolkPuddleGeo: THREE.CircleGeometry
+  private readonly yolkCenterGeo: THREE.SphereGeometry
+  private readonly bowlGeo: THREE.CylinderGeometry
+  private readonly bowlRimGeo: THREE.TorusGeometry
+  private readonly stickGeo: THREE.CylinderGeometry
+  private readonly emberGeo: THREE.SphereGeometry
 
   private clockS = 0
   private shakeRemainingS = 0
@@ -596,13 +653,31 @@ export class FloorFx3D {
   constructor(
     scene: THREE.Scene,
     world: WorldTransformConfig,
-    overlay: OverlayLayer
+    overlay: OverlayLayer,
+    opts?: FloorFx3DOptions
   ) {
     this.world = world
     this.overlay = overlay
+    this.lite = opts?.lite ?? false
+    this.maxParticles = this.lite ? 72 : 220
     this.group = new THREE.Group()
     this.group.name = "trading-floor-fx-3d"
     scene.add(this.group)
+
+    this.sparkGeo = new THREE.OctahedronGeometry(0.085, 0)
+    this.smokeGeo = new THREE.SphereGeometry(0.14, this.lite ? 6 : 10, this.lite ? 5 : 8)
+    this.shardGeo = new THREE.TetrahedronGeometry(0.1, 0)
+    this.confettiGeo = new THREE.PlaneGeometry(0.12, 0.055)
+    this.rocketGeo = new THREE.SphereGeometry(0.095, this.lite ? 6 : 8, this.lite ? 5 : 8)
+    this.burstCoinGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.04, this.lite ? 10 : 14)
+    this.ringGeo = new THREE.RingGeometry(0.32, 0.44, this.lite ? 20 : 32)
+    this.eggGeo = new THREE.SphereGeometry(0.16, this.lite ? 10 : 14, this.lite ? 8 : 12)
+    this.yolkPuddleGeo = new THREE.CircleGeometry(0.32, this.lite ? 12 : 18)
+    this.yolkCenterGeo = new THREE.SphereGeometry(0.14, this.lite ? 8 : 12, this.lite ? 6 : 10)
+    this.bowlGeo = new THREE.CylinderGeometry(0.16, 0.11, 0.15, this.lite ? 10 : 16)
+    this.bowlRimGeo = new THREE.TorusGeometry(0.16, 0.022, 6, this.lite ? 12 : 18)
+    this.stickGeo = new THREE.CylinderGeometry(0.011, 0.011, 0.56, 6)
+    this.emberGeo = new THREE.SphereGeometry(0.026, 6, 6)
 
     this.ringGeo.rotateX(-Math.PI / 2)
     this.yolkPuddleGeo.rotateX(-Math.PI / 2)
@@ -610,11 +685,21 @@ export class FloorFx3D {
     this.burstCoinGeo.rotateX(Math.PI / 2)
 
     this.coins = new RainCoinManager(this.group, world, overlay, {
+      lite: this.lite,
       spawnSparks: (wx, wy, wz, count, color) => {
         this.spawnRadialSparks(wx, wy, wz, count, color, 1.2, 2.5, 0.44)
       },
+      spawnFloorRing: (wx, wz, color, startScale, endScale, life, alpha) => {
+        this.spawnWorldRing(wx, wz, color, startScale, endScale, life, alpha)
+      },
       spawnBurstCoins: (wx, wy, wz) => {
-        for (let i = 0; i < 24; i += 1) {
+        const reduced = prefersReducedMotion()
+        const count = Math.max(
+          6,
+          Math.round(24 * (this.lite ? 0.5 : 1) * (reduced ? 0.5 : 1))
+        )
+        const lifeMul = reduced ? 0.65 : 1
+        for (let i = 0; i < count; i += 1) {
           const angle = Math.random() * Math.PI * 2
           const speed = randRange(1.2, 3.0)
           this.addParticle(this.burstCoinGeo, 0xffd84d, {
@@ -625,10 +710,11 @@ export class FloorFx3D {
             vy: randRange(1.8, 3.8),
             vz: Math.sin(angle) * speed,
             gravity: 7.4,
+            bounce: 0.42,
             spinX: randRange(-10, 10),
             spinY: randRange(-12, 12),
             spinZ: randRange(-8, 8),
-            life: randRange(0.78, 1.08),
+            life: randRange(0.78, 1.08) * lifeMul,
             startScale: 1.0,
             endScale: 0.55,
             startAlpha: 1,
@@ -637,6 +723,21 @@ export class FloorFx3D {
         }
       },
     })
+  }
+
+  /** Exposed for diagnostics & unit tests. */
+  getActiveParticleCount(): number {
+    return this.particles.length
+  }
+
+  private scaleCount(base: number, min = 2): number {
+    const reduced = prefersReducedMotion()
+    const mul = (this.lite ? 0.5 : 1) * (reduced ? 0.55 : 1)
+    return Math.max(min, Math.round(base * mul))
+  }
+
+  private scaleLife(base: number): number {
+    return prefersReducedMotion() ? base * 0.65 : base
   }
 
   private schedule(delayS: number, run: () => void): void {
@@ -662,6 +763,10 @@ export class FloorFx3D {
       vy: number
       vz: number
       gravity: number
+      drag?: number
+      bounce?: number
+      swirlAmp?: number
+      swirlFreq?: number
       spinX?: number
       spinY?: number
       spinZ?: number
@@ -670,15 +775,24 @@ export class FloorFx3D {
       endScale: number
       startAlpha: number
       additive: boolean
+      doubleSide?: boolean
     }
   ): void {
     if (this.disposed) return
+    if (this.particles.length >= this.maxParticles) {
+      const oldest = this.particles.shift()
+      if (oldest) {
+        this.group.remove(oldest.mesh)
+        oldest.mat.dispose()
+      }
+    }
     const mat = new THREE.MeshBasicMaterial({
       color,
       transparent: true,
       opacity: cfg.startAlpha,
       depthWrite: !cfg.additive,
       blending: cfg.additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+      side: cfg.doubleSide ? THREE.DoubleSide : THREE.FrontSide,
     })
     const mesh = new THREE.Mesh(geo, mat)
     mesh.position.set(cfg.x, cfg.y, cfg.z)
@@ -691,6 +805,11 @@ export class FloorFx3D {
       vy: cfg.vy,
       vz: cfg.vz,
       gravity: cfg.gravity,
+      drag: cfg.drag ?? 0,
+      bounce: cfg.bounce ?? 0,
+      swirlAmp: cfg.swirlAmp ?? 0,
+      swirlFreq: cfg.swirlFreq ?? 0,
+      swirlPhase: randRange(0, Math.PI * 2),
       spinX: cfg.spinX ?? 0,
       spinY: cfg.spinY ?? 0,
       spinZ: cfg.spinZ ?? 0,
@@ -712,7 +831,8 @@ export class FloorFx3D {
     maxSpeed: number,
     life: number,
     gravity = 2.8,
-    startScale = 0.85
+    startScale = 0.85,
+    drag = 0
   ): void {
     for (let i = 0; i < count; i += 1) {
       const theta = Math.random() * Math.PI * 2
@@ -726,6 +846,7 @@ export class FloorFx3D {
         vy: Math.cos(phi) * speed,
         vz: Math.sin(phi) * Math.sin(theta) * speed,
         gravity,
+        drag,
         spinY: randRange(-6, 6),
         life: life * randRange(0.85, 1.15),
         startScale,
@@ -744,39 +865,64 @@ export class FloorFx3D {
     peakIntensity: number,
     life: number
   ): void {
+    if (prefersReducedMotion()) return
+    if (this.lite && this.flashLights.length >= 1) return
     const light = new THREE.PointLight(color, peakIntensity, 16, 1.4)
     light.position.set(wx, wy, wz)
     this.group.add(light)
     this.flashLights.push({ light, age: 0, life, peakIntensity })
   }
 
-  /** Glowing golden floor click ripple marker (`520ms`). */
-  spawnClickRing(lx: number, ly: number): void {
+  private spawnWorldRing(
+    wx: number,
+    wz: number,
+    color: number,
+    startScale: number,
+    endScale: number,
+    life: number,
+    startAlpha: number,
+    additive = false
+  ): void {
     if (this.disposed) return
-    const pt = logicalToWorld(lx, ly, this.world)
     const mat = new THREE.MeshBasicMaterial({
-      color: 0xffd76a,
+      color,
       transparent: true,
-      opacity: 0.95,
+      opacity: startAlpha,
       depthWrite: false,
+      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
       side: THREE.DoubleSide,
     })
     const mesh = new THREE.Mesh(this.ringGeo, mat)
-    mesh.position.set(pt.x, 0.032, pt.z)
-    mesh.scale.setScalar(0.45)
+    mesh.position.set(wx, 0.034, wz)
+    mesh.scale.setScalar(startScale)
     this.group.add(mesh)
     this.rings.push({
       mesh,
       mat,
       age: 0,
-      life: 0.52,
-      startScale: 0.45,
-      endScale: 1.55,
-      startAlpha: 0.95,
+      life,
+      startScale,
+      endScale,
+      startAlpha,
     })
   }
 
-  /** Xả xui: 3D egg pop -> hop -> 10 shell shards + yolk splat + 10 rising grey smoke puffs + local shake + xaxui.mp3. */
+  /** Glowing golden floor click ripple marker (`520ms`). */
+  spawnClickRing(lx: number, ly: number): void {
+    if (this.disposed) return
+    const pt = logicalToWorld(lx, ly, this.world)
+    this.spawnWorldRing(
+      pt.x,
+      pt.z,
+      0xffd76a,
+      0.45,
+      1.55,
+      this.scaleLife(0.52),
+      0.95
+    )
+  }
+
+  /** Xả xui: 3D egg pop -> hop -> bouncing shell shards + yolk splat + swirling bad-luck smoke + golden cleanse sparks + local shake + xaxui.mp3. */
   playXaXui(
     lx: number,
     ly: number,
@@ -798,7 +944,7 @@ export class FloorFx3D {
     const mesh = new THREE.Mesh(this.eggGeo, mat)
     mesh.position.set(pt.x, 0.21, pt.z)
     mesh.scale.set(0.3, 0.38, 0.3)
-    mesh.castShadow = true
+    mesh.castShadow = !this.lite
     this.group.add(mesh)
 
     this.eggs.push({
@@ -816,11 +962,24 @@ export class FloorFx3D {
   }
 
   private crackEgg(egg: EggFx): void {
-    if (egg.isSelf) {
+    const reduced = prefersReducedMotion()
+    if (egg.isSelf && !reduced) {
       this.shakeRemainingS = 0.12
       this.shakeDurationS = 0.12
       this.shakeAmp = 0.12
     }
+
+    // Crisp stomp impact ring on the floor
+    this.spawnWorldRing(
+      egg.wx,
+      egg.wz,
+      0xf6c65b,
+      0.4,
+      1.7,
+      this.scaleLife(0.42),
+      0.75,
+      true
+    )
 
     // Yolk splat on floor
     const group = new THREE.Group()
@@ -854,53 +1013,79 @@ export class FloorFx3D {
       mats: [albumenMat, yolkMat],
       age: 0,
       popS: 0.12,
-      stayS: 0.85,
+      stayS: reduced ? 0.55 : 0.85,
       fadeS: 0.36,
     })
 
-    // 10 flying eggshell shards with gravity
-    for (let i = 0; i < 10; i += 1) {
-      const a = (i / 10) * Math.PI * 2 + randRange(-0.25, 0.25)
-      const spd = randRange(1.2, 2.6)
+    // Bouncing eggshell shards with gravity
+    const shardCount = this.scaleCount(12, 4)
+    for (let i = 0; i < shardCount; i += 1) {
+      const a = (i / shardCount) * Math.PI * 2 + randRange(-0.25, 0.25)
+      const spd = randRange(1.2, 2.7)
       this.addParticle(this.shardGeo, i % 2 === 0 ? 0xfaf5e8 : 0xefe6cf, {
         x: egg.wx,
         y: 0.2,
         z: egg.wz,
         vx: Math.cos(a) * spd,
-        vy: randRange(1.6, 3.2),
+        vy: randRange(1.7, 3.3),
         vz: Math.sin(a) * spd,
-        gravity: 7.5,
+        gravity: 7.8,
+        bounce: 0.38,
         spinX: randRange(-12, 12),
         spinY: randRange(-12, 12),
         spinZ: randRange(-12, 12),
-        life: 0.72,
+        life: this.scaleLife(0.76),
         startScale: 1.05,
-        endScale: 0.6,
+        endScale: 0.55,
         startAlpha: 1,
         additive: false,
       })
     }
 
-    // 10 rising grey "bad-luck" smoke wisps
-    for (let i = 0; i < 10; i += 1) {
-      this.addParticle(this.smokeGeo, 0x949ba8, {
-        x: egg.wx + randRange(-0.22, 0.22),
-        y: 0.22 + randRange(0, 0.15),
-        z: egg.wz + randRange(-0.22, 0.22),
-        vx: randRange(-0.42, 0.42),
-        vy: randRange(0.75, 1.45),
-        vz: randRange(-0.42, 0.42),
+    // Rising swirling dark-slate "vía xui" smoke wisps
+    const smokeCount = this.scaleCount(10, 4)
+    for (let i = 0; i < smokeCount; i += 1) {
+      this.addParticle(this.smokeGeo, i % 3 === 0 ? 0x7c8396 : 0x9aa2b2, {
+        x: egg.wx + randRange(-0.24, 0.24),
+        y: 0.22 + randRange(0, 0.16),
+        z: egg.wz + randRange(-0.24, 0.24),
+        vx: randRange(-0.32, 0.32),
+        vy: randRange(0.78, 1.45),
+        vz: randRange(-0.32, 0.32),
         gravity: -0.25,
-        life: randRange(0.78, 1.15),
+        swirlAmp: reduced ? 0 : 0.22,
+        swirlFreq: 4.5,
+        life: this.scaleLife(randRange(0.78, 1.15)),
         startScale: 0.55,
-        endScale: 1.85,
-        startAlpha: 0.58,
+        endScale: 1.9,
+        startAlpha: 0.56,
         additive: false,
+      })
+    }
+
+    // Golden cleanse sparks signaling bad luck dispelled
+    const cleanseCount = this.scaleCount(8, 3)
+    for (let i = 0; i < cleanseCount; i += 1) {
+      const a = (i / cleanseCount) * Math.PI * 2
+      this.addParticle(this.sparkGeo, 0xffe07a, {
+        x: egg.wx + Math.cos(a) * 0.25,
+        y: 0.24,
+        z: egg.wz + Math.sin(a) * 0.25,
+        vx: Math.cos(a) * 0.6,
+        vy: randRange(1.2, 2.1),
+        vz: Math.sin(a) * 0.6,
+        gravity: 1.2,
+        spinY: 5,
+        life: this.scaleLife(0.62),
+        startScale: 0.72,
+        endScale: 0.06,
+        startAlpha: 0.95,
+        additive: true,
       })
     }
   }
 
-  /** Gáy: 6-8 firework rockets -> dual-ring starbursts + golden willow burst + flash + DOM banner + sounds. */
+  /** Gáy: firework rockets -> air-drag starburst blooms + golden willow + confetti + flash + DOM banner + sounds. */
   playGay(
     lx: number,
     ly: number,
@@ -909,21 +1094,34 @@ export class FloorFx3D {
     opts: { isSelf: boolean; soundVol?: number }
   ): void {
     if (this.disposed) return
+    const reduced = prefersReducedMotion()
     const vol = opts.soundVol ?? 1
     const base = logicalToWorld(lx, ly, this.world)
-    const count = 6 + Math.floor(Math.random() * 3) // 6..8
+    const count = reduced
+      ? 3
+      : this.lite
+        ? 4
+        : 6 + Math.floor(Math.random() * 3)
 
     this.scheduleSound(0, "rooster", vol)
     this.scheduleSound(0.5, "firework", vol)
-    this.scheduleSound(1.3, "firework", vol)
+    if (!reduced) this.scheduleSound(1.3, "firework", vol)
 
-    this.overlay.showFxBanner(lx, ly, 2.4, "gay", `${name} gáy:`, text, 5000)
+    this.overlay.showFxBanner(
+      lx,
+      ly,
+      2.4,
+      "gay",
+      `${name} gáy:`,
+      text,
+      reduced ? 3500 : 5000
+    )
 
     for (let i = 0; i < count; i += 1) {
       const delayS =
         i === 0
           ? 0
-          : Math.min(1.1, (i / (count - 1)) * 1.02 + randRange(0, 0.08))
+          : Math.min(1.05, (i / Math.max(1, count - 1)) * 0.98 + randRange(0, 0.08))
       const outerColor = FIREWORK_COLORS[i % FIREWORK_COLORS.length]!
       const innerColor = FIREWORK_COLORS[(i + 2) % FIREWORK_COLORS.length]!
       this.schedule(delayS, () => {
@@ -934,7 +1132,7 @@ export class FloorFx3D {
         )
         const apex = new THREE.Vector3(
           start.x + randRange(-0.6, 0.6),
-          randRange(4.4, 6.6),
+          randRange(4.4, 6.4),
           start.z + randRange(-0.5, 0.5)
         )
         const mat = new THREE.MeshBasicMaterial({
@@ -961,18 +1159,73 @@ export class FloorFx3D {
       })
     }
 
-    // Final golden willow burst at +1300ms + warm flash light
-    this.schedule(1.3, () => {
+    // Final golden willow climax burst + fluttering celebratory confetti
+    this.schedule(reduced ? 0.85 : 1.3, () => {
       const wx = base.x + randRange(-0.25, 0.25)
-      const wy = randRange(5.1, 6.2)
+      const wy = randRange(5.0, 6.0)
       const wz = base.z + randRange(-0.25, 0.25)
-      this.spawnFlashLight(wx, wy, wz, 0xffdc8c, 5.2, 0.34)
-      this.spawnRadialSparks(wx, wy, wz, 56, 0xffd84d, 1.0, 4.1, 1.55, 2.3, 1.05)
-      this.spawnRadialSparks(wx, wy, wz, 28, 0xfff4b8, 0.6, 2.2, 1.35, 2.1, 0.85)
+      this.spawnFlashLight(wx, wy, wz, 0xffdc8c, 5.0, 0.34)
+      this.spawnRadialSparks(
+        wx,
+        wy,
+        wz,
+        this.scaleCount(48, 12),
+        0xffd84d,
+        1.2,
+        4.3,
+        this.scaleLife(1.5),
+        2.1,
+        1.05,
+        1.45
+      )
+      this.spawnRadialSparks(
+        wx,
+        wy,
+        wz,
+        this.scaleCount(24, 6),
+        0xfff4b8,
+        0.7,
+        2.3,
+        this.scaleLife(1.3),
+        1.9,
+        0.85,
+        1.35
+      )
+
+      const confettiCount = this.scaleCount(20, 6)
+      for (let i = 0; i < confettiCount; i += 1) {
+        const a = Math.random() * Math.PI * 2
+        const r = randRange(0.4, 1.7)
+        this.addParticle(
+          this.confettiGeo,
+          CONFETTI_COLORS[i % CONFETTI_COLORS.length]!,
+          {
+            x: base.x + Math.cos(a) * r,
+            y: randRange(2.4, 3.8),
+            z: base.z + Math.sin(a) * r,
+            vx: randRange(-0.4, 0.4),
+            vy: randRange(-0.3, 0.4),
+            vz: randRange(-0.4, 0.4),
+            gravity: 1.1,
+            drag: 1.2,
+            swirlAmp: reduced ? 0 : 0.35,
+            swirlFreq: 3.4,
+            spinX: randRange(-7, 7),
+            spinY: randRange(-8, 8),
+            spinZ: randRange(-6, 6),
+            life: this.scaleLife(randRange(1.4, 2.0)),
+            startScale: 1.0,
+            endScale: 0.75,
+            startAlpha: 0.96,
+            additive: false,
+            doubleSide: true,
+          }
+        )
+      }
     })
   }
 
-  /** Khấn: 3D incense bowl + 3 sticks + rising smoke + bow 3x + warm gold aura + 20 sparks + celebrate + DOM banner + bell.mp3. */
+  /** Khấn: 3D incense bowl + 3 sticks + swirling smoke + bow 3x + double gold lotus aura + spiraling sparks + bell.mp3. */
   playKhan(
     lx: number,
     ly: number,
@@ -986,17 +1239,25 @@ export class FloorFx3D {
     }
   ): void {
     if (this.disposed) return
+    const reduced = prefersReducedMotion()
     const vol = opts.soundVol ?? 1
     this.scheduleSound(0, "bell", vol)
     opts.onAnim?.("bow", 2.7)
     opts.onCelebrate?.(opts.isSelf ? 3 : 2)
 
-    this.overlay.showFxBanner(lx, ly, 2.35, "khan", `${name} khấn:`, text, 4500)
+    this.overlay.showFxBanner(
+      lx,
+      ly,
+      2.35,
+      "khan",
+      `${name} khấn:`,
+      text,
+      reduced ? 3200 : 4500
+    )
 
     const charPt = logicalToWorld(lx, ly, this.world)
     const bowlPt = logicalToWorld(lx + 28, ly - 8, this.world)
 
-    // 3D golden incense bowl + 3 glowing incense sticks
     const group = new THREE.Group()
     group.position.set(bowlPt.x, 0, bowlPt.z)
 
@@ -1054,48 +1315,56 @@ export class FloorFx3D {
       mats: [bowlMat, stickMat, emberMat],
       tipWorldPos,
       age: 0,
-      burnS: 3.5,
+      burnS: reduced ? 2.2 : 3.5,
       fadeS: 0.6,
       smokeAccum: 0,
     })
 
-    // Warm expanding golden floor aura ring
-    const auraMat = new THREE.MeshBasicMaterial({
-      color: 0xffd76a,
-      transparent: true,
-      opacity: 0.65,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide,
-    })
-    const auraRing = new THREE.Mesh(this.ringGeo, auraMat)
-    auraRing.position.set(charPt.x, 0.036, charPt.z)
-    auraRing.scale.setScalar(1.2)
-    this.group.add(auraRing)
-    this.rings.push({
-      mesh: auraRing,
-      mat: auraMat,
-      age: 0,
-      life: 2.4,
-      startScale: 1.2,
-      endScale: 2.5,
-      startAlpha: 0.65,
-    })
+    // Concentric golden sacred lotus floor aura rings
+    this.spawnWorldRing(
+      charPt.x,
+      charPt.z,
+      0xffd76a,
+      1.1,
+      2.5,
+      this.scaleLife(2.4),
+      0.68,
+      true
+    )
+    if (!this.lite && !reduced) {
+      this.schedule(0.38, () => {
+        this.spawnWorldRing(
+          charPt.x,
+          charPt.z,
+          0xfff0a8,
+          0.85,
+          2.1,
+          2.0,
+          0.52,
+          true
+        )
+      })
+    }
 
-    // Warm golden glow light + 20 rising golden sparks
+    // Warm golden glow light + spiraling rising golden sparks
     this.spawnFlashLight(charPt.x, 1.3, charPt.z, 0xffd86b, 2.4, 2.2)
-    for (let i = 0; i < 20; i += 1) {
+    const sparkCount = this.scaleCount(24, 6)
+    for (let i = 0; i < sparkCount; i += 1) {
+      const a = (i / sparkCount) * Math.PI * 2
+      const r = randRange(0.25, 0.65)
       this.addParticle(this.sparkGeo, i % 2 === 0 ? 0xfff0a0 : 0xffc83d, {
-        x: charPt.x + randRange(-0.5, 0.5),
-        y: randRange(0.2, 1.2),
-        z: charPt.z + randRange(-0.5, 0.5),
-        vx: randRange(-0.18, 0.18),
-        vy: randRange(0.6, 1.35),
-        vz: randRange(-0.18, 0.18),
-        gravity: -0.1,
+        x: charPt.x + Math.cos(a) * r,
+        y: randRange(0.18, 1.15),
+        z: charPt.z + Math.sin(a) * r,
+        vx: Math.cos(a + Math.PI / 2) * 0.24,
+        vy: randRange(0.65, 1.35),
+        vz: Math.sin(a + Math.PI / 2) * 0.24,
+        gravity: -0.08,
+        swirlAmp: reduced ? 0 : 0.28,
+        swirlFreq: 2.8,
         spinY: randRange(-4, 4),
-        life: randRange(1.4, 2.1),
-        startScale: 0.9,
+        life: this.scaleLife(randRange(1.4, 2.1)),
+        startScale: 0.92,
         endScale: 0.08,
         startAlpha: 0.95,
         additive: true,
@@ -1103,9 +1372,11 @@ export class FloorFx3D {
     }
   }
 
-  /** Current camera shake displacement (non-zero briefly during local Xả xui stomp). */
+  /** Current camera shake displacement (always zero when prefers-reduced-motion is active). */
   getCameraShakeOffset(): { x: number; y: number; z: number } {
-    if (this.shakeRemainingS <= 0) return { x: 0, y: 0, z: 0 }
+    if (this.shakeRemainingS <= 0 || prefersReducedMotion()) {
+      return { x: 0, y: 0, z: 0 }
+    }
     const k = this.shakeRemainingS / Math.max(0.01, this.shakeDurationS)
     const a = this.shakeAmp * k
     return {
@@ -1118,6 +1389,7 @@ export class FloorFx3D {
   update(dt: number): void {
     if (this.disposed) return
     this.clockS += dt
+    const reduced = prefersReducedMotion()
 
     if (this.shakeRemainingS > 0) {
       this.shakeRemainingS = Math.max(0, this.shakeRemainingS - dt)
@@ -1178,7 +1450,8 @@ export class FloorFx3D {
       r.mesh.position.lerpVectors(r.start, r.apex, easeOut)
 
       r.trailAccum += dt
-      if (r.trailAccum >= 0.035) {
+      const trailStep = this.lite || reduced ? 0.07 : 0.035
+      if (r.trailAccum >= trailStep) {
         r.trailAccum = 0
         this.addParticle(this.sparkGeo, r.outerColor, {
           x: r.mesh.position.x,
@@ -1188,7 +1461,7 @@ export class FloorFx3D {
           vy: randRange(-0.4, 0.1),
           vz: randRange(-0.25, 0.25),
           gravity: 0.8,
-          life: 0.24,
+          life: this.scaleLife(0.24),
           startScale: 0.6,
           endScale: 0.05,
           startAlpha: 0.85,
@@ -1201,42 +1474,45 @@ export class FloorFx3D {
         this.group.remove(r.mesh)
         r.mat.dispose()
         this.rockets.splice(i, 1)
-        // Dual-ring starburst + falling gold glitter
+        // Air-drag dual-ring starburst + falling gold glitter
         this.spawnRadialSparks(
           pos.x,
           pos.y,
           pos.z,
-          26,
+          this.scaleCount(24, 6),
           r.outerColor,
-          2.2,
-          3.8,
-          0.74,
-          2.6,
-          0.95
-        )
-        this.spawnRadialSparks(
-          pos.x,
-          pos.y,
-          pos.z,
-          16,
-          r.innerColor,
-          0.8,
-          2.0,
-          0.66,
+          2.4,
+          4.1,
+          this.scaleLife(0.82),
           2.3,
-          0.8
+          0.95,
+          1.85
         )
         this.spawnRadialSparks(
           pos.x,
           pos.y,
           pos.z,
-          8,
+          this.scaleCount(14, 4),
+          r.innerColor,
+          0.9,
+          2.2,
+          this.scaleLife(0.72),
+          2.1,
+          0.8,
+          1.6
+        )
+        this.spawnRadialSparks(
+          pos.x,
+          pos.y,
+          pos.z,
+          this.scaleCount(8, 2),
           0xfff0a0,
           0.4,
-          1.1,
-          0.72,
-          2.2,
-          0.6
+          1.2,
+          this.scaleLife(0.78),
+          2.0,
+          0.6,
+          1.2
         )
       }
     }
@@ -1247,20 +1523,24 @@ export class FloorFx3D {
       inc.age += dt
       if (inc.age < inc.burnS) {
         inc.smokeAccum += dt
-        if (inc.smokeAccum >= 0.15) {
+        const smokeInterval = this.lite || reduced ? 0.3 : 0.15
+        if (inc.smokeAccum >= smokeInterval) {
           inc.smokeAccum = 0
-          for (const tip of inc.tipWorldPos) {
-            this.addParticle(this.smokeGeo, 0xedf2f7, {
+          const tips = this.lite ? [inc.tipWorldPos[1]!] : inc.tipWorldPos
+          for (const tip of tips) {
+            this.addParticle(this.smokeGeo, 0xf1f5f9, {
               x: tip.x + randRange(-0.02, 0.02),
               y: tip.y + 0.02,
               z: tip.z + randRange(-0.02, 0.02),
-              vx: randRange(-0.1, 0.1),
+              vx: randRange(-0.08, 0.08),
               vy: randRange(0.45, 0.72),
-              vz: randRange(-0.1, 0.1),
+              vz: randRange(-0.08, 0.08),
               gravity: -0.05,
-              life: 1.5,
+              swirlAmp: reduced ? 0 : 0.18,
+              swirlFreq: 3.2,
+              life: this.scaleLife(1.5),
               startScale: 0.28,
-              endScale: 1.0,
+              endScale: 1.05,
               startAlpha: 0.42,
               additive: false,
             })
@@ -1280,7 +1560,7 @@ export class FloorFx3D {
       }
     }
 
-    // 6. Update expanding floor rings (click ripple & khấn aura)
+    // 6. Update expanding floor rings (click ripple, stomp, landing & khấn aura)
     for (let i = this.rings.length - 1; i >= 0; i -= 1) {
       const ring = this.rings[i]!
       ring.age += dt
@@ -1309,7 +1589,7 @@ export class FloorFx3D {
       }
     }
 
-    // 8. Update 3D particles
+    // 8. Update 3D particles (with drag, floor bounce, and organic swirl)
     for (let i = this.particles.length - 1; i >= 0; i -= 1) {
       const p = this.particles[i]!
       p.age += dt
@@ -1320,10 +1600,39 @@ export class FloorFx3D {
         continue
       }
       const t = p.age / p.life
+      if (p.drag > 0) {
+        const damp = Math.exp(-p.drag * dt)
+        p.vx *= damp
+        p.vy *= damp
+        p.vz *= damp
+      }
       p.vy -= p.gravity * dt
-      p.mesh.position.x += p.vx * dt
-      p.mesh.position.y = Math.max(0.04, p.mesh.position.y + p.vy * dt)
-      p.mesh.position.z += p.vz * dt
+
+      const swirlX =
+        p.swirlAmp > 0
+          ? Math.cos(p.age * p.swirlFreq + p.swirlPhase) * p.swirlAmp
+          : 0
+      const swirlZ =
+        p.swirlAmp > 0
+          ? Math.sin(p.age * p.swirlFreq + p.swirlPhase) * p.swirlAmp
+          : 0
+
+      p.mesh.position.x += (p.vx + swirlX) * dt
+      p.mesh.position.z += (p.vz + swirlZ) * dt
+      const nextY = p.mesh.position.y + p.vy * dt
+      if (nextY <= 0.04) {
+        p.mesh.position.y = 0.04
+        if (p.bounce > 0 && p.vy < -0.35) {
+          p.vy = -p.vy * p.bounce
+          p.vx *= 0.72
+          p.vz *= 0.72
+        } else {
+          p.vy = 0
+        }
+      } else {
+        p.mesh.position.y = nextY
+      }
+
       if (p.spinX) p.mesh.rotation.x += p.spinX * dt
       if (p.spinY) p.mesh.rotation.y += p.spinY * dt
       if (p.spinZ) p.mesh.rotation.z += p.spinZ * dt
@@ -1374,6 +1683,7 @@ export class FloorFx3D {
     this.sparkGeo.dispose()
     this.smokeGeo.dispose()
     this.shardGeo.dispose()
+    this.confettiGeo.dispose()
     this.rocketGeo.dispose()
     this.burstCoinGeo.dispose()
     this.ringGeo.dispose()

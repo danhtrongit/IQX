@@ -1,8 +1,17 @@
 /** True on touch-first devices, where "press E" hints make no sense. */
 export function isTouchDevice(): boolean {
-  return (
-    typeof window !== "undefined" &&
+  if (typeof window === "undefined") return false
+  const coarse =
+    typeof window.matchMedia === "function" &&
     window.matchMedia("(pointer: coarse)").matches
+  if (coarse) return true
+  const hoverNone =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(hover: none)").matches
+  return (
+    hoverNone &&
+    typeof navigator !== "undefined" &&
+    navigator.maxTouchPoints > 0
   )
 }
 

@@ -23,6 +23,8 @@ export interface ChibiSceneHostOptions {
   shadows?: boolean
   cameraLerp?: number
   boundsMargin?: number
+  northMargin?: number
+  southMargin?: number
   onContextLost?: () => void
   onContextRestored?: () => void
   onResize?: (width: number, height: number, dpr: number) => void
@@ -43,6 +45,8 @@ export interface CameraClampParams {
   pitchRad: number
   aspect: number
   boundsMargin: number
+  northMargin?: number
+  southMargin?: number
 }
 
 export interface CameraClampResult {
@@ -87,8 +91,8 @@ export function computeCameraClampBounds(
   const nearHalfXCoeff =
     (sinPitch / Math.sin(botAngle)) * Math.sin(halfFovRad) * safeAspect
 
-  const northMargin = Math.max(boundsMargin, 2.2)
-  const southMargin = Math.max(boundsMargin, 1.1)
+  const northMargin = params.northMargin ?? Math.max(boundsMargin, 2.2)
+  const southMargin = params.southMargin ?? Math.max(boundsMargin, 1.1)
 
   const zSpanBudget = Math.max(1, roomH + northMargin + southMargin)
   const xSpanBudget = Math.max(1, roomW)
@@ -152,6 +156,8 @@ export interface ChibiSceneHost {
   setCameraShake: (offsetX: number, offsetY: number, offsetZ?: number) => void
   setPaused: (paused: boolean) => void
   isPaused: () => boolean
+  isContextLost: () => boolean
+  getClampBounds: (zoom?: number) => CameraClampResult
   getViewportSize: () => { width: number; height: number; dpr: number }
   screenToLogical: (clientX: number, clientY: number) => LogicalPoint2D | null
   pickObjects: (
@@ -171,13 +177,17 @@ export interface ChibiSceneHost {
   dispose: () => void
 }
 
-function detectLiteDevice(): boolean {
+export function detectLiteDevice(): boolean {
   if (typeof window === "undefined") return false
-  const coarse =
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(pointer: coarse)").matches
+  const hasMatch = typeof window.matchMedia === "function"
+  const coarse = hasMatch && window.matchMedia("(pointer: coarse)").matches
+  const touchOnly =
+    hasMatch &&
+    window.matchMedia("(hover: none)").matches &&
+    typeof navigator !== "undefined" &&
+    navigator.maxTouchPoints > 0
   const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
-  return coarse || (typeof mem === "number" && mem <= 4)
+  return coarse || touchOnly || (typeof mem === "number" && mem <= 4)
 }
 
 function detectSoftwareWebGL(renderer: THREE.WebGLRenderer): boolean {
@@ -217,16 +227,21 @@ export function createChibiSceneHost(
   const maxZoom = opts.maxZoom ?? 2.4
   const cameraLerp = opts.cameraLerp ?? 0.15
   const boundsMargin = opts.boundsMargin ?? 0.5
+  const northMargin = opts.northMargin
+  const southMargin = opts.southMargin
+  const maxDpr = lite ? 1.5 : 2
 
   const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    powerPreference: "high-performance",
+    antialias: !lite,
+    powerPreference: lite ? "default" : "high-performance",
   })
   const softwareWebGL = detectSoftwareWebGL(renderer)
-  const shadows = (opts.shadows ?? true) && !softwareWebGL
+  // Lite mode uses contact/blob shadows by default to avoid Safari iOS WebGL memory pressure;
+  // callers explicitly enabling shadows in lite mode get a compact 512px shadow map.
+  const shadows = (opts.shadows ?? !lite) && !softwareWebGL
   renderer.outputColorSpace = THREE.SRGBColorSpace
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.06
+  renderer.toneMapping = THREE.AgXToneMapping
+  renderer.toneMappingExposure = 1.08
   renderer.shadowMap.enabled = shadows
   renderer.shadowMap.type = THREE.PCFShadowMap
 
@@ -242,35 +257,39 @@ export function createChibiSceneHost(
 
   const camera = new THREE.PerspectiveCamera(fov, 16 / 9, 0.2, 220)
 
-  // Studio-warm 3-point + hemisphere chibi lighting rig
-  const hemi = new THREE.HemisphereLight(0xfff8ee, 0x7c6a58, 1.18)
+  // Studio-warm 3-point + hemisphere chibi lighting rig with tight following shadow camera
+  const hemi = new THREE.HemisphereLight(0xfff7ea, 0x6d6156, 1.06)
   hemi.position.set(0, 24, 0)
   scene.add(hemi)
 
-  const sun = new THREE.DirectionalLight(0xfff1da, 1.62)
-  sun.position.set(roomW * 0.32, Math.max(18, roomH * 0.95), roomH * 0.42)
+  const shadowMapSize = lite ? 512 : 2048
+  const sunOffset = new THREE.Vector3(9.5, 19.5, 11.0)
+  const sun = new THREE.DirectionalLight(0xfff1d6, 1.82)
+  sun.position.copy(sunOffset)
   sun.castShadow = shadows
-  const shadowExtent = Math.max(roomW, roomH) * 0.64
-  sun.shadow.mapSize.set(lite ? 1024 : 2048, lite ? 1024 : 2048)
+  let lastShadowExtent = clamp(Math.max(roomW, roomH) * 0.48, 9, 22)
+  sun.shadow.mapSize.set(shadowMapSize, shadowMapSize)
   sun.shadow.camera.near = 2
-  sun.shadow.camera.far = Math.max(60, roomW + roomH)
-  sun.shadow.camera.left = -shadowExtent
-  sun.shadow.camera.right = shadowExtent
-  sun.shadow.camera.top = shadowExtent
-  sun.shadow.camera.bottom = -shadowExtent
-  sun.shadow.bias = -0.0004
-  sun.shadow.normalBias = 0.025
+  sun.shadow.camera.far = Math.max(64, roomW + roomH + 16)
+  sun.shadow.camera.left = -lastShadowExtent
+  sun.shadow.camera.right = lastShadowExtent
+  sun.shadow.camera.top = lastShadowExtent
+  sun.shadow.camera.bottom = -lastShadowExtent
+  sun.shadow.bias = -0.00035
+  sun.shadow.normalBias = 0.022
+  sun.shadow.radius = lite ? 1.4 : 2.6
   scene.add(sun)
+  scene.add(sun.target)
 
-  const rim = new THREE.DirectionalLight(0xbcd8ff, 0.68)
-  rim.position.set(-roomW * 0.42, 12, -roomH * 0.52)
+  const rim = new THREE.DirectionalLight(0xc6deff, 0.64)
+  rim.position.set(-roomW * 0.42, 13, -roomH * 0.48)
   scene.add(rim)
 
   const lights: ChibiSceneLights = { hemi, sun, rim }
 
   let cssW = Math.max(1, container.clientWidth || window.innerWidth || 1280)
   let cssH = Math.max(1, container.clientHeight || window.innerHeight || 720)
-  let dpr = Math.min(window.devicePixelRatio || 1, lite ? 2 : 2.5)
+  let dpr = Math.min(window.devicePixelRatio || 1, maxDpr)
 
   let currentZoom = clamp(opts.initialZoom ?? 1.0, minZoom, maxZoom)
   let targetZoom = currentZoom
@@ -297,7 +316,7 @@ export function createChibiSceneHost(
   const hitVec = new THREE.Vector3()
   const projVec = new THREE.Vector3()
 
-  const getClampBounds = (zoom: number): CameraClampResult =>
+  const getClampBounds = (zoom = currentZoom): CameraClampResult =>
     computeCameraClampBounds({
       roomW,
       roomH,
@@ -307,6 +326,8 @@ export function createChibiSceneHost(
       pitchRad,
       aspect: cssW / Math.max(1, cssH),
       boundsMargin,
+      northMargin,
+      southMargin,
     })
 
   const clampCameraTarget = (
@@ -321,19 +342,54 @@ export function createChibiSceneHost(
     }
   }
 
+  const updateShadowCamera = (bounds: CameraClampResult): void => {
+    if (!shadows) return
+    const visHalfX =
+      Math.max(bounds.targetPlaneHalfVisX, bounds.farHalfVisX) + 2.0
+    const visHalfZ = (bounds.northSpan + bounds.southSpan) * 0.54 + 2.5
+    const desiredExtent = clamp(
+      Math.max(visHalfX, visHalfZ),
+      8.5,
+      Math.max(roomW, roomH) * 0.6
+    )
+    // Snap light target to shadow-map texel increments to prevent edge shimmer while walking
+    const texelSize = (desiredExtent * 2) / shadowMapSize
+    const focusZ = currentZ - (bounds.northSpan - bounds.southSpan) * 0.16
+    const snappedX = Math.round(currentX / texelSize) * texelSize
+    const snappedZ = Math.round(focusZ / texelSize) * texelSize
+
+    sun.target.position.set(snappedX, 0, snappedZ)
+    sun.position.set(
+      snappedX + sunOffset.x,
+      sunOffset.y,
+      snappedZ + sunOffset.z
+    )
+    sun.target.updateMatrixWorld()
+
+    if (Math.abs(desiredExtent - lastShadowExtent) > 0.25) {
+      lastShadowExtent = desiredExtent
+      sun.shadow.camera.left = -desiredExtent
+      sun.shadow.camera.right = desiredExtent
+      sun.shadow.camera.top = desiredExtent
+      sun.shadow.camera.bottom = -desiredExtent
+      sun.shadow.camera.updateProjectionMatrix()
+    }
+  }
+
   const applyCameraTransform = (): void => {
     currentZoom = clamp(currentZoom, minZoom, maxZoom)
     targetZoom = clamp(targetZoom, minZoom, maxZoom)
     const dist = baseDistance / currentZoom
-    const clamped = clampCameraTarget(currentX, currentZ, currentZoom)
-    currentX = clamped.x
-    currentZ = clamped.z
+    const bounds = getClampBounds(currentZoom)
+    currentX = clamp(currentX, bounds.minX, bounds.maxX)
+    currentZ = clamp(currentZ, bounds.minZ, bounds.maxZ)
 
     const camY = dist * Math.sin(pitchRad)
     const camZ = currentZ + dist * Math.cos(pitchRad)
     camera.position.set(currentX + shakeX, camY + shakeY, camZ + shakeZ)
     camera.lookAt(currentX + shakeX, 0, currentZ + shakeZ)
     camera.updateMatrixWorld()
+    updateShadowCamera(bounds)
   }
 
   const setWorldSize = (logicalW: number, logicalH: number): void => {
@@ -351,15 +407,9 @@ export function createChibiSceneHost(
     roomW = world.logicalW * world.scale
     roomH = world.logicalH * world.scale
 
-    sun.position.set(roomW * 0.32, Math.max(18, roomH * 0.95), roomH * 0.42)
-    const nextExtent = Math.max(roomW, roomH) * 0.64
-    sun.shadow.camera.far = Math.max(60, roomW + roomH)
-    sun.shadow.camera.left = -nextExtent
-    sun.shadow.camera.right = nextExtent
-    sun.shadow.camera.top = nextExtent
-    sun.shadow.camera.bottom = -nextExtent
-    sun.shadow.camera.updateProjectionMatrix()
-    rim.position.set(-roomW * 0.42, 12, -roomH * 0.52)
+    sun.shadow.camera.far = Math.max(64, roomW + roomH + 16)
+    lastShadowExtent = -1
+    rim.position.set(-roomW * 0.42, 13, -roomH * 0.48)
 
     applyCameraTransform()
     if (paused && !contextLost) {
@@ -369,12 +419,16 @@ export function createChibiSceneHost(
 
   const resize = (): void => {
     if (disposed) return
-    cssW = Math.max(1, container.clientWidth || 1)
-    cssH = Math.max(1, container.clientHeight || 1)
-    dpr = Math.min(window.devicePixelRatio || 1, lite ? 2 : 2.5)
+    const nextW = container.clientWidth
+    const nextH = container.clientHeight
+    if (nextW > 0 && nextH > 0) {
+      cssW = nextW
+      cssH = nextH
+    }
+    dpr = Math.min(window.devicePixelRatio || 1, maxDpr)
     renderer.setPixelRatio(dpr)
     renderer.setSize(cssW, cssH, false)
-    camera.aspect = cssW / cssH
+    camera.aspect = cssW / Math.max(1, cssH)
     camera.updateProjectionMatrix()
     applyCameraTransform()
     if (paused && !contextLost) {
@@ -387,11 +441,19 @@ export function createChibiSceneHost(
   const onContextLost = (e: Event): void => {
     e.preventDefault()
     contextLost = true
+    if (rafId !== 0) {
+      cancelAnimationFrame(rafId)
+      rafId = 0
+    }
     opts.onContextLost?.()
   }
   const onContextRestored = (): void => {
     contextLost = false
     resize()
+    if (started && !paused && !disposed && rafId === 0) {
+      lastFrameMs = performance.now()
+      rafId = requestAnimationFrame(loop)
+    }
     opts.onContextRestored?.()
   }
 
@@ -560,6 +622,11 @@ export function createChibiSceneHost(
     dom.removeEventListener("webglcontextrestored", onContextRestored)
     disposeObject3D(scene)
     renderer.dispose()
+    try {
+      renderer.forceContextLoss()
+    } catch {
+      // Headless or mocked WebGL contexts may not expose WEBGL_lose_context.
+    }
     if (dom.parentNode === container) {
       container.removeChild(dom)
     }
@@ -585,6 +652,8 @@ export function createChibiSceneHost(
     },
     setPaused,
     isPaused: () => paused,
+    isContextLost: () => contextLost,
+    getClampBounds,
     getViewportSize: () => ({ width: cssW, height: cssH, dpr }),
     screenToLogical,
     pickObjects,

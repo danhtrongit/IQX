@@ -1,25 +1,159 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { createElement } from "react"
+import * as THREE from "three"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import type { ChibiSceneHost } from "@/lib/chibi-3d/scene-host.ts"
 import { logicalToWorld, worldToLogical } from "@/lib/chibi-3d/types.ts"
 
-import { resetBridge, ui } from "../bridge.ts"
-import { facingOf } from "./floor-controller.ts"
-import { FLOOR_WORLD_CONFIG, buildFloorNavGrid } from "./floor-world-3d.ts"
+import { openPanel, openPosts, resetBridge, ui } from "../bridge.ts"
+import {
+  FloorController,
+  computeResponsiveZoom,
+  facingOf,
+  isModifierResetEvent,
+} from "./floor-controller.ts"
+import { FloorFx3D } from "./floor-fx-3d.ts"
+import {
+  FLOOR_WORLD_CONFIG,
+  FloorWorld3D,
+  buildFloorNavGrid,
+} from "./floor-world-3d.ts"
 import { SPAWN, WORLD_H, WORLD_W } from "./layout.ts"
 import { OverlayLayer } from "./overlay-layer.ts"
+import { prefersReducedMotion } from "./reduced-motion.ts"
 import { startFloor } from "./start-floor.ts"
 
 const openAuth = vi.hoisted(() => vi.fn())
+const navigateMock = vi.hoisted(() => vi.fn())
 vi.mock("@/hooks/use-auth", () => ({
   useAuth: () => ({ user: null, openAuth }),
 }))
+vi.mock("react-router", () => ({
+  useNavigate: () => navigateMock,
+}))
+vi.mock("@/pages/demo-trading/shop/use-shop", () => ({
+  useShopState: () => ({ data: { wallet: { balance: 500 } } }),
+}))
 
 const { JoinScreen } = await import("../ui/JoinScreen.tsx")
+const { Hud } = await import("../ui/Hud.tsx")
+
+const origMatchMedia = window.matchMedia
+
+function mockMatchMedia(matcher: (query: string) => boolean): void {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches: matcher(query),
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  })
+}
+
+function createFakeSceneHost(opts?: {
+  lite?: boolean
+  width?: number
+  height?: number
+}): {
+  host: ChibiSceneHost
+  dom: HTMLCanvasElement
+  step: (dt: number, elapsedS: number) => void
+  setCameraShake: ReturnType<typeof vi.fn>
+} {
+  const scene = new THREE.Scene()
+  const camera = new THREE.PerspectiveCamera(36, 16 / 9, 0.2, 220)
+  const dom = document.createElement("canvas")
+  const width = opts?.width ?? 1440
+  const height = opts?.height ?? 844
+  let frameCb: ((dt: number, elapsedS: number) => void) | null = null
+  let paused = false
+  let zoom = 1
+  const setCameraShake = vi.fn()
+
+  const host: ChibiSceneHost = {
+    scene,
+    camera,
+    renderer: {
+      domElement: dom,
+      dispose: vi.fn(),
+      forceContextLoss: vi.fn(),
+      render: vi.fn(),
+    } as unknown as THREE.WebGLRenderer,
+    world: { ...FLOOR_WORLD_CONFIG },
+    lights: {
+      hemi: new THREE.HemisphereLight(),
+      sun: new THREE.DirectionalLight(),
+      rim: new THREE.DirectionalLight(),
+    },
+    lite: opts?.lite ?? false,
+    followLogical: vi.fn(),
+    setWorldSize: vi.fn(),
+    setWorldDimensions: vi.fn(),
+    setZoom: vi.fn((z) => {
+      zoom = z
+    }),
+    getZoom: () => zoom,
+    getTargetZoom: () => zoom,
+    setCameraShake,
+    setPaused: (p) => {
+      paused = p
+    },
+    isPaused: () => paused,
+    isContextLost: () => false,
+    getClampBounds: () => ({
+      minX: -8,
+      maxX: 8,
+      minZ: -3,
+      maxZ: 5,
+      northSpan: 13,
+      southSpan: 7,
+      targetPlaneHalfVisX: 11,
+      nearHalfVisX: 9,
+      farHalfVisX: 13,
+      minFillZoom: 0.75,
+    }),
+    getViewportSize: () => ({ width, height, dpr: opts?.lite ? 1.5 : 2 }),
+    screenToLogical: vi.fn(() => ({ x: 1120, y: 740 })),
+    pickObjects: vi.fn(() => []),
+    projectToScreen: vi.fn(() => ({ x: 400, y: 300, visible: true, depth: 0 })),
+    projectLogicalToScreen: vi.fn(() => ({
+      x: 400,
+      y: 300,
+      visible: true,
+      depth: 0,
+    })),
+    start: (cb) => {
+      frameCb = cb
+    },
+    renderOnce: vi.fn(),
+    resize: vi.fn(),
+    dispose: vi.fn(),
+  }
+
+  return {
+    host,
+    dom,
+    setCameraShake,
+    step: (dt, elapsedS) => frameCb?.(dt, elapsedS),
+  }
+}
 
 afterEach(() => {
   resetBridge()
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: origMatchMedia,
+  })
+  vi.restoreAllMocks()
 })
 
 describe("Trading Floor 3D layout & backend bot corridor preservation", () => {
@@ -163,6 +297,266 @@ describe("startFloor WebGL fallback & JoinScreen Chibi 3D preview", () => {
     expect(sacoTop + 44).toBeLessThanOrEqual(272) // lifted cleanly above self nameplate top (~272px)
 
     layer.dispose()
+    container.remove()
+  })
+})
+
+describe("FloorWorld3D & FloorFx3D graphics, lite mode, and prefers-reduced-motion", () => {
+  it("builds Trading Floor world with skirting/columns/ticker/contact-shadows in normal & lite mode and disposes cleanly", () => {
+    for (const lite of [false, true]) {
+      const scene = new THREE.Scene()
+      const container = document.createElement("div")
+      document.body.appendChild(container)
+      const overlay = new OverlayLayer(container)
+      const world3d = new FloorWorld3D(scene, overlay, { lite })
+
+      expect(world3d.hotspots.length).toBeGreaterThanOrEqual(7)
+      expect(world3d.group.getObjectByName("arch-skirting")).toBeTruthy()
+      expect(world3d.group.getObjectByName("arch-warm-glow")).toBeTruthy()
+      world3d.updateMarket(null, null)
+      world3d.updatePosts([])
+      world3d.updateLeaderboard(null, overlay)
+      world3d.refreshDynamicTextures()
+      world3d.celebrate(4, 1.0)
+      world3d.update(
+        0.016,
+        1.1,
+        () => ({ x: 400, y: 300, visible: true, depth: 0 }),
+        overlay
+      )
+
+      expect(() => world3d.dispose()).not.toThrow()
+      overlay.dispose()
+      container.remove()
+    }
+  })
+
+  it("caps FX particles in lite mode and disables camera shake & trims FX under prefers-reduced-motion", () => {
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() =>
+      Promise.resolve()
+    )
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const overlay = new OverlayLayer(container)
+
+    // Normal mode: egg crack triggers camera shake and rich particle burst
+    mockMatchMedia(() => false)
+    const normalScene = new THREE.Scene()
+    const normalFx = new FloorFx3D(normalScene, FLOOR_WORLD_CONFIG, overlay, {
+      lite: false,
+    })
+    normalFx.playXaXui(1024, 540, { isSelf: true })
+    normalFx.update(0.3)
+    const normalShake = normalFx.getCameraShakeOffset()
+    expect(
+      Math.abs(normalShake.x) + Math.abs(normalShake.y) + Math.abs(normalShake.z)
+    ).toBeGreaterThan(0)
+    const normalCount = normalFx.getActiveParticleCount()
+    normalFx.dispose()
+
+    // Reduced-motion mode: zero camera shake & fewer particles
+    mockMatchMedia((q) => q.includes("prefers-reduced-motion: reduce"))
+    expect(prefersReducedMotion()).toBe(true)
+    const rmScene = new THREE.Scene()
+    const rmFx = new FloorFx3D(rmScene, FLOOR_WORLD_CONFIG, overlay, {
+      lite: false,
+    })
+    rmFx.playXaXui(1024, 540, { isSelf: true })
+    rmFx.update(0.3)
+    expect(rmFx.getCameraShakeOffset()).toEqual({ x: 0, y: 0, z: 0 })
+    expect(rmFx.getActiveParticleCount()).toBeLessThan(normalCount)
+    rmFx.playGay(1024, 540, "Minh Anh", "Tím trần!", { isSelf: true })
+    rmFx.playKhan(1024, 540, "Minh Anh", "Xin lộc!", { isSelf: true })
+    rmFx.update(1.5)
+    expect(() => rmFx.dispose()).not.toThrow()
+
+    // Lite mode: particle count stays tightly bounded even under repeated Gáy
+    mockMatchMedia(() => false)
+    const liteScene = new THREE.Scene()
+    const liteFx = new FloorFx3D(liteScene, FLOOR_WORLD_CONFIG, overlay, {
+      lite: true,
+    })
+    liteFx.playGay(1024, 540, "A", "B", { isSelf: true })
+    liteFx.playGay(1024, 540, "C", "D", { isSelf: false })
+    for (let t = 0; t < 2.0; t += 0.1) liteFx.update(0.1)
+    expect(liteFx.getActiveParticleCount()).toBeLessThanOrEqual(72)
+    liteFx.dispose()
+
+    overlay.dispose()
+    container.remove()
+  })
+})
+
+describe("FloorController input safety, modal walk cancellation, responsive zoom & HUD", () => {
+  it("computes responsive zoom for desktop, tablet, phone portrait, and ultrawide", () => {
+    const desktop = computeResponsiveZoom(1, 1440, 844, 0.75)
+    const phone = computeResponsiveZoom(1, 390, 788, 0.75)
+    const ultrawide = computeResponsiveZoom(0.72, 2560, 900, 1.15)
+    expect(desktop).toBeCloseTo(0.94, 2)
+    expect(phone).toBeGreaterThan(desktop)
+    expect(ultrawide).toBeGreaterThanOrEqual(1.1)
+    expect(isModifierResetEvent({ code: "MetaLeft" })).toBe(true)
+    expect(isModifierResetEvent({ code: "KeyW", metaKey: true })).toBe(true)
+    expect(isModifierResetEvent({ code: "KeyW" })).toBe(false)
+  })
+
+  it("uses event.code, clears held keys on blur / visibility hidden / Meta-Ctrl, and clears click-to-walk when modal opens", () => {
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    ui.profile.set({ name: "Minh Anh", avatar: "male01", color: "default" })
+
+    const fake = createFakeSceneHost({ lite: false })
+    const controller = new FloorController(fake.host, container)
+
+    // Press KeyD with non-Latin event.key (e.g. Vietnamese / Cyrillic layout): moves East by code
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyD", key: "đ" }))
+    fake.step(0.1, 0.1)
+    const posAfterKeyD = (controller as unknown as { player: { x: number; y: number } }).player.x
+    expect(posAfterKeyD).toBeGreaterThan(SPAWN.x - 60)
+
+    // Pressing Meta key clears all held keys (prevents macOS Cmd+Tab stuck walk)
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "MetaLeft", metaKey: true }))
+    const xBeforeStep = (controller as unknown as { player: { x: number } }).player.x
+    fake.step(0.1, 0.2)
+    expect((controller as unknown as { player: { x: number } }).player.x).toBe(xBeforeStep)
+
+    // Hold KeyS then blur window -> clears held keys immediately
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyS", key: "s" }))
+    window.dispatchEvent(new Event("blur"))
+    const yAfterBlur = (controller as unknown as { player: { y: number } }).player.y
+    fake.step(0.1, 0.3)
+    expect((controller as unknown as { player: { y: number } }).player.y).toBe(yAfterBlur)
+
+    // Click-to-walk sets a path; opening a panel or posts clears the walk target immediately
+    fake.dom.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 1440, height: 844, right: 1440, bottom: 844 }) as DOMRect
+    fake.dom.dispatchEvent(
+      new MouseEvent("pointerdown", { button: 0, clientX: 600, clientY: 500 })
+    )
+    expect(
+      (controller as unknown as { path: unknown[] }).path.length
+    ).toBeGreaterThan(0)
+    openPanel("market")
+    expect((controller as unknown as { path: unknown[] }).path).toHaveLength(0)
+
+    ui.panel.set(null)
+    fake.dom.dispatchEvent(
+      new MouseEvent("pointerdown", { button: 0, clientX: 600, clientY: 500 })
+    )
+    expect(
+      (controller as unknown as { path: unknown[] }).path.length
+    ).toBeGreaterThan(0)
+    openPosts()
+    expect((controller as unknown as { path: unknown[] }).path).toHaveLength(0)
+
+    controller.dispose()
+    container.remove()
+  })
+
+  it("hides keyboard help line on touch devices, supports tapping the E/Chạm hint, and collapses FxBar on phones", () => {
+    const queryClient = new QueryClient()
+    ui.profile.set({ name: "Minh Anh", avatar: "male01", color: "default" })
+    ui.hint.set({ kind: "thantai", label: "Thần Tài" })
+
+    mockMatchMedia(
+      (q) => q.includes("pointer: coarse") || q.includes("max-width: 640px")
+    )
+
+    const { container, unmount } = render(
+      createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        createElement(Hud, { onEditProfile: vi.fn() })
+      )
+    )
+
+    // Keyboard help line is hidden on touch devices
+    expect(container.querySelector(".help")).toBeNull()
+
+    // Touch hint shows "Chạm để mở" and tapping it opens the panel
+    const hintBtn = screen.getByRole("button", {
+      name: /Thần Tài.*Chạm để mở/i,
+    })
+    expect(hintBtn.textContent).toContain("Chạm để mở")
+    fireEvent.click(hintBtn)
+    expect(ui.panel.get()?.kind).toBe("thantai")
+
+    // FxBar starts collapsed on mobile and expands on tap
+    const fxToggle = screen.getByRole("button", { name: "Mở hành động" })
+    expect(fxToggle.getAttribute("aria-expanded")).toBe("false")
+    fireEvent.click(fxToggle)
+    expect(screen.getByRole("button", { name: "Thu gọn hành động" })).toBeTruthy()
+    expect(screen.getByTitle(/Xả xui/i)).toBeTruthy()
+
+    unmount()
+  })
+
+  it("throttles far peer rig animations in lite mode and suppresses character bob under prefers-reduced-motion", () => {
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    ui.profile.set({ name: "Minh Anh", avatar: "male01", color: "default" })
+
+    const fake = createFakeSceneHost({ lite: true })
+    const controller = new FloorController(fake.host, container)
+
+    // Add a near peer and a far peer directly through private addPeer hook
+    const internal = controller as unknown as {
+      addPeer: (p: {
+        id: string
+        name: string
+        avatar: string
+        color: string
+        x: number
+        y: number
+        facing: "s"
+        moving: boolean
+      }) => void
+      peers: Map<string, { rig: { update: (...args: unknown[]) => void } }>
+      player: { rig: { update: (...args: unknown[]) => void } }
+    }
+    internal.addPeer({
+      id: "peer-near",
+      name: "Gần",
+      avatar: "male02",
+      color: "default",
+      x: SPAWN.x + 40,
+      y: SPAWN.y,
+      facing: "s",
+      moving: true,
+    })
+    internal.addPeer({
+      id: "peer-far",
+      name: "Xa",
+      avatar: "female02",
+      color: "default",
+      x: 1950,
+      y: 1300,
+      facing: "s",
+      moving: true,
+    })
+
+    const nearSpy = vi.spyOn(internal.peers.get("peer-near")!.rig, "update")
+    const farSpy = vi.spyOn(internal.peers.get("peer-far")!.rig, "update")
+    const playerSpy = vi.spyOn(internal.player.rig, "update")
+
+    mockMatchMedia((q) => q.includes("prefers-reduced-motion: reduce"))
+    for (let i = 1; i <= 10; i += 1) {
+      fake.step(0.016, i * 0.016)
+    }
+
+    // Near peer updates every frame (10x); very far peer (>850u) is throttled to ~5Hz (1 initial update in 160ms)
+    expect(nearSpy.mock.calls.length).toBe(10)
+    expect(farSpy.mock.calls.length).toBeLessThanOrEqual(2)
+
+    // Under prefers-reduced-motion, player idle passes moveFactor=0 and animTime=0 (no bobbing)
+    const lastPlayerCall = playerSpy.mock.calls.at(-1)?.[1] as {
+      moveFactor?: number
+      animTime?: number
+    }
+    expect(lastPlayerCall.moveFactor).toBe(0)
+    expect(lastPlayerCall.animTime).toBe(0)
+
+    controller.dispose()
     container.remove()
   })
 })
