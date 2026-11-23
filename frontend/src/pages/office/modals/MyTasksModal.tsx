@@ -77,6 +77,7 @@ function StickyNoteCard({
   const [saving, setSaving] = useState(false)
   const lastSavedRef = useRef(note.content)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const deletedRef = useRef(false)
   const draftRef = useRef(draft)
   const onUpdateRef = useRef(onUpdate)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -108,7 +109,7 @@ function StickyNoteCard({
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current)
         timerRef.current = null
-        if (draftRef.current !== lastSavedRef.current) {
+        if (!deletedRef.current && draftRef.current !== lastSavedRef.current) {
           lastSavedRef.current = draftRef.current
           onUpdateRef.current(note.id, { content: draftRef.current })
         }
@@ -121,7 +122,7 @@ function StickyNoteCard({
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
-    if (value === lastSavedRef.current) {
+    if (deletedRef.current || value === lastSavedRef.current) {
       setSaving(false)
       return
     }
@@ -131,18 +132,29 @@ function StickyNoteCard({
   }
 
   const handleChange = (value: string) => {
+    if (deletedRef.current) return
     const clamped = value.slice(0, MAX_STICKY_NOTE)
     setDraft(clamped)
     setSaving(true)
     if (timerRef.current !== null) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       timerRef.current = null
-      if (clamped !== lastSavedRef.current) {
+      if (!deletedRef.current && clamped !== lastSavedRef.current) {
         lastSavedRef.current = clamped
         onUpdate(note.id, { content: clamped })
       }
       setSaving(false)
     }, STICKY_SAVE_DEBOUNCE_MS)
+  }
+
+  const handleDeleteClick = () => {
+    deletedRef.current = true
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    setSaving(false)
+    onDelete(note.id)
   }
 
   return (
@@ -184,7 +196,8 @@ function StickyNoteCard({
           type="button"
           className="of-note-del"
           aria-label="Xoá ghi chú"
-          onClick={() => onDelete(note.id)}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={handleDeleteClick}
         >
           <Trash2 size={14} aria-hidden="true" />
         </button>
@@ -280,7 +293,9 @@ function TaskColumn({
                         <span className="of-tag t-bad">Cần làm lại</span>
                       )}
                       {task.status === "done" && (
-                        <span className="of-tag t-ok">Đã duyệt</span>
+                        <span className="of-tag t-ok">
+                          +{task.pointsSnapshot ?? task.points} điểm
+                        </span>
                       )}
                     </div>
                   </div>
@@ -300,7 +315,7 @@ function TaskColumn({
 
                 {task.status === "returned" && task.returnReason && (
                   <div className="of-quote is-reason">
-                    Lý do trả lại: {task.returnReason}
+                    Sếp: {task.returnReason}
                   </div>
                 )}
 
@@ -308,7 +323,7 @@ function TaskColumn({
                   (task.submitNote || task.submittedAt) && (
                     <div className="of-quote">
                       {task.submitNote
-                        ? `Ghi chú đã gửi: ${task.submitNote}`
+                        ? `Bạn ghi: ${task.submitNote}`
                         : "Đã gửi xác nhận"}
                       {task.submittedAt
                         ? ` · gửi ${formatHm(task.submittedAt)}`
@@ -328,7 +343,7 @@ function TaskColumn({
                       className="of-textarea"
                       maxLength={MAX_SUBMIT_NOTE}
                       value={noteDraft}
-                      placeholder="Ghi chú kết quả thực hiện (tuỳ chọn)..."
+                      placeholder="Ghi chú cho sếp (không bắt buộc)"
                       aria-label={`Ghi chú hoàn thành cho ${task.title}`}
                       onChange={(event) =>
                         onChangeNote(event.target.value.slice(0, MAX_SUBMIT_NOTE))
@@ -388,7 +403,8 @@ export function MyTasksModal({
   const [clockState, setClockState] = useState<{
     anchor: string
     elapsedMs: number
-  }>(() => ({ anchor: me.serverTime, elapsedMs: 0 }))
+    nowMs: number
+  }>(() => ({ anchor: me.serverTime, elapsedMs: 0, nowMs: Date.now() }))
   const [activeSubmitId, setActiveSubmitId] = useState<string | null>(null)
   const [noteDraft, setNoteDraft] = useState("")
   const [proposalDraft, setProposalDraft] = useState("")
@@ -396,12 +412,14 @@ export function MyTasksModal({
   const [focusNoteId, setFocusNoteId] = useState<string | null>(null)
 
   const proposalInputRef = useRef<HTMLTextAreaElement>(null)
+  const deletedNoteIdsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const startMs = Date.now()
     const anchor = me.serverTime
     const timer = setInterval(() => {
-      setClockState({ anchor, elapsedMs: Date.now() - startMs })
+      const now = Date.now()
+      setClockState({ anchor, elapsedMs: now - startMs, nowMs: now })
     }, 15_000)
     return () => clearInterval(timer)
   }, [me.serverTime])
@@ -411,7 +429,7 @@ export function MyTasksModal({
     clockState.anchor === me.serverTime ? clockState.elapsedMs : 0
   const nowHm = Number.isFinite(parsedServerMs)
     ? formatHm(new Date(parsedServerMs + clockElapsedMs).toISOString())
-    : ""
+    : formatHm(new Date(clockState.nowMs).toISOString())
 
   useEffect(() => {
     if (autoFocusProposal) {
@@ -454,8 +472,8 @@ export function MyTasksModal({
       const result = await checkInMutation.mutateAsync()
       onToast(
         result.status === "ok"
-          ? `Đã điểm danh đúng giờ · ${result.timeLabel}`
-          : `Đã điểm danh trễ · ${result.timeLabel}`
+          ? `Đã điểm danh ${result.timeLabel} · Đúng giờ`
+          : `Đã điểm danh ${result.timeLabel} · Trễ`
       )
     } catch (error) {
       onToast(getErrorMessage(error, "Không thể điểm danh lúc này."))
@@ -512,19 +530,25 @@ export function MyTasksModal({
     id: string,
     body: { content?: string; color?: OfficeStickyColor }
   ) => {
+    if (deletedNoteIdsRef.current.has(id)) return
     updateNoteMutation.mutate(
       { id, body },
       {
-        onError: (error) =>
-          onToast(getErrorMessage(error, "Không thể lưu ghi chú.")),
+        onError: (error) => {
+          if (deletedNoteIdsRef.current.has(id)) return
+          onToast(getErrorMessage(error, "Không thể lưu ghi chú."))
+        },
       }
     )
   }
 
   const handleDeleteNote = (id: string) => {
+    deletedNoteIdsRef.current.add(id)
     deleteNoteMutation.mutate(id, {
-      onError: (error) =>
-        onToast(getErrorMessage(error, "Không thể xoá ghi chú.")),
+      onError: (error) => {
+        deletedNoteIdsRef.current.delete(id)
+        onToast(getErrorMessage(error, "Không thể xoá ghi chú."))
+      },
     })
   }
 
@@ -539,8 +563,8 @@ export function MyTasksModal({
             data-testid="office-checkin-status"
           >
             {myStatus === "ok"
-              ? `✓ Đã điểm danh · ${formatHm(checkedAt)} · Đúng giờ`
-              : `✓ Đã điểm danh · ${formatHm(checkedAt)} · Trễ`}
+              ? `✓ Đã điểm danh ${formatHm(checkedAt)} · Đúng giờ`
+              : `✓ Đã điểm danh ${formatHm(checkedAt)} · Trễ`}
           </span>
         ) : !isLocked ? (
           <button
@@ -550,7 +574,7 @@ export function MyTasksModal({
             disabled={checkInMutation.isPending}
             onClick={() => void handleCheckIn()}
           >
-            Điểm danh · {nowHm || "08:00"}
+            Điểm danh · {nowHm}
           </button>
         ) : (
           <span
@@ -582,7 +606,7 @@ export function MyTasksModal({
         emptyText={
           tasksQuery.isLoading
             ? "Đang tải nhiệm vụ ngày..."
-            : "Hôm nay chưa có nhiệm vụ ngày."
+            : "Chưa có nhiệm vụ."
         }
         isError={tasksQuery.isError}
         onRetry={() => void tasksQuery.refetch()}
@@ -608,7 +632,7 @@ export function MyTasksModal({
         emptyText={
           tasksQuery.isLoading
             ? "Đang tải nhiệm vụ tháng..."
-            : "Chưa có nhiệm vụ tháng."
+            : "Chưa có nhiệm vụ."
         }
         isError={tasksQuery.isError}
         onRetry={() => void tasksQuery.refetch()}
@@ -632,7 +656,7 @@ export function MyTasksModal({
         subtitle={`${kpiDone}/${kpiTasks.length} xong · tháng ${monthNum}`}
         tasks={kpiTasks}
         emptyText={
-          tasksQuery.isLoading ? "Đang tải KPI..." : "Chưa có mục tiêu KPI."
+          tasksQuery.isLoading ? "Đang tải KPI..." : "Chưa có nhiệm vụ."
         }
         isError={tasksQuery.isError}
         onRetry={() => void tasksQuery.refetch()}
@@ -654,7 +678,9 @@ export function MyTasksModal({
       <section className="of-fr">
         <div className="of-fh">
           <h3>ĐỀ XUẤT</h3>
-          <span className="of-fh-sub">Gửi trưởng nhóm</span>
+          <span className="of-fh-sub">
+            gửi sếp {me.team?.bossName ?? ""}
+          </span>
         </div>
         <div className="of-fb">
           <form className="of-compose" onSubmit={(e) => void handleSendProposal(e)}>
@@ -663,7 +689,7 @@ export function MyTasksModal({
               className="of-textarea"
               maxLength={MAX_PROPOSAL}
               value={proposalDraft}
-              placeholder="Viết đề xuất gửi trưởng nhóm..."
+              placeholder="Viết đề xuất cho sếp: xin nghỉ, ý tưởng, góp ý…"
               aria-label="Nội dung đề xuất"
               onChange={(event) => {
                 setProposalDraft(event.target.value.slice(0, MAX_PROPOSAL))
@@ -717,7 +743,9 @@ export function MyTasksModal({
                 {proposal.reply && (
                   <div className="of-msg-rep">
                     <b>
-                      Sếp trả lời
+                      {me.team?.bossName
+                        ? `${me.team.bossName} trả lời`
+                        : "Sếp trả lời"}
                       {proposal.repliedAt
                         ? ` · ${formatFullDate(proposal.repliedAt)}`
                         : ""}
@@ -734,9 +762,7 @@ export function MyTasksModal({
       <section className="of-fr of-f-note">
         <div className="of-fh">
           <h3>GHI CHÚ</h3>
-          <span className="of-fh-sub">
-            Riêng tư · {notes.length}/{maxNotes}
-          </span>
+          <span className="of-fh-sub">chỉ mình bạn thấy</span>
         </div>
         <div className="of-fb">
           {notesQuery.isError ? (

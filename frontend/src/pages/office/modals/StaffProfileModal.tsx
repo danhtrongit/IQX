@@ -107,7 +107,7 @@ export function StaffProfileModal({
         joinDate: value,
       })
       setJoinDateOverride(null)
-      onToast("Đã cập nhật ngày vào làm.")
+      onToast("Đã cập nhật ngày vào làm")
     } catch (error) {
       setJoinDateError(
         getErrorMessage(error, "Không thể cập nhật ngày vào làm.")
@@ -164,7 +164,7 @@ export function StaffProfileModal({
             type="search"
             className="of-inp"
             value={search}
-            placeholder="Tìm nhân viên..."
+            placeholder="Tìm nhân viên"
             aria-label="Tìm nhân viên"
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -178,7 +178,7 @@ export function StaffProfileModal({
             <p className="of-empty" style={{ padding: "14px 12px" }}>
               {membersQuery.isLoading
                 ? "Đang tải danh sách nhân viên..."
-                : "Không tìm thấy nhân viên phù hợp."}
+                : "Không tìm thấy."}
             </p>
           ) : (
             filteredMembers.map((member) => {
@@ -316,7 +316,7 @@ export function StaffProfileModal({
                   className="of-textarea"
                   maxLength={MAX_BOSS_NOTE}
                   value={noteDraft}
-                  placeholder="Ghi chú riêng của trưởng nhóm về nhân viên này..."
+                  placeholder={`Ghi chú về ${detail.displayName}`}
                   aria-label="Ghi chú của sếp"
                   onChange={(event) => {
                     setNoteDraft(event.target.value.slice(0, MAX_BOSS_NOTE))
@@ -343,7 +343,7 @@ export function StaffProfileModal({
               </form>
 
               {sortedNotes.length === 0 ? (
-                <p className="of-empty">Chưa có ghi chú nào cho nhân viên này.</p>
+                <p className="of-empty">Chưa có ghi chú.</p>
               ) : (
                 sortedNotes.map((note) => (
                   <div

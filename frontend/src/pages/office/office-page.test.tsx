@@ -648,13 +648,24 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
     await user.click(absentTile)
     expect(absentTile.getAttribute("aria-pressed")).toBe("true")
     const roster = within(attCard).getByTestId("office-attendance-roster")
+    expect(within(roster).getByText("Vắng · 1 người")).toBeTruthy()
     expect(within(roster).getByText(/Lê Ngọc Hạnh/)).toBeTruthy()
     expect(within(roster).getByText("(bạn)")).toBeTruthy()
 
-    // Open NHIỆM VỤ CỦA TÔI via orange nudge bar
+    // Empty late bucket shows exact Spec copy "Không có ai."
+    await user.click(within(attCard).getByRole("button", { name: /Trễ/ }))
+    expect(within(roster).getByText("Trễ · 0 người")).toBeTruthy()
+    expect(within(roster).getByText("Không có ai.")).toBeTruthy()
+
+    // Attendance rule matches Spec §9.2
+    expect(attCard.textContent).toContain(
+      "Đúng giờ: điểm danh trước 08:30 · Trễ: 08:30–12:00 · Không điểm danh tính vắng · Thứ Hai – Thứ Sáu"
+    )
+
+    // Open NHIỆM VỤ CỦA TÔI via exact-copy nudge bar
     await user.click(
       within(attCard).getByRole("button", {
-        name: /Bạn chưa điểm danh hôm nay/,
+        name: "Bạn chưa điểm danh hôm nay · mở Nhiệm vụ của tôi ›",
       })
     )
     const modal = await screen.findByTestId("office-modal-mine")
@@ -664,16 +675,25 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
     await user.click(checkInBtn)
     await waitFor(() => expect(apiMocks.checkIn).toHaveBeenCalledOnce())
     expect(screen.getByTestId("office-toast").textContent).toContain(
-      "Đã điểm danh đúng giờ · 08:25"
+      "Đã điểm danh 08:25 · Đúng giờ"
     )
+
+    // Verify Spec copy on returned reason, sticky notes subtitle, placeholders
+    expect(modal.textContent).toContain("Sếp: Bổ sung số liệu quý 3")
+    expect(modal.textContent).toContain("chỉ mình bạn thấy")
+    expect(
+      (within(modal).getByLabelText("Nội dung đề xuất") as HTMLTextAreaElement)
+        .placeholder
+    ).toBe("Viết đề xuất cho sếp: xin nghỉ, ý tưởng, góp ý…")
 
     // Submit daily task with note
     const dayTask = within(modal).getByTestId("office-task-t-day-1")
     await user.click(within(dayTask).getByRole("button", { name: "Hoàn thành" }))
-    await user.type(
-      within(dayTask).getByLabelText("Ghi chú hoàn thành cho Cập nhật báo cáo sáng"),
-      "Đã hoàn tất báo cáo"
-    )
+    const submitArea = within(dayTask).getByLabelText(
+      "Ghi chú hoàn thành cho Cập nhật báo cáo sáng"
+    ) as HTMLTextAreaElement
+    expect(submitArea.placeholder).toBe("Ghi chú cho sếp (không bắt buộc)")
+    await user.type(submitArea, "Đã hoàn tất báo cáo")
     await user.click(
       within(dayTask).getByRole("button", { name: "Gửi sếp xác nhận" })
     )
@@ -958,11 +978,19 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
         })
       )
     )
+    expect(screen.getByTestId("office-toast").textContent).toBe(
+      'Đã giao "Tổng hợp báo cáo tháng" cho 2 người'
+    )
 
     // Switch to "Đã giao" -> edit & delete with inline confirm
     await user.click(within(mgrModal).getByRole("tab", { name: /Đã giao/ }))
     const asgRow = within(mgrModal).getByTestId("office-assignment-asg-1")
     await user.click(within(asgRow).getByRole("button", { name: "Sửa" }))
+    expect(
+      within(asgRow).getByText(
+        "Đổi điểm chỉ áp dụng cho người chưa hoàn thành. Người đã được duyệt giữ điểm cũ."
+      )
+    ).toBeTruthy()
     await user.click(within(asgRow).getByRole("button", { name: "Lưu thay đổi" }))
     await waitFor(() =>
       expect(apiMocks.updateAssignment).toHaveBeenCalledWith(
@@ -973,29 +1001,32 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
 
     await user.click(within(asgRow).getByRole("button", { name: "Xoá" }))
     expect(
-      within(asgRow).getByText(/Điểm của các mục đã duyệt sẽ được giữ nguyên/)
+      within(asgRow).getByText(
+        "Xoá nhiệm vụ này khỏi 1 người chưa hoàn thành? Người đã được duyệt vẫn giữ điểm."
+      )
     ).toBeTruthy()
     await user.click(within(asgRow).getByRole("button", { name: "Xác nhận xoá" }))
     await waitFor(() =>
       expect(apiMocks.deleteAssignment).toHaveBeenCalledWith("asg-1")
     )
 
-    // Return pending item: empty reason blocked, then valid reason succeeds
+    // Return pending item: empty reason blocked with exact Spec copy, then valid reason succeeds
     const rev1 = within(mgrModal).getByTestId("office-review-rev-1")
     expect(
       within(rev1).getByText("Duyệt trong hôm nay, qua 0:00 không tính điểm")
     ).toBeTruthy()
     await user.click(within(rev1).getByRole("button", { name: "Trả lại" }))
+    const reasonArea = within(rev1).getByLabelText(
+      "Lý do trả lại cho Kiểm tra danh mục khách"
+    ) as HTMLTextAreaElement
+    expect(reasonArea.placeholder).toBe("Lý do trả lại (nhân viên sẽ thấy)")
     await user.click(
       within(rev1).getByRole("button", { name: "Xác nhận trả lại" })
     )
-    expect(within(rev1).getByRole("alert").textContent).toContain(
-      "Vui lòng nhập lý do trả lại"
+    expect(within(rev1).getByRole("alert").textContent).toBe(
+      "Ghi lý do trả lại"
     )
-    await user.type(
-      within(rev1).getByLabelText("Lý do trả lại cho Kiểm tra danh mục khách"),
-      "Thiếu ghi chú 2 tài khoản cuối"
-    )
+    await user.type(reasonArea, "Thiếu ghi chú 2 tài khoản cuối")
     await user.click(
       within(rev1).getByRole("button", { name: "Xác nhận trả lại" })
     )
@@ -1006,12 +1037,18 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
       )
     )
 
-    // Bulk approve all pending tasks
+    // Bulk approve all pending tasks -> "Đã duyệt 2 mục"
     await user.click(within(mgrModal).getByLabelText("Chọn tất cả"))
     await user.click(within(mgrModal).getByRole("button", { name: "Duyệt 2 mục" }))
     await waitFor(() =>
       expect(apiMocks.approveTasks).toHaveBeenCalledWith(["rev-1", "rev-2"])
     )
+    expect(screen.getByTestId("office-toast").textContent).toBe(
+      "Đã duyệt 2 mục"
+    )
+
+    // Progress subtitle matches Spec §7
+    expect(mgrModal.textContent).toContain("bấm tên để mở hồ sơ")
 
     // Reply to team proposal
     const propRow = within(mgrModal).getByTestId("office-team-proposal-prop-1")
@@ -1479,7 +1516,7 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
     )
     expect(mineModal.textContent).toContain("0/1 xong · reset 0:00")
     expect(mineModal.textContent).toContain("Chờ sếp xác nhận · trong hôm nay")
-    expect(mineModal.textContent).toContain("· gửi 08:40")
+    expect(mineModal.textContent).toContain("Bạn ghi: Đã gửi báo cáo · gửi 08:40")
 
     // 1-click blue pastel dot creates sticky note & auto-focuses its textarea + shows 23/11
     await user.click(
@@ -1530,5 +1567,222 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
       "Mỗi mục nội dung họp tối đa 200 ký tự."
     )
     expect(apiMocks.createMeeting).not.toHaveBeenCalled()
+  })
+
+  it("cancels pending sticky note debounce when deleted within 500ms (zero 404 PATCH) and verifies remaining Spec copy", async () => {
+    const user = userEvent.setup()
+    authState.user = {
+      id: "u-staff-1",
+      email: "hanh@iqx.vn",
+      username: "hanh",
+      full_name: "Lê Ngọc Hạnh",
+      role: "user",
+    }
+    authState.isAuthenticated = true
+    authState.isLoading = false
+
+    // Invalid serverTime must fall back to real current time (never hardcoded "08:00" when not 08:00)
+    apiMocks.me.mockResolvedValue({ ...makeStaffMe(), serverTime: "invalid" })
+    apiMocks.listMyTasks.mockResolvedValue({
+      periodMonth: "2026-11",
+      todayDate: "2026-11-23",
+      monthlyPoints: 180,
+      day: [
+        {
+          ...makeMyTasks().day[0],
+          status: "done",
+          pointsSnapshot: 15,
+        },
+      ],
+      month: [],
+      kpi: [],
+    })
+    apiMocks.listMyProposals.mockResolvedValue({ items: [], unreadCount: 0 })
+    const noteItems = [
+      {
+        id: "n-race",
+        color: "y" as const,
+        content: "Ghi chú sắp xoá",
+        createdAt: "2026-11-23T01:00:00.000Z",
+        updatedAt: "2026-11-23T01:00:00.000Z",
+      },
+    ]
+    apiMocks.listStickyNotes.mockImplementation(() =>
+      Promise.resolve({ maxNotes: 50, items: [...noteItems] })
+    )
+    apiMocks.deleteStickyNote.mockImplementation(async (id: string) => {
+      const idx = noteItems.findIndex((n) => n.id === id)
+      if (idx >= 0) noteItems.splice(idx, 1)
+      return { ok: true }
+    })
+
+    const staffView = renderOffice("/van-phong?modal=mine")
+    const mineModal = await screen.findByTestId("office-modal-mine")
+
+    // Done task badge shows "+15 điểm", empty task boxes show "Chưa có nhiệm vụ."
+    expect(await within(mineModal).findByText("+15 điểm")).toBeTruthy()
+    expect(within(mineModal).getAllByText("Chưa có nhiệm vụ.")).toHaveLength(2)
+
+    // Attendance button uses real current HH:mm format (no blank/NaN)
+    expect(within(mineModal).getByTestId("office-checkin-btn").textContent).toMatch(
+      /^Điểm danh · \d{2}:\d{2}$/
+    )
+
+    // Type into sticky note and delete immediately within 500ms debounce
+    const noteCard = await within(mineModal).findByTestId(
+      "office-sticky-note-n-race"
+    )
+    const textarea = within(noteCard).getByLabelText("Nội dung ghi chú")
+    await user.type(textarea, " mới gõ")
+    await user.click(within(noteCard).getByRole("button", { name: "Xoá ghi chú" }))
+
+    await waitFor(() =>
+      expect(apiMocks.deleteStickyNote).toHaveBeenCalledWith("n-race")
+    )
+    await waitFor(() =>
+      expect(
+        within(mineModal).queryByTestId("office-sticky-note-n-race")
+      ).toBeNull()
+    )
+    // Wait past the 500ms debounce window to ensure no stray PATCH fires
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    expect(apiMocks.updateStickyNote).not.toHaveBeenCalled()
+    staffView.unmount()
+
+    // Verify Boss single-approve toast, empty review copy, "Bạn đã trả lời", StaffProfile empty search/notes & join date toast
+    authState.user = {
+      id: "u-boss",
+      email: "huy@iqx.vn",
+      username: "lehuy",
+      full_name: "Lê Huy",
+      role: "team_lead",
+    }
+    apiMocks.me.mockResolvedValue(makeBossMe())
+    apiMocks.listAssignments.mockResolvedValue({ items: [] })
+    apiMocks.listReview
+      .mockResolvedValueOnce({
+        items: [
+          {
+            id: "rev-single",
+            assignmentId: "asg-1",
+            userId: "u-staff-1",
+            staffName: "Lê Ngọc Hạnh",
+            staffAccentColor: "#C2417D",
+            kind: "day",
+            title: "Gọi khách sáng",
+            points: 10,
+            taskDate: "2026-11-23",
+            dueDate: null,
+            submitNote: null,
+            submittedAt: "2026-11-23T01:30:00.000Z",
+          },
+        ],
+      })
+      .mockResolvedValue({ items: [] })
+    apiMocks.approveTasks.mockResolvedValue({
+      approved: [
+        {
+          taskId: "rev-single",
+          userId: "u-staff-1",
+          staffName: "Lê Ngọc Hạnh",
+          title: "Gọi khách sáng",
+          points: 10,
+          totalMonthlyPoints: 190,
+        },
+      ],
+    })
+    apiMocks.listTeamProposals.mockResolvedValue({
+      unreadCount: 0,
+      items: [
+        {
+          id: "prop-replied",
+          userId: "u-staff-1",
+          staffName: "Lê Ngọc Hạnh",
+          staffAccentColor: "#C2417D",
+          content: "Xin nghỉ sáng mai",
+          status: "replied",
+          seenAt: "2026-11-23T01:35:00.000Z",
+          reply: "Đồng ý",
+          repliedAt: "2026-11-23T01:40:00.000Z",
+          createdAt: "2026-11-23T01:30:00.000Z",
+        },
+      ],
+    })
+    apiMocks.progress.mockResolvedValue({
+      periodMonth: "2026-11",
+      todayDate: "2026-11-23",
+      items: [],
+    })
+    apiMocks.listMembers.mockResolvedValue({
+      todayDate: "2026-11-23",
+      items: [
+        {
+          userId: "u-staff-1",
+          displayName: "Lê Ngọc Hạnh",
+          accentColor: "#C2417D",
+          joinDate: "2024-05-10",
+          tenure: { years: 2, months: 6, days: 13, label: "2 năm 6 tháng 13 ngày" },
+        },
+      ],
+    })
+    const baseDetail: OfficeMemberDetail = {
+      userId: "u-staff-1",
+      displayName: "Lê Ngọc Hạnh",
+      email: "hanh@iqx.vn",
+      bossName: "Lê Huy",
+      accentColor: "#C2417D",
+      joinDate: "2024-05-10",
+      todayDate: "2026-11-23",
+      tenure: { years: 2, months: 6, days: 13, label: "2 năm 6 tháng 13 ngày" },
+      stats: {
+        monthlyPoints: 180,
+        tasksDone: 8,
+        tasksTotal: 10,
+        pendingCount: 0,
+        attendanceOk: 15,
+        attendanceLate: 1,
+        attendanceAbsent: 0,
+      },
+      notes: [],
+    }
+    apiMocks.getMemberProfile.mockResolvedValue(baseDetail)
+    apiMocks.updateMemberProfile.mockResolvedValue({
+      ...baseDetail,
+      joinDate: "2024-06-01",
+    })
+
+    const mgrView = renderOffice("/van-phong?modal=mgr")
+    const mgrModal = await screen.findByTestId("office-modal-mgr")
+    expect(await within(mgrModal).findByText(/^Bạn đã trả lời/)).toBeTruthy()
+    await user.click(
+      await within(mgrModal).findByRole("button", { name: "✓ Duyệt hoàn thành" })
+    )
+    await waitFor(() =>
+      expect(screen.getByTestId("office-toast").textContent).toBe(
+        "Đã duyệt · Lê Ngọc Hạnh +10 điểm"
+      )
+    )
+    expect(
+      await within(mgrModal).findByText("Không có nhiệm vụ nào chờ xác nhận.")
+    ).toBeTruthy()
+
+    await user.click(
+      within(mgrModal).getByRole("button", { name: "Hồ sơ nhân viên" })
+    )
+    const profModal = await screen.findByTestId("office-modal-prof")
+    expect(await within(profModal).findByText("Chưa có ghi chú.")).toBeTruthy()
+
+    const dateInput = within(profModal).getByLabelText("Ngày vào làm")
+    fireEvent.change(dateInput, { target: { value: "2024-06-01" } })
+    await waitFor(() =>
+      expect(screen.getByTestId("office-toast").textContent).toBe(
+        "Đã cập nhật ngày vào làm"
+      )
+    )
+
+    const searchInput = within(profModal).getByLabelText("Tìm nhân viên")
+    await user.type(searchInput, "khongtontai")
+    expect(within(profModal).getByText("Không tìm thấy.")).toBeTruthy()
+    mgrView.unmount()
   })
 })

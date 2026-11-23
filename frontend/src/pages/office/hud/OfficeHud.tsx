@@ -34,18 +34,6 @@ function getInitialMobile(): boolean {
   return window.matchMedia(MOBILE_MEDIA_QUERY).matches
 }
 
-function nextMinuteHm(hm: string): string {
-  const parts = hm.split(":")
-  if (parts.length !== 2) return "08:31"
-  const h = Number(parts[0])
-  const m = Number(parts[1])
-  if (!Number.isInteger(h) || !Number.isInteger(m)) return "08:31"
-  const total = (h * 60 + m + 1) % (24 * 60)
-  const nh = String(Math.floor(total / 60)).padStart(2, "0")
-  const nm = String(total % 60).padStart(2, "0")
-  return `${nh}:${nm}`
-}
-
 interface HudCardProps {
   id: HudCardKey
   title: string
@@ -167,10 +155,10 @@ export function OfficeHud({
     selectedBucket && attendance ? attendance.roster[selectedBucket] : []
   const rosterTitle =
     selectedBucket === "ok"
-      ? `Đúng giờ (${rosterEntries.length})`
+      ? `Đúng giờ · ${rosterEntries.length} người`
       : selectedBucket === "late"
-        ? `Trễ (${rosterEntries.length})`
-        : `Vắng (${rosterEntries.length})`
+        ? `Trễ · ${rosterEntries.length} người`
+        : `Vắng · ${rosterEntries.length} người`
 
   const bossCards =
     me.role === "boss" && bossHud ? (
@@ -329,8 +317,7 @@ export function OfficeHud({
           className="of-nudge"
           onClick={() => onOpenModal("mine")}
         >
-          <span>Bạn chưa điểm danh hôm nay — mở Nhiệm vụ của tôi</span>
-          <ChevronRight size={15} aria-hidden="true" />
+          <span>Bạn chưa điểm danh hôm nay · mở Nhiệm vụ của tôi ›</span>
         </button>
       )}
 
@@ -352,7 +339,7 @@ export function OfficeHud({
           </h6>
           {rosterEntries.length === 0 ? (
             <p className="of-empty" style={{ padding: "6px 0" }}>
-              Không có nhân viên nào.
+              Không có ai.
             </p>
           ) : (
             <ul>
@@ -375,9 +362,8 @@ export function OfficeHud({
       )}
 
       <p className="of-rule" style={{ marginBottom: 0 }}>
-        Thứ Hai – Thứ Sáu · ≤ {cutoffs.onTime} đúng giờ ·{" "}
-        {nextMinuteHm(cutoffs.onTime)}–{cutoffs.lock} trễ · sau {cutoffs.lock}{" "}
-        vắng
+        Đúng giờ: điểm danh trước {cutoffs.onTime} · Trễ: {cutoffs.onTime}–
+        {cutoffs.lock} · Không điểm danh tính vắng · Thứ Hai – Thứ Sáu
       </p>
     </HudCard>
   )
