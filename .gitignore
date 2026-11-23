@@ -6,17 +6,12 @@
 
 # Repository agent instructions.
 !/AGENTS.md
-!/CLAUDE.md
 
-# Application directories: NestJS API, web frontend, mobile, Rust desktop.
+# Application directories: NestJS API, web frontend.
 !/backend/
 !/backend/**
 !/frontend/
 !/frontend/**
-!/mobile/
-!/mobile/**
-!/desktop/
-!/desktop/**
 # Safety guard: frontend was previously a standalone repo.
 /frontend/.git
 

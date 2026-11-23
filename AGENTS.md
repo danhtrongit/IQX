@@ -1,62 +1,30 @@
-# AGENTS.md — IQX
+# AGENTS.md
 
-> `CLAUDE.md` là symlink tới file này.
+## Ngôn ngữ
 
-## Ngôn ngữ & Giao tiếp
+- **Phản hồi người dùng:** luôn bằng tiếng Việt.
+- **Giao task cho sub agent / worker:** viết prompt bằng tiếng Anh để tiết kiệm token. Yêu cầu worker chỉ báo cáo tóm tắt gọn (file/dòng liên quan, thay đổi đã làm, kết quả kiểm chứng), **không** chép lại nguyên khối code dài; main agent kiểm chứng rồi tóm tắt lại cho người dùng bằng tiếng Việt.
 
-- **Phản hồi người dùng:** luôn bằng tiếng Việt, ngắn gọn, đi thẳng vào kết quả.
-- **Giao task cho sub agent:** viết prompt bằng tiếng Anh để tiết kiệm token. Yêu cầu sub agent chỉ báo cáo tóm tắt (file/dòng liên quan, thay đổi đã làm, kết quả kiểm tra), **không** chép lại nguyên khối code dài vào câu trả lời; sau đó main agent tóm tắt lại cho người dùng bằng tiếng Việt.
+## Chất lượng & Quy trình làm việc
 
-## Tốc độ & Tối ưu token
-
-- Luôn tìm cách đẩy nhanh tiến độ; chạy song song các việc độc lập (tool call, sub agent) trong cùng một lượt.
-- Không hỏi lại khi đã đủ thông tin để làm; không làm thừa ngoài phạm vi được yêu cầu.
-- **Đọc có mục tiêu:** dùng `Grep`/`Glob` định vị chính xác trước, sau đó `Read` theo khoảng dòng (`offset`/`limit`) với file lớn thay vì đọc tràn cả file.
-- **Không đẻ sub agent cho việc quá nhỏ:** nếu chỉ cần tra cứu nhanh hoặc đọc/sửa ≤ 3 file đã biết rõ đường dẫn, thực hiện trực tiếp trên main agent (tránh tốn phí khởi tạo ngữ cảnh của sub agent).
-- **Không quét nhầm thư mục:** KHÔNG tự ý tìm kiếm/đọc trong `node_modules/`, `dist/`, `mobile/` trừ khi được yêu cầu.
-
-## Sub agent
-
-### Giới hạn số lượng
-
-- **Tối đa 10 sub agent chạy đồng thời** (tính cả agent con do sub agent tự đẻ ra). Đây là mức an toàn cho máy và hạn mức sử dụng.
-- Khi đã đủ 10: xếp hàng việc mới, chỉ mở thêm khi có agent kết thúc; ưu tiên việc nằm trên đường găng và việc sửa lỗi nghiêm trọng.
-- Không dừng ngang agent đang chạy chỉ để hạ số lượng; để chúng tự kết thúc rồi mới áp giới hạn cho các lượt mở tiếp theo.
-
-### Chọn model & mức thinking (effort)
-
-- **Mặc định (`sonnet` — effort `high` hoặc `xhigh`):**
-  - Sửa code, refactor, viết test, cài đặt tính năng đã có plan cụ thể từ main agent.
-  - Phân tích luồng, đọc hiểu logic vừa phải.
-- **Dùng `opus` (effort `medium` hoặc `high`) chỉ cho task khó:**
-  - Thiết kế kiến trúc, tính năng phức tạp, thuật toán, debug lỗi chưa rõ nguyên nhân.
-  - UX/UI.
-- **Dùng `haiku` (effort `high` hoặc `xhigh`):**
-  - Task thuần tìm kiếm, tra cứu dữ liệu, quét diện rộng qua nhiều file. (Luôn giữ effort `high`/`xhigh` để đảm bảo độ chính xác.)
-
-### Giao việc cho sub agent
-
-Trước khi giao, main agent phải đưa plan cụ thể gồm:
-
-1. **Mục tiêu (Goal)** — cần đạt được gì.
-2. **File mục tiêu (Target files)** — đường dẫn cụ thể (kèm dòng/hàm nếu đã biết).
-3. **Các bước (Steps)** — thứ tự thực hiện rõ ràng.
-4. **Tiêu chí hoàn thành (Acceptance criteria)** — thế nào là xong & các edge-case cần chặn.
-5. **Cách kiểm tra (Verification)** — lệnh build/test/thao tác cụ thể để xác nhận.
-
-Không giao việc mơ hồ.
+- **Ưu tiên chất lượng lên hàng đầu:** thiết kế chuẩn chỉnh, xử lý triệt để edge-case, đảm bảo type-safety, hiệu năng và khả năng bảo trì lâu dài.
+- **Bảo toàn ngữ cảnh phiên chính:** main agent đóng vai điều phối (lập kế hoạch, ra quyết định, giao việc, tích hợp git, báo cáo) và hạn chế tự làm để ngữ cảnh không nhanh chạm giới hạn token. Đọc code, tìm kiếm, sửa code, build/test và review đều giao cho sub agent. Sub agent trả về kết quả qua file báo cáo cùng một bản tóm tắt ngắn; main agent không kéo log dài, diff lớn hay nội dung file vào phiên chính.
+- **Ngoại lệ (main agent tự làm):** chỉ những việc thực hiện nhanh với output ngắn, ví dụ `git status/log/merge`, một lệnh kiểm tra có kết quả vài dòng, ghi ledger/memory, hoặc sửa nhỏ ≤ 3 file đã biết rõ đường dẫn.
+- **Kiểm chứng bắt buộc:** **không** tin mù quáng báo cáo "xong/GREEN" từ worker. Mỗi kết quả phải được kiểm chứng độc lập (build, typecheck, test, đối chiếu diff và dữ liệu thực tế) trước khi báo cáo hoàn thành. Việc kiểm chứng nặng giao cho một sub agent khác với worker đã làm; main agent chỉ tự chạy lệnh kiểm chứng khi output ngắn, ví dụ dòng tổng kết `Passed/Failed`.
+- **Tốc độ & song song hoá:** chạy song song các tác vụ độc lập (tool calls, sub agents) trong cùng một lượt để tối ưu thời gian mà không đánh đổi độ chính xác.
+- **Không làm thừa, không hỏi thừa:** không hỏi lại khi đã đủ thông tin để thực hiện; không làm ngoài phạm vi được yêu cầu.
+- **Không quét nhầm thư mục lớn:** **KHÔNG** tự ý tìm kiếm hoặc đọc trong `archives/`, `node_modules/` hay thư mục build/cache trừ khi được yêu cầu đối chiếu trực tiếp; luôn ghi rõ danh sách cấm này trong prompt giao việc cho worker.
 
 ## Cấu trúc thư mục
 
-- Giữ cây thư mục gọn, sạch, chuẩn production ngay từ đầu.
-- Mỗi thư mục phải có lý do tồn tại rõ ràng.
-- Nhóm file theo loại (components/, utils/, types/...), không nhóm theo tính năng (feature).
+- Giữ cây thư mục gọn, sạch, chuẩn production ngay từ đầu; mỗi thư mục phải có lý do tồn tại rõ ràng.
+- **Mô hình Hybrid** (theo loại ở tầng gốc + chia thư mục con theo cụm):
+  - Tầng gốc phân theo vai trò kỹ thuật (`components/`, `systems/`, `services/`, `types/`, `utils/`, `assets/`...).
+  - Bên trong mỗi thư mục gốc, gom các file cùng mảng vào thư mục con (ví dụ: `components/ui/`, `components/hud/`, `components/clan/`, `systems/combat/`, `systems/social/`...).
+- **Kiểm soát số lượng file & độ sâu:** không để quá ~10–15 file nằm phẳng trực tiếp trong một thư mục (vượt ngưỡng phải tách thư mục con); đồng thời tránh lồng quá sâu hoặc tạo thư mục chỉ có 1 file lẻ loi.
 
 ## Git & worktree
 
-- **Luôn gộp và xoá nhánh sau khi xong:** kiểm tra sạch lỗi → merge vào `main`, push, xoá nhánh (cả local lẫn remote).
-- **Worktree:** chỉ lấy những thứ cần thiết và xoá ngay sau khi dùng xong.
-
-## Phạm vi
-
-- **Mobile (`mobile/`) đang tạm ngừng:** không sửa, không cập nhật mobile theo thay đổi backend/web, trừ khi được yêu cầu rõ.
+- **Xong việc:** kiểm tra sạch lỗi → merge vào `main` → push → xoá nhánh (cả local lẫn remote).
+- **Worktree / Workspace:** chỉ tách nhánh (`branch` / `share`) khi cần thiết và dọn dẹp ngay sau khi hoàn tất.
+- **Phân quyền tích hợp:** worker không tự push, merge hay xoá nhánh; các bước tích hợp git cuối cùng do main agent thực hiện.
