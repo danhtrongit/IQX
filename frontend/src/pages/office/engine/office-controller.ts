@@ -3,8 +3,12 @@
  * - Click/tap-to-move (`250 px/s`, golden ring) + WASD/Arrow keys via `event.code`
  *   (cleared on blur, visibilitychange hidden, Meta/Control, or modal open)
  * - `E` (`KeyE`) opens closest interactive station (`< 95 px`), `Esc` closes active modal
- * - Smart follow camera: fills desktop viewport cleanly at 1.0x zoom (no excess empty void),
- *   centers closely on player on phones (`<= 720px`) below top HUD cards; zoom range `0.55×..1.5×`
+ * - HUD-aware follow camera:
+ *   - Desktop (`>= 1101px`, 330px HUD columns) & tablet (`721-1100px`, 290px HUD columns):
+ *     frames the full open-plan desk grid + upper rooms row and offsets the camera target
+ *     horizontally so the player sits in the visible center between the HUD columns.
+ *   - Phones (`<= 720px`): centers on the player below the collapsed top-right HUD cards.
+ *   - Zoom range stays strictly `0.55×..1.5×`.
  * - Renders ONLY online WebSocket members (+ self) — NEVER tied to attendance
  * - Crisp projected HTML overlays: nameplates (`< 70 px` own-desk declutter for ALL staff
  *   including self per Spec §3.2), role-aware attendance dots, and clickable golden `E` pill
@@ -33,6 +37,7 @@ import type {
 } from "../types.ts"
 import { monthNumberFromPeriod, resolveOfficeAvatarId } from "../utils.ts"
 import {
+  MAX_STAFF_DESKS,
   OFFICE_BASE_H,
   OFFICE_BASE_W,
   OFFICE_BOSS_SPAWN,
@@ -58,8 +63,11 @@ import { OfficeWorld3D } from "./office-world-3d.ts"
 
 export const OFFICE_CAMERA_FOV = 36
 export const OFFICE_CAMERA_PITCH_DEG = 50
-export const OFFICE_CAMERA_BASE_DISTANCE = 17.6
+export const OFFICE_CAMERA_BASE_DISTANCE = 18.0
+export const OFFICE_DESKTOP_BREAKPOINT_PX = 1101
 export const OFFICE_MOBILE_BREAKPOINT_PX = 720
+export const OFFICE_DESKTOP_HUD_COL_PX = 330 + 14
+export const OFFICE_TABLET_HUD_COL_PX = 290 + 14
 export const OFFICE_DEFAULT_DESKTOP_ZOOM = 1.0
 export const OFFICE_DEFAULT_MOBILE_ZOOM = 1.32
 
@@ -69,6 +77,87 @@ const ARRIVAL_PX = 4
 const PEER_TELEPORT_PX = 280
 const PEER_SMOOTH_RATE = 12
 const HALF_FOV_TAN = Math.tan(((OFFICE_CAMERA_FOV / 2) * Math.PI) / 180)
+
+export interface OfficeCameraTargetParams {
+  readonly lx: number
+  readonly ly: number
+  readonly worldW: number
+  readonly worldH: number
+  readonly viewportW: number
+  readonly viewportH: number
+  readonly zoom: number
+  readonly role: OfficeRole
+}
+
+/**
+ * Resolves the HUD column widths (left & right screen insets in CSS px) that occlude
+ * the canvas at a given viewport width and role:
+ * - `<= 720px`: collapsed top-right cards (`0` horizontal side columns).
+ * - `721–1100px`: `290px + 14px` cards (Boss has both left & right; Staff has right only).
+ * - `>= 1101px`: `330px + 14px` cards (Boss has both left & right; Staff has right only).
+ */
+export function resolveOfficeHudInsets(
+  viewportW: number,
+  role: OfficeRole
+): { readonly leftPx: number; readonly rightPx: number } {
+  if (viewportW <= OFFICE_MOBILE_BREAKPOINT_PX) {
+    return { leftPx: 0, rightPx: 0 }
+  }
+  const colPx =
+    viewportW >= OFFICE_DESKTOP_BREAKPOINT_PX
+      ? OFFICE_DESKTOP_HUD_COL_PX
+      : OFFICE_TABLET_HUD_COL_PX
+  return {
+    leftPx: role === "boss" ? colPx : 0,
+    rightPx: colPx,
+  }
+}
+
+/**
+ * Computes the ideal camera logical look target:
+ * - On phones (`<= 720px`): centers on the player horizontally and shifts slightly north
+ *   (`-48 px`) so the player sits cleanly below the collapsed top HUD cards.
+ * - On tablet (`721–1100px`) & desktop (`>= 1101px`): shifts the camera target horizontally
+ *   so the player sits in the visible center between the left & right HUD columns, while
+ *   softly clamping against the world edges using HUD-aware margins so the visible band
+ *   stays filled with the furnished office instead of empty dark margins.
+ */
+export function computeOfficeCameraTarget(
+  params: OfficeCameraTargetParams
+): { readonly x: number; readonly y: number } {
+  const { lx, ly, worldW, viewportW, viewportH, role } = params
+  if (viewportW <= OFFICE_MOBILE_BREAKPOINT_PX) {
+    return { x: lx, y: ly - 48 }
+  }
+
+  const safeW = Math.max(1, viewportW)
+  const safeH = Math.max(1, viewportH)
+  const safeZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, params.zoom))
+  const aspect = Math.max(0.5, safeW / safeH)
+  const dist = OFFICE_CAMERA_BASE_DISTANCE / safeZoom
+  const halfVisXLogical = (dist * HALF_FOV_TAN * aspect) / OFFICE_WORLD_SCALE
+
+  const { leftPx, rightPx } = resolveOfficeHudInsets(safeW, role)
+  // Visible center X = safeW / 2 + (leftPx - rightPx) / 2.
+  // Shifting camera target by +((rightPx - leftPx) / safeW) * halfVisXLogical places `lx`
+  // directly at the visible center between the left and right HUD columns.
+  const hudOffsetLogical = ((rightPx - leftPx) / safeW) * halfVisXLogical
+  const desiredX = lx + hudOffsetLogical
+
+  // Account for HUD-covered screen bands when clamping to room edges so Boss's left cards
+  // do not trap Desk #0 or the Boss behind the left column, while Staff sees zero dark void.
+  const leftHudLogical = (leftPx / (safeW / 2)) * halfVisXLogical
+  const rightHudLogical = (rightPx / (safeW / 2)) * halfVisXLogical
+  const minEdgeX = halfVisXLogical * 0.88 - leftHudLogical
+  const maxEdgeX = worldW - halfVisXLogical * 0.88 + rightHudLogical
+
+  const targetX =
+    minEdgeX >= maxEdgeX
+      ? worldW / 2 + hudOffsetLogical
+      : Math.max(minEdgeX, Math.min(maxEdgeX, desiredX))
+
+  return { x: targetX, y: ly - 25 }
+}
 
 const MOVE_KEY_CODES: ReadonlySet<string> = new Set([
   "KeyW",
@@ -149,9 +238,15 @@ function buildTeamLayoutSignature(
   bossName: string,
   selfUserId: string,
   worldH: number,
+  totalDesks: number,
   desks: readonly OfficeDeskPlacement[]
 ): string {
-  const parts = [bossName.trim(), selfUserId, String(worldH)]
+  const parts = [
+    bossName.trim(),
+    selfUserId,
+    String(worldH),
+    String(totalDesks),
+  ]
   for (const d of desks) {
     parts.push(
       `${d.index}:${d.userId}:${d.displayName}:${d.x},${d.y},${d.w},${d.h}:${d.hasMug ? 1 : 0}`
@@ -173,7 +268,7 @@ export class OfficeController {
   private worldH = OFFICE_BASE_H
   private desks: OfficeDeskPlacement[] = []
   private readonly deskByUserId = new Map<string, OfficeDeskPlacement>()
-  private obstacles: OfficeRect[] = buildOfficeObstacles(11)
+  private obstacles: OfficeRect[] = buildOfficeObstacles(MAX_STAFF_DESKS)
   private stations: OfficeStation[] = []
   private lastTeamLayoutSignature = ""
 
@@ -254,29 +349,22 @@ export class OfficeController {
     host.start((dt) => this.tick(dt))
   }
 
-  /** Computes ideal camera look target: full-office framing on desktop, player-centered on phones. */
+  /** Computes ideal camera look target respecting desktop/tablet HUD columns and mobile centering. */
   private computeCameraFollowLogical(
     lx: number,
     ly: number
   ): { x: number; y: number } {
     const vp = this.host.getViewportSize()
-    const isMobile = vp.width <= OFFICE_MOBILE_BREAKPOINT_PX
-    if (isMobile) {
-      // Shift target slightly north (-48px) so the player sits cleanly below top-right collapsed HUD cards
-      return { x: lx, y: ly - 48 }
-    }
-
-    const zoom = Math.max(MIN_ZOOM, this.host.getTargetZoom())
-    const aspect = Math.max(0.5, vp.width / Math.max(1, vp.height))
-    const dist = OFFICE_CAMERA_BASE_DISTANCE / zoom
-    const halfVisXLogical = (dist * HALF_FOV_TAN * aspect) / OFFICE_WORLD_SCALE
-    // Keep camera inside room bounds so desktop fills the canvas with the office instead of empty dark margins
-    const marginX = halfVisXLogical * 0.9
-    const targetX =
-      marginX >= this.worldW / 2
-        ? this.worldW / 2
-        : Math.max(marginX, Math.min(this.worldW - marginX, lx))
-    return { x: targetX, y: ly - 25 }
+    return computeOfficeCameraTarget({
+      lx,
+      ly,
+      worldW: this.worldW,
+      worldH: this.worldH,
+      viewportW: vp.width,
+      viewportH: vp.height,
+      zoom: this.host.getTargetZoom(),
+      role: this.selfRole,
+    })
   }
 
   /** Adjusts framing immediately when the canvas container resizes (via ResizeObserver). */
@@ -328,7 +416,10 @@ export class OfficeController {
 
     const onKeyDown = (event: KeyboardEvent): void => {
       if (this.disposed) return
-      if ((event.code === "Escape" || event.key === "Escape") && this.modalOpen) {
+      if (
+        (event.code === "Escape" || event.key === "Escape") &&
+        this.modalOpen
+      ) {
         event.preventDefault()
         this.callbacks.onCloseModal?.()
         return
@@ -473,6 +564,7 @@ export class OfficeController {
       me.team.bossName,
       me.self.userId,
       dims.height,
+      dims.totalDesks,
       nextDesks
     )
     const layoutChanged = nextSignature !== this.lastTeamLayoutSignature
@@ -498,7 +590,8 @@ export class OfficeController {
         me.team.bossName,
         this.desks,
         me.self.userId,
-        this.worldH
+        this.worldH,
+        dims.totalDesks
       )
     }
 
@@ -591,7 +684,7 @@ export class OfficeController {
         this.selfActor.outfitColorHex = outfitHex
         this.selfActor.rig.setOutfitColor(outfitHex)
       }
-      if (dimsChanged) {
+      if (dimsChanged || prevRole !== this.selfRole) {
         const selfPt = logicalToWorld(
           this.selfActor.x,
           this.selfActor.y,
@@ -842,9 +935,12 @@ export class OfficeController {
 
       if (!this.modalOpen) {
         if (this.heldKeys.has("KeyW") || this.heldKeys.has("ArrowUp")) vy -= 1
-        if (this.heldKeys.has("KeyS") || this.heldKeys.has("ArrowDown")) vy += 1
-        if (this.heldKeys.has("KeyA") || this.heldKeys.has("ArrowLeft")) vx -= 1
-        if (this.heldKeys.has("KeyD") || this.heldKeys.has("ArrowRight")) vx += 1
+        if (this.heldKeys.has("KeyS") || this.heldKeys.has("ArrowDown"))
+          vy += 1
+        if (this.heldKeys.has("KeyA") || this.heldKeys.has("ArrowLeft"))
+          vx -= 1
+        if (this.heldKeys.has("KeyD") || this.heldKeys.has("ArrowRight"))
+          vx += 1
       }
 
       let moved = false
@@ -992,7 +1088,10 @@ export class OfficeController {
               const hudRect = hudTr.getBoundingClientRect()
               const stageRect = this.container.getBoundingClientRect()
               if (hudRect.height > 0) {
-                minTop = Math.max(minTop, Math.ceil(hudRect.bottom - stageRect.top) + 10)
+                minTop = Math.max(
+                  minTop,
+                  Math.ceil(hudRect.bottom - stageRect.top) + 10
+                )
               }
             }
           }

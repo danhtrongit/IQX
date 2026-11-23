@@ -1,18 +1,35 @@
 import * as THREE from "three"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import type { ChibiSceneHost } from "@/lib/chibi-3d/scene-host.ts"
+import {
+  computeCameraClampBounds,
+  type ChibiSceneHost,
+} from "@/lib/chibi-3d/scene-host.ts"
 import {
   logicalToWorld,
   type WorldTransformConfig,
 } from "@/lib/chibi-3d/types.ts"
 
-import type { OfficeMe } from "../types.ts"
-import { OfficeController } from "./office-controller.ts"
+import type { OfficeMe, OfficeMember } from "../types.ts"
 import {
+  OFFICE_CAMERA_BASE_DISTANCE,
+  OFFICE_CAMERA_FOV,
+  OFFICE_CAMERA_PITCH_DEG,
+  OFFICE_DESKTOP_HUD_COL_PX,
+  OFFICE_TABLET_HUD_COL_PX,
+  OfficeController,
+  computeOfficeCameraTarget,
+  resolveOfficeHudInsets,
+} from "./office-controller.ts"
+import {
+  MAX_STAFF_DESKS,
   OFFICE_BASE_H,
   OFFICE_BASE_W,
+  OFFICE_BOSS_SPAWN,
+  OFFICE_EXTRA_BAND_STEP,
   OFFICE_WORLD_SCALE,
+  buildDeskPositions,
+  deskSlotCoords,
   getOfficeWindows,
   getZoneRugs,
   prefersReducedMotion,
@@ -40,6 +57,7 @@ function createMockHost(viewport = { width: 1440, height: 840 }): {
   step: (dt: number) => void
   forceContextLoss: ReturnType<typeof vi.fn>
   followLogical: ReturnType<typeof vi.fn>
+  setWorldSize: ReturnType<typeof vi.fn>
   setZoom: ReturnType<typeof vi.fn>
   setViewport: (w: number, h: number) => void
 } {
@@ -54,6 +72,10 @@ function createMockHost(viewport = { width: 1440, height: 840 }): {
   let onFrame: ((dt: number, elapsed: number) => void) | null = null
   const forceContextLoss = vi.fn()
   const followLogical = vi.fn()
+  const setWorldSize = vi.fn((w: number, h: number) => {
+    world.logicalW = w
+    world.logicalH = h
+  })
   const setZoom = vi.fn((z: number) => {
     zoom = z
   })
@@ -76,11 +98,8 @@ function createMockHost(viewport = { width: 1440, height: 840 }): {
     },
     lite: false,
     followLogical,
-    setWorldSize: vi.fn((w: number, h: number) => {
-      world.logicalW = w
-      world.logicalH = h
-    }),
-    setWorldDimensions: vi.fn(),
+    setWorldSize,
+    setWorldDimensions: setWorldSize,
     setZoom,
     getZoom: () => zoom,
     getTargetZoom: () => zoom,
@@ -118,6 +137,7 @@ function createMockHost(viewport = { width: 1440, height: 840 }): {
     step: (dt: number) => onFrame?.(dt, dt),
     forceContextLoss,
     followLogical,
+    setWorldSize,
     setZoom,
     setViewport: (w: number, h: number) => {
       vp = { width: w, height: h, dpr: 1 }
@@ -194,12 +214,40 @@ function makeStaffMe(overrides: Partial<OfficeMe> = {}): OfficeMe {
   }
 }
 
+/** Projects a logical X coordinate to CSS screen X using the actual perspective host clamp math. */
+function projectLogicalXWithHostClamp(
+  lx: number,
+  targetLx: number,
+  vpW: number,
+  vpH: number,
+  zoom = 1.0,
+  worldW = OFFICE_BASE_W,
+  worldH = OFFICE_BASE_H
+): number {
+  const aspect = vpW / Math.max(1, vpH)
+  const bounds = computeCameraClampBounds({
+    roomW: worldW * OFFICE_WORLD_SCALE,
+    roomH: worldH * OFFICE_WORLD_SCALE,
+    baseDistance: OFFICE_CAMERA_BASE_DISTANCE,
+    zoom,
+    fovDeg: OFFICE_CAMERA_FOV,
+    pitchRad: (OFFICE_CAMERA_PITCH_DEG * Math.PI) / 180,
+    aspect,
+    boundsMargin: 0.5,
+  })
+  const rawWorldX = (targetLx - worldW / 2) * OFFICE_WORLD_SCALE
+  const clampedWorldX = Math.max(bounds.minX, Math.min(bounds.maxX, rawWorldX))
+  const clampedLx = clampedWorldX / OFFICE_WORLD_SCALE + worldW / 2
+  const halfVisXLogical = bounds.targetPlaneHalfVisX / OFFICE_WORLD_SCALE
+  return vpW / 2 + ((lx - clampedLx) / halfVisXLogical) * (vpW / 2)
+}
+
 afterEach(() => {
   vi.restoreAllMocks()
   createHostMock.mockReset()
 })
 
-describe("OfficeController & startOffice bug fixes & framing", () => {
+describe("OfficeController & startOffice bug fixes & HUD-aware framing", () => {
   it("skips rebuilding desks when updateTeam receives identical desk layout, and rebuilds when name/layout changes (Bug 5a)", () => {
     const container = document.createElement("div")
     document.body.appendChild(container)
@@ -339,6 +387,236 @@ describe("OfficeController & startOffice bug fixes & framing", () => {
     container.remove()
   })
 
+  it("frames camera between HUD columns on desktop (>=1101px) and tablet (721-1100px), centers on phones (<=720px), and keeps zoom within 0.55x-1.5x", () => {
+    // 1. Desktop (>=1101px): 330px HUD columns (+14px inset = 344px)
+    expect(resolveOfficeHudInsets(1440, "boss")).toEqual({
+      leftPx: OFFICE_DESKTOP_HUD_COL_PX,
+      rightPx: OFFICE_DESKTOP_HUD_COL_PX,
+    })
+    expect(resolveOfficeHudInsets(1440, "staff")).toEqual({
+      leftPx: 0,
+      rightPx: OFFICE_DESKTOP_HUD_COL_PX,
+    })
+
+    // Boss at spawn (440, 310) & Desk #0 (left edge x=200) must sit strictly clear of Boss's left 330px HUD
+    const bossCamDesktop = computeOfficeCameraTarget({
+      lx: OFFICE_BOSS_SPAWN.x,
+      ly: OFFICE_BOSS_SPAWN.y,
+      worldW: OFFICE_BASE_W,
+      worldH: OFFICE_BASE_H,
+      viewportW: 1440,
+      viewportH: 840,
+      zoom: 1.0,
+      role: "boss",
+    })
+    const bossScreenX = projectLogicalXWithHostClamp(
+      OFFICE_BOSS_SPAWN.x,
+      bossCamDesktop.x,
+      1440,
+      840,
+      1.0
+    )
+    expect(bossScreenX).toBeGreaterThan(OFFICE_DESKTOP_HUD_COL_PX)
+    expect(bossScreenX).toBeLessThan(1440 - OFFICE_DESKTOP_HUD_COL_PX)
+
+    const desk0 = deskSlotCoords(0)
+    const desk0LeftScreenX = projectLogicalXWithHostClamp(
+      desk0.x,
+      bossCamDesktop.x,
+      1440,
+      840,
+      1.0
+    )
+    expect(desk0LeftScreenX).toBeGreaterThan(OFFICE_DESKTOP_HUD_COL_PX)
+
+    // Staff in middle of office sits at exact visible center between 0 and (1440 - 344) = 548 px
+    const staffMidCam = computeOfficeCameraTarget({
+      lx: 1000,
+      ly: 932,
+      worldW: OFFICE_BASE_W,
+      worldH: OFFICE_BASE_H,
+      viewportW: 1440,
+      viewportH: 840,
+      zoom: 1.0,
+      role: "staff",
+    })
+    expect(staffMidCam.x).toBeGreaterThan(1000)
+    const staffMidScreenX = projectLogicalXWithHostClamp(
+      1000,
+      staffMidCam.x,
+      1440,
+      840,
+      1.0
+    )
+    expect(staffMidScreenX).toBeCloseTo((1440 - OFFICE_DESKTOP_HUD_COL_PX) / 2, 0)
+
+    // Staff near Standee (x = 2195) remains clear of right HUD column
+    const standeeCam = computeOfficeCameraTarget({
+      lx: 2195,
+      ly: 1150,
+      worldW: OFFICE_BASE_W,
+      worldH: OFFICE_BASE_H,
+      viewportW: 1440,
+      viewportH: 840,
+      zoom: 1.0,
+      role: "staff",
+    })
+    const standeeScreenX = projectLogicalXWithHostClamp(
+      2195,
+      standeeCam.x,
+      1440,
+      840,
+      1.0
+    )
+    expect(standeeScreenX).toBeLessThan(1440 - OFFICE_DESKTOP_HUD_COL_PX)
+
+    // 2. Tablet (721-1100px): 290px HUD columns (+14px inset = 304px)
+    expect(resolveOfficeHudInsets(960, "boss")).toEqual({
+      leftPx: OFFICE_TABLET_HUD_COL_PX,
+      rightPx: OFFICE_TABLET_HUD_COL_PX,
+    })
+    const staffTabletCam = computeOfficeCameraTarget({
+      lx: 1100,
+      ly: 932,
+      worldW: OFFICE_BASE_W,
+      worldH: OFFICE_BASE_H,
+      viewportW: 960,
+      viewportH: 700,
+      zoom: 1.0,
+      role: "staff",
+    })
+    const staffTabletScreenX = projectLogicalXWithHostClamp(
+      1100,
+      staffTabletCam.x,
+      960,
+      700,
+      1.0
+    )
+    expect(staffTabletScreenX).toBeCloseTo(
+      (960 - OFFICE_TABLET_HUD_COL_PX) / 2,
+      0
+    )
+
+    // 3. Phone (<=720px): centers horizontally on player below collapsed top-right cards
+    expect(resolveOfficeHudInsets(390, "boss")).toEqual({ leftPx: 0, rightPx: 0 })
+    const phoneCam = computeOfficeCameraTarget({
+      lx: 295,
+      ly: 932,
+      worldW: OFFICE_BASE_W,
+      worldH: OFFICE_BASE_H,
+      viewportW: 390,
+      viewportH: 760,
+      zoom: 1.32,
+      role: "staff",
+    })
+    expect(phoneCam).toEqual({ x: 295, y: 932 - 48 })
+
+    // 4. Zoom range strictly clamped to 0.55x..1.5x
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const { host } = createMockHost()
+    const controller = new OfficeController(host, container, {})
+    for (let i = 0; i < 20; i += 1) controller.setZoomDelta(-1)
+    expect(host.getTargetZoom()).toBeCloseTo(0.55, 5)
+    for (let i = 0; i < 30; i += 1) controller.setZoomDelta(1)
+    expect(host.getTargetZoom()).toBeCloseTo(1.5, 5)
+    controller.dispose()
+    container.remove()
+  })
+
+  it("renders instanced 24-desk open-plan pods, empty desks, pod dividers & team banner rug, handles >MAX_STAFF_DESKS expansion, and disposes cleanly in normal & lite modes", () => {
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const { host, setWorldSize } = createMockHost()
+
+    const controller = new OfficeController(host, container, {})
+    controller.updateTeam(makeStaffMe())
+
+    const instancedByName = (name: string): THREE.InstancedMesh[] => {
+      const out: THREE.InstancedMesh[] = []
+      host.scene.traverse((obj) => {
+        if (obj instanceof THREE.InstancedMesh && obj.name === name) {
+          out.push(obj)
+        }
+      })
+      return out
+    }
+
+    // 1 staff member in makeStaffMe -> 24 total desks (1 ON + 23 OFF + 23 "Bàn trống" plates + 6 pod dividers)
+    const deskInsts = instancedByName("office-staff-desks-instanced")
+    expect(deskInsts.length).toBeGreaterThan(0)
+    expect(deskInsts[0]!.count).toBe(MAX_STAFF_DESKS)
+
+    const chairInsts = instancedByName("office-staff-chairs-instanced")
+    expect(chairInsts.length).toBeGreaterThan(0)
+    expect(chairInsts[0]!.count).toBe(MAX_STAFF_DESKS)
+
+    const onMons = instancedByName("office-monitors-on")
+    const offMons = instancedByName("office-monitors-off")
+    const emptyPlates = instancedByName("office-empty-desk-plates")
+    const dividers = instancedByName("office-pod-dividers-instanced")
+    expect(onMons[0]!.count).toBe(1)
+    expect(offMons[0]!.count).toBe(MAX_STAFF_DESKS - 1)
+    expect(emptyPlates[0]!.count).toBe(MAX_STAFF_DESKS - 1)
+    expect(dividers[0]!.count).toBe(6)
+    expect(host.scene.getObjectByName("office-team-banner-rug")).toBeTruthy()
+    expect(host.scene.getObjectByName("office-self-desk-plate")).toBeTruthy()
+
+    // Exceed MAX_STAFF_DESKS (30 staff) -> world height grows to 1910, 36 instanced desks, 9 pod dividers
+    const members30: OfficeMember[] = [
+      {
+        id: "m-boss",
+        userId: "u-boss",
+        role: "boss",
+        displayName: "Lê Huy",
+        avatar: "male04",
+        avatarColor: null,
+        deskIndex: null,
+        accentColor: "#B7791F",
+        online: true,
+      },
+      ...Array.from({ length: 30 }, (_, idx) => ({
+        id: `m-${idx + 1}`,
+        userId: idx === 0 ? "u-staff-1" : `u-staff-${idx + 1}`,
+        role: "staff" as const,
+        displayName: `Nhân viên ${idx + 1}`,
+        avatar: null,
+        avatarColor: null,
+        deskIndex: idx,
+        accentColor: "#1D6FE8",
+        online: idx === 0,
+      })),
+    ]
+    controller.updateTeam(makeStaffMe({ members: members30 }))
+    expect(setWorldSize).toHaveBeenCalledWith(
+      OFFICE_BASE_W,
+      OFFICE_BASE_H + OFFICE_EXTRA_BAND_STEP
+    )
+    expect(instancedByName("office-staff-desks-instanced")[0]!.count).toBe(36)
+    expect(instancedByName("office-monitors-on")[0]!.count).toBe(30)
+    expect(instancedByName("office-monitors-off")[0]!.count).toBe(6)
+    expect(instancedByName("office-pod-dividers-instanced")[0]!.count).toBe(9)
+
+    controller.dispose()
+
+    // Lite mode OfficeWorld3D builds & disposes cleanly
+    const liteScene = new THREE.Scene()
+    const liteWorld = new OfficeWorld3D(
+      liteScene,
+      {
+        logicalW: OFFICE_BASE_W,
+        logicalH: OFFICE_BASE_H,
+        scale: OFFICE_WORLD_SCALE,
+      },
+      true
+    )
+    const desks2 = buildDeskPositions(members30.slice(0, 3))
+    liteWorld.rebuildTeamProps("Lê Huy", desks2, "u-staff-1", OFFICE_BASE_H)
+    expect(liteScene.getObjectByName("office-team-banner-rug")).toBeTruthy()
+    liteWorld.dispose()
+    container.remove()
+  })
+
   it("respects prefers-reduced-motion (no pulsing target ring & no walk bob) and releases WebGL context on dispose (Bugs 5e & 5g)", async () => {
     const container = document.createElement("div")
     document.body.appendChild(container)
@@ -356,8 +634,8 @@ describe("OfficeController & startOffice bug fixes & framing", () => {
     await vi.waitFor(() => expect(createHostMock).toHaveBeenCalledTimes(1))
 
     // Verify rich zone rugs & windows exist
-    expect(getZoneRugs().length).toBeGreaterThanOrEqual(6)
-    expect(getOfficeWindows().length).toBeGreaterThanOrEqual(9)
+    expect(getZoneRugs().length).toBeGreaterThanOrEqual(8)
+    expect(getOfficeWindows().length).toBeGreaterThanOrEqual(10)
 
     // Verify reduced motion static target ring does not pulse scale
     const world = new OfficeWorld3D(mock.host.scene, mock.host.world, false)

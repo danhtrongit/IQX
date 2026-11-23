@@ -2,11 +2,11 @@
  * Boots the Procedural Chibi Three.js 3D Engine for Khu Văn phòng inside `container`.
  *
  * - Waits briefly for "Be Vietnam Pro" so procedural canvas textures (Wall Screen, Standee,
- *   Desk Nameplates, Zone Decals) render with sharp Vietnamese glyphs.
+ *   Desk Nameplates, Team Banner Rug, Zone Decals) render with sharp Vietnamese glyphs.
  * - Buffers `updateTeam`, `updateOnlinePeers`, `updateAttendance`, `updateMeeting`,
  *   `updateStandee`, and `setModalOpen` calls made before async boot completes.
- * - Configures camera framing so desktop fills the viewport cleanly with the office at 1.0x
- *   and phones center closely on the player; zoom range stays 0.55x–1.5x (Spec §3.3).
+ * - Configures HUD-aware camera framing across desktop (`>= 1101px`), tablet (`721–1100px`),
+ *   and phones (`<= 720px`) with zoom range strictly `0.55×–1.5×` (Spec §3.3).
  * - Releases the WebGL context cleanly on dispose (`renderer.forceContextLoss()`).
  * - Survives React StrictMode double-mount & reports WebGL unavailability cleanly via `onError`.
  */
@@ -35,6 +35,7 @@ import {
   type OfficeControllerCallbacks,
 } from "./office-controller.ts"
 import {
+  MAX_STAFF_DESKS,
   OFFICE_WORLD_SCALE,
   computeOfficeDimensions,
 } from "./office-layout.ts"
@@ -121,7 +122,7 @@ export function startOffice(
 
     const staffCount = buffered.team
       ? buffered.team.members.filter((member) => member.role === "staff").length
-      : (callbacks.initialStaffCount ?? 11)
+      : (callbacks.initialStaffCount ?? MAX_STAFF_DESKS)
     const dims = computeOfficeDimensions(staffCount)
     const initialW =
       container.clientWidth ||
