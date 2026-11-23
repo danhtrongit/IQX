@@ -3840,8 +3840,21 @@
       "GET /api/v2/market/bulletins/{date}/files/{variant}/{revision}",
       "GET /api/v2/market/tracking",
       "GET /api/v2/media/{token}",
+      "GET /api/v2/office/documents/{id}/download",
       "GET /api/v2/premium/plans",
+      "GET /api/v2/toan-canh/template",
+      "GET /api/v2/toan-canh/widgets/{widget}",
+      "GET /api/v2/trading-floor/chat/convs/{id}",
+      "GET /api/v2/trading-floor/chat/images/{imageId}",
+      "GET /api/v2/trading-floor/chat/inbox",
+      "GET /api/v2/trading-floor/me",
       "GET /api/v2/trading-floor/post-images/{imageId}",
+      "GET /api/v2/trading-floor/posts/today",
+      "GET /api/v2/trading-floor/posts/{id}",
+      "GET /api/v2/trading-floor/posts/{id}/comments",
+      "GET /api/v2/trading-floor/than-tai/leaderboard",
+      "GET /api/v2/trading-floor/than-tai/results",
+      "GET /api/v2/trading-floor/than-tai/today",
       "GET /api/v2/valuation/{symbol}",
       "GET /api/v2/virtual-trading/leaderboard",
       "GET /health/live",
@@ -3862,8 +3875,22 @@
       "POST /api/v2/auth/reset-password",
       "POST /api/v2/market-data/screening/search",
       "POST /api/v2/market-data/trading/price-board",
+      "POST /api/v2/notifications/unsubscribe",
       "POST /api/v2/premium/sepay/ipn",
-      "POST /api/v2/telegram/webhook/{secret}"
+      "POST /api/v2/telegram/webhook/{secret}",
+      "POST /api/v2/trading-floor/chat/convs/{id}/images",
+      "POST /api/v2/trading-floor/chat/convs/{id}/messages/{messageId}/recall",
+      "POST /api/v2/trading-floor/chat/convs/{id}/read",
+      "POST /api/v2/trading-floor/chat/convs/{id}/send",
+      "POST /api/v2/trading-floor/chat/match",
+      "POST /api/v2/trading-floor/chat/match/cancel",
+      "POST /api/v2/trading-floor/chat/open",
+      "POST /api/v2/trading-floor/chat/start",
+      "POST /api/v2/trading-floor/guest",
+      "POST /api/v2/trading-floor/than-tai/cau",
+      "POST /api/v2/trading-floor/than-tai/draw",
+      "POST /api/v2/trading-floor/than-tai/predict",
+      "PUT /api/v2/trading-floor/profile"
     ],
     "operationsWithoutResponseSchema": [
       "DELETE /api/v1/cap5/watchlist/{symbol}",
@@ -3881,15 +3908,21 @@
         "kind": "constant-placeholder",
         "line": 68,
         "sample": "return null;"
+      },
+      {
+        "file": "src/modules/office/office-workspace.controller.ts",
+        "kind": "constant-placeholder",
+        "line": 79,
+        "sample": "return undefined;"
       }
     ],
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 909,
-    "registeredHttp": 1435,
+    "documentedHttp": 992,
+    "registeredHttp": 1552,
     "websocketAdapter": "WsAdapter",
-    "websocketGateways": 4
+    "websocketGateways": 5
   },
   "schemaVersion": 1,
   "verdict": {

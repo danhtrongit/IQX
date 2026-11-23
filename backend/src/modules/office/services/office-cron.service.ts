@@ -10,14 +10,25 @@ import { Injectable, Optional } from '@nestjs/common';
 import { DatabaseService } from '../../../platform/database/index.js';
 import { RedisService } from '../../../platform/redis/index.js';
 import type { JobOutcome } from '../../runtime/runtime.types.js';
-import { extractHolidaySet, ictNowParts, isWorkdayIct } from '../office.time.js';
+import { extractHolidaySet, ictNowParts, isWorkdayIct, type IctNowParts } from '../office.time.js';
 import type { OfficeSyncScope } from '../office.types.js';
 import { OfficeHub } from '../realtime/office.hub.js';
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const MAX_CATCHUP_CACHE_ENTRIES = 2_000;
+
+export interface TeamRepeatCatchUpOutcome {
+  readonly status: 'completed' | 'skipped';
+  readonly todayDate: string;
+  readonly spawnedTasks: number;
+  readonly reason?: string;
+}
 
 @Injectable()
 export class OfficeCronService {
+  private readonly caughtUpTeamDates = new Set<string>();
+  private readonly inflightTeamCatchUps = new Map<string, Promise<TeamRepeatCatchUpOutcome>>();
+
   constructor(
     private readonly database: DatabaseService,
     @Optional() private readonly hub?: OfficeHub,
@@ -87,9 +98,100 @@ export class OfficeCronService {
       };
     }
 
-    const spawned = await this.database.transaction(async (tx) => {
+    const spawned = await this.spawnRepeatsForDate(parts, now);
+
+    const teamIds = [...new Set(spawned.map((row) => row.team_id))];
+    for (const teamId of teamIds) {
+      await this.emitSync(teamId, 'tasks');
+    }
+
+    return {
+      status: 'completed',
+      detail: {
+        todayDate: parts.date,
+        spawnedTasks: spawned.length,
+        teamsAffected: teamIds.length,
+      },
+    };
+  }
+
+  /**
+   * Lazy per-team catch-up for daily repeating tasks when the 00:01 cron was missed.
+   * Guarded per (teamId, ICT date) in memory so it runs at most once per team per day
+   * per process, with concurrent calls coalesced onto a single in-flight pass.
+   */
+  async ensureDailyRepeatsForTeam(
+    teamId: string,
+    now: Date = new Date(),
+  ): Promise<TeamRepeatCatchUpOutcome> {
+    const parts = ictNowParts(now);
+    const cacheKey = `${teamId}:${parts.date}`;
+    if (this.caughtUpTeamDates.has(cacheKey)) {
+      return {
+        status: 'skipped',
+        reason: 'already-caught-up',
+        todayDate: parts.date,
+        spawnedTasks: 0,
+      };
+    }
+
+    const existing = this.inflightTeamCatchUps.get(cacheKey);
+    if (existing) return existing;
+
+    const promise = (async (): Promise<TeamRepeatCatchUpOutcome> => {
+      const holidays = await this.loadHolidays();
+      if (!isWorkdayIct(parts.date, holidays)) {
+        this.markTeamCaughtUp(cacheKey, parts.date);
+        return {
+          status: 'skipped',
+          reason: 'non-workday',
+          todayDate: parts.date,
+          spawnedTasks: 0,
+        };
+      }
+
+      const spawned = await this.spawnRepeatsForDate(parts, now, teamId);
+      this.markTeamCaughtUp(cacheKey, parts.date);
+      if (spawned.length > 0) {
+        await this.emitSync(teamId, 'tasks');
+      }
+      return {
+        status: 'completed',
+        todayDate: parts.date,
+        spawnedTasks: spawned.length,
+      };
+    })();
+
+    this.inflightTeamCatchUps.set(cacheKey, promise);
+    try {
+      return await promise;
+    } finally {
+      this.inflightTeamCatchUps.delete(cacheKey);
+    }
+  }
+
+  private markTeamCaughtUp(cacheKey: string, currentDate: string): void {
+    if (this.caughtUpTeamDates.size >= MAX_CATCHUP_CACHE_ENTRIES) {
+      const suffix = `:${currentDate}`;
+      for (const entry of this.caughtUpTeamDates) {
+        if (!entry.endsWith(suffix)) this.caughtUpTeamDates.delete(entry);
+      }
+    }
+    this.caughtUpTeamDates.add(cacheKey);
+  }
+
+  private async spawnRepeatsForDate(
+    parts: IctNowParts,
+    now: Date,
+    teamId?: string,
+  ): Promise<Array<{ id: string; team_id: string }>> {
+    return this.database.transaction(async (tx) => {
       // Strictly idempotent: both NOT EXISTS and ON CONFLICT DO NOTHING prevent duplicate tasks
       // on retries or overlapping runs, and repeat tasks do NOT trigger repeat notifications (Spec §12).
+      const teamFilter = teamId ? '\n            and a.team_id = $4' : '';
+      const params = teamId
+        ? [parts.date, parts.monthKey, now, teamId]
+        : [parts.date, parts.monthKey, now];
       const rows = await tx.query<{ id: string; team_id: string }>(
         `insert into office_tasks
            (team_id, assignment_id, user_id, kind, title, points, repeat_daily,
@@ -105,7 +207,7 @@ export class OfficeCronService {
             and om.active = true
           where a.kind = 'day'
             and a.repeat_daily = true
-            and a.deleted_at is null
+            and a.deleted_at is null${teamFilter}
             and not exists (
               select 1 from office_tasks existing
                where existing.assignment_id = a.id
@@ -114,7 +216,7 @@ export class OfficeCronService {
             )
          on conflict (assignment_id, user_id, task_date) do nothing
          returning id, team_id`,
-        [parts.date, parts.monthKey, now],
+        params,
       );
 
       for (const task of rows) {
@@ -126,20 +228,6 @@ export class OfficeCronService {
       }
       return rows;
     });
-
-    const teamIds = [...new Set(spawned.map((row) => row.team_id))];
-    for (const teamId of teamIds) {
-      await this.emitSync(teamId, 'tasks');
-    }
-
-    return {
-      status: 'completed',
-      detail: {
-        todayDate: parts.date,
-        spawnedTasks: spawned.length,
-        teamsAffected: teamIds.length,
-      },
-    };
   }
 
   async monthlyRollover(now: Date = new Date()): Promise<JobOutcome> {

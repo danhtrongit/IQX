@@ -53,17 +53,32 @@ export class OfficeAttendanceService {
 
     const status: OfficeAttendanceState = parts.minutesOfDay <= onTimeMinutes ? 'ok' : 'late';
 
-    const rows = await this.database.query<{
+    let rows: Array<{
       work_date: string;
       status: OfficeAttendanceState;
       checked_in_at: Date | string;
-    }>(
-      `insert into office_attendance (team_id, user_id, work_date, status, checked_in_at)
-       values ($1, $2, $3::date, $4, $5)
-       on conflict (team_id, user_id, work_date) do nothing
-       returning to_char(work_date, 'YYYY-MM-DD') as work_date, status, checked_in_at`,
-      [ctx.team.id, user.id, parts.date, status, now],
-    );
+    }>;
+    try {
+      rows = await this.database.query<{
+        work_date: string;
+        status: OfficeAttendanceState;
+        checked_in_at: Date | string;
+      }>(
+        `insert into office_attendance (team_id, user_id, work_date, status, checked_in_at)
+         values ($1, $2, $3::date, $4, $5)
+         on conflict (user_id, work_date) do nothing
+         returning to_char(work_date, 'YYYY-MM-DD') as work_date, status, checked_in_at`,
+        [ctx.team.id, user.id, parts.date, status, now],
+      );
+    } catch (error) {
+      if ((error as { code?: string } | null)?.code === '23505') {
+        throw new ConflictException({
+          code: 'OFFICE_ALREADY_CHECKED_IN',
+          message: 'Bạn đã điểm danh hôm nay rồi.',
+        });
+      }
+      throw error;
+    }
 
     const inserted = rows[0];
     if (!inserted) {
@@ -98,16 +113,20 @@ export class OfficeAttendanceService {
     const isLocked = !isWorkday || parts.minutesOfDay > lockMinutes;
 
     const staff = ctx.members.filter((m) => m.role === 'staff');
-    const records = await this.database.query<{
-      user_id: string;
-      status: OfficeAttendanceState;
-      checked_in_at: Date | string;
-    }>(
-      `select user_id, status, checked_in_at
-         from office_attendance
-        where team_id = $1 and work_date = $2::date`,
-      [ctx.team.id, parts.date],
-    );
+    const staffIds = staff.map((m) => m.userId);
+    const records =
+      staffIds.length === 0
+        ? []
+        : await this.database.query<{
+            user_id: string;
+            status: OfficeAttendanceState;
+            checked_in_at: Date | string;
+          }>(
+            `select user_id, status, checked_in_at
+               from office_attendance
+              where user_id = any($1::uuid[]) and work_date = $2::date`,
+            [staffIds, parts.date],
+          );
     const byUser = new Map(records.map((r) => [r.user_id, r]));
 
     type Entry = {

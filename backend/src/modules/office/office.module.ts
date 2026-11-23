@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module, type OnApplicationBootstrap } from '@nestjs/common';
 
 import { DatabaseModule } from '../../platform/database/index.js';
 import { RedisModule } from '../../platform/redis/index.js';
@@ -18,13 +18,33 @@ import { OfficeTasksService } from './services/office-tasks.service.js';
 /**
  * Lightweight job-only module imported by DomainRuntimeModule in the worker process
  * (avoids mounting HTTP controllers or WebSocket gateways inside the BullMQ worker).
+ * Runs an idempotent daily-repeat catch-up pass at worker boot so missed 00:01 runs recover.
  */
 @Module({
   imports: [DatabaseModule, RedisModule],
   providers: [OfficeCronService],
   exports: [OfficeCronService],
 })
-export class OfficeJobsModule {}
+export class OfficeJobsModule implements OnApplicationBootstrap {
+  private readonly logger = new Logger(OfficeJobsModule.name);
+
+  constructor(private readonly cron: OfficeCronService) {}
+
+  async onApplicationBootstrap(): Promise<void> {
+    const rawEnabled = process.env.JOB_OFFICE_SPAWN_DAILY_REPEATS_ENABLED;
+    if (rawEnabled === 'false' || rawEnabled === '0') return;
+    try {
+      const outcome = await this.cron.spawnDailyRepeats();
+      this.logger.log(
+        `Office boot repeat-task catch-up: ${outcome.status} (${JSON.stringify(outcome.detail ?? {})})`,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Office boot repeat-task catch-up failed: ${error instanceof Error ? error.message : 'unknown'}`,
+      );
+    }
+  }
+}
 
 @Module({
   imports: [DatabaseModule, RedisModule, AuthModule, UserNotificationsModule],

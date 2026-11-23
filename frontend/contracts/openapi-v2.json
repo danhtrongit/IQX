@@ -145490,6 +145490,34 @@
                         "type": "object"
                       },
                       "type": "array"
+                    },
+                    "skipped": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "enum": [
+                              "OFFICE_TASK_NOT_FOUND",
+                              "OFFICE_TASK_EXPIRED",
+                              "OFFICE_TASK_NOT_PENDING"
+                            ],
+                            "type": "string"
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "taskId": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "taskId",
+                          "code",
+                          "reason"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     }
                   },
                   "required": [

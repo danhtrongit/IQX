@@ -27,6 +27,13 @@ export type OfficeTaskKind = (typeof OFFICE_TASK_KINDS)[number];
 export const OFFICE_TASK_STATUSES = ['todo', 'pending', 'returned', 'done', 'expired'] as const;
 export type OfficeTaskStatus = (typeof OFFICE_TASK_STATUSES)[number];
 
+export const OFFICE_APPROVE_SKIP_CODES = [
+  'OFFICE_TASK_NOT_FOUND',
+  'OFFICE_TASK_EXPIRED',
+  'OFFICE_TASK_NOT_PENDING',
+] as const;
+export type OfficeApproveSkipCode = (typeof OFFICE_APPROVE_SKIP_CODES)[number];
+
 export const OFFICE_ATTENDANCE_STATES = ['ok', 'late'] as const;
 export type OfficeAttendanceState = (typeof OFFICE_ATTENDANCE_STATES)[number];
 

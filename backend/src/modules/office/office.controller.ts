@@ -37,6 +37,7 @@ import {
 import { OfficeHub } from './realtime/office.hub.js';
 import { OfficeAccessService } from './services/office-access.service.js';
 import { OfficeAttendanceService } from './services/office-attendance.service.js';
+import { OfficeCronService } from './services/office-cron.service.js';
 import { OfficeTasksService } from './services/office-tasks.service.js';
 
 @ApiTags('Văn phòng')
@@ -48,6 +49,7 @@ export class OfficeController {
     private readonly tasks: OfficeTasksService,
     private readonly attendance: OfficeAttendanceService,
     private readonly hub: OfficeHub,
+    private readonly cron: OfficeCronService,
   ) {}
 
   @Get('me')
@@ -57,7 +59,14 @@ export class OfficeController {
   })
   @ApiOkResponse({ schema: OFFICE_ME_SCHEMA })
   me(@CurrentUser() user: AuthenticatedUser) {
-    return this.access.getMeSummary(user, (teamId) => this.hub.onlineUserIds(teamId));
+    return this.access.getMeSummary(
+      user,
+      (teamId) => this.hub.onlineUserIds(teamId),
+      undefined,
+      async (teamId, at) => {
+        await this.cron.ensureDailyRepeatsForTeam(teamId, at);
+      },
+    );
   }
 
   // ───────────── Staff tasks & Boss review actions (static routes BEFORE :id) ─────────────
