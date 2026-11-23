@@ -38,6 +38,14 @@ export const OFFICE_DESK_ROW_STEP = 330
 export const OFFICE_BOSS_SPAWN = { x: 440, y: 310 } as const
 export const OFFICE_STAFF_FALLBACK_SPAWN = { x: 440, y: 920 } as const
 
+/** Returns true when the user has enabled `prefers-reduced-motion: reduce`. */
+export function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false
+  }
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+}
+
 export interface OfficeRect {
   readonly x: number
   readonly y: number
@@ -204,15 +212,178 @@ export function getOfficePlants(
   ]
 }
 
-/** Lounge oval rug & sofa positions aligned cleanly with bottom-left corner. */
+/** Lounge oval rug, sofa & coffee table positions aligned cleanly with bottom-left corner. */
 export function getLoungePositions(worldHeight = OFFICE_BASE_H): {
   readonly rug: OfficeRect
   readonly sofa: OfficeRect
+  readonly table: OfficeRect
 } {
   return {
     rug: { x: 70, y: worldHeight - 260, w: 300, h: 170 },
     sofa: { x: 130, y: worldHeight - 220, w: 200, h: 70 },
+    table: { x: 165, y: worldHeight - 132, w: 130, h: 56 },
   }
+}
+
+export interface OfficeZoneRugSpec extends OfficeRect {
+  readonly id: string
+  readonly shape: "oval" | "rounded"
+  readonly colorHex: string
+  readonly borderHex: string
+  readonly borderWidth: number
+}
+
+/** Per-zone decorative rugs and floor runners that stay 100% walkable. */
+export function getZoneRugs(
+  worldHeight = OFFICE_BASE_H
+): readonly OfficeZoneRugSpec[] {
+  const staffBandH = Math.max(540, worldHeight - 920)
+  return [
+    // Phòng Sếp: executive navy & gold rug framing boss desk
+    {
+      id: "boss-rug",
+      x: 200,
+      y: 112,
+      w: 480,
+      h: 296,
+      shape: "rounded",
+      colorHex: "#203457",
+      borderHex: "#d9a03a",
+      borderWidth: 0.13,
+    },
+    // Phòng Họp: slate & gold rug anchoring conference table
+    {
+      id: "meet-rug",
+      x: 878,
+      y: 130,
+      w: 560,
+      h: 296,
+      shape: "rounded",
+      colorHex: "#3b4e6f",
+      borderHex: "#c9a24b",
+      borderWidth: 0.12,
+    },
+    // Phòng Tài Liệu: warm parchment & walnut rug under reading desk
+    {
+      id: "docs-rug",
+      x: 1755,
+      y: 175,
+      w: 370,
+      h: 230,
+      shape: "rounded",
+      colorHex: "#e6d8be",
+      borderHex: "#8c653c",
+      borderWidth: 0.11,
+    },
+    // Main corridor runner uniting Boss, Meeting & Documents doorways
+    {
+      id: "corridor-runner",
+      x: 260,
+      y: 582,
+      w: 1840,
+      h: 72,
+      shape: "rounded",
+      colorHex: "#213358",
+      borderHex: "#d9a03a",
+      borderWidth: 0.08,
+    },
+    // Staff work area subtle woven floor mat under desk rows
+    {
+      id: "staff-work-mat",
+      x: 105,
+      y: 682,
+      w: 1630,
+      h: staffBandH,
+      shape: "rounded",
+      colorHex: "#e5d5bc",
+      borderHex: "#b89b72",
+      borderWidth: 0.1,
+    },
+    // Góc Cà Phê warm bistro mat
+    {
+      id: "coffee-rug",
+      x: 1825,
+      y: 620,
+      w: 495,
+      h: 280,
+      shape: "rounded",
+      colorHex: "#dac5a6",
+      borderHex: "#7a5230",
+      borderWidth: 0.11,
+    },
+    // Achievement Standee VIP navy-gold showcase carpet
+    {
+      id: "standee-rug",
+      x: 2040,
+      y: 990,
+      w: 310,
+      h: 210,
+      shape: "rounded",
+      colorHex: "#1c2d4f",
+      borderHex: "#e9b949",
+      borderWidth: 0.13,
+    },
+  ]
+}
+
+export interface OfficeWindowSpec {
+  readonly wall: "north" | "west" | "east"
+  /** Logical center coordinate along the wall (`x` for north wall, `y` for west/east walls). */
+  readonly pos: number
+  /** Width along the wall in logical px. */
+  readonly span: number
+  /** Vertical center height in world units. */
+  readonly centerY: number
+  /** Window height in world units. */
+  readonly heightU: number
+  /** Cast soft sunlight pool onto the floor. */
+  readonly sunPool?: boolean
+}
+
+/** Sunlit architectural windows placed cleanly clear of shelves & wall boards. */
+export function getOfficeWindows(
+  worldHeight = OFFICE_BASE_H
+): readonly OfficeWindowSpec[] {
+  const wins: OfficeWindowSpec[] = [
+    // North wall windows (Boss room right, Meeting room flanking wall screen)
+    { wall: "north", pos: 575, span: 190, centerY: 1.56, heightU: 1.12, sunPool: true },
+    { wall: "north", pos: 870, span: 150, centerY: 1.56, heightU: 1.1, sunPool: true },
+    { wall: "north", pos: 1450, span: 150, centerY: 1.56, heightU: 1.1, sunPool: true },
+    // Clerestory bright windows above Documents bookshelves
+    { wall: "north", pos: 1720, span: 150, centerY: 2.18, heightU: 0.48, sunPool: false },
+    { wall: "north", pos: 1970, span: 150, centerY: 2.18, heightU: 0.48, sunPool: false },
+    { wall: "north", pos: 2220, span: 150, centerY: 2.18, heightU: 0.48, sunPool: false },
+    // West cutaway wall windows
+    { wall: "west", pos: 220, span: 170, centerY: 1.32, heightU: 0.9, sunPool: true },
+    { wall: "west", pos: 830, span: 200, centerY: 1.32, heightU: 0.9, sunPool: true },
+    { wall: "west", pos: 1160, span: 200, centerY: 1.32, heightU: 0.9, sunPool: true },
+    // East cutaway wall windows
+    { wall: "east", pos: 800, span: 200, centerY: 1.32, heightU: 0.9, sunPool: true },
+    { wall: "east", pos: 1180, span: 190, centerY: 1.32, heightU: 0.9, sunPool: false },
+  ]
+  if (worldHeight > OFFICE_BASE_H) {
+    wins.push(
+      { wall: "west", pos: 1490, span: 200, centerY: 1.32, heightU: 0.9, sunPool: true },
+      { wall: "east", pos: 1490, span: 200, centerY: 1.32, heightU: 0.9, sunPool: false }
+    )
+  }
+  return wins
+}
+
+export const OFFICE_COFFEE_COOLER_RECT: OfficeRect = {
+  x: 2050,
+  y: 642,
+  w: 54,
+  h: 54,
+  label: "water-cooler",
+}
+
+export const OFFICE_COFFEE_TABLE_RECT: OfficeRect = {
+  x: 2146,
+  y: 752,
+  w: 110,
+  h: 96,
+  label: "coffee-bistro",
 }
 
 /**
@@ -260,10 +431,13 @@ export function buildOfficeObstacles(
     { x: 2300, y: 140, w: 60, h: 240, label: "docs-shelf-east" },
     { x: 1840, y: 240, w: 200, h: 90, label: "reading-desk" },
 
-    // Góc Cà Phê, Standee base & Lounge Sofa
+    // Góc Cà Phê, Standee base & Lounge Sofa + Coffee Table
     { x: 1860, y: 640, w: 170, h: 60, label: "coffee-bar" },
+    OFFICE_COFFEE_COOLER_RECT,
+    OFFICE_COFFEE_TABLE_RECT,
     { x: 2090, y: 1046, w: 210, h: 40, label: "standee-base" },
     { ...lounge.sofa, label: "lounge-sofa" },
+    { ...lounge.table, label: "lounge-table" },
   ]
 
   for (const desk of desks) {

@@ -5,8 +5,13 @@
  *   Desk Nameplates, Zone Decals) render with sharp Vietnamese glyphs.
  * - Buffers `updateTeam`, `updateOnlinePeers`, `updateAttendance`, `updateMeeting`,
  *   `updateStandee`, and `setModalOpen` calls made before async boot completes.
+ * - Configures camera framing so desktop fills the viewport cleanly with the office at 1.0x
+ *   and phones center closely on the player; zoom range stays 0.55x–1.5x (Spec §3.3).
+ * - Releases the WebGL context cleanly on dispose (`renderer.forceContextLoss()`).
  * - Survives React StrictMode double-mount & reports WebGL unavailability cleanly via `onError`.
  */
+import * as THREE from "three"
+
 import {
   createChibiSceneHost,
   type ChibiSceneHost,
@@ -20,6 +25,12 @@ import type {
   OfficeOnlinePeer,
 } from "../types.ts"
 import {
+  OFFICE_CAMERA_BASE_DISTANCE,
+  OFFICE_CAMERA_FOV,
+  OFFICE_CAMERA_PITCH_DEG,
+  OFFICE_DEFAULT_DESKTOP_ZOOM,
+  OFFICE_DEFAULT_MOBILE_ZOOM,
+  OFFICE_MOBILE_BREAKPOINT_PX,
   OfficeController,
   type OfficeControllerCallbacks,
 } from "./office-controller.ts"
@@ -63,6 +74,20 @@ async function fontsReady(): Promise<void> {
   ])
 }
 
+function disposeHostAndContext(host: ChibiSceneHost): void {
+  const renderer = host.renderer
+  host.dispose()
+  try {
+    const gl =
+      typeof renderer.getContext === "function" ? renderer.getContext() : null
+    if (!gl || !gl.isContextLost?.()) {
+      renderer.forceContextLoss()
+    }
+  } catch {
+    // WebGL context may already be lost or unavailable (e.g. jsdom).
+  }
+}
+
 export function startOffice(
   container: HTMLElement,
   callbacks: OfficeEngineCallbacks = {}
@@ -98,6 +123,13 @@ export function startOffice(
       ? buffered.team.members.filter((member) => member.role === "staff").length
       : (callbacks.initialStaffCount ?? 11)
     const dims = computeOfficeDimensions(staffCount)
+    const initialW =
+      container.clientWidth ||
+      (typeof window !== "undefined" ? window.innerWidth : 1280)
+    const initialZoom =
+      initialW <= OFFICE_MOBILE_BREAKPOINT_PX
+        ? OFFICE_DEFAULT_MOBILE_ZOOM
+        : OFFICE_DEFAULT_DESKTOP_ZOOM
 
     host = createChibiSceneHost({
       container,
@@ -107,21 +139,31 @@ export function startOffice(
         scale: OFFICE_WORLD_SCALE,
       },
       backgroundHex: 0x141d32,
-      fov: 35,
-      pitchDeg: 52,
-      baseDistance: 13.8,
+      fov: OFFICE_CAMERA_FOV,
+      pitchDeg: OFFICE_CAMERA_PITCH_DEG,
+      baseDistance: OFFICE_CAMERA_BASE_DISTANCE,
       minZoom: 0.55,
       maxZoom: 1.5,
-      initialZoom: 1.0,
+      initialZoom,
       cameraLerp: 0.18,
       boundsMargin: 0.5,
+      onResize: (width) => {
+        controller?.handleViewportResize(width)
+      },
     })
 
     if (disposed) {
-      host.dispose()
+      disposeHostAndContext(host)
       host = null
       return
     }
+
+    // Tone mapping & warm studio lighting consistent with Khu giao dịch
+    host.renderer.toneMapping = THREE.ACESFilmicToneMapping
+    host.renderer.toneMappingExposure = 1.08
+    host.lights.hemi.intensity = 1.22
+    host.lights.sun.intensity = 1.65
+    host.lights.rim.intensity = 0.72
 
     controller = new OfficeController(host, container, callbacks)
     controller.setModalOpen(buffered.modalOpen)
@@ -191,8 +233,10 @@ export function startOffice(
       disposed = true
       controller?.dispose()
       controller = null
-      host?.dispose()
-      host = null
+      if (host) {
+        disposeHostAndContext(host)
+        host = null
+      }
       if (import.meta.env.DEV) {
         Reflect.deleteProperty(window, "__iqxOffice")
       }

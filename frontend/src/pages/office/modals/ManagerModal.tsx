@@ -25,7 +25,6 @@ import {
   formatHm,
   getInitials,
   monthEndDate,
-  monthNumberFromPeriod,
 } from "../utils.ts"
 import { ModalShell, OfficeQueryError } from "./ModalShell.tsx"
 
@@ -105,7 +104,6 @@ export function ManagerModal({
   const periodMonth = progressQuery.data?.periodMonth ?? me.periodMonth
   const todayDate = progressQuery.data?.todayDate ?? me.todayDate
   const currentMonthEnd = monthEndDate(periodMonth)
-  const monthNum = monthNumberFromPeriod(periodMonth)
 
   // Assignment panel state
   const [assignTab, setAssignTab] = useState<"new" | "sent">("new")
@@ -269,7 +267,7 @@ export function ManagerModal({
         userIds: effectiveRecipientIds,
       })
       setTitle("")
-      onToast(`Đã giao nhiệm vụ cho ${effectiveRecipientIds.length} nhân viên.`)
+      onToast(`Đã giao "${cleanTitle}" cho ${effectiveRecipientIds.length} người`)
     } catch (error) {
       setAssignError(getErrorMessage(error, "Không thể giao nhiệm vụ."))
     }
@@ -370,8 +368,17 @@ export function ManagerModal({
     try {
       const result = await approveTasksMutation.mutateAsync(ids)
       setSelectedReviewIds((prev) => prev.filter((id) => !ids.includes(id)))
-      const count = result.approved.length || ids.length
-      onToast(`Đã duyệt ${count} nhiệm vụ hoàn thành.`)
+      const approvedList = result.approved ?? []
+      const count = approvedList.length || ids.length
+      if (count === 1) {
+        const firstApproved = approvedList[0]
+        const fallbackItem = reviewItems.find((item) => item.id === ids[0])
+        const staffName = firstApproved?.staffName ?? fallbackItem?.staffName ?? ""
+        const points = firstApproved?.points ?? fallbackItem?.points ?? 0
+        onToast(`Đã duyệt · ${staffName} +${points} điểm`)
+      } else {
+        onToast(`Đã duyệt ${count} mục`)
+      }
     } catch (error) {
       onToast(getErrorMessage(error, "Không thể duyệt nhiệm vụ."))
     }
@@ -380,7 +387,7 @@ export function ManagerModal({
   const handleConfirmReturn = async (taskId: string) => {
     const reason = returnReason.trim()
     if (!reason) {
-      setReturnError("Vui lòng nhập lý do trả lại.")
+      setReturnError("Ghi lý do trả lại")
       return
     }
     setReturnError(null)
@@ -423,7 +430,7 @@ export function ManagerModal({
   return (
     <ModalShell
       title="QUẢN LÝ"
-      subtitle={`Nhóm ${me.team?.bossName ?? ""} · tháng ${monthNum}`}
+      subtitle={`Nhóm ${me.team?.bossName ?? ""} · ${staffMembers.length} nhân viên`}
       headerExtra={
         <button
           type="button"
@@ -738,7 +745,8 @@ export function ManagerModal({
                         )}
                       </div>
                       <span className="of-fh-sub">
-                        Điểm và hạn mới chỉ áp dụng cho các mục chưa hoàn thành.
+                        Đổi điểm chỉ áp dụng cho người chưa hoàn thành. Người đã
+                        được duyệt giữ điểm cũ.
                       </span>
                       {editError && (
                         <div className="of-err" role="alert">
@@ -768,8 +776,13 @@ export function ManagerModal({
                   {isDeleting && (
                     <div className="of-confirm-inline">
                       <span>
-                        Xoá các nhiệm vụ chưa hoàn thành và dừng lặp lại. Điểm
-                        của các mục đã duyệt sẽ được giữ nguyên.
+                        Xoá nhiệm vụ này khỏi{" "}
+                        {Math.max(
+                          0,
+                          assignment.activeCount ??
+                            assignment.targetCount - assignment.doneCount
+                        )}{" "}
+                        người chưa hoàn thành? Người đã được duyệt vẫn giữ điểm.
                       </span>
                       <div className="of-form-acts">
                         <button
@@ -801,7 +814,7 @@ export function ManagerModal({
       <section className="of-fr">
         <div className="of-fh">
           <h3>CHỜ XÁC NHẬN</h3>
-          <span className="of-fh-sub">{reviewItems.length} mục</span>
+          <span className="of-fh-sub">{reviewItems.length} nhiệm vụ</span>
         </div>
         <div className="of-fb">
           {reviewItems.length > 0 && (
@@ -837,7 +850,7 @@ export function ManagerModal({
           {reviewQuery.isError ? (
             <OfficeQueryError onRetry={() => void reviewQuery.refetch()} />
           ) : reviewItems.length === 0 ? (
-            <p className="of-empty">Không có nhiệm vụ nào đang chờ xác nhận.</p>
+            <p className="of-empty">Không có nhiệm vụ nào chờ xác nhận.</p>
           ) : (
             reviewItems.map((item) => {
               const checked = activeSelectedReviewIds.includes(item.id)
@@ -875,7 +888,7 @@ export function ManagerModal({
                     </span>
                     <div className="of-ap-tt">
                       <div className="of-ap-nm">
-                        {item.staffName} · {KIND_LABEL[item.kind]} ·{" "}
+                        {item.staffName} · {KIND_LABEL[item.kind]} · gửi{" "}
                         {formatHm(item.submittedAt)}
                       </div>
                       <b>{item.title}</b>
@@ -925,7 +938,7 @@ export function ManagerModal({
                         className="of-textarea"
                         maxLength={MAX_RETURN_REASON}
                         value={returnReason}
-                        placeholder="Nhập lý do trả lại (bắt buộc)..."
+                        placeholder="Lý do trả lại (nhân viên sẽ thấy)"
                         aria-label={`Lý do trả lại cho ${item.title}`}
                         onChange={(event) => {
                           setReturnReason(
@@ -1020,7 +1033,7 @@ export function ManagerModal({
                   {proposal.reply ? (
                     <div className="of-msg-rep">
                       <b>
-                        Phản hồi của bạn
+                        Bạn đã trả lời
                         {proposal.repliedAt
                           ? ` · ${formatFullDate(proposal.repliedAt)}`
                           : ""}
@@ -1113,7 +1126,7 @@ export function ManagerModal({
       <section className="of-fr">
         <div className="of-fh">
           <h3>TIẾN ĐỘ NHÂN VIÊN</h3>
-          <span className="of-fh-sub">tháng {monthNum}</span>
+          <span className="of-fh-sub">bấm tên để mở hồ sơ</span>
         </div>
         <div className="of-fb">
           {progressQuery.isError ? (
@@ -1188,7 +1201,13 @@ export function ManagerModal({
                         />
                       </span>
                     </td>
-                    <td>{row.pendingCount}</td>
+                    <td>
+                      {row.pendingCount > 0 ? (
+                        <span className="of-tag t-warn">{row.pendingCount}</span>
+                      ) : (
+                        0
+                      )}
+                    </td>
                     <td>
                       <b style={{ color: "var(--of-gold2)" }}>{row.points}</b>
                     </td>

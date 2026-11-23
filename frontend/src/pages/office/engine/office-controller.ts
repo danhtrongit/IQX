@@ -1,12 +1,15 @@
 /**
  * Interactive 3D Office controller:
- * - Click/tap-to-move (`250 px/s`, golden ring) + WASD/Arrow keys (paused when modal/input active)
- * - `E` opens closest interactive station (`< 95 px`), `Esc` closes active modal
- * - Smooth follow camera (`lerp 0.18`), zoom `0.55×..1.5×` via wheel (ignoring `.of-hud`) or `+`/`−`
- * - Renders ONLY online WebSocket members (+ self!) — NEVER tied to attendance
- * - Crisp projected HTML overlays: nameplates (`< 70 px` own-desk declutter for non-self staff),
- *   role-aware attendance status dots (Boss sees all staff; Staff sees self only; Boss has none),
- *   and clickable golden `E` proximity prompt pill.
+ * - Click/tap-to-move (`250 px/s`, golden ring) + WASD/Arrow keys via `event.code`
+ *   (cleared on blur, visibilitychange hidden, Meta/Control, or modal open)
+ * - `E` (`KeyE`) opens closest interactive station (`< 95 px`), `Esc` closes active modal
+ * - Smart follow camera: fills desktop viewport cleanly at 1.0x zoom (no excess empty void),
+ *   centers closely on player on phones (`<= 720px`) below top HUD cards; zoom range `0.55×..1.5×`
+ * - Renders ONLY online WebSocket members (+ self) — NEVER tied to attendance
+ * - Crisp projected HTML overlays: nameplates (`< 70 px` own-desk declutter for ALL staff
+ *   including self per Spec §3.2), role-aware attendance dots, and clickable golden `E` pill
+ * - Desk layout signature check avoids rebuilding desks/textures when only HUD counts change
+ * - Respects `prefers-reduced-motion` (no walk bob, no pulsing target ring)
  */
 import { createChibiCharacter } from "@/lib/chibi-3d/character-builder.ts"
 import type { ChibiSceneHost } from "@/lib/chibi-3d/scene-host.ts"
@@ -37,6 +40,7 @@ import {
   OFFICE_STAFF_FALLBACK_SPAWN,
   OFFICE_STATION_RADIUS,
   OFFICE_WALK_SPEED,
+  OFFICE_WORLD_SCALE,
   buildDeskPositions,
   buildOfficeObstacles,
   buildOfficeStations,
@@ -45,17 +49,44 @@ import {
   moveWithSlide,
   officeFacingFromDelta,
   officeFacingToRadians,
+  prefersReducedMotion,
   type OfficeDeskPlacement,
   type OfficeRect,
   type OfficeStation,
 } from "./office-layout.ts"
 import { OfficeWorld3D } from "./office-world-3d.ts"
 
+export const OFFICE_CAMERA_FOV = 36
+export const OFFICE_CAMERA_PITCH_DEG = 50
+export const OFFICE_CAMERA_BASE_DISTANCE = 17.6
+export const OFFICE_MOBILE_BREAKPOINT_PX = 720
+export const OFFICE_DEFAULT_DESKTOP_ZOOM = 1.0
+export const OFFICE_DEFAULT_MOBILE_ZOOM = 1.32
+
 const MIN_ZOOM = 0.55
 const MAX_ZOOM = 1.5
 const ARRIVAL_PX = 4
 const PEER_TELEPORT_PX = 280
 const PEER_SMOOTH_RATE = 12
+const HALF_FOV_TAN = Math.tan(((OFFICE_CAMERA_FOV / 2) * Math.PI) / 180)
+
+const MOVE_KEY_CODES: ReadonlySet<string> = new Set([
+  "KeyW",
+  "KeyA",
+  "KeyS",
+  "KeyD",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+])
+
+const MODIFIER_KEY_CODES: ReadonlySet<string> = new Set([
+  "MetaLeft",
+  "MetaRight",
+  "ControlLeft",
+  "ControlRight",
+])
 
 export interface OfficeControllerCallbacks {
   onStationTrigger?: (action: OfficeStationAction) => void
@@ -114,6 +145,21 @@ function isHudOrModalTarget(target: EventTarget | null): boolean {
   )
 }
 
+function buildTeamLayoutSignature(
+  bossName: string,
+  selfUserId: string,
+  worldH: number,
+  desks: readonly OfficeDeskPlacement[]
+): string {
+  const parts = [bossName.trim(), selfUserId, String(worldH)]
+  for (const d of desks) {
+    parts.push(
+      `${d.index}:${d.userId}:${d.displayName}:${d.x},${d.y},${d.w},${d.h}:${d.hasMug ? 1 : 0}`
+    )
+  }
+  return parts.join("|")
+}
+
 export class OfficeController {
   private readonly host: ChibiSceneHost
   private readonly container: HTMLElement
@@ -129,6 +175,7 @@ export class OfficeController {
   private readonly deskByUserId = new Map<string, OfficeDeskPlacement>()
   private obstacles: OfficeRect[] = buildOfficeObstacles(11)
   private stations: OfficeStation[] = []
+  private lastTeamLayoutSignature = ""
 
   private selfActor: SelfActor | null = null
   private selfRole: OfficeRole = "staff"
@@ -148,6 +195,8 @@ export class OfficeController {
 
   private activeStation: OfficeStation | null = null
   private modalOpen = false
+  private userZoomed = false
+  private lastMobileViewport = false
   private readonly heldKeys = new Set<string>()
   private disposed = false
 
@@ -161,7 +210,9 @@ export class OfficeController {
     this.host = host
     this.container = container
     this.callbacks = callbacks
-    this.world3d = new OfficeWorld3D(host.scene, host.world)
+    this.world3d = new OfficeWorld3D(host.scene, host.world, host.lite)
+    this.lastMobileViewport =
+      host.getViewportSize().width <= OFFICE_MOBILE_BREAKPOINT_PX
 
     const overlay = document.createElement("div")
     overlay.className = "of-overlay-layer"
@@ -203,6 +254,51 @@ export class OfficeController {
     host.start((dt) => this.tick(dt))
   }
 
+  /** Computes ideal camera look target: full-office framing on desktop, player-centered on phones. */
+  private computeCameraFollowLogical(
+    lx: number,
+    ly: number
+  ): { x: number; y: number } {
+    const vp = this.host.getViewportSize()
+    const isMobile = vp.width <= OFFICE_MOBILE_BREAKPOINT_PX
+    if (isMobile) {
+      // Shift target slightly north (-48px) so the player sits cleanly below top-right collapsed HUD cards
+      return { x: lx, y: ly - 48 }
+    }
+
+    const zoom = Math.max(MIN_ZOOM, this.host.getTargetZoom())
+    const aspect = Math.max(0.5, vp.width / Math.max(1, vp.height))
+    const dist = OFFICE_CAMERA_BASE_DISTANCE / zoom
+    const halfVisXLogical = (dist * HALF_FOV_TAN * aspect) / OFFICE_WORLD_SCALE
+    // Keep camera inside room bounds so desktop fills the canvas with the office instead of empty dark margins
+    const marginX = halfVisXLogical * 0.9
+    const targetX =
+      marginX >= this.worldW / 2
+        ? this.worldW / 2
+        : Math.max(marginX, Math.min(this.worldW - marginX, lx))
+    return { x: targetX, y: ly - 25 }
+  }
+
+  /** Adjusts framing immediately when the canvas container resizes (via ResizeObserver). */
+  handleViewportResize(width: number): void {
+    if (this.disposed) return
+    const isMobile = width <= OFFICE_MOBILE_BREAKPOINT_PX
+    if (!this.userZoomed && isMobile !== this.lastMobileViewport) {
+      this.host.setZoom(
+        isMobile ? OFFICE_DEFAULT_MOBILE_ZOOM : OFFICE_DEFAULT_DESKTOP_ZOOM,
+        true
+      )
+    }
+    this.lastMobileViewport = isMobile
+    if (this.selfActor) {
+      const target = this.computeCameraFollowLogical(
+        this.selfActor.x,
+        this.selfActor.y
+      )
+      this.host.followLogical(target.x, target.y, true)
+    }
+  }
+
   private bindInput(): void {
     const onPointerDown = (event: PointerEvent): void => {
       if (this.disposed || this.modalOpen || !this.selfActor) return
@@ -221,6 +317,7 @@ export class OfficeController {
       if (this.disposed || this.modalOpen) return
       if (isHudOrModalTarget(event.target)) return
       event.preventDefault()
+      this.userZoomed = true
       const factor = event.deltaY < 0 ? 1.1 : 1 / 1.1
       const next = Math.max(
         MIN_ZOOM,
@@ -231,25 +328,24 @@ export class OfficeController {
 
     const onKeyDown = (event: KeyboardEvent): void => {
       if (this.disposed) return
-      if (event.key === "Escape" && this.modalOpen) {
+      if ((event.code === "Escape" || event.key === "Escape") && this.modalOpen) {
         event.preventDefault()
         this.callbacks.onCloseModal?.()
         return
       }
+      if (
+        event.metaKey ||
+        event.ctrlKey ||
+        MODIFIER_KEY_CODES.has(event.code)
+      ) {
+        this.heldKeys.clear()
+        return
+      }
       if (this.modalOpen || isTypingTarget(event.target)) return
 
-      const code = event.key.toLowerCase()
-      if (
-        code === "w" ||
-        code === "a" ||
-        code === "s" ||
-        code === "d" ||
-        code === "arrowup" ||
-        code === "arrowdown" ||
-        code === "arrowleft" ||
-        code === "arrowright"
-      ) {
-        if (code.startsWith("arrow")) {
+      const code = event.code
+      if (MOVE_KEY_CODES.has(code)) {
+        if (code.startsWith("Arrow")) {
           event.preventDefault()
         }
         this.heldKeys.add(code)
@@ -259,18 +355,28 @@ export class OfficeController {
         return
       }
 
-      if (code === "e" && !event.repeat && this.activeStation) {
+      if (code === "KeyE" && !event.repeat && this.activeStation) {
         event.preventDefault()
         this.triggerStation(this.activeStation)
       }
     }
 
     const onKeyUp = (event: KeyboardEvent): void => {
-      this.heldKeys.delete(event.key.toLowerCase())
+      if (MODIFIER_KEY_CODES.has(event.code)) {
+        this.heldKeys.clear()
+        return
+      }
+      this.heldKeys.delete(event.code)
     }
 
     const onBlur = (): void => {
       this.heldKeys.clear()
+    }
+
+    const onVisibilityChange = (): void => {
+      if (document.hidden) {
+        this.heldKeys.clear()
+      }
     }
 
     this.container.addEventListener("pointerdown", onPointerDown)
@@ -278,6 +384,7 @@ export class OfficeController {
     window.addEventListener("keydown", onKeyDown)
     window.addEventListener("keyup", onKeyUp)
     window.addEventListener("blur", onBlur)
+    document.addEventListener("visibilitychange", onVisibilityChange)
 
     this.cleanups.push(() => {
       this.container.removeEventListener("pointerdown", onPointerDown)
@@ -285,11 +392,16 @@ export class OfficeController {
       window.removeEventListener("keydown", onKeyDown)
       window.removeEventListener("keyup", onKeyUp)
       window.removeEventListener("blur", onBlur)
+      document.removeEventListener("visibilitychange", onVisibilityChange)
     })
   }
 
   private triggerStation(station: OfficeStation): void {
     this.heldKeys.clear()
+    if (this.selfActor) {
+      this.selfActor.target = null
+    }
+    this.world3d.hideTargetRing()
     this.callbacks.onStationTrigger?.({
       station: station.id,
       modal: station.modal,
@@ -300,6 +412,7 @@ export class OfficeController {
   /** Programmatic zoom step for corner `+` / `−` buttons (`1.15×` / `1/1.15×`). */
   setZoomDelta(delta: 1 | -1): void {
     if (this.disposed) return
+    this.userZoomed = true
     const factor = delta > 0 ? 1.15 : 1 / 1.15
     const next = Math.max(
       MIN_ZOOM,
@@ -312,6 +425,10 @@ export class OfficeController {
     this.modalOpen = open
     if (open) {
       this.heldKeys.clear()
+      if (this.selfActor) {
+        this.selfActor.target = null
+      }
+      this.world3d.hideTargetRing()
       this.promptBtn.style.display = "none"
     }
   }
@@ -327,37 +444,63 @@ export class OfficeController {
     })
   }
 
-  /** Syncs team roster, desks, self character, and interactive stations from `GET /office/me`. */
+  /**
+   * Syncs team roster, desks, self character, and interactive stations from `GET /office/me`.
+   * Compares a layout signature so desks/textures are ONLY rebuilt when names, layout, or
+   * desk indices actually change (avoiding full GPU rebuilds on HUD counter refetches).
+   */
   updateTeam(me: OfficeMe): void {
     if (this.disposed || !me.member || !me.self || !me.team) return
 
+    const prevRole = this.selfRole
+    const prevTeamName = this.teamName
     this.selfRole = me.self.role
     this.teamName = me.team.name
     this.currentMonth = monthNumberFromPeriod(me.periodMonth)
+    this.attendanceWorkday = me.isWorkday
 
-    this.desks = buildDeskPositions(me.members)
-    this.deskByUserId.clear()
-    for (const desk of this.desks) {
-      this.deskByUserId.set(desk.userId, desk)
+    if (
+      me.self.role === "staff" &&
+      me.hud?.kind === "staff" &&
+      !this.attendanceByUser.has(me.self.userId)
+    ) {
+      this.attendanceByUser.set(me.self.userId, me.hud.myAttendanceStatus)
     }
 
-    const dims = computeOfficeDimensions(this.desks.length)
+    const nextDesks = buildDeskPositions(me.members)
+    const dims = computeOfficeDimensions(nextDesks.length)
+    const nextSignature = buildTeamLayoutSignature(
+      me.team.bossName,
+      me.self.userId,
+      dims.height,
+      nextDesks
+    )
+    const layoutChanged = nextSignature !== this.lastTeamLayoutSignature
+
     const dimsChanged =
       dims.width !== this.host.world.logicalW ||
       dims.height !== this.host.world.logicalH
-    this.worldW = dims.width
-    this.worldH = dims.height
-    if (dimsChanged) {
-      this.host.setWorldSize(this.worldW, this.worldH)
-    }
-    this.obstacles = buildOfficeObstacles(this.desks)
 
-    this.world3d.rebuildTeamProps(
-      me.team.bossName,
-      this.desks,
-      me.self.userId,
-      this.worldH
-    )
+    if (layoutChanged) {
+      this.lastTeamLayoutSignature = nextSignature
+      this.desks = nextDesks
+      this.deskByUserId.clear()
+      for (const desk of this.desks) {
+        this.deskByUserId.set(desk.userId, desk)
+      }
+      this.worldW = dims.width
+      this.worldH = dims.height
+      if (dimsChanged) {
+        this.host.setWorldSize(this.worldW, this.worldH)
+      }
+      this.obstacles = buildOfficeObstacles(this.desks)
+      this.world3d.rebuildTeamProps(
+        me.team.bossName,
+        this.desks,
+        me.self.userId,
+        this.worldH
+      )
+    }
 
     const selfDesk = this.deskByUserId.get(me.self.userId) ?? null
     this.stations = buildOfficeStations(
@@ -415,7 +558,8 @@ export class OfficeController {
         moving: false,
         target: null,
       }
-      this.host.followLogical(spawn.x, spawn.y - 25, true)
+      const camTarget = this.computeCameraFollowLogical(spawn.x, spawn.y)
+      this.host.followLogical(camTarget.x, camTarget.y, true)
       this.callbacks.onSelfState?.({
         x: spawn.x,
         y: spawn.y,
@@ -454,7 +598,11 @@ export class OfficeController {
           this.host.world
         )
         this.selfActor.rig.root.position.set(selfPt.x, 0, selfPt.z)
-        this.host.followLogical(this.selfActor.x, this.selfActor.y - 25, true)
+        const camTarget = this.computeCameraFollowLogical(
+          this.selfActor.x,
+          this.selfActor.y
+        )
+        this.host.followLogical(camTarget.x, camTarget.y, true)
       }
     }
 
@@ -465,14 +613,20 @@ export class OfficeController {
       }
     }
 
-    // Refresh Standee & Wall Screen with latest role/team context
-    this.world3d.updateStandee(
-      this.latestLeaderboard,
-      this.teamName,
-      this.selfRole === "staff"
-    )
-    if (this.latestMeeting !== null) {
-      this.world3d.updateMeetingScreen(this.latestMeeting)
+    // Refresh Standee & Wall Screen only when team/role/layout context changed
+    if (
+      layoutChanged ||
+      prevRole !== this.selfRole ||
+      prevTeamName !== this.teamName
+    ) {
+      this.world3d.updateStandee(
+        this.latestLeaderboard,
+        this.teamName,
+        this.selfRole === "staff"
+      )
+      if (this.latestMeeting !== null) {
+        this.world3d.updateMeetingScreen(this.latestMeeting)
+      }
     }
   }
 
@@ -631,11 +785,11 @@ export class OfficeController {
     x: number,
     y: number,
     headHeight: number
-  ): void {
+  ): boolean {
     const dom = this.ensureNameplate(userId)
 
-    // Own-desk declutter rule (Spec §3.2): hide non-self staff overhead nameplate within < 70 px of desk home
-    if (!isSelf && role === "staff") {
+    // Own-desk declutter rule (Spec §3.2): hide overhead tag for any staff standing at their own desk (including self)
+    if (role === "staff") {
       const desk = this.deskByUserId.get(userId)
       if (
         desk &&
@@ -643,14 +797,14 @@ export class OfficeController {
           OFFICE_DESK_DECLUTTER_RADIUS
       ) {
         dom.el.style.display = "none"
-        return
+        return false
       }
     }
 
     const pt = this.host.projectLogicalToScreen(x, y, headHeight + 0.22)
     if (!pt.visible) {
       dom.el.style.display = "none"
-      return
+      return false
     }
 
     const dotStatus = this.resolveAttendanceDot(userId, role, isSelf)
@@ -671,12 +825,14 @@ export class OfficeController {
     dom.el.style.display = "inline-flex"
     dom.el.style.transform = `translate3d(${Math.round(pt.x)}px, ${Math.round(pt.y)}px, 0) translate(-50%, -100%)`
     dom.el.style.zIndex = String(10 + Math.round(y * 0.05))
+    return true
   }
 
   private tick(dt: number): void {
     if (this.disposed) return
 
     this.world3d.update(dt)
+    const reducedMotion = prefersReducedMotion()
 
     // 1. Update local self movement (WASD/Arrows or click-to-move)
     if (this.selfActor) {
@@ -685,10 +841,10 @@ export class OfficeController {
       let vy = 0
 
       if (!this.modalOpen) {
-        if (this.heldKeys.has("w") || this.heldKeys.has("arrowup")) vy -= 1
-        if (this.heldKeys.has("s") || this.heldKeys.has("arrowdown")) vy += 1
-        if (this.heldKeys.has("a") || this.heldKeys.has("arrowleft")) vx -= 1
-        if (this.heldKeys.has("d") || this.heldKeys.has("arrowright")) vx += 1
+        if (this.heldKeys.has("KeyW") || this.heldKeys.has("ArrowUp")) vy -= 1
+        if (this.heldKeys.has("KeyS") || this.heldKeys.has("ArrowDown")) vy += 1
+        if (this.heldKeys.has("KeyA") || this.heldKeys.has("ArrowLeft")) vx -= 1
+        if (this.heldKeys.has("KeyD") || this.heldKeys.has("ArrowRight")) vx += 1
       }
 
       let moved = false
@@ -744,7 +900,8 @@ export class OfficeController {
       const pt = logicalToWorld(self.x, self.y, this.host.world)
       self.rig.root.position.set(pt.x, 0, pt.z)
       self.rig.update(dt, {
-        anim: moved ? "walk" : "idle",
+        anim: reducedMotion ? "walk" : moved ? "walk" : "idle",
+        moveFactor: reducedMotion ? 0 : 1,
         facingRad: officeFacingToRadians(self.facing),
       })
 
@@ -757,8 +914,9 @@ export class OfficeController {
         })
       }
 
-      this.host.followLogical(self.x, self.y - 25)
-      this.updateActorNameplate(
+      const camTarget = this.computeCameraFollowLogical(self.x, self.y)
+      this.host.followLogical(camTarget.x, camTarget.y)
+      const selfPlateShown = this.updateActorNameplate(
         self.userId,
         self.name,
         self.role,
@@ -779,17 +937,21 @@ export class OfficeController {
           )
       this.activeStation = nearest
       if (nearest) {
+        const vp = this.host.getViewportSize()
+        const isMobile = vp.width <= OFFICE_MOBILE_BREAKPOINT_PX
         const selfPlatePt = this.host.projectLogicalToScreen(
           self.x,
           self.y,
           self.rig.headHeight + 0.22
         )
-        // Own-desk prompt anchors cleanly below character's feet on the open corridor
-        // so it never overlaps the self overhead nameplate or desk nameplate.
-        const anchorBelowFeet = nearest.id === "mydesk"
+        // Anchor below feet for own desk, boss desk, and on phones so the E label never covers the avatar or top HUD cards
+        const anchorBelowFeet =
+          nearest.id === "mydesk" || nearest.id === "boss" || isMobile
+        const promptAnchorX = anchorBelowFeet ? self.x : nearest.x
+        const promptAnchorY = anchorBelowFeet ? self.y : nearest.y
         const promptPt = this.host.projectLogicalToScreen(
-          nearest.x,
-          nearest.y,
+          promptAnchorX,
+          promptAnchorY,
           anchorBelowFeet ? 0.0 : 1.55
         )
         if (promptPt.visible) {
@@ -804,7 +966,6 @@ export class OfficeController {
           if (this.promptBtn.style.display === "none") {
             this.promptBtn.style.display = "inline-flex"
           }
-          const vp = this.host.getViewportSize()
           const measuredW = this.promptBtn.offsetWidth || 240
           const measuredH = this.promptBtn.offsetHeight || 42
           const halfW = Math.ceil(measuredW / 2) + 12
@@ -815,20 +976,34 @@ export class OfficeController {
           let py = anchorBelowFeet ? promptPt.y + 18 : promptPt.y
           if (
             !anchorBelowFeet &&
+            selfPlateShown &&
             selfPlatePt.visible &&
             Math.abs(px - selfPlatePt.x) < 170 &&
             Math.abs(py - selfPlatePt.y) < 46
           ) {
             py = Math.min(py, selfPlatePt.y - 44)
           }
+          // On phones, keep E label clear of top HUD stack
+          let minTop = 58
+          if (isMobile) {
+            const stageRoot = this.container.parentElement
+            const hudTr = stageRoot?.querySelector(".of-hud-tr")
+            if (hudTr instanceof HTMLElement) {
+              const hudRect = hudTr.getBoundingClientRect()
+              const stageRect = this.container.getBoundingClientRect()
+              if (hudRect.height > 0) {
+                minTop = Math.max(minTop, Math.ceil(hudRect.bottom - stageRect.top) + 10)
+              }
+            }
+          }
           py = anchorBelowFeet
             ? Math.max(
-                58,
-                Math.min(Math.max(58, vp.height - measuredH - 28), py)
+                minTop,
+                Math.min(Math.max(minTop, vp.height - measuredH - 28), py)
               )
             : Math.max(
-                58 + measuredH,
-                Math.min(Math.max(58 + measuredH, vp.height - 28), py)
+                minTop + measuredH,
+                Math.min(Math.max(minTop + measuredH, vp.height - 28), py)
               )
 
           this.promptBtn.style.transform = anchorBelowFeet
@@ -859,7 +1034,8 @@ export class OfficeController {
       const pt = logicalToWorld(peer.x, peer.y, this.host.world)
       peer.rig.root.position.set(pt.x, 0, pt.z)
       peer.rig.update(dt, {
-        anim: isWalking ? "walk" : "idle",
+        anim: reducedMotion ? "walk" : isWalking ? "walk" : "idle",
+        moveFactor: reducedMotion ? 0 : 1,
         facingRad: officeFacingToRadians(peer.facing),
       })
       this.updateActorNameplate(

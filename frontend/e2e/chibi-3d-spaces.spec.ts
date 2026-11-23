@@ -2013,8 +2013,12 @@ test("Test 4 — Khu Văn phòng Staff 3D World, HUD, NHIỆM VỤ CỦA TÔI & 
     minDistinctColors: 18,
   })
 
-  // Verify self projected nameplate
+  // Verify self projected nameplate is hidden when standing at own desk (Spec §3.2) and appears once stepping away
   const selfNameplate = page.locator('.of-nameplate[data-self="1"]')
+  await expect(selfNameplate).toBeHidden({ timeout: 5_000 })
+  await page.keyboard.down("ArrowDown")
+  await page.waitForTimeout(450)
+  await page.keyboard.up("ArrowDown")
   await expect(selfNameplate).toBeVisible({ timeout: 8_000 })
   await expect(selfNameplate).toContainText("Lê Ngọc Hạnh (bạn)")
 
@@ -2130,8 +2134,8 @@ test("Test 4 — Khu Văn phòng Staff 3D World, HUD, NHIỆM VỤ CỦA TÔI & 
   await expect(page.getByTestId("office-toast")).toContainText("Đã gửi sếp xác nhận")
 
   await headerCheckIn.click()
-  await expect(page.getByTestId("office-toast")).toContainText("Đã điểm danh đúng giờ · 08:25")
-  await expect(mineModal.getByTestId("office-checkin-status")).toContainText("Đã điểm danh · 08:25")
+  await expect(page.getByTestId("office-toast")).toContainText("Đã điểm danh 08:25 · Đúng giờ")
+  await expect(mineModal.getByTestId("office-checkin-status")).toContainText("✓ Đã điểm danh 08:25 · Đúng giờ")
 
   await mineModal.getByLabel("Nội dung đề xuất").fill("Bổ sung checklist kiểm tra lệnh cuối phiên")
   await mineModal.getByRole("button", { name: "Gửi đề xuất" }).click()
@@ -2215,7 +2219,9 @@ test("Test 5 — Khu Văn phòng Boss HUD, QUẢN LÝ & HỒ SƠ NHÂN VIÊN (14
   await expect(titleInput).toHaveValue("Rà soát danh mục khuyến nghị VN30")
   await expect(mgrModal.getByLabel("Điểm thưởng (1–1000)")).toHaveValue("40")
   await mgrModal.getByRole("button", { name: "Giao nhiệm vụ" }).click()
-  await expect(page.getByTestId("office-toast")).toContainText("Đã giao nhiệm vụ cho 6 nhân viên")
+  await expect(page.getByTestId("office-toast")).toContainText(
+    'Đã giao "Rà soát danh mục khuyến nghị VN30" cho 6 người'
+  )
   expect(server.getCreatedAssignments()).toHaveLength(1)
 
   // Switch Giao mới <-> Đã giao
