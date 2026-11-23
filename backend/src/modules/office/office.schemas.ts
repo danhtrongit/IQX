@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import {
   OFFICE_ALLOWED_DOC_EXTS,
+  OFFICE_APPROVE_SKIP_CODES,
   OFFICE_ATTENDANCE_DISPLAY_STATES,
   OFFICE_ATTENDANCE_STATES,
   OFFICE_PROPOSAL_STATUSES,
@@ -336,6 +337,15 @@ export const officeApproveTasksResponseSchema = z.object({
       totalMonthlyPoints: z.number().int(),
     }),
   ),
+  skipped: z
+    .array(
+      z.object({
+        taskId: z.string(),
+        code: z.enum(OFFICE_APPROVE_SKIP_CODES),
+        reason: z.string(),
+      }),
+    )
+    .optional(),
 });
 
 export const officeProgressItemSchema = z.object({

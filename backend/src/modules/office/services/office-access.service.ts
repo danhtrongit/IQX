@@ -84,16 +84,30 @@ const NO_ACCESS: OfficeResolvedAccess = {
 };
 
 export const OFFICE_ACCESS_CLOCK = Symbol('OFFICE_ACCESS_CLOCK');
+export const OFFICE_TEAM_SYNC_CACHE_TTL_MS = 30_000;
+const MAX_SYNC_CACHE_ENTRIES = 1_000;
+
+type TeamSyncCacheEntry = {
+  readonly team: OfficeTeamRow;
+  readonly activeUserIds: ReadonlySet<string>;
+  readonly expiresAt: number;
+};
 
 @Injectable()
 export class OfficeAccessService {
   private readonly now: () => Date;
+  private readonly syncCache = new Map<string, TeamSyncCacheEntry>();
 
   constructor(
     private readonly database: DatabaseService,
     @Optional() @Inject(OFFICE_ACCESS_CLOCK) now?: () => Date,
   ) {
     this.now = now ?? (() => new Date());
+  }
+
+  invalidateTeamSyncCache(bossUserId?: string): void {
+    if (bossUserId) this.syncCache.delete(bossUserId);
+    else this.syncCache.clear();
   }
 
   async loadHolidays(client: SqlClient = this.database): Promise<Set<string>> {
@@ -124,7 +138,7 @@ export class OfficeAccessService {
       [user.id],
     );
     if (lead) {
-      const team = await this.ensureTeamSynced(lead.user_id, lead.name);
+      const team = await this.ensureTeamSynced(lead.user_id, lead.name, user.id);
       return this.buildContext(team, user.id);
     }
 
@@ -138,7 +152,7 @@ export class OfficeAccessService {
       [user.id],
     );
     if (saco) {
-      const team = await this.ensureTeamSynced(saco.lead_user_id, saco.lead_name);
+      const team = await this.ensureTeamSynced(saco.lead_user_id, saco.lead_name, user.id);
       return this.buildContext(team, user.id);
     }
 
@@ -219,6 +233,7 @@ export class OfficeAccessService {
     user: Pick<AuthenticatedUser, 'id'>,
     onlineUserIdsForTeam: (teamId: string) => string[],
     now: Date = this.now(),
+    beforeHud?: (teamId: string, at: Date) => Promise<void>,
   ) {
     const parts = ictNowParts(now);
     const holidays = await this.loadHolidays();
@@ -249,6 +264,9 @@ export class OfficeAccessService {
     }
 
     const { team, self, members, role } = resolved;
+    if (beforeHud) {
+      await beforeHud(team.id, now);
+    }
     const lockMin = parseCutoffMinutes(team.checkinLockCutoff, 12 * 60);
     const isAttendanceLocked = !isWorkday || parts.minutesOfDay > lockMin;
     const onlineIds = onlineUserIdsForTeam(team.id);
@@ -379,8 +397,8 @@ export class OfficeAccessService {
       checked_in_at: Date | string;
     }>(
       `select status, checked_in_at from office_attendance
-        where team_id = $1 and user_id = $2 and work_date = $3::date`,
-      [teamId, userId, todayDate],
+        where user_id = $1 and work_date = $2::date`,
+      [userId, todayDate],
     );
 
     const myAttendanceStatus: OfficeAttendanceDisplayState = attRow?.status ?? 'absent';
@@ -401,8 +419,150 @@ export class OfficeAccessService {
     };
   }
 
-  private async ensureTeamSynced(bossUserId: string, bossName: string): Promise<OfficeTeamRow> {
-    return this.database.transaction(async (tx) => {
+  private cacheTeamSync(
+    bossUserId: string,
+    team: OfficeTeamRow,
+    activeUserIds: ReadonlySet<string>,
+    nowMs: number,
+  ): void {
+    if (this.syncCache.size >= MAX_SYNC_CACHE_ENTRIES) {
+      for (const [key, entry] of this.syncCache) {
+        if (entry.expiresAt <= nowMs) this.syncCache.delete(key);
+      }
+    }
+    this.syncCache.set(bossUserId, {
+      team,
+      activeUserIds,
+      expiresAt: nowMs + OFFICE_TEAM_SYNC_CACHE_TTL_MS,
+    });
+  }
+
+  private async checkTeamInSyncReadOnly(
+    bossUserId: string,
+  ): Promise<
+    { inSync: true; team: OfficeTeamRow; activeUserIds: ReadonlySet<string> } | { inSync: false }
+  > {
+    const team = await this.findTeamByBoss(this.database, bossUserId);
+    if (!team) return { inSync: false };
+
+    const activeSacos = await this.database.query<SacoSyncRow>(
+      `select s.user_id, to_char(s.assigned_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as assigned_date
+         from tf_sacos s
+         join users u on u.id = s.user_id and u.status = 'active' and u.deleted_at is null
+        where s.lead_user_id = $1 and s.active = true
+        order by s.assigned_at asc, s.id asc`,
+      [bossUserId],
+    );
+
+    const members = await this.database.query<{
+      user_id: string;
+      role: OfficeRole;
+      desk_index: number | null;
+      active: boolean;
+      has_saco_row: boolean;
+    }>(
+      `select om.user_id, om.role, om.desk_index, om.active,
+              exists (select 1 from tf_sacos s where s.user_id = om.user_id) as has_saco_row
+         from office_members om
+        where om.team_id = $1`,
+      [team.id],
+    );
+
+    const bossRow = members.find((m) => m.user_id === bossUserId);
+    if (!bossRow || bossRow.role !== 'boss' || !bossRow.active || bossRow.desk_index !== null) {
+      return { inSync: false };
+    }
+
+    const activeSacoIds = new Set(activeSacos.map((s) => s.user_id));
+    const memberByUser = new Map(members.map((m) => [m.user_id, m]));
+    const seenActiveDesks = new Set<number>();
+
+    for (const member of members) {
+      if (member.active && member.desk_index !== null) {
+        if (seenActiveDesks.has(member.desk_index)) return { inSync: false };
+        seenActiveDesks.add(member.desk_index);
+      }
+      if (
+        member.role === 'staff' &&
+        member.active &&
+        member.has_saco_row &&
+        !activeSacoIds.has(member.user_id)
+      ) {
+        return { inSync: false };
+      }
+    }
+
+    for (const saco of activeSacos) {
+      const existing = memberByUser.get(saco.user_id);
+      if (
+        !existing ||
+        !existing.active ||
+        existing.role !== 'staff' ||
+        existing.desk_index === null
+      ) {
+        return { inSync: false };
+      }
+    }
+
+    if (activeSacos.length > 0) {
+      const sacoUserIds = activeSacos.map((s) => s.user_id);
+      const currentMonth = ictMonthString(this.now());
+      const [pending] = await this.database.query<{ has_pending_transfer: boolean }>(
+        `select (
+           exists (
+             select 1 from office_members
+              where user_id = any($1::uuid[])
+                and team_id <> $2
+                and role = 'staff'
+                and active = true
+           )
+           or exists (
+             select 1 from office_points_monthly
+              where user_id = any($1::uuid[])
+                and team_id <> $2
+                and period_month = $3
+                and points > 0
+           )
+         ) as has_pending_transfer`,
+        [sacoUserIds, team.id, currentMonth],
+      );
+      if (pending?.has_pending_transfer) return { inSync: false };
+    }
+
+    const activeUserIds = new Set<string>([bossUserId]);
+    for (const member of members) {
+      if (member.active) activeUserIds.add(member.user_id);
+    }
+    return { inSync: true, team, activeUserIds };
+  }
+
+  private async ensureTeamSynced(
+    bossUserId: string,
+    bossName: string,
+    requestingUserId?: string,
+  ): Promise<OfficeTeamRow> {
+    const nowMs = this.now().getTime();
+    const cached = this.syncCache.get(bossUserId);
+    if (
+      cached &&
+      nowMs < cached.expiresAt &&
+      (!requestingUserId || cached.activeUserIds.has(requestingUserId))
+    ) {
+      return cached.team;
+    }
+
+    const probe = await this.checkTeamInSyncReadOnly(bossUserId);
+    if (probe.inSync) {
+      this.cacheTeamSync(bossUserId, probe.team, probe.activeUserIds, nowMs);
+      return probe.team;
+    }
+
+    const { team, activeUserIds } = await this.database.transaction(async (tx) => {
+      // Serialize concurrent first-time and membership syncs per team across all processes.
+      await tx.query(`select pg_advisory_xact_lock(hashtext('office_team_sync:' || $1))`, [
+        bossUserId,
+      ]);
+
       const teamName = `Nhóm ${bossName}`.slice(0, 120);
       await tx.query(
         `insert into office_teams (boss_user_id, name)
@@ -411,16 +571,18 @@ export class OfficeAccessService {
         [bossUserId, teamName],
       );
 
-      const team = await this.findTeamByBoss(tx, bossUserId);
-      if (!team) throw new Error(`Failed to resolve office team for boss ${bossUserId}`);
+      const resolvedTeam = await this.findTeamByBoss(tx, bossUserId);
+      if (!resolvedTeam) throw new Error(`Failed to resolve office team for boss ${bossUserId}`);
 
       await tx.query(
         `insert into office_members (team_id, user_id, role, desk_index, accent_color, active)
          values ($1, $2, 'boss', null, $3, true)
          on conflict (team_id, user_id) do update
-           set role = 'boss', active = true, updated_at = now()
-         where office_members.active = false or office_members.role <> 'boss'`,
-        [team.id, bossUserId, OFFICE_BOSS_ACCENT_COLOR],
+           set role = 'boss', desk_index = null, active = true, updated_at = now()
+         where office_members.active = false
+            or office_members.role <> 'boss'
+            or office_members.desk_index is not null`,
+        [resolvedTeam.id, bossUserId, OFFICE_BOSS_ACCENT_COLOR],
       );
 
       const activeSacos = await tx.query<SacoSyncRow>(
@@ -440,9 +602,14 @@ export class OfficeAccessService {
         `select user_id, desk_index, active
            from office_members
           where team_id = $1 and role = 'staff'`,
-        [team.id],
+        [resolvedTeam.id],
       );
       const existingByUser = new Map(existingStaff.map((row) => [row.user_id, row]));
+      const activeUsedDesks = new Set(
+        existingStaff
+          .filter((row) => row.active && row.desk_index !== null)
+          .map((row) => row.desk_index as number),
+      );
       const usedDesks = new Set(
         existingStaff
           .filter((row) => row.desk_index !== null)
@@ -450,8 +617,9 @@ export class OfficeAccessService {
       );
       const nextDesk = (): number => {
         let idx = 0;
-        while (usedDesks.has(idx)) idx += 1;
+        while (usedDesks.has(idx) || activeUsedDesks.has(idx)) idx += 1;
         usedDesks.add(idx);
+        activeUsedDesks.add(idx);
         return idx;
       };
 
@@ -466,7 +634,7 @@ export class OfficeAccessService {
               set active = false, updated_at = now()
             where user_id = $1 and team_id <> $2 and role = 'staff' and active = true
             returning team_id`,
-          [saco.user_id, team.id],
+          [saco.user_id, resolvedTeam.id],
         );
         for (const old of oldTeams) {
           await tx.query(
@@ -490,7 +658,7 @@ export class OfficeAccessService {
               and team_id <> $2
               and period_month = $3
             returning points, reached_at`,
-          [saco.user_id, team.id, currentMonth],
+          [saco.user_id, resolvedTeam.id, currentMonth],
         );
         let totalMigrated = 0;
         let latestReachedAt: Date | null = null;
@@ -510,7 +678,7 @@ export class OfficeAccessService {
              on conflict (team_id, user_id, period_month) do update
                set points = office_points_monthly.points + excluded.points,
                    reached_at = greatest(office_points_monthly.reached_at, excluded.reached_at)`,
-            [team.id, saco.user_id, currentMonth, totalMigrated, latestReachedAt],
+            [resolvedTeam.id, saco.user_id, currentMonth, totalMigrated, latestReachedAt],
           );
         }
 
@@ -522,16 +690,23 @@ export class OfficeAccessService {
             `insert into office_members (team_id, user_id, role, desk_index, join_date, accent_color, active)
              values ($1, $2, 'staff', $3, $4::date, $5, true)
              on conflict (team_id, user_id) do update
-               set active = true, updated_at = now()`,
-            [team.id, saco.user_id, desk, saco.assigned_date, color],
+               set active = true,
+                   desk_index = coalesce(office_members.desk_index, excluded.desk_index),
+                   updated_at = now()`,
+            [resolvedTeam.id, saco.user_id, desk, saco.assigned_date, color],
           );
-        } else if (!existing.active) {
-          const desk = existing.desk_index ?? nextDesk();
+        } else if (!existing.active || existing.desk_index === null) {
+          const desk =
+            existing.desk_index !== null && !activeUsedDesks.has(existing.desk_index)
+              ? existing.desk_index
+              : nextDesk();
+          activeUsedDesks.add(desk);
+          usedDesks.add(desk);
           await tx.query(
             `update office_members
                 set active = true, desk_index = $3, updated_at = now()
               where team_id = $1 and user_id = $2`,
-            [team.id, saco.user_id, desk],
+            [resolvedTeam.id, saco.user_id, desk],
           );
         }
       }
@@ -553,24 +728,36 @@ export class OfficeAccessService {
                  and s.active = true
             )
           returning om.user_id`,
-        [team.id, bossUserId],
+        [resolvedTeam.id, bossUserId],
       );
       for (const removed of deactivatedStaff) {
         await tx.query(
           `delete from office_tasks
             where team_id = $1 and user_id = $2 and status <> 'done'`,
-          [team.id, removed.user_id],
+          [resolvedTeam.id, removed.user_id],
         );
         await tx.query(
           `delete from office_assignment_targets t
             using office_assignments a
             where t.assignment_id = a.id and a.team_id = $1 and t.user_id = $2`,
-          [team.id, removed.user_id],
+          [resolvedTeam.id, removed.user_id],
         );
       }
 
-      return team;
+      const deactivatedSet = new Set(deactivatedStaff.map((row) => row.user_id));
+      const syncedActiveUsers = new Set<string>([bossUserId]);
+      for (const saco of activeSacos) syncedActiveUsers.add(saco.user_id);
+      for (const row of existingStaff) {
+        if (row.active && !deactivatedSet.has(row.user_id)) {
+          syncedActiveUsers.add(row.user_id);
+        }
+      }
+
+      return { team: resolvedTeam, activeUserIds: syncedActiveUsers };
     });
+
+    this.cacheTeamSync(bossUserId, team, activeUserIds, nowMs);
+    return team;
   }
 
   private async buildContext(team: OfficeTeamRow, userId: string): Promise<OfficeResolvedAccess> {

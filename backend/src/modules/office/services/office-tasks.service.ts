@@ -29,11 +29,13 @@ import {
 } from '../office.time.js';
 import {
   OFFICE_TASK_KIND_LABEL,
+  type OfficeApproveSkipCode,
   type OfficeTaskKind,
   type OfficeTaskStatus,
 } from '../office.types.js';
 import { OfficeHub } from '../realtime/office.hub.js';
 import { OfficeAccessService } from './office-access.service.js';
+import { OfficeCronService } from './office-cron.service.js';
 
 export const OFFICE_TASKS_CLOCK = Symbol('OFFICE_TASKS_CLOCK');
 
@@ -129,13 +131,16 @@ export class OfficeTasksService {
     @Inject(OFFICE_NOTIFIER) private readonly notifier: OfficeNotifier,
     private readonly hub: OfficeHub,
     @Optional() @Inject(OFFICE_TASKS_CLOCK) now?: () => Date,
+    @Optional() private readonly cron?: OfficeCronService,
   ) {
     this.now = now ?? (() => new Date());
   }
 
   async listMyTasks(user: AuthenticatedUser) {
     const ctx = await this.access.requireStaff(user);
-    const parts = ictNowParts(this.now());
+    const now = this.now();
+    await this.cron?.ensureDailyRepeatsForTeam(ctx.team.id, now);
+    const parts = ictNowParts(now);
 
     const rows = await this.database.query<TaskDbRow>(
       `select id, assignment_id, user_id, kind, title, points, points_snapshot,
@@ -173,7 +178,9 @@ export class OfficeTasksService {
 
   async listAssignments(user: AuthenticatedUser) {
     const ctx = await this.access.requireBoss(user);
-    const parts = ictNowParts(this.now());
+    const now = this.now();
+    await this.cron?.ensureDailyRepeatsForTeam(ctx.team.id, now);
+    const parts = ictNowParts(now);
     const activeStaffCount = ctx.members.filter((m) => m.role === 'staff').length;
 
     const assignments = await this.database.query<AssignmentDbRow>(
@@ -420,8 +427,18 @@ export class OfficeTasksService {
       let nextDueDate = existing.kind === 'day' ? null : ymd(existing.due_date);
 
       if (existing.kind !== 'day' && body.dueDate !== undefined) {
+        const currentMonthEnd = ictMonthEndDate(parts.monthKey);
+        const assignmentMonthEnd = ictMonthEndDate(existing.period_month);
+        const maxDueDate =
+          assignmentMonthEnd < currentMonthEnd ? assignmentMonthEnd : currentMonthEnd;
         if (body.dueDate === null) {
-          nextDueDate = ictMonthEndDate(existing.period_month);
+          if (maxDueDate < parts.date) {
+            throw new BadRequestException({
+              code: 'OFFICE_DUE_DATE_OUT_OF_RANGE',
+              message: 'Hạn hoàn thành phải nằm từ hôm nay tới cuối tháng.',
+            });
+          }
+          nextDueDate = maxDueDate;
         } else {
           if (!parseDateYmd(body.dueDate)) {
             throw new BadRequestException({
@@ -429,12 +446,10 @@ export class OfficeTasksService {
               message: 'Ngày hạn hoàn thành không hợp lệ.',
             });
           }
-          const monthStart = `${existing.period_month}-01`;
-          const monthEnd = ictMonthEndDate(existing.period_month);
-          if (body.dueDate < monthStart || body.dueDate > monthEnd) {
+          if (body.dueDate < parts.date || body.dueDate > maxDueDate) {
             throw new BadRequestException({
               code: 'OFFICE_DUE_DATE_OUT_OF_RANGE',
-              message: 'Hạn hoàn thành phải nằm trong tháng của nhiệm vụ.',
+              message: 'Hạn hoàn thành phải nằm từ hôm nay tới cuối tháng.',
             });
           }
           nextDueDate = body.dueDate;
@@ -666,7 +681,9 @@ export class OfficeTasksService {
 
   async listReview(user: AuthenticatedUser) {
     const ctx = await this.access.requireBoss(user);
-    const parts = ictNowParts(this.now());
+    const now = this.now();
+    await this.cron?.ensureDailyRepeatsForTeam(ctx.team.id, now);
+    const parts = ictNowParts(now);
 
     // Spec §7.2 (fixing prototype bug #8): oldest submitted_at FIRST.
     const rows = await this.database.query<{
@@ -731,7 +748,8 @@ export class OfficeTasksService {
     const uniqueIds = [...new Set(body.ids)];
     const memberById = new Map(ctx.members.map((m) => [m.userId, m]));
 
-    const approved = await this.database.transaction(async (tx) => {
+    const { approved, skipped } = await this.database.transaction(async (tx) => {
+      // Lock all requested rows in deterministic id order to prevent deadlocks & double-awards.
       const tasks = await tx.query<TaskDbRow>(
         `select id, assignment_id, user_id, kind, title, points, points_snapshot,
                 repeat_daily, to_char(task_date, 'YYYY-MM-DD') as task_date,
@@ -744,27 +762,57 @@ export class OfficeTasksService {
         [ctx.team.id, uniqueIds],
       );
 
-      if (tasks.length !== uniqueIds.length) {
-        throw new NotFoundException({
-          code: 'OFFICE_TASK_NOT_FOUND',
-          message: 'Một hoặc nhiều nhiệm vụ không tồn tại trong nhóm của bạn.',
-        });
-      }
+      const taskById = new Map(tasks.map((task) => [task.id, task]));
+      const validTasks: TaskDbRow[] = [];
+      const skippedItems: Array<{
+        taskId: string;
+        code: OfficeApproveSkipCode;
+        reason: string;
+      }> = [];
 
-      for (const task of tasks) {
-        if (task.status === 'expired' || isTaskPastExpiry(task, parts.date, parts.monthKey)) {
-          throw new BadRequestException({
-            code: 'OFFICE_TASK_EXPIRED',
-            message: 'Nhiệm vụ đã hết hạn, không duyệt được.',
+      for (const id of uniqueIds) {
+        const task = taskById.get(id);
+        if (!task) {
+          skippedItems.push({
+            taskId: id,
+            code: 'OFFICE_TASK_NOT_FOUND',
+            reason: 'Nhiệm vụ không tồn tại trong nhóm của bạn.',
           });
+          continue;
+        }
+        if (task.status === 'expired' || isTaskPastExpiry(task, parts.date, parts.monthKey)) {
+          skippedItems.push({
+            taskId: task.id,
+            code: 'OFFICE_TASK_EXPIRED',
+            reason: 'Nhiệm vụ đã hết hạn, không duyệt được.',
+          });
+          continue;
         }
         if (task.status !== 'pending') {
-          throw new ConflictException({
+          skippedItems.push({
+            taskId: task.id,
             code: 'OFFICE_TASK_NOT_PENDING',
-            message: 'Chỉ duyệt được nhiệm vụ đang chờ xác nhận.',
+            reason: 'Chỉ duyệt được nhiệm vụ đang chờ xác nhận.',
           });
+          continue;
         }
+        validTasks.push(task);
       }
+
+      // Single-task approve preserves direct HTTP error semantics (Spec §13.3).
+      if (uniqueIds.length === 1 && validTasks.length === 0 && skippedItems[0]) {
+        const only = skippedItems[0];
+        if (only.code === 'OFFICE_TASK_NOT_FOUND') {
+          throw new NotFoundException({ code: only.code, message: only.reason });
+        }
+        if (only.code === 'OFFICE_TASK_EXPIRED') {
+          throw new BadRequestException({ code: only.code, message: only.reason });
+        }
+        throw new ConflictException({ code: only.code, message: only.reason });
+      }
+
+      // Deterministic processing order matching the FOR UPDATE lock order.
+      validTasks.sort((a, b) => a.id.localeCompare(b.id));
 
       const results: Array<{
         taskId: string;
@@ -775,7 +823,7 @@ export class OfficeTasksService {
         totalMonthlyPoints: number;
       }> = [];
 
-      for (const task of tasks) {
+      for (const task of validTasks) {
         const snapshot = task.points;
         await tx.query(
           `update office_tasks
@@ -784,7 +832,7 @@ export class OfficeTasksService {
                   approved_at = $4,
                   approved_by = $5,
                   updated_at = $4
-            where id = $1 and team_id = $2`,
+            where id = $1 and team_id = $2 and status = 'pending'`,
           [task.id, ctx.team.id, snapshot, now, user.id],
         );
 
@@ -832,14 +880,16 @@ export class OfficeTasksService {
         });
       }
 
-      return results;
+      return { approved: results, skipped: skippedItems };
     });
 
-    const staffIds = [...new Set(approved.map((a) => a.userId))];
-    this.hub.broadcastSync(ctx.team.id, 'tasks');
-    this.hub.broadcastSync(ctx.team.id, 'leaderboard');
-    this.hub.broadcastSync(ctx.team.id, 'notifications', staffIds);
-    return { approved };
+    if (approved.length > 0) {
+      const staffIds = [...new Set(approved.map((a) => a.userId))];
+      this.hub.broadcastSync(ctx.team.id, 'tasks');
+      this.hub.broadcastSync(ctx.team.id, 'leaderboard');
+      this.hub.broadcastSync(ctx.team.id, 'notifications', staffIds);
+    }
+    return { approved, skipped };
   }
 
   async returnTask(user: AuthenticatedUser, taskId: string, body: ReturnTaskBody) {
@@ -917,7 +967,9 @@ export class OfficeTasksService {
 
   async getProgress(user: AuthenticatedUser) {
     const ctx = await this.access.requireBoss(user);
-    const parts = ictNowParts(this.now());
+    const now = this.now();
+    await this.cron?.ensureDailyRepeatsForTeam(ctx.team.id, now);
+    const parts = ictNowParts(now);
     const staff = ctx.members.filter((m) => m.role === 'staff');
 
     const taskAgg = await this.database.query<{

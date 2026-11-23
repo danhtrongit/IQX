@@ -55102,6 +55102,14 @@ export type OfficeApproveTasksResponses = {
       totalMonthlyPoints: number;
       userId: string;
     }>;
+    skipped?: Array<{
+      code:
+        | "OFFICE_TASK_NOT_FOUND"
+        | "OFFICE_TASK_EXPIRED"
+        | "OFFICE_TASK_NOT_PENDING";
+      reason: string;
+      taskId: string;
+    }>;
   };
 };
 
