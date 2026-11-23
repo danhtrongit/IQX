@@ -31,12 +31,71 @@ import {
 const FONT_STACK =
   '"Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
+export type WallTextureStyle = "ivory_plaster" | "navy_wainscot" | "cream_paint"
+export type WoodSurfaceTone = "walnut" | "oak" | "rosewood" | "honey"
+export type FabricSurfacePattern = "weave" | "velvet" | "rug"
+export type MarbleSurfaceTone = "cream" | "white_gold"
+export type MonitorScreenVariant = "boss" | "staff" | "reception"
+
+export interface HighDprSignOptions extends SignTextureOptions {
+  dpr?: number
+  anisotropy?: number
+}
+
 const faceTextureCache = new Map<ChibiFaceVariant, THREE.Texture>()
 const floorTextureCache = new Map<FloorTextureStyle, THREE.Texture>()
+const wallTextureCache = new Map<WallTextureStyle, THREE.Texture>()
+const woodTextureCache = new Map<WoodSurfaceTone, THREE.Texture>()
+const fabricTextureCache = new Map<string, THREE.Texture>()
+const marbleTextureCache = new Map<MarbleSurfaceTone, THREE.Texture>()
+const monitorScreenCache = new Map<MonitorScreenVariant, THREE.Texture>()
+let altarClothCache: THREE.Texture | null = null
+
+const MAX_FABRIC_CACHE = 48
 
 interface CanvasSurface {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D | null
+}
+
+/** Deterministic PRNG for repeatable procedural surface textures. */
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function hashString(input: string): number {
+  let h = 2166136261
+  for (let i = 0; i < input.length; i += 1) {
+    h ^= input.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, v))
+}
+
+function resolveSupersampleDpr(
+  baseWidth: number,
+  baseHeight: number,
+  explicitDpr?: number
+): number {
+  const envDpr =
+    typeof window !== "undefined" && Number.isFinite(window.devicePixelRatio)
+      ? window.devicePixelRatio
+      : 2
+  const desired = clamp(explicitDpr ?? Math.max(2, envDpr), 1, 2.5)
+  const maxDim = Math.max(baseWidth, baseHeight, 1)
+  const cap = 1536 / maxDim
+  return clamp(Math.min(desired, cap), 1, 2.5)
 }
 
 /** Safely obtains a 2D canvas context without triggering jsdom's unimplemented-canvas stderr spam. */
@@ -63,8 +122,8 @@ export function safeGet2DContext(
 
 function createCanvasSurface(w: number, h: number): CanvasSurface {
   const canvas = document.createElement("canvas")
-  canvas.width = w
-  canvas.height = h
+  canvas.width = Math.max(1, Math.round(w))
+  canvas.height = Math.max(1, Math.round(h))
   const ctx = safeGet2DContext(canvas)
   return { canvas, ctx }
 }
@@ -91,7 +150,10 @@ function finalizeCanvasTexture(
     ? new THREE.CanvasTexture(canvas)
     : createFallbackTexture(255, 255, 255, 255)
   tex.colorSpace = THREE.SRGBColorSpace
-  tex.anisotropy = opts?.anisotropy ?? 8
+  tex.anisotropy = opts?.anisotropy ?? 12
+  tex.minFilter = THREE.LinearMipmapLinearFilter
+  tex.magFilter = THREE.LinearFilter
+  tex.generateMipmaps = true
   if (opts?.repeat) {
     tex.wrapS = THREE.RepeatWrapping
     tex.wrapT = THREE.RepeatWrapping
@@ -111,7 +173,7 @@ function drawRoundedRect(
   h: number,
   r: number
 ): void {
-  const radius = Math.min(r, w / 2, h / 2)
+  const radius = Math.max(0, Math.min(r, w / 2, h / 2))
   ctx.beginPath()
   ctx.moveTo(x + radius, y)
   ctx.arcTo(x + w, y, x + w, y + h, radius)
@@ -142,6 +204,25 @@ function trimToWidth(
   return lo <= 0 ? ellipsis : `${text.slice(0, lo).trimEnd()}${ellipsis}`
 }
 
+/** Disposes cached procedural surface textures (wall, wood, fabric, marble, monitor, altar cloth). */
+export function disposeProceduralTextureCaches(): void {
+  const disposeMap = <K>(map: Map<K, THREE.Texture>): void => {
+    for (const tex of map.values()) {
+      tex.dispose()
+    }
+    map.clear()
+  }
+  disposeMap(wallTextureCache)
+  disposeMap(woodTextureCache)
+  disposeMap(fabricTextureCache)
+  disposeMap(marbleTextureCache)
+  disposeMap(monitorScreenCache)
+  if (altarClothCache) {
+    altarClothCache.dispose()
+    altarClothCache = null
+  }
+}
+
 // ---------- 1. High-DPI Kawaii Chibi Face Textures (256x256) ----------
 
 function drawSparkleEye(
@@ -159,14 +240,12 @@ function drawSparkleEye(
 ): void {
   const { rx, ry, irisTop, irisBottom, lashStyle, side } = opts
 
-  // Soft eye socket white sclera crescent
   ctx.save()
   ctx.fillStyle = "#ffffff"
   ctx.beginPath()
   ctx.ellipse(cx, cy + 1, rx * 1.12, ry * 1.06, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  // Main glossy iris gradient
   const grad = ctx.createLinearGradient(cx, cy - ry, cx, cy + ry)
   grad.addColorStop(0, irisTop)
   grad.addColorStop(0.58, irisTop)
@@ -176,19 +255,16 @@ function drawSparkleEye(
   ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  // Deep pupil center
   ctx.fillStyle = "#0e1118"
   ctx.beginPath()
   ctx.ellipse(cx, cy - 1, rx * 0.56, ry * 0.56, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  // Bright lower jewel crescent reflection
   ctx.fillStyle = "rgba(255, 255, 255, 0.36)"
   ctx.beginPath()
   ctx.ellipse(cx, cy + ry * 0.48, rx * 0.54, ry * 0.24, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  // Dual crisp white catchlight sparkles
   ctx.fillStyle = "#ffffff"
   ctx.beginPath()
   ctx.ellipse(
@@ -205,7 +281,6 @@ function drawSparkleEye(
   ctx.arc(cx + rx * 0.3, cy + ry * 0.28, rx * 0.16, 0, Math.PI * 2)
   ctx.fill()
 
-  // Crisp upper eyelid arc
   ctx.strokeStyle = "#161318"
   ctx.lineWidth = lashStyle === "cool" ? 5.5 : 4.5
   ctx.lineCap = "round"
@@ -226,7 +301,6 @@ function drawSparkleEye(
   }
   ctx.stroke()
 
-  // Cute outer eyelash flicks for female variants
   if (lashStyle === "female" || lashStyle === "elegant") {
     const outerX = cx + side * rx * 1.04
     const outerY = cy - ry * 0.38
@@ -266,7 +340,6 @@ export function createChibiFaceTexture(
       const shine =
         variant === "statue_empty" ? "rgba(255,255,255,0.28)" : "#fff8dc"
 
-      // Sculpted metallic eyes + brows + calm proud smile
       ctx.fillStyle = ink
       for (const cx of [86, 170]) {
         ctx.beginPath()
@@ -293,7 +366,6 @@ export function createChibiFaceTexture(
       ctx.arc(128, 158, 17, 0.16 * Math.PI, 0.84 * Math.PI)
       ctx.stroke()
     } else if (variant === "thantai") {
-      // Extra rosy jolly cheeks
       for (const cx of [62, 194]) {
         const g = ctx.createRadialGradient(cx, 154, 4, cx, 154, 28)
         g.addColorStop(0, "rgba(239, 68, 68, 0.56)")
@@ -304,7 +376,6 @@ export function createChibiFaceTexture(
         ctx.fill()
       }
 
-      // Thick friendly white eyebrows
       ctx.strokeStyle = "#ffffff"
       ctx.lineWidth = 11
       ctx.lineCap = "round"
@@ -315,7 +386,6 @@ export function createChibiFaceTexture(
       ctx.quadraticCurveTo(172, 76, 198, 92)
       ctx.stroke()
 
-      // Happy laughing crescent eyes (^ ^)
       ctx.strokeStyle = "#2b1610"
       ctx.lineWidth = 8.5
       ctx.beginPath()
@@ -325,7 +395,6 @@ export function createChibiFaceTexture(
       ctx.arc(172, 134, 20, Math.PI * 1.12, Math.PI * 1.88)
       ctx.stroke()
 
-      // Beaming wide joyful smile
       ctx.fillStyle = "#b91c1c"
       ctx.beginPath()
       ctx.arc(128, 162, 24, 0.06 * Math.PI, 0.94 * Math.PI)
@@ -341,7 +410,6 @@ export function createChibiFaceTexture(
       const isCool = variant === "cool_glasses"
       const isEnergetic = variant === "male_energetic"
 
-      // Rosy kawaii cheek blush
       const blushAlpha = isFemale ? 0.44 : isCool ? 0.24 : 0.34
       for (const cx of [62, 194]) {
         const g = ctx.createRadialGradient(cx, 156, 3, cx, 156, 26)
@@ -353,7 +421,6 @@ export function createChibiFaceTexture(
         ctx.fill()
       }
 
-      // Glossy chibi eyes
       const irisTop = isCool
         ? "#11243e"
         : isFemale
@@ -393,7 +460,6 @@ export function createChibiFaceTexture(
         side: 1,
       })
 
-      // Expressive eyebrows
       ctx.strokeStyle = isCool ? "#151b26" : "#38261d"
       ctx.lineWidth = isFemale ? 4.2 : 5.6
       ctx.lineCap = "round"
@@ -411,13 +477,11 @@ export function createChibiFaceTexture(
       }
       ctx.stroke()
 
-      // Tiny cute nose dot
       ctx.fillStyle = "rgba(180, 118, 88, 0.55)"
       ctx.beginPath()
       ctx.arc(128, 149, 3.2, 0, Math.PI * 2)
       ctx.fill()
 
-      // Expressive mouth
       ctx.strokeStyle = "#7a3b2e"
       ctx.lineWidth = 4.8
       ctx.lineCap = "round"
@@ -441,12 +505,69 @@ export function createChibiFaceTexture(
     }
   }
 
-  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), { shared: true })
+  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+    anisotropy: 8,
+    shared: true,
+  })
   faceTextureCache.set(variant, tex)
   return tex
 }
 
 // ---------- 2. Procedural Architectural Floor Textures (512x512) ----------
+
+function drawMarbleVeinsInRect(
+  ctx: CanvasRenderingContext2D,
+  rx: number,
+  ry: number,
+  rw: number,
+  rh: number,
+  rand: () => number,
+  veinCount: number
+): void {
+  for (let i = 0; i < veinCount; i += 1) {
+    const startY = ry + rand() * rh
+    const endY = ry + rand() * rh
+    const c1x = rx + rw * (0.25 + rand() * 0.25)
+    const c1y = ry + rand() * rh
+    const c2x = rx + rw * (0.55 + rand() * 0.25)
+    const c2y = ry + rand() * rh
+
+    // Soft broad under-vein
+    ctx.strokeStyle = "rgba(188, 170, 144, 0.18)"
+    ctx.lineWidth = 5 + rand() * 4
+    ctx.lineCap = "round"
+    ctx.beginPath()
+    ctx.moveTo(rx, startY)
+    ctx.bezierCurveTo(c1x, c1y, c2x, c2y, rx + rw, endY)
+    ctx.stroke()
+
+    // Crisp mineral hairline vein
+    ctx.strokeStyle =
+      i % 3 === 0 ? "rgba(206, 178, 126, 0.26)" : "rgba(154, 136, 114, 0.24)"
+    ctx.lineWidth = 1.1 + rand() * 1.3
+    ctx.beginPath()
+    ctx.moveTo(rx, startY + 1)
+    ctx.bezierCurveTo(c1x + 4, c1y - 3, c2x - 4, c2y + 3, rx + rw, endY - 1)
+    ctx.stroke()
+
+    // Delicate offshoot branch
+    if (rand() > 0.35) {
+      const bx = rx + rw * (0.35 + rand() * 0.3)
+      const by = (c1y + c2y) * 0.5
+      ctx.strokeStyle = "rgba(164, 146, 122, 0.17)"
+      ctx.lineWidth = 0.9
+      ctx.beginPath()
+      ctx.moveTo(bx, by)
+      ctx.quadraticCurveTo(
+        bx + (rand() - 0.5) * rw * 0.3,
+        by + (rand() - 0.5) * rh * 0.25,
+        clamp(bx + (rand() - 0.3) * rw * 0.45, rx + 4, rx + rw - 4),
+        clamp(by + (rand() - 0.5) * rh * 0.35, ry + 4, ry + rh - 4)
+      )
+      ctx.stroke()
+    }
+  }
+}
 
 export function createFloorTexture(style: FloorTextureStyle): THREE.Texture {
   const cached = floorTextureCache.get(style)
@@ -455,29 +576,57 @@ export function createFloorTexture(style: FloorTextureStyle): THREE.Texture {
   const { canvas, ctx } = createCanvasSurface(512, 512)
   if (ctx) {
     if (style === "marble_cream") {
-      ctx.fillStyle = "#efe6d8"
-      ctx.fillRect(0, 0, 512, 512)
-
-      // Subtle checkerboard stone shade shift (2x2 tiles)
+      // Luminous Italian Crema Marfil marble slabs (2x2) with organic veins & bevel polish
+      const rand = mulberry32(4109)
+      const slabTones = ["#f4ece1", "#ede3d4", "#f0e6d9", "#ebe0d0"]
       const tile = 256
       for (let gy = 0; gy < 2; gy += 1) {
         for (let gx = 0; gx < 2; gx += 1) {
-          ctx.fillStyle = (gx + gy) % 2 === 0 ? "#f3ebe0" : "#eae0d1"
-          ctx.fillRect(gx * tile, gy * tile, tile, tile)
+          const tx = gx * tile
+          const ty = gy * tile
+          ctx.fillStyle = slabTones[gy * 2 + gx]!
+          ctx.fillRect(tx, ty, tile, tile)
+
+          // Satin polished sheen wash across slab
+          const sheen = ctx.createLinearGradient(tx, ty, tx + tile, ty + tile)
+          sheen.addColorStop(0, "rgba(255, 253, 248, 0.22)")
+          sheen.addColorStop(0.5, "rgba(255, 250, 240, 0)")
+          sheen.addColorStop(1, "rgba(176, 152, 120, 0.10)")
+          ctx.fillStyle = sheen
+          ctx.fillRect(tx, ty, tile, tile)
+
+          drawMarbleVeinsInRect(ctx, tx, ty, tile, tile, rand, 4)
+
+          // Subtle natural mineral flecks
+          for (let f = 0; f < 18; f += 1) {
+            ctx.fillStyle =
+              f % 2 === 0
+                ? "rgba(255, 252, 246, 0.28)"
+                : "rgba(168, 148, 120, 0.12)"
+            ctx.beginPath()
+            ctx.arc(
+              tx + rand() * tile,
+              ty + rand() * tile,
+              0.8 + rand() * 1.4,
+              0,
+              Math.PI * 2
+            )
+            ctx.fill()
+          }
+
+          // Top/left bevel specular highlight
+          ctx.strokeStyle = "rgba(255, 253, 248, 0.52)"
+          ctx.lineWidth = 2
+          ctx.beginPath()
+          ctx.moveTo(tx + 3, ty + tile - 3)
+          ctx.lineTo(tx + 3, ty + 3)
+          ctx.lineTo(tx + tile - 3, ty + 3)
+          ctx.stroke()
         }
       }
-      // Subtle organic warm veins
-      ctx.strokeStyle = "rgba(182, 164, 140, 0.22)"
-      ctx.lineWidth = 2.5
-      for (let i = 0; i < 8; i += 1) {
-        ctx.beginPath()
-        const sy = (i * 67 + 24) % 512
-        ctx.moveTo(0, sy)
-        ctx.bezierCurveTo(160, sy + 28, 340, sy - 24, 512, (sy + 14) % 512)
-        ctx.stroke()
-      }
-      // Crisp grout lines
-      ctx.strokeStyle = "rgba(176, 158, 134, 0.45)"
+
+      // Clean warm stone grout lines
+      ctx.strokeStyle = "rgba(168, 149, 124, 0.52)"
       ctx.lineWidth = 3
       ctx.strokeRect(1.5, 1.5, 509, 509)
       ctx.beginPath()
@@ -487,174 +636,831 @@ export function createFloorTexture(style: FloorTextureStyle): THREE.Texture {
       ctx.lineTo(512, 256)
       ctx.stroke()
     } else if (style === "parquet") {
-      // Office Boss Room warm walnut hardwood planks (#C99D6B)
+      // Rich warm walnut-honey hardwood planks with cathedral wood grain & bevel joints
+      const rand = mulberry32(8217)
       const plankH = 64
       const plankW = 256
-      const shades = ["#c99d6b", "#c0925e", "#d1a676", "#b98a57"]
+      const shades = [
+        "#cb9f6d",
+        "#bf915e",
+        "#d3a878",
+        "#b68653",
+        "#c69864",
+        "#cea372",
+        "#ba8b58",
+        "#c39460",
+      ]
       for (let row = 0; row < 8; row += 1) {
-        const offset = (row % 2) * 128
+        const offset = (row % 2) * 128 + (row % 4 === 2 ? 48 : 0)
         for (let col = -1; col <= 2; col += 1) {
           const x = col * plankW + offset
           const y = row * plankH
-          ctx.fillStyle = shades[(row * 3 + col + 4) % shades.length]
+          const tone = shades[(row * 5 + col + 8) % shades.length]!
+          ctx.fillStyle = tone
           ctx.fillRect(x, y, plankW, plankH)
 
-          // Fine wood grain lines
-          ctx.strokeStyle = "rgba(92, 56, 22, 0.13)"
-          ctx.lineWidth = 1.5
-          for (let g = 10; g < plankH; g += 14) {
+          // Lengthwise warm polish gradient
+          const finish = ctx.createLinearGradient(x, y, x, y + plankH)
+          finish.addColorStop(0, "rgba(255, 238, 206, 0.14)")
+          finish.addColorStop(0.45, "rgba(255, 240, 210, 0)")
+          finish.addColorStop(1, "rgba(74, 42, 14, 0.14)")
+          ctx.fillStyle = finish
+          ctx.fillRect(x, y, plankW, plankH)
+
+          // Flowing wood grain fibers
+          for (let g = 6; g < plankH - 4; g += 8) {
+            const wave = (rand() - 0.5) * 7
+            ctx.strokeStyle =
+              g % 16 === 6
+                ? "rgba(84, 48, 18, 0.16)"
+                : "rgba(255, 232, 192, 0.09)"
+            ctx.lineWidth = g % 16 === 6 ? 1.5 : 1.0
             ctx.beginPath()
             ctx.moveTo(x, y + g)
             ctx.bezierCurveTo(
-              x + plankW * 0.35,
-              y + g + 3,
-              x + plankW * 0.7,
-              y + g - 3,
+              x + plankW * 0.33,
+              y + g + wave,
+              x + plankW * 0.66,
+              y + g - wave,
               x + plankW,
               y + g
             )
             ctx.stroke()
           }
 
-          ctx.strokeStyle = "rgba(82, 48, 18, 0.30)"
+          // Occasional subtle timber knot
+          if (rand() > 0.72) {
+            const kx = x + 36 + rand() * (plankW - 72)
+            const ky = y + 18 + rand() * (plankH - 36)
+            ctx.fillStyle = "rgba(88, 52, 20, 0.22)"
+            ctx.beginPath()
+            ctx.ellipse(kx, ky, 9, 4.2, 0.08, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.strokeStyle = "rgba(74, 42, 15, 0.20)"
+            ctx.lineWidth = 1.1
+            ctx.beginPath()
+            ctx.ellipse(kx, ky, 15, 6.5, 0.08, 0, Math.PI * 2)
+            ctx.stroke()
+          }
+
+          // Subtle micro-pores
+          ctx.fillStyle = "rgba(72, 40, 14, 0.12)"
+          for (let p = 0; p < 12; p += 1) {
+            ctx.fillRect(x + rand() * plankW, y + rand() * plankH, 6, 1)
+          }
+
+          // Top chamfer highlight + dark plank seam
+          ctx.fillStyle = "rgba(255, 238, 206, 0.20)"
+          ctx.fillRect(x + 1, y + 1.5, plankW - 2, 1.5)
+          ctx.strokeStyle = "rgba(74, 42, 16, 0.36)"
           ctx.lineWidth = 2
           ctx.strokeRect(x, y, plankW, plankH)
         }
       }
     } else if (style === "carpet_slate") {
-      // Office Meeting Room speckled blue-gray carpet (#5E6E86)
-      ctx.fillStyle = "#5e6e86"
+      // Architectural modular woven slate carpet tiles (2x2 alternating pile direction)
+      const rand = mulberry32(9913)
+      ctx.fillStyle = "#5c6d85"
       ctx.fillRect(0, 0, 512, 512)
-      for (let y = 0; y < 512; y += 16) {
-        for (let x = 0; x < 512; x += 16) {
-          const light = ((x / 16 + y / 16) & 1) === 0
-          ctx.fillStyle = light
-            ? "rgba(255, 255, 255, 0.08)"
-            : "rgba(18, 28, 44, 0.14)"
-          ctx.beginPath()
-          ctx.arc(x + 8, y + 8, 2.2, 0, Math.PI * 2)
-          ctx.fill()
+
+      for (let gy = 0; gy < 2; gy += 1) {
+        for (let gx = 0; gx < 2; gx += 1) {
+          const tx = gx * 256
+          const ty = gy * 256
+          const horizontal = (gx + gy) % 2 === 0
+          ctx.fillStyle = horizontal ? "#5f7088" : "#586880"
+          ctx.fillRect(tx, ty, 256, 256)
+
+          // Fine loop-pile yarn ribs
+          for (let step = 4; step < 256; step += 6) {
+            ctx.fillStyle =
+              step % 12 === 4
+                ? "rgba(255, 255, 255, 0.055)"
+                : "rgba(18, 28, 46, 0.085)"
+            if (horizontal) {
+              ctx.fillRect(tx, ty + step, 256, 2)
+            } else {
+              ctx.fillRect(tx + step, ty, 2, 256)
+            }
+          }
+
+          // Heather carpet tuft speckles
+          for (let i = 0; i < 160; i += 1) {
+            const sx = tx + rand() * 256
+            const sy = ty + rand() * 256
+            ctx.fillStyle =
+              i % 3 === 0
+                ? "rgba(226, 236, 248, 0.12)"
+                : "rgba(20, 30, 48, 0.16)"
+            ctx.fillRect(sx, sy, 2.5, 2.5)
+          }
+
+          // Subtle modular tile seam
+          ctx.strokeStyle = "rgba(22, 32, 50, 0.28)"
+          ctx.lineWidth = 2
+          ctx.strokeRect(tx + 1, ty + 1, 254, 254)
         }
       }
-      // Subtle commercial carpet tile seam
-      ctx.strokeStyle = "rgba(25, 36, 54, 0.22)"
-      ctx.lineWidth = 2
-      ctx.strokeRect(1, 1, 254, 254)
-      ctx.strokeRect(257, 1, 254, 254)
-      ctx.strokeRect(1, 257, 254, 254)
-      ctx.strokeRect(257, 257, 254, 254)
     } else if (style === "stone_sand") {
-      // Office Document Room warm sand tiles (#D8CBB4)
-      ctx.fillStyle = "#d8cbb4"
-      ctx.fillRect(0, 0, 512, 512)
+      // Warm travertine sandstone tiles (4x4) with subtle per-tile shade variation & mineral veins
+      const rand = mulberry32(5521)
       const step = 128
+      const tones = ["#dcd0ba", "#d5c7af", "#dfd4bf", "#d2c3aa", "#d9ccb4"]
       for (let gy = 0; gy < 4; gy += 1) {
         for (let gx = 0; gx < 4; gx += 1) {
-          ctx.fillStyle =
-            (gx + gy) % 2 === 0 ? "rgba(255,250,240,0.22)" : "rgba(155,134,104,0.1)"
-          ctx.fillRect(gx * step, gy * step, step, step)
-          ctx.strokeStyle = "rgba(130, 112, 86, 0.34)"
+          const tx = gx * step
+          const ty = gy * step
+          ctx.fillStyle = tones[(gy * 4 + gx * 3 + Math.floor(rand() * 2)) % tones.length]!
+          ctx.fillRect(tx, ty, step, step)
+
+          // Soft sedimentary horizontal bands
+          for (let b = 0; b < 5; b += 1) {
+            const by = ty + 10 + rand() * (step - 20)
+            ctx.fillStyle =
+              b % 2 === 0
+                ? "rgba(255, 250, 238, 0.16)"
+                : "rgba(138, 118, 90, 0.10)"
+            ctx.fillRect(tx + 4, by, step - 8, 5 + rand() * 8)
+          }
+
+          // Natural stone flecks
+          for (let s = 0; s < 16; s += 1) {
+            ctx.fillStyle =
+              s % 2 === 0
+                ? "rgba(116, 94, 66, 0.14)"
+                : "rgba(255, 252, 244, 0.22)"
+            ctx.fillRect(tx + rand() * step, ty + rand() * step, 2.5, 2.5)
+          }
+
+          // Chamfer highlight & warm mortar grout
+          ctx.strokeStyle = "rgba(255, 252, 244, 0.34)"
+          ctx.lineWidth = 1.5
+          ctx.beginPath()
+          ctx.moveTo(tx + 2.5, ty + step - 2.5)
+          ctx.lineTo(tx + 2.5, ty + 2.5)
+          ctx.lineTo(tx + step - 2.5, ty + 2.5)
+          ctx.stroke()
+
+          ctx.strokeStyle = "rgba(126, 108, 82, 0.38)"
           ctx.lineWidth = 2.5
-          ctx.strokeRect(gx * step + 1, gy * step + 1, step - 2, step - 2)
+          ctx.strokeRect(tx + 1, ty + 1, step - 2, step - 2)
         }
-      }
-      // Subtle sandstone speckles
-      for (let i = 0; i < 180; i += 1) {
-        const sx = (i * 97) % 512
-        const sy = (i * 53 + 19) % 512
-        ctx.fillStyle =
-          i % 2 === 0 ? "rgba(120, 98, 70, 0.12)" : "rgba(255, 252, 244, 0.18)"
-        ctx.fillRect(sx, sy, 3, 3)
       }
     } else if (style === "ceramic_cream") {
-      // Office Staff Zone cream ceramic grid (#EEDFC6)
-      ctx.fillStyle = "#eedfc6"
-      ctx.fillRect(0, 0, 512, 512)
+      // Warm cream porcelain tiles (4x4) with gentle organic per-tile variation & satin glaze
+      const rand = mulberry32(3197)
       const step = 128
+      const tones = ["#f2e5cf", "#eee0c7", "#f4e8d3", "#ebdabe", "#f0e2cb"]
       for (let gy = 0; gy < 4; gy += 1) {
         for (let gx = 0; gx < 4; gx += 1) {
-          ctx.fillStyle =
-            (gx + gy) % 2 === 0 ? "#f1e3cc" : "#ead9be"
-          ctx.fillRect(gx * step, gy * step, step, step)
-          ctx.strokeStyle = "rgba(156, 126, 86, 0.34)"
-          ctx.lineWidth = 2.5
-          ctx.strokeRect(gx * step + 1, gy * step + 1, step - 2, step - 2)
+          const tx = gx * step
+          const ty = gy * step
+          ctx.fillStyle = tones[(gy * 3 + gx * 2 + (gx === gy ? 1 : 0)) % tones.length]!
+          ctx.fillRect(tx, ty, step, step)
+
+          // Soft diagonal porcelain glaze sheen
+          const glaze = ctx.createLinearGradient(tx, ty, tx + step, ty + step)
+          glaze.addColorStop(0, "rgba(255, 253, 248, 0.24)")
+          glaze.addColorStop(0.55, "rgba(255, 252, 244, 0)")
+          glaze.addColorStop(1, "rgba(168, 138, 98, 0.08)")
+          ctx.fillStyle = glaze
+          ctx.fillRect(tx, ty, step, step)
+
+          // Subtle ceramic micro-grain
+          for (let f = 0; f < 10; f += 1) {
+            ctx.fillStyle =
+              f % 2 === 0
+                ? "rgba(255, 253, 248, 0.22)"
+                : "rgba(162, 134, 96, 0.08)"
+            ctx.fillRect(tx + rand() * step, ty + rand() * step, 2, 2)
+          }
+
+          // Crisp glazed top-left highlight
+          ctx.strokeStyle = "rgba(255, 254, 250, 0.48)"
+          ctx.lineWidth = 1.5
+          ctx.beginPath()
+          ctx.moveTo(tx + 2.5, ty + step - 2.5)
+          ctx.lineTo(tx + 2.5, ty + 2.5)
+          ctx.lineTo(tx + step - 2.5, ty + 2.5)
+          ctx.stroke()
+
+          // Refined warm grout line
+          ctx.strokeStyle = "rgba(154, 126, 88, 0.36)"
+          ctx.lineWidth = 2.4
+          ctx.strokeRect(tx + 1, ty + 1, step - 2, step - 2)
         }
       }
     } else {
-      // Trading Floor royal crimson red carpet with gold border trim
-      ctx.fillStyle = "#981b24"
+      // Trading Floor royal crimson plush runner with woven damask & gold brocade trim
+      const bg = ctx.createLinearGradient(0, 0, 512, 0)
+      bg.addColorStop(0, "#7c111a")
+      bg.addColorStop(0.14, "#9a1924")
+      bg.addColorStop(0.5, "#a61e29")
+      bg.addColorStop(0.86, "#9a1924")
+      bg.addColorStop(1, "#7c111a")
+      ctx.fillStyle = bg
       ctx.fillRect(0, 0, 512, 512)
-      // Subtle plush weave pattern
-      ctx.fillStyle = "rgba(255, 214, 150, 0.05)"
-      for (let y = 0; y < 512; y += 32) {
-        for (let x = 48; x < 464; x += 32) {
+
+      // Plush velvet micro-pile lines
+      ctx.fillStyle = "rgba(255, 224, 178, 0.035)"
+      for (let y = 0; y < 512; y += 4) {
+        ctx.fillRect(58, y, 396, 1)
+      }
+
+      // Subtle royal damask diamond lattice & gold florets
+      for (let y = 0; y < 512; y += 64) {
+        for (let x = 64; x < 448; x += 64) {
+          ctx.strokeStyle = "rgba(246, 210, 122, 0.11)"
+          ctx.lineWidth = 1.6
           ctx.beginPath()
-          ctx.moveTo(x + 16, y + 4)
-          ctx.lineTo(x + 28, y + 16)
-          ctx.lineTo(x + 16, y + 28)
-          ctx.lineTo(x + 4, y + 16)
+          ctx.moveTo(x + 32, y + 6)
+          ctx.lineTo(x + 58, y + 32)
+          ctx.lineTo(x + 32, y + 58)
+          ctx.lineTo(x + 6, y + 32)
+          ctx.closePath()
+          ctx.stroke()
+
+          ctx.fillStyle = "rgba(255, 220, 146, 0.09)"
+          ctx.beginPath()
+          ctx.arc(x + 32, y + 32, 6, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      }
+
+      // Crisp metallic-gold brocade double border rails + woven diamond motifs
+      for (const bx of [14, 484]) {
+        ctx.fillStyle = "#e6b647"
+        ctx.fillRect(bx, 0, 14, 512)
+        ctx.fillStyle = "#fce092"
+        ctx.fillRect(bx + 3, 0, 3, 512)
+      }
+      ctx.fillStyle = "#f4ce72"
+      ctx.fillRect(36, 0, 5, 512)
+      ctx.fillRect(471, 0, 5, 512)
+
+      ctx.fillStyle = "rgba(248, 218, 134, 0.42)"
+      for (let y = 16; y < 512; y += 32) {
+        for (const mx of [49, 463]) {
+          ctx.beginPath()
+          ctx.moveTo(mx, y - 6)
+          ctx.lineTo(mx + 5, y)
+          ctx.lineTo(mx, y + 6)
+          ctx.lineTo(mx - 5, y)
           ctx.closePath()
           ctx.fill()
         }
       }
-      // Crisp double gold border rails along left & right edges
-      ctx.fillStyle = "#e9b949"
-      ctx.fillRect(14, 0, 14, 512)
-      ctx.fillRect(484, 0, 14, 512)
-      ctx.fillStyle = "#f6d27a"
-      ctx.fillRect(36, 0, 6, 512)
-      ctx.fillRect(470, 0, 6, 512)
     }
   }
 
   const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
     repeat: true,
+    anisotropy: 12,
     shared: true,
   })
   floorTextureCache.set(style, tex)
   return tex
 }
 
-// ---------- 3. Crisp Floor Zone Decal Texture ----------
+// ---------- 2b. Procedural Wall Paint & Furniture Surface Textures ----------
+
+export function createWallTexture(
+  style: WallTextureStyle = "ivory_plaster"
+): THREE.Texture {
+  const cached = wallTextureCache.get(style)
+  if (cached) return cached
+
+  const { canvas, ctx } = createCanvasSurface(512, 512)
+  if (ctx) {
+    const rand = mulberry32(hashString(`wall:${style}`))
+    if (style === "navy_wainscot") {
+      const grad = ctx.createLinearGradient(0, 0, 0, 512)
+      grad.addColorStop(0, "#1c2d54")
+      grad.addColorStop(1, "#13203d")
+      ctx.fillStyle = grad
+      ctx.fillRect(0, 0, 512, 512)
+
+      // Subtle architectural wainscot recessed molding rectangles
+      for (let gx = 0; gx < 2; gx += 1) {
+        const px = gx * 256 + 22
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)"
+        ctx.lineWidth = 3
+        ctx.strokeRect(px, 28, 212, 456)
+        ctx.strokeStyle = "rgba(6, 12, 26, 0.34)"
+        ctx.lineWidth = 2
+        ctx.strokeRect(px + 6, 34, 200, 444)
+      }
+      for (let i = 0; i < 420; i += 1) {
+        ctx.fillStyle =
+          i % 2 === 0 ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)"
+        ctx.fillRect(rand() * 512, rand() * 512, 3, 3)
+      }
+    } else {
+      const baseTop = style === "cream_paint" ? "#f5efe4" : "#eee5d8"
+      const baseBot = style === "cream_paint" ? "#ebe2d2" : "#e3d7c6"
+      const grad = ctx.createLinearGradient(0, 0, 0, 512)
+      grad.addColorStop(0, baseTop)
+      grad.addColorStop(1, baseBot)
+      ctx.fillStyle = grad
+      ctx.fillRect(0, 0, 512, 512)
+
+      // Soft Venetian plaster trowel clouds
+      for (let i = 0; i < 28; i += 1) {
+        const cx = rand() * 512
+        const cy = rand() * 512
+        const r = 40 + rand() * 75
+        const g = ctx.createRadialGradient(cx, cy, 4, cx, cy, r)
+        g.addColorStop(
+          0,
+          i % 2 === 0
+            ? "rgba(255, 253, 248, 0.14)"
+            : "rgba(176, 156, 130, 0.07)"
+        )
+        g.addColorStop(1, "rgba(255, 253, 248, 0)")
+        ctx.fillStyle = g
+        ctx.beginPath()
+        ctx.arc(cx, cy, r, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // Fine matte paint roller stipple
+      for (let i = 0; i < 650; i += 1) {
+        ctx.fillStyle =
+          i % 2 === 0
+            ? "rgba(255, 255, 255, 0.18)"
+            : "rgba(154, 136, 112, 0.08)"
+        ctx.fillRect(rand() * 512, rand() * 512, 2, 2)
+      }
+    }
+  }
+
+  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+    repeat: true,
+    anisotropy: 8,
+    shared: true,
+  })
+  wallTextureCache.set(style, tex)
+  return tex
+}
+
+export function createWoodSurfaceTexture(tone: WoodSurfaceTone): THREE.Texture {
+  const cached = woodTextureCache.get(tone)
+  if (cached) return cached
+
+  const palette: Readonly<
+    Record<WoodSurfaceTone, { base: string; dark: string; light: string }>
+  > = {
+    walnut: {
+      base: "#8a5c35",
+      dark: "rgba(58, 32, 12, 0.24)",
+      light: "rgba(226, 184, 132, 0.15)",
+    },
+    oak: {
+      base: "#bd8f5d",
+      dark: "rgba(104, 66, 28, 0.18)",
+      light: "rgba(255, 236, 200, 0.16)",
+    },
+    rosewood: {
+      base: "#5b1a1d",
+      dark: "rgba(30, 6, 8, 0.30)",
+      light: "rgba(182, 78, 66, 0.16)",
+    },
+    honey: {
+      base: "#c89a64",
+      dark: "rgba(116, 74, 30, 0.16)",
+      light: "rgba(255, 240, 206, 0.18)",
+    },
+  }
+  const p = palette[tone]
+  const { canvas, ctx } = createCanvasSurface(256, 256)
+  if (ctx) {
+    const rand = mulberry32(hashString(`wood:${tone}`))
+    ctx.fillStyle = p.base
+    ctx.fillRect(0, 0, 256, 256)
+
+    // Soft satin sheen strips
+    for (let s = 0; s < 8; s += 1) {
+      const sy = s * 32
+      ctx.fillStyle = s % 2 === 0 ? p.light : "rgba(0,0,0,0.035)"
+      ctx.fillRect(0, sy, 256, 16)
+    }
+
+    // Flowing organic cathedral wood grain
+    for (let y = 4; y < 256; y += 6) {
+      const amp = 4 + rand() * 8
+      ctx.strokeStyle = y % 12 === 4 ? p.dark : p.light
+      ctx.lineWidth = y % 12 === 4 ? 1.6 : 1.0
+      ctx.beginPath()
+      ctx.moveTo(0, y)
+      ctx.bezierCurveTo(
+        84,
+        y + amp,
+        172,
+        y - amp,
+        256,
+        y
+      )
+      ctx.stroke()
+    }
+
+    // Subtle wood pore dashes
+    ctx.fillStyle = p.dark
+    for (let i = 0; i < 90; i += 1) {
+      ctx.fillRect(rand() * 256, rand() * 256, 5 + rand() * 9, 1)
+    }
+  }
+
+  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+    repeat: true,
+    anisotropy: 8,
+    shared: true,
+  })
+  woodTextureCache.set(tone, tex)
+  return tex
+}
+
+export function createFabricSurfaceTexture(
+  colorHex: string,
+  pattern: FabricSurfacePattern = "weave"
+): THREE.Texture {
+  const key = `${pattern}:${colorHex.toLowerCase()}`
+  const cached = fabricTextureCache.get(key)
+  if (cached) return cached
+
+  const { canvas, ctx } = createCanvasSurface(256, 256)
+  if (ctx) {
+    const rand = mulberry32(hashString(`fabric:${key}`))
+    ctx.fillStyle = colorHex
+    ctx.fillRect(0, 0, 256, 256)
+
+    if (pattern === "velvet") {
+      for (let i = 0; i < 24; i += 1) {
+        const cx = rand() * 256
+        const cy = rand() * 256
+        const r = 24 + rand() * 44
+        const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, r)
+        g.addColorStop(
+          0,
+          i % 2 === 0 ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)"
+        )
+        g.addColorStop(1, "rgba(0,0,0,0)")
+        ctx.fillStyle = g
+        ctx.beginPath()
+        ctx.arc(cx, cy, r, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    } else if (pattern === "rug") {
+      for (let y = 0; y < 256; y += 6) {
+        ctx.fillStyle =
+          y % 12 === 0 ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"
+        ctx.fillRect(0, y, 256, 2.5)
+      }
+      for (let x = 0; x < 256; x += 12) {
+        ctx.fillStyle = "rgba(0,0,0,0.04)"
+        ctx.fillRect(x, 0, 2, 256)
+      }
+      for (let i = 0; i < 240; i += 1) {
+        ctx.fillStyle =
+          i % 2 === 0 ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.07)"
+        ctx.fillRect(rand() * 256, rand() * 256, 3, 2)
+      }
+    } else {
+      // Cozy woven upholstery warp & weft
+      for (let y = 0; y < 256; y += 4) {
+        ctx.fillStyle =
+          y % 8 === 0 ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)"
+        ctx.fillRect(0, y, 256, 1.5)
+      }
+      for (let x = 0; x < 256; x += 4) {
+        ctx.fillStyle =
+          x % 8 === 0 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"
+        ctx.fillRect(x, 0, 1.5, 256)
+      }
+      for (let i = 0; i < 180; i += 1) {
+        ctx.fillStyle =
+          i % 2 === 0 ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"
+        ctx.fillRect(rand() * 256, rand() * 256, 2, 2)
+      }
+    }
+  }
+
+  const shouldCache = fabricTextureCache.size < MAX_FABRIC_CACHE
+  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+    repeat: true,
+    anisotropy: 8,
+    shared: shouldCache,
+  })
+  if (shouldCache) {
+    fabricTextureCache.set(key, tex)
+  }
+  return tex
+}
+
+export function createMarbleSurfaceTexture(
+  tone: MarbleSurfaceTone = "cream"
+): THREE.Texture {
+  const cached = marbleTextureCache.get(tone)
+  if (cached) return cached
+
+  const { canvas, ctx } = createCanvasSurface(256, 256)
+  if (ctx) {
+    const rand = mulberry32(hashString(`marble:${tone}`))
+    const grad = ctx.createLinearGradient(0, 0, 256, 256)
+    if (tone === "white_gold") {
+      grad.addColorStop(0, "#faf6ee")
+      grad.addColorStop(1, "#eee7d8")
+    } else {
+      grad.addColorStop(0, "#f5eee3")
+      grad.addColorStop(1, "#ebe1d1")
+    }
+    ctx.fillStyle = grad
+    ctx.fillRect(0, 0, 256, 256)
+    drawMarbleVeinsInRect(ctx, 0, 0, 256, 256, rand, 6)
+  }
+
+  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+    repeat: true,
+    anisotropy: 8,
+    shared: true,
+  })
+  marbleTextureCache.set(tone, tex)
+  return tex
+}
+
+export function createMonitorScreenTexture(
+  variant: MonitorScreenVariant
+): THREE.Texture {
+  const cached = monitorScreenCache.get(variant)
+  if (cached) return cached
+
+  const { canvas, ctx } = createCanvasSurface(256, 160)
+  if (ctx) {
+    const bg = ctx.createLinearGradient(0, 0, 0, 160)
+    bg.addColorStop(0, "#122142")
+    bg.addColorStop(1, "#0b1428")
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, 256, 160)
+
+    // Top IQX app bar
+    ctx.fillStyle = "#182b52"
+    ctx.fillRect(0, 0, 256, 24)
+    ctx.fillStyle = "#f3cd6a"
+    ctx.fillRect(10, 7, 30, 10)
+    ctx.fillStyle = "#34c38f"
+    ctx.beginPath()
+    ctx.arc(240, 12, 4, 0, Math.PI * 2)
+    ctx.fill()
+
+    if (variant === "boss") {
+      // Candlestick chart panel + KPI cards
+      drawRoundedRect(ctx, 10, 32, 152, 116, 8)
+      ctx.fillStyle = "#0e1a33"
+      ctx.fill()
+      ctx.strokeStyle = "rgba(148, 179, 218, 0.25)"
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+
+      // Subtle grid lines
+      ctx.strokeStyle = "rgba(148, 179, 218, 0.10)"
+      ctx.lineWidth = 1
+      for (let gy = 52; gy < 140; gy += 22) {
+        ctx.beginPath()
+        ctx.moveTo(16, gy)
+        ctx.lineTo(156, gy)
+        ctx.stroke()
+      }
+
+      // Stylized rising green/red candlesticks
+      const candles: readonly [number, number, number, boolean][] = [
+        [28, 118, 22, true],
+        [44, 110, 18, false],
+        [60, 102, 26, true],
+        [76, 94, 20, true],
+        [92, 98, 16, false],
+        [108, 84, 28, true],
+        [124, 72, 24, true],
+        [140, 62, 30, true],
+      ]
+      for (const [cx, cy, ch, up] of candles) {
+        const col = up ? "#34c38f" : "#f06a6e"
+        ctx.fillStyle = col
+        ctx.fillRect(cx + 3, cy - 8, 2, ch + 16)
+        ctx.fillRect(cx, cy, 8, ch)
+      }
+
+      // Right-hand KPI summary widgets
+      for (let i = 0; i < 3; i += 1) {
+        const ry = 32 + i * 40
+        drawRoundedRect(ctx, 170, ry, 76, 33, 6)
+        ctx.fillStyle = "#162647"
+        ctx.fill()
+        ctx.fillStyle = i === 0 ? "#f3cd6a" : i === 1 ? "#34c38f" : "#4d8ef0"
+        ctx.fillRect(178, ry + 8, 26 + i * 8, 5)
+        ctx.fillStyle = "#c9d6e4"
+        ctx.fillRect(178, ry + 19, 52, 4)
+      }
+    } else if (variant === "reception") {
+      // IQX welcome dashboard
+      drawRoundedRect(ctx, 14, 34, 228, 42, 8)
+      ctx.fillStyle = "rgba(243, 205, 106, 0.16)"
+      ctx.fill()
+      ctx.fillStyle = "#f3cd6a"
+      ctx.fillRect(28, 46, 96, 8)
+      ctx.fillStyle = "#f1f5f9"
+      ctx.fillRect(28, 60, 150, 5)
+
+      for (let r = 0; r < 3; r += 1) {
+        const ry = 86 + r * 22
+        ctx.fillStyle = "#34c38f"
+        ctx.beginPath()
+        ctx.arc(24, ry + 6, 4, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = "#f1f5f9"
+        ctx.fillRect(36, ry + 3, 128 - r * 14, 6)
+        ctx.fillStyle = "#4d8ef0"
+        ctx.fillRect(198, ry + 2, 36, 8)
+      }
+    } else {
+      // Staff workspace: task checklist + mini chart
+      for (let i = 0; i < 4; i += 1) {
+        const ry = 34 + i * 29
+        drawRoundedRect(ctx, 10, ry, 142, 23, 5)
+        ctx.fillStyle = "#152546"
+        ctx.fill()
+        ctx.fillStyle = i < 2 ? "#34c38f" : "#f2a33a"
+        ctx.beginPath()
+        ctx.arc(22, ry + 11.5, 4.5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = "#f1f5f9"
+        ctx.fillRect(34, ry + 9, 74 - (i % 2) * 14, 5)
+        ctx.fillStyle = "#f6d27a"
+        ctx.fillRect(122, ry + 8, 22, 7)
+      }
+
+      drawRoundedRect(ctx, 160, 34, 86, 110, 7)
+      ctx.fillStyle = "#0f1c36"
+      ctx.fill()
+      ctx.strokeStyle = "#38bdf8"
+      ctx.lineWidth = 2.5
+      ctx.beginPath()
+      ctx.moveTo(170, 122)
+      ctx.lineTo(186, 108)
+      ctx.lineTo(202, 114)
+      ctx.lineTo(220, 82)
+      ctx.lineTo(236, 68)
+      ctx.stroke()
+      ctx.fillStyle = "#34c38f"
+      ctx.fillRect(170, 44, 48, 6)
+    }
+  }
+
+  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+    anisotropy: 8,
+    shared: true,
+  })
+  monitorScreenCache.set(variant, tex)
+  return tex
+}
+
+export function createAltarClothTexture(): THREE.Texture {
+  if (altarClothCache) return altarClothCache
+
+  const { canvas, ctx } = createCanvasSurface(256, 256)
+  if (ctx) {
+    // Deep crimson satin brocade drape
+    const bg = ctx.createLinearGradient(0, 0, 0, 256)
+    bg.addColorStop(0, "#a8141f")
+    bg.addColorStop(0.55, "#8d111a")
+    bg.addColorStop(1, "#6f0c14")
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, 256, 256)
+
+    // Soft vertical drape fold shading
+    for (let x = 24; x < 256; x += 42) {
+      const fGrad = ctx.createLinearGradient(x - 14, 0, x + 14, 0)
+      fGrad.addColorStop(0, "rgba(0,0,0,0)")
+      fGrad.addColorStop(0.5, "rgba(0,0,0,0.16)")
+      fGrad.addColorStop(1, "rgba(0,0,0,0)")
+      ctx.fillStyle = fGrad
+      ctx.fillRect(x - 14, 0, 28, 256)
+    }
+
+    // Ornate double gold brocade outer & inner frame
+    ctx.strokeStyle = "#f3c64a"
+    ctx.lineWidth = 10
+    ctx.strokeRect(10, 10, 236, 224)
+    ctx.strokeStyle = "#fde69b"
+    ctx.lineWidth = 3
+    ctx.strokeRect(24, 24, 208, 196)
+
+    // Traditional corner gold square frets
+    for (const [cx, cy] of [
+      [34, 34],
+      [222, 34],
+      [34, 210],
+      [222, 210],
+    ] as const) {
+      ctx.strokeStyle = "#f6d27a"
+      ctx.lineWidth = 3
+      ctx.strokeRect(cx - 10, cy - 10, 20, 20)
+    }
+
+    // Central golden auspicious lotus medallion
+    ctx.save()
+    ctx.translate(128, 122)
+    ctx.strokeStyle = "#f6d27a"
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.arc(0, 0, 48, 0, Math.PI * 2)
+    ctx.stroke()
+
+    ctx.strokeStyle = "#fde69b"
+    ctx.lineWidth = 2.5
+    ctx.beginPath()
+    ctx.arc(0, 0, 38, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // 8 golden lotus petals
+    ctx.fillStyle = "rgba(246, 210, 122, 0.85)"
+    for (let i = 0; i < 8; i += 1) {
+      ctx.save()
+      ctx.rotate((i * Math.PI) / 4)
+      ctx.beginPath()
+      ctx.ellipse(0, -22, 7, 13, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+    }
+    ctx.fillStyle = "#fde69b"
+    ctx.beginPath()
+    ctx.arc(0, 0, 12, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+
+    // Bottom golden fringe border strip
+    ctx.fillStyle = "#e6b647"
+    ctx.fillRect(0, 236, 256, 20)
+    ctx.fillStyle = "#b57c16"
+    for (let x = 4; x < 256; x += 8) {
+      ctx.fillRect(x, 238, 2, 18)
+    }
+  }
+
+  altarClothCache = finalizeCanvasTexture(canvas, Boolean(ctx), {
+    anisotropy: 12,
+    shared: true,
+  })
+  return altarClothCache
+}
+
+// ---------- 3. Crisp High-DPR Floor Zone Decal Texture ----------
 
 export function createFloorDecalTexture(
   text: string,
   color = "#7c5c32",
   subtext?: string
 ): THREE.Texture {
-  const { canvas, ctx } = createCanvasSurface(512, 128)
+  const baseW = 512
+  const baseH = 128
+  const dpr = resolveSupersampleDpr(baseW, baseH)
+  const { canvas, ctx } = createCanvasSurface(baseW * dpr, baseH * dpr)
   if (ctx) {
-    ctx.clearRect(0, 0, 512, 128)
+    ctx.save()
+    ctx.scale(dpr, dpr)
+    ctx.clearRect(0, 0, baseW, baseH)
     ctx.textAlign = "center"
     ctx.textBaseline = "middle"
     ctx.fillStyle = color
     ctx.font = `800 ${text.length > 18 ? 30 : 36}px ${FONT_STACK}`
-    ctx.fillText(text, 256, subtext ? 48 : 64, 484)
+    ctx.fillText(text, baseW / 2, subtext ? 46 : 64, baseW - 28)
 
     if (subtext) {
-      ctx.globalAlpha = 0.85
+      ctx.globalAlpha = 0.88
       ctx.font = `600 20px ${FONT_STACK}`
-      ctx.fillText(subtext, 256, 92, 484)
+      ctx.fillText(subtext, baseW / 2, 92, baseW - 28)
       ctx.globalAlpha = 1
     }
+    ctx.restore()
   }
-  return finalizeCanvasTexture(canvas, Boolean(ctx))
+  return finalizeCanvasTexture(canvas, Boolean(ctx), { anisotropy: 16 })
 }
 
-// ---------- 4. Crisp Sign, Nameplate, Banner & Medal Texture ----------
+// ---------- 4. Crisp High-DPR Sign, Nameplate, Banner & Medal Texture ----------
 
 export function createSignTexture(
   text: string,
-  opts?: SignTextureOptions
+  opts?: HighDprSignOptions
 ): THREE.Texture {
   const style = opts?.style ?? "navy_gold"
   const width = opts?.width ?? (style === "medal" ? 160 : 512)
   const height = opts?.height ?? (style === "medal" ? 160 : 128)
-  const { canvas, ctx } = createCanvasSurface(width, height)
+  const dpr = resolveSupersampleDpr(width, height, opts?.dpr)
+  const { canvas, ctx } = createCanvasSurface(width * dpr, height * dpr)
 
   if (ctx) {
+    ctx.save()
+    ctx.scale(dpr, dpr)
     ctx.clearRect(0, 0, width, height)
+
     if (style === "medal") {
       const cx = width / 2
       const cy = height / 2
@@ -662,122 +1468,187 @@ export function createSignTexture(
       const accent = opts?.accentColor ?? "#f3c64a"
 
       const grad = ctx.createRadialGradient(
-        cx - r * 0.25,
-        cy - r * 0.25,
-        r * 0.1,
+        cx - r * 0.28,
+        cy - r * 0.28,
+        r * 0.08,
         cx,
         cy,
         r
       )
-      grad.addColorStop(0, "#fff8dc")
-      grad.addColorStop(0.42, accent)
-      grad.addColorStop(1, "#7c5a18")
+      grad.addColorStop(0, "#fffbe8")
+      grad.addColorStop(0.4, accent)
+      grad.addColorStop(1, "#6f4e12")
       ctx.fillStyle = grad
       ctx.beginPath()
       ctx.arc(cx, cy, r, 0, Math.PI * 2)
       ctx.fill()
 
-      ctx.strokeStyle = "#fff4cc"
-      ctx.lineWidth = Math.max(4, r * 0.1)
+      ctx.strokeStyle = "#fff5d6"
+      ctx.lineWidth = Math.max(4, r * 0.095)
+      ctx.stroke()
+
+      // Inner embossed coin ring
+      ctx.strokeStyle = "rgba(42, 28, 0, 0.28)"
+      ctx.lineWidth = Math.max(2, r * 0.04)
+      ctx.beginPath()
+      ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2)
       ctx.stroke()
 
       ctx.fillStyle = opts?.textColor ?? "#261804"
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
-      ctx.font = `900 ${Math.round(r * 1.15)}px ${FONT_STACK}`
+      ctx.font = `900 ${Math.round(r * 1.1)}px ${FONT_STACK}`
       ctx.fillText(text, cx, cy + 2)
     } else if (style === "emblem") {
-      const grad = ctx.createLinearGradient(0, 0, width, height)
-      grad.addColorStop(0, "#f6d27a")
-      grad.addColorStop(1, "#d9a03a")
-      drawRoundedRect(ctx, 8, 8, width - 16, height - 16, 20)
-      ctx.fillStyle = opts?.bgColor ?? "#0f1c38"
+      const bg = ctx.createLinearGradient(0, 0, 0, height)
+      bg.addColorStop(0, opts?.bgColor ?? "#14244a")
+      bg.addColorStop(1, "#0a1428")
+      drawRoundedRect(ctx, 6, 6, width - 12, height - 12, 20)
+      ctx.fillStyle = bg
       ctx.fill()
-      ctx.strokeStyle = grad
+
+      const borderGrad = ctx.createLinearGradient(0, 0, width, height)
+      borderGrad.addColorStop(0, "#fbe29b")
+      borderGrad.addColorStop(0.5, "#e9b949")
+      borderGrad.addColorStop(1, "#c58d26")
+      ctx.strokeStyle = borderGrad
       ctx.lineWidth = 6
       ctx.stroke()
 
-      ctx.fillStyle = opts?.textColor ?? "#f6d27a"
+      drawRoundedRect(ctx, 14, 14, width - 28, height - 28, 13)
+      ctx.strokeStyle = "rgba(246, 210, 122, 0.35)"
+      ctx.lineWidth = 2
+      ctx.stroke()
+
+      ctx.fillStyle = opts?.textColor ?? "#f8dc8c"
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       ctx.font = `900 ${Math.round(height * 0.56)}px ${FONT_STACK}`
-      ctx.fillText(text, width / 2, height / 2 + 2, width - 32)
+      ctx.fillText(text, width / 2, height / 2 + 2, width - 40)
     } else if (style === "gold_banner") {
       const grad = ctx.createLinearGradient(0, 0, 0, height)
-      grad.addColorStop(0, "#8f161f")
-      grad.addColorStop(1, "#5c0c12")
-      drawRoundedRect(ctx, 6, 6, width - 12, height - 12, 18)
+      grad.addColorStop(0, "#991620")
+      grad.addColorStop(0.5, "#7d1018")
+      grad.addColorStop(1, "#590a10")
+      drawRoundedRect(ctx, 5, 5, width - 10, height - 10, 18)
       ctx.fillStyle = grad
       ctx.fill()
+
       ctx.strokeStyle = "#f3c64a"
       ctx.lineWidth = 6
       ctx.stroke()
 
-      ctx.fillStyle = "#fde49b"
+      drawRoundedRect(ctx, 14, 14, width - 28, height - 28, 12)
+      ctx.strokeStyle = "rgba(253, 228, 155, 0.55)"
+      ctx.lineWidth = 2
+      ctx.stroke()
+
+      // Corner gold accents
+      ctx.fillStyle = "#f8dc8c"
+      for (const [cx, cy] of [
+        [24, 24],
+        [width - 24, 24],
+        [24, height - 24],
+        [width - 24, height - 24],
+      ] as const) {
+        ctx.beginPath()
+        ctx.arc(cx, cy, 4, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
-      ctx.font = `800 ${Math.round(height * 0.34)}px ${FONT_STACK}`
+      ctx.font = `800 ${Math.round(height * 0.35)}px ${FONT_STACK}`
+      ctx.fillStyle = "rgba(40, 4, 6, 0.55)"
+      ctx.fillText(
+        text,
+        width / 2,
+        (opts?.subtext ? height * 0.38 : height / 2) + 2,
+        width - 52
+      )
+      ctx.fillStyle = "#fde69b"
       ctx.fillText(
         text,
         width / 2,
         opts?.subtext ? height * 0.38 : height / 2,
-        width - 40
+        width - 52
       )
       if (opts?.subtext) {
         ctx.fillStyle = "#fef3c7"
         ctx.font = `600 ${Math.round(height * 0.22)}px ${FONT_STACK}`
-        ctx.fillText(opts.subtext, width / 2, height * 0.72, width - 40)
+        ctx.fillText(opts.subtext, width / 2, height * 0.72, width - 52)
       }
     } else if (style === "gold_plate") {
-      const grad = ctx.createLinearGradient(0, 0, 0, height)
-      grad.addColorStop(0, "#f6d27a")
-      grad.addColorStop(1, "#d9a03a")
-      drawRoundedRect(ctx, 6, 6, width - 12, height - 12, 16)
+      const grad = ctx.createLinearGradient(0, 0, width, height)
+      grad.addColorStop(0, "#fae29c")
+      grad.addColorStop(0.45, "#f0c253")
+      grad.addColorStop(1, "#d59a30")
+      drawRoundedRect(ctx, 5, 5, width - 10, height - 10, 16)
       ctx.fillStyle = grad
       ctx.fill()
-      ctx.strokeStyle = "#fff5d6"
+      ctx.strokeStyle = "#fff8df"
       ctx.lineWidth = 4
+      ctx.stroke()
+
+      drawRoundedRect(ctx, 12, 12, width - 24, height - 24, 10)
+      ctx.strokeStyle = "rgba(66, 42, 4, 0.32)"
+      ctx.lineWidth = 2
       ctx.stroke()
 
       ctx.fillStyle = opts?.textColor ?? "#2a1c00"
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
-      ctx.font = `800 ${Math.round(height * 0.38)}px ${FONT_STACK}`
-      ctx.fillText(text, width / 2, height / 2 + 1, width - 36)
+      ctx.font = `800 ${Math.round(height * 0.39)}px ${FONT_STACK}`
+      ctx.fillText(text, width / 2, height / 2 + 1, width - 40)
     } else {
-      // Default IQX dark navy & gold nameplate
+      // Crisp IQX dark navy & brushed gold nameplate
       const grad = ctx.createLinearGradient(0, 0, 0, height)
-      grad.addColorStop(0, opts?.bgColor ?? "#16244a")
-      grad.addColorStop(1, "#0e1830")
-      drawRoundedRect(ctx, 6, 6, width - 12, height - 12, 16)
+      grad.addColorStop(0, opts?.bgColor ?? "#192a54")
+      grad.addColorStop(1, "#0d1730")
+      drawRoundedRect(ctx, 5, 5, width - 10, height - 10, 16)
       ctx.fillStyle = grad
       ctx.fill()
       ctx.strokeStyle = opts?.accentColor ?? "#e9b949"
       ctx.lineWidth = 5
       ctx.stroke()
 
-      ctx.fillStyle = opts?.textColor ?? "#f6d27a"
+      drawRoundedRect(ctx, 12, 12, width - 24, height - 24, 10)
+      ctx.strokeStyle = "rgba(246, 210, 122, 0.26)"
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
-      ctx.font = `800 ${Math.round(height * (opts?.subtext ? 0.34 : 0.4))}px ${FONT_STACK}`
+      ctx.font = `800 ${Math.round(height * (opts?.subtext ? 0.34 : 0.41))}px ${FONT_STACK}`
+      ctx.fillStyle = "rgba(4, 8, 18, 0.55)"
+      ctx.fillText(
+        text,
+        width / 2,
+        (opts?.subtext ? height * 0.37 : height / 2 + 1) + 1.5,
+        width - 40
+      )
+      ctx.fillStyle = opts?.textColor ?? "#f8dc8c"
       ctx.fillText(
         text,
         width / 2,
         opts?.subtext ? height * 0.37 : height / 2 + 1,
-        width - 36
+        width - 40
       )
       if (opts?.subtext) {
         ctx.fillStyle = "#c9d6e4"
         ctx.font = `600 ${Math.round(height * 0.24)}px ${FONT_STACK}`
-        ctx.fillText(opts.subtext, width / 2, height * 0.72, width - 36)
+        ctx.fillText(opts.subtext, width / 2, height * 0.72, width - 40)
       }
     }
+    ctx.restore()
   }
 
-  return finalizeCanvasTexture(canvas, Boolean(ctx))
+  return finalizeCanvasTexture(canvas, Boolean(ctx), {
+    anisotropy: opts?.anisotropy ?? 16,
+  })
 }
 
-// ---------- 5. Trading Floor LED VN30 Board Painter (1024x280) ----------
+// ---------- 5. Trading Floor LED VN30 Board Painter (1024x280 base) ----------
 
 export function drawLedMarketBoard(
   canvas: HTMLCanvasElement,
@@ -789,53 +1660,66 @@ export function drawLedMarketBoard(
   const ctx = safeGet2DContext(canvas)
   if (!ctx) return
 
-  const w = canvas.width
-  const h = canvas.height
+  const baseW = 1024
+  const baseH = 280
+  const sx = canvas.width / baseW
+  const sy = canvas.height / baseH
 
-  // Deep obsidian LED backdrop
-  ctx.fillStyle = "#090e18"
-  ctx.fillRect(0, 0, w, h)
+  ctx.save()
+  ctx.scale(sx, sy)
 
-  // Subtle top bar glow
+  // Deep obsidian LED wall backdrop
+  ctx.fillStyle = "#070b14"
+  ctx.fillRect(0, 0, baseW, baseH)
+
+  // Header bar gradient + gold underline rule
   const topGrad = ctx.createLinearGradient(0, 0, 0, 52)
-  topGrad.addColorStop(0, "#151f33")
-  topGrad.addColorStop(1, "#0b111e")
+  topGrad.addColorStop(0, "#17243d")
+  topGrad.addColorStop(1, "#0b1222")
   ctx.fillStyle = topGrad
-  ctx.fillRect(0, 0, w, 52)
+  ctx.fillRect(0, 0, baseW, 52)
 
-  // Header left title
-  const padX = Math.round(w * 0.022)
+  ctx.fillStyle = "rgba(233, 185, 73, 0.42)"
+  ctx.fillRect(18, 50, baseW - 36, 2)
+
+  // Header left live indicator & title
+  const padX = 22
+  ctx.fillStyle = "#34c38f"
+  ctx.beginPath()
+  ctx.arc(padX + 6, 26, 5, 0, Math.PI * 2)
+  ctx.fill()
+
   ctx.textBaseline = "middle"
   ctx.textAlign = "left"
-  ctx.fillStyle = "#f3cd6a"
-  ctx.font = `800 ${Math.round(h * 0.075)}px ${FONT_STACK}`
-  ctx.fillText("IQX · BẢNG ĐIỆN VN30", padX, 27)
+  ctx.fillStyle = "#f6d27a"
+  ctx.font = `800 21px ${FONT_STACK}`
+  ctx.fillText("IQX · BẢNG ĐIỆN VN30", padX + 18, 27)
 
-  // Header right VN-Index summary
+  // Header right VN-Index pill summary
   const vnIndex = indices?.find((q) => q.code === "VNINDEX") ?? null
   ctx.textAlign = "right"
   if (!vnIndex) {
     ctx.fillStyle = "#c9d6e4"
-    ctx.font = `700 ${Math.round(h * 0.068)}px ${FONT_STACK}`
-    ctx.fillText("VN-Index —", w - padX, 27)
+    ctx.font = `700 19px ${FONT_STACK}`
+    ctx.fillText("VN-Index —", baseW - padX, 27)
   } else {
     const weather = marketWeather(vnIndex)
     ctx.fillStyle = PRICE_COLORS[indexTone(vnIndex)]
-    ctx.font = `700 ${Math.round(h * 0.072)}px ${FONT_STACK}`
+    ctx.font = `800 20px ${FONT_STACK}`
     ctx.fillText(
       `VN-Index ${formatIndex(vnIndex.value)} ${formatPercent(vnIndex.pct)} · ${weather.label}`,
-      w - padX,
+      baseW - padX,
       27
     )
   }
 
-  // 10 x 3 VN30 Heatmap Grid
+  // 10 x 3 VN30 Heatmap Grid with crisp high-contrast LED glyphs
   const cols = 10
   const rows = 3
   const gap = 6
   const gridTop = 58
-  const gridBottom = h - 12
-  const innerW = w - padX * 2
+  const gridBottom = baseH - 12
+  const innerW = baseW - padX * 2
   const tileW = (innerW - gap * (cols - 1)) / cols
   const tileH = (gridBottom - gridTop - gap * (rows - 1)) / rows
 
@@ -850,9 +1734,12 @@ export function drawLedMarketBoard(
 
     drawRoundedRect(ctx, x, y, tileW, tileH, 7)
     if (!quote) {
-      ctx.fillStyle = "#162033"
+      ctx.fillStyle = "#121c30"
       ctx.fill()
-      ctx.fillStyle = "#64748b"
+      ctx.strokeStyle = "rgba(148, 179, 218, 0.14)"
+      ctx.lineWidth = 1
+      ctx.stroke()
+      ctx.fillStyle = "#c9d6e4"
       ctx.font = `700 ${Math.round(tileH * 0.34)}px ${FONT_STACK}`
       ctx.fillText(vn30 ? "" : "·", cx, y + tileH * 0.52)
       continue
@@ -862,23 +1749,46 @@ export function drawLedMarketBoard(
     ctx.fillStyle = bg
     ctx.fill()
 
-    // Crisp gloss top hairline on tile
-    ctx.fillStyle = "rgba(255, 255, 255, 0.12)"
+    // Crisp subtle tile outline & gloss top bar
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.24)"
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+    ctx.fillStyle = "rgba(255, 255, 255, 0.16)"
     ctx.fillRect(x + 4, y + 2, tileW - 8, 2)
 
+    // Crisp shadow behind bright glyphs for legibility on yellow/green LED cells
+    const isLightFg = fg.toLowerCase() === "#ffffff" || fg.toLowerCase() === "#f1f5f9"
+    if (isLightFg) {
+      ctx.shadowColor = "rgba(0, 0, 0, 0.45)"
+      ctx.shadowBlur = 2
+      ctx.shadowOffsetY = 1
+    }
+
     ctx.fillStyle = fg
-    ctx.font = `800 ${Math.round(tileH * 0.28)}px ${FONT_STACK}`
+    ctx.font = `900 ${Math.round(tileH * 0.29)}px ${FONT_STACK}`
     ctx.fillText(quote.symbol, cx, y + tileH * 0.26, tileW - 8)
 
-    ctx.font = `600 ${Math.round(tileH * 0.22)}px ${FONT_STACK}`
-    ctx.fillText(heatPrice(quote.price), cx, y + tileH * 0.56, tileW - 8)
-
     ctx.font = `700 ${Math.round(tileH * 0.22)}px ${FONT_STACK}`
+    ctx.fillText(heatPrice(quote.price), cx, y + tileH * 0.55, tileW - 8)
+
+    ctx.font = `800 ${Math.round(tileH * 0.23)}px ${FONT_STACK}`
     ctx.fillText(heatPct(quote.pct), cx, y + tileH * 0.82, tileW - 8)
+
+    ctx.shadowColor = "transparent"
+    ctx.shadowBlur = 0
+    ctx.shadowOffsetY = 0
   }
+
+  // Subtle LED horizontal scanline micro-texture
+  ctx.fillStyle = "rgba(0, 0, 0, 0.08)"
+  for (let y = gridTop; y < gridBottom; y += 4) {
+    ctx.fillRect(padX, y, innerW, 1)
+  }
+
+  ctx.restore()
 }
 
-// ---------- 6. Trading Floor SACO Nhận Định Board Painter (768x288) ----------
+// ---------- 6. Trading Floor SACO Nhận Định Board Painter (768x288 base) ----------
 
 export function drawSacoBoard(
   canvas: HTMLCanvasElement,
@@ -889,29 +1799,38 @@ export function drawSacoBoard(
   const ctx = safeGet2DContext(canvas)
   if (!ctx) return
 
-  const w = canvas.width
-  const h = canvas.height
+  const baseW = 768
+  const baseH = 288
+  ctx.save()
+  ctx.scale(canvas.width / baseW, canvas.height / baseH)
 
   // Deep IQX navy gradient backdrop
-  const bg = ctx.createLinearGradient(0, 0, 0, h)
-  bg.addColorStop(0, "#14244a")
-  bg.addColorStop(1, "#0c162c")
+  const bg = ctx.createLinearGradient(0, 0, 0, baseH)
+  bg.addColorStop(0, "#16264e")
+  bg.addColorStop(1, "#0c152b")
   ctx.fillStyle = bg
-  ctx.fillRect(0, 0, w, h)
+  ctx.fillRect(0, 0, baseW, baseH)
 
-  // Inner gold trim border
-  drawRoundedRect(ctx, 10, 10, w - 20, h - 20, 14)
-  ctx.strokeStyle = "rgba(233, 185, 73, 0.55)"
+  // Subtle upper warm gold glow
+  const glow = ctx.createRadialGradient(baseW / 2, 34, 8, baseW / 2, 34, 240)
+  glow.addColorStop(0, "rgba(243, 205, 106, 0.16)")
+  glow.addColorStop(1, "rgba(243, 205, 106, 0)")
+  ctx.fillStyle = glow
+  ctx.fillRect(0, 0, baseW, 140)
+
+  // Crisp double gold trim border
+  drawRoundedRect(ctx, 10, 10, baseW - 20, baseH - 20, 14)
+  ctx.strokeStyle = "rgba(233, 185, 73, 0.65)"
   ctx.lineWidth = 3
   ctx.stroke()
 
   // Gold header banner pill
-  const pillW = Math.round(w * 0.48)
-  const pillH = 48
-  const pillX = (w - pillW) / 2
+  const pillW = Math.round(baseW * 0.46)
+  const pillH = 46
+  const pillX = (baseW - pillW) / 2
   const pillY = 18
   const goldGrad = ctx.createLinearGradient(pillX, pillY, pillX, pillY + pillH)
-  goldGrad.addColorStop(0, "#f3cd6a")
+  goldGrad.addColorStop(0, "#f6d67c")
   goldGrad.addColorStop(1, "#d9a03a")
   drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 12)
   ctx.fillStyle = goldGrad
@@ -919,41 +1838,44 @@ export function drawSacoBoard(
 
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
-  ctx.fillStyle = "#1a1406"
-  ctx.font = `800 24px ${FONT_STACK}`
-  ctx.fillText("SACO NHẬN ĐỊNH", w / 2, pillY + pillH / 2 + 1)
+  ctx.fillStyle = "#2a1c00"
+  ctx.font = `900 23px ${FONT_STACK}`
+  ctx.fillText("SACO NHẬN ĐỊNH", baseW / 2, pillY + pillH / 2 + 1)
 
   // Top 3 headlines
   const left = 36
-  const maxTextW = w - 84
+  const maxTextW = baseW - 84
   ctx.textAlign = "left"
   if (!posts.length) {
     ctx.fillStyle = "#c9d6e4"
     ctx.font = `600 22px ${FONT_STACK}`
-    ctx.fillText("Chưa có nhận định hôm nay", left, 140)
+    ctx.fillText("Chưa có nhận định hôm nay", left, 142)
   } else {
     const topThree = posts.slice(0, 3)
     topThree.forEach((post, idx) => {
       const rowY = 104 + idx * 48
-      // Subtle row pill divider
-      drawRoundedRect(ctx, 26, rowY - 19, w - 52, 38, 8)
-      ctx.fillStyle = "rgba(255, 255, 255, 0.05)"
+      drawRoundedRect(ctx, 26, rowY - 19, baseW - 52, 38, 8)
+      ctx.fillStyle =
+        idx % 2 === 0
+          ? "rgba(255, 255, 255, 0.065)"
+          : "rgba(255, 255, 255, 0.04)"
       ctx.fill()
+      ctx.strokeStyle = "rgba(148, 179, 218, 0.14)"
+      ctx.lineWidth = 1
+      ctx.stroke()
 
-      // Gold bullet dot
       ctx.fillStyle = "#f3cd6a"
       ctx.beginPath()
       ctx.arc(44, rowY, 5, 0, Math.PI * 2)
       ctx.fill()
 
-      // Prefix + ellipsized headline
       ctx.font = `700 20px ${FONT_STACK}`
       const prefix = `${post.sacoName}: `
       const prefixW = Math.min(ctx.measureText(prefix).width, maxTextW * 0.42)
       ctx.fillStyle = "#f6d27a"
       ctx.fillText(trimToWidth(ctx, prefix, prefixW + 4), 58, rowY)
 
-      ctx.font = `500 20px ${FONT_STACK}`
+      ctx.font = `600 20px ${FONT_STACK}`
       ctx.fillStyle = "#f1f5f9"
       const remaining = Math.max(80, maxTextW - prefixW - 24)
       ctx.fillText(
@@ -966,12 +1888,14 @@ export function drawSacoBoard(
 
   // Bottom-right CTA
   ctx.textAlign = "right"
-  ctx.fillStyle = "#f3cd6a"
+  ctx.fillStyle = "#f6d27a"
   ctx.font = `700 18px ${FONT_STACK}`
-  ctx.fillText("Chạm để xem chi tiết ›", w - 34, h - 28)
+  ctx.fillText("Chạm để xem chi tiết ›", baseW - 34, baseH - 28)
+
+  ctx.restore()
 }
 
-// ---------- 7. Office Meeting Room Wall Screen Painter (640x160) ----------
+// ---------- 7. Office Meeting Room Wall Screen Painter (640x160 base) ----------
 
 export function drawOfficeMeetingScreen(
   canvas: HTMLCanvasElement,
@@ -983,20 +1907,29 @@ export function drawOfficeMeetingScreen(
   const ctx = safeGet2DContext(canvas)
   if (!ctx) return
 
-  const w = canvas.width
-  const h = canvas.height
+  const baseW = 640
+  const baseH = 160
+  ctx.save()
+  ctx.scale(canvas.width / baseW, canvas.height / baseH)
 
-  const bg = ctx.createLinearGradient(0, 0, w, h)
-  bg.addColorStop(0, "#101a34")
-  bg.addColorStop(1, "#0b1224")
+  const bg = ctx.createLinearGradient(0, 0, baseW, baseH)
+  bg.addColorStop(0, "#132040")
+  bg.addColorStop(1, "#0a1226")
   ctx.fillStyle = bg
-  ctx.fillRect(0, 0, w, h)
+  ctx.fillRect(0, 0, baseW, baseH)
 
-  // Subtle top accent bar
+  // Subtle ambient gold highlight in top-right
+  const glow = ctx.createRadialGradient(baseW - 60, 26, 6, baseW - 60, 26, 180)
+  glow.addColorStop(0, "rgba(233, 185, 73, 0.16)")
+  glow.addColorStop(1, "rgba(233, 185, 73, 0)")
+  ctx.fillStyle = glow
+  ctx.fillRect(0, 0, baseW, baseH)
+
+  // Top gold accent rail
   ctx.fillStyle = "#e9b949"
-  ctx.fillRect(0, 0, w, 5)
+  ctx.fillRect(0, 0, baseW, 5)
 
-  // Live green dot + badge
+  // Live green dot + eyebrow badge
   ctx.fillStyle = "#34c38f"
   ctx.beginPath()
   ctx.arc(34, 34, 6, 0, Math.PI * 2)
@@ -1011,15 +1944,22 @@ export function drawOfficeMeetingScreen(
   // Main title
   ctx.fillStyle = "#f6d27a"
   ctx.font = `800 34px ${FONT_STACK}`
-  ctx.fillText(trimToWidth(ctx, title || "Phòng họp nhóm", w - 64), 30, 84)
+  ctx.fillText(trimToWidth(ctx, title || "Phòng họp nhóm", baseW - 64), 30, 84)
 
   // Subtitle
   ctx.fillStyle = "#f1f5f9"
   ctx.font = `600 20px ${FONT_STACK}`
-  ctx.fillText(trimToWidth(ctx, subtitle || "", w - 64), 30, 126)
+  ctx.fillText(trimToWidth(ctx, subtitle || "", baseW - 64), 30, 126)
+
+  ctx.restore()
 }
 
-// ---------- 8. Office Achievement Standee Painter (460x748) ----------
+// ---------- 8. Office Achievement Standee Painter (460x748 base, Spec §10) ----------
+
+/** Canonical spec §10 personal rank line for the Achievement Standee. */
+export function formatStandeePersonalRank(rank: number, points: number): string {
+  return `Hạng của bạn #${rank} · ${points} điểm`
+}
 
 export function drawOfficeStandee(
   canvas: HTMLCanvasElement,
@@ -1030,140 +1970,192 @@ export function drawOfficeStandee(
   const ctx = safeGet2DContext(canvas)
   if (!ctx) return
 
-  const w = canvas.width
-  const h = canvas.height
+  const baseW = 460
+  const baseH = 748
+  ctx.save()
+  ctx.scale(canvas.width / baseW, canvas.height / baseH)
 
-  // Dark navy gradient backdrop
-  const bg = ctx.createLinearGradient(0, 0, 0, h)
-  bg.addColorStop(0, "#16244a")
-  bg.addColorStop(0.55, "#101c3a")
-  bg.addColorStop(1, "#0c152b")
+  // Dark IQX navy vertical gradient backdrop
+  const bg = ctx.createLinearGradient(0, 0, 0, baseH)
+  bg.addColorStop(0, "#172750")
+  bg.addColorStop(0.55, "#101d3c")
+  bg.addColorStop(1, "#0b1429")
   ctx.fillStyle = bg
-  ctx.fillRect(0, 0, w, h)
+  ctx.fillRect(0, 0, baseW, baseH)
 
-  // Warm gold top radial glow
-  const glow = ctx.createRadialGradient(w / 2, 70, 10, w / 2, 70, 240)
-  glow.addColorStop(0, "rgba(243, 205, 106, 0.24)")
+  // Warm gold top radial spotlight glow
+  const glow = ctx.createRadialGradient(baseW / 2, 72, 12, baseW / 2, 72, 240)
+  glow.addColorStop(0, "rgba(243, 205, 106, 0.28)")
   glow.addColorStop(1, "rgba(243, 205, 106, 0)")
   ctx.fillStyle = glow
-  ctx.fillRect(0, 0, w, 320)
+  ctx.fillRect(0, 0, baseW, 330)
 
-  // Crisp gold inner border
-  drawRoundedRect(ctx, 12, 12, w - 24, h - 24, 22)
+  // Double gold exhibition border
+  drawRoundedRect(ctx, 12, 12, baseW - 24, baseH - 24, 22)
   ctx.strokeStyle = "#e9b949"
   ctx.lineWidth = 6
   ctx.stroke()
 
-  // Team Eyebrow
+  drawRoundedRect(ctx, 22, 22, baseW - 44, baseH - 44, 15)
+  ctx.strokeStyle = "rgba(246, 210, 122, 0.28)"
+  ctx.lineWidth = 1.8
+  ctx.stroke()
+
+  // Team Eyebrow ("IQX · NHÓM {TÊN SẾP}")
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
-  ctx.fillStyle = "#f3cd6a"
+  ctx.fillStyle = "#f6d27a"
   ctx.font = `800 21px ${FONT_STACK}`
-  ctx.fillText(trimToWidth(ctx, payload.teamTitle, w - 64), w / 2, 62)
+  ctx.fillText(
+    trimToWidth(ctx, payload.teamTitle || "IQX · NHÓM", baseW - 68),
+    baseW / 2,
+    62
+  )
 
-  // Gold divider accent
-  ctx.fillStyle = "rgba(233, 185, 73, 0.55)"
-  ctx.fillRect(w / 2 - 64, 86, 128, 3)
+  // Ornamental gold divider accent
+  ctx.fillStyle = "rgba(233, 185, 73, 0.65)"
+  ctx.fillRect(baseW / 2 - 68, 86, 136, 3)
 
-  // Month Headline
-  ctx.fillStyle = "#ffffff"
+  // Month Headline ("Thành tích tháng {m}")
+  ctx.fillStyle = "#f1f5f9"
   ctx.font = `900 36px ${FONT_STACK}`
-  ctx.fillText(trimToWidth(ctx, payload.monthLabel, w - 56), w / 2, 130)
+  ctx.fillText(
+    trimToWidth(ctx, payload.monthLabel || "Thành tích tháng", baseW - 58),
+    baseW / 2,
+    130
+  )
 
-  // Subtitle
+  // Subtitle ("Top 3 điểm nhiệm vụ")
   ctx.fillStyle = "#c9d6e4"
   ctx.font = `600 20px ${FONT_STACK}`
-  ctx.fillText(payload.subtitle ?? "Top 3 điểm nhiệm vụ", w / 2, 170)
+  ctx.fillText(payload.subtitle ?? "Top 3 điểm nhiệm vụ", baseW / 2, 170)
 
   // Top 3 rows
-  const medalColors: Readonly<Record<1 | 2 | 3, { bg: string; fg: string }>> = {
-    1: { bg: "#f6d27a", fg: "#2a1c00" },
-    2: { bg: "#d9dee7", fg: "#1b2433" },
-    3: { bg: "#e0a26b", fg: "#2b1605" },
+  const medalStyles: Readonly<
+    Record<1 | 2 | 3, { hi: string; bg: string; lo: string; fg: string }>
+  > = {
+    1: { hi: "#fff6d6", bg: "#f6d27a", lo: "#c98f24", fg: "#2a1c00" },
+    2: { hi: "#f8fafc", bg: "#d9dee7", lo: "#8c99ad", fg: "#1b2433" },
+    3: { hi: "#fde2c4", bg: "#e0a26b", lo: "#9e5c26", fg: "#2b1605" },
   }
 
   if (!payload.top3.length) {
-    drawRoundedRect(ctx, 32, 232, w - 64, 130, 16)
-    ctx.fillStyle = "rgba(255, 255, 255, 0.06)"
+    drawRoundedRect(ctx, 32, 232, baseW - 64, 136, 16)
+    ctx.fillStyle = "rgba(255, 255, 255, 0.065)"
     ctx.fill()
+    ctx.strokeStyle = "rgba(148, 179, 218, 0.22)"
+    ctx.lineWidth = 1.5
+    ctx.stroke()
+
     ctx.fillStyle = "#c9d6e4"
     ctx.font = `600 21px ${FONT_STACK}`
     ctx.fillText(
       payload.emptyText ?? "Chưa có ai ghi điểm tháng này",
-      w / 2,
-      298
+      baseW / 2,
+      300
     )
   } else {
     payload.top3.slice(0, 3).forEach((entry, idx) => {
       const cardY = 216 + idx * 104
-      const medal = medalColors[entry.rank]
+      const medal = medalStyles[entry.rank]
 
-      drawRoundedRect(ctx, 30, cardY, w - 60, 86, 16)
+      drawRoundedRect(ctx, 30, cardY, baseW - 60, 86, 16)
       ctx.fillStyle =
         entry.rank === 1
-          ? "rgba(233, 185, 73, 0.18)"
-          : "rgba(255, 255, 255, 0.07)"
+          ? "rgba(233, 185, 73, 0.19)"
+          : "rgba(255, 255, 255, 0.075)"
       ctx.fill()
       ctx.strokeStyle =
         entry.rank === 1
-          ? "rgba(246, 210, 122, 0.72)"
-          : "rgba(148, 179, 218, 0.25)"
+          ? "rgba(246, 210, 122, 0.78)"
+          : "rgba(148, 179, 218, 0.28)"
       ctx.lineWidth = 2
       ctx.stroke()
 
-      // Rank circle
-      ctx.fillStyle = medal.bg
+      // Metallic shaded rank medal circle
+      const mGrad = ctx.createRadialGradient(
+        68,
+        cardY + 36,
+        3,
+        74,
+        cardY + 43,
+        24
+      )
+      mGrad.addColorStop(0, medal.hi)
+      mGrad.addColorStop(0.55, medal.bg)
+      mGrad.addColorStop(1, medal.lo)
+      ctx.fillStyle = mGrad
       ctx.beginPath()
       ctx.arc(74, cardY + 43, 24, 0, Math.PI * 2)
       ctx.fill()
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.45)"
+      ctx.lineWidth = 1.8
+      ctx.stroke()
+
       ctx.fillStyle = medal.fg
       ctx.textAlign = "center"
       ctx.font = `900 24px ${FONT_STACK}`
       ctx.fillText(String(entry.rank), 74, cardY + 45)
 
+      // Points (measured first so name uses exact remaining width)
+      const pointsText = `${entry.points} điểm`
+      ctx.textAlign = "right"
+      ctx.fillStyle = medal.bg
+      ctx.font = `800 21px ${FONT_STACK}`
+      const ptsW = Math.min(ctx.measureText(pointsText).width, 130)
+      ctx.fillText(pointsText, baseW - 44, cardY + 44)
+
       // Name
       ctx.textAlign = "left"
       ctx.fillStyle = "#f1f5f9"
-      ctx.font = `700 22px ${FONT_STACK}`
-      ctx.fillText(trimToWidth(ctx, entry.name, w - 224), 112, cardY + 44)
-
-      // Points
-      ctx.textAlign = "right"
-      ctx.fillStyle = medal.bg
-      ctx.font = `800 24px ${FONT_STACK}`
-      ctx.fillText(`${entry.points} đ`, w - 48, cardY + 44)
+      ctx.font = `700 21px ${FONT_STACK}`
+      const nameMaxW = Math.max(96, baseW - 112 - 54 - ptsW)
+      ctx.fillText(trimToWidth(ctx, entry.name, nameMaxW), 110, cardY + 44)
     })
   }
 
-  // Personal rank blue pill (for staff)
+  // Personal rank blue pill (for staff): exact spec §10 copy
   if (payload.personalRank) {
     const pillY = 556
-    drawRoundedRect(ctx, 36, pillY, w - 72, 64, 16)
-    ctx.fillStyle = "#1d6fe8"
+    drawRoundedRect(ctx, 32, pillY, baseW - 64, 66, 16)
+    const pillGrad = ctx.createLinearGradient(0, pillY, 0, pillY + 66)
+    pillGrad.addColorStop(0, "#2b7df5")
+    pillGrad.addColorStop(1, "#1a5ec7")
+    ctx.fillStyle = pillGrad
     ctx.fill()
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)"
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.42)"
     ctx.lineWidth = 2
     ctx.stroke()
 
-    ctx.textAlign = "center"
-    ctx.fillStyle = "#ffffff"
-    ctx.font = `800 22px ${FONT_STACK}`
-    ctx.fillText(
-      `Hạng của bạn: #${payload.personalRank.rank} · ${payload.personalRank.points} đ`,
-      w / 2,
-      pillY + 33
+    const rankText = formatStandeePersonalRank(
+      payload.personalRank.rank,
+      payload.personalRank.points
     )
+    const maxPillTextW = baseW - 88
+    let fontSize = 21
+    ctx.font = `800 ${fontSize}px ${FONT_STACK}`
+    while (fontSize > 15 && ctx.measureText(rankText).width > maxPillTextW) {
+      fontSize -= 1
+      ctx.font = `800 ${fontSize}px ${FONT_STACK}`
+    }
+
+    ctx.textAlign = "center"
+    ctx.fillStyle = "#f1f5f9"
+    ctx.fillText(rankText, baseW / 2, pillY + 34, maxPillTextW)
   }
 
-  // Footer
-  ctx.fillStyle = "rgba(233, 185, 73, 0.28)"
-  ctx.fillRect(46, h - 88, w - 92, 2)
+  // Footer ("Reset ngày 01 hằng tháng")
+  ctx.fillStyle = "rgba(233, 185, 73, 0.34)"
+  ctx.fillRect(46, baseH - 88, baseW - 92, 2)
   ctx.textAlign = "center"
   ctx.fillStyle = "#c9d6e4"
   ctx.font = `600 18px ${FONT_STACK}`
   ctx.fillText(
     payload.footerText ?? "Reset ngày 01 hằng tháng",
-    w / 2,
-    h - 52
+    baseW / 2,
+    baseH - 52
   )
+
+  ctx.restore()
 }
