@@ -19,6 +19,8 @@ export interface ChibiCharacterSpec {
   isThanTai?: boolean
   statueRank?: ChibiStatueRank
   scale?: number
+  lite?: boolean
+  reducedMotion?: boolean
 }
 
 export interface ChibiUpdateState {
@@ -26,6 +28,7 @@ export interface ChibiUpdateState {
   facingRad: number
   moveFactor?: number
   animTime?: number
+  reducedMotion?: boolean
 }
 
 export interface ChibiRig {

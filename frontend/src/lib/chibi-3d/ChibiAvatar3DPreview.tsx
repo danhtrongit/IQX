@@ -13,13 +13,14 @@ export interface ChibiAvatar3DPreviewProps {
   size?: number
   anim?: ChibiAnimMode
   interactive?: boolean
+  lite?: boolean
   className?: string
   label?: string
 }
 
 /**
  * Renders a live, gently spinning interactive 3D Three.js Chibi character preview
- * with an automatic instant fallback to a razor-sharp 2D Chibi portrait when WebGL is unavailable.
+ * with an automatic instant fallback to a crisp HiDPI 2D Chibi portrait when WebGL is unavailable.
  */
 export function ChibiAvatar3DPreview({
   avatarId,
@@ -27,6 +28,7 @@ export function ChibiAvatar3DPreview({
   size = 160,
   anim = "idle",
   interactive = true,
+  lite = false,
   className,
   label,
 }: ChibiAvatar3DPreviewProps) {
@@ -52,6 +54,7 @@ export function ChibiAvatar3DPreview({
       size: init.size,
       anim: init.anim,
       interactive,
+      lite,
       onContextLost: () => {
         if (imgEl) imgEl.style.opacity = "1"
       },
@@ -66,7 +69,7 @@ export function ChibiAvatar3DPreview({
       handleRef.current = null
       if (imgEl) imgEl.style.opacity = "1"
     }
-  }, [interactive])
+  }, [interactive, lite])
 
   useEffect(() => {
     latestRef.current = { avatarId, colorHex, size, anim }
