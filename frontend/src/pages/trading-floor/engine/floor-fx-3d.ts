@@ -10,9 +10,12 @@
  */
 import * as THREE from "three"
 
+import { prefersReducedMotion } from "@/lib/chibi-3d/character-builder.ts"
 import {
+  getSceneHostBridge,
   logicalToWorld,
   type ChibiAnimMode,
+  type ChibiSceneHostBridge,
   type ProjectedPoint,
   type WorldTransformConfig,
 } from "@/lib/chibi-3d/types.ts"
@@ -20,7 +23,6 @@ import {
 import type { Rain } from "../net/types.ts"
 import { playFx, type FxSoundKey } from "./fx-sound.ts"
 import type { OverlayLayer } from "./overlay-layer.ts"
-import { prefersReducedMotion } from "./reduced-motion.ts"
 
 const FIREWORK_COLORS = [0xffd84d, 0xff4d5a, 0xff6ec7, 0x4df3ff, 0x7cff50]
 const CONFETTI_COLORS = [0xffd84d, 0xfff1a8, 0xff5e6c, 0x34d399, 0x60a5fa]
@@ -170,6 +172,7 @@ export class RainCoinManager {
     life: number,
     alpha: number
   ) => void
+  private readonly onActivity: () => void
 
   private readonly rains = new Map<
     string,
@@ -205,6 +208,7 @@ export class RainCoinManager {
         life: number,
         alpha: number
       ) => void
+      onActivity?: () => void
     }
   ) {
     this.parent = parent
@@ -214,6 +218,7 @@ export class RainCoinManager {
     this.spawnSparks = hooks.spawnSparks
     this.spawnBurstCoins = hooks.spawnBurstCoins
     this.spawnFloorRing = hooks.spawnFloorRing ?? (() => undefined)
+    this.onActivity = hooks.onActivity ?? (() => undefined)
 
     const segs = this.lite ? 12 : 20
     this.coinRimGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.055, segs)
@@ -227,12 +232,14 @@ export class RainCoinManager {
 
   playRainBurst(lx: number, ly: number): void {
     if (this.disposed) return
+    this.onActivity()
     const pt = logicalToWorld(lx, ly, this.world)
     this.spawnBurstCoins(pt.x, 1.9, pt.z)
   }
 
   addRain(rain: Rain, isMine: boolean): void {
     if (this.disposed) return
+    this.onActivity()
     this.removeRain(rain.id)
     const coinMap = new Map<number, ActiveCoin>()
     rain.coins.forEach((c, idx) => {
@@ -467,8 +474,13 @@ export class RainCoinManager {
     return best
   }
 
+  /** Returns true when any live or fading coin animation is active. */
+  hasActive(): boolean {
+    return this.rains.size > 0 || this.dyingCoins.length > 0
+  }
+
   update(dt: number): void {
-    if (this.disposed) return
+    if (this.disposed || !this.hasActive()) return
     const reduced = prefersReducedMotion()
     for (const rain of this.rains.values()) {
       for (const coin of rain.coins.values()) {
@@ -619,6 +631,8 @@ export class FloorFx3D {
   private readonly overlay: OverlayLayer
   private readonly lite: boolean
   private readonly maxParticles: number
+  private readonly hostBridge: ChibiSceneHostBridge | null
+  private readonly shakeOut = { x: 0, y: 0, z: 0 }
   private readonly tasks: ScheduledTask[] = []
   private readonly particles: Particle3D[] = []
   private readonly rockets: FireworkRocket[] = []
@@ -660,6 +674,7 @@ export class FloorFx3D {
     this.overlay = overlay
     this.lite = opts?.lite ?? false
     this.maxParticles = this.lite ? 72 : 220
+    this.hostBridge = getSceneHostBridge(scene)
     this.group = new THREE.Group()
     this.group.name = "trading-floor-fx-3d"
     scene.add(this.group)
@@ -686,6 +701,9 @@ export class FloorFx3D {
 
     this.coins = new RainCoinManager(this.group, world, overlay, {
       lite: this.lite,
+      onActivity: () => {
+        this.hostBridge?.markActive(1000)
+      },
       spawnSparks: (wx, wy, wz, count, color) => {
         this.spawnRadialSparks(wx, wy, wz, count, color, 1.2, 2.5, 0.44)
       },
@@ -910,6 +928,7 @@ export class FloorFx3D {
   /** Glowing golden floor click ripple marker (`520ms`). */
   spawnClickRing(lx: number, ly: number): void {
     if (this.disposed) return
+    this.hostBridge?.markActive(600)
     const pt = logicalToWorld(lx, ly, this.world)
     this.spawnWorldRing(
       pt.x,
@@ -933,6 +952,7 @@ export class FloorFx3D {
     }
   ): void {
     if (this.disposed) return
+    this.hostBridge?.markActive(1500)
     const pt = logicalToWorld(lx + 2, ly + 8, this.world)
     opts.onAnim?.("hop", 0.52)
 
@@ -946,6 +966,9 @@ export class FloorFx3D {
     mesh.scale.set(0.3, 0.38, 0.3)
     mesh.castShadow = !this.lite
     this.group.add(mesh)
+    if (!this.lite) {
+      this.hostBridge?.markShadowDirty()
+    }
 
     this.eggs.push({
       mesh,
@@ -1094,6 +1117,7 @@ export class FloorFx3D {
     opts: { isSelf: boolean; soundVol?: number }
   ): void {
     if (this.disposed) return
+    this.hostBridge?.markActive(2500)
     const reduced = prefersReducedMotion()
     const vol = opts.soundVol ?? 1
     const base = logicalToWorld(lx, ly, this.world)
@@ -1239,6 +1263,7 @@ export class FloorFx3D {
     }
   ): void {
     if (this.disposed) return
+    this.hostBridge?.markActive(3500)
     const reduced = prefersReducedMotion()
     const vol = opts.soundVol ?? 1
     this.scheduleSound(0, "bell", vol)
@@ -1375,20 +1400,40 @@ export class FloorFx3D {
   /** Current camera shake displacement (always zero when prefers-reduced-motion is active). */
   getCameraShakeOffset(): { x: number; y: number; z: number } {
     if (this.shakeRemainingS <= 0 || prefersReducedMotion()) {
-      return { x: 0, y: 0, z: 0 }
+      this.shakeOut.x = 0
+      this.shakeOut.y = 0
+      this.shakeOut.z = 0
+      return this.shakeOut
     }
     const k = this.shakeRemainingS / Math.max(0.01, this.shakeDurationS)
     const a = this.shakeAmp * k
-    return {
-      x: randRange(-a, a),
-      y: randRange(-a * 0.6, a * 0.6),
-      z: randRange(-a * 0.5, a * 0.5),
-    }
+    this.shakeOut.x = randRange(-a, a)
+    this.shakeOut.y = randRange(-a * 0.6, a * 0.6)
+    this.shakeOut.z = randRange(-a * 0.5, a * 0.5)
+    return this.shakeOut
+  }
+
+  /** True when any FX animation, particle, scheduled task, or coin rain is currently active. */
+  hasActiveEffects(): boolean {
+    return (
+      this.shakeRemainingS > 0 ||
+      this.tasks.length > 0 ||
+      this.eggs.length > 0 ||
+      this.yolks.length > 0 ||
+      this.rockets.length > 0 ||
+      this.incenses.length > 0 ||
+      this.rings.length > 0 ||
+      this.flashLights.length > 0 ||
+      this.particles.length > 0 ||
+      this.coins.hasActive()
+    )
   }
 
   update(dt: number): void {
     if (this.disposed) return
     this.clockS += dt
+    if (!this.hasActiveEffects()) return
+    this.hostBridge?.markActive(300)
     const reduced = prefersReducedMotion()
 
     if (this.shakeRemainingS > 0) {
@@ -1415,6 +1460,9 @@ export class FloorFx3D {
         this.group.remove(egg.mesh)
         egg.mat.dispose()
         this.eggs.splice(i, 1)
+        if (!this.lite) {
+          this.hostBridge?.markShadowDirty()
+        }
         this.crackEgg(egg)
       }
     }
@@ -1470,15 +1518,17 @@ export class FloorFx3D {
       }
 
       if (t >= 1) {
-        const pos = r.mesh.position.clone()
+        const px = r.mesh.position.x
+        const py = r.mesh.position.y
+        const pz = r.mesh.position.z
         this.group.remove(r.mesh)
         r.mat.dispose()
         this.rockets.splice(i, 1)
         // Air-drag dual-ring starburst + falling gold glitter
         this.spawnRadialSparks(
-          pos.x,
-          pos.y,
-          pos.z,
+          px,
+          py,
+          pz,
           this.scaleCount(24, 6),
           r.outerColor,
           2.4,
@@ -1489,9 +1539,9 @@ export class FloorFx3D {
           1.85
         )
         this.spawnRadialSparks(
-          pos.x,
-          pos.y,
-          pos.z,
+          px,
+          py,
+          pz,
           this.scaleCount(14, 4),
           r.innerColor,
           0.9,
@@ -1502,9 +1552,9 @@ export class FloorFx3D {
           1.6
         )
         this.spawnRadialSparks(
-          pos.x,
-          pos.y,
-          pos.z,
+          px,
+          py,
+          pz,
           this.scaleCount(8, 2),
           0xfff0a0,
           0.4,

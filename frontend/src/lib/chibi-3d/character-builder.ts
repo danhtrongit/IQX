@@ -1,5 +1,4 @@
 import * as THREE from "three"
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js"
 
 import { createSignTexture } from "./textures.ts"
 import {
@@ -9,12 +8,15 @@ import {
   createMatteMaterial,
   createMetalMaterial,
   getAvatarStylePreset,
+  getSceneHostBridge,
+  mergeIndexedGeometries,
   resolveOutfitHex,
   shortestAngleDiff,
   type AvatarStylePreset,
   type ChibiCharacterSpec,
   type ChibiHairStyle,
   type ChibiRig,
+  type ChibiSceneHostBridge,
   type ChibiStatueRank,
   type ChibiUpdateState,
 } from "./types.ts"
@@ -331,62 +333,12 @@ function mergeNormalizedGeometries(
   geoms: THREE.BufferGeometry[],
   includeVertexColors: boolean
 ): THREE.BufferGeometry {
-  if (geoms.length === 1) {
-    const single = geoms[0]
-    if (!single.getAttribute("normal")) {
-      single.computeVertexNormals()
-    }
-    if (!includeVertexColors && single.getAttribute("color")) {
-      single.deleteAttribute("color")
-    }
-    return single
-  }
-
-  const prepared: THREE.BufferGeometry[] = []
-  for (const src of geoms) {
-    let g: THREE.BufferGeometry
-    if (src.index) {
-      g = src.toNonIndexed()
-      src.dispose()
-    } else {
-      g = src
-    }
-    if (!g.getAttribute("normal")) {
-      g.computeVertexNormals()
-    }
-    const pos = g.getAttribute("position")
-    if (!g.getAttribute("uv") && pos) {
-      g.setAttribute(
-        "uv",
-        new THREE.Float32BufferAttribute(new Float32Array(pos.count * 2), 2)
-      )
-    }
-    if (includeVertexColors) {
-      if (!g.getAttribute("color") && pos) {
-        const white = new Float32Array(pos.count * 3)
-        white.fill(1)
-        g.setAttribute("color", new THREE.Float32BufferAttribute(white, 3))
-      }
-    } else if (g.getAttribute("color")) {
-      g.deleteAttribute("color")
-    }
-    for (const key of Object.keys(g.attributes)) {
-      if (
-        key !== "position" &&
-        key !== "normal" &&
-        key !== "uv" &&
-        !(includeVertexColors && key === "color")
-      ) {
-        g.deleteAttribute(key)
-      }
-    }
-    prepared.push(g)
-  }
-  const merged = mergeGeometries(prepared, false)
-  for (const g of prepared) {
-    g.dispose()
-  }
-  return merged ?? new THREE.BufferGeometry()
+  return (
+    mergeIndexedGeometries(geoms, {
+      includeVertexColors,
+      disposeInputs: true,
+    }) ?? new THREE.BufferGeometry()
+  )
 }
 
 // ---------- Color Utilities ----------
@@ -4045,8 +3997,26 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
   let currentFacing = 0
   let facingInitialized = false
   let disposed = false
+  let cachedParent: THREE.Object3D | null = null
+  let hostBridge: ChibiSceneHostBridge | null = null
+  let lastPosX = Number.NaN
+  let lastPosY = Number.NaN
+  let lastPosZ = Number.NaN
+  let lastShadowFacing = Number.NaN
+
+  const syncHostBridge = (): ChibiSceneHostBridge | null => {
+    if (root.parent !== cachedParent) {
+      cachedParent = root.parent
+      hostBridge = getSceneHostBridge(cachedParent)
+      if (hostBridge) {
+        hostBridge.markShadowDirty()
+      }
+    }
+    return hostBridge
+  }
 
   const update = (dt: number, state: ChibiUpdateState): void => {
+    const bridge = syncHostBridge()
     const safeDt = Number.isFinite(dt) ? Math.max(0, Math.min(0.1, dt)) : 0
     internalTime += safeDt
     const t =
@@ -4061,6 +4031,16 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
     const reduced =
       state.reducedMotion ?? spec.reducedMotion ?? prefersReducedMotion()
 
+    // Short-circuit motionless reduced-motion statues after initial facing setup
+    if (
+      state.anim === "statue" &&
+      reduced &&
+      facingInitialized &&
+      Math.abs(shortestAngleDiff(currentFacing, targetFacing)) < 1e-4
+    ) {
+      return
+    }
+
     if (!facingInitialized || state.anim === "statue") {
       currentFacing = targetFacing
       facingInitialized = true
@@ -4070,6 +4050,32 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
       currentFacing += delta * alpha
     }
     bodyPivot.rotation.y = currentFacing
+
+    if (bridge) {
+      const px = root.position.x
+      const py = root.position.y
+      const pz = root.position.z
+      const posChanged =
+        px !== lastPosX || py !== lastPosY || pz !== lastPosZ
+      const rotChanged =
+        Number.isNaN(lastShadowFacing) ||
+        Math.abs(shortestAngleDiff(lastShadowFacing, currentFacing)) > 0.02
+      const activeAnim =
+        state.anim !== "idle" &&
+        state.anim !== "statue" &&
+        (state.anim !== "walk" || moveFactor > 0.01)
+
+      if (posChanged || rotChanged || activeAnim) {
+        lastPosX = px
+        lastPosY = py
+        lastPosZ = pz
+        lastShadowFacing = currentFacing
+        bridge.markShadowDirty()
+        if (posChanged || activeAnim) {
+          bridge.markActive(400)
+        }
+      }
+    }
 
     // Reset articulated transforms cleanly before applying active animation mode
     bodyPivot.position.set(0, 0, 0)
@@ -4273,6 +4279,10 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
     dispose: () => {
       if (disposed) return
       disposed = true
+      const bridge = hostBridge ?? getSceneHostBridge(root.parent)
+      bridge?.markShadowDirty()
+      hostBridge = null
+      cachedParent = null
       releaseGeometryBundle(bundle)
       releaseMaterialPalette(palette)
     },

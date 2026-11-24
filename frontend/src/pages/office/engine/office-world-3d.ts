@@ -30,40 +30,52 @@
  */
 import * as THREE from "three"
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js"
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js"
 
+import { prefersReducedMotion } from "@/lib/chibi-3d/character-builder.ts"
 import {
   createAchievementStandee,
   createBookshelf,
   createCoffeeTable,
   createConferenceTable,
+  createInstancedPottedPlants,
   createOfficeDesk,
   createPantryCounter,
-  createPottedPlant,
   createRug,
   createSofa,
   createWallBoardFrame,
   type DisposableProp,
+  type InstancedPropTransform,
   type LiveBoardProp,
 } from "@/lib/chibi-3d/furniture-builder.ts"
 import {
+  cloneSharedRepeatedTexture,
   createFabricSurfaceTexture,
   createFloorDecalTexture,
   createFloorTexture,
   createMonitorScreenTexture,
+  createNameplateAtlasTexture,
   createSignTexture,
   createWoodSurfaceTexture,
   drawOfficeMeetingScreen,
   drawOfficeStandee,
+  markStaticCanvasTexture,
+  releaseCachedTexture,
+  retainCachedTexture,
   safeGet2DContext,
+  type NameplateAtlasEntry,
 } from "@/lib/chibi-3d/textures.ts"
 import {
-  SHARED_TEXTURE_FLAG,
   createClothMaterial,
   createGlowMaterial,
   createMatteMaterial,
   createMetalMaterial,
+  disposeObject3D,
+  freezeStaticSubtree,
+  getSceneHostBridge,
+  isSharedResourceObj,
   logicalToWorld,
+  mergeIndexedGeometries,
+  type ChibiSceneHostBridge,
   type OfficeStandeeEntry,
   type WorldTransformConfig,
 } from "@/lib/chibi-3d/types.ts"
@@ -96,14 +108,12 @@ import {
   getSouthCredenzaRect,
   getTeamBannerRugRect,
   getZoneRugs,
-  prefersReducedMotion,
   type OfficeDeskPlacement,
   type OfficeDeskSlot,
 } from "./office-layout.ts"
 
 const FONT_STACK =
   '"Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-const SHARED_RESOURCE_FLAG = "__chibiSharedResource"
 
 const scratchMatrix = new THREE.Matrix4()
 const scratchPos = new THREE.Vector3()
@@ -125,89 +135,6 @@ interface BatchBucket {
   geometries: THREE.BufferGeometry[]
 }
 
-function isSharedFlagged(obj: { userData?: Record<string, unknown> }): boolean {
-  return Boolean(obj.userData?.[SHARED_RESOURCE_FLAG])
-}
-
-/** Safely disposes InstancedMeshes, unique geometries, unique materials, and non-shared textures. */
-function disposeSubtree(root: THREE.Object3D): void {
-  const geometries = new Set<THREE.BufferGeometry>()
-  const materials = new Set<THREE.Material>()
-  const textures = new Set<THREE.Texture>()
-
-  root.traverse((node) => {
-    if (node instanceof THREE.InstancedMesh) {
-      node.dispose()
-    }
-    const mesh = node as THREE.Mesh
-    if (mesh.geometry && !isSharedFlagged(mesh.geometry)) {
-      geometries.add(mesh.geometry)
-    }
-    const rawMat = mesh.material as
-      | THREE.Material
-      | THREE.Material[]
-      | undefined
-    const list = Array.isArray(rawMat) ? rawMat : rawMat ? [rawMat] : []
-    for (const mat of list) {
-      if (!mat || isSharedFlagged(mat)) continue
-      materials.add(mat)
-      const std = mat as THREE.MeshStandardMaterial & {
-        map?: THREE.Texture | null
-        emissiveMap?: THREE.Texture | null
-        roughnessMap?: THREE.Texture | null
-        metalnessMap?: THREE.Texture | null
-        alphaMap?: THREE.Texture | null
-        bumpMap?: THREE.Texture | null
-        normalMap?: THREE.Texture | null
-      }
-      for (const tex of [
-        std.map,
-        std.emissiveMap,
-        std.roughnessMap,
-        std.metalnessMap,
-        std.alphaMap,
-        std.bumpMap,
-        std.normalMap,
-      ]) {
-        if (
-          tex &&
-          !(tex.userData as Record<string, unknown>)[SHARED_TEXTURE_FLAG]
-        ) {
-          textures.add(tex)
-        }
-      }
-    }
-  })
-
-  for (const geom of geometries) geom.dispose()
-  for (const tex of textures) tex.dispose()
-  for (const mat of materials) mat.dispose()
-}
-
-function normalizeForMerge(raw: THREE.BufferGeometry): THREE.BufferGeometry {
-  const geom = raw.index ? raw.toNonIndexed() : raw.clone()
-  if (!isSharedFlagged(raw)) {
-    raw.dispose()
-  }
-  for (const attrName of Object.keys(geom.attributes)) {
-    if (attrName !== "position" && attrName !== "normal" && attrName !== "uv") {
-      geom.deleteAttribute(attrName)
-    }
-  }
-  if (!geom.getAttribute("normal")) {
-    geom.computeVertexNormals()
-  }
-  if (!geom.getAttribute("uv")) {
-    const pos = geom.getAttribute("position")
-    const count = pos ? pos.count : 0
-    geom.setAttribute(
-      "uv",
-      new THREE.BufferAttribute(new Float32Array(count * 2), 2)
-    )
-  }
-  return geom
-}
-
 class MeshBatcher {
   private readonly buckets = new Map<string, BatchBucket>()
 
@@ -220,7 +147,10 @@ class MeshBatcher {
     castShadow = true,
     receiveShadow = true
   ): void {
-    const geom = normalizeForMerge(raw)
+    const geom = isSharedResourceObj(raw) ? raw.clone() : raw
+    if (isSharedResourceObj(geom)) {
+      geom.userData = {}
+    }
     scratchPos.set(pos[0], pos[1], pos[2])
     if (rot) {
       scratchEuler.set(rot[0], rot[1], rot[2])
@@ -250,19 +180,36 @@ class MeshBatcher {
     bucket.geometries.push(geom)
   }
 
+  addBox(
+    w: number,
+    h: number,
+    d: number,
+    material: THREE.Material,
+    x: number,
+    y: number,
+    z: number,
+    castShadow = true,
+    receiveShadow = true,
+    rot?: readonly [number, number, number]
+  ): void {
+    this.add(
+      new THREE.BoxGeometry(w, h, d),
+      material,
+      [x, y, z],
+      rot,
+      undefined,
+      castShadow,
+      receiveShadow
+    )
+  }
+
   flushToSpecs(): MergedSpec[] {
     const specs: MergedSpec[] = []
     for (const bucket of this.buckets.values()) {
       if (bucket.geometries.length === 0) continue
-      let merged: THREE.BufferGeometry | null
-      if (bucket.geometries.length === 1) {
-        merged = bucket.geometries[0]!
-      } else {
-        merged = mergeGeometries(bucket.geometries, false)
-        if (merged) {
-          for (const g of bucket.geometries) g.dispose()
-        }
-      }
+      const merged = mergeIndexedGeometries(bucket.geometries, {
+        disposeInputs: true,
+      })
       if (merged) {
         merged.computeBoundingSphere()
         specs.push({
@@ -271,15 +218,6 @@ class MeshBatcher {
           castShadow: bucket.castShadow,
           receiveShadow: bucket.receiveShadow,
         })
-      } else {
-        for (const g of bucket.geometries) {
-          specs.push({
-            geometry: g,
-            material: bucket.material,
-            castShadow: bucket.castShadow,
-            receiveShadow: bucket.receiveShadow,
-          })
-        }
       }
     }
     this.buckets.clear()
@@ -293,6 +231,71 @@ class MeshBatcher {
       mesh.receiveShadow = spec.receiveShadow
       parent.add(mesh)
     }
+  }
+}
+
+/** Merges non-instanced static prop meshes per `(material, castShadow, receiveShadow)` while keeping `InstancedMesh` intact. */
+function mergeStaticPropsInto(
+  props: readonly DisposableProp[],
+  parent: THREE.Object3D
+): void {
+  const buckets = new Map<
+    string,
+    {
+      material: THREE.Material
+      castShadow: boolean
+      receiveShadow: boolean
+      geos: THREE.BufferGeometry[]
+    }
+  >()
+
+  for (const prop of props) {
+    prop.group.updateMatrixWorld(true)
+    const toRemove: THREE.Mesh[] = []
+    prop.group.traverse((node) => {
+      if (
+        !(node instanceof THREE.Mesh) ||
+        node instanceof THREE.InstancedMesh
+      ) {
+        return
+      }
+      if (!node.geometry || Array.isArray(node.material) || !node.material) {
+        return
+      }
+      const cloned = node.geometry.clone()
+      cloned.userData = {}
+      cloned.applyMatrix4(node.matrixWorld)
+      const key = `${node.material.uuid}:${node.castShadow ? 1 : 0}:${node.receiveShadow ? 1 : 0}`
+      let bucket = buckets.get(key)
+      if (!bucket) {
+        bucket = {
+          material: node.material,
+          castShadow: node.castShadow,
+          receiveShadow: node.receiveShadow,
+          geos: [],
+        }
+        buckets.set(key, bucket)
+      }
+      bucket.geos.push(cloned)
+      toRemove.push(node)
+    })
+
+    for (const mesh of toRemove) {
+      mesh.parent?.remove(mesh)
+      if (mesh.geometry && !isSharedResourceObj(mesh.geometry)) {
+        mesh.geometry.dispose()
+      }
+    }
+  }
+
+  for (const bucket of buckets.values()) {
+    const merged = mergeIndexedGeometries(bucket.geos, { disposeInputs: true })
+    if (!merged) continue
+    merged.computeBoundingSphere()
+    const mesh = new THREE.Mesh(merged, bucket.material)
+    mesh.castShadow = bucket.castShadow
+    mesh.receiveShadow = bucket.receiveShadow
+    parent.add(mesh)
   }
 }
 
@@ -310,53 +313,28 @@ function roundedBox(
   return new RoundedBoxGeometry(sw, sh, sd, lite ? 1 : 2, r)
 }
 
-function cloneRepeatedTexture(
-  base: THREE.Texture,
-  repeatX: number,
-  repeatY: number
-): THREE.Texture {
-  const tex = base.clone()
-  tex.wrapS = THREE.RepeatWrapping
-  tex.wrapT = THREE.RepeatWrapping
-  tex.repeat.set(repeatX, repeatY)
-  tex.needsUpdate = true
-  return tex
-}
-
-function addBox(
-  parent: THREE.Object3D,
-  w: number,
-  h: number,
-  d: number,
-  mat: THREE.Material,
-  x: number,
-  y: number,
-  z: number,
-  cast = true
-): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat)
-  mesh.position.set(x, y, z)
-  mesh.castShadow = cast
-  mesh.receiveShadow = true
-  parent.add(mesh)
-  return mesh
-}
-
 function createCanvasTextureSafe(
   w: number,
   h: number,
   draw: (ctx: CanvasRenderingContext2D, width: number, height: number) => void,
   anisotropy = 4
 ): THREE.Texture {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
+    draw(ctx, w, h)
+    return true
+  }
   const canvas = document.createElement("canvas")
   canvas.width = w
   canvas.height = h
-  const ctx = safeGet2DContext(canvas)
-  if (ctx) {
-    draw(ctx, w, h)
-    const tex = new THREE.CanvasTexture(canvas)
+  const hasCtx = paint(canvas)
+  if (hasCtx) {
+    const tex = markStaticCanvasTexture(new THREE.CanvasTexture(canvas), (c) => {
+      paint(c)
+    })
     tex.colorSpace = THREE.SRGBColorSpace
-    tex.anisotropy = anisotropy
+    tex.anisotropy = Math.min(8, anisotropy)
     tex.needsUpdate = true
     return tex
   }
@@ -595,8 +573,8 @@ function createTeamBannerRugTexture(
     : "IQX · VĂN PHÒNG"
 
   return createCanvasTextureSafe(
-    lite ? 640 : 1280,
-    lite ? 112 : 224,
+    lite ? 512 : 1024,
+    lite ? 96 : 192,
     (ctx, w, h) => {
       // Deep executive navy woven base
       const bg = ctx.createLinearGradient(0, 0, w, h)
@@ -663,8 +641,8 @@ function createTeamBannerRugTexture(
 /** Shared neutral "Bàn trống" plate texture for all unassigned staff desks. */
 function createEmptyDeskPlateTexture(lite: boolean): THREE.Texture {
   return createCanvasTextureSafe(
-    lite ? 220 : 360,
-    lite ? 56 : 92,
+    lite ? 192 : 256,
+    lite ? 48 : 64,
     (ctx, w, h) => {
       ctx.fillStyle = "#192640"
       ctx.fillRect(0, 0, w, h)
@@ -685,10 +663,12 @@ function createEmptyDeskPlateTexture(lite: boolean): THREE.Texture {
 function createStaffDeskPrototypeSpecs(
   width: number,
   depth: number,
-  lite: boolean
+  lite: boolean,
+  retainTex: (tex: THREE.Texture) => void
 ): MergedSpec[] {
   const batcher = new MeshBatcher()
   const oakTex = createWoodSurfaceTexture("oak")
+  retainTex(oakTex)
   const topWoodMat = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     map: oakTex,
@@ -842,9 +822,13 @@ function createStaffDeskPrototypeSpecs(
 }
 
 /** Builds merged prototype geometry buckets for an instanced ergonomic swivel chair (facing +Z). */
-function createSwivelChairPrototypeSpecs(lite: boolean): MergedSpec[] {
+function createSwivelChairPrototypeSpecs(
+  lite: boolean,
+  retainTex: (tex: THREE.Texture) => void
+): MergedSpec[] {
   const batcher = new MeshBatcher()
   const fabricTex = createFabricSurfaceTexture("#2f3e60", "weave")
+  retainTex(fabricTex)
   const fabricMat = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     map: fabricTex,
@@ -934,10 +918,12 @@ function createSwivelChairPrototypeSpecs(lite: boolean): MergedSpec[] {
 function createPodDividerPrototypeSpecs(
   width: number,
   depth: number,
-  lite: boolean
+  lite: boolean,
+  retainTex: (tex: THREE.Texture) => void
 ): MergedSpec[] {
   const batcher = new MeshBatcher()
   const feltTex = createFabricSurfaceTexture("#32476b", "weave")
+  retainTex(feltTex)
   const feltMat = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     map: feltTex,
@@ -945,6 +931,7 @@ function createPodDividerPrototypeSpecs(
     metalness: 0.03,
   })
   const oakTex = createWoodSurfaceTexture("oak")
+  retainTex(oakTex)
   const railMat = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     map: oakTex,
@@ -1002,15 +989,20 @@ export class OfficeWorld3D {
   readonly group: THREE.Group
   private readonly world: WorldTransformConfig
   private readonly lite: boolean
+  private readonly hostBridge: ChibiSceneHostBridge | null
   private readonly archGroup: THREE.Group
   private readonly teamPropsGroup: THREE.Group
   private readonly staticProps: DisposableProp[] = []
   private readonly teamProps: DisposableProp[] = []
+  private readonly archRetainedTextures: THREE.Texture[] = []
+  private readonly teamRetainedTextures: THREE.Texture[] = []
 
   private readonly meetingCanvas: HTMLCanvasElement
   private readonly standeeCanvas: HTMLCanvasElement
   private readonly meetingBoard: LiveBoardProp
   private readonly standeeBoard: LiveBoardProp
+  private lastMeetingSig = ""
+  private lastStandeeSig = ""
 
   private readonly targetRing: THREE.Mesh
   private readonly targetRingMat: THREE.MeshStandardMaterial
@@ -1024,6 +1016,7 @@ export class OfficeWorld3D {
   constructor(scene: THREE.Scene, world: WorldTransformConfig, lite = false) {
     this.world = world
     this.lite = lite
+    this.hostBridge = getSceneHostBridge(scene)
     this.currentWorldH = world.logicalH
 
     this.group = new THREE.Group()
@@ -1047,6 +1040,7 @@ export class OfficeWorld3D {
       "Phòng họp nhóm",
       "Chưa có lịch họp hôm nay"
     )
+    this.lastMeetingSig = "init:empty"
     this.meetingBoard = createWallBoardFrame(
       3.2,
       0.96,
@@ -1057,6 +1051,7 @@ export class OfficeWorld3D {
     const meetScreenPt = logicalToWorld(1160, 26, this.world)
     this.meetingBoard.group.position.set(meetScreenPt.x, 1.58, meetScreenPt.z)
     this.group.add(this.meetingBoard.group)
+    freezeStaticSubtree(this.meetingBoard.group)
 
     // Live Freestanding Gold-Trimmed Achievement Standee (460x748)
     this.standeeCanvas = document.createElement("canvas")
@@ -1069,6 +1064,7 @@ export class OfficeWorld3D {
       emptyText: "Chưa có ai ghi điểm tháng này",
       footerText: "Reset ngày 01 hằng tháng",
     })
+    this.lastStandeeSig = "init:empty"
     this.standeeBoard = createAchievementStandee(
       this.standeeCanvas,
       2.3,
@@ -1078,6 +1074,7 @@ export class OfficeWorld3D {
     const standeePt = logicalToWorld(2195, 1066, this.world)
     this.standeeBoard.group.position.set(standeePt.x, 0, standeePt.z)
     this.group.add(this.standeeBoard.group)
+    freezeStaticSubtree(this.standeeBoard.group)
 
     // Golden click-to-move destination ring
     this.targetRingMat = createGlowMaterial("#f6d27a", 1.1, 0)
@@ -1092,6 +1089,18 @@ export class OfficeWorld3D {
     this.group.add(this.targetRing)
 
     this.buildArchitectureAndStaticProps(this.currentWorldH)
+  }
+
+  private retainArchTex(tex: THREE.Texture): THREE.Texture {
+    retainCachedTexture(tex)
+    this.archRetainedTextures.push(tex)
+    return tex
+  }
+
+  private retainTeamTex(tex: THREE.Texture): THREE.Texture {
+    retainCachedTexture(tex)
+    this.teamRetainedTextures.push(tex)
+    return tex
   }
 
   private toWorldCenter(x: number, y: number, w: number, h: number): {
@@ -1110,7 +1119,10 @@ export class OfficeWorld3D {
       const child = this.archGroup.children[0]
       if (!child) break
       this.archGroup.remove(child)
-      disposeSubtree(child)
+      disposeObject3D(child)
+    }
+    for (const tex of this.archRetainedTextures.splice(0)) {
+      releaseCachedTexture(tex)
     }
   }
 
@@ -1123,7 +1135,10 @@ export class OfficeWorld3D {
       const child = this.teamPropsGroup.children[0]
       if (!child) break
       this.teamPropsGroup.remove(child)
-      disposeSubtree(child)
+      disposeObject3D(child)
+    }
+    for (const tex of this.teamRetainedTextures.splice(0)) {
+      releaseCachedTexture(tex)
     }
   }
 
@@ -1172,6 +1187,25 @@ export class OfficeWorld3D {
     const ceilingLightMat = createGlowMaterial("#fff4d8", 1.35)
     const lampShadeMat = createGlowMaterial("#fff0c8", 0.75)
 
+    const archBatch = new MeshBatcher()
+    const artMaterials = new Map<
+      "chart" | "crest" | "mountain" | "motto" | "target",
+      THREE.MeshStandardMaterial
+    >()
+    const getArtMaterial = (
+      variant: "chart" | "crest" | "mountain" | "motto" | "target"
+    ): THREE.MeshStandardMaterial => {
+      let mat = artMaterials.get(variant)
+      if (!mat) {
+        mat = new THREE.MeshStandardMaterial({
+          map: createArtFrameTexture(variant),
+          roughness: 0.36,
+        })
+        artMaterials.set(variant, mat)
+      }
+      return mat
+    }
+
     // 1. Exterior architectural studio surround apron + framing plinth
     const staffFloorW = OFFICE_BASE_W * s
     const staffFloorH = worldH * s
@@ -1186,8 +1220,7 @@ export class OfficeWorld3D {
 
     const outerTrimMat = createMatteMaterial("#2A3D63", { roughness: 0.7 })
     const plinthMat = createMatteMaterial("#1B2846", { roughness: 0.78 })
-    addBox(
-      this.archGroup,
+    archBatch.addBox(
       staffFloorW + 1.08,
       0.014,
       staffFloorH + 1.08,
@@ -1197,8 +1230,7 @@ export class OfficeWorld3D {
       staffFloorCenter.z,
       false
     )
-    addBox(
-      this.archGroup,
+    archBatch.addBox(
       staffFloorW + 0.92,
       0.04,
       staffFloorH + 0.92,
@@ -1210,10 +1242,12 @@ export class OfficeWorld3D {
     )
 
     // 1b. Base Khu Nhân Viên floor (cream ceramic grid)
-    const ceramicTex = cloneRepeatedTexture(
-      createFloorTexture("ceramic_cream"),
+    const baseCeramicTex = this.retainArchTex(createFloorTexture("ceramic_cream"))
+    const ceramicTex = cloneSharedRepeatedTexture(
+      baseCeramicTex,
       OFFICE_BASE_W / 256,
-      worldH / 256
+      worldH / 256,
+      this.lite ? 2 : 8
     )
     const baseFloor = new THREE.Mesh(
       new THREE.PlaneGeometry(staffFloorW, staffFloorH),
@@ -1245,10 +1279,12 @@ export class OfficeWorld3D {
     for (const zone of zones) {
       if (zone.id === "staff") continue
       const cfg = roomMaterials[zone.id]
-      const tex = cloneRepeatedTexture(
-        createFloorTexture(cfg.style),
+      const baseRoomTex = this.retainArchTex(createFloorTexture(cfg.style))
+      const tex = cloneSharedRepeatedTexture(
+        baseRoomTex,
         zone.w / cfg.tilePx,
-        zone.h / cfg.tilePx
+        zone.h / cfg.tilePx,
+        this.lite ? 2 : 8
       )
       const pt = this.toWorldCenter(zone.x, zone.y, zone.w, zone.h)
       const plane = new THREE.Mesh(
@@ -1352,98 +1388,18 @@ export class OfficeWorld3D {
 
     // North outer wall
     const northPt = this.toWorldCenter(0, 0, OFFICE_BASE_W, OFFICE_WALL_THICK)
-    addBox(
-      this.archGroup,
-      OFFICE_BASE_W * s,
-      northH,
-      t,
-      wallUpperMat,
-      northPt.x,
-      northH / 2,
-      northPt.z,
-      false
-    )
-    addBox(
-      this.archGroup,
-      OFFICE_BASE_W * s,
-      0.82,
-      t + 0.04,
-      wallNavyMat,
-      northPt.x,
-      0.41,
-      northPt.z,
-      false
-    )
-    addBox(
-      this.archGroup,
-      OFFICE_BASE_W * s,
-      0.14,
-      t + 0.07,
-      wallDarkBaseMat,
-      northPt.x,
-      0.07,
-      northPt.z,
-      false
-    )
-    addBox(
-      this.archGroup,
-      OFFICE_BASE_W * s,
-      0.05,
-      t + 0.08,
-      goldMat,
-      northPt.x,
-      0.84,
-      northPt.z,
-      false
-    )
-    addBox(
-      this.archGroup,
-      OFFICE_BASE_W * s + 0.1,
-      0.14,
-      t + 0.1,
-      wallNavyMat,
-      northPt.x,
-      northH + 0.05,
-      northPt.z,
-      false
-    )
-    addBox(
-      this.archGroup,
-      OFFICE_BASE_W * s + 0.14,
-      0.06,
-      t + 0.12,
-      goldMat,
-      northPt.x,
-      northH - 0.02,
-      northPt.z,
-      false
-    )
+    archBatch.addBox(OFFICE_BASE_W * s, northH, t, wallUpperMat, northPt.x, northH / 2, northPt.z, false)
+    archBatch.addBox(OFFICE_BASE_W * s, 0.82, t + 0.04, wallNavyMat, northPt.x, 0.41, northPt.z, false)
+    archBatch.addBox(OFFICE_BASE_W * s, 0.14, t + 0.07, wallDarkBaseMat, northPt.x, 0.07, northPt.z, false)
+    archBatch.addBox(OFFICE_BASE_W * s, 0.05, t + 0.08, goldMat, northPt.x, 0.84, northPt.z, false)
+    archBatch.addBox(OFFICE_BASE_W * s + 0.1, 0.14, t + 0.1, wallNavyMat, northPt.x, northH + 0.05, northPt.z, false)
+    archBatch.addBox(OFFICE_BASE_W * s + 0.14, 0.06, t + 0.12, goldMat, northPt.x, northH - 0.02, northPt.z, false)
 
     // Architectural pilasters along North wall
     for (const pxLogical of [24, 740, 1560, 2376]) {
       const px = logicalToWorld(pxLogical, OFFICE_WALL_THICK, this.world)
-      addBox(
-        this.archGroup,
-        0.26,
-        northH,
-        0.16,
-        pilasterMat,
-        px.x,
-        northH / 2,
-        px.z + 0.04,
-        false
-      )
-      addBox(
-        this.archGroup,
-        0.3,
-        0.08,
-        0.2,
-        goldMat,
-        px.x,
-        northH - 0.14,
-        px.z + 0.05,
-        false
-      )
+      archBatch.addBox(0.26, northH, 0.16, pilasterMat, px.x, northH / 2, px.z + 0.04, false)
+      archBatch.addBox(0.3, 0.08, 0.2, goldMat, px.x, northH - 0.14, px.z + 0.05, false)
     }
 
     // West & East cutaway walls
@@ -1455,61 +1411,11 @@ export class OfficeWorld3D {
       worldH
     )
     for (const pt of [westPt, eastPt]) {
-      addBox(
-        this.archGroup,
-        t,
-        sideH,
-        worldH * s,
-        wallUpperMat,
-        pt.x,
-        sideH / 2,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t + 0.04,
-        0.82,
-        worldH * s,
-        wallNavyMat,
-        pt.x,
-        0.41,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t + 0.07,
-        0.13,
-        worldH * s,
-        wallDarkBaseMat,
-        pt.x,
-        0.065,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t + 0.07,
-        0.045,
-        worldH * s,
-        goldMat,
-        pt.x,
-        0.84,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t + 0.08,
-        0.07,
-        worldH * s,
-        goldMat,
-        pt.x,
-        sideH + 0.03,
-        pt.z,
-        false
-      )
+      archBatch.addBox(t, sideH, worldH * s, wallUpperMat, pt.x, sideH / 2, pt.z, false)
+      archBatch.addBox(t + 0.04, 0.82, worldH * s, wallNavyMat, pt.x, 0.41, pt.z, false)
+      archBatch.addBox(t + 0.07, 0.13, worldH * s, wallDarkBaseMat, pt.x, 0.065, pt.z, false)
+      archBatch.addBox(t + 0.07, 0.045, worldH * s, goldMat, pt.x, 0.84, pt.z, false)
+      archBatch.addBox(t + 0.08, 0.07, worldH * s, goldMat, pt.x, sideH + 0.03, pt.z, false)
     }
 
     // Low South cutaway curb
@@ -1519,114 +1425,25 @@ export class OfficeWorld3D {
       OFFICE_BASE_W,
       OFFICE_WALL_THICK
     )
-    addBox(
-      this.archGroup,
-      OFFICE_BASE_W * s,
-      southH,
-      t,
-      wallNavyMat,
-      southPt.x,
-      southH / 2,
-      southPt.z,
-      false
-    )
-    addBox(
-      this.archGroup,
-      OFFICE_BASE_W * s,
-      0.05,
-      t + 0.06,
-      goldMat,
-      southPt.x,
-      southH + 0.025,
-      southPt.z,
-      false
-    )
+    archBatch.addBox(OFFICE_BASE_W * s, southH, t, wallNavyMat, southPt.x, southH / 2, southPt.z, false)
+    archBatch.addBox(OFFICE_BASE_W * s, 0.05, t + 0.06, goldMat, southPt.x, southH + 0.025, southPt.z, false)
 
     // 4b. Framed Glass Interior Dividers (vertical x = 740, 1560 & horizontal y = 540)
-    const mullionBatch = new MeshBatcher()
-
     for (const vx of [740, 1560]) {
       const spanLen = 524 * s
       const pt = this.toWorldCenter(vx, 16, OFFICE_WALL_THICK, 524)
-      addBox(this.archGroup, t, 0.92, spanLen, wallNavyMat, pt.x, 0.46, pt.z)
-      addBox(
-        this.archGroup,
-        t + 0.05,
-        0.11,
-        spanLen,
-        wallDarkBaseMat,
-        pt.x,
-        0.055,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t + 0.04,
-        0.045,
-        spanLen,
-        woodTrimMat,
-        pt.x,
-        0.94,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t * 0.36,
-        0.78,
-        spanLen,
-        glassMat,
-        pt.x,
-        1.35,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t * 0.4,
-        0.16,
-        spanLen,
-        glassFrostMat,
-        pt.x,
-        1.32,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t + 0.04,
-        0.08,
-        spanLen,
-        frameMetalMat,
-        pt.x,
-        innerH - 0.04,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        t + 0.06,
-        0.045,
-        spanLen,
-        goldMat,
-        pt.x,
-        innerH + 0.02,
-        pt.z,
-        false
-      )
+      archBatch.addBox(t, 0.92, spanLen, wallNavyMat, pt.x, 0.46, pt.z)
+      archBatch.addBox(t + 0.05, 0.11, spanLen, wallDarkBaseMat, pt.x, 0.055, pt.z, false)
+      archBatch.addBox(t + 0.04, 0.045, spanLen, woodTrimMat, pt.x, 0.94, pt.z, false)
+      archBatch.addBox(t * 0.36, 0.78, spanLen, glassMat, pt.x, 1.35, pt.z, false)
+      archBatch.addBox(t * 0.4, 0.16, spanLen, glassFrostMat, pt.x, 1.32, pt.z, false)
+      archBatch.addBox(t + 0.04, 0.08, spanLen, frameMetalMat, pt.x, innerH - 0.04, pt.z, false)
+      archBatch.addBox(t + 0.06, 0.045, spanLen, goldMat, pt.x, innerH + 0.02, pt.z, false)
       const frameCount = 4
       for (let i = 0; i <= frameCount; i += 1) {
         const mz =
           pt.z - spanLen / 2 + 0.08 + (i * (spanLen - 0.16)) / frameCount
-        mullionBatch.add(
-          new THREE.BoxGeometry(t * 0.78, 0.84, 0.055),
-          frameMetalMat,
-          [pt.x, 1.36, mz],
-          undefined,
-          undefined,
-          false
-        )
+        archBatch.addBox(t * 0.78, 0.84, 0.055, frameMetalMat, pt.x, 1.36, mz, false)
       }
     }
 
@@ -1639,87 +1456,19 @@ export class OfficeWorld3D {
     for (const [sx, sw] of corridorSegments) {
       const segW = sw * s
       const pt = this.toWorldCenter(sx, OFFICE_DIVIDER_Y, sw, OFFICE_WALL_THICK)
-      addBox(this.archGroup, segW, 0.92, t, wallNavyMat, pt.x, 0.46, pt.z)
-      addBox(
-        this.archGroup,
-        segW,
-        0.11,
-        t + 0.05,
-        wallDarkBaseMat,
-        pt.x,
-        0.055,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        segW,
-        0.045,
-        t + 0.05,
-        woodTrimMat,
-        pt.x,
-        0.94,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        segW,
-        0.78,
-        t * 0.36,
-        glassMat,
-        pt.x,
-        1.35,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        segW,
-        0.18,
-        t * 0.42,
-        glassFrostMat,
-        pt.x,
-        1.32,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        segW,
-        0.085,
-        t + 0.04,
-        frameMetalMat,
-        pt.x,
-        innerH - 0.04,
-        pt.z,
-        false
-      )
-      addBox(
-        this.archGroup,
-        segW,
-        0.045,
-        t + 0.06,
-        goldMat,
-        pt.x,
-        innerH + 0.02,
-        pt.z,
-        false
-      )
+      archBatch.addBox(segW, 0.92, t, wallNavyMat, pt.x, 0.46, pt.z)
+      archBatch.addBox(segW, 0.11, t + 0.05, wallDarkBaseMat, pt.x, 0.055, pt.z, false)
+      archBatch.addBox(segW, 0.045, t + 0.05, woodTrimMat, pt.x, 0.94, pt.z, false)
+      archBatch.addBox(segW, 0.78, t * 0.36, glassMat, pt.x, 1.35, pt.z, false)
+      archBatch.addBox(segW, 0.18, t * 0.42, glassFrostMat, pt.x, 1.32, pt.z, false)
+      archBatch.addBox(segW, 0.085, t + 0.04, frameMetalMat, pt.x, innerH - 0.04, pt.z, false)
+      archBatch.addBox(segW, 0.045, t + 0.06, goldMat, pt.x, innerH + 0.02, pt.z, false)
       const bays = Math.max(2, Math.round(segW / 1.55))
       for (let i = 0; i <= bays; i += 1) {
         const mx = pt.x - segW / 2 + 0.06 + (i * (segW - 0.12)) / bays
-        mullionBatch.add(
-          new THREE.BoxGeometry(0.055, 0.84, t * 0.78),
-          frameMetalMat,
-          [mx, 1.36, pt.z],
-          undefined,
-          undefined,
-          false
-        )
+        archBatch.addBox(0.055, 0.84, t * 0.78, frameMetalMat, mx, 1.36, pt.z, false)
       }
     }
-    mullionBatch.flushInto(this.archGroup)
 
     // 4c. Doorway Frames, Thresholds, Swung-Open Wood/Glass Doors & Room Plaques
     const doorNames: Record<"boss" | "meet" | "docs", string> = {
@@ -1727,6 +1476,11 @@ export class OfficeWorld3D {
       meet: "PHÒNG HỌP",
       docs: "PHÒNG TÀI LIỆU",
     }
+    const doorAngle = Math.PI * 0.43
+    const doorCos = Math.cos(doorAngle)
+    const doorSin = Math.sin(doorAngle)
+    const doorRot: readonly [number, number, number] = [0, doorAngle, 0]
+
     for (const door of OFFICE_DOORWAYS) {
       const doorW = (door.x2 - door.x1) * s
       for (const edgeX of [door.x1, door.x2]) {
@@ -1735,27 +1489,8 @@ export class OfficeWorld3D {
           door.y + OFFICE_WALL_THICK / 2,
           this.world
         )
-        addBox(
-          this.archGroup,
-          0.1,
-          innerH + 0.06,
-          t + 0.1,
-          woodTrimMat,
-          jambPt.x,
-          (innerH + 0.06) / 2,
-          jambPt.z
-        )
-        addBox(
-          this.archGroup,
-          0.12,
-          0.06,
-          t + 0.12,
-          goldMat,
-          jambPt.x,
-          innerH + 0.06,
-          jambPt.z,
-          false
-        )
+        archBatch.addBox(0.1, innerH + 0.06, t + 0.1, woodTrimMat, jambPt.x, (innerH + 0.06) / 2, jambPt.z)
+        archBatch.addBox(0.12, 0.06, t + 0.12, goldMat, jambPt.x, innerH + 0.06, jambPt.z, false)
       }
 
       const threshPt = this.toWorldCenter(
@@ -1764,17 +1499,7 @@ export class OfficeWorld3D {
         door.x2 - door.x1,
         OFFICE_WALL_THICK
       )
-      addBox(
-        this.archGroup,
-        doorW,
-        0.022,
-        t + 0.06,
-        goldMat,
-        threshPt.x,
-        0.011,
-        threshPt.z,
-        false
-      )
+      archBatch.addBox(doorW, 0.022, t + 0.06, goldMat, threshPt.x, 0.011, threshPt.z, false)
 
       const leafW = Math.min(0.86, doorW * 0.68)
       const leafH = innerH - 0.06
@@ -1783,76 +1508,33 @@ export class OfficeWorld3D {
         door.y + OFFICE_WALL_THICK * 0.2,
         this.world
       )
-      const doorPivot = new THREE.Group()
-      doorPivot.position.set(hingePt.x, 0, hingePt.z)
-      doorPivot.rotation.y = Math.PI * 0.43
-      addBox(
-        doorPivot,
-        leafW,
-        0.74,
-        0.055,
-        woodTrimMat,
-        -leafW / 2,
-        0.37,
-        0,
-        false
-      )
-      addBox(
-        doorPivot,
-        leafW,
-        0.1,
-        0.055,
-        woodTrimMat,
-        -leafW / 2,
-        leafH - 0.05,
-        0,
-        false
-      )
-      addBox(
-        doorPivot,
-        0.08,
-        leafH - 0.74,
-        0.055,
-        woodTrimMat,
-        -0.04,
-        0.74 + (leafH - 0.74) / 2,
-        0,
-        false
-      )
-      addBox(
-        doorPivot,
-        0.08,
-        leafH - 0.74,
-        0.055,
-        woodTrimMat,
-        -leafW + 0.04,
-        0.74 + (leafH - 0.74) / 2,
-        0,
-        false
-      )
-      addBox(
-        doorPivot,
-        leafW - 0.16,
-        leafH - 0.84,
-        0.025,
-        glassMat,
-        -leafW / 2,
-        0.74 + (leafH - 0.84) / 2,
-        0,
-        false
-      )
-      addBox(
-        doorPivot,
-        0.12,
-        0.028,
-        0.11,
-        goldMat,
-        -leafW + 0.12,
-        0.84,
-        0,
-        false
-      )
-      this.archGroup.add(doorPivot)
+      const addDoorLeafBox = (
+        bw: number,
+        bh: number,
+        bd: number,
+        mat: THREE.Material,
+        lx: number,
+        ly: number
+      ): void => {
+        archBatch.addBox(
+          bw,
+          bh,
+          bd,
+          mat,
+          hingePt.x + lx * doorCos,
+          ly,
+          hingePt.z - lx * doorSin,
+          false,
+          true,
+          doorRot
+        )
+      }
+      addDoorLeafBox(leafW, 0.74, 0.055, woodTrimMat, -leafW / 2, 0.37)
+      addDoorLeafBox(leafW, 0.1, 0.055, woodTrimMat, -leafW / 2, leafH - 0.05)
+      addDoorLeafBox(0.08, leafH - 0.74, 0.055, woodTrimMat, -0.04, 0.74 + (leafH - 0.74) / 2)
+      addDoorLeafBox(0.08, leafH - 0.74, 0.055, woodTrimMat, -leafW + 0.04, 0.74 + (leafH - 0.74) / 2)
+      addDoorLeafBox(leafW - 0.16, leafH - 0.84, 0.025, glassMat, -leafW / 2, 0.74 + (leafH - 0.84) / 2)
+      addDoorLeafBox(0.12, 0.028, 0.11, goldMat, -leafW + 0.12, 0.84)
 
       const plaqueTex = createSignTexture(doorNames[door.id], {
         style: "navy_gold",
@@ -1869,17 +1551,7 @@ export class OfficeWorld3D {
         door.y + OFFICE_WALL_THICK + 2,
         this.world
       )
-      addBox(
-        this.archGroup,
-        0.92,
-        0.24,
-        0.03,
-        frameMetalMat,
-        plaquePt.x,
-        1.14,
-        plaquePt.z + 0.015,
-        false
-      )
+      archBatch.addBox(0.92, 0.24, 0.03, frameMetalMat, plaquePt.x, 1.14, plaquePt.z + 0.015, false)
       const plaqueFace = new THREE.Mesh(
         new THREE.PlaneGeometry(0.86, 0.2),
         plaqueMat
@@ -1888,13 +1560,12 @@ export class OfficeWorld3D {
       this.archGroup.add(plaqueFace)
     }
 
-    // 4d. Architectural Windows with Warm Sunlight Pools (batched frames + sills!)
-    const winBatch = new MeshBatcher()
+    // 4d. Architectural Windows with Warm Sunlight Pools (batched into archBatch)
     for (const win of getOfficeWindows(worldH)) {
       const spanU = win.span * s
       if (win.wall === "north") {
         const pt = logicalToWorld(win.pos, OFFICE_WALL_THICK, this.world)
-        winBatch.add(
+        archBatch.add(
           new THREE.BoxGeometry(spanU + 0.14, win.heightU + 0.14, 0.08),
           frameMetalMat,
           [pt.x, win.centerY, pt.z + 0.02],
@@ -1902,7 +1573,7 @@ export class OfficeWorld3D {
           undefined,
           false
         )
-        winBatch.add(
+        archBatch.add(
           new THREE.BoxGeometry(spanU + 0.22, 0.06, 0.16),
           woodTrimMat,
           [pt.x, win.centerY - win.heightU / 2 - 0.05, pt.z + 0.06],
@@ -1910,7 +1581,7 @@ export class OfficeWorld3D {
           undefined,
           false
         )
-        winBatch.add(
+        archBatch.add(
           new THREE.PlaneGeometry(spanU, win.heightU),
           windowGlassMat,
           [pt.x, win.centerY, pt.z + 0.064],
@@ -1919,7 +1590,7 @@ export class OfficeWorld3D {
           false,
           false
         )
-        winBatch.add(
+        archBatch.add(
           new THREE.BoxGeometry(0.045, win.heightU, 0.04),
           frameMetalMat,
           [pt.x, win.centerY, pt.z + 0.065],
@@ -1928,7 +1599,7 @@ export class OfficeWorld3D {
           false
         )
         if (win.heightU > 0.7) {
-          winBatch.add(
+          archBatch.add(
             new THREE.BoxGeometry(spanU, 0.04, 0.04),
             frameMetalMat,
             [pt.x, win.centerY + 0.08, pt.z + 0.065],
@@ -1938,7 +1609,7 @@ export class OfficeWorld3D {
           )
         }
         if (win.sunPool) {
-          winBatch.add(
+          archBatch.add(
             new THREE.PlaneGeometry(spanU * 1.08, 1.75),
             sunPoolMat,
             [pt.x, 0.025, pt.z + 1.05],
@@ -1956,7 +1627,7 @@ export class OfficeWorld3D {
           this.world
         )
         const dir = isWest ? 1 : -1
-        winBatch.add(
+        archBatch.add(
           new THREE.BoxGeometry(0.08, win.heightU + 0.14, spanU + 0.14),
           frameMetalMat,
           [pt.x + dir * 0.02, win.centerY, pt.z],
@@ -1964,7 +1635,7 @@ export class OfficeWorld3D {
           undefined,
           false
         )
-        winBatch.add(
+        archBatch.add(
           new THREE.BoxGeometry(0.14, 0.055, spanU + 0.22),
           woodTrimMat,
           [pt.x + dir * 0.06, win.centerY - win.heightU / 2 - 0.05, pt.z],
@@ -1972,7 +1643,7 @@ export class OfficeWorld3D {
           undefined,
           false
         )
-        winBatch.add(
+        archBatch.add(
           new THREE.PlaneGeometry(spanU, win.heightU),
           windowGlassMat,
           [pt.x + dir * 0.065, win.centerY, pt.z],
@@ -1981,7 +1652,7 @@ export class OfficeWorld3D {
           false,
           false
         )
-        winBatch.add(
+        archBatch.add(
           new THREE.BoxGeometry(0.04, win.heightU, 0.045),
           frameMetalMat,
           [pt.x + dir * 0.065, win.centerY, pt.z],
@@ -1990,7 +1661,7 @@ export class OfficeWorld3D {
           false
         )
         if (win.sunPool) {
-          winBatch.add(
+          archBatch.add(
             new THREE.PlaneGeometry(1.55, spanU * 1.04),
             sunPoolMat,
             [pt.x + dir * 0.95, 0.025, pt.z],
@@ -2002,10 +1673,8 @@ export class OfficeWorld3D {
         }
       }
     }
-    winBatch.flushInto(this.archGroup)
 
-    // 4e. Ceiling Light Coves & Warm Brass Wall Sconces (batched!)
-    const fixtureBatch = new MeshBatcher()
+    // 4e. Ceiling Light Coves & Warm Brass Wall Sconces
     const ceilingBars: readonly { x: number; w: number }[] = [
       { x: 380, w: 3.4 },
       { x: 1160, w: 4.2 },
@@ -2013,7 +1682,7 @@ export class OfficeWorld3D {
     ]
     for (const bar of ceilingBars) {
       const pt = logicalToWorld(bar.x, OFFICE_WALL_THICK + 12, this.world)
-      fixtureBatch.add(
+      archBatch.add(
         new THREE.BoxGeometry(bar.w + 0.16, 0.09, 0.24),
         frameMetalMat,
         [pt.x, northH - 0.12, pt.z + 0.12],
@@ -2021,7 +1690,7 @@ export class OfficeWorld3D {
         undefined,
         false
       )
-      fixtureBatch.add(
+      archBatch.add(
         new THREE.BoxGeometry(bar.w, 0.045, 0.16),
         ceilingLightMat,
         [pt.x, northH - 0.17, pt.z + 0.14],
@@ -2038,7 +1707,7 @@ export class OfficeWorld3D {
         OFFICE_DIVIDER_Y + OFFICE_WALL_THICK,
         this.world
       )
-      fixtureBatch.add(
+      archBatch.add(
         new THREE.CylinderGeometry(0.055, 0.055, 0.05, seg),
         goldMat,
         [pt.x, 1.62, pt.z + 0.03],
@@ -2046,7 +1715,7 @@ export class OfficeWorld3D {
         undefined,
         false
       )
-      fixtureBatch.add(
+      archBatch.add(
         new THREE.SphereGeometry(0.075, seg, Math.max(6, seg - 4)),
         ceilingLightMat,
         [pt.x, 1.62, pt.z + 0.09],
@@ -2055,7 +1724,6 @@ export class OfficeWorld3D {
         false
       )
     }
-    fixtureBatch.flushInto(this.archGroup)
 
     // 5. Room Decorations & Static Furniture Props across all 4 zones
 
@@ -2065,8 +1733,7 @@ export class OfficeWorld3D {
     bossShelf.group.position.set(bossShelfPt.x, 0, bossShelfPt.z)
     this.mountStaticProp(bossShelf)
 
-    const bossAccentBatch = new MeshBatcher()
-    bossAccentBatch.add(
+    archBatch.add(
       new THREE.CylinderGeometry(0.11, 0.06, 0.18, seg),
       goldMat,
       [bossShelfPt.x - 0.45, 1.98, bossShelfPt.z],
@@ -2074,7 +1741,7 @@ export class OfficeWorld3D {
       undefined,
       false
     )
-    bossAccentBatch.add(
+    archBatch.add(
       new THREE.BoxGeometry(0.16, 0.06, 0.16),
       wallDarkBaseMat,
       [bossShelfPt.x - 0.45, 1.86, bossShelfPt.z],
@@ -2083,7 +1750,7 @@ export class OfficeWorld3D {
       false
     )
     const globeMat = createMatteMaterial("#3b82f6", { roughness: 0.42 })
-    bossAccentBatch.add(
+    archBatch.add(
       new THREE.SphereGeometry(0.11, seg, seg),
       globeMat,
       [bossShelfPt.x + 0.48, 2.02, bossShelfPt.z],
@@ -2091,7 +1758,7 @@ export class OfficeWorld3D {
       undefined,
       false
     )
-    bossAccentBatch.add(
+    archBatch.add(
       new THREE.BoxGeometry(0.14, 0.05, 0.14),
       goldMat,
       [bossShelfPt.x + 0.48, 1.86, bossShelfPt.z],
@@ -2100,7 +1767,7 @@ export class OfficeWorld3D {
       false
     )
     const lampPt = logicalToWorld(716, 355, this.world)
-    bossAccentBatch.add(
+    archBatch.add(
       new THREE.CylinderGeometry(0.14, 0.16, 0.04, seg),
       goldMat,
       [lampPt.x, 0.02, lampPt.z],
@@ -2108,7 +1775,7 @@ export class OfficeWorld3D {
       undefined,
       false
     )
-    bossAccentBatch.add(
+    archBatch.add(
       new THREE.CylinderGeometry(0.022, 0.026, 1.42, 8),
       goldMat,
       [lampPt.x, 0.73, lampPt.z],
@@ -2116,7 +1783,7 @@ export class OfficeWorld3D {
       undefined,
       false
     )
-    bossAccentBatch.add(
+    archBatch.add(
       new THREE.CylinderGeometry(0.14, 0.22, 0.28, seg),
       lampShadeMat,
       [lampPt.x, 1.48, lampPt.z],
@@ -2124,7 +1791,6 @@ export class OfficeWorld3D {
       undefined,
       false
     )
-    bossAccentBatch.flushInto(this.archGroup)
 
     const bossFrames: readonly {
       x: number
@@ -2137,24 +1803,15 @@ export class OfficeWorld3D {
     ]
     for (const f of bossFrames) {
       const fPt = logicalToWorld(f.x, OFFICE_WALL_THICK + 2, this.world)
-      addBox(
-        this.archGroup,
-        f.w + 0.1,
-        f.h + 0.1,
-        0.04,
-        goldMat,
-        fPt.x,
-        1.64,
-        fPt.z + 0.02,
+      archBatch.addBox(f.w + 0.1, f.h + 0.1, 0.04, goldMat, fPt.x, 1.64, fPt.z + 0.02, false)
+      archBatch.add(
+        new THREE.PlaneGeometry(f.w, f.h),
+        getArtMaterial(f.variant),
+        [fPt.x, 1.64, fPt.z + 0.044],
+        undefined,
+        undefined,
         false
       )
-      const artTex = createArtFrameTexture(f.variant)
-      const artMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(f.w, f.h),
-        new THREE.MeshStandardMaterial({ map: artTex, roughness: 0.36 })
-      )
-      artMesh.position.set(fPt.x, 1.64, fPt.z + 0.044)
-      this.archGroup.add(artMesh)
     }
 
     const bossSofa = createSofa(1.5, 0.7, "#24365e", { lite: this.lite })
@@ -2168,12 +1825,11 @@ export class OfficeWorld3D {
     this.archGroup.add(bossLamp)
 
     // ----- PHÒNG HỌP -----
-    const meetBatch = new MeshBatcher()
     const slatCenter = logicalToWorld(1160, OFFICE_WALL_THICK + 3, this.world)
     const slatCount = this.lite ? 10 : 18
     for (let i = 0; i < slatCount; i += 1) {
       const offset = -1.9 + (i * 3.8) / Math.max(1, slatCount - 1)
-      meetBatch.add(
+      archBatch.add(
         new THREE.BoxGeometry(0.07, 1.56, 0.035),
         woodSlatMat,
         [slatCenter.x + offset, 1.58, slatCenter.z + 0.01],
@@ -2184,12 +1840,12 @@ export class OfficeWorld3D {
     }
 
     const credenzaPt = this.toWorldCenter(1015, 22, 290, 52)
-    meetBatch.add(new THREE.BoxGeometry(2.9, 0.56, 0.48), wallNavyMat, [
+    archBatch.add(new THREE.BoxGeometry(2.9, 0.56, 0.48), wallNavyMat, [
       credenzaPt.x,
       0.28,
       credenzaPt.z,
     ])
-    meetBatch.add(
+    archBatch.add(
       new THREE.BoxGeometry(2.96, 0.05, 0.52),
       woodTrimMat,
       [credenzaPt.x, 0.585, credenzaPt.z],
@@ -2197,7 +1853,7 @@ export class OfficeWorld3D {
       undefined,
       false
     )
-    meetBatch.add(
+    archBatch.add(
       new THREE.BoxGeometry(1.1, 0.075, 0.11),
       wallDarkBaseMat,
       [credenzaPt.x, 0.65, credenzaPt.z + 0.08],
@@ -2205,20 +1861,9 @@ export class OfficeWorld3D {
       undefined,
       false
     )
-    meetBatch.flushInto(this.archGroup)
 
     const wbPt = logicalToWorld(758, 275, this.world)
-    addBox(
-      this.archGroup,
-      0.05,
-      0.92,
-      1.68,
-      frameMetalMat,
-      wbPt.x + 0.03,
-      1.26,
-      wbPt.z,
-      false
-    )
+    archBatch.addBox(0.05, 0.92, 1.68, frameMetalMat, wbPt.x + 0.03, 1.26, wbPt.z, false)
     const wbFace = new THREE.Mesh(
       new THREE.PlaneGeometry(1.58, 0.84),
       new THREE.MeshStandardMaterial({
@@ -2273,17 +1918,7 @@ export class OfficeWorld3D {
       width: 384,
       height: 128,
     })
-    addBox(
-      this.archGroup,
-      0.04,
-      0.56,
-      1.36,
-      goldMat,
-      docsSignPt.x + 0.02,
-      1.32,
-      docsSignPt.z,
-      false
-    )
+    archBatch.addBox(0.04, 0.56, 1.36, goldMat, docsSignPt.x + 0.02, 1.32, docsSignPt.z, false)
     const docsSignFace = new THREE.Mesh(
       new THREE.PlaneGeometry(1.28, 0.48),
       new THREE.MeshStandardMaterial({ map: docsSignTex, roughness: 0.35 })
@@ -2309,17 +1944,7 @@ export class OfficeWorld3D {
       OFFICE_DIVIDER_Y + OFFICE_WALL_THICK + 2,
       this.world
     )
-    addBox(
-      this.archGroup,
-      1.26,
-      0.76,
-      0.04,
-      woodTrimMat,
-      menuPt.x,
-      1.32,
-      menuPt.z + 0.02,
-      false
-    )
+    archBatch.addBox(1.26, 0.76, 0.04, woodTrimMat, menuPt.x, 1.32, menuPt.z + 0.02, false)
     const menuFace = new THREE.Mesh(
       new THREE.PlaneGeometry(1.16, 0.68),
       new THREE.MeshStandardMaterial({
@@ -2330,9 +1955,8 @@ export class OfficeWorld3D {
     menuFace.position.set(menuPt.x, 1.32, menuPt.z + 0.045)
     this.archGroup.add(menuFace)
 
-    // Batched Staff Area purposeful decor: Water Cooler, Bistro Stools, Standee Stanchions,
-    // Lockers, Printer/Copier Station, South Credenza, Huddle Nook Stools & Lounge Lamp
-    const decorBatch = new MeshBatcher()
+    // Batched Staff Area purposeful decor (merged directly into archBatch)
+    const decorBatch = archBatch
     const coolerMat = createMatteMaterial("#eef2f7", { roughness: 0.34 })
     const waterJugMat = new THREE.MeshStandardMaterial({
       color: "#60a5fa",
@@ -2344,7 +1968,7 @@ export class OfficeWorld3D {
     const redTapMat = createMatteMaterial("#ef4444", { roughness: 0.35 })
     const blueTapMat = createMatteMaterial("#3b82f6", { roughness: 0.35 })
     const stoolSeatMat = createClothMaterial("#2c416b")
-    const oakTopTex = createWoodSurfaceTexture("oak")
+    const oakTopTex = this.retainArchTex(createWoodSurfaceTexture("oak"))
     const oakSlabMat = new THREE.MeshStandardMaterial({
       color: "#ffffff",
       map: oakTopTex,
@@ -2816,8 +2440,6 @@ export class OfficeWorld3D {
       false
     )
 
-    decorBatch.flushInto(this.archGroup)
-
     // ----- FRAMED OFFICE WALL ART ON WEST & EAST STAFF WALLS -----
     for (const art of getOfficeWallArt(worldH)) {
       const isWest = art.wall === "west"
@@ -2827,38 +2449,50 @@ export class OfficeWorld3D {
         art.pos,
         this.world
       )
-      addBox(
-        this.archGroup,
-        0.04,
-        art.heightU + 0.08,
-        art.widthU + 0.08,
-        goldMat,
-        pt.x + dir * 0.02,
-        art.centerY,
-        pt.z,
+      archBatch.addBox(0.04, art.heightU + 0.08, art.widthU + 0.08, goldMat, pt.x + dir * 0.02, art.centerY, pt.z, false)
+      archBatch.add(
+        new THREE.PlaneGeometry(art.widthU, art.heightU),
+        getArtMaterial(art.variant),
+        [pt.x + dir * 0.046, art.centerY, pt.z],
+        [0, isWest ? Math.PI / 2 : -Math.PI / 2, 0],
+        undefined,
         false
       )
-      const artMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(art.widthU, art.heightU),
-        new THREE.MeshStandardMaterial({
-          map: createArtFrameTexture(art.variant),
-          roughness: 0.36,
-        })
-      )
-      artMesh.rotation.y = isWest ? Math.PI / 2 : -Math.PI / 2
-      artMesh.position.set(pt.x + dir * 0.046, art.centerY, pt.z)
-      this.archGroup.add(artMesh)
     }
 
-    // ----- POTTED PLANT CLUSTERS -----
+    archBatch.flushInto(this.archGroup)
+
+    // Merge static non-instanced prop meshes (rugs, sofas, tables, pantry, shelf frames) per material
+    mergeStaticPropsInto(this.staticProps, this.archGroup)
+
+    // ----- INSTANCED POTTED PLANT CLUSTERS -----
+    const tallPlantTransforms: InstancedPropTransform[] = []
+    const smallPlantTransforms: InstancedPropTransform[] = []
     for (const plantSpec of getOfficePlants(worldH)) {
-      const plant = createPottedPlant(plantSpec.tall ? "tall" : "small", {
-        lite: this.lite,
-      })
       const pt = logicalToWorld(plantSpec.x + 28, plantSpec.y + 52, this.world)
-      plant.group.position.set(pt.x, 0, pt.z)
-      this.mountStaticProp(plant)
+      if (plantSpec.tall) {
+        tallPlantTransforms.push({ x: pt.x, z: pt.z })
+      } else {
+        smallPlantTransforms.push({ x: pt.x, z: pt.z })
+      }
     }
+    if (tallPlantTransforms.length > 0) {
+      this.mountStaticProp(
+        createInstancedPottedPlants("tall", tallPlantTransforms, {
+          lite: this.lite,
+        })
+      )
+    }
+    if (smallPlantTransforms.length > 0) {
+      this.mountStaticProp(
+        createInstancedPottedPlants("small", smallPlantTransforms, {
+          lite: this.lite,
+        })
+      )
+    }
+
+    freezeStaticSubtree(this.archGroup)
+    this.hostBridge?.markShadowDirty()
   }
 
   private mountStaticProp(prop: DisposableProp): void {
@@ -2883,12 +2517,21 @@ export class OfficeWorld3D {
     const deskD = OFFICE_DESK_H * s
     const topSurfaceY = 0.76 + 0.064 / 2
 
-    const deskSpecs = createStaffDeskPrototypeSpecs(deskW, deskD, this.lite)
-    const chairSpecs = createSwivelChairPrototypeSpecs(this.lite)
+    const retainTeam = (tex: THREE.Texture): void => {
+      this.retainTeamTex(tex)
+    }
+    const deskSpecs = createStaffDeskPrototypeSpecs(
+      deskW,
+      deskD,
+      this.lite,
+      retainTeam
+    )
+    const chairSpecs = createSwivelChairPrototypeSpecs(this.lite, retainTeam)
     const dividerSpecs = createPodDividerPrototypeSpecs(
       OFFICE_POD_W * s,
       OFFICE_POD_DIVIDER_H * s,
-      this.lite
+      this.lite,
+      retainTeam
     )
 
     // 1. Instanced Desk Bodies (all occupied + empty slots in ~7 draw calls total)
@@ -3024,7 +2667,7 @@ export class OfficeWorld3D {
     }
 
     if (occupiedSlots.length > 0) {
-      const onTex = createMonitorScreenTexture("staff")
+      const onTex = this.retainTeamTex(createMonitorScreenTexture("staff"))
       const monitorOnMat = new THREE.MeshStandardMaterial({
         map: onTex,
         emissive: new THREE.Color("#ffffff"),
@@ -3197,66 +2840,107 @@ export class OfficeWorld3D {
       this.teamPropsGroup.add(emptyFaceInst)
     }
 
-    // 7. Member Desk Nameplates (always facing +Z toward camera; own desk highlighted yellow!)
+    // 7. Member Desk Nameplates (packed into ONE atlas texture, 1-2 draw calls total!)
     if (occupiedSlots.length > 0) {
-      const hasSelfDesk = Boolean(
-        selfUserId && occupiedSlots.some((slot) => slot.member?.userId === selfUserId)
-      )
-      const hasOtherDesk = occupiedSlots.some(
-        (slot) => !selfUserId || slot.member?.userId !== selfUserId
-      )
-      const plateBaseMat = hasOtherDesk
-        ? createMatteMaterial("#6f5234", { roughness: 0.56 })
-        : null
-      const plateBezelMat = hasOtherDesk
-        ? createMatteMaterial("#161f33", { roughness: 0.34, metalness: 0.22 })
-        : null
-      const plateGoldBaseMat = hasSelfDesk
-        ? createMetalMaterial("#e9b949", { roughness: 0.24, metalness: 0.84 })
-        : null
-
-      const memberHolderBatch = new MeshBatcher()
-      const faceGeo = new THREE.PlaneGeometry(plateW - 0.04, plateH - 0.025)
-      for (const slot of occupiedSlots) {
-        const member = slot.member
-        if (!member) continue
-        const isSelf = Boolean(selfUserId && member.userId === selfUserId)
-        const pt = this.toWorldCenter(slot.x, slot.y, slot.w, slot.h)
-        const plateZ =
-          slot.facing === "south"
-            ? pt.z + deskD * 0.4
-            : pt.z - deskD * 0.38
-
-        memberHolderBatch.add(
-          roundedBox(plateW + 0.05, 0.026, 0.092, 0.008, this.lite),
-          (isSelf ? plateGoldBaseMat : plateBaseMat)!,
-          [pt.x, topSurfaceY + 0.013, plateZ]
+      const validSlots = occupiedSlots.filter((slot) => Boolean(slot.member))
+      if (validSlots.length > 0) {
+        const hasSelfDesk = Boolean(
+          selfUserId &&
+            validSlots.some((slot) => slot.member!.userId === selfUserId)
         )
-        memberHolderBatch.add(
-          roundedBox(plateW + 0.02, plateH + 0.01, 0.04, 0.012, this.lite),
-          (isSelf ? plateGoldBaseMat : plateBezelMat)!,
-          [pt.x, topSurfaceY + 0.105, plateZ],
-          [-0.24, 0, 0]
+        const hasOtherDesk = validSlots.some(
+          (slot) => !selfUserId || slot.member!.userId !== selfUserId
         )
+        const plateBaseMat = hasOtherDesk
+          ? createMatteMaterial("#6f5234", { roughness: 0.56 })
+          : null
+        const plateBezelMat = hasOtherDesk
+          ? createMatteMaterial("#161f33", { roughness: 0.34, metalness: 0.22 })
+          : null
+        const plateGoldBaseMat = hasSelfDesk
+          ? createMetalMaterial("#e9b949", { roughness: 0.24, metalness: 0.84 })
+          : null
 
-        const plateTex = createSignTexture(member.displayName, {
-          style: isSelf ? "gold_plate" : "navy_gold",
-          width: 440,
-          height: 112,
+        const atlasEntries: NameplateAtlasEntry[] = validSlots.map((slot) => {
+          const member = slot.member!
+          const isSelf = Boolean(selfUserId && member.userId === selfUserId)
+          return {
+            text: member.displayName,
+            style: isSelf ? "gold_plate" : "navy_gold",
+          }
         })
-        const plateMat = new THREE.MeshStandardMaterial({
-          map: plateTex,
+        const atlas = createNameplateAtlasTexture(atlasEntries, {
+          lite: this.lite,
+        })
+        const atlasMat = new THREE.MeshStandardMaterial({
+          map: atlas.texture,
           roughness: 0.3,
           metalness: 0.16,
         })
-        const faceMesh = new THREE.Mesh(faceGeo.clone(), plateMat)
-        faceMesh.name = isSelf ? "office-self-desk-plate" : "office-member-desk-plate"
-        faceMesh.position.set(pt.x, topSurfaceY + 0.11, plateZ + 0.026)
-        faceMesh.rotation.x = -0.24
-        this.teamPropsGroup.add(faceMesh)
+
+        const memberHolderBatch = new MeshBatcher()
+        const otherPlateGeos: THREE.BufferGeometry[] = []
+
+        for (let i = 0; i < validSlots.length; i += 1) {
+          const slot = validSlots[i]!
+          const member = slot.member!
+          const isSelf = Boolean(selfUserId && member.userId === selfUserId)
+          const pt = this.toWorldCenter(slot.x, slot.y, slot.w, slot.h)
+          const plateZ =
+            slot.facing === "south"
+              ? pt.z + deskD * 0.4
+              : pt.z - deskD * 0.38
+
+          memberHolderBatch.add(
+            roundedBox(plateW + 0.05, 0.026, 0.092, 0.008, this.lite),
+            (isSelf ? plateGoldBaseMat : plateBaseMat)!,
+            [pt.x, topSurfaceY + 0.013, plateZ]
+          )
+          memberHolderBatch.add(
+            roundedBox(plateW + 0.02, plateH + 0.01, 0.04, 0.012, this.lite),
+            (isSelf ? plateGoldBaseMat : plateBezelMat)!,
+            [pt.x, topSurfaceY + 0.105, plateZ],
+            [-0.24, 0, 0]
+          )
+
+          const faceGeo = new THREE.PlaneGeometry(plateW - 0.04, plateH - 0.025)
+          const [u0, v0, u1, v1] = atlas.getUvRect(i)
+          const uv = faceGeo.getAttribute("uv")
+          if (uv && uv.count >= 4) {
+            uv.setXY(0, u0, v1)
+            uv.setXY(1, u1, v1)
+            uv.setXY(2, u0, v0)
+            uv.setXY(3, u1, v0)
+            uv.needsUpdate = true
+          }
+
+          if (isSelf) {
+            const selfMesh = new THREE.Mesh(faceGeo, atlasMat)
+            selfMesh.name = "office-self-desk-plate"
+            selfMesh.position.set(pt.x, topSurfaceY + 0.11, plateZ + 0.026)
+            selfMesh.rotation.x = -0.24
+            this.teamPropsGroup.add(selfMesh)
+          } else {
+            faceGeo.rotateX(-0.24)
+            faceGeo.translate(pt.x, topSurfaceY + 0.11, plateZ + 0.026)
+            otherPlateGeos.push(faceGeo)
+          }
+        }
+
+        if (otherPlateGeos.length > 0) {
+          const mergedPlates = mergeIndexedGeometries(otherPlateGeos, {
+            disposeInputs: true,
+          })
+          if (mergedPlates) {
+            mergedPlates.computeBoundingSphere()
+            const othersMesh = new THREE.Mesh(mergedPlates, atlasMat)
+            othersMesh.name = "office-member-desk-plate"
+            this.teamPropsGroup.add(othersMesh)
+          }
+        }
+
+        memberHolderBatch.flushInto(this.teamPropsGroup)
       }
-      faceGeo.dispose()
-      memberHolderBatch.flushInto(this.teamPropsGroup)
     }
   }
 
@@ -3282,8 +2966,12 @@ export class OfficeWorld3D {
         1.58,
         meetScreenPt.z
       )
+      this.meetingBoard.group.updateMatrix()
+      this.meetingBoard.group.updateMatrixWorld(true)
       const standeePt = logicalToWorld(2195, 1066, this.world)
       this.standeeBoard.group.position.set(standeePt.x, 0, standeePt.z)
+      this.standeeBoard.group.updateMatrix()
+      this.standeeBoard.group.updateMatrixWorld(true)
       this.buildArchitectureAndStaticProps(worldH)
     }
 
@@ -3358,32 +3046,40 @@ export class OfficeWorld3D {
     const podBands = Math.max(dims.podBands, Math.ceil(resolvedTotal / 12))
     const allSlots = buildAllDeskSlots(desks, resolvedTotal)
     this.buildInstancedStaffPods(allSlots, podBands, selfUserId)
+
+    freezeStaticSubtree(this.teamPropsGroup)
+    this.hostBridge?.markShadowDirty()
+    this.hostBridge?.requestFrame()
   }
 
-  /** Repaints the live Meeting Room Wall Screen canvas texture. */
+  /** Re-flags dynamic canvas textures after a WebGL context restore. */
+  refreshDynamicTextures(): void {
+    if (this.disposed) return
+    this.meetingBoard.update()
+    this.standeeBoard.update()
+    this.hostBridge?.requestFrame()
+  }
+
+  /** Repaints the live Meeting Room Wall Screen canvas texture only on content change. */
   updateMeetingScreen(meeting: OfficeMeeting | null): void {
     if (this.disposed) return
-    if (!meeting) {
-      drawOfficeMeetingScreen(
-        this.meetingCanvas,
-        "Phòng họp nhóm",
-        "Chưa có lịch họp sắp tới"
-      )
-    } else {
-      drawOfficeMeetingScreen(
-        this.meetingCanvas,
-        meeting.title,
-        formatMeetingScheduleVi(
+    const title = meeting ? meeting.title : "Phòng họp nhóm"
+    const subtitle = meeting
+      ? formatMeetingScheduleVi(
           meeting.startsAt,
           meeting.durationMinutes,
           meeting.platform
         )
-      )
-    }
+      : "Chưa có lịch họp sắp tới"
+    const sig = `${title}|${subtitle}`
+    if (sig === this.lastMeetingSig) return
+    this.lastMeetingSig = sig
+    drawOfficeMeetingScreen(this.meetingCanvas, title, subtitle)
     this.meetingBoard.update()
+    this.hostBridge?.requestFrame()
   }
 
-  /** Repaints the live Freestanding Achievement Standee canvas texture. */
+  /** Repaints the live Freestanding Achievement Standee canvas texture only on content change. */
   updateStandee(
     leaderboard: OfficeLeaderboard | null,
     fallbackTeamName: string,
@@ -3391,16 +3087,21 @@ export class OfficeWorld3D {
   ): void {
     if (this.disposed) return
     if (!leaderboard) {
+      const teamTitle = fallbackTeamName
+        ? `IQX · ${fallbackTeamName.toUpperCase()}`
+        : "IQX · VĂN PHÒNG"
+      const sig = `empty|${teamTitle}`
+      if (sig === this.lastStandeeSig) return
+      this.lastStandeeSig = sig
       drawOfficeStandee(this.standeeCanvas, {
-        teamTitle: fallbackTeamName
-          ? `IQX · ${fallbackTeamName.toUpperCase()}`
-          : "IQX · VĂN PHÒNG",
+        teamTitle,
         monthLabel: "Thành tích tháng",
         top3: [],
         emptyText: "Chưa có ai ghi điểm tháng này",
         footerText: "Reset ngày 01 hằng tháng",
       })
       this.standeeBoard.update()
+      this.hostBridge?.requestFrame()
       return
     }
 
@@ -3423,9 +3124,15 @@ export class OfficeWorld3D {
           }
         : null
 
+    const teamTitle = `IQX · ${(leaderboard.teamName || fallbackTeamName).toUpperCase()}`
+    const monthLabel = `Thành tích tháng ${leaderboard.monthNumber}`
+    const sig = `${teamTitle}|${monthLabel}|${top3.map((e) => `${e.rank}:${e.name}:${e.points}`).join(",")}|${personalRank ? `${personalRank.rank}:${personalRank.points}` : ""}`
+    if (sig === this.lastStandeeSig) return
+    this.lastStandeeSig = sig
+
     drawOfficeStandee(this.standeeCanvas, {
-      teamTitle: `IQX · ${(leaderboard.teamName || fallbackTeamName).toUpperCase()}`,
-      monthLabel: `Thành tích tháng ${leaderboard.monthNumber}`,
+      teamTitle,
+      monthLabel,
       subtitle: "Top 3 điểm nhiệm vụ",
       top3,
       personalRank,
@@ -3433,6 +3140,7 @@ export class OfficeWorld3D {
       footerText: "Reset ngày 01 hằng tháng",
     })
     this.standeeBoard.update()
+    this.hostBridge?.requestFrame()
   }
 
   /** Triggers the golden destination ring on click/tap-to-move (static when reduced motion is on). */
@@ -3446,6 +3154,7 @@ export class OfficeWorld3D {
     this.targetRing.visible = true
     this.targetRingAge = 0
     this.targetRingActive = true
+    this.hostBridge?.markActive(700)
   }
 
   /** Immediately hides the click-to-move destination ring (e.g. when a modal opens). */
@@ -3466,6 +3175,7 @@ export class OfficeWorld3D {
     if (this.targetRingStatic) {
       return
     }
+    this.hostBridge?.markActive(200)
     const t = this.targetRingAge / duration
     const ease = 1 - (1 - t) * (1 - t)
     this.targetRing.scale.setScalar(0.45 + ease * 1.15)
@@ -3479,6 +3189,7 @@ export class OfficeWorld3D {
     this.clearTeamProps()
     this.meetingBoard.dispose()
     this.standeeBoard.dispose()
-    disposeSubtree(this.group)
+    disposeObject3D(this.group)
+    this.group.parent?.remove(this.group)
   }
 }

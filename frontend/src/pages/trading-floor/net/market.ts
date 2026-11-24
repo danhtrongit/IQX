@@ -10,29 +10,115 @@ export const market = createMarketApi({ baseUrl: API_BASE })
 
 let stopPolling: (() => void) | null = null
 
+const ACTIVITY_EVENTS = ["pointerdown", "keydown", "touchstart", "wheel"] as const
+
+function isTabHidden(): boolean {
+  return typeof document !== "undefined" && document.hidden === true
+}
+
 /** Polls VNINDEX & co and the VN30 basket until the returned function is called. */
 export function startMarket(): () => void {
   if (stopPolling) return stopPolling
   const controller = new AbortController()
   const timers = new Set<ReturnType<typeof setTimeout>>()
+  const loops: {
+    resume: () => void
+    pause: () => void
+  }[] = []
   let vn30Symbols: string[] | null = null
+  let lastActivityMs = Date.now()
+
+  const onActivity = (): void => {
+    lastActivityMs = Date.now()
+  }
+  if (typeof window !== "undefined") {
+    for (const evt of ACTIVITY_EVENTS) {
+      window.addEventListener(evt, onActivity, { passive: true })
+    }
+  }
 
   const loop = (run: () => Promise<boolean>): void => {
     let failures = 0
-    const tick = async (): Promise<void> => {
+    let timer: ReturnType<typeof setTimeout> | null = null
+    let inFlight = false
+    let pendingResume = false
+
+    const clearTimer = (): void => {
+      if (timer !== null) {
+        clearTimeout(timer)
+        timers.delete(timer)
+        timer = null
+      }
+    }
+
+    const scheduleNext = (): void => {
       if (controller.signal.aborted) return
-      failures = (await run()) ? 0 : failures + 1
-      if (controller.signal.aborted) return
-      const timer = setTimeout(
+      if (isTabHidden()) {
+        pendingResume = true
+        return
+      }
+      clearTimer()
+      const now = Date.now()
+      const idleMs = Math.max(0, now - lastActivityMs)
+      timer = setTimeout(
         () => {
-          timers.delete(timer)
+          if (timer !== null) {
+            timers.delete(timer)
+            timer = null
+          }
           void tick()
         },
-        nextPollDelay({ now: Date.now(), failures })
+        nextPollDelay({ now, failures, idleMs })
       )
       timers.add(timer)
     }
-    void tick()
+
+    const tick = async (): Promise<void> => {
+      if (controller.signal.aborted || inFlight) return
+      if (isTabHidden()) {
+        pendingResume = true
+        return
+      }
+      pendingResume = false
+      clearTimer()
+      inFlight = true
+      try {
+        failures = (await run()) ? 0 : failures + 1
+      } finally {
+        inFlight = false
+      }
+      if (controller.signal.aborted) return
+      if (pendingResume && !isTabHidden()) {
+        pendingResume = false
+        void tick()
+        return
+      }
+      scheduleNext()
+    }
+
+    loops.push({
+      pause: () => {
+        clearTimer()
+        pendingResume = true
+      },
+      resume: () => {
+        if (controller.signal.aborted) return
+        if (inFlight) {
+          pendingResume = true
+          return
+        }
+        if (pendingResume || timer === null) {
+          pendingResume = false
+          void tick()
+        }
+      },
+    })
+
+    if (isTabHidden()) {
+      pendingResume = true
+    } else {
+      void tick()
+    }
   }
 
   loop(async () => {
@@ -57,10 +143,31 @@ export function startMarket(): () => void {
     }
   })
 
+  const onVisibilityChange = (): void => {
+    if (controller.signal.aborted) return
+    if (isTabHidden()) {
+      for (const l of loops) l.pause()
+    } else {
+      lastActivityMs = Date.now()
+      for (const l of loops) l.resume()
+    }
+  }
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", onVisibilityChange)
+  }
+
   const stop = (): void => {
     controller.abort()
     for (const timer of timers) clearTimeout(timer)
     timers.clear()
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+    }
+    if (typeof window !== "undefined") {
+      for (const evt of ACTIVITY_EVENTS) {
+        window.removeEventListener(evt, onActivity)
+      }
+    }
     stopPolling = null
   }
   stopPolling = stop

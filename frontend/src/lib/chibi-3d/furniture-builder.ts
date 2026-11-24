@@ -1,6 +1,5 @@
 import * as THREE from "three"
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js"
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js"
 
 import {
   createAltarClothTexture,
@@ -10,17 +9,21 @@ import {
   createSignTexture,
   createWoodSurfaceTexture,
   disposeProceduralTextureCaches,
+  releaseCachedTexture,
+  retainCachedTexture,
   type FabricSurfacePattern,
   type MarbleSurfaceTone,
   type MonitorScreenVariant,
   type WoodSurfaceTone,
 } from "./textures.ts"
 import {
+  SHARED_RESOURCE_FLAG,
   SHARED_TEXTURE_FLAG,
   createClothMaterial,
   createGlowMaterial,
   createMatteMaterial,
   createMetalMaterial,
+  mergeIndexedGeometries,
 } from "./types.ts"
 
 export interface DisposableProp {
@@ -65,9 +68,12 @@ export interface RugOptions extends PropDetailOptions {
   borderWidth?: number
 }
 
-// ---------- Global Detail Mode & Shared Resource Caches ----------
+// ---------- Global Detail Mode & Ref-Counted Shared Resource Caches ----------
 
-const SHARED_RESOURCE_FLAG = "__chibiSharedResource"
+const GEO_CACHE_KEY = "__chibiGeoCacheKey"
+const MAT_CACHE_KEY = "__chibiMatCacheKey"
+const PART_CACHE_OWNER = "__chibiPartCacheOwner"
+const CHILD_PROP_FLAG = "__chibiChildProp"
 const MAX_CACHED_MATERIALS = 256
 const MAX_CACHED_GEOMETRIES = 256
 
@@ -87,8 +93,20 @@ function resolveLite(opts?: PropDetailOptions): boolean {
 
 const noopDispose = (): void => undefined
 
-const sharedGeometries = new Map<string, THREE.BufferGeometry>()
-const sharedMaterials = new Map<string, THREE.Material>()
+interface CachedGeometryEntry {
+  geometry: THREE.BufferGeometry
+  refCount: number
+  partOwner?: { cache: Map<string, readonly MergedPartSpec[]>; key: string }
+}
+
+interface CachedMaterialEntry {
+  material: THREE.Material
+  refCount: number
+  textures: THREE.Texture[]
+}
+
+const sharedGeometries = new Map<string, CachedGeometryEntry>()
+const sharedMaterials = new Map<string, CachedMaterialEntry>()
 
 interface MergedPartSpec {
   geometry: THREE.BufferGeometry
@@ -101,14 +119,43 @@ const chairPartCache = new Map<string, readonly MergedPartSpec[]>()
 const plantPartCache = new Map<string, readonly MergedPartSpec[]>()
 const lanternPartCache = new Map<string, readonly MergedPartSpec[]>()
 
-function markSharedGeometry<T extends THREE.BufferGeometry>(geom: T): T {
-  ;(geom.userData as Record<string, unknown>)[SHARED_RESOURCE_FLAG] = true
+export interface FurnitureCacheStats {
+  geometries: number
+  materials: number
+  chairSpecs: number
+  plantSpecs: number
+  lanternSpecs: number
+}
+
+/** Exposes active ref-counted furniture cache sizes for diagnostics and tear-down tests. */
+export function getFurnitureCacheStats(): FurnitureCacheStats {
+  return {
+    geometries: sharedGeometries.size,
+    materials: sharedMaterials.size,
+    chairSpecs: chairPartCache.size,
+    plantSpecs: plantPartCache.size,
+    lanternSpecs: lanternPartCache.size,
+  }
+}
+
+function markSharedGeometry<T extends THREE.BufferGeometry>(
+  geom: T,
+  cacheKey: string
+): T {
+  const ud = geom.userData as Record<string, unknown>
+  ud[SHARED_RESOURCE_FLAG] = true
+  ud[GEO_CACHE_KEY] = cacheKey
   geom.dispose = noopDispose
   return geom
 }
 
-function markSharedMaterial<T extends THREE.Material>(mat: T): T {
-  ;(mat.userData as Record<string, unknown>)[SHARED_RESOURCE_FLAG] = true
+function markSharedMaterial<T extends THREE.Material>(
+  mat: T,
+  cacheKey: string
+): T {
+  const ud = mat.userData as Record<string, unknown>
+  ud[SHARED_RESOURCE_FLAG] = true
+  ud[MAT_CACHE_KEY] = cacheKey
   mat.dispose = noopDispose
   return mat
 }
@@ -117,16 +164,41 @@ function isSharedResource(obj: { userData?: Record<string, unknown> }): boolean 
   return Boolean(obj.userData?.[SHARED_RESOURCE_FLAG])
 }
 
+function collectMaterialTextures(mat: THREE.Material): THREE.Texture[] {
+  const std = mat as THREE.MeshStandardMaterial & {
+    map?: THREE.Texture | null
+    emissiveMap?: THREE.Texture | null
+    roughnessMap?: THREE.Texture | null
+    metalnessMap?: THREE.Texture | null
+    alphaMap?: THREE.Texture | null
+    bumpMap?: THREE.Texture | null
+    normalMap?: THREE.Texture | null
+  }
+  const unique = new Set<THREE.Texture>()
+  for (const tex of [
+    std.map,
+    std.emissiveMap,
+    std.roughnessMap,
+    std.metalnessMap,
+    std.alphaMap,
+    std.bumpMap,
+    std.normalMap,
+  ]) {
+    if (tex) unique.add(tex)
+  }
+  return [...unique]
+}
+
 function getCachedGeometry(
   key: string,
   factory: () => THREE.BufferGeometry
 ): THREE.BufferGeometry {
   const existing = sharedGeometries.get(key)
-  if (existing) return existing
+  if (existing) return existing.geometry
   const geom = factory()
   if (sharedGeometries.size < MAX_CACHED_GEOMETRIES) {
-    markSharedGeometry(geom)
-    sharedGeometries.set(key, geom)
+    markSharedGeometry(geom, key)
+    sharedGeometries.set(key, { geometry: geom, refCount: 0 })
   }
   return geom
 }
@@ -136,24 +208,136 @@ function getCachedMaterial<T extends THREE.Material>(
   factory: () => T
 ): T {
   const existing = sharedMaterials.get(key)
-  if (existing) return existing as T
+  if (existing) return existing.material as T
   const mat = factory()
   if (sharedMaterials.size < MAX_CACHED_MATERIALS) {
-    markSharedMaterial(mat)
-    sharedMaterials.set(key, mat)
+    markSharedMaterial(mat, key)
+    const textures = collectMaterialTextures(mat)
+    for (const tex of textures) {
+      retainCachedTexture(tex)
+    }
+    sharedMaterials.set(key, { material: mat, refCount: 0, textures })
   }
   return mat
 }
 
+interface RetainedSharedRefs {
+  geoKeys: string[]
+  matKeys: string[]
+}
+
+function retainSubtreeSharedRefs(root: THREE.Object3D): RetainedSharedRefs {
+  const geoSet = new Set<string>()
+  const matSet = new Set<string>()
+  const visit = (node: THREE.Object3D): void => {
+    if (
+      node !== root &&
+      (node.userData as Record<string, unknown> | undefined)?.[CHILD_PROP_FLAG]
+    ) {
+      return
+    }
+    const mesh = node as THREE.Mesh
+    if (mesh.geometry) {
+      const gKey = (mesh.geometry.userData as Record<string, unknown>)[
+        GEO_CACHE_KEY
+      ] as string | undefined
+      if (gKey && sharedGeometries.has(gKey)) {
+        geoSet.add(gKey)
+      }
+    }
+    const rawMat = mesh.material as
+      | THREE.Material
+      | THREE.Material[]
+      | undefined
+    const mats = Array.isArray(rawMat) ? rawMat : rawMat ? [rawMat] : []
+    for (const m of mats) {
+      if (!m) continue
+      const mKey = (m.userData as Record<string, unknown>)[MAT_CACHE_KEY] as
+        | string
+        | undefined
+      if (mKey && sharedMaterials.has(mKey)) {
+        matSet.add(mKey)
+      }
+    }
+    for (const child of node.children) {
+      visit(child)
+    }
+  }
+  visit(root)
+
+  const geoKeys = [...geoSet]
+  const matKeys = [...matSet]
+  for (const k of geoKeys) {
+    const entry = sharedGeometries.get(k)
+    if (entry) entry.refCount += 1
+  }
+  for (const k of matKeys) {
+    const entry = sharedMaterials.get(k)
+    if (entry) entry.refCount += 1
+  }
+  return { geoKeys, matKeys }
+}
+
+function releaseSubtreeSharedRefs(refs: RetainedSharedRefs): void {
+  for (const k of refs.geoKeys) {
+    const entry = sharedGeometries.get(k)
+    if (!entry) continue
+    if (entry.refCount > 0) entry.refCount -= 1
+    if (entry.refCount === 0) {
+      sharedGeometries.delete(k)
+      if (entry.partOwner) {
+        entry.partOwner.cache.delete(entry.partOwner.key)
+      }
+      THREE.BufferGeometry.prototype.dispose.call(entry.geometry)
+    }
+  }
+  for (const k of refs.matKeys) {
+    const entry = sharedMaterials.get(k)
+    if (!entry) continue
+    if (entry.refCount > 0) entry.refCount -= 1
+    if (entry.refCount === 0) {
+      sharedMaterials.delete(k)
+      for (const tex of entry.textures) {
+        releaseCachedTexture(tex)
+      }
+      THREE.Material.prototype.dispose.call(entry.material)
+    }
+  }
+  pruneUnreferencedSharedCaches()
+}
+
+/** Reclaims any cached geometry/material entries with refCount === 0 (e.g. optional branch resources not mounted). */
+function pruneUnreferencedSharedCaches(): void {
+  for (const [k, entry] of sharedGeometries) {
+    if (entry.refCount > 0) continue
+    sharedGeometries.delete(k)
+    if (entry.partOwner) {
+      entry.partOwner.cache.delete(entry.partOwner.key)
+    }
+    THREE.BufferGeometry.prototype.dispose.call(entry.geometry)
+  }
+  for (const [k, entry] of sharedMaterials) {
+    if (entry.refCount > 0) continue
+    sharedMaterials.delete(k)
+    for (const tex of entry.textures) {
+      releaseCachedTexture(tex)
+    }
+    THREE.Material.prototype.dispose.call(entry.material)
+  }
+}
+
 /** Explicitly releases all shared cached furniture geometries, materials, and procedural surface maps. */
 export function disposeFurnitureCaches(): void {
-  for (const geom of sharedGeometries.values()) {
-    THREE.BufferGeometry.prototype.dispose.call(geom)
+  for (const entry of sharedGeometries.values()) {
+    THREE.BufferGeometry.prototype.dispose.call(entry.geometry)
   }
   sharedGeometries.clear()
 
-  for (const mat of sharedMaterials.values()) {
-    THREE.Material.prototype.dispose.call(mat)
+  for (const entry of sharedMaterials.values()) {
+    for (const tex of entry.textures) {
+      releaseCachedTexture(tex)
+    }
+    THREE.Material.prototype.dispose.call(entry.material)
   }
   sharedMaterials.clear()
 
@@ -165,29 +349,9 @@ export function disposeFurnitureCaches(): void {
 
 function disposeMaterialSafe(mat: THREE.Material): void {
   if (isSharedResource(mat)) return
-  const std = mat as THREE.MeshStandardMaterial & {
-    map?: THREE.Texture | null
-    emissiveMap?: THREE.Texture | null
-    roughnessMap?: THREE.Texture | null
-    metalnessMap?: THREE.Texture | null
-    alphaMap?: THREE.Texture | null
-    bumpMap?: THREE.Texture | null
-    normalMap?: THREE.Texture | null
-  }
-  const textures = new Set([
-    std.map,
-    std.emissiveMap,
-    std.roughnessMap,
-    std.metalnessMap,
-    std.alphaMap,
-    std.bumpMap,
-    std.normalMap,
-  ])
+  const textures = collectMaterialTextures(mat)
   for (const tex of textures) {
-    if (
-      tex &&
-      !(tex.userData as Record<string, unknown>)[SHARED_TEXTURE_FLAG]
-    ) {
+    if (!(tex.userData as Record<string, unknown>)[SHARED_TEXTURE_FLAG]) {
       tex.dispose()
     }
   }
@@ -195,13 +359,21 @@ function disposeMaterialSafe(mat: THREE.Material): void {
 }
 
 function disposePropGroup(root: THREE.Object3D): void {
-  root.traverse((node) => {
+  const geometries = new Set<THREE.BufferGeometry>()
+  const materials = new Set<THREE.Material>()
+  const visit = (node: THREE.Object3D): void => {
+    if (
+      node !== root &&
+      (node.userData as Record<string, unknown> | undefined)?.[CHILD_PROP_FLAG]
+    ) {
+      return
+    }
     if (node instanceof THREE.InstancedMesh) {
       node.dispose()
     }
     const mesh = node as THREE.Mesh
     if (mesh.geometry && !isSharedResource(mesh.geometry)) {
-      mesh.geometry.dispose()
+      geometries.add(mesh.geometry)
     }
     const material = mesh.material as
       | THREE.Material
@@ -209,22 +381,36 @@ function disposePropGroup(root: THREE.Object3D): void {
       | undefined
     if (Array.isArray(material)) {
       for (const m of material) {
-        if (m) disposeMaterialSafe(m)
+        if (m && !isSharedResource(m)) materials.add(m)
       }
-    } else if (material) {
-      disposeMaterialSafe(material)
+    } else if (material && !isSharedResource(material)) {
+      materials.add(material)
     }
-  })
+    for (const child of node.children) {
+      visit(child)
+    }
+  }
+  visit(root)
+  for (const g of geometries) g.dispose()
+  for (const m of materials) disposeMaterialSafe(m)
 }
 
-function wrapProp(group: THREE.Group): DisposableProp {
+function wrapProp(
+  group: THREE.Group,
+  extraChildren?: readonly DisposableProp[]
+): DisposableProp {
+  const retained = retainSubtreeSharedRefs(group)
   let disposed = false
   return {
     group,
     dispose: () => {
       if (disposed) return
       disposed = true
+      if (extraChildren) {
+        for (const child of extraChildren) child.dispose()
+      }
       disposePropGroup(group)
+      releaseSubtreeSharedRefs(retained)
     },
   }
 }
@@ -368,11 +554,7 @@ function normalizeForMerge(
   raw: THREE.BufferGeometry,
   disposeRaw: boolean
 ): THREE.BufferGeometry {
-  const geom = raw.index ? raw.toNonIndexed() : raw.clone()
-  if (disposeRaw && !isSharedResource(raw)) {
-    raw.dispose()
-  }
-
+  const geom = disposeRaw && !isSharedResource(raw) ? raw : raw.clone()
   for (const attrName of Object.keys(geom.attributes)) {
     if (attrName !== "position" && attrName !== "normal" && attrName !== "uv") {
       geom.deleteAttribute(attrName)
@@ -439,28 +621,33 @@ class PropMeshBatcher {
     bucket.geometries.push(geom)
   }
 
-  flushToSpecs(cachePrefix?: string): MergedPartSpec[] {
+  flushToSpecs(
+    cachePrefix?: string,
+    partOwner?: { cache: Map<string, readonly MergedPartSpec[]>; key: string }
+  ): MergedPartSpec[] {
     const specs: MergedPartSpec[] = []
     let idx = 0
     for (const bucket of this.buckets.values()) {
       if (bucket.geometries.length === 0) continue
-      let merged: THREE.BufferGeometry | null
-      if (bucket.geometries.length === 1) {
-        merged = bucket.geometries[0]!
-      } else {
-        merged = mergeGeometries(bucket.geometries, false)
-        if (merged) {
-          for (const g of bucket.geometries) g.dispose()
-        }
-      }
+      const merged = mergeIndexedGeometries(bucket.geometries, {
+        disposeInputs: true,
+      })
 
       if (merged) {
         merged.computeBoundingSphere()
         if (cachePrefix) {
           const cacheKey = `${cachePrefix}:${idx}`
           if (sharedGeometries.size < MAX_CACHED_GEOMETRIES) {
-            markSharedGeometry(merged)
-            sharedGeometries.set(cacheKey, merged)
+            markSharedGeometry(merged, cacheKey)
+            if (partOwner) {
+              ;(merged.userData as Record<string, unknown>)[PART_CACHE_OWNER] =
+                partOwner
+            }
+            sharedGeometries.set(cacheKey, {
+              geometry: merged,
+              refCount: 0,
+              partOwner,
+            })
           }
         }
         specs.push({
@@ -664,38 +851,36 @@ function extrudedStadium(
 }
 
 function createSculptedLeafGeometry(lite: boolean): THREE.BufferGeometry {
-  return getCachedGeometry(`leaf:${lite ? "lite" : "hi"}`, () => {
-    const shape = new THREE.Shape()
-    shape.moveTo(0, 0)
-    shape.bezierCurveTo(0.09, 0.05, 0.145, 0.16, 0.105, 0.29)
-    shape.bezierCurveTo(0.07, 0.37, 0.025, 0.43, 0, 0.46)
-    shape.bezierCurveTo(-0.025, 0.43, -0.07, 0.37, -0.105, 0.29)
-    shape.bezierCurveTo(-0.145, 0.16, -0.09, 0.05, 0, 0)
+  const shape = new THREE.Shape()
+  shape.moveTo(0, 0)
+  shape.bezierCurveTo(0.09, 0.05, 0.145, 0.16, 0.105, 0.29)
+  shape.bezierCurveTo(0.07, 0.37, 0.025, 0.43, 0, 0.46)
+  shape.bezierCurveTo(-0.025, 0.43, -0.07, 0.37, -0.105, 0.29)
+  shape.bezierCurveTo(-0.145, 0.16, -0.09, 0.05, 0, 0)
 
-    const geom = new THREE.ExtrudeGeometry(shape, {
-      depth: 0.014,
-      bevelEnabled: true,
-      bevelThickness: 0.006,
-      bevelSize: 0.005,
-      bevelSegments: 1,
-      curveSegments: lite ? 4 : 6,
-    })
-
-    // Gently arch the leaf blade backward and cup along its midrib for organic botanical shape
-    const pos = geom.getAttribute("position")
-    for (let i = 0; i < pos.count; i += 1) {
-      const x = pos.getX(i)
-      const y = pos.getY(i)
-      const z = pos.getZ(i)
-      const t = Math.max(0, Math.min(1, y / 0.46))
-      const arch = Math.sin(t * Math.PI * 0.85) * 0.055 - t * t * 0.09
-      const cup = Math.abs(x) * 0.18
-      pos.setZ(i, z + arch + cup)
-    }
-    pos.needsUpdate = true
-    geom.computeVertexNormals()
-    return geom
+  const geom = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.014,
+    bevelEnabled: true,
+    bevelThickness: 0.006,
+    bevelSize: 0.005,
+    bevelSegments: 1,
+    curveSegments: lite ? 4 : 6,
   })
+
+  // Gently arch the leaf blade backward and cup along its midrib for organic botanical shape
+  const pos = geom.getAttribute("position")
+  for (let i = 0; i < pos.count; i += 1) {
+    const x = pos.getX(i)
+    const y = pos.getY(i)
+    const z = pos.getZ(i)
+    const t = Math.max(0, Math.min(1, y / 0.46))
+    const arch = Math.sin(t * Math.PI * 0.85) * 0.055 - t * t * 0.09
+    const cup = Math.abs(x) * 0.18
+    pos.setZ(i, z + arch + cup)
+  }
+  pos.needsUpdate = true
+  geom.computeVertexNormals()
+  return geom
 }
 
 function createLathePotGeometry(
@@ -1001,7 +1186,7 @@ function getSwivelChairSpecs(
     )
   }
 
-  const specs = batcher.flushToSpecs(key)
+  const specs = batcher.flushToSpecs(key, { cache: chairPartCache, key })
   chairPartCache.set(key, specs)
   return specs
 }
@@ -1221,9 +1406,63 @@ function getPottedPlantSpecs(
     }
   }
 
-  const specs = batcher.flushToSpecs(key)
+  leafGeom.dispose()
+  const specs = batcher.flushToSpecs(key, { cache: plantPartCache, key })
   plantPartCache.set(key, specs)
   return specs
+}
+
+export interface InstancedPropTransform {
+  x: number
+  y?: number
+  z: number
+  rotY?: number
+  scale?: number
+}
+
+/**
+ * Renders multiple identical potted plants using `InstancedMesh` (one draw call per material
+ * bucket across all instances) with full ref-counted shared cache cleanup.
+ */
+export function createInstancedPottedPlants(
+  size: "tall" | "small",
+  transforms: readonly InstancedPropTransform[],
+  opts?: PropDetailOptions
+): DisposableProp {
+  const lite = resolveLite(opts)
+  const group = new THREE.Group()
+  group.name = `prop-plant-${size}-instanced`
+  if (transforms.length === 0) {
+    return wrapProp(group)
+  }
+  const specs = getPottedPlantSpecs(size, lite)
+  for (const spec of specs) {
+    const inst = new THREE.InstancedMesh(
+      spec.geometry,
+      spec.material,
+      transforms.length
+    )
+    inst.castShadow = spec.castShadow
+    inst.receiveShadow = spec.receiveShadow
+    for (let i = 0; i < transforms.length; i += 1) {
+      const tr = transforms[i]!
+      scratchPos.set(tr.x, tr.y ?? 0, tr.z)
+      if (tr.rotY) {
+        scratchEuler.set(0, tr.rotY, 0)
+        scratchQuat.setFromEuler(scratchEuler)
+      } else {
+        scratchQuat.identity()
+      }
+      const sc = tr.scale ?? 1
+      scratchScale.set(sc, sc, sc)
+      scratchMatrix.compose(scratchPos, scratchQuat, scratchScale)
+      inst.setMatrixAt(i, scratchMatrix)
+    }
+    inst.instanceMatrix.needsUpdate = true
+    inst.computeBoundingSphere()
+    group.add(inst)
+  }
+  return wrapProp(group)
 }
 
 export function createPottedPlant(
@@ -2013,7 +2252,7 @@ function getLanternSpecs(
     false
   )
 
-  const specs = batcher.flushToSpecs(key)
+  const specs = batcher.flushToSpecs(key, { cache: lanternPartCache, key })
   lanternPartCache.set(key, specs)
   return specs
 }
@@ -2557,13 +2796,16 @@ export function createThanTaiShrine(opts?: {
     group.add(lanternGroup)
   }
 
+  const extraChildren: DisposableProp[] = []
   if (opts?.includeAltar) {
     const altar = createOfferingAltar(3.2, 1.1, { lite })
+    ;(altar.group.userData as Record<string, unknown>)[CHILD_PROP_FLAG] = true
     altar.group.position.set(0, 0, 1.25)
     group.add(altar.group)
+    extraChildren.push(altar)
   }
 
-  return wrapProp(group)
+  return wrapProp(group, extraChildren)
 }
 
 // ---------- 7. Hall of Fame Statue Podium (Exact Top Y Preserved!) ----------
@@ -2832,6 +3074,7 @@ export function createWallBoardFrame(
     false
   )
 
+  const retained = retainSubtreeSharedRefs(group)
   let disposed = false
   return {
     group,
@@ -2843,6 +3086,7 @@ export function createWallBoardFrame(
       if (disposed) return
       disposed = true
       disposePropGroup(group)
+      releaseSubtreeSharedRefs(retained)
     },
   }
 }
@@ -2865,31 +3109,17 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
     0.58,
     0.04
   )
-  const drawerFaceMat = matteMat(
-    variant === "boss" ? "#6d4628" : "#a3784a",
-    0.52,
-    0.05
-  )
-  const legMat = metalMat("#27334a", 0.34, 0.68)
   const handleMat = metalMat(
     variant === "boss" ? "#e9b949" : "#b8c4d4",
     0.24,
     0.84
   )
-  const blotterMat = matteMat(
-    variant === "boss" ? "#162138" : "#253147",
-    0.72,
-    0.06
-  )
-  const bezelMat = matteMat("#161f33", 0.34, 0.22)
-  const standMetalMat = metalMat("#64748b", 0.28, 0.78)
-  const keyBaseMat = matteMat("#cfd7e3", 0.48, 0.08)
-  const keyCapMat = matteMat("#f8fafc", 0.56, 0.04)
-  const powerLedMat = glowMat("#34c38f", 1.2)
-  const mugMat = matteMat("#faf8f5", 0.24, 0.06)
-  const mugRimMat = matteMat("#c0392b", 0.34, 0.06)
-  const coffeeMat = matteMat("#3f1f0e", 0.3, 0.04)
-  const coasterMat = matteMat("#7a5230", 0.68, 0.04)
+  const getDrawerFaceMat = (): THREE.MeshStandardMaterial =>
+    matteMat(variant === "boss" ? "#6d4628" : "#a3784a", 0.52, 0.05)
+  const getLegMat = (): THREE.MeshStandardMaterial =>
+    metalMat("#27334a", 0.34, 0.68)
+  const getBezelMat = (): THREE.MeshStandardMaterial =>
+    matteMat("#161f33", 0.34, 0.22)
 
   const deskH = 0.76
   const topThick = 0.068
@@ -2898,6 +3128,8 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
   const addDrawerPedestal = (centerX: number, pedW: number): void => {
     const pedH = deskH - 0.08
     const pedD = depth * 0.8
+    const legMat = getLegMat()
+    const drawerFaceMat = getDrawerFaceMat()
     // Foot glides + bevelled pedestal carcass
     batcher.add(
       roundedBox(pedW - 0.04, 0.04, pedD - 0.04, 0.01, lite),
@@ -2952,6 +3184,7 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
       [0, deskH * 0.64, depth * 0.348]
     )
   } else if (variant === "staff") {
+    const legMat = getLegMat()
     const pedW = Math.min(0.4, width * 0.23)
     addDrawerPedestal(width / 2 - pedW / 2 - 0.05, pedW)
     // Modern metal sled leg frame on left side
@@ -3021,6 +3254,16 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
   }[] = []
 
   if (showMonitors) {
+    const blotterMat = matteMat(
+      variant === "boss" ? "#162138" : "#253147",
+      0.72,
+      0.06
+    )
+    const bezelMat = getBezelMat()
+    const standMetalMat = metalMat("#64748b", 0.28, 0.78)
+    const keyBaseMat = matteMat("#cfd7e3", 0.48, 0.08)
+    const keyCapMat = matteMat("#f8fafc", 0.56, 0.04)
+    const powerLedMat = glowMat("#34c38f", 1.2)
     // Soft leather desk blotter pad
     const blotterW = Math.min(width * 0.56, 1.06)
     const blotterD = Math.min(depth * 0.44, 0.4)
@@ -3127,6 +3370,7 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
 
     // Executive boss desk accents: brass pen cup & leather portfolio on left wing
     if (variant === "boss" && width >= 2.2) {
+      const accentPenMat = matteMat("#c0392b", 0.34, 0.06)
       const px = -width * 0.37
       const pz = -depth * 0.12
       batcher.add(
@@ -3142,7 +3386,7 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
       )
       batcher.add(
         new THREE.CylinderGeometry(0.007, 0.007, 0.145, 6),
-        mugRimMat,
+        accentPenMat,
         [px + 0.014, topSurfaceY + 0.082, pz + 0.008],
         [-0.1, 0, -0.18]
       )
@@ -3222,6 +3466,10 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
 
   // Cozy lathe-turned coffee mug with handle on wooden coaster
   if (opts.hasMug ?? variant === "boss") {
+    const mugMat = matteMat("#faf8f5", 0.24, 0.06)
+    const mugRimMat = matteMat("#c0392b", 0.34, 0.06)
+    const coffeeMat = matteMat("#3f1f0e", 0.3, 0.04)
+    const coasterMat = matteMat("#7a5230", 0.68, 0.04)
     const mx = width * 0.35
     const mz = depth * 0.14
     batcher.add(
@@ -3254,7 +3502,7 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
     )
     batcher.add(
       roundedBox(plateW, 0.215, 0.042, 0.014, lite),
-      bezelMat,
+      getBezelMat(),
       [0, topSurfaceY + 0.105, depth * 0.42],
       [-0.22, 0, 0]
     )
@@ -3588,20 +3836,26 @@ export function createBookshelf(
 
   batcher.flushInto(group)
 
-  const instWhiteMat = matteMat("#ffffff", 0.56, 0.05)
-  const instLabelMat = matteMat("#ffffff", 0.45, 0.02)
-  const instBoxMat = matteMat("#ffffff", 0.78, 0.02)
-
-  emitInstancedGroup(group, getUnitBookGeometry(lite), instWhiteMat, bookInstances)
-  emitInstancedGroup(group, getUnitBoxGeometry(lite), instBoxMat, boxInstances)
-  emitInstancedGroup(group, getUnitBoxGeometry(lite), instBoxMat, lidInstances)
-  emitInstancedGroup(
-    group,
-    getUnitBoxGeometry(true),
-    instLabelMat,
-    labelInstances,
-    false
-  )
+  if (bookInstances.length > 0) {
+    const instWhiteMat = matteMat("#ffffff", 0.56, 0.05)
+    emitInstancedGroup(group, getUnitBookGeometry(lite), instWhiteMat, bookInstances)
+  }
+  if (boxInstances.length > 0 || lidInstances.length > 0) {
+    const instBoxMat = matteMat("#ffffff", 0.78, 0.02)
+    const unitBox = getUnitBoxGeometry(lite)
+    emitInstancedGroup(group, unitBox, instBoxMat, boxInstances)
+    emitInstancedGroup(group, unitBox, instBoxMat, lidInstances)
+  }
+  if (labelInstances.length > 0) {
+    const instLabelMat = matteMat("#ffffff", 0.45, 0.02)
+    emitInstancedGroup(
+      group,
+      getUnitBoxGeometry(true),
+      instLabelMat,
+      labelInstances,
+      false
+    )
+  }
 
   return wrapProp(group)
 }
@@ -3638,12 +3892,6 @@ export function createConferenceTable(
   const trayMat = metalMat("#475569", 0.3, 0.78)
   const puckMat = matteMat("#182032", 0.36, 0.24)
   const ledMat = glowMat("#34c38f", 1.15)
-  const folderMat = matteMat("#1e3a5f", 0.52, 0.06)
-  const paperMat = matteMat("#f8fafc", 0.65, 0.02)
-  const glassMat = matteMat("#d8eefc", 0.14, 0.1, {
-    transparent: true,
-    opacity: 0.46,
-  })
 
   const tableH = 0.76
   const straightW = Math.max(0.2, width - depth)
@@ -3717,6 +3965,12 @@ export function createConferenceTable(
 
   // Subtle tabletop meeting props (notepads & carafe)
   if (!lite && width >= 2.6) {
+    const folderMat = matteMat("#1e3a5f", 0.52, 0.06)
+    const paperMat = matteMat("#f8fafc", 0.65, 0.02)
+    const glassMat = matteMat("#d8eefc", 0.14, 0.1, {
+      transparent: true,
+      opacity: 0.46,
+    })
     for (const [fx, fz, yaw] of [
       [-width * 0.28, depth * 0.26, 0.08],
       [width * 0.26, -depth * 0.26, -0.1],
@@ -3952,6 +4206,7 @@ export function createAchievementStandee(
     false
   )
 
+  const retained = retainSubtreeSharedRefs(group)
   let disposed = false
   return {
     group,
@@ -3963,6 +4218,7 @@ export function createAchievementStandee(
       if (disposed) return
       disposed = true
       disposePropGroup(group)
+      releaseSubtreeSharedRefs(retained)
     },
   }
 }

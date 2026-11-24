@@ -40,18 +40,328 @@ export type MonitorScreenVariant = "boss" | "staff" | "reception"
 export interface HighDprSignOptions extends SignTextureOptions {
   dpr?: number
   anisotropy?: number
+  maxWidth?: number
 }
 
-const faceTextureCache = new Map<ChibiFaceVariant, THREE.Texture>()
-const floorTextureCache = new Map<FloorTextureStyle, THREE.Texture>()
-const wallTextureCache = new Map<WallTextureStyle, THREE.Texture>()
-const woodTextureCache = new Map<WoodSurfaceTone, THREE.Texture>()
-const fabricTextureCache = new Map<string, THREE.Texture>()
-const marbleTextureCache = new Map<MarbleSurfaceTone, THREE.Texture>()
-const monitorScreenCache = new Map<MonitorScreenVariant, THREE.Texture>()
-let altarClothCache: THREE.Texture | null = null
+export interface StaticCanvasMeta {
+  width: number
+  height: number
+  released: boolean
+  pendingUploads: number
+  repaint?: (canvas: HTMLCanvasElement) => void
+}
+
+export const STATIC_CANVAS_KEY = "__chibiStaticCanvas"
+const BASE_TEXTURE_KEY = "__chibiBaseTexture"
+
+interface CachedTextureEntry {
+  texture: THREE.Texture
+  refCount: number
+}
+
+interface CachedTextureHandle {
+  map: Map<unknown, CachedTextureEntry>
+  key: unknown
+  entry: CachedTextureEntry
+}
+
+const faceTextureCache = new Map<ChibiFaceVariant, CachedTextureEntry>()
+const floorTextureCache = new Map<FloorTextureStyle, CachedTextureEntry>()
+const wallTextureCache = new Map<WallTextureStyle, CachedTextureEntry>()
+const woodTextureCache = new Map<WoodSurfaceTone, CachedTextureEntry>()
+const fabricTextureCache = new Map<string, CachedTextureEntry>()
+const marbleTextureCache = new Map<MarbleSurfaceTone, CachedTextureEntry>()
+const monitorScreenCache = new Map<MonitorScreenVariant, CachedTextureEntry>()
+const altarClothCache = new Map<"default", CachedTextureEntry>()
+
+const cachedTextureRegistry = new WeakMap<THREE.Texture, CachedTextureHandle>()
 
 const MAX_FABRIC_CACHE = 48
+
+export interface TextureCacheStats {
+  face: number
+  floor: number
+  wall: number
+  wood: number
+  fabric: number
+  marble: number
+  monitor: number
+  altarCloth: number
+  total: number
+}
+
+export function getTextureCacheStats(): TextureCacheStats {
+  const face = faceTextureCache.size
+  const floor = floorTextureCache.size
+  const wall = wallTextureCache.size
+  const wood = woodTextureCache.size
+  const fabric = fabricTextureCache.size
+  const marble = marbleTextureCache.size
+  const monitor = monitorScreenCache.size
+  const altarCloth = altarClothCache.size
+  return {
+    face,
+    floor,
+    wall,
+    wood,
+    fabric,
+    marble,
+    monitor,
+    altarCloth,
+    total: face + floor + wall + wood + fabric + marble + monitor + altarCloth,
+  }
+}
+
+function releaseCanvasBackingStore(canvas: HTMLCanvasElement): void {
+  canvas.width = 0
+  canvas.height = 0
+}
+
+/**
+ * Marks a static `CanvasTexture` so its CPU-side HTMLCanvasElement backing store is released
+ * immediately after GPU upload (`onUpdate`), while retaining an optional `repaint` callback
+ * for WebGL context-loss restoration.
+ */
+export function markStaticCanvasTexture<T extends THREE.Texture>(
+  tex: T,
+  repaint?: (canvas: HTMLCanvasElement) => void
+): T {
+  if (!(tex instanceof THREE.CanvasTexture)) return tex
+  const canvas = tex.image as HTMLCanvasElement | undefined
+  if (!canvas || typeof canvas.width !== "number" || typeof canvas.height !== "number") {
+    return tex
+  }
+  const meta: StaticCanvasMeta = {
+    width: canvas.width,
+    height: canvas.height,
+    released: false,
+    pendingUploads: 0,
+    repaint,
+  }
+  ;(tex.userData as Record<string, unknown>)[STATIC_CANVAS_KEY] = meta
+  tex.onUpdate = () => {
+    if (!meta.released && meta.pendingUploads <= 0) {
+      if (canvas.width > 0 && canvas.height > 0) {
+        releaseCanvasBackingStore(canvas)
+      }
+      meta.released = true
+    }
+    tex.onUpdate = null
+  }
+  const origDispose = tex.dispose.bind(tex)
+  tex.dispose = () => {
+    if (!meta.released && canvas.width > 0) {
+      releaseCanvasBackingStore(canvas)
+      meta.released = true
+    }
+    tex.onUpdate = null
+    origDispose()
+  }
+  return tex
+}
+
+function attachCloneReleaseHook(
+  tex: THREE.Texture,
+  base: THREE.CanvasTexture,
+  meta: StaticCanvasMeta
+): void {
+  const canvas = base.image as HTMLCanvasElement | undefined
+  if (!canvas) return
+  let pending = true
+  meta.pendingUploads += 1
+  const finish = (): void => {
+    if (!pending) return
+    pending = false
+    meta.pendingUploads = Math.max(0, meta.pendingUploads - 1)
+    if (!meta.released && meta.pendingUploads <= 0) {
+      if (canvas.width > 0 && canvas.height > 0) {
+        releaseCanvasBackingStore(canvas)
+      }
+      meta.released = true
+      base.onUpdate = null
+    }
+    tex.onUpdate = null
+  }
+  tex.onUpdate = finish
+  const origDispose = tex.dispose.bind(tex)
+  tex.dispose = (): void => {
+    if (pending) {
+      pending = false
+      meta.pendingUploads = Math.max(0, meta.pendingUploads - 1)
+      tex.onUpdate = null
+    }
+    origDispose()
+  }
+}
+
+/** Repaints a released static `CanvasTexture` into its backing canvas (e.g. after WebGL context restore). */
+export function restoreStaticTexture(tex: THREE.Texture): boolean {
+  const base =
+    ((tex.userData as Record<string, unknown>)[BASE_TEXTURE_KEY] as
+      | THREE.Texture
+      | undefined) ?? tex
+  const meta = (base.userData as Record<string, unknown>)[STATIC_CANVAS_KEY] as
+    | StaticCanvasMeta
+    | undefined
+  if (!meta || !meta.released || !meta.repaint) return false
+  if (!(base instanceof THREE.CanvasTexture)) return false
+  const canvas = base.image as HTMLCanvasElement | undefined
+  if (!canvas) return false
+  canvas.width = meta.width
+  canvas.height = meta.height
+  meta.repaint(canvas)
+  meta.released = false
+  base.onUpdate = () => {
+    if (!meta.released && meta.pendingUploads <= 0) {
+      if (canvas.width > 0 && canvas.height > 0) {
+        releaseCanvasBackingStore(canvas)
+      }
+      meta.released = true
+    }
+    base.onUpdate = null
+  }
+  base.needsUpdate = true
+  if (tex !== base) {
+    attachCloneReleaseHook(tex, base, meta)
+  }
+  return true
+}
+
+/** Traverses a Three.js scene/subtree and restores any released static CanvasTextures (for WebGL context restore). */
+export function restoreStaticTextures(root: THREE.Object3D): number {
+  const visited = new Set<THREE.Texture>()
+  let restored = 0
+  root.traverse((node) => {
+    const mesh = node as THREE.Mesh
+    const rawMat = mesh.material as THREE.Material | THREE.Material[] | undefined
+    if (!rawMat) return
+    const mats = Array.isArray(rawMat) ? rawMat : [rawMat]
+    for (const mat of mats) {
+      if (!mat) continue
+      const std = mat as THREE.MeshStandardMaterial & {
+        map?: THREE.Texture | null
+        emissiveMap?: THREE.Texture | null
+        roughnessMap?: THREE.Texture | null
+        metalnessMap?: THREE.Texture | null
+        alphaMap?: THREE.Texture | null
+      }
+      for (const tex of [
+        std.map,
+        std.emissiveMap,
+        std.roughnessMap,
+        std.metalnessMap,
+        std.alphaMap,
+      ]) {
+        if (!tex || visited.has(tex)) continue
+        visited.add(tex)
+        if (restoreStaticTexture(tex)) {
+          restored += 1
+        }
+      }
+    }
+  })
+  return restored
+}
+
+/**
+ * Clones a cached repeated texture sharing the exact same GPU `Source` without forcing
+ * redundant uploads, and forwards the first-upload static canvas release hook cleanly.
+ */
+export function cloneSharedRepeatedTexture(
+  base: THREE.Texture,
+  repeatX: number,
+  repeatY: number,
+  anisotropy?: number
+): THREE.Texture {
+  const tex = base.clone()
+  tex.wrapS = THREE.RepeatWrapping
+  tex.wrapT = THREE.RepeatWrapping
+  tex.repeat.set(repeatX, repeatY)
+  if (anisotropy !== undefined) {
+    tex.anisotropy = anisotropy
+  }
+  tex.userData = { [BASE_TEXTURE_KEY]: base }
+  const meta = (base.userData as Record<string, unknown>)[STATIC_CANVAS_KEY] as
+    | StaticCanvasMeta
+    | undefined
+  if (meta && base instanceof THREE.CanvasTexture) {
+    const canvas = base.image as HTMLCanvasElement | undefined
+    if (canvas) {
+      if (meta.released && meta.repaint) {
+        canvas.width = meta.width
+        canvas.height = meta.height
+        meta.repaint(canvas)
+        meta.released = false
+      }
+      if (!meta.released) {
+        attachCloneReleaseHook(tex, base, meta)
+      }
+    }
+  }
+  return tex
+}
+
+function disposeTextureAndCanvas(tex: THREE.Texture): void {
+  const meta = (tex.userData as Record<string, unknown>)[STATIC_CANVAS_KEY] as
+    | StaticCanvasMeta
+    | undefined
+  if (meta && !meta.released && tex instanceof THREE.CanvasTexture) {
+    const canvas = tex.image as HTMLCanvasElement | undefined
+    if (canvas && canvas.width > 0) {
+      releaseCanvasBackingStore(canvas)
+    }
+    meta.released = true
+  }
+  tex.onUpdate = null
+  tex.dispose()
+}
+
+function registerCachedTexture<K>(
+  map: Map<K, CachedTextureEntry>,
+  key: K,
+  texture: THREE.Texture
+): THREE.Texture {
+  const entry: CachedTextureEntry = { texture, refCount: 0 }
+  map.set(key, entry)
+  cachedTextureRegistry.set(texture, {
+    map: map as unknown as Map<unknown, CachedTextureEntry>,
+    key,
+    entry,
+  })
+  return texture
+}
+
+/** Increments ref-count on a cached procedural texture owned by a room or shared material. */
+export function retainCachedTexture(tex: THREE.Texture | null | undefined): void {
+  if (!tex) return
+  const base =
+    ((tex.userData as Record<string, unknown>)[BASE_TEXTURE_KEY] as
+      | THREE.Texture
+      | undefined) ?? tex
+  const handle = cachedTextureRegistry.get(base)
+  if (!handle) return
+  handle.entry.refCount += 1
+  if (handle.entry.refCount === 1) {
+    restoreStaticTexture(base)
+  }
+}
+
+/** Decrements ref-count on a cached procedural texture and disposes it when count reaches 0. */
+export function releaseCachedTexture(tex: THREE.Texture | null | undefined): void {
+  if (!tex) return
+  const base =
+    ((tex.userData as Record<string, unknown>)[BASE_TEXTURE_KEY] as
+      | THREE.Texture
+      | undefined) ?? tex
+  const handle = cachedTextureRegistry.get(base)
+  if (!handle || handle.entry.refCount <= 0) return
+  handle.entry.refCount -= 1
+  if (handle.entry.refCount === 0) {
+    handle.map.delete(handle.key)
+    cachedTextureRegistry.delete(base)
+    disposeTextureAndCanvas(handle.entry.texture)
+  }
+}
 
 interface CanvasSurface {
   canvas: HTMLCanvasElement
@@ -86,16 +396,17 @@ function clamp(v: number, lo: number, hi: number): number {
 function resolveSupersampleDpr(
   baseWidth: number,
   baseHeight: number,
-  explicitDpr?: number
+  explicitDpr?: number,
+  maxDimCap = 1024
 ): number {
   const envDpr =
     typeof window !== "undefined" && Number.isFinite(window.devicePixelRatio)
       ? window.devicePixelRatio
       : 2
-  const desired = clamp(explicitDpr ?? Math.max(2, envDpr), 1, 2.5)
+  const desired = clamp(explicitDpr ?? Math.min(2, Math.max(1.5, envDpr)), 1, 2)
   const maxDim = Math.max(baseWidth, baseHeight, 1)
-  const cap = 1536 / maxDim
-  return clamp(Math.min(desired, cap), 1, 2.5)
+  const cap = maxDimCap / maxDim
+  return clamp(Math.min(desired, cap), 1, 2)
 }
 
 /** Safely obtains a 2D canvas context without triggering jsdom's unimplemented-canvas stderr spam. */
@@ -144,13 +455,18 @@ function createFallbackTexture(
 function finalizeCanvasTexture(
   canvas: HTMLCanvasElement,
   hasContext: boolean,
-  opts?: { repeat?: boolean; anisotropy?: number; shared?: boolean }
+  opts?: {
+    repeat?: boolean
+    anisotropy?: number
+    shared?: boolean
+    repaint?: (canvas: HTMLCanvasElement) => void
+  }
 ): THREE.Texture {
   const tex: THREE.Texture = hasContext
     ? new THREE.CanvasTexture(canvas)
     : createFallbackTexture(255, 255, 255, 255)
   tex.colorSpace = THREE.SRGBColorSpace
-  tex.anisotropy = opts?.anisotropy ?? 12
+  tex.anisotropy = opts?.anisotropy ?? 8
   tex.minFilter = THREE.LinearMipmapLinearFilter
   tex.magFilter = THREE.LinearFilter
   tex.generateMipmaps = true
@@ -162,6 +478,9 @@ function finalizeCanvasTexture(
     tex.wrapT = THREE.ClampToEdgeWrapping
   }
   tex.needsUpdate = true
+  if (hasContext) {
+    markStaticCanvasTexture(tex, opts?.repaint)
+  }
   return opts?.shared ? markSharedTexture(tex) : tex
 }
 
@@ -204,23 +523,29 @@ function trimToWidth(
   return lo <= 0 ? ellipsis : `${text.slice(0, lo).trimEnd()}${ellipsis}`
 }
 
+function disposeCacheMap<K>(map: Map<K, CachedTextureEntry>): void {
+  for (const entry of map.values()) {
+    cachedTextureRegistry.delete(entry.texture)
+    disposeTextureAndCanvas(entry.texture)
+  }
+  map.clear()
+}
+
 /** Disposes cached procedural surface textures (wall, wood, fabric, marble, monitor, altar cloth). */
 export function disposeProceduralTextureCaches(): void {
-  const disposeMap = <K>(map: Map<K, THREE.Texture>): void => {
-    for (const tex of map.values()) {
-      tex.dispose()
-    }
-    map.clear()
-  }
-  disposeMap(wallTextureCache)
-  disposeMap(woodTextureCache)
-  disposeMap(fabricTextureCache)
-  disposeMap(marbleTextureCache)
-  disposeMap(monitorScreenCache)
-  if (altarClothCache) {
-    altarClothCache.dispose()
-    altarClothCache = null
-  }
+  disposeCacheMap(wallTextureCache)
+  disposeCacheMap(woodTextureCache)
+  disposeCacheMap(fabricTextureCache)
+  disposeCacheMap(marbleTextureCache)
+  disposeCacheMap(monitorScreenCache)
+  disposeCacheMap(altarClothCache)
+}
+
+/** Disposes every cached texture including faces and floors (used when resetting all 3D spaces). */
+export function disposeAllTextureCaches(): void {
+  disposeCacheMap(faceTextureCache)
+  disposeCacheMap(floorTextureCache)
+  disposeProceduralTextureCaches()
 }
 
 // ---------- 1. High-DPI Kawaii Chibi Face Textures (256x256) ----------
@@ -321,10 +646,11 @@ export function createChibiFaceTexture(
   variant: ChibiFaceVariant
 ): THREE.Texture {
   const cached = faceTextureCache.get(variant)
-  if (cached) return cached
+  if (cached) return cached.texture
 
-  const { canvas, ctx } = createCanvasSurface(256, 256)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     ctx.clearRect(0, 0, 256, 256)
 
     const isStatue = variant.startsWith("statue_")
@@ -503,14 +829,19 @@ export function createChibiFaceTexture(
         ctx.stroke()
       }
     }
+    return true
   }
 
-  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+  const { canvas } = createCanvasSurface(256, 256)
+  const hasCtx = paint(canvas)
+  const tex = finalizeCanvasTexture(canvas, hasCtx, {
     anisotropy: 8,
     shared: true,
+    repaint: (c) => {
+      paint(c)
+    },
   })
-  faceTextureCache.set(variant, tex)
-  return tex
+  return registerCachedTexture(faceTextureCache, variant, tex)
 }
 
 // ---------- 2. Procedural Architectural Floor Textures (512x512) ----------
@@ -571,10 +902,11 @@ function drawMarbleVeinsInRect(
 
 export function createFloorTexture(style: FloorTextureStyle): THREE.Texture {
   const cached = floorTextureCache.get(style)
-  if (cached) return cached
+  if (cached) return cached.texture
 
-  const { canvas, ctx } = createCanvasSurface(512, 512)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     if (style === "marble_cream") {
       // Luminous Italian Crema Marfil marble slabs (2x2) with organic veins & bevel polish
       const rand = mulberry32(4109)
@@ -911,15 +1243,20 @@ export function createFloorTexture(style: FloorTextureStyle): THREE.Texture {
         }
       }
     }
+    return true
   }
 
-  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+  const { canvas } = createCanvasSurface(512, 512)
+  const hasCtx = paint(canvas)
+  const tex = finalizeCanvasTexture(canvas, hasCtx, {
     repeat: true,
-    anisotropy: 12,
+    anisotropy: 8,
     shared: true,
+    repaint: (c) => {
+      paint(c)
+    },
   })
-  floorTextureCache.set(style, tex)
-  return tex
+  return registerCachedTexture(floorTextureCache, style, tex)
 }
 
 // ---------- 2b. Procedural Wall Paint & Furniture Surface Textures ----------
@@ -928,10 +1265,11 @@ export function createWallTexture(
   style: WallTextureStyle = "ivory_plaster"
 ): THREE.Texture {
   const cached = wallTextureCache.get(style)
-  if (cached) return cached
+  if (cached) return cached.texture
 
-  const { canvas, ctx } = createCanvasSurface(512, 512)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     const rand = mulberry32(hashString(`wall:${style}`))
     if (style === "navy_wainscot") {
       const grad = ctx.createLinearGradient(0, 0, 0, 512)
@@ -992,20 +1330,25 @@ export function createWallTexture(
         ctx.fillRect(rand() * 512, rand() * 512, 2, 2)
       }
     }
+    return true
   }
 
-  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+  const { canvas } = createCanvasSurface(512, 512)
+  const hasCtx = paint(canvas)
+  const tex = finalizeCanvasTexture(canvas, hasCtx, {
     repeat: true,
     anisotropy: 8,
     shared: true,
+    repaint: (c) => {
+      paint(c)
+    },
   })
-  wallTextureCache.set(style, tex)
-  return tex
+  return registerCachedTexture(wallTextureCache, style, tex)
 }
 
 export function createWoodSurfaceTexture(tone: WoodSurfaceTone): THREE.Texture {
   const cached = woodTextureCache.get(tone)
-  if (cached) return cached
+  if (cached) return cached.texture
 
   const palette: Readonly<
     Record<WoodSurfaceTone, { base: string; dark: string; light: string }>
@@ -1032,8 +1375,9 @@ export function createWoodSurfaceTexture(tone: WoodSurfaceTone): THREE.Texture {
     },
   }
   const p = palette[tone]
-  const { canvas, ctx } = createCanvasSurface(256, 256)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     const rand = mulberry32(hashString(`wood:${tone}`))
     ctx.fillStyle = p.base
     ctx.fillRect(0, 0, 256, 256)
@@ -1068,15 +1412,20 @@ export function createWoodSurfaceTexture(tone: WoodSurfaceTone): THREE.Texture {
     for (let i = 0; i < 90; i += 1) {
       ctx.fillRect(rand() * 256, rand() * 256, 5 + rand() * 9, 1)
     }
+    return true
   }
 
-  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+  const { canvas } = createCanvasSurface(256, 256)
+  const hasCtx = paint(canvas)
+  const tex = finalizeCanvasTexture(canvas, hasCtx, {
     repeat: true,
     anisotropy: 8,
     shared: true,
+    repaint: (c) => {
+      paint(c)
+    },
   })
-  woodTextureCache.set(tone, tex)
-  return tex
+  return registerCachedTexture(woodTextureCache, tone, tex)
 }
 
 export function createFabricSurfaceTexture(
@@ -1085,10 +1434,11 @@ export function createFabricSurfaceTexture(
 ): THREE.Texture {
   const key = `${pattern}:${colorHex.toLowerCase()}`
   const cached = fabricTextureCache.get(key)
-  if (cached) return cached
+  if (cached) return cached.texture
 
-  const { canvas, ctx } = createCanvasSurface(256, 256)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     const rand = mulberry32(hashString(`fabric:${key}`))
     ctx.fillStyle = colorHex
     ctx.fillRect(0, 0, 256, 256)
@@ -1142,16 +1492,22 @@ export function createFabricSurfaceTexture(
         ctx.fillRect(rand() * 256, rand() * 256, 2, 2)
       }
     }
+    return true
   }
 
+  const { canvas } = createCanvasSurface(256, 256)
+  const hasCtx = paint(canvas)
   const shouldCache = fabricTextureCache.size < MAX_FABRIC_CACHE
-  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+  const tex = finalizeCanvasTexture(canvas, hasCtx, {
     repeat: true,
     anisotropy: 8,
     shared: shouldCache,
+    repaint: (c) => {
+      paint(c)
+    },
   })
   if (shouldCache) {
-    fabricTextureCache.set(key, tex)
+    return registerCachedTexture(fabricTextureCache, key, tex)
   }
   return tex
 }
@@ -1160,10 +1516,11 @@ export function createMarbleSurfaceTexture(
   tone: MarbleSurfaceTone = "cream"
 ): THREE.Texture {
   const cached = marbleTextureCache.get(tone)
-  if (cached) return cached
+  if (cached) return cached.texture
 
-  const { canvas, ctx } = createCanvasSurface(256, 256)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     const rand = mulberry32(hashString(`marble:${tone}`))
     const grad = ctx.createLinearGradient(0, 0, 256, 256)
     if (tone === "white_gold") {
@@ -1176,25 +1533,31 @@ export function createMarbleSurfaceTexture(
     ctx.fillStyle = grad
     ctx.fillRect(0, 0, 256, 256)
     drawMarbleVeinsInRect(ctx, 0, 0, 256, 256, rand, 6)
+    return true
   }
 
-  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+  const { canvas } = createCanvasSurface(256, 256)
+  const hasCtx = paint(canvas)
+  const tex = finalizeCanvasTexture(canvas, hasCtx, {
     repeat: true,
     anisotropy: 8,
     shared: true,
+    repaint: (c) => {
+      paint(c)
+    },
   })
-  marbleTextureCache.set(tone, tex)
-  return tex
+  return registerCachedTexture(marbleTextureCache, tone, tex)
 }
 
 export function createMonitorScreenTexture(
   variant: MonitorScreenVariant
 ): THREE.Texture {
   const cached = monitorScreenCache.get(variant)
-  if (cached) return cached
+  if (cached) return cached.texture
 
-  const { canvas, ctx } = createCanvasSurface(256, 160)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     const bg = ctx.createLinearGradient(0, 0, 0, 160)
     bg.addColorStop(0, "#122142")
     bg.addColorStop(1, "#0b1428")
@@ -1312,21 +1675,28 @@ export function createMonitorScreenTexture(
       ctx.fillStyle = "#34c38f"
       ctx.fillRect(170, 44, 48, 6)
     }
+    return true
   }
 
-  const tex = finalizeCanvasTexture(canvas, Boolean(ctx), {
+  const { canvas } = createCanvasSurface(256, 160)
+  const hasCtx = paint(canvas)
+  const tex = finalizeCanvasTexture(canvas, hasCtx, {
     anisotropy: 8,
     shared: true,
+    repaint: (c) => {
+      paint(c)
+    },
   })
-  monitorScreenCache.set(variant, tex)
-  return tex
+  return registerCachedTexture(monitorScreenCache, variant, tex)
 }
 
 export function createAltarClothTexture(): THREE.Texture {
-  if (altarClothCache) return altarClothCache
+  const cached = altarClothCache.get("default")
+  if (cached) return cached.texture
 
-  const { canvas, ctx } = createCanvasSurface(256, 256)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     // Deep crimson satin brocade drape
     const bg = ctx.createLinearGradient(0, 0, 0, 256)
     bg.addColorStop(0, "#a8141f")
@@ -1403,13 +1773,19 @@ export function createAltarClothTexture(): THREE.Texture {
     for (let x = 4; x < 256; x += 8) {
       ctx.fillRect(x, 238, 2, 18)
     }
+    return true
   }
 
-  altarClothCache = finalizeCanvasTexture(canvas, Boolean(ctx), {
-    anisotropy: 12,
+  const { canvas } = createCanvasSurface(256, 256)
+  const hasCtx = paint(canvas)
+  const tex = finalizeCanvasTexture(canvas, hasCtx, {
+    anisotropy: 8,
     shared: true,
+    repaint: (c) => {
+      paint(c)
+    },
   })
-  return altarClothCache
+  return registerCachedTexture(altarClothCache, "default", tex)
 }
 
 // ---------- 3. Crisp High-DPR Floor Zone Decal Texture ----------
@@ -1421,11 +1797,12 @@ export function createFloorDecalTexture(
 ): THREE.Texture {
   const baseW = 512
   const baseH = 128
-  const dpr = resolveSupersampleDpr(baseW, baseH)
-  const { canvas, ctx } = createCanvasSurface(baseW * dpr, baseH * dpr)
-  if (ctx) {
+  const dpr = resolveSupersampleDpr(baseW, baseH, undefined, 768)
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     ctx.save()
-    ctx.scale(dpr, dpr)
+    ctx.scale(canvas.width / baseW, canvas.height / baseH)
     ctx.clearRect(0, 0, baseW, baseH)
     ctx.textAlign = "center"
     ctx.textBaseline = "middle"
@@ -1440,8 +1817,16 @@ export function createFloorDecalTexture(
       ctx.globalAlpha = 1
     }
     ctx.restore()
+    return true
   }
-  return finalizeCanvasTexture(canvas, Boolean(ctx), { anisotropy: 16 })
+  const { canvas } = createCanvasSurface(baseW * dpr, baseH * dpr)
+  const hasCtx = paint(canvas)
+  return finalizeCanvasTexture(canvas, hasCtx, {
+    anisotropy: 8,
+    repaint: (c) => {
+      paint(c)
+    },
+  })
 }
 
 // ---------- 4. Crisp High-DPR Sign, Nameplate, Banner & Medal Texture ----------
@@ -1453,12 +1838,25 @@ export function createSignTexture(
   const style = opts?.style ?? "navy_gold"
   const width = opts?.width ?? (style === "medal" ? 160 : 512)
   const height = opts?.height ?? (style === "medal" ? 160 : 128)
-  const dpr = resolveSupersampleDpr(width, height, opts?.dpr)
-  const { canvas, ctx } = createCanvasSurface(width * dpr, height * dpr)
-
-  if (ctx) {
+  const defaultMaxDim =
+    style === "medal"
+      ? 256
+      : style === "gold_banner"
+        ? 1024
+        : style === "emblem"
+          ? 448
+          : 512
+  const dpr = resolveSupersampleDpr(
+    width,
+    height,
+    opts?.dpr,
+    opts?.maxWidth ?? defaultMaxDim
+  )
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     ctx.save()
-    ctx.scale(dpr, dpr)
+    ctx.scale(canvas.width / width, canvas.height / height)
     ctx.clearRect(0, 0, width, height)
 
     if (style === "medal") {
@@ -1641,11 +2039,138 @@ export function createSignTexture(
       }
     }
     ctx.restore()
+    return true
   }
 
-  return finalizeCanvasTexture(canvas, Boolean(ctx), {
-    anisotropy: opts?.anisotropy ?? 16,
+  const { canvas } = createCanvasSurface(width * dpr, height * dpr)
+  const hasCtx = paint(canvas)
+  return finalizeCanvasTexture(canvas, hasCtx, {
+    anisotropy: Math.min(8, opts?.anisotropy ?? 8),
+    repaint: (c) => {
+      paint(c)
+    },
   })
+}
+
+export interface NameplateAtlasEntry {
+  text: string
+  style: "navy_gold" | "gold_plate"
+}
+
+export interface NameplateAtlasResult {
+  texture: THREE.Texture
+  cols: number
+  rows: number
+  /** Returns UV rect `[u0, v0, u1, v1]` for entry `index` in Three.js bottom-left UV space. */
+  getUvRect: (index: number) => readonly [number, number, number, number]
+}
+
+/**
+ * Packs multiple static desk nameplates into ONE crisp atlas texture (256x64 px per cell,
+ * still >2x sharper than max-zoom Retina pixels) and releases the backing canvas after GPU upload.
+ */
+export function createNameplateAtlasTexture(
+  entries: readonly NameplateAtlasEntry[],
+  opts?: { lite?: boolean; anisotropy?: number }
+): NameplateAtlasResult {
+  const count = Math.max(1, entries.length)
+  const cols = Math.min(4, count)
+  const rows = Math.ceil(count / cols)
+  const cellW = opts?.lite ? 192 : 256
+  const cellH = opts?.lite ? 48 : 64
+  const atlasW = cols * cellW
+  const atlasH = rows * cellH
+
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
+    ctx.clearRect(0, 0, atlasW, atlasH)
+
+    for (let i = 0; i < entries.length; i += 1) {
+      const entry = entries[i]!
+      const col = i % cols
+      const row = Math.floor(i / cols)
+      const ox = col * cellW
+      const oy = row * cellH
+      const w = cellW
+      const h = cellH
+
+      ctx.save()
+      ctx.translate(ox, oy)
+      if (entry.style === "gold_plate") {
+        const grad = ctx.createLinearGradient(0, 0, w, h)
+        grad.addColorStop(0, "#fae29c")
+        grad.addColorStop(0.45, "#f0c253")
+        grad.addColorStop(1, "#d59a30")
+        drawRoundedRect(ctx, 3, 3, w - 6, h - 6, 8)
+        ctx.fillStyle = grad
+        ctx.fill()
+        ctx.strokeStyle = "#fff8df"
+        ctx.lineWidth = 2.5
+        ctx.stroke()
+
+        drawRoundedRect(ctx, 7, 7, w - 14, h - 14, 5)
+        ctx.strokeStyle = "rgba(66, 42, 4, 0.32)"
+        ctx.lineWidth = 1.2
+        ctx.stroke()
+
+        ctx.fillStyle = "#2a1c00"
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+        ctx.font = `800 ${Math.round(h * 0.4)}px ${FONT_STACK}`
+        ctx.fillText(entry.text, w / 2, h / 2 + 1, w - 22)
+      } else {
+        const grad = ctx.createLinearGradient(0, 0, 0, h)
+        grad.addColorStop(0, "#192a54")
+        grad.addColorStop(1, "#0d1730")
+        drawRoundedRect(ctx, 3, 3, w - 6, h - 6, 8)
+        ctx.fillStyle = grad
+        ctx.fill()
+        ctx.strokeStyle = "#e9b949"
+        ctx.lineWidth = 2.5
+        ctx.stroke()
+
+        drawRoundedRect(ctx, 7, 7, w - 14, h - 14, 5)
+        ctx.strokeStyle = "rgba(246, 210, 122, 0.26)"
+        ctx.lineWidth = 1
+        ctx.stroke()
+
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+        ctx.font = `800 ${Math.round(h * 0.41)}px ${FONT_STACK}`
+        ctx.fillStyle = "rgba(4, 8, 18, 0.55)"
+        ctx.fillText(entry.text, w / 2, h / 2 + 2, w - 22)
+        ctx.fillStyle = "#f8dc8c"
+        ctx.fillText(entry.text, w / 2, h / 2 + 1, w - 22)
+      }
+      ctx.restore()
+    }
+    return true
+  }
+
+  const { canvas } = createCanvasSurface(atlasW, atlasH)
+  const hasCtx = paint(canvas)
+  const texture = finalizeCanvasTexture(canvas, hasCtx, {
+    anisotropy: opts?.anisotropy ?? (opts?.lite ? 4 : 8),
+    repaint: (c) => {
+      paint(c)
+    },
+  })
+
+  const padU = 1 / atlasW
+  const padV = 1 / atlasH
+  const getUvRect = (index: number): readonly [number, number, number, number] => {
+    const col = index % cols
+    const row = Math.floor(index / cols)
+    const u0 = col / cols + padU
+    const u1 = (col + 1) / cols - padU
+    // Canvas y=0 is top; Three.js CanvasTexture flipY=true maps top to v=1
+    const v1 = 1 - row / rows - padV
+    const v0 = 1 - (row + 1) / rows + padV
+    return [u0, v0, u1, v1]
+  }
+
+  return { texture, cols, rows, getUvRect }
 }
 
 // ---------- 5. Trading Floor LED VN30 Board Painter (1024x280 base) ----------

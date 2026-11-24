@@ -107,6 +107,12 @@ function createFakeSceneHost(opts?: {
       paused = p
     },
     isPaused: () => paused,
+    setSuspended: vi.fn(),
+    isSuspended: () => paused,
+    getSuspendReasons: () => (paused ? ["paused"] : []),
+    requestFrame: vi.fn(),
+    markActive: vi.fn(),
+    markShadowDirty: vi.fn(),
     isContextLost: () => false,
     getClampBounds: () => ({
       minX: -8,

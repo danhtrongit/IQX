@@ -63,14 +63,34 @@ export function unreadAsSaco(inbox: Inbox | null): number {
 
 let inboxTimer: ReturnType<typeof setTimeout> | null = null
 let freshTimer: ReturnType<typeof setTimeout> | null = null
+let chatActive = false
+let pendingInboxWhileHidden = false
+let pendingThreadWhileHidden = false
 
-/** Debounced: a burst of socket events costs one request. */
+function isTabHidden(): boolean {
+  return typeof document !== "undefined" && document.hidden === true
+}
+
+/** Debounced: a burst of socket events costs one request. Deferred while document is hidden. */
 export function refreshInbox(delay = 120): void {
   // Guests have an inbox too (the server keys it by their guest token), but only once they have a character.
   if (!ui.profile.get()) return
+  if (chatActive && isTabHidden()) {
+    if (inboxTimer) {
+      clearTimeout(inboxTimer)
+      inboxTimer = null
+    }
+    pendingInboxWhileHidden = true
+    return
+  }
+  pendingInboxWhileHidden = false
   if (inboxTimer) clearTimeout(inboxTimer)
   inboxTimer = setTimeout(async () => {
     inboxTimer = null
+    if (chatActive && isTabHidden()) {
+      pendingInboxWhileHidden = true
+      return
+    }
     try {
       const box = await floorApi.inbox()
       chat.inbox.set(box)
@@ -344,7 +364,35 @@ function panelShows(convId: string): boolean {
 
 /** Loads the inbox and listens to the chat events. Returns the stop function. */
 export function startChat(): () => void {
+  chatActive = true
+  pendingInboxWhileHidden = false
+  pendingThreadWhileHidden = false
   refreshInbox(0)
+
+  const onVisibilityChange = (): void => {
+    if (!chatActive) return
+    if (isTabHidden()) {
+      if (inboxTimer) {
+        clearTimeout(inboxTimer)
+        inboxTimer = null
+        pendingInboxWhileHidden = true
+      }
+      return
+    }
+    if (pendingInboxWhileHidden) {
+      pendingInboxWhileHidden = false
+      refreshInbox(0)
+    }
+    if (pendingThreadWhileHidden) {
+      pendingThreadWhileHidden = false
+      const id = chat.viewing.get()
+      if (id !== null) void loadThread(id)
+    }
+  }
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", onVisibilityChange)
+  }
+
   const off = [
     floorSocket.on("ready", () => {
       refreshInbox(0)
@@ -371,7 +419,13 @@ export function startChat(): () => void {
     floorSocket.on("chat:inbox", () => {
       refreshInbox()
       const id = chat.viewing.get()
-      if (id !== null) void loadThread(id)
+      if (id !== null) {
+        if (isTabHidden()) {
+          pendingThreadWhileHidden = true
+        } else {
+          void loadThread(id)
+        }
+      }
     }),
     floorSocket.on("chat:msg", ({ convId, message }) => {
       if (message.from === "x" && Date.now() - acceptedAt < 5000) {
@@ -429,6 +483,12 @@ export function startChat(): () => void {
     }),
   ]
   return () => {
+    chatActive = false
+    pendingInboxWhileHidden = false
+    pendingThreadWhileHidden = false
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+    }
     for (const fn of off) fn()
     if (inboxTimer) clearTimeout(inboxTimer)
     inboxTimer = null
