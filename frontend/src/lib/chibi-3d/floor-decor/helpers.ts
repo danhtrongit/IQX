@@ -359,9 +359,13 @@ export function roundedBox(
   const sw = Math.max(0.008, w)
   const sh = Math.max(0.008, h)
   const sd = Math.max(0.008, d)
+  if (lite && Math.max(sw, sh, sd) < 0.25) {
+    return new THREE.BoxGeometry(sw, sh, sd)
+  }
   const maxR = Math.min(sw, sh, sd) * 0.44
   const r = Math.max(0.002, Math.min(radius, maxR))
-  return new RoundedBoxGeometry(sw, sh, sd, lite ? 1 : 2, r)
+  // 1 bevel segment preserves crisp chibi rounded silhouettes at 1/4 the triangle cost of 2 segments
+  return new RoundedBoxGeometry(sw, sh, sd, 1, r)
 }
 
 /** Plane geometry whose UVs map onto `[u0..u1] × [vTop..vBottom]` of a Canvas2D atlas (top-down V). */
@@ -417,15 +421,14 @@ export function createLathePotGeometry(
   const pts: THREE.Vector2[] = [
     new THREE.Vector2(0.002, 0),
     new THREE.Vector2(botR * 0.88, 0),
-    new THREE.Vector2(botR, height * 0.1),
-    new THREE.Vector2(botR + (topR - botR) * 0.55, height * 0.46),
-    new THREE.Vector2(topR * 0.96, height * 0.82),
-    new THREE.Vector2(topR * 1.07, height * 0.93),
-    new THREE.Vector2(topR * 1.04, height),
+    new THREE.Vector2(botR, height * 0.12),
+    new THREE.Vector2(botR + (topR - botR) * 0.55, height * 0.5),
+    new THREE.Vector2(topR * 0.96, height * 0.84),
+    new THREE.Vector2(topR * 1.06, height * 0.94),
+    new THREE.Vector2(topR * 1.02, height),
     new THREE.Vector2(topR * 0.88, height),
-    new THREE.Vector2(topR * 0.85, height * 0.88),
   ]
-  return new THREE.LatheGeometry(pts, lite ? 10 : 18)
+  return new THREE.LatheGeometry(pts, lite ? 8 : 12)
 }
 
 export function createSculptedLeafGeometry(lite: boolean): THREE.BufferGeometry {
@@ -438,11 +441,8 @@ export function createSculptedLeafGeometry(lite: boolean): THREE.BufferGeometry 
 
   const geom = new THREE.ExtrudeGeometry(shape, {
     depth: 0.012,
-    bevelEnabled: !lite,
-    bevelThickness: 0.004,
-    bevelSize: 0.004,
-    bevelSegments: 1,
-    curveSegments: lite ? 3 : 5,
+    bevelEnabled: false,
+    curveSegments: lite ? 2 : 3,
   })
 
   const pos = geom.getAttribute("position")
@@ -463,14 +463,14 @@ export function createSculptedLeafGeometry(lite: boolean): THREE.BufferGeometry 
 export function createLatheLanternBodyGeometry(lite: boolean): THREE.BufferGeometry {
   const pts: THREE.Vector2[] = [
     new THREE.Vector2(0.05, 0),
-    new THREE.Vector2(0.11, 0.03),
-    new THREE.Vector2(0.16, 0.1),
+    new THREE.Vector2(0.115, 0.04),
+    new THREE.Vector2(0.17, 0.11),
     new THREE.Vector2(0.185, 0.175),
-    new THREE.Vector2(0.16, 0.25),
-    new THREE.Vector2(0.11, 0.32),
+    new THREE.Vector2(0.17, 0.24),
+    new THREE.Vector2(0.115, 0.31),
     new THREE.Vector2(0.05, 0.35),
   ]
-  return new THREE.LatheGeometry(pts, lite ? 10 : 18)
+  return new THREE.LatheGeometry(pts, lite ? 8 : 12)
 }
 
 export function createBoatIngotGeometry(lite: boolean): THREE.BufferGeometry {
@@ -484,11 +484,11 @@ export function createBoatIngotGeometry(lite: boolean): THREE.BufferGeometry {
 
   const geom = new THREE.ExtrudeGeometry(shape, {
     depth: 0.052,
-    bevelEnabled: true,
-    bevelThickness: 0.008,
-    bevelSize: 0.007,
-    bevelSegments: lite ? 1 : 2,
-    curveSegments: lite ? 4 : 8,
+    bevelEnabled: !lite,
+    bevelThickness: 0.006,
+    bevelSize: 0.006,
+    bevelSegments: 1,
+    curveSegments: lite ? 3 : 4,
   })
   geom.translate(0, 0, -0.026)
   return geom

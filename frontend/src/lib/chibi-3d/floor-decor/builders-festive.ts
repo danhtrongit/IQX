@@ -57,16 +57,16 @@ export function buildBlossomTreeBaseSpecs(
 ): MergedPartSpec[] {
   const b = new DecorMeshBatcher()
   const potH = 0.42
-  const cyl = lite ? 10 : 16
+  const cyl = lite ? 8 : 12
 
-  b.add(new THREE.CylinderGeometry(0.2, 0.18, 0.028, cyl), pal.metal, [0, 0.014, 0], { color: C.gold })
-  b.add(createLathePotGeometry(0.17, 0.24, potH - 0.02, lite), pal.matte, [0, 0.02, 0], { color: C.crimsonLacquer })
-  b.add(new THREE.TorusGeometry(0.235, 0.014, 6, cyl), pal.metal, [0, potH * 0.84, 0], { color: C.gold, rot: [Math.PI / 2, 0, 0] })
+  b.add(new THREE.CylinderGeometry(0.2, 0.18, 0.028, cyl), pal.metal, [0, 0.014, 0], { color: C.gold, castShadow: false })
+  b.add(createLathePotGeometry(0.17, 0.24, potH - 0.02, lite), pal.matte, [0, 0.02, 0], { color: C.crimsonLacquer, castShadow: false })
+  b.add(new THREE.TorusGeometry(0.235, 0.014, 5, cyl), pal.metal, [0, potH * 0.84, 0], { color: C.gold, rot: [Math.PI / 2, 0, 0], castShadow: false })
   b.add(
-    new THREE.SphereGeometry(0.21, cyl, 6, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.SphereGeometry(0.21, cyl, 5, 0, Math.PI * 2, 0, Math.PI / 2),
     pal.matte,
     [0, potH - 0.03, 0],
-    { color: C.soil, scale: [1, 0.25, 1] }
+    { color: C.soil, scale: [1, 0.25, 1], castShadow: false }
   )
 
   for (let bi = 0; bi < BLOSSOM_BRANCHES.length; bi += 1) {
@@ -74,8 +74,9 @@ export function buildBlossomTreeBaseSpecs(
     const curve = new THREE.CatmullRomCurve3(
       br.pts.map(([x, y, z]) => new THREE.Vector3(x, y, z))
     )
-    b.add(new THREE.TubeGeometry(curve, lite ? 5 : 10, br.r, lite ? 5 : 8, false), pal.matte, [0, 0, 0], {
+    b.add(new THREE.TubeGeometry(curve, lite ? 4 : 7, br.r, 5, false), pal.matte, [0, 0, 0], {
       color: C.darkWood,
+      castShadow: false,
     })
 
     if (bi > 0) {
@@ -83,14 +84,16 @@ export function buildBlossomTreeBaseSpecs(
       const envX = tip[0] * 0.72
       const envY = tip[1] - 0.18
       const envZ = tip[2] * 0.72
-      b.add(new THREE.CylinderGeometry(0.005, 0.005, 0.08, 5), pal.metal, [envX, envY + 0.075, envZ], { color: C.gold })
+      b.add(new THREE.CylinderGeometry(0.005, 0.005, 0.08, 4), pal.metal, [envX, envY + 0.075, envZ], { color: C.gold, castShadow: false })
       b.add(roundedBox(0.065, 0.095, 0.014, 0.005, lite), pal.matte, [envX, envY, envZ], {
         color: C.crimsonLacquer,
         rot: [0, bi * 0.6, 0.06],
+        castShadow: false,
       })
       b.add(roundedBox(0.04, 0.022, 0.018, 0.004, lite), pal.metal, [envX, envY + 0.012, envZ], {
         color: C.gold,
         rot: [0, bi * 0.6, 0.06],
+        castShadow: false,
       })
     }
   }
@@ -106,21 +109,21 @@ export function buildBlossomCrownSpecs(
   lite: boolean
 ): MergedPartSpec[] {
   const b = new DecorMeshBatcher()
-  const puffSeg = lite ? 6 : 9
+  const puffSeg = lite ? 5 : 7
   for (let bi = 0; bi < BLOSSOM_BRANCHES.length; bi += 1) {
     const br = BLOSSOM_BRANCHES[bi]!
     const tip = br.pts[br.pts.length - 1]!
-    const puffCount = lite ? Math.max(4, Math.ceil(br.puffs * 0.6)) : br.puffs
+    const puffCount = lite ? 4 : Math.max(5, br.puffs - 1)
     for (let p = 0; p < puffCount; p += 1) {
       const a = (p * Math.PI * 2) / puffCount + bi * 0.9
       const ringR = p === 0 ? 0 : 0.1 + (p % 2) * 0.08
       const yOff = p === 0 ? 0.1 : ((p % 3) - 1) * 0.065
-      const rad = p === 0 ? 0.14 : 0.085 + (p % 2) * 0.026
+      const rad = p === 0 ? 0.145 : 0.09 + (p % 2) * 0.026
       b.add(
-        new THREE.SphereGeometry(rad, puffSeg, puffSeg),
+        new THREE.SphereGeometry(rad, puffSeg, Math.max(4, puffSeg - 1)),
         pal.matte,
         [tip[0] + Math.cos(a) * ringR, tip[1] + yOff, tip[2] + Math.sin(a) * ringR],
-        { color: "#ffffff" }
+        { color: "#ffffff", castShadow: false }
       )
     }
   }
@@ -135,12 +138,12 @@ export function buildBambooPlanterSpecs(
   lite: boolean
 ): MergedPartSpec[] {
   const b = new DecorMeshBatcher()
-  const cyl = lite ? 8 : 14
+  const cyl = lite ? 7 : 10
   const potH = 0.46
 
-  b.add(createLathePotGeometry(0.15, 0.21, potH, lite), pal.matte, [0, 0, 0], { color: C.celadonCeramic })
-  b.add(new THREE.TorusGeometry(0.205, 0.012, 6, cyl), pal.metal, [0, potH * 0.86, 0], { color: C.gold, rot: [Math.PI / 2, 0, 0] })
-  b.add(new THREE.CylinderGeometry(0.18, 0.18, 0.03, cyl), pal.matte, [0, potH - 0.02, 0], { color: C.soil })
+  b.add(createLathePotGeometry(0.15, 0.21, potH, lite), pal.matte, [0, 0, 0], { color: C.celadonCeramic, castShadow: false })
+  b.add(new THREE.TorusGeometry(0.205, 0.012, 5, cyl), pal.metal, [0, potH * 0.86, 0], { color: C.gold, rot: [Math.PI / 2, 0, 0], castShadow: false })
+  b.add(new THREE.CylinderGeometry(0.18, 0.18, 0.03, cyl), pal.matte, [0, potH - 0.02, 0], { color: C.soil, castShadow: false })
 
   const stalks: readonly [number, number, number][] = [
     [0, 0, 1.28],
@@ -156,33 +159,37 @@ export function buildBambooPlanterSpecs(
     const segH = h / segs
     for (let k = 0; k < segs; k += 1) {
       const cy = potH + k * segH + segH / 2
-      b.add(new THREE.CylinderGeometry(0.022, 0.025, segH - 0.012, lite ? 6 : 10), pal.matte, [sx, cy, sz], {
+      b.add(new THREE.CylinderGeometry(0.022, 0.025, segH - 0.012, lite ? 5 : 7), pal.matte, [sx, cy, sz], {
         color: C.bambooGreen,
+        castShadow: false,
       })
-      b.add(new THREE.TorusGeometry(0.026, 0.006, 5, lite ? 6 : 10), pal.matte, [sx, potH + (k + 1) * segH, sz], {
+      b.add(new THREE.TorusGeometry(0.026, 0.006, 4, lite ? 5 : 7), pal.matte, [sx, potH + (k + 1) * segH, sz], {
         color: C.leafDark,
         rot: [Math.PI / 2, 0, 0],
+        castShadow: false,
       })
     }
     const topY = potH + h
-    const tuftN = lite ? 3 : 5
+    const tuftN = lite ? 3 : 4
     for (let lf = 0; lf < tuftN; lf += 1) {
       const yaw = (lf * Math.PI * 2) / tuftN + i * 0.9
       b.add(leafGeo, pal.matte, [sx, topY - 0.04, sz], {
         color: lf % 2 === 0 ? C.leafMid : C.bambooGreen,
         rot: [0.82, yaw, 0],
         scale: [0.44, 0.68, 0.44],
+        castShadow: false,
         disposeRaw: false,
       })
     }
   }
   leafGeo.dispose()
 
-  b.add(new THREE.TorusGeometry(0.11, 0.016, 6, cyl), pal.matte, [0, potH + 0.32, 0], {
+  b.add(new THREE.TorusGeometry(0.11, 0.016, 5, cyl), pal.matte, [0, potH + 0.32, 0], {
     color: C.crimsonLacquer,
     rot: [Math.PI / 2, 0, 0],
+    castShadow: false,
   })
-  b.add(new THREE.SphereGeometry(0.026, 6, 5), pal.metal, [0, potH + 0.32, 0.115], { color: C.gold })
+  b.add(new THREE.SphereGeometry(0.026, 6, 5), pal.metal, [0, potH + 0.32, 0.115], { color: C.gold, castShadow: false })
 
   return b.flushToSpecs()
 }
@@ -195,61 +202,71 @@ export function buildLuckyCatSpecs(
   lite: boolean
 ): MergedPartSpec[] {
   const b = new DecorMeshBatcher()
-  const seg = lite ? 8 : 14
+  const seg = lite ? 7 : 10
 
-  b.add(roundedBox(0.56, 0.07, 0.5, 0.018, lite), pal.matte, [0, 0.035, 0], { color: C.obsidian })
-  b.add(roundedBox(0.48, 0.46, 0.42, 0.022, lite), pal.matte, [0, 0.3, 0], { color: C.crimsonLacquer })
-  b.add(roundedBox(0.52, 0.045, 0.46, 0.014, lite), pal.metal, [0, 0.545, 0], { color: C.gold })
-  b.add(roundedBox(0.42, 0.06, 0.38, 0.024, lite), pal.matte, [0, 0.595, 0], { color: C.crimsonLacquer })
+  b.add(roundedBox(0.56, 0.07, 0.5, 0.018, lite), pal.matte, [0, 0.035, 0], { color: C.obsidian, castShadow: false })
+  b.add(roundedBox(0.48, 0.46, 0.42, 0.022, lite), pal.matte, [0, 0.3, 0], { color: C.crimsonLacquer, castShadow: false })
+  b.add(roundedBox(0.52, 0.045, 0.46, 0.014, lite), pal.metal, [0, 0.545, 0], { color: C.gold, castShadow: false })
+  b.add(roundedBox(0.42, 0.06, 0.38, 0.024, lite), pal.matte, [0, 0.595, 0], { color: C.crimsonLacquer, castShadow: false })
   const topY = 0.625
 
   b.add(new THREE.SphereGeometry(0.19, seg, seg), pal.metal, [0, topY + 0.17, 0], {
     color: C.goldBright,
     scale: [1.02, 1.05, 0.94],
+    castShadow: false,
   })
-  b.add(new THREE.TorusGeometry(0.135, 0.024, 6, seg), pal.matte, [0, topY + 0.32, 0.01], {
+  b.add(new THREE.TorusGeometry(0.135, 0.024, 5, seg), pal.matte, [0, topY + 0.32, 0.01], {
     color: C.crimsonLacquer,
     rot: [Math.PI / 2, 0, 0],
+    castShadow: false,
   })
-  b.add(new THREE.SphereGeometry(0.036, 8, 6), pal.metal, [0, topY + 0.31, 0.155], { color: C.goldBright })
+  b.add(new THREE.SphereGeometry(0.036, 7, 5), pal.metal, [0, topY + 0.31, 0.155], { color: C.goldBright, castShadow: false })
 
   const hy = topY + 0.48
   b.add(new THREE.SphereGeometry(0.2, seg, seg), pal.metal, [0, hy, 0.01], {
     color: C.goldBright,
     scale: [1.1, 0.96, 0.96],
+    castShadow: false,
   })
   for (const side of [-1, 1] as const) {
     b.add(new THREE.ConeGeometry(0.072, 0.14, 6), pal.metal, [side * 0.13, hy + 0.18, 0], {
       color: C.goldBright,
       rot: [0, 0, -side * 0.24],
+      castShadow: false,
     })
     b.add(new THREE.ConeGeometry(0.042, 0.095, 5), pal.matte, [side * 0.13, hy + 0.175, 0.034], {
       color: C.crimsonLacquer,
       rot: [0, 0, -side * 0.24],
+      castShadow: false,
     })
-    b.add(new THREE.SphereGeometry(0.024, 7, 6), pal.matte, [side * 0.075, hy + 0.02, 0.182], {
+    b.add(new THREE.SphereGeometry(0.024, 6, 5), pal.matte, [side * 0.075, hy + 0.02, 0.182], {
       color: C.obsidian,
       scale: [1.2, 0.85, 0.6],
+      castShadow: false,
     })
     b.add(new THREE.SphereGeometry(0.026, 6, 5), pal.matte, [side * 0.125, hy - 0.025, 0.165], {
       color: C.blossomPink,
       scale: [1.2, 0.7, 0.5],
+      castShadow: false,
     })
   }
-  b.add(new THREE.SphereGeometry(0.02, 6, 5), pal.matte, [0, hy - 0.015, 0.198], { color: C.crimsonLacquer })
+  b.add(new THREE.SphereGeometry(0.02, 6, 5), pal.matte, [0, hy - 0.015, 0.198], { color: C.crimsonLacquer, castShadow: false })
 
-  b.add(new THREE.CapsuleGeometry(0.046, 0.14, 4, lite ? 6 : 10), pal.metal, [-0.19, topY + 0.43, 0.08], {
+  b.add(new THREE.CapsuleGeometry(0.046, 0.14, 3, 7), pal.metal, [-0.19, topY + 0.43, 0.08], {
     color: C.goldBright,
     rot: [-0.25, 0, 0.26],
+    castShadow: false,
   })
-  b.add(new THREE.CapsuleGeometry(0.044, 0.1, 4, lite ? 6 : 10), pal.metal, [0.14, topY + 0.2, 0.13], {
+  b.add(new THREE.CapsuleGeometry(0.044, 0.1, 3, 7), pal.metal, [0.14, topY + 0.2, 0.13], {
     color: C.goldBright,
     rot: [0.45, 0, -0.35],
+    castShadow: false,
   })
   b.add(new THREE.CylinderGeometry(0.065, 0.065, 0.018, seg), pal.metal, [0.06, topY + 0.17, 0.2], {
     color: C.gold,
     rot: [Math.PI / 2, 0, 0.12],
     scale: [0.75, 1, 1.35],
+    castShadow: false,
   })
 
   return b.flushToSpecs()
@@ -323,10 +340,10 @@ export function buildRedLanternSpecs(
   b.add(new THREE.CylinderGeometry(0.062, 0.05, 0.032, cyl), pal.metal, [0, -0.45, 0], { color: C.gold, castShadow: false })
   b.add(createLatheLanternBodyGeometry(lite), pal.redSilk, [0, -0.435, 0], { castShadow: false })
   if (!lite) {
-    for (let i = 0; i < 4; i += 1) {
-      b.add(new THREE.TorusGeometry(0.18, 0.006, 5, 16), pal.metal, [0, -0.26, 0], {
+    for (let i = 0; i < 3; i += 1) {
+      b.add(new THREE.TorusGeometry(0.18, 0.006, 4, 12), pal.metal, [0, -0.26, 0], {
         color: C.gold,
-        rot: [0, (i * Math.PI) / 4, 0],
+        rot: [0, (i * Math.PI) / 3, 0],
         castShadow: false,
       })
     }

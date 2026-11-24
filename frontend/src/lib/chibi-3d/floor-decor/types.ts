@@ -104,8 +104,8 @@ export const FLOOR_DECOR_LAYOUT = {
   /** Coffee & tea bar corner in the open South-West nook (facing North). */
   coffeeBar: {
     id: "decor-coffee-bar",
-    cx: 274,
-    cy: 1322,
+    cx: 292,
+    cy: 1320,
     footW: 192,
     footH: 88,
     rotY: Math.PI,
@@ -124,7 +124,7 @@ export const FLOOR_DECOR_LAYOUT = {
   /** Sleek IQX touchscreen info kiosks (1 visible near Mid-W cross aisle, 1 at South entry). */
   infoKiosks: [
     { id: "decor-kiosk-west", cx: 746, cy: 920, footW: 50, footH: 44, rotY: 0.35 },
-    { id: "decor-kiosk-south", cx: 1244, cy: 1336, footW: 50, footH: 44, rotY: -2.85 },
+    { id: "decor-kiosk-south", cx: 1244, cy: 1336, footW: 50, footH: 44, rotY: -0.42 },
   ] as readonly FloorDecorObstacle[],
 
   /** Plush walnut-and-navy gallery benches (facing LED board, SACO board, and Hall of Fame). */

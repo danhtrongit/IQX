@@ -132,10 +132,8 @@ export function* createFloorDecorSteps(
       new THREE.MeshBasicMaterial({
         map: decalsWaterTex,
         transparent: true,
-        opacity: 0.86,
+        opacity: 0.88,
         depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
       })
     )
     const secondaryTickerMat = trackMat(
@@ -441,8 +439,9 @@ export function* createFloorDecorSteps(
       decalGeos.push(geo)
     }
 
-    // Grand Gold Compass Rose & IQX Medallion framing the central atrium + SW & SE walkable plazas
+    // Grand Gold Compass Rose & IQX Medallion framing the central atrium cleanly beneath the red carpet (y=0.011 < 0.014)
     stampDecal(1024, 628, 4.4, 4.4, 0.011, 0, 0.005, 0.005, 0.495, 0.995)
+    // Secondary IQX Gold Floor Medallions in SW & SE open walkable plazas (zero obstacles!)
     stampDecal(410, 1116, 2.75, 2.75, 0.012, 0, 0.005, 0.005, 0.495, 0.995)
     stampDecal(1650, 1240, 2.75, 2.75, 0.012, 0, 0.005, 0.005, 0.495, 0.995)
 

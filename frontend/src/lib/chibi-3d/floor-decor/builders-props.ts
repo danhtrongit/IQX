@@ -21,8 +21,8 @@ export function buildTradingDeskIslandSpecs(
   lite: boolean
 ): MergedPartSpec[] {
   const b = new DecorMeshBatcher()
-  const cyl = lite ? 10 : 18
-  const stoolCyl = lite ? 8 : 14
+  const cyl = lite ? 8 : 12
+  const stoolCyl = lite ? 7 : 10
   const tableH = 0.94
   const tableR = 0.56
 
@@ -127,7 +127,7 @@ export function buildKoiFountain(
     })
   }
 
-  const cyl = lite ? 10 : 18
+  const cyl = lite ? 8 : 12
   b.add(new THREE.CylinderGeometry(0.16, 0.24, 0.26, cyl), pal.matte, [0, 0.2, 0], { color: C.marbleCream })
   b.add(new THREE.CylinderGeometry(0.32, 0.14, 0.12, cyl), pal.matte, [0, 0.38, 0], { color: C.marbleLight })
   b.add(new THREE.TorusGeometry(0.31, 0.022, 6, cyl), pal.metal, [0, 0.44, 0], { color: C.gold, rot: [Math.PI / 2, 0, 0] })
@@ -279,7 +279,7 @@ export function buildBullStatueSpecs(
 ): MergedPartSpec[] {
   const b = new DecorMeshBatcher()
   const topY = addSculpturePedestal(b, pal, C.gold, lite)
-  const seg = lite ? 8 : 14
+  const seg = lite ? 7 : 10
 
   b.add(new THREE.SphereGeometry(0.24, seg, seg), pal.metal, [0, topY + 0.32, -0.02], {
     color: C.goldBright,
@@ -357,7 +357,7 @@ export function buildBearStatueSpecs(
 ): MergedPartSpec[] {
   const b = new DecorMeshBatcher()
   const topY = addSculpturePedestal(b, pal, C.bronze, lite)
-  const seg = lite ? 8 : 14
+  const seg = lite ? 7 : 10
 
   b.add(new THREE.SphereGeometry(0.24, seg, seg), pal.metal, [0, topY + 0.31, 0], {
     color: C.bronze,
@@ -649,7 +649,7 @@ export function buildPlanterDividerSpecs(
   b.add(roundedBox(w - 0.1, 0.04, d - 0.1, 0.01, lite), pal.matte, [0, h - 0.01, 0], { color: C.soil })
 
   const leafGeo = createSculptedLeafGeometry(lite)
-  const leafCount = lite ? 5 : 8
+  const leafCount = lite ? 4 : 6
   for (const cx of [-0.38, 0, 0.38]) {
     const scaleBase = cx === 0 ? 0.78 : 0.68
     for (let i = 0; i < leafCount; i += 1) {
