@@ -3,7 +3,9 @@ import * as THREE from "three"
 import { yieldToMain } from "./chunked-build.ts"
 import { restoreStaticTextures } from "./textures.ts"
 import {
+  CHIBI_SHADOW_PROXY_LAYER,
   SCENE_HOST_BRIDGE_KEY,
+  SHADOW_PROXY_ROOT_FLAG,
   disposeObject3D,
   worldToLogical,
   type ChibiSceneHostBridge,
@@ -23,6 +25,11 @@ export interface AdaptivePacerOptions {
 
 export interface AdaptiveFramePacer {
   markActive: (nowMs: number, holdMs?: number) => void
+  /**
+   * Background motion (remote players, bots): keeps the idle cadence (never deep idle) without
+   * forcing the full display rate or an immediate frame.
+   */
+  markAmbient: (nowMs: number) => void
   requestFrame: (nowMs: number) => void
   getMode: (nowMs: number) => PacingMode
   getTargetFps: (nowMs: number) => number
@@ -66,6 +73,9 @@ export function createAdaptiveFramePacer(
       lastActivityMs = Math.max(lastActivityMs, nowMs)
       activeUntilMs = Math.max(activeUntilMs, nowMs + Math.max(0, holdMs))
       forceNextFrame = true
+    },
+    markAmbient: (nowMs: number) => {
+      lastActivityMs = Math.max(lastActivityMs, nowMs)
     },
     requestFrame: (nowMs: number) => {
       lastActivityMs = Math.max(lastActivityMs, nowMs)
@@ -215,7 +225,13 @@ export interface SpacePerfStats {
     dpr: number
     baseDpr: number
     shadowAutoUpdate: boolean
+    /** Full static shadow-map bakes. */
     shadowUpdates: number
+    /** Cheap passes that redraw only registered moving casters over the cached static shadows. */
+    dynamicShadowUpdates: number
+    shadowFrustum: "follow" | "room"
+    shadowMapWidth: number
+    shadowMapHeight: number
     renderedFrames: number
     skippedFrames: number
     avgFrameMs: number
@@ -234,6 +250,16 @@ export interface ChibiSceneHostOptions {
   initialZoom?: number
   lite?: boolean
   shadows?: boolean
+  /**
+   * `"follow"` (default): a tight directional shadow frustum that re-centres on the camera target,
+   * so the static shadow map re-bakes whenever the camera moves.
+   * `"room"`: one frustum covering the whole room with a shadow map sized so its texel density
+   * matches the follow frustum at the current zoom; camera motion never re-bakes it. Falls back to
+   * the follow frustum when that density would need a map larger than 3072 px (deep zoom).
+   */
+  shadowFrustum?: "follow" | "room"
+  /** Height (world units) of the tallest static caster covered by `shadowFrustum: "room"`. Default 7. */
+  shadowCasterHeight?: number
   cameraLerp?: number
   boundsMargin?: number
   northMargin?: number
@@ -543,6 +569,11 @@ export function createChibiSceneHost(
   let lastSnappedZ = Number.NaN
   let shadowDirty = shadows
   let shadowUpdates = 0
+  let dynamicShadowDirty = false
+  let dynamicShadowUpdates = 0
+  const shadowFrustumMode = opts.shadowFrustum ?? "follow"
+  const shadowCasterHeight = Math.max(1, opts.shadowCasterHeight ?? 7)
+  let roomShadowActive = false
   sun.shadow.mapSize.set(shadowMapSize, shadowMapSize)
   sun.shadow.camera.near = 2
   sun.shadow.camera.far = Math.max(64, roomW + roomH + 16)
@@ -676,23 +707,142 @@ export function createChibiSceneHost(
     pacer.requestFrame(performance.now())
   }
 
+  const markAmbient = (): void => {
+    if (disposed) return
+    pacer.markAmbient(performance.now())
+  }
+
   const bridge: ChibiSceneHostBridge = {
     markActive,
     requestFrame,
     markShadowDirty,
+    markAmbient,
+    setDynamicShadowCaster: (root, dynamic) => setDynamicShadowCaster(root, dynamic),
+    markDynamicShadowDirty: () => markDynamicShadowDirty(),
   }
   ;(scene.userData as Record<string, unknown>)[SCENE_HOST_BRIDGE_KEY] = bridge
 
-  const updateShadowCamera = (bounds: CameraClampResult): void => {
-    if (!shadows) return
+  /** Half-size of the tight follow frustum that covers the visible floor at the current zoom. */
+  const followShadowExtent = (bounds: CameraClampResult): number => {
     const visHalfX =
       Math.max(bounds.targetPlaneHalfVisX, bounds.farHalfVisX) + 2.0
     const visHalfZ = (bounds.northSpan + bounds.southSpan) * 0.54 + 2.5
-    const desiredExtent = clamp(
-      Math.max(visHalfX, visHalfZ),
-      8.5,
-      Math.max(roomW, roomH) * 0.6
+    return clamp(Math.max(visHalfX, visHalfZ), 8.5, Math.max(roomW, roomH) * 0.6)
+  }
+
+  // ---- "room" shadow frustum: one fixed frustum over the whole room ----
+  const ROOM_SHADOW_MAX_MAP = 3072
+  const ROOM_SHADOW_MAP_STEP = 128
+  const roomShadowBox = { key: "", left: 0, right: 0, bottom: 0, top: 0 }
+  const roomShadowCam = new THREE.OrthographicCamera()
+  const roomCorner = new THREE.Vector3()
+
+  const updateRoomShadowBox = (): void => {
+    const key = `${roomW}x${roomH}`
+    if (roomShadowBox.key === key) return
+    roomShadowBox.key = key
+    // Same view the DirectionalLightShadow camera gets when the sun aims at the room centre.
+    roomShadowCam.position.copy(sunOffset)
+    roomShadowCam.lookAt(0, 0, 0)
+    roomShadowCam.updateMatrixWorld()
+    const inv = roomShadowCam.matrixWorldInverse
+    const margin = 1
+    let minX = Infinity
+    let maxX = -Infinity
+    let minY = Infinity
+    let maxY = -Infinity
+    for (const x of [-roomW / 2 - margin, roomW / 2 + margin]) {
+      for (const y of [0, shadowCasterHeight]) {
+        for (const z of [-roomH / 2 - margin, roomH / 2 + margin]) {
+          roomCorner.set(x, y, z).applyMatrix4(inv)
+          minX = Math.min(minX, roomCorner.x)
+          maxX = Math.max(maxX, roomCorner.x)
+          minY = Math.min(minY, roomCorner.y)
+          maxY = Math.max(maxY, roomCorner.y)
+        }
+      }
+    }
+    roomShadowBox.left = minX
+    roomShadowBox.right = maxX
+    roomShadowBox.bottom = minY
+    roomShadowBox.top = maxY
+  }
+
+  const maxRoomShadowMap = (): number => {
+    const cap = (renderer as { capabilities?: { maxTextureSize?: number } })
+      .capabilities?.maxTextureSize
+    return Math.min(
+      ROOM_SHADOW_MAX_MAP,
+      typeof cap === "number" && cap > 0 ? cap : ROOM_SHADOW_MAX_MAP
     )
+  }
+
+  /**
+   * Fits the room frustum with a shadow map whose texel size matches the follow frustum at this
+   * zoom (same PCF softness). Returns false when that needs a map above the cap (deep zoom), in
+   * which case the caller keeps the classic follow frustum.
+   */
+  const applyRoomShadowCamera = (bounds: CameraClampResult): boolean => {
+    updateRoomShadowBox()
+    const texel = (followShadowExtent(bounds) * 2) / shadowMapSize
+    const quantize = (span: number): number =>
+      Math.ceil(span / texel / ROOM_SHADOW_MAP_STEP) * ROOM_SHADOW_MAP_STEP
+    let w = quantize(roomShadowBox.right - roomShadowBox.left)
+    let h = quantize(roomShadowBox.top - roomShadowBox.bottom)
+    const cap = maxRoomShadowMap()
+    if (w > cap || h > cap) return false
+
+    const cam = sun.shadow.camera
+    if (!roomShadowActive) {
+      roomShadowActive = true
+      lastSnappedX = Number.NaN
+      lastSnappedZ = Number.NaN
+      lastShadowExtent = -1
+      sun.target.position.set(0, 0, 0)
+      sun.position.copy(sunOffset)
+      sun.target.updateMatrixWorld()
+      shadowDirty = true
+    }
+    if (
+      cam.left !== roomShadowBox.left ||
+      cam.right !== roomShadowBox.right ||
+      cam.top !== roomShadowBox.top ||
+      cam.bottom !== roomShadowBox.bottom
+    ) {
+      cam.left = roomShadowBox.left
+      cam.right = roomShadowBox.right
+      cam.top = roomShadowBox.top
+      cam.bottom = roomShadowBox.bottom
+      cam.updateProjectionMatrix()
+      shadowDirty = true
+    }
+    // Grow as soon as more density is needed; shrink only on a clear drop (avoids realloc churn).
+    const curW = sun.shadow.mapSize.x
+    const curH = sun.shadow.mapSize.y
+    if (w <= curW && w >= curW * 0.8) w = curW
+    if (h <= curH && h >= curH * 0.8) h = curH
+    if (w !== curW || h !== curH) {
+      sun.shadow.mapSize.set(w, h)
+      shadowDirty = true
+    }
+    return true
+  }
+
+  const updateShadowCamera = (bounds: CameraClampResult): void => {
+    if (!shadows) return
+    if (shadowFrustumMode === "room") {
+      // Re-fit only once zoom settles so a zoom gesture never reallocates the map mid-animation.
+      const zoomSettled = Math.abs(targetZoom - currentZoom) <= 1e-4
+      if (roomShadowActive && !zoomSettled) return
+      if (applyRoomShadowCamera(bounds)) return
+      if (roomShadowActive) {
+        roomShadowActive = false
+        sun.shadow.mapSize.set(shadowMapSize, shadowMapSize)
+        lastShadowExtent = -1
+        shadowDirty = true
+      }
+    }
+    const desiredExtent = followShadowExtent(bounds)
     // Snap light target to shadow-map texel increments to prevent edge shimmer while walking
     const texelSize = (desiredExtent * 2) / shadowMapSize
     const focusZ = currentZ - (bounds.northSpan - bounds.southSpan) * 0.16
@@ -726,6 +876,289 @@ export function createChibiSceneHost(
     }
   }
 
+  // ---- Static / dynamic shadow split ----
+  // The static bake renders every caster except registered dynamic ones (walking characters) and
+  // its depth is snapshotted into a cache. When only dynamic casters move, the cached static depth
+  // is blitted back and just the dynamic casters are drawn on top: same depth map, a fraction of
+  // the draw calls. Needs WebGL2 blits; otherwise every change falls back to a full bake.
+  type ShadowRenderFn = (
+    lights: THREE.Light[],
+    scene: THREE.Object3D,
+    camera: THREE.Camera
+  ) => void
+  const shadowMapApi = renderer.shadowMap as unknown as {
+    render?: ShadowRenderFn
+    needsUpdate: boolean
+  }
+  let gl2: WebGL2RenderingContext | null = null
+  try {
+    const ctx = renderer.getContext() as unknown
+    if (
+      typeof WebGL2RenderingContext !== "undefined" &&
+      ctx instanceof WebGL2RenderingContext
+    ) {
+      gl2 = ctx
+    }
+  } catch {
+    gl2 = null
+  }
+  const originalShadowRender: ShadowRenderFn | null =
+    shadows &&
+    gl2 !== null &&
+    typeof shadowMapApi.render === "function" &&
+    typeof renderer.properties?.get === "function"
+      ? shadowMapApi.render
+      : null
+  const dynamicCasters = new Set<THREE.Object3D>()
+  const dynamicPassRoot = new THREE.Group()
+  dynamicPassRoot.name = "chibi-dynamic-shadow-pass"
+  const noChildren: THREE.Object3D[] = []
+  const dynamicPassList: THREE.Object3D[] = []
+  const proxyPassList: THREE.Object3D[] = []
+  // Depth-pass "camera" for proxied casters: only its layer mask is read by the shadow pass.
+  const proxyLayerCamera = new THREE.PerspectiveCamera()
+  proxyLayerCamera.layers.set(CHIBI_SHADOW_PROXY_LAYER)
+  const hiddenForStaticPass: THREE.Object3D[] = []
+  let pendingShadowPass: "static" | "dynamic" | null = null
+  let cacheFb: WebGLFramebuffer | null = null
+  let cacheRb: WebGLRenderbuffer | null = null
+  let cacheW = 0
+  let cacheH = 0
+  let staticCacheValid = false
+  // Dynamic casters whose shadow cannot reach the screen are skipped; the camera moving re-runs
+  // the (cheap) dynamic pass so newly revealed casters get their shadow.
+  const DYNAMIC_CASTER_REACH = 4
+  const viewFrustum = new THREE.Frustum()
+  const viewProjMatrix = new THREE.Matrix4()
+  const casterSphere = new THREE.Sphere()
+
+  const isAttachedAndVisible = (obj: THREE.Object3D): boolean => {
+    let cur: THREE.Object3D | null = obj
+    while (cur) {
+      if (!cur.visible) return false
+      if (cur === scene) return true
+      cur = cur.parent
+    }
+    return false
+  }
+
+  const shadowFramebuffer = (): WebGLFramebuffer | null => {
+    const map = sun.shadow.map
+    if (!map) return null
+    const fb = (renderer.properties.get(map) as { __webglFramebuffer?: unknown })
+      .__webglFramebuffer
+    return typeof WebGLFramebuffer !== "undefined" && fb instanceof WebGLFramebuffer
+      ? fb
+      : null
+  }
+
+  const releaseShadowCache = (deleteObjects: boolean): void => {
+    if (deleteObjects && gl2) {
+      if (cacheFb) gl2.deleteFramebuffer(cacheFb)
+      if (cacheRb) gl2.deleteRenderbuffer(cacheRb)
+    }
+    cacheFb = null
+    cacheRb = null
+    cacheW = 0
+    cacheH = 0
+    staticCacheValid = false
+  }
+
+  /** Depth-only framebuffer matching the shadow map's DEPTH_COMPONENT24 depth texture. */
+  const ensureShadowCache = (w: number, h: number): boolean => {
+    const gl = gl2
+    if (!gl) return false
+    if (cacheFb && cacheRb && cacheW === w && cacheH === h) return true
+    cacheFb = cacheFb ?? gl.createFramebuffer()
+    cacheRb = cacheRb ?? gl.createRenderbuffer()
+    if (!cacheFb || !cacheRb) return false
+    const prevRb = gl.getParameter(gl.RENDERBUFFER_BINDING) as WebGLRenderbuffer | null
+    gl.bindRenderbuffer(gl.RENDERBUFFER, cacheRb)
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, w, h)
+    gl.bindRenderbuffer(gl.RENDERBUFFER, prevRb)
+    const prevDraw = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, cacheFb)
+    gl.framebufferRenderbuffer(
+      gl.DRAW_FRAMEBUFFER,
+      gl.DEPTH_ATTACHMENT,
+      gl.RENDERBUFFER,
+      cacheRb
+    )
+    const complete =
+      gl.checkFramebufferStatus(gl.DRAW_FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, prevDraw)
+    cacheW = complete ? w : 0
+    cacheH = complete ? h : 0
+    return complete
+  }
+
+  /** Copies depth between framebuffers, restoring the GL bindings Three.js believes are current. */
+  const blitDepth = (
+    src: WebGLFramebuffer,
+    dst: WebGLFramebuffer,
+    w: number,
+    h: number
+  ): void => {
+    const gl = gl2
+    if (!gl) return
+    renderer.state.setScissorTest(false)
+    renderer.state.buffers.depth.setMask(true)
+    const prevRead = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null
+    const prevDraw = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, src)
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, dst)
+    gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.DEPTH_BUFFER_BIT, gl.NEAREST)
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, prevRead)
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, prevDraw)
+  }
+
+  /** Draws only the registered dynamic casters into the shadow map, starting from the cached static depth. */
+  const runDynamicShadowOverlay = (
+    render: ShadowRenderFn,
+    lights: THREE.Light[],
+    cameraArg: THREE.Camera,
+    restoreStatic: boolean
+  ): void => {
+    dynamicPassList.length = 0
+    proxyPassList.length = 0
+    if (dynamicCasters.size > 0) {
+      viewProjMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
+      viewFrustum.setFromProjectionMatrix(viewProjMatrix)
+      for (const root of dynamicCasters) {
+        if (!isAttachedAndVisible(root)) continue
+        casterSphere.center.setFromMatrixPosition(root.matrixWorld)
+        casterSphere.center.y += 1
+        casterSphere.radius = DYNAMIC_CASTER_REACH
+        if (!viewFrustum.intersectsSphere(casterSphere)) continue
+        // Roots with proxy meshes cast through one merged depth draw per pivot.
+        if ((root.userData as Record<string, unknown>)[SHADOW_PROXY_ROOT_FLAG]) {
+          proxyPassList.push(root)
+        } else {
+          dynamicPassList.push(root)
+        }
+      }
+    }
+    if (!restoreStatic && dynamicPassList.length === 0 && proxyPassList.length === 0) {
+      return
+    }
+    let restorePending = restoreStatic
+    const realClear = renderer.clear
+    renderer.clear = (color?: boolean, depth?: boolean, stencil?: boolean) => {
+      const map = sun.shadow.map
+      if (map && renderer.getRenderTarget() === map) {
+        // Replaces the shadow pass's clear: start from the static bake instead of an empty map.
+        if (restorePending) {
+          restorePending = false
+          const fb = shadowFramebuffer()
+          if (fb && cacheFb) blitDepth(cacheFb, fb, cacheW, cacheH)
+        }
+        return
+      }
+      realClear.call(renderer, color, depth, stencil)
+    }
+    try {
+      if (proxyPassList.length > 0 || dynamicPassList.length === 0) {
+        dynamicPassRoot.children = proxyPassList
+        shadowMapApi.needsUpdate = true
+        render.call(renderer.shadowMap, lights, dynamicPassRoot, proxyLayerCamera)
+      }
+      if (dynamicPassList.length > 0) {
+        dynamicPassRoot.children = dynamicPassList
+        shadowMapApi.needsUpdate = true
+        render.call(renderer.shadowMap, lights, dynamicPassRoot, cameraArg)
+      }
+    } finally {
+      renderer.clear = realClear
+      dynamicPassRoot.children = noChildren
+      dynamicPassList.length = 0
+      proxyPassList.length = 0
+      shadowMapApi.needsUpdate = false
+    }
+  }
+
+  const runStaticShadowPass = (
+    render: ShadowRenderFn,
+    lights: THREE.Light[],
+    cameraArg: THREE.Camera
+  ): void => {
+    hiddenForStaticPass.length = 0
+    for (const root of dynamicCasters) {
+      if (root.visible) {
+        root.visible = false
+        hiddenForStaticPass.push(root)
+      }
+    }
+    try {
+      shadowMapApi.needsUpdate = true
+      render.call(renderer.shadowMap, lights, scene, cameraArg)
+    } finally {
+      for (const root of hiddenForStaticPass) root.visible = true
+      hiddenForStaticPass.length = 0
+    }
+    staticCacheValid = false
+    const map = sun.shadow.map
+    const fb = shadowFramebuffer()
+    if (map && fb && ensureShadowCache(map.width, map.height) && cacheFb) {
+      blitDepth(fb, cacheFb, map.width, map.height)
+      staticCacheValid = true
+      runDynamicShadowOverlay(render, lights, cameraArg, false)
+      return
+    }
+    // No cache possible: one ordinary full pass so dynamic casters are still in the map.
+    shadowMapApi.needsUpdate = true
+    render.call(renderer.shadowMap, lights, scene, cameraArg)
+    shadowMapApi.needsUpdate = false
+  }
+
+  if (originalShadowRender) {
+    const render = originalShadowRender
+    shadowMapApi.render = (lights, sceneArg, cameraArg) => {
+      const pass = pendingShadowPass
+      pendingShadowPass = null
+      if (sceneArg !== scene || pass === null || lights.length === 0) {
+        render.call(renderer.shadowMap, lights, sceneArg, cameraArg)
+        return
+      }
+      const map = sun.shadow.map
+      const cacheUsable =
+        staticCacheValid &&
+        map !== null &&
+        map.width === cacheW &&
+        map.height === cacheH &&
+        map.width === sun.shadow.mapSize.x &&
+        map.height === sun.shadow.mapSize.y
+      if (pass === "dynamic" && cacheUsable) {
+        runDynamicShadowOverlay(render, lights, cameraArg, true)
+      } else {
+        runStaticShadowPass(render, lights, cameraArg)
+      }
+    }
+  }
+
+  const markDynamicShadowDirty = (): void => {
+    if (shadows) {
+      dynamicShadowDirty = true
+    }
+  }
+
+  const setDynamicShadowCaster = (root: THREE.Object3D, dynamic: boolean): void => {
+    if (disposed || !shadows) return
+    if (dynamic) {
+      if (dynamicCasters.has(root)) return
+      dynamicCasters.add(root)
+      // Its shadow is still in the static bake: re-bake once without it.
+      shadowDirty = true
+      return
+    }
+    if (!dynamicCasters.delete(root)) return
+    if (isAttachedAndVisible(root)) {
+      // Becomes part of the static scenery again.
+      shadowDirty = true
+    } else {
+      dynamicShadowDirty = true
+    }
+  }
+
   const applyCameraTransform = (): void => {
     currentZoom = clamp(currentZoom, minZoom, maxZoom)
     targetZoom = clamp(targetZoom, minZoom, maxZoom)
@@ -740,6 +1173,10 @@ export function createChibiSceneHost(
     camera.lookAt(currentX + shakeX, 0, currentZ + shakeZ)
     camera.updateMatrixWorld()
     updateShadowCamera(bounds)
+    if (dynamicCasters.size > 0) {
+      // Dynamic casters are culled against the view, so a new view needs a fresh dynamic pass.
+      dynamicShadowDirty = true
+    }
     cameraDirty = false
   }
 
@@ -747,12 +1184,28 @@ export function createChibiSceneHost(
     if (disposed || contextLost) return
     // While booting, only the warm-up's hidden frame may render (it compiles nothing synchronously).
     if (booting && !force) return
-    if (shadows && shadowDirty) {
-      renderer.shadowMap.needsUpdate = true
+    if (shadows && (shadowDirty || dynamicShadowDirty)) {
+      if (shadowDirty || !originalShadowRender) {
+        shadowUpdates += 1
+        pendingShadowPass = "static"
+      } else {
+        dynamicShadowUpdates += 1
+        pendingShadowPass = "dynamic"
+      }
       shadowDirty = false
-      shadowUpdates += 1
+      dynamicShadowDirty = false
+      if (!originalShadowRender) {
+        pendingShadowPass = null
+        renderer.shadowMap.needsUpdate = true
+      }
     }
     renderer.render(scene, camera)
+    if (pendingShadowPass !== null) {
+      // The shadow pass did not run (no shadow-casting light rendered): retry next frame.
+      if (pendingShadowPass === "static") shadowDirty = true
+      else dynamicShadowDirty = true
+      pendingShadowPass = null
+    }
   }
 
   const stopLoop = (): void => {
@@ -816,6 +1269,7 @@ export function createChibiSceneHost(
     lastShadowExtent = -1
     lastSnappedX = Number.NaN
     lastSnappedZ = Number.NaN
+    roomShadowActive = false
     rim.position.set(-roomW * 0.42, 13, -roomH * 0.48)
 
     cameraDirty = true
@@ -867,6 +1321,8 @@ export function createChibiSceneHost(
   }
   const onContextRestored = (): void => {
     contextLost = false
+    // GL objects of the static shadow cache died with the old context.
+    releaseShadowCache(false)
     restoreStaticTextures(scene)
     markShadowDirty()
     resize()
@@ -1308,6 +1764,10 @@ export function createChibiSceneHost(
         baseDpr,
         shadowAutoUpdate: renderer.shadowMap.autoUpdate ?? false,
         shadowUpdates,
+        dynamicShadowUpdates,
+        shadowFrustum: roomShadowActive ? "room" : "follow",
+        shadowMapWidth: sun.shadow.mapSize.x,
+        shadowMapHeight: sun.shadow.mapSize.y,
         renderedFrames,
         skippedFrames,
         avgFrameMs: Number(dynRes.getAvgFrameMs().toFixed(2)),
@@ -1327,6 +1787,22 @@ export function createChibiSceneHost(
       },
       get host() {
         return readSpaceStats().host
+      },
+      // Dev-only handles for profiling scripts (draw-call inventories, frustum checks).
+      scene,
+      camera,
+      renderer,
+      /** Renders one frame now with a forced shadow pass, to compare cached vs full shadows. */
+      debugShadowPass: (mode: "legacy" | "static" | "dynamic") => {
+        if (disposed || contextLost || !shadows) return
+        if (mode === "legacy" || !originalShadowRender) {
+          pendingShadowPass = null
+          renderer.shadowMap.needsUpdate = true
+        } else {
+          pendingShadowPass = mode
+        }
+        renderer.render(scene, camera)
+        pendingShadowPass = null
       },
     }
     ;(window as unknown as Record<string, unknown>).__iqxSpaceStats =
@@ -1353,6 +1829,8 @@ export function createChibiSceneHost(
     dom.removeEventListener("webglcontextlost", onContextLost)
     dom.removeEventListener("webglcontextrestored", onContextRestored)
     delete (scene.userData as Record<string, unknown>)[SCENE_HOST_BRIDGE_KEY]
+    dynamicCasters.clear()
+    releaseShadowCache(!contextLost)
     if (
       devStatsHook &&
       typeof window !== "undefined" &&

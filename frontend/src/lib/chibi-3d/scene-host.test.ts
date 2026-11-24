@@ -182,6 +182,45 @@ describe("createChibiSceneHost lite mode, disposal & context recovery", () => {
     container.remove()
   })
 
+  it("covers the whole room with one fixed shadow frustum in room mode, so following the player never moves it", () => {
+    const container = document.createElement("div")
+    Object.defineProperty(container, "clientWidth", { value: 1440, configurable: true })
+    Object.defineProperty(container, "clientHeight", { value: 844, configurable: true })
+    document.body.appendChild(container)
+
+    const host = createChibiSceneHost({
+      container,
+      world,
+      lite: false,
+      fov: 36,
+      pitchDeg: 48,
+      baseDistance: 21.6,
+      initialZoom: 0.94,
+      shadowFrustum: "room",
+    })
+    const sun = host.lights.sun
+    expect(sun.target.position.toArray()).toEqual([0, 0, 0])
+    const cam = sun.shadow.camera
+    const frustum = [cam.left, cam.right, cam.top, cam.bottom]
+    // Texel density stays close to the 2048px follow frustum, so the map is a little larger.
+    expect(sun.shadow.mapSize.x).toBeGreaterThanOrEqual(2048)
+    expect(sun.shadow.mapSize.x).toBeLessThanOrEqual(3072)
+
+    host.followLogical(1800, 1200, true)
+    host.followLogical(200, 200, true)
+    expect(sun.target.position.toArray()).toEqual([0, 0, 0])
+    expect([cam.left, cam.right, cam.top, cam.bottom]).toEqual(frustum)
+
+    // Deep zoom would need a map above the cap: falls back to the tight follow frustum.
+    host.setZoom(2.4, true)
+    host.followLogical(1500, 900, true)
+    expect(sun.target.position.x).toBeGreaterThan(2)
+    expect(sun.shadow.mapSize.x).toBe(2048)
+
+    host.dispose()
+    container.remove()
+  })
+
   it("calls renderer.forceContextLoss() after renderer.dispose() and handles webglcontextlost/restored + ResizeObserver", () => {
     const roRef: { current: ResizeObserverCallback | null } = { current: null }
     class FakeResizeObserver {

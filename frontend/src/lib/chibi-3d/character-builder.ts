@@ -2,6 +2,9 @@ import * as THREE from "three"
 
 import { createSignTexture } from "./textures.ts"
 import {
+  CHIBI_SHADOW_PROXY_LAYER,
+  SHADOW_PROXY_ROOT_FLAG,
+  SHARED_RESOURCE_FLAG,
   SHARED_TEXTURE_FLAG,
   createClothMaterial,
   createGlowMaterial,
@@ -165,6 +168,8 @@ interface VariantGeometryBundle {
   eyeCenterY: number
   hasDynamicEyes: boolean
   hasPonytail: boolean
+  /** Merged caster geometry per (part list, depth side, slots), built lazily for shadow proxies. */
+  shadowProxyGeometries?: Map<string, THREE.BufferGeometry>
 }
 
 interface VariantMaterialPalette {
@@ -247,6 +252,15 @@ function releaseGeometryBundle(bundle: VariantGeometryBundle): void {
         entry.geometry.dispose()
       }
     }
+  }
+  if (bundle.shadowProxyGeometries) {
+    for (const geometry of bundle.shadowProxyGeometries.values()) {
+      if (!disposed.has(geometry)) {
+        disposed.add(geometry)
+        geometry.dispose()
+      }
+    }
+    bundle.shadowProxyGeometries.clear()
   }
 }
 
@@ -3494,30 +3508,15 @@ function buildMaterialPalette(
               : "#334155",
         { roughness: 0.42, metalness: 0.35 }
       )
-      for (const slot of [
-        "skin",
-        "skinShade",
-        "outfit",
-        "shirt",
-        "gold",
-        "pearl",
-      ] as MaterialSlot[]) {
+      for (const slot of STATUE_SLOT_GROUPS[0]) {
         materials.set(slot, statueBase)
       }
-      for (const slot of [
-        "hair",
-        "hairHighlight",
-        "outfitShade",
-        "bottom",
-        "accent",
-        "belt",
-        "shoe",
-        "sole",
-      ] as MaterialSlot[]) {
+      for (const slot of STATUE_SLOT_GROUPS[1]) {
         materials.set(slot, statueShade)
       }
-      materials.set("pupilLash", inkMat)
-      materials.set("browMouth", inkMat)
+      for (const slot of STATUE_SLOT_GROUPS[2]) {
+        materials.set(slot, inkMat)
+      }
 
       const label = statueRank === "empty" ? "?" : String(statueRank)
       const accent =
@@ -3706,6 +3705,103 @@ function buildMaterialPalette(
   return { key, refCount: 0, materials, shadowMat }
 }
 
+/**
+ * Statue palettes map whole groups of slots onto one material (base metal, shade metal, ink). The
+ * first slot of each group is the one its merged mesh binds to.
+ */
+const STATUE_SLOT_GROUPS: readonly (readonly MaterialSlot[])[] = [
+  ["skin", "skinShade", "outfit", "shirt", "gold", "pearl"],
+  ["hair", "hairHighlight", "outfitShade", "bottom", "accent", "belt", "shoe", "sole"],
+  ["pupilLash", "browMouth"],
+]
+const STATUE_SLOT_CANONICAL = new Map<MaterialSlot, MaterialSlot>()
+for (const group of STATUE_SLOT_GROUPS) {
+  for (const slot of group) STATUE_SLOT_CANONICAL.set(slot, group[0]!)
+}
+
+/**
+ * Opaque podium statues draw every slot of a group with the same material, so per-slot meshes
+ * inside one pivot are merged into one draw per material (same triangles, same material).
+ * Transparent ("empty") statues are left alone to keep their per-mesh depth sorting.
+ */
+function mergeStatueBundleSlots(bundle: VariantGeometryBundle): void {
+  // Part geometries may be shared between lists, so inputs are only disposed once unreferenced.
+  const consumed = new Set<THREE.BufferGeometry>()
+  const mergeList = (list: MergedPartEntry[]): MergedPartEntry[] => {
+    const groups = new Map<string, MergedPartEntry[]>()
+    const out: MergedPartEntry[] = []
+    for (const entry of list) {
+      const canonical = STATUE_SLOT_CANONICAL.get(entry.slot)
+      if (!canonical || entry.geometry.getAttribute("color")) {
+        out.push(entry)
+        continue
+      }
+      const key = `${canonical}|${entry.noShadow ? 1 : 0}|${entry.renderOrder ?? 0}`
+      const group = groups.get(key)
+      if (group) group.push(entry)
+      else groups.set(key, [entry])
+    }
+    for (const group of groups.values()) {
+      const first = group[0]!
+      const canonical = STATUE_SLOT_CANONICAL.get(first.slot)!
+      if (group.length === 1) {
+        out.push({ ...first, slot: canonical })
+        continue
+      }
+      const merged = mergeIndexedGeometries(
+        group.map((e) => e.geometry),
+        { includeVertexColors: false, disposeInputs: false }
+      )
+      if (!merged) {
+        out.push(...group)
+        continue
+      }
+      for (const e of group) consumed.add(e.geometry)
+      out.push({
+        slot: canonical,
+        geometry: merged,
+        noShadow: first.noShadow,
+        renderOrder: first.renderOrder,
+      })
+    }
+    return out
+  }
+  bundle.leftLeg = mergeList(bundle.leftLeg)
+  bundle.rightLeg = mergeList(bundle.rightLeg)
+  bundle.torso = mergeList(bundle.torso)
+  bundle.leftArm = mergeList(bundle.leftArm)
+  bundle.rightArm = mergeList(bundle.rightArm)
+  bundle.head = mergeList(bundle.head)
+  bundle.eyes = mergeList(bundle.eyes)
+  bundle.hair = mergeList(bundle.hair)
+  bundle.ponytail = mergeList(bundle.ponytail)
+  bundle.glasses = mergeList(bundle.glasses)
+  bundle.medal = mergeList(bundle.medal)
+  bundle.halo = mergeList(bundle.halo)
+  bundle.ingot = mergeList(bundle.ingot)
+  const stillUsed = new Set<THREE.BufferGeometry>()
+  for (const list of [
+    bundle.leftLeg,
+    bundle.rightLeg,
+    bundle.torso,
+    bundle.leftArm,
+    bundle.rightArm,
+    bundle.head,
+    bundle.eyes,
+    bundle.hair,
+    bundle.ponytail,
+    bundle.glasses,
+    bundle.medal,
+    bundle.halo,
+    bundle.ingot,
+  ]) {
+    for (const entry of list) stillUsed.add(entry.geometry)
+  }
+  for (const geometry of consumed) {
+    if (!stillUsed.has(geometry)) geometry.dispose()
+  }
+}
+
 function acquireGeometryBundle(
   isThanTai: boolean,
   preset: AvatarStylePreset,
@@ -3722,6 +3818,9 @@ function acquireGeometryBundle(
     bundle = isThanTai
       ? buildThanTaiGeometryBundle(key, detail)
       : buildStandardGeometryBundle(key, preset, isBoss, statueRank, detail)
+    if (typeof statueRank === "number") {
+      mergeStatueBundleSlots(bundle)
+    }
     geometryBundleCache.set(key, bundle)
   }
   bundle.refCount += 1
@@ -3783,6 +3882,113 @@ function mountPartList(
     parent.add(mesh)
     bindings.push({ mesh, slot: entry.slot })
   }
+}
+
+// ---------- Shadow Proxies (one depth-only draw per animated pivot) ----------
+
+const shadowProxyMaterials = new Map<string, THREE.Material>()
+
+/** Shared invisible-to-the-main-camera material; only its `side`/`shadowSide` matter in the depth pass. */
+function getShadowProxyMaterial(side: THREE.Side, shadowSide: THREE.Side | null): THREE.Material {
+  const key = `${side}|${shadowSide ?? "-"}`
+  let mat = shadowProxyMaterials.get(key)
+  if (!mat) {
+    mat = new THREE.MeshBasicMaterial({ side, colorWrite: false, depthWrite: false })
+    mat.shadowSide = shadowSide
+    mat.name = "chibi-shadow-proxy"
+    ;(mat.userData as Record<string, unknown>)[SHARED_RESOURCE_FLAG] = true
+    shadowProxyMaterials.set(key, mat)
+  }
+  return mat
+}
+
+/** The default depth material reproduces this material's shadow exactly (no alpha/displacement/clipping). */
+function castsPlainDepth(mat: THREE.Material): boolean {
+  const m = mat as THREE.MeshStandardMaterial
+  if (!m.visible || m.wireframe) return false
+  if (m.alphaTest > 0 && (m.map || m.alphaMap)) return false
+  if (m.alphaToCoverage) return false
+  if (m.displacementMap && m.displacementScale !== 0) return false
+  if (m.clippingPlanes && m.clippingPlanes.length > 0) return false
+  return true
+}
+
+interface MountedPartList {
+  parent: THREE.Object3D
+  entries: MergedPartEntry[]
+  name: string
+}
+
+/**
+ * Adds, per pivot, merged copies of the shadow-casting parts on `CHIBI_SHADOW_PROXY_LAYER`. The
+ * parts keep casting in full static bakes; the proxies (same triangles, same depth side) replace
+ * them when the host redraws only moving casters, cutting ~25 depth draws per character to ~8.
+ * Parts whose material needs a special depth material also join the proxy layer themselves.
+ */
+function attachShadowProxies(
+  root: THREE.Object3D,
+  bundle: VariantGeometryBundle,
+  palette: VariantMaterialPalette,
+  mounted: readonly MountedPartList[]
+): void {
+  const cache = (bundle.shadowProxyGeometries ??= new Map())
+  for (const { parent, entries, name } of mounted) {
+    const groups = new Map<string, { mat: THREE.Material; entries: MergedPartEntry[] }>()
+    for (const entry of entries) {
+      if (entry.noShadow) continue
+      const mat = palette.materials.get(entry.slot)
+      if (!mat) continue
+      if (!castsPlainDepth(mat)) {
+        for (const child of parent.children) {
+          const mesh = child as THREE.Mesh
+          if (mesh.isMesh && mesh.geometry === entry.geometry) {
+            mesh.layers.enable(CHIBI_SHADOW_PROXY_LAYER)
+          }
+        }
+        continue
+      }
+      const sideKey = `${mat.side}|${mat.shadowSide ?? "-"}`
+      const group = groups.get(sideKey)
+      if (group) group.entries.push(entry)
+      else groups.set(sideKey, { mat, entries: [entry] })
+    }
+    for (const [sideKey, group] of groups) {
+      let geometry: THREE.BufferGeometry | null | undefined
+      if (group.entries.length === 1) {
+        geometry = group.entries[0]!.geometry
+      } else {
+        const key = `${name}|${sideKey}|${group.entries.map((e) => e.slot).join(",")}`
+        geometry = cache.get(key)
+        if (!geometry) {
+          geometry = mergeIndexedGeometries(
+            group.entries.map((e) => e.geometry),
+            { includeVertexColors: false, disposeInputs: false }
+          )
+          if (geometry) cache.set(key, geometry)
+        }
+      }
+      if (!geometry) {
+        // Could not merge: let the parts themselves cast in the proxy pass.
+        for (const child of parent.children) {
+          const mesh = child as THREE.Mesh
+          if (mesh.isMesh && group.entries.some((e) => e.geometry === mesh.geometry)) {
+            mesh.layers.enable(CHIBI_SHADOW_PROXY_LAYER)
+          }
+        }
+        continue
+      }
+      const proxy = new THREE.Mesh(
+        geometry,
+        getShadowProxyMaterial(group.mat.side, group.mat.shadowSide)
+      )
+      proxy.name = "chibi-shadow-proxy"
+      proxy.layers.set(CHIBI_SHADOW_PROXY_LAYER)
+      proxy.castShadow = true
+      proxy.receiveShadow = false
+      parent.add(proxy)
+    }
+  }
+  ;(root.userData as Record<string, unknown>)[SHADOW_PROXY_ROOT_FLAG] = true
 }
 
 // ---------- Blink Envelope Computation (Zero Allocation) ----------
@@ -3887,19 +4093,28 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
   }
 
   const bindings: BoundMesh[] = []
-  mountPartList(leftLegPivot, bundle.leftLeg, palette, bindings)
-  mountPartList(rightLegPivot, bundle.rightLeg, palette, bindings)
-  mountPartList(torsoPivot, bundle.torso, palette, bindings)
-  mountPartList(leftArmPivot, bundle.leftArm, palette, bindings)
-  mountPartList(rightArmPivot, bundle.rightArm, palette, bindings)
-  mountPartList(headPivot, bundle.head, palette, bindings)
+  const mountedLists: MountedPartList[] = []
+  const mountTracked = (
+    parent: THREE.Object3D,
+    entries: MergedPartEntry[],
+    name: string
+  ): void => {
+    mountPartList(parent, entries, palette, bindings)
+    mountedLists.push({ parent, entries, name })
+  }
+  mountTracked(leftLegPivot, bundle.leftLeg, "leftLeg")
+  mountTracked(rightLegPivot, bundle.rightLeg, "rightLeg")
+  mountTracked(torsoPivot, bundle.torso, "torso")
+  mountTracked(leftArmPivot, bundle.leftArm, "leftArm")
+  mountTracked(rightArmPivot, bundle.rightArm, "rightArm")
+  mountTracked(headPivot, bundle.head, "head")
 
   // Blinkable eyes group anchored at exact eye center Y
   const eyesPivot = new THREE.Group()
   eyesPivot.name = "chibi-face"
   eyesPivot.position.set(0, bundle.eyeCenterY, 0)
   headPivot.add(eyesPivot)
-  mountPartList(eyesPivot, bundle.eyes, palette, bindings)
+  mountTracked(eyesPivot, bundle.eyes, "eyes")
 
   // Sculpted hairstyle group ("chibi-hair" direct child of headPivot)
   let ponytailPivot: THREE.Group | null = null
@@ -3907,13 +4122,13 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
     const hairGroup = new THREE.Group()
     hairGroup.name = "chibi-hair"
     headPivot.add(hairGroup)
-    mountPartList(hairGroup, bundle.hair, palette, bindings)
+    mountTracked(hairGroup, bundle.hair, "hair")
 
     if (bundle.hasPonytail && bundle.ponytail.length > 0) {
       ponytailPivot = new THREE.Group()
       ponytailPivot.position.set(0, 0.16, -0.37)
       hairGroup.add(ponytailPivot)
-      mountPartList(ponytailPivot, bundle.ponytail, palette, bindings)
+      mountTracked(ponytailPivot, bundle.ponytail, "ponytail")
     }
   }
 
@@ -3922,7 +4137,7 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
     const glassesGroup = new THREE.Group()
     glassesGroup.name = "chibi-glasses"
     headPivot.add(glassesGroup)
-    mountPartList(glassesGroup, bundle.glasses, palette, bindings)
+    mountTracked(glassesGroup, bundle.glasses, "glasses")
   }
 
   // Floating Hall of Fame rank medal
@@ -3931,7 +4146,7 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
     medalGroup = new THREE.Group()
     medalGroup.position.set(0, 0.56, 0)
     headPivot.add(medalGroup)
-    mountPartList(medalGroup, bundle.medal, palette, bindings)
+    mountTracked(medalGroup, bundle.medal, "medal")
   }
 
   // Thần Tài floating luminous golden halo
@@ -3940,7 +4155,7 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
     haloGroup = new THREE.Group()
     haloGroup.position.set(0, 0.08, -0.26)
     headPivot.add(haloGroup)
-    mountPartList(haloGroup, bundle.halo, palette, bindings)
+    mountTracked(haloGroup, bundle.halo, "halo")
   }
 
   // Thần Tài gleaming gold sycee ingot
@@ -3949,8 +4164,9 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
     ingotGroup = new THREE.Group()
     ingotGroup.position.set(0, 0.32, 0.37)
     torsoPivot.add(ingotGroup)
-    mountPartList(ingotGroup, bundle.ingot, palette, bindings)
+    mountTracked(ingotGroup, bundle.ingot, "ingot")
   }
+  let shadowProxiesAttached = false
 
   const swapPalette = (nextOutfitHex: string, nextDimmed: boolean): void => {
     const nextPalette = acquireMaterialPalette(
@@ -4003,16 +4219,50 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
   let lastPosY = Number.NaN
   let lastPosZ = Number.NaN
   let lastShadowFacing = Number.NaN
+  // Bridge this rig registered with as a moving shadow caster (lazily, on its first motion, so
+  // statues and idle NPCs stay in the cached static shadow bake).
+  let dynamicCasterBridge: ChibiSceneHostBridge | null = null
+
+  const releaseDynamicCaster = (): boolean => {
+    const owner = dynamicCasterBridge
+    if (!owner) return false
+    dynamicCasterBridge = null
+    owner.setDynamicShadowCaster?.(root, false)
+    owner.markDynamicShadowDirty?.()
+    return true
+  }
 
   const syncHostBridge = (): ChibiSceneHostBridge | null => {
     if (root.parent !== cachedParent) {
       cachedParent = root.parent
-      hostBridge = getSceneHostBridge(cachedParent)
-      if (hostBridge) {
+      const nextBridge = getSceneHostBridge(cachedParent)
+      if (dynamicCasterBridge && dynamicCasterBridge !== nextBridge) {
+        releaseDynamicCaster()
+      }
+      hostBridge = nextBridge
+      if (hostBridge && dynamicCasterBridge !== hostBridge) {
         hostBridge.markShadowDirty()
       }
     }
     return hostBridge
+  }
+
+  /** Shadow of this rig changed: redraw only moving casters when the host supports it. */
+  const markRigShadowDirty = (bridge: ChibiSceneHostBridge): void => {
+    if (bridge.setDynamicShadowCaster && bridge.markDynamicShadowDirty) {
+      if (dynamicCasterBridge !== bridge) {
+        if (!shadowProxiesAttached && !disposed) {
+          // Built on first motion only: statues and idle NPCs never need them.
+          shadowProxiesAttached = true
+          attachShadowProxies(root, bundle, palette, mountedLists)
+        }
+        dynamicCasterBridge = bridge
+        bridge.setDynamicShadowCaster(root, true)
+      }
+      bridge.markDynamicShadowDirty()
+      return
+    }
+    bridge.markShadowDirty()
   }
 
   const update = (dt: number, state: ChibiUpdateState): void => {
@@ -4069,10 +4319,20 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
         lastPosX = px
         lastPosY = py
         lastPosZ = pz
+        const firstSample = Number.isNaN(lastShadowFacing)
         lastShadowFacing = currentFacing
-        bridge.markShadowDirty()
+        if (firstSample && !activeAnim) {
+          // First pose seen by this host: part of the static bake until it actually moves.
+          bridge.markShadowDirty()
+        } else {
+          markRigShadowDirty(bridge)
+        }
         if (posChanged || activeAnim) {
-          bridge.markActive(400)
+          if (state.ambient && bridge.markAmbient) {
+            bridge.markAmbient(400)
+          } else {
+            bridge.markActive(400)
+          }
         }
       }
     }
@@ -4279,8 +4539,10 @@ export function createChibiCharacter(spec: ChibiCharacterSpec): ChibiRig {
     dispose: () => {
       if (disposed) return
       disposed = true
-      const bridge = hostBridge ?? getSceneHostBridge(root.parent)
-      bridge?.markShadowDirty()
+      if (!releaseDynamicCaster()) {
+        const bridge = hostBridge ?? getSceneHostBridge(root.parent)
+        bridge?.markShadowDirty()
+      }
       hostBridge = null
       cachedParent = null
       releaseGeometryBundle(bundle)

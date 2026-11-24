@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react"
 import { createElement } from "react"
 import * as THREE from "three"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import type {
   IndexQuote,
@@ -52,7 +52,13 @@ import {
   drawSacoBoard,
 } from "./textures.ts"
 import {
+  CHIBI_SHADOW_PROXY_LAYER,
   OUTFIT_COLOR_HEX,
+  SCENE_HOST_BRIDGE_KEY,
+  SHADOW_PROXY_ROOT_FLAG,
+  SHARED_RESOURCE_FLAG,
+  splitMaterialProgramVariants,
+  type ChibiSceneHostBridge,
   facingToRadians,
   logicalToWorld,
   resolveOutfitHex,
@@ -758,5 +764,84 @@ describe("chibi-3d portraits & procedural textures", () => {
 
     expect(calls).toContain("fillRect")
     expect(calls).toContain("fillText")
+  })
+})
+
+describe("render batching helpers", () => {
+  it("gives plain, instanced and instance-coloured users of one material their own program variant", () => {
+    const root = new THREE.Group()
+    const mat = new THREE.MeshStandardMaterial({ color: "#ff0000", roughness: 0.4 })
+    const geo = new THREE.BoxGeometry(1, 1, 1)
+    const plain = new THREE.Mesh(geo, mat)
+    const inst = new THREE.InstancedMesh(geo, mat, 2)
+    const inst2 = new THREE.InstancedMesh(geo, mat, 2)
+    const tinted = new THREE.InstancedMesh(geo, mat, 2)
+    tinted.setColorAt(0, new THREE.Color("#00ff00"))
+    root.add(plain, inst, inst2, tinted)
+
+    const release = splitMaterialProgramVariants(root)
+    expect(plain.material).toBe(mat)
+    expect(inst.material).not.toBe(mat)
+    expect(inst2.material).toBe(inst.material)
+    expect(tinted.material).not.toBe(inst.material)
+    const clone = inst.material as THREE.MeshStandardMaterial
+    expect(clone.color.getHex()).toBe(mat.color.getHex())
+    expect(clone.roughness).toBe(mat.roughness)
+    expect((clone.userData as Record<string, unknown>)[SHARED_RESOURCE_FLAG]).toBe(true)
+    const disposed = vi.fn()
+    clone.addEventListener("dispose", disposed)
+    release()
+    expect(disposed).toHaveBeenCalledTimes(1)
+  })
+
+  it("registers a character as a dynamic shadow caster on its first motion, with per-pivot proxies", () => {
+    const scene = new THREE.Scene()
+    const bridge: ChibiSceneHostBridge = {
+      markActive: vi.fn(),
+      requestFrame: vi.fn(),
+      markShadowDirty: vi.fn(),
+      markAmbient: vi.fn(),
+      setDynamicShadowCaster: vi.fn(),
+      markDynamicShadowDirty: vi.fn(),
+    }
+    ;(scene.userData as Record<string, unknown>)[SCENE_HOST_BRIDGE_KEY] = bridge
+    const rig = createChibiCharacter({ avatarId: "male01", lite: false })
+    scene.add(rig.root)
+
+    // First pose: static bake only, no proxies yet.
+    rig.update(0.016, { anim: "idle", facingRad: 0 })
+    expect(bridge.setDynamicShadowCaster).not.toHaveBeenCalled()
+    let proxies = 0
+    rig.root.traverse((o) => {
+      if (o.name === "chibi-shadow-proxy") proxies += 1
+    })
+    expect(proxies).toBe(0)
+
+    // Remote walking: dynamic caster + ambient pacing, never the full display rate.
+    rig.root.position.x += 0.3
+    rig.update(0.016, { anim: "walk", facingRad: 0, moveFactor: 1, ambient: true })
+    expect(bridge.setDynamicShadowCaster).toHaveBeenCalledWith(rig.root, true)
+    expect(bridge.markDynamicShadowDirty).toHaveBeenCalled()
+    expect(bridge.markAmbient).toHaveBeenCalled()
+    expect(bridge.markActive).toHaveBeenCalledTimes(1)
+    expect((rig.root.userData as Record<string, unknown>)[SHADOW_PROXY_ROOT_FLAG]).toBe(true)
+
+    let casters = 0
+    rig.root.traverse((o) => {
+      const mesh = o as THREE.Mesh
+      if (!mesh.isMesh) return
+      if (o.name === "chibi-shadow-proxy") {
+        proxies += 1
+        expect(o.layers.mask).toBe(1 << CHIBI_SHADOW_PROXY_LAYER)
+        expect(mesh.castShadow).toBe(true)
+      } else if (mesh.castShadow) {
+        casters += 1
+      }
+    })
+    expect(proxies).toBeGreaterThan(0)
+    expect(proxies).toBeLessThan(casters)
+
+    rig.dispose()
+    expect(bridge.setDynamicShadowCaster).toHaveBeenLastCalledWith(rig.root, false)
   })
 })

@@ -56,6 +56,7 @@ import {
   disposeObject3D,
   facingToRadians,
   freezeStaticSubtree,
+  splitMaterialProgramVariants,
   getSceneHostBridge,
   isSharedResourceObj,
   logicalToWorld,
@@ -554,6 +555,8 @@ export class FloorWorld3D {
   private readonly lite: boolean
   private readonly hostBridge: ChibiSceneHostBridge | null
   private readonly staticGroup: THREE.Group
+  /** Disposes the per-variant material clones made by `splitMaterialProgramVariants`. */
+  private releaseMaterialVariants: (() => void) | null = null
   private readonly props: DisposableProp[] = []
   private readonly retainedCachedTextures: THREE.Texture[] = []
   private readonly pendingContactShadows: PendingContactShadow[] = []
@@ -905,6 +908,8 @@ export class FloorWorld3D {
     // Flush batched contact shadows and lock static matrices once
     this.flushContactShadows()
     freezeStaticSubtree(this.staticGroup)
+    this.releaseMaterialVariants?.()
+    this.releaseMaterialVariants = splitMaterialProgramVariants(this.staticGroup)
     this.hostBridge?.markShadowDirty()
   }
 
@@ -2032,6 +2037,8 @@ export class FloorWorld3D {
     this.floorDecor?.dispose()
     this.floorDecor = null
     disposeObject3D(this.group)
+    this.releaseMaterialVariants?.()
+    this.releaseMaterialVariants = null
     for (const tex of this.retainedCachedTextures.splice(0)) {
       releaseCachedTexture(tex)
     }
