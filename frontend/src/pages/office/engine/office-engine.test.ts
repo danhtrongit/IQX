@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import { findOfficeDoorPath } from "@/pages/spaces/door-transition.ts"
+
 import {
   OFFICE_CLOSE_AUTH,
   OFFICE_CLOSE_FORBIDDEN,
@@ -27,9 +29,11 @@ import {
   OFFICE_BASE_W,
   OFFICE_BOSS_SPAWN,
   OFFICE_DESK_COLS,
-  OFFICE_DIVIDER_Y,
-  OFFICE_DOORWAYS,
   OFFICE_EXTRA_BAND_STEP,
+  OFFICE_HAS_ENCLOSING_WALLS,
+  OFFICE_LOUNGE_PROPS,
+  OFFICE_NORTH_PROPS,
+  OFFICE_NORTH_WALL_Y,
   OFFICE_STAFF_FALLBACK_SPAWN,
   OFFICE_STATION_RADIUS,
   buildAllDeskSlots,
@@ -38,9 +42,20 @@ import {
   buildOfficeStations,
   computeOfficeDimensions,
   deskSlotCoords,
+  findClickedStation,
   findNearestStation,
+  getMeetingPlanters,
+  getOfficeExitDoor,
+  getOfficeFloorLabels,
+  getOfficeNorthWindows,
+  getOfficePlants,
   getOfficePodDividers,
+  getOfficeZones,
+  getPrinterStationRect,
+  getSouthLoungeRect,
+  getSouthWelcomeDeskRect,
   getTeamBannerRugRect,
+  getZoneRugs,
   isOfficeBlocked,
   moveWithSlide,
   officeFacingFromDelta,
@@ -81,7 +96,6 @@ function runWalkGridBfs(
   const visited = new Set<string>()
   const queue: Array<[number, number]> = []
 
-  // Find a walkable seed cell reachable from exact start coordinates
   const seedCandidates: Array<[number, number]> = [
     [sx, sy],
     [sx + step, sy],
@@ -150,11 +164,35 @@ afterEach(() => {
   window.localStorage.removeItem(OFFICE_HUD_STORAGE_KEY)
 })
 
-describe("office-layout geometry, doorways, collision & open-plan desk pods", () => {
-  it("keeps all 3 doorways passable and interior walls solid", () => {
-    const obstacles = buildOfficeObstacles(11)
+describe("office-layout open-floor geometry, zones, collision & 24-desk pods", () => {
+  it("has ONE North back wall only — zero enclosing side/south walls and zero interior room partitions", () => {
+    expect(OFFICE_HAS_ENCLOSING_WALLS).toBe(false)
 
-    // Boss spawn & staff fallback spawn are walkable across normal & expanded (>MAX_STAFF_DESKS) layouts
+    const obstacles = buildOfficeObstacles(11)
+    const wallObstacles = obstacles.filter((o) =>
+      (o.label ?? "").includes("wall")
+    )
+    expect(wallObstacles).toHaveLength(1)
+    expect(wallObstacles[0]!.label).toBe("north-wall")
+    expect(wallObstacles[0]!.y).toBe(0)
+    expect(wallObstacles[0]!.h).toBe(OFFICE_NORTH_WALL_Y)
+
+    // Former interior partition coordinates (y = 540 horizontal glass, x = 740 & x = 1560 vertical glass)
+    // are now open walkable floor!
+    for (const openX of [180, 620, 1210, 1740]) {
+      expect(
+        isOfficeBlocked(openX, 540, obstacles),
+        `open floor at (${openX}, 540) must NOT be blocked by a partition`
+      ).toBe(false)
+    }
+    expect(isOfficeBlocked(775, 260, obstacles)).toBe(false)
+    expect(isOfficeBlocked(1650, 260, obstacles)).toBe(false)
+
+    // Soft-border low planters around Phòng họp leave a wide open center entry
+    expect(getMeetingPlanters().length).toBeGreaterThanOrEqual(4)
+    expect(isOfficeBlocked(1210, 456, obstacles)).toBe(false)
+
+    // Boss spawn & staff fallback spawn are walkable across normal & expanded layouts
     expect(
       isOfficeBlocked(OFFICE_BOSS_SPAWN.x, OFFICE_BOSS_SPAWN.y, obstacles)
     ).toBe(false)
@@ -173,51 +211,107 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
       ).toBe(false)
     }
 
-    // All 3 doorways along y = 540 must be passable at their midpoints
-    for (const door of OFFICE_DOORWAYS) {
-      const midX = (door.x1 + door.x2) / 2
-      expect(
-        isOfficeBlocked(midX, OFFICE_DIVIDER_Y + 8, obstacles),
-        `doorway ${door.id} should be passable`
-      ).toBe(false)
-    }
-
-    // Solid horizontal divider segments block actors
-    for (const solidX of [120, 760, 1560, 2200]) {
-      expect(
-        isOfficeBlocked(solidX, OFFICE_DIVIDER_Y + 8, obstacles),
-        `divider wall at x=${solidX} should block`
-      ).toBe(true)
-    }
-
-    // Vertical top-room dividers block actors
-    expect(isOfficeBlocked(748, 260, obstacles)).toBe(true)
-    expect(isOfficeBlocked(1568, 260, obstacles)).toBe(true)
-
-    // Outer world bounds enforce margins
+    // Playable perimeter bounds keep avatars inside the open floor
     expect(isOfficeBlocked(20, 300, obstacles)).toBe(true)
     expect(isOfficeBlocked(OFFICE_BASE_W - 20, 300, obstacles)).toBe(true)
     expect(isOfficeBlocked(500, 30, obstacles)).toBe(true)
     expect(isOfficeBlocked(500, OFFICE_BASE_H - 10, obstacles)).toBe(true)
   })
 
-  it("slides smoothly along X and Y axes when pushing diagonally into a wall", () => {
+  it("defines all open-floor zones, painted floor labels, zone rugs, north windows, and multi-variety plants", () => {
+    const zones = getOfficeZones()
+    const zoneTitles = zones.map((z) => z.title)
+    expect(zoneTitles).toEqual(
+      expect.arrayContaining([
+        "BÀN SẾP",
+        "PHÒNG HỌP",
+        "KHU LÀM VIỆC",
+        "GÓC NGHỈ",
+        "GÓC THÀNH TÍCH",
+        "TÀI LIỆU",
+      ])
+    )
+
+    const labels = getOfficeFloorLabels().map((l) => l.text)
+    expect(labels).toEqual(
+      expect.arrayContaining([
+        "BÀN SẾP",
+        "PHÒNG HỌP",
+        "KHU LÀM VIỆC",
+        "GÓC NGHỈ",
+        "GÓC THÀNH TÍCH",
+      ])
+    )
+
+    expect(getZoneRugs().length).toBeGreaterThanOrEqual(10)
+    expect(getOfficeNorthWindows().length).toBeGreaterThanOrEqual(3)
+
+    const plantKinds = new Set(getOfficePlants().map((p) => p.kind))
+    expect(plantKinds).toEqual(new Set(["fiddle", "monstera", "snake"]))
+
+    // Floor labels must sit in clear open floor space (zero overlap with obstacles or each other)
+    const obs24 = buildOfficeObstacles(MAX_STAFF_DESKS)
+    const floorLabels = getOfficeFloorLabels()
+    for (let i = 0; i < floorLabels.length; i += 1) {
+      const lbl = floorLabels[i]!
+      const halfW = (lbl.widthU * 100) / 2
+      const halfH = (lbl.heightU * 100) / 2
+      const lx1 = lbl.x - halfW
+      const lx2 = lbl.x + halfW
+      const ly1 = lbl.y - halfH
+      const ly2 = lbl.y + halfH
+      for (const o of obs24) {
+        const overlaps =
+          lx1 < o.x + o.w && lx2 > o.x && ly1 < o.y + o.h && ly2 > o.y
+        expect(
+          overlaps,
+          `floor label "${lbl.text}" must not overlap obstacle "${o.label ?? "unnamed"}"`
+        ).toBe(false)
+      }
+      for (let j = i + 1; j < floorLabels.length; j += 1) {
+        const other = floorLabels[j]!
+        const ow = (other.widthU * 100) / 2
+        const oh = (other.heightU * 100) / 2
+        const labelOverlap =
+          lx1 < other.x + ow &&
+          lx2 > other.x - ow &&
+          ly1 < other.y + oh &&
+          ly2 > other.y - oh
+        expect(
+          labelOverlap,
+          `floor label "${lbl.text}" must not overlap "${other.text}"`
+        ).toBe(false)
+      }
+    }
+
+    // Deliberate south welcome & support strip sits cleanly south of Band 1 and scales with worldHeight
+    const welcome = getSouthWelcomeDeskRect(OFFICE_BASE_H)
+    const printer = getPrinterStationRect(OFFICE_BASE_H)
+    const southLounge = getSouthLoungeRect(OFFICE_BASE_H)
+    expect(welcome.x + welcome.w).toBeLessThan(printer.x - 100)
+    expect(printer.x + printer.w).toBeLessThan(southLounge.x - 100)
+    expect(
+      getSouthWelcomeDeskRect(OFFICE_BASE_H + OFFICE_EXTRA_BAND_STEP).y
+    ).toBe(welcome.y + OFFICE_EXTRA_BAND_STEP)
+  })
+
+  it("slides smoothly along X and Y axes when pushing diagonally into the north wall or furniture", () => {
     const obstacles = buildOfficeObstacles(11)
 
-    // Standing right below the corridor wall at x=600, y=572: moving up-right (-y blocked, +x free)
-    const slideX = moveWithSlide(600, 572, 20, -20, obstacles)
+    // Standing just south of Boss Desk (y=180..280) at (440, 294): moving up-right (-y blocked, +x free)
+    const slideX = moveWithSlide(440, 294, 20, -20, obstacles)
     expect(slideX.moved).toBe(true)
-    expect(slideX.x).toBe(620)
-    expect(slideX.y).toBe(572)
+    expect(slideX.x).toBe(460)
+    expect(slideX.y).toBe(294)
 
-    // Standing right to the left of vertical wall x=740 at x=726, y=300: moving right-down (+x blocked, +y free)
-    const slideY = moveWithSlide(726, 300, 20, 25, obstacles)
+    // Standing just west of West Meeting Planter (x=860..904, y=205..400) at (848, 300): +x blocked, +y free
+    const slideY = moveWithSlide(848, 300, 20, 25, obstacles)
     expect(slideY.moved).toBe(true)
-    expect(slideY.x).toBe(726)
+    expect(slideY.x).toBe(848)
     expect(slideY.y).toBe(325)
   })
 
-  it("builds exact role-filtered stations and detects proximity strictly within < 95 px", () => {
+  it("builds exact role-filtered stations, supports click hit-testing, and detects proximity strictly within < 95 px", () => {
     const bossStations = buildOfficeStations("boss", null, 11)
     expect(bossStations.map((s) => s.id)).toEqual([
       "boss",
@@ -229,8 +323,29 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
     expect(bossStations[0]?.modal).toBe("mgr")
     expect(bossStations[0]?.focusProposal).toBe(false)
 
-    const staffHome = { x: 295, y: 932 }
-    const staffStations = buildOfficeStations("staff", staffHome, 12)
+    // Direct click on Boss Desk or Conference Table resolves the station
+    expect(
+      findClickedStation(
+        OFFICE_NORTH_PROPS.bossDesk.x + 40,
+        OFFICE_NORTH_PROPS.bossDesk.y + 40,
+        bossStations
+      )?.id
+    ).toBe("boss")
+    expect(
+      findClickedStation(
+        OFFICE_NORTH_PROPS.conferenceTable.x + 80,
+        OFFICE_NORTH_PROPS.conferenceTable.y + 60,
+        bossStations
+      )?.id
+    ).toBe("meet")
+
+    const desk0 = deskSlotCoords(0)
+    const staffStations = buildOfficeStations("staff", desk0.home, 12, {
+      x: desk0.x,
+      y: desk0.y,
+      w: desk0.w,
+      h: desk0.h,
+    })
     expect(staffStations.map((s) => s.id)).toEqual([
       "boss",
       "meet",
@@ -242,8 +357,13 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
     expect(staffStations[0]?.modal).toBe("mine")
     expect(staffStations[0]?.focusProposal).toBe(true)
     expect(staffStations[3]?.label).toBe("Thành tích tháng 12")
-    expect(staffStations[4]?.x).toBe(staffHome.x)
-    expect(staffStations[4]?.y).toBe(staffHome.y + 10)
+    expect(staffStations[4]?.x).toBe(desk0.home.x)
+    expect(staffStations[4]?.y).toBe(desk0.home.y + 10)
+
+    // Direct click on own desk resolves mydesk
+    expect(
+      findClickedStation(desk0.x + 50, desk0.y + 30, staffStations)?.id
+    ).toBe("mydesk")
 
     // Within < 95 px triggers, >= 95 px does not
     expect(findNearestStation(440, 340 + 94, staffStations)?.id).toBe("boss")
@@ -252,10 +372,30 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
     ).toBeNull()
   })
 
-  it("furnishes MAX_STAFF_DESKS (24) in back-to-back pods, keeps empty desks as obstacles, and expands map height cleanly when staff exceed MAX_STAFF_DESKS", () => {
-    // Base grid capacity constant (Spec §3.1)
+  it("assigns 24 unique desk positions in deskIndex order, keeps empty desks as obstacles, and expands cleanly above 24 staff", () => {
     expect(MAX_STAFF_DESKS).toBe(24)
     expect(OFFICE_BASE_DESK_ROWS * OFFICE_DESK_COLS).toBe(MAX_STAFF_DESKS)
+
+    // Verify all 24 desk slots have strictly unique (x, y) and non-overlapping footprints
+    const seen = new Set<string>()
+    const slots24 = Array.from({ length: MAX_STAFF_DESKS }, (_, i) =>
+      deskSlotCoords(i)
+    )
+    for (let i = 0; i < slots24.length; i += 1) {
+      const a = slots24[i]!
+      const key = `${a.x},${a.y}`
+      expect(seen.has(key)).toBe(false)
+      seen.add(key)
+      for (let j = i + 1; j < slots24.length; j += 1) {
+        const b = slots24[j]!
+        const overlap =
+          a.x < b.x + b.w &&
+          a.x + a.w > b.x &&
+          a.y < b.y + b.h &&
+          a.y + a.h > b.y
+        expect(overlap, `desk ${i} and desk ${j} must not overlap`).toBe(false)
+      }
+    }
 
     // Small 2-member team still furnishes all 24 desks (2 occupied + 22 empty) on base map
     const desks2 = buildDeskPositions(makeStaffMembers(2))
@@ -299,9 +439,11 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
       ).toBe(true)
     }
 
-    // 6th desk leaves generous main boulevard (>= 150 px) before Coffee Bar at x=1860
+    // 6th desk leaves generous main boulevard (>= 150 px) before Góc Nghỉ coffee bar
     const sixthSlot = deskSlotCoords(5)
-    expect(1860 - (sixthSlot.x + sixthSlot.w)).toBeGreaterThanOrEqual(150)
+    expect(
+      OFFICE_LOUNGE_PROPS.coffeeBar.x - (sixthSlot.x + sixthSlot.w)
+    ).toBeGreaterThanOrEqual(150)
 
     // Team Banner Rug is 100% walkable
     const banner = getTeamBannerRugRect()
@@ -313,12 +455,7 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
       )
     ).toBe(false)
 
-    // Up to MAX_STAFF_DESKS stays at base map height
-    const dims24 = computeOfficeDimensions(MAX_STAFF_DESKS)
-    expect(dims24.height).toBe(OFFICE_BASE_H)
-    expect(dims24.totalDesks).toBe(MAX_STAFF_DESKS)
-
-    // Exceeding MAX_STAFF_DESKS (25..36) appends 1 extra pod band (+2 rows = +12 desks, +350 px height)
+    // Exceeding MAX_STAFF_DESKS appends extra pod bands cleanly
     const desks25 = buildDeskPositions(makeStaffMembers(MAX_STAFF_DESKS + 1))
     const dims25 = computeOfficeDimensions(MAX_STAFF_DESKS + 1)
     expect(dims25.rows).toBe(6)
@@ -340,13 +477,11 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
       ).toBe(false)
     }
 
-    // 37 staff appends 2 extra pod bands (+4 rows = +24 desks, +700 px height)
     const dims37 = computeOfficeDimensions(37)
     expect(dims37.rows).toBe(8)
     expect(dims37.totalDesks).toBe(48)
     expect(dims37.height).toBe(OFFICE_BASE_H + OFFICE_EXTRA_BAND_STEP * 2)
 
-    // Facing conversion sanity
     expect(officeFacingFromDelta(10, 2)).toBe("right")
     expect(officeFacingFromDelta(-10, 2)).toBe("left")
     expect(officeFacingFromDelta(1, 10)).toBe("down")
@@ -355,11 +490,12 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
     expect(officeFacingToRadians("up")).toBe(Math.PI)
   })
 
-  it("proves via BFS over the walk grid that all stations and all desk interaction points are reachable from spawn (base 24-desk & expanded 36-desk maps)", () => {
+  it("proves via BFS & A* that all stations, all 24+ desk positions, and the Khu giao dịch portal door are reachable from spawn", () => {
     for (const staffCount of [2, MAX_STAFF_DESKS, MAX_STAFF_DESKS + 6]) {
       const dims = computeOfficeDimensions(staffCount)
       const obstacles = buildOfficeObstacles(staffCount)
       const sharedStations = buildOfficeStations("boss", null, 11)
+      const exitDoor = getOfficeExitDoor(dims.height)
 
       for (const spawn of [OFFICE_BOSS_SPAWN, OFFICE_STAFF_FALLBACK_SPAWN]) {
         const bfs = runWalkGridBfs(
@@ -371,7 +507,7 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
           16
         )
 
-        // All 4 shared stations (Boss Desk, Meeting Room, Documents Shelf, Standee) reachable
+        // All 4 shared stations reachable
         for (const station of sharedStations) {
           expect(
             isTargetReachedByBfs(station.x, station.y, bfs, 24),
@@ -379,12 +515,26 @@ describe("office-layout geometry, doorways, collision & open-plan desk pods", ()
           ).toBe(true)
         }
 
-        // Every desk slot's home AND mydesk interaction point (home.y + 10) reachable
+        // Portal door access & spawnInside reachable via both BFS and A*
+        expect(
+          isTargetReachedByBfs(exitDoor.access.x, exitDoor.access.y, bfs, 24),
+          `door access must be reachable via BFS for staffCount=${staffCount}`
+        ).toBe(true)
+        const doorPath = findOfficeDoorPath(
+          spawn,
+          exitDoor.access,
+          obstacles,
+          dims.width,
+          dims.height
+        )
+        expect(doorPath.length).toBeGreaterThan(0)
+
+        // Every desk slot's home AND mydesk interaction point reachable
         for (let idx = 0; idx < dims.totalDesks; idx += 1) {
           const slot = deskSlotCoords(idx)
           expect(
             isTargetReachedByBfs(slot.home.x, slot.home.y, bfs, 24),
-            `desk ${idx} home (${slot.home.x},${slot.home.y}) must be reachable from (${spawn.x},${spawn.y}) for staffCount=${staffCount}`
+            `desk ${idx} home (${slot.home.x},${slot.home.y}) must be reachable for staffCount=${staffCount}`
           ).toBe(true)
           expect(
             isTargetReachedByBfs(slot.home.x, slot.home.y + 10, bfs, 24),
@@ -409,7 +559,6 @@ describe("office utils (Vietnamese search, tenure, UTC+7 dates & HUD persistence
     expect(formatTenureVi("2024-11-23", "2026-11-23")).toBe("2 năm")
     expect(formatTenureVi("2026-08-18", "2026-11-23")).toBe("3 tháng 5 ngày")
     expect(formatTenureVi("2025-11-19", "2026-11-23")).toBe("1 năm 4 ngày")
-    // Clamped month-end anchor: Jan 31 -> Feb 28 (1 month) + 2 days = Mar 02
     expect(formatTenureVi("2025-01-31", "2025-03-02")).toBe("1 tháng 2 ngày")
   })
 
@@ -422,12 +571,10 @@ describe("office utils (Vietnamese search, tenure, UTC+7 dates & HUD persistence
   it("formats UTC+7 dates, times, file sizes, and workday checks accurately", () => {
     expect(formatDayMonth("2026-11-23")).toBe("23/11")
     expect(formatFullDate("2026-11-23")).toBe("23/11/2026")
-    // 2026-11-23T01:47:00Z === 08:47 UTC+7
     expect(formatHm("2026-11-23T01:47:00.000Z")).toBe("08:47")
     expect(formatFileSize(0)).toBe("0 B")
     expect(formatFileSize(1536)).toBe("1.5 KB")
     expect(formatFileSize(2.5 * 1024 * 1024)).toBe("2.5 MB")
-    // 2026-11-23 is Monday, 2026-11-22 is Sunday, 2026-11-21 is Saturday
     expect(isWorkdayToday("2026-11-23")).toBe(true)
     expect(isWorkdayToday("2026-11-22")).toBe(false)
     expect(isWorkdayToday("2026-11-21")).toBe(false)
@@ -438,7 +585,6 @@ describe("office utils (Vietnamese search, tenure, UTC+7 dates & HUD persistence
     writeHudCollapseState({ att: true, task: false })
     expect(readHudCollapseState()).toEqual({ att: true, task: false })
 
-    // Corrupted JSON recovers cleanly
     window.localStorage.setItem(OFFICE_HUD_STORAGE_KEY, "{broken")
     expect(readHudCollapseState()).toEqual({})
   })
@@ -512,7 +658,6 @@ describe("office-socket & startOffice fallback", () => {
     expect(client.getOnlineCount()).toBe(2)
     expect(client.getPeers()).toHaveLength(1)
 
-    // Throttled outbound state while moving; immediate flush on stop
     expect(
       client.sendState({ x: 300, y: 932, facing: "right", moving: true })
     ).toBe(true)
@@ -523,7 +668,6 @@ describe("office-socket & startOffice fallback", () => {
       client.sendState({ x: 310, y: 932, facing: "right", moving: false })
     ).toBe(true)
 
-    // Sync event triggers callback
     fakeSocket!.onmessage?.({
       data: JSON.stringify({
         type: "office:sync",
@@ -534,7 +678,6 @@ describe("office-socket & startOffice fallback", () => {
     })
     expect(onSync).toHaveBeenCalledWith("tasks")
 
-    // Multi-tab peer:leave with another tab's peerId keeps active tab online
     fakeSocket!.onmessage?.({
       data: JSON.stringify({
         type: "peer:leave",
@@ -545,11 +688,9 @@ describe("office-socket & startOffice fallback", () => {
     })
     expect(client.getPeers()).toHaveLength(1)
 
-    // 4403 stops permanently without scheduling reconnect
     fakeSocket!.onclose?.({ code: OFFICE_CLOSE_FORBIDDEN })
     expect(client.getStatus()).toBe("closed")
 
-    // Verify 4401 also stops cleanly
     const authClient = createOfficeSocket({
       getToken: () => "bad-token",
       url: () => "ws://localhost/api/v2/office/ws",
