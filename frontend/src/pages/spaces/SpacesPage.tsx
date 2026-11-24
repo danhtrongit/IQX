@@ -35,6 +35,7 @@ import {
 import { SpaceLoadingScreen } from "./loading/SpaceLoadingScreen.tsx"
 import { buildSpaceUrl, resolveSpaceRoom, type SpaceRoom } from "./spaces-url.ts"
 import "./spaces.css"
+import { afterFramesSettle } from "./after-frames-settle"
 
 const ROOM_HANDOFF_DELAY_MS = 24
 /** Longest the loading screen may cover a room that never reports ready (errors, stuck gates). */
@@ -80,6 +81,7 @@ function SpaceLoadingLayer({
     />
   )
 }
+
 
 export function SpacesPage() {
   const queryClient = useQueryClient()
@@ -212,9 +214,15 @@ export function SpacesPage() {
 
   const handleRoomReady = useCallback(
     (room: SpaceRoom) => {
-      if (isLoadingRoom(room)) finishLoading()
+      if (!isLoadingRoom(room)) return
+      const cur = loadingStore.get()
+      const session = cur.session
+      if (cur.progress !== 1) loadingStore.set({ ...cur, progress: 1 })
+      // Start the exit fade only once the first frames and the HUD mount have settled, so the
+      // compositor fade is not starved by main-thread work (that looked like a flash on fast Macs).
+      afterFramesSettle(() => finishLoading(session))
     },
-    [finishLoading, isLoadingRoom]
+    [finishLoading, isLoadingRoom, loadingStore]
   )
 
   const handleFloorReady = useCallback(

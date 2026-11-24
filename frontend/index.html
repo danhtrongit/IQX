@@ -15,6 +15,9 @@
     <link rel="icon" href="/brand/logo-mark-192.png" type="image/png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <meta name="theme-color" content="#080c14" />
+    <!-- Apply the saved theme before CSS loads so dark-theme users never see a white first frame. -->
+    <style>html.dark{background:#0c111b;color-scheme:dark}html.light{background:#f1f3f6;color-scheme:light}</style>
+    <script>(function(){try{var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.classList.add(t)}catch(e){}})()</script>
     <meta name="description" content="IQX giúp bạn đọc thị trường, học đầu tư và thực hành giao dịch bằng vốn mô phỏng." />
     <title>IQX | Học đầu tư và Demo Trading</title>
   </head>

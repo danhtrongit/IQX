@@ -66,6 +66,11 @@ const mocks = vi.hoisted(() => ({
   },
 }))
 
+// The loading exit waits for frames to settle in the browser; run it at once in tests.
+vi.mock("./after-frames-settle", () => ({
+  afterFramesSettle: (run: () => void) => run(),
+}))
+
 vi.mock("@/hooks/use-auth", () => ({
   useAuth: () => mocks.auth,
 }))

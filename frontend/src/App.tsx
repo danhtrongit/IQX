@@ -1,4 +1,4 @@
-import { lazy, useMemo, useState, type ComponentType } from "react"
+import { lazy, Suspense, useMemo, useState, type ComponentType } from "react"
 import { createBrowserRouter, Navigate, RouterProvider, useLocation, type RouteObject } from "react-router"
 
 import { AdminLayout } from "@/components/layout/admin-layout"
@@ -78,6 +78,26 @@ const VTAccountDetailPage = lazyPage(() => import("@/pages/admin/trading/vt-acco
 const VTConfigPage = lazyPage(() => import("@/pages/admin/trading/vt-config-page").then(module => ({ default: module.VTConfigPage })))
 const CoursesPage = lazyPage(() => import("@/pages/admin/learning/courses-page").then(module => ({ default: module.CoursesPage })))
 const SpacesPage = lazyPage(() => import("@/pages/spaces/SpacesPage").then(module => ({ default: module.SpacesPage })))
+
+/** Navy backdrop identical to the Khu giao dịch loading screen, shown while the spaces chunk downloads
+ *  (the generic gray page skeleton flashed between the site shell and the loading screen). */
+const SPACES_BACKDROP = {
+  flex: "1 1 0%",
+  width: "100%",
+  height: "100%",
+  minWidth: 0,
+  minHeight: 0,
+  background:
+    "radial-gradient(circle at 50% 34%, rgba(243, 205, 106, 0.13) 0%, rgba(21, 35, 63, 0.45) 36%, transparent 66%), linear-gradient(160deg, #091122 0%, #0e1830 50%, #15233f 100%)",
+} as const
+
+function SpacesRoute() {
+  return (
+    <Suspense fallback={<div aria-busy="true" style={SPACES_BACKDROP} />}>
+      <SpacesPage />
+    </Suspense>
+  )
+}
 const UnsubscribePage = lazyPage(() => import("@/pages/notifications/unsubscribe-page").then(module => ({ default: module.UnsubscribePage })))
 const AboutPage = lazyPage(() => import("@/pages/about/about-page").then(module => ({ default: module.AboutPage })))
 const CourseEditPage = lazyPage(() => import("@/pages/admin/learning/course-edit-page").then(module => ({ default: module.CourseEditPage })))
@@ -155,7 +175,7 @@ export const routes: RouteObject[] = [
       { path: "backtest", element: <RedirectWithSearch to="/chien-luoc" tab="backtest" />, handle: { chrome: emptyChrome } },
       { path: "backtest/:symbol", Component: BacktestSymbolRedirect, handle: { chrome: emptyChrome } },
       { path: "thong-bao/tat", Component: UnsubscribePage, handle: { chrome: emptyChrome } },
-      { path: "khu-giao-dich", Component: SpacesPage, handle: { chrome: emptyChrome } },
+      { path: "khu-giao-dich", Component: SpacesRoute, handle: { chrome: emptyChrome } },
       { path: "van-phong", Component: LegacyOfficeRedirect, handle: { chrome: emptyChrome } },
       { path: "van-phong-ao", Component: LegacyVirtualOfficeRedirect, handle: { chrome: emptyChrome } },
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },

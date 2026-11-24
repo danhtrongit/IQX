@@ -2,8 +2,8 @@ export type SpaceRoom = "floor" | "office"
 
 export type SpaceLoadingMode = "enter" | "door"
 
-/** Exit duration for full-cover enter loading screen (~350 ms). */
-export const EXIT_DURATION_ENTER_MS = 350
+/** Exit duration for full-cover enter loading screen (matches the 420 ms opacity fade). */
+export const EXIT_DURATION_ENTER_MS = 440
 
 /** Exit duration for door panels sliding open (close ~240 ms + open ~320 ms ≈ 0.56 s). */
 export const EXIT_DURATION_DOOR_MS = 320
