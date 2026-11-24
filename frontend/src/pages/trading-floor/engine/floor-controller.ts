@@ -1624,6 +1624,8 @@ export class FloorController {
         : undefined
     peer.rig.update(stepDt, {
       anim,
+      // Remote players and bots animate at the idle cadence unless the local player is active.
+      ambient: true,
       facingRad: facingToRadians(peer.facing),
       moveFactor: reducedMotion
         ? 0

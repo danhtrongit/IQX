@@ -128,6 +128,9 @@ export function startFloor(
       northMargin: 4.7,
       southMargin: 0.9,
       holdUntilPrepared: true,
+      // One shadow frustum over the whole hall: following the camera re-baked it every frame.
+      shadowFrustum: "room",
+      shadowCasterHeight: 5.5,
       onResize: () => {
         controller?.handleResize()
       },

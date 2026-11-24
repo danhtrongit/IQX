@@ -263,6 +263,23 @@ describe("Adaptive frame pacer & dynamic resolution controllers", () => {
     expect(pacer.shouldRender(8616.6)).toBe(true)
   })
 
+  it("keeps background (ambient) motion at the idle cadence: never deep idle, never full rate", () => {
+    const pacer = createAdaptiveFramePacer({
+      idleFps: 30,
+      deepIdleFps: 20,
+      idleAfterMs: 1500,
+      deepIdleAfterMs: 8000,
+    })
+    pacer.reset(0)
+    for (let t = 2000; t <= 12_000; t += 500) pacer.markAmbient(t)
+    expect(pacer.getMode(12_000)).toBe("idle")
+    expect(pacer.getTargetFps(12_000)).toBe(30)
+    expect(pacer.shouldRender(12_000)).toBe(true)
+    expect(pacer.shouldRender(12_016.6)).toBe(false)
+    // Once background motion stops, deep idle resumes after the usual delay.
+    expect(pacer.getMode(20_500)).toBe("deep_idle")
+  })
+
   it("steps DPR down by 0.25 after 2s over budget and recovers with headroom without exceeding baseDpr", () => {
     const dyn = createDynamicResolutionController({
       baseDpr: 2,

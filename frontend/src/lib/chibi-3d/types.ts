@@ -30,6 +30,11 @@ export interface ChibiUpdateState {
   moveFactor?: number
   animTime?: number
   reducedMotion?: boolean
+  /**
+   * Background actor (remote player, bot): its motion keeps the host at the idle frame cadence
+   * instead of forcing the full display rate. The local player leaves this unset.
+   */
+  ambient?: boolean
 }
 
 export interface ChibiRig {
@@ -438,10 +443,33 @@ export function shortestAngleDiff(from: number, to: number): number {
 
 export const SCENE_HOST_BRIDGE_KEY = "__chibiHostBridge"
 
+/**
+ * Layer holding depth-only "shadow proxy" meshes: per animated pivot, all shadow-casting parts
+ * merged into one mesh. The main camera and raycasters never see this layer; the scene host draws
+ * it (instead of the per-material parts) when it redraws moving shadow casters.
+ */
+export const CHIBI_SHADOW_PROXY_LAYER = 1
+/** `userData` flag on a dynamic caster root whose shadow is fully represented by proxy meshes. */
+export const SHADOW_PROXY_ROOT_FLAG = "__chibiShadowProxies"
+
 export interface ChibiSceneHostBridge {
   markActive: (holdMs?: number) => void
   requestFrame: () => void
+  /** Static scenery changed: the whole directional shadow map re-bakes. */
   markShadowDirty: () => void
+  /**
+   * Background motion (remote players, bots) that should keep rendering at the idle cadence
+   * without forcing the full display rate. Optional: hosts without it fall back to `markActive`.
+   */
+  markAmbient?: (holdMs?: number) => void
+  /**
+   * Registers / unregisters a moving shadow caster (e.g. a walking character root). Registered
+   * casters are left out of the cached static shadow bake and redrawn on top of it, so their
+   * motion never forces a full re-bake. Registering or unregistering re-bakes once.
+   */
+  setDynamicShadowCaster?: (root: THREE.Object3D, dynamic: boolean) => void
+  /** A registered dynamic caster moved: redraw dynamic casters over the cached static shadows. */
+  markDynamicShadowDirty?: () => void
 }
 
 /** Walks up the scene graph to locate an active `ChibiSceneHostBridge` on the owning Scene. */
@@ -465,6 +493,63 @@ export function freezeStaticSubtree(root: THREE.Object3D): void {
   root.traverse((node) => {
     node.matrixAutoUpdate = false
   })
+}
+
+/**
+ * Three.js keys shader programs on per-object features too (instancing, per-instance colour). A
+ * material shared by plain and instanced meshes therefore swaps programs back and forth every
+ * frame, paying a program-cache lookup per swap on the CPU. This gives each extra variant its own
+ * clone (same parameters and texture references, so pixels are identical) so every material maps
+ * to exactly one program. Clones are flagged as shared resources so generic disposal (which would
+ * also dispose the textures they borrow) skips them; call the returned function to release them.
+ */
+export function splitMaterialProgramVariants(root: THREE.Object3D): () => void {
+  const variantOf = (mesh: THREE.Mesh): string =>
+    mesh instanceof THREE.InstancedMesh
+      ? mesh.instanceColor
+        ? "instanced-color"
+        : "instanced"
+      : "mesh"
+  const variantsByMaterial = new Map<THREE.Material, Set<string>>()
+  root.traverse((node) => {
+    const mesh = node as THREE.Mesh
+    if (!mesh.isMesh || !mesh.material || Array.isArray(mesh.material)) return
+    let variants = variantsByMaterial.get(mesh.material)
+    if (!variants) {
+      variants = new Set()
+      variantsByMaterial.set(mesh.material, variants)
+    }
+    variants.add(variantOf(mesh))
+  })
+  const clonesByMaterial = new Map<THREE.Material, Map<string, THREE.Material>>()
+  const clones: THREE.Material[] = []
+  root.traverse((node) => {
+    const mesh = node as THREE.Mesh
+    if (!mesh.isMesh || !mesh.material || Array.isArray(mesh.material)) return
+    const original = mesh.material
+    const variants = variantsByMaterial.get(original)
+    if (!variants || variants.size < 2) return
+    const keep = variants.has("mesh") ? "mesh" : [...variants].sort()[0]
+    const variant = variantOf(mesh)
+    if (variant === keep) return
+    let perVariant = clonesByMaterial.get(original)
+    if (!perVariant) {
+      perVariant = new Map()
+      clonesByMaterial.set(original, perVariant)
+    }
+    let clone = perVariant.get(variant)
+    if (!clone) {
+      clone = original.clone()
+      clone.name = original.name ? `${original.name}#${variant}` : variant
+      ;(clone.userData as Record<string, unknown>)[SHARED_RESOURCE_FLAG] = true
+      perVariant.set(variant, clone)
+      clones.push(clone)
+    }
+    mesh.material = clone
+  })
+  return () => {
+    for (const clone of clones.splice(0)) clone.dispose()
+  }
 }
 
 /** Ensures a geometry has an index buffer so `mergeGeometries` stays compactly indexed instead of expanding 3x-5x. */
