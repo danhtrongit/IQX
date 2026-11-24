@@ -24,6 +24,7 @@ export function FloorUi({
   onRequestOffice?: () => void
 }) {
   const profile = useStore(ui.profile)
+  const profileKnown = useStore(ui.profileKnown)
   const panel = useStore(ui.panel)
   const ready = useStore(ui.ready)
   const queue = useStore(ui.queue)
@@ -38,7 +39,7 @@ export function FloorUi({
           <p>Đang mở cửa Khu Giao Dịch…</p>
         </div>
       )}
-      {!profile && (
+      {profileKnown && !profile && (
         <JoinScreen
           initial={null}
           suggestedName={suggestedName}

@@ -111,6 +111,8 @@ export interface PostsState {
 
 export const ui = {
   profile: new Store<Profile | null>(null),
+  /** The visitor's saved character (or its absence) has been loaded; the join card waits for this. */
+  profileKnown: new Store<boolean>(false),
   /** The visitor is not signed in (guest character): hearts, comments and reports need an account; SACO chat does not. */
   guest: new Store<boolean>(false),
   /** Text of the "Đăng nhập để dùng tính năng này" prompt; null while it is closed. */

@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router"
 
 import { useAuth } from "@/hooks/use-auth"
 import type { RoomDoorHandle } from "@/pages/spaces/door-transition.ts"
+import type { BootProgressFn } from "@/pages/spaces/loading/boot-progress.ts"
 import { SPACES_PATH } from "@/pages/spaces/spaces-url.ts"
 
 import type { OfficeEngineHandle } from "./engine/start-office.ts"
@@ -74,6 +75,8 @@ export interface OfficePageProps {
   onRequestTradingFloor?: (viaDoor?: boolean) => void
   /** Called once the office 3D world (or gate/fallback) is ready to reveal. */
   onRoomReady?: () => void
+  /** Boot progress 0..1 + Vietnamese stage label while the 3D office loads. */
+  onRoomProgress?: BootProgressFn
   /** Publishes the active controller's door exit handle to the Spaces shell. */
   onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
 }
@@ -84,6 +87,7 @@ interface OfficeWorkspaceProps {
   arrivedViaDoor: boolean
   onGoTradingFloor: () => void
   onRoomReady?: () => void
+  onRoomProgress?: BootProgressFn
   onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
 }
 
@@ -93,6 +97,7 @@ function OfficeWorkspace({
   arrivedViaDoor,
   onGoTradingFloor,
   onRoomReady,
+  onRoomProgress,
   onDoorHandleReady,
 }: OfficeWorkspaceProps) {
   const queryClient = useQueryClient()
@@ -204,6 +209,7 @@ function OfficeWorkspace({
   const closeModalRef = useRef(closeModal)
   const onGoTradingFloorRef = useRef(onGoTradingFloor)
   const onRoomReadyRef = useRef(onRoomReady)
+  const onRoomProgressRef = useRef(onRoomProgress)
   const onDoorHandleReadyRef = useRef(onDoorHandleReady)
   const latestEngineStateRef = useRef({
     me,
@@ -225,6 +231,9 @@ function OfficeWorkspace({
   useEffect(() => {
     onRoomReadyRef.current = onRoomReady
   }, [onRoomReady])
+  useEffect(() => {
+    onRoomProgressRef.current = onRoomProgress
+  }, [onRoomProgress])
   useEffect(() => {
     onDoorHandleReadyRef.current = onDoorHandleReady
   }, [onDoorHandleReady])
@@ -314,6 +323,9 @@ function OfficeWorkspace({
           },
           onReady: () => {
             if (!cancelled) onRoomReadyRef.current?.()
+          },
+          onProgress: (progress, stage) => {
+            if (!cancelled) onRoomProgressRef.current?.(progress, stage)
           },
           onError: () => {
             if (!cancelled) {
@@ -530,6 +542,7 @@ export function OfficePage({
   arrivedViaDoor = false,
   onRequestTradingFloor,
   onRoomReady,
+  onRoomProgress,
   onDoorHandleReady,
 }: OfficePageProps = {}) {
   const navigate = useNavigate()
@@ -626,6 +639,7 @@ export function OfficePage({
       arrivedViaDoor={arrivedViaDoor}
       onGoTradingFloor={handleGoFloorViaDoor}
       onRoomReady={onRoomReady}
+      onRoomProgress={onRoomProgress}
       onDoorHandleReady={onDoorHandleReady}
     />
   )

@@ -135,6 +135,8 @@ function createFakeHost(
       frameCb = cb
     },
     renderOnce: vi.fn(),
+    prepare: vi.fn(() => Promise.resolve()),
+    waitForFirstFrame: vi.fn(() => Promise.resolve()),
     resize: vi.fn(),
     dispose: vi.fn(),
     setSuspended: vi.fn(),

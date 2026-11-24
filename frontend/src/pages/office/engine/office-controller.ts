@@ -16,6 +16,12 @@
  * - Respects `prefers-reduced-motion` (no walk bob, no pulsing target ring)
  */
 import { createChibiCharacter } from "@/lib/chibi-3d/character-builder.ts"
+import {
+  runBuildChunked,
+  runBuildSync,
+  type BuildSteps,
+  type ChunkedBuildOptions,
+} from "@/lib/chibi-3d/chunked-build.ts"
 import type { ChibiSceneHost } from "@/lib/chibi-3d/scene-host.ts"
 import {
   logicalToWorld,
@@ -349,13 +355,16 @@ export class OfficeController {
   constructor(
     host: ChibiSceneHost,
     container: HTMLElement,
-    callbacks: OfficeControllerCallbacks
+    callbacks: OfficeControllerCallbacks,
+    /** World already built by the boot sequence (time-sliced); the controller takes ownership. */
+    prebuiltWorld?: OfficeWorld3D
   ) {
     this.host = host
     this.container = container
     this.callbacks = callbacks
     this.pendingDoorArrival = Boolean(callbacks.arrivedViaDoor)
-    this.world3d = new OfficeWorld3D(host.scene, host.world, host.lite)
+    this.world3d =
+      prebuiltWorld ?? new OfficeWorld3D(host.scene, host.world, host.lite)
     this.exitDoor = createChibiPortalDoor({
       signText: "KHU GIAO DỊCH",
       signSubtext: "LỐI RA",
@@ -432,6 +441,12 @@ export class OfficeController {
       zoom: this.host.getTargetZoom(),
       role: this.selfRole,
     })
+  }
+
+  /** Re-flags live canvas textures (meeting screen, standee) after a WebGL context restore. */
+  handleContextRestored(): void {
+    if (this.disposed) return
+    this.world3d.refreshDynamicTextures()
   }
 
   /** Adjusts framing immediately when the canvas container resizes (via ResizeObserver). */
@@ -753,6 +768,15 @@ export class OfficeController {
    * desk indices actually change (avoiding full GPU rebuilds on HUD counter refetches).
    */
   updateTeam(me: OfficeMe): void {
+    runBuildSync(this.updateTeamSteps(me))
+  }
+
+  /** `updateTeam` with the desk/pod rebuild time-sliced (used once during boot behind the loading screen). */
+  updateTeamAsync(me: OfficeMe, opts: ChunkedBuildOptions = {}): Promise<boolean> {
+    return runBuildChunked(this.updateTeamSteps(me), opts)
+  }
+
+  private *updateTeamSteps(me: OfficeMe): BuildSteps {
     if (this.disposed || !me.member || !me.self || !me.team) return
 
     const prevRole = this.selfRole
@@ -798,7 +822,7 @@ export class OfficeController {
         this.host.setWorldSize(this.worldW, this.worldH)
       }
       this.obstacles = buildOfficeObstacles(this.desks)
-      this.world3d.rebuildTeamProps(
+      yield* this.world3d.rebuildTeamPropsSteps(
         me.team.bossName,
         this.desks,
         me.self.userId,

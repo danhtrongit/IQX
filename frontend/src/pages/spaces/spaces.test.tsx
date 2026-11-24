@@ -54,6 +54,16 @@ const mocks = vi.hoisted(() => ({
   officeSocketStop: vi.fn(),
   lastFloorDoorHandle: null as RoomDoorHandle | null,
   lastOfficeDoorHandle: null as RoomDoorHandle | null,
+  /** When true the floor/office engine mocks do not report ready on their own. */
+  deferReady: false,
+  lastFloorOpts: null as null | {
+    onReady?: () => void
+    onProgress?: (progress: number, stage: string) => void
+  },
+  lastOfficeCallbacks: null as null | {
+    onReady?: () => void
+    onProgress?: (progress: number, stage: string) => void
+  },
 }))
 
 vi.mock("@/hooks/use-auth", () => ({
@@ -96,19 +106,21 @@ vi.mock("@/pages/trading-floor/engine/start-floor.ts", () => ({
     opts?: {
       arrivedViaDoor?: boolean
       onReady?: () => void
+      onProgress?: (progress: number, stage: string) => void
       onControllerReady?: (handle: RoomDoorHandle | null) => void
       onDoorHintChange?: (near: boolean) => void
       onDoorRequest?: () => void
     }
   ) => {
     mocks.startFloor(container, opts)
+    mocks.lastFloorOpts = opts ?? null
     const handle: RoomDoorHandle = {
       beginDoorExit: vi.fn((onFadeStart: () => void) => onFadeStart()),
     }
     mocks.lastFloorDoorHandle = handle
     ui.ready.set(true)
     opts?.onControllerReady?.(handle)
-    opts?.onReady?.()
+    if (!mocks.deferReady) opts?.onReady?.()
     return () => {
       mocks.startFloorCleanup()
       mocks.floorSocketStop()
@@ -132,13 +144,15 @@ vi.mock("@/pages/office/engine/start-office.ts", () => ({
     callbacks?: {
       arrivedViaDoor?: boolean
       onReady?: () => void
+      onProgress?: (progress: number, stage: string) => void
       onDoorRequest?: () => void
     }
   ) => {
     mocks.startOffice(container, callbacks)
+    mocks.lastOfficeCallbacks = callbacks ?? null
     const beginDoorExit = vi.fn((onFadeStart: () => void) => onFadeStart())
     mocks.lastOfficeDoorHandle = { beginDoorExit }
-    callbacks?.onReady?.()
+    if (!mocks.deferReady) callbacks?.onReady?.()
     return {
       setZoomDelta: vi.fn(),
       updateTeam: vi.fn(),
@@ -165,7 +179,7 @@ vi.mock("@/pages/office/office-socket.ts", () => ({
   }),
 }))
 
-const { SpacesPage } = await import("./SpacesPage.tsx")
+const { SpacesPage, LOADING_SAFETY_TIMEOUT_MS } = await import("./SpacesPage.tsx")
 
 const MEMBER_ME: OfficeMe = {
   member: true,
@@ -393,6 +407,9 @@ beforeEach(() => {
   mocks.officeSocketStop.mockReset()
   mocks.lastFloorDoorHandle = null
   mocks.lastOfficeDoorHandle = null
+  mocks.deferReady = false
+  mocks.lastFloorOpts = null
+  mocks.lastOfficeCallbacks = null
 })
 
 afterEach(() => {
@@ -638,5 +655,96 @@ describe("SpacesPage room switch, full teardown, back/forward, and access rules"
       "/khu-giao-dich?phong=van-phong&modal=meet"
     )
     officeModalView.unmount()
+  })
+})
+
+describe("SpacesPage loading screen wiring", () => {
+  it("covers first entry with the enter-mode screen, shows engine progress + stage, and leaves only after ready", async () => {
+    stubReducedMotion(true)
+    mocks.deferReady = true
+    renderSpaces(["/khu-giao-dich"])
+
+    const screenEl = await screen.findByTestId("space-loading-screen")
+    expect(screenEl.dataset.mode).toBe("enter")
+    expect(screenEl.dataset.room).toBe("floor")
+    await waitFor(() => expect(mocks.lastFloorOpts).not.toBeNull())
+
+    act(() => {
+      mocks.lastFloorOpts?.onProgress?.(0.42, "Đang dựng sàn giao dịch")
+    })
+    expect(screen.getByTestId("loading-stage-text").textContent).toBe(
+      "Đang dựng sàn giao dịch"
+    )
+    expect(
+      screen.getByRole("progressbar").getAttribute("aria-valuenow")
+    ).toBe("42")
+
+    act(() => {
+      mocks.lastFloorOpts?.onProgress?.(0.8, "Đang chuẩn bị ánh sáng (4/10)")
+    })
+    expect(screen.getByTestId("loading-stage-text").textContent).toBe(
+      "Đang chuẩn bị ánh sáng (4/10)"
+    )
+    // Still covering the room until the engine reports its first real frame.
+    expect(screen.getByTestId("space-loading-screen")).toBeTruthy()
+
+    act(() => {
+      mocks.lastFloorOpts?.onReady?.()
+    })
+    await waitFor(() =>
+      expect(screen.queryByTestId("space-loading-screen")).toBeNull()
+    )
+  })
+
+  it("never traps the user: the screen finishes after the safety timeout even if the room never reports ready", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      stubReducedMotion(true)
+      mocks.deferReady = true
+      renderSpaces(["/khu-giao-dich"])
+      expect(await screen.findByTestId("space-loading-screen")).toBeTruthy()
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(LOADING_SAFETY_TIMEOUT_MS + 500)
+      })
+      await waitFor(() =>
+        expect(screen.queryByTestId("space-loading-screen")).toBeNull()
+      )
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("uses the door-mode screen for room switches with the office team name, and ignores progress from the room being left", async () => {
+    stubReducedMotion(true)
+    const user = userEvent.setup()
+    renderSpaces(["/khu-giao-dich"])
+    await waitFor(() =>
+      expect(screen.queryByTestId("space-loading-screen")).toBeNull()
+    )
+
+    mocks.deferReady = true
+    const floorOpts = mocks.lastFloorOpts
+    await user.click(await screen.findByTestId("floor-go-office-btn"))
+
+    const doorEl = await screen.findByTestId("space-loading-screen")
+    expect(doorEl.dataset.mode).toBe("door")
+    expect(doorEl.dataset.room).toBe("office")
+    await waitFor(() => expect(mocks.lastOfficeCallbacks).not.toBeNull())
+    expect(screen.getByText(MEMBER_ME.team!.name)).toBeTruthy()
+
+    act(() => {
+      // A late report from the torn-down floor must not leak into the office screen.
+      floorOpts?.onProgress?.(0.9, "Đang dựng sàn giao dịch")
+      mocks.lastOfficeCallbacks?.onProgress?.(0.3, "Đang dựng văn phòng")
+    })
+    expect(screen.getByText("Đang dựng văn phòng")).toBeTruthy()
+
+    act(() => {
+      mocks.lastOfficeCallbacks?.onReady?.()
+    })
+    await waitFor(() =>
+      expect(screen.queryByTestId("space-loading-screen")).toBeNull()
+    )
+    expect(screen.getByTestId("office-page")).toBeTruthy()
   })
 })

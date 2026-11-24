@@ -209,6 +209,11 @@ export interface FloorControllerOptions {
   onDoorHintChange?: (near: boolean) => void
   /** Invoked when the player clicks the 3D door or presses E while near it. */
   onDoorRequest?: () => void
+  /**
+   * Overlay + world already built by the boot sequence (time-sliced behind the loading screen).
+   * The controller takes ownership and disposes both.
+   */
+  prebuilt?: { overlay: OverlayLayer; world3d: FloorWorld3D }
 }
 
 interface FloorDoorExitState {
@@ -279,10 +284,12 @@ export class FloorController {
     const doorObs = FLOOR_OFFICE_DOOR.obstacle
     this.nav.blockRect(doorObs.x, doorObs.y, doorObs.w, doorObs.h)
 
-    this.overlay = new OverlayLayer(container)
-    this.world3d = new FloorWorld3D(host.scene, this.overlay, {
-      lite: host.lite,
-    })
+    this.overlay = options.prebuilt?.overlay ?? new OverlayLayer(container)
+    this.world3d =
+      options.prebuilt?.world3d ??
+      new FloorWorld3D(host.scene, this.overlay, {
+        lite: host.lite,
+      })
     this.fx3d = new FloorFx3D(host.scene, FLOOR_WORLD_CONFIG, this.overlay, {
       lite: host.lite,
     })

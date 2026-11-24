@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { createElement } from "react"
 import * as THREE from "three"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -39,6 +39,7 @@ vi.mock("@/pages/demo-trading/shop/use-shop", () => ({
 
 const { JoinScreen } = await import("../ui/JoinScreen.tsx")
 const { Hud } = await import("../ui/Hud.tsx")
+const { FloorUi } = await import("../ui/FloorUi.tsx")
 
 const origMatchMedia = window.matchMedia
 
@@ -140,6 +141,8 @@ function createFakeSceneHost(opts?: {
       frameCb = cb
     },
     renderOnce: vi.fn(),
+    prepare: vi.fn(() => Promise.resolve()),
+    waitForFirstFrame: vi.fn(() => Promise.resolve()),
     resize: vi.fn(),
     dispose: vi.fn(),
   }
@@ -227,6 +230,33 @@ describe("startFloor WebGL fallback & JoinScreen Chibi 3D preview", () => {
     container.remove()
   })
 
+  it("keeps the JoinScreen (and its 3D preview) unmounted until the profile is known to be absent", () => {
+    ui.guest.set(true)
+    render(createElement(FloorUi, { suggestedName: "Minh Anh" }))
+    // Profile not loaded yet: a returning player must not see the join card flash up.
+    expect(
+      screen.queryByRole("button", { name: "Vào khu giao dịch" })
+    ).toBeNull()
+
+    act(() => {
+      ui.profileKnown.set(true)
+    })
+    expect(
+      screen.getByRole("button", { name: "Vào khu giao dịch" })
+    ).toBeTruthy()
+  })
+
+  it("never mounts the JoinScreen for a player whose saved profile arrives with the known flag", () => {
+    render(createElement(FloorUi, { suggestedName: "Minh Anh" }))
+    act(() => {
+      ui.profile.set({ name: "Minh Anh", avatar: "male01", color: "default" })
+      ui.profileKnown.set(true)
+    })
+    expect(
+      screen.queryByRole("button", { name: "Vào khu giao dịch" })
+    ).toBeNull()
+  })
+
   it("renders JoinScreen with live ChibiAvatar3DPreview and portrait cards", () => {
     ui.guest.set(true)
     const onDone = vi.fn()
@@ -307,7 +337,66 @@ describe("startFloor WebGL fallback & JoinScreen Chibi 3D preview", () => {
   })
 })
 
+function sceneSignature(root: THREE.Object3D): string[] {
+  const out: string[] = []
+  root.traverse((o) => {
+    const geo = (o as THREE.Mesh).geometry as THREE.BufferGeometry | undefined
+    const verts = geo?.attributes?.position?.count ?? 0
+    const p = o.position
+    out.push(`${o.type}:${o.name}:${verts}:${p.x.toFixed(3)},${p.y.toFixed(3)},${p.z.toFixed(3)}`)
+  })
+  return out
+}
+
 describe("FloorWorld3D & FloorFx3D graphics, lite mode, and prefers-reduced-motion", () => {
+  it("time-sliced boot build (deferBuild + buildAsync) produces the same scene as the synchronous build", async () => {
+    const build = async (deferred: boolean) => {
+      const scene = new THREE.Scene()
+      const container = document.createElement("div")
+      document.body.appendChild(container)
+      const overlay = new OverlayLayer(container)
+      const world3d = new FloorWorld3D(scene, overlay, { lite: false, deferBuild: deferred })
+      if (deferred) {
+        expect(world3d.hotspots.length).toBe(0)
+        const progress: number[] = []
+        const yieldFn = vi.fn(() => Promise.resolve())
+        await expect(
+          world3d.buildAsync({ budgetMs: 1, yieldFn, onProgress: (f) => progress.push(f) })
+        ).resolves.toBe(true)
+        expect(yieldFn).toHaveBeenCalled()
+        expect(progress.at(-1)).toBe(1)
+      }
+      const result = { sig: sceneSignature(scene), hotspots: world3d.hotspots.length }
+      world3d.dispose()
+      overlay.dispose()
+      container.remove()
+      return result
+    }
+    const sync = await build(false)
+    const sliced = await build(true)
+    expect(sliced.hotspots).toBe(sync.hotspots)
+    expect(sliced.sig).toEqual(sync.sig)
+  })
+
+  it("disposes a world abandoned mid-build without throwing", async () => {
+    const scene = new THREE.Scene()
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const overlay = new OverlayLayer(container)
+    const world3d = new FloorWorld3D(scene, overlay, { deferBuild: true })
+    let calls = 0
+    const finished = await world3d.buildAsync({
+      budgetMs: 1,
+      yieldFn: () => Promise.resolve(),
+      isCancelled: () => ++calls >= 2,
+    })
+    expect(finished).toBe(false)
+    expect(() => world3d.dispose()).not.toThrow()
+    expect(scene.getObjectByName("trading-floor-world-3d")).toBeUndefined()
+    overlay.dispose()
+    container.remove()
+  })
+
   it("builds Trading Floor world with skirting/columns/ticker/contact-shadows in normal & lite mode and disposes cleanly", () => {
     for (const lite of [false, true]) {
       const scene = new THREE.Scene()

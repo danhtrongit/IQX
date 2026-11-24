@@ -1,6 +1,8 @@
 import * as THREE from "three"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import { runBuildChunked } from "@/lib/chibi-3d/chunked-build.ts"
+
 import {
   computeCameraClampBounds,
   type ChibiSceneHost,
@@ -252,7 +254,8 @@ describe("OfficeController & startOffice bug fixes & HUD-aware framing", () => {
     const container = document.createElement("div")
     document.body.appendChild(container)
     const { host } = createMockHost()
-    const rebuildSpy = vi.spyOn(OfficeWorld3D.prototype, "rebuildTeamProps")
+    // updateTeam drives the step-wise rebuild (same generator the time-sliced boot uses)
+    const rebuildSpy = vi.spyOn(OfficeWorld3D.prototype, "rebuildTeamPropsSteps")
 
     const controller = new OfficeController(host, container, {})
     const me1 = makeStaffMe()
@@ -615,6 +618,47 @@ describe("OfficeController & startOffice bug fixes & HUD-aware framing", () => {
     expect(liteScene.getObjectByName("office-team-banner-rug")).toBeTruthy()
     liteWorld.dispose()
     container.remove()
+  })
+
+  it("time-sliced boot build (architecture + team pods) produces the same scene as the synchronous build", async () => {
+    const worldCfg = () => ({
+      logicalW: OFFICE_BASE_W,
+      logicalH: OFFICE_BASE_H,
+      scale: OFFICE_WORLD_SCALE,
+    })
+    const desks = buildDeskPositions(makeStaffMe().members)
+    const syncScene = new THREE.Scene()
+    const syncWorld = new OfficeWorld3D(syncScene, worldCfg(), false)
+    syncWorld.rebuildTeamProps("Lê Huy", desks, "u-staff-1", OFFICE_BASE_H)
+
+    const slicedScene = new THREE.Scene()
+    const slicedWorld = new OfficeWorld3D(slicedScene, worldCfg(), false, {
+      deferBuild: true,
+    })
+    const yieldFn = vi.fn(() => Promise.resolve())
+    await expect(slicedWorld.buildAsync({ budgetMs: 1, yieldFn })).resolves.toBe(true)
+    await expect(
+      runBuildChunked(
+        slicedWorld.rebuildTeamPropsSteps("Lê Huy", desks, "u-staff-1", OFFICE_BASE_H),
+        { budgetMs: 1, yieldFn }
+      )
+    ).resolves.toBe(true)
+    expect(yieldFn.mock.calls.length).toBeGreaterThan(5)
+
+    const sig = (root: THREE.Object3D) => {
+      const out: string[] = []
+      root.traverse((o) => {
+        const geo = (o as THREE.Mesh).geometry as THREE.BufferGeometry | undefined
+        const p = o.position
+        out.push(
+          `${o.type}:${o.name}:${geo?.attributes?.position?.count ?? 0}:${p.x.toFixed(3)},${p.y.toFixed(3)},${p.z.toFixed(3)}`
+        )
+      })
+      return out
+    }
+    expect(sig(slicedScene)).toEqual(sig(syncScene))
+    syncWorld.dispose()
+    slicedWorld.dispose()
   })
 
   it("respects prefers-reduced-motion (no pulsing target ring & no walk bob) and releases WebGL context on dispose (Bugs 5e & 5g)", async () => {
