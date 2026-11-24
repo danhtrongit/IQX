@@ -303,6 +303,27 @@ function releaseSubtreeSharedRefs(refs: RetainedSharedRefs): void {
       THREE.Material.prototype.dispose.call(entry.material)
     }
   }
+  pruneUnreferencedSharedCaches()
+}
+
+/** Reclaims any cached geometry/material entries with refCount === 0 (e.g. optional branch resources not mounted). */
+function pruneUnreferencedSharedCaches(): void {
+  for (const [k, entry] of sharedGeometries) {
+    if (entry.refCount > 0) continue
+    sharedGeometries.delete(k)
+    if (entry.partOwner) {
+      entry.partOwner.cache.delete(entry.partOwner.key)
+    }
+    THREE.BufferGeometry.prototype.dispose.call(entry.geometry)
+  }
+  for (const [k, entry] of sharedMaterials) {
+    if (entry.refCount > 0) continue
+    sharedMaterials.delete(k)
+    for (const tex of entry.textures) {
+      releaseCachedTexture(tex)
+    }
+    THREE.Material.prototype.dispose.call(entry.material)
+  }
 }
 
 /** Explicitly releases all shared cached furniture geometries, materials, and procedural surface maps. */
@@ -3088,31 +3109,17 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
     0.58,
     0.04
   )
-  const drawerFaceMat = matteMat(
-    variant === "boss" ? "#6d4628" : "#a3784a",
-    0.52,
-    0.05
-  )
-  const legMat = metalMat("#27334a", 0.34, 0.68)
   const handleMat = metalMat(
     variant === "boss" ? "#e9b949" : "#b8c4d4",
     0.24,
     0.84
   )
-  const blotterMat = matteMat(
-    variant === "boss" ? "#162138" : "#253147",
-    0.72,
-    0.06
-  )
-  const bezelMat = matteMat("#161f33", 0.34, 0.22)
-  const standMetalMat = metalMat("#64748b", 0.28, 0.78)
-  const keyBaseMat = matteMat("#cfd7e3", 0.48, 0.08)
-  const keyCapMat = matteMat("#f8fafc", 0.56, 0.04)
-  const powerLedMat = glowMat("#34c38f", 1.2)
-  const mugMat = matteMat("#faf8f5", 0.24, 0.06)
-  const mugRimMat = matteMat("#c0392b", 0.34, 0.06)
-  const coffeeMat = matteMat("#3f1f0e", 0.3, 0.04)
-  const coasterMat = matteMat("#7a5230", 0.68, 0.04)
+  const getDrawerFaceMat = (): THREE.MeshStandardMaterial =>
+    matteMat(variant === "boss" ? "#6d4628" : "#a3784a", 0.52, 0.05)
+  const getLegMat = (): THREE.MeshStandardMaterial =>
+    metalMat("#27334a", 0.34, 0.68)
+  const getBezelMat = (): THREE.MeshStandardMaterial =>
+    matteMat("#161f33", 0.34, 0.22)
 
   const deskH = 0.76
   const topThick = 0.068
@@ -3121,6 +3128,8 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
   const addDrawerPedestal = (centerX: number, pedW: number): void => {
     const pedH = deskH - 0.08
     const pedD = depth * 0.8
+    const legMat = getLegMat()
+    const drawerFaceMat = getDrawerFaceMat()
     // Foot glides + bevelled pedestal carcass
     batcher.add(
       roundedBox(pedW - 0.04, 0.04, pedD - 0.04, 0.01, lite),
@@ -3175,6 +3184,7 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
       [0, deskH * 0.64, depth * 0.348]
     )
   } else if (variant === "staff") {
+    const legMat = getLegMat()
     const pedW = Math.min(0.4, width * 0.23)
     addDrawerPedestal(width / 2 - pedW / 2 - 0.05, pedW)
     // Modern metal sled leg frame on left side
@@ -3244,6 +3254,16 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
   }[] = []
 
   if (showMonitors) {
+    const blotterMat = matteMat(
+      variant === "boss" ? "#162138" : "#253147",
+      0.72,
+      0.06
+    )
+    const bezelMat = getBezelMat()
+    const standMetalMat = metalMat("#64748b", 0.28, 0.78)
+    const keyBaseMat = matteMat("#cfd7e3", 0.48, 0.08)
+    const keyCapMat = matteMat("#f8fafc", 0.56, 0.04)
+    const powerLedMat = glowMat("#34c38f", 1.2)
     // Soft leather desk blotter pad
     const blotterW = Math.min(width * 0.56, 1.06)
     const blotterD = Math.min(depth * 0.44, 0.4)
@@ -3350,6 +3370,7 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
 
     // Executive boss desk accents: brass pen cup & leather portfolio on left wing
     if (variant === "boss" && width >= 2.2) {
+      const accentPenMat = matteMat("#c0392b", 0.34, 0.06)
       const px = -width * 0.37
       const pz = -depth * 0.12
       batcher.add(
@@ -3365,7 +3386,7 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
       )
       batcher.add(
         new THREE.CylinderGeometry(0.007, 0.007, 0.145, 6),
-        mugRimMat,
+        accentPenMat,
         [px + 0.014, topSurfaceY + 0.082, pz + 0.008],
         [-0.1, 0, -0.18]
       )
@@ -3445,6 +3466,10 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
 
   // Cozy lathe-turned coffee mug with handle on wooden coaster
   if (opts.hasMug ?? variant === "boss") {
+    const mugMat = matteMat("#faf8f5", 0.24, 0.06)
+    const mugRimMat = matteMat("#c0392b", 0.34, 0.06)
+    const coffeeMat = matteMat("#3f1f0e", 0.3, 0.04)
+    const coasterMat = matteMat("#7a5230", 0.68, 0.04)
     const mx = width * 0.35
     const mz = depth * 0.14
     batcher.add(
@@ -3477,7 +3502,7 @@ export function createOfficeDesk(opts: OfficeDeskOptions): DisposableProp {
     )
     batcher.add(
       roundedBox(plateW, 0.215, 0.042, 0.014, lite),
-      bezelMat,
+      getBezelMat(),
       [0, topSurfaceY + 0.105, depth * 0.42],
       [-0.22, 0, 0]
     )
@@ -3811,20 +3836,26 @@ export function createBookshelf(
 
   batcher.flushInto(group)
 
-  const instWhiteMat = matteMat("#ffffff", 0.56, 0.05)
-  const instLabelMat = matteMat("#ffffff", 0.45, 0.02)
-  const instBoxMat = matteMat("#ffffff", 0.78, 0.02)
-
-  emitInstancedGroup(group, getUnitBookGeometry(lite), instWhiteMat, bookInstances)
-  emitInstancedGroup(group, getUnitBoxGeometry(lite), instBoxMat, boxInstances)
-  emitInstancedGroup(group, getUnitBoxGeometry(lite), instBoxMat, lidInstances)
-  emitInstancedGroup(
-    group,
-    getUnitBoxGeometry(true),
-    instLabelMat,
-    labelInstances,
-    false
-  )
+  if (bookInstances.length > 0) {
+    const instWhiteMat = matteMat("#ffffff", 0.56, 0.05)
+    emitInstancedGroup(group, getUnitBookGeometry(lite), instWhiteMat, bookInstances)
+  }
+  if (boxInstances.length > 0 || lidInstances.length > 0) {
+    const instBoxMat = matteMat("#ffffff", 0.78, 0.02)
+    const unitBox = getUnitBoxGeometry(lite)
+    emitInstancedGroup(group, unitBox, instBoxMat, boxInstances)
+    emitInstancedGroup(group, unitBox, instBoxMat, lidInstances)
+  }
+  if (labelInstances.length > 0) {
+    const instLabelMat = matteMat("#ffffff", 0.45, 0.02)
+    emitInstancedGroup(
+      group,
+      getUnitBoxGeometry(true),
+      instLabelMat,
+      labelInstances,
+      false
+    )
+  }
 
   return wrapProp(group)
 }
@@ -3861,12 +3892,6 @@ export function createConferenceTable(
   const trayMat = metalMat("#475569", 0.3, 0.78)
   const puckMat = matteMat("#182032", 0.36, 0.24)
   const ledMat = glowMat("#34c38f", 1.15)
-  const folderMat = matteMat("#1e3a5f", 0.52, 0.06)
-  const paperMat = matteMat("#f8fafc", 0.65, 0.02)
-  const glassMat = matteMat("#d8eefc", 0.14, 0.1, {
-    transparent: true,
-    opacity: 0.46,
-  })
 
   const tableH = 0.76
   const straightW = Math.max(0.2, width - depth)
@@ -3940,6 +3965,12 @@ export function createConferenceTable(
 
   // Subtle tabletop meeting props (notepads & carafe)
   if (!lite && width >= 2.6) {
+    const folderMat = matteMat("#1e3a5f", 0.52, 0.06)
+    const paperMat = matteMat("#f8fafc", 0.65, 0.02)
+    const glassMat = matteMat("#d8eefc", 0.14, 0.1, {
+      transparent: true,
+      opacity: 0.46,
+    })
     for (const [fx, fz, yaw] of [
       [-width * 0.28, depth * 0.26, 0.08],
       [width * 0.26, -depth * 0.26, -0.1],

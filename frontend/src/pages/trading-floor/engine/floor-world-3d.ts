@@ -306,6 +306,7 @@ function mergeStaticPropsInto(
         return
       }
       const cloned = node.geometry.clone()
+      cloned.userData = {}
       cloned.applyMatrix4(node.matrixWorld)
       const key = `${node.material.uuid}:${node.castShadow ? 1 : 0}:${node.receiveShadow ? 1 : 0}`
       let bucket = buckets.get(key)
@@ -529,7 +530,11 @@ export class FloorWorld3D {
   readonly interacts: Interact[] = []
 
   private readonly lite: boolean
+  private readonly hostBridge: ChibiSceneHostBridge | null
+  private readonly staticGroup: THREE.Group
   private readonly props: DisposableProp[] = []
+  private readonly retainedCachedTextures: THREE.Texture[] = []
+  private readonly pendingContactShadows: PendingContactShadow[] = []
   private readonly ledCanvas: HTMLCanvasElement
   private readonly sacoCanvas: HTMLCanvasElement
   private readonly tickerCanvas: HTMLCanvasElement
@@ -537,16 +542,41 @@ export class FloorWorld3D {
   private readonly ledBoard: LiveBoardProp
   private readonly sacoBoard: LiveBoardProp
   private readonly aoTextures: THREE.Texture[] = []
+  private lastMarketSig = ""
+  private lastPostsSig = ""
 
   private readonly deityRig: ChibiRig
   private readonly deityLogical = { x: 1024, y: 360 }
+  private readonly deityWorldPt: { x: number; z: number }
   private readonly shrineLight: THREE.PointLight | null
   private readonly shrineSparkGeo: THREE.OctahedronGeometry
+  private readonly shrineSparkMat: THREE.MeshBasicMaterial
+  private readonly shrineSparkMesh: THREE.InstancedMesh
+  private readonly shrineSparkCap: number
   private readonly shrineSparks: ShrineSpark[] = []
+  private readonly shrineSparkPool: ShrineSpark[] = []
+  private shrineSparkLastCount = 0
   private shrineSparkAccum = 0
   private deityWaveUntilS = 0
   private shrinePulseS = 0
   private readonly nearDeity = new Set<string>()
+  private readonly presentVisitorsScratch = new Set<string>()
+  private readonly greetDedupScratch = new Set<string>()
+  private readonly deityUpdateState: ChibiUpdateState = {
+    anim: "idle",
+    facingRad: facingToRadians("s"),
+    animTime: 0,
+  }
+  private readonly receptionistUpdateState: ChibiUpdateState = {
+    anim: "idle",
+    facingRad: facingToRadians(RECEPTIONIST.facing),
+    animTime: 0,
+  }
+  private readonly statueUpdateState: ChibiUpdateState = {
+    anim: "statue",
+    facingRad: facingToRadians("s"),
+    animTime: 0,
+  }
   private greetQueue: string[] = []
   private deityFreeAtMs = 0
 
@@ -560,11 +590,39 @@ export class FloorWorld3D {
     opts?: FloorWorld3DOptions
   ) {
     this.lite = opts?.lite ?? false
+    this.hostBridge = getSceneHostBridge(scene)
     this.group = new THREE.Group()
     this.group.name = "trading-floor-world-3d"
     scene.add(this.group)
 
+    this.staticGroup = new THREE.Group()
+    this.staticGroup.name = "trading-floor-static-world"
+    this.group.add(this.staticGroup)
+
+    this.deityWorldPt = logicalToWorld(
+      this.deityLogical.x,
+      this.deityLogical.y,
+      FLOOR_WORLD_CONFIG
+    )
+
+    this.shrineSparkCap = this.lite ? 14 : 48
     this.shrineSparkGeo = new THREE.OctahedronGeometry(0.07, 0)
+    this.shrineSparkMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.92,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+    this.shrineSparkMesh = new THREE.InstancedMesh(
+      this.shrineSparkGeo,
+      this.shrineSparkMat,
+      this.shrineSparkCap
+    )
+    this.shrineSparkMesh.name = "shrine-sparks-instanced"
+    this.shrineSparkMesh.count = 0
+    this.shrineSparkMesh.frustumCulled = false
+    this.group.add(this.shrineSparkMesh)
 
     this.buildArchitecture()
     this.buildZoneDecals()
@@ -574,10 +632,12 @@ export class FloorWorld3D {
     this.ledCanvas.width = 1024
     this.ledCanvas.height = 280
     drawLedMarketBoard(this.ledCanvas, null, null)
-    this.ledBoard = createWallBoardFrame(10.8, 2.86, this.ledCanvas, "#e9b949")
+    this.ledBoard = createWallBoardFrame(10.8, 2.86, this.ledCanvas, "#e9b949", {
+      lite: this.lite,
+    })
     const ledPt = logicalToWorld(BOARDS.led.x, WALL_H, FLOOR_WORLD_CONFIG)
     this.ledBoard.group.position.set(ledPt.x, 2.6, ledPt.z + 0.14)
-    this.group.add(this.ledBoard.group)
+    this.staticGroup.add(this.ledBoard.group)
     this.props.push(this.ledBoard)
     this.registerHotspot(this.ledBoard.group, BOARDS.led.interact, 10)
 
@@ -586,28 +646,76 @@ export class FloorWorld3D {
     this.tickerCanvas.height = 48
     drawTickerStrip(this.tickerCanvas, null, null)
     this.tickerTexture = this.mountTickerStrip(ledPt.x, ledPt.z + 0.17, 10.95)
+    this.lastMarketSig = this.computeMarketSignature(null, null)
 
     // Live SACO Nhận định wall board
     this.sacoCanvas = document.createElement("canvas")
     this.sacoCanvas.width = 768
     this.sacoCanvas.height = 288
     drawSacoBoard(this.sacoCanvas, [])
-    this.sacoBoard = createWallBoardFrame(7.4, 2.74, this.sacoCanvas, "#e9b949")
+    this.sacoBoard = createWallBoardFrame(7.4, 2.74, this.sacoCanvas, "#e9b949", {
+      lite: this.lite,
+    })
     const sacoPt = logicalToWorld(BOARDS.saco.x, WALL_H, FLOOR_WORLD_CONFIG)
     this.sacoBoard.group.position.set(sacoPt.x, 2.58, sacoPt.z + 0.14)
-    this.group.add(this.sacoBoard.group)
+    this.staticGroup.add(this.sacoBoard.group)
     this.props.push(this.sacoBoard)
     this.registerHotspot(this.sacoBoard.group, BOARDS.saco.interact, 10)
+    this.lastPostsSig = this.computePostsSignature([])
 
     // Mount contact shadows under props & wall edges
     const ovalShadowTex = createContactShadowTexture("oval")
     const boxShadowTex = createContactShadowTexture("box")
     this.aoTextures.push(ovalShadowTex, boxShadowTex)
 
-    // Mount all static furniture props & shrine from PLACEMENTS
+    // Mount static furniture props from PLACEMENTS (instancing plants & merging non-interactive props)
+    const tallPlantTransforms: InstancedPropTransform[] = []
+    const smallPlantTransforms: InstancedPropTransform[] = []
+    const mergeableProps: DisposableProp[] = []
+
     for (const p of PLACEMENTS) {
       if (p.id.startsWith("statue-") || p.id === "thantai") continue
-      this.placeFurniture(p, ovalShadowTex, boxShadowTex)
+      const isTallPlant =
+        !p.interact && (p.placeholder === "plant" || p.art === "plant_tall")
+      const isSmallPlant =
+        !p.interact &&
+        (p.placeholder === "plant-small" || p.art === "plant_small")
+      if (isTallPlant || isSmallPlant) {
+        const centerY = p.foot ? p.y - p.foot[1] / 2 : p.y - p.h / 2
+        const pt = logicalToWorld(p.x, centerY, FLOOR_WORLD_CONFIG)
+        if (isTallPlant) {
+          tallPlantTransforms.push({ x: pt.x, z: pt.z })
+          this.addContactShadow(pt.x, pt.z, 1.05, 1.05, ovalShadowTex, 0.62)
+        } else {
+          smallPlantTransforms.push({ x: pt.x, z: pt.z })
+          this.addContactShadow(pt.x, pt.z, 0.78, 0.78, ovalShadowTex, 0.58)
+        }
+        continue
+      }
+      const mounted = this.placeFurniture(p, ovalShadowTex, boxShadowTex)
+      if (mounted && !p.interact) {
+        mergeableProps.push(mounted)
+      }
+    }
+
+    if (tallPlantTransforms.length > 0) {
+      const tallInst = createInstancedPottedPlants("tall", tallPlantTransforms, {
+        lite: this.lite,
+      })
+      this.staticGroup.add(tallInst.group)
+      this.props.push(tallInst)
+    }
+    if (smallPlantTransforms.length > 0) {
+      const smallInst = createInstancedPottedPlants(
+        "small",
+        smallPlantTransforms,
+        { lite: this.lite }
+      )
+      this.staticGroup.add(smallInst.group)
+      this.props.push(smallInst)
+    }
+    if (mergeableProps.length > 0) {
+      mergeStaticPropsInto(mergeableProps, this.staticGroup)
     }
 
     // Mount Thần Tài Shrine archway + animated Thần Tài NPC + dais contact shadow
@@ -620,7 +728,7 @@ export class FloorWorld3D {
     const shrinePt = logicalToWorld(1024, 344, FLOOR_WORLD_CONFIG)
     shrineProp.group.position.set(shrinePt.x, 0, shrinePt.z)
     shrineProp.group.scale.setScalar(1.06)
-    this.group.add(shrineProp.group)
+    this.staticGroup.add(shrineProp.group)
     this.props.push(shrineProp)
     this.addContactShadow(shrinePt.x, shrinePt.z - 0.25, 5.1, 2.25, boxShadowTex, 0.72)
 
@@ -631,12 +739,11 @@ export class FloorWorld3D {
       lite: this.lite,
     }
     this.deityRig = createChibiCharacter(deitySpec)
-    const deityPt = logicalToWorld(
-      this.deityLogical.x,
-      this.deityLogical.y,
-      FLOOR_WORLD_CONFIG
+    this.deityRig.root.position.set(
+      this.deityWorldPt.x,
+      0.19,
+      this.deityWorldPt.z
     )
-    this.deityRig.root.position.set(deityPt.x, 0.19, deityPt.z)
     this.group.add(this.deityRig.root)
 
     if (thanTaiPlacement.interact) {
@@ -646,13 +753,17 @@ export class FloorWorld3D {
 
     if (!this.lite) {
       this.shrineLight = new THREE.PointLight(0xffcf6e, 2.2, 11.5, 1.5)
-      this.shrineLight.position.set(deityPt.x, 2.55, deityPt.z + 0.7)
+      this.shrineLight.position.set(
+        this.deityWorldPt.x,
+        2.55,
+        this.deityWorldPt.z + 0.7
+      )
       this.group.add(this.shrineLight)
 
       // Subtle cool-cyan trading-hall bounce light near the LED wall
       const ledBounce = new THREE.PointLight(0x8ecaff, 0.55, 10, 1.6)
       ledBounce.position.set(ledPt.x, 2.4, ledPt.z + 2.4)
-      this.group.add(ledBounce)
+      this.staticGroup.add(ledBounce)
     } else {
       this.shrineLight = null
     }
@@ -688,6 +799,11 @@ export class FloorWorld3D {
 
     // Mount 3 Hall of Fame podiums & initial empty statues
     this.buildStatues(overlay, boxShadowTex)
+
+    // Flush batched contact shadows and lock static matrices once
+    this.flushContactShadows()
+    freezeStaticSubtree(this.staticGroup)
+    this.hostBridge?.markShadowDirty()
   }
 
   private addContactShadow(
@@ -698,18 +814,43 @@ export class FloorWorld3D {
     tex: THREE.Texture,
     opacity = 0.65
   ): void {
-    const mat = new THREE.MeshBasicMaterial({
-      map: tex,
-      transparent: true,
-      opacity,
-      depthWrite: false,
-      polygonOffset: true,
-      polygonOffsetFactor: -1,
-    })
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat)
-    mesh.rotation.x = -Math.PI / 2
-    mesh.position.set(wx, 0.009, wz)
-    this.group.add(mesh)
+    this.pendingContactShadows.push({ wx, wz, w, d, tex, opacity })
+  }
+
+  private flushContactShadows(): void {
+    if (this.pendingContactShadows.length === 0) return
+    const buckets = new Map<
+      string,
+      { tex: THREE.Texture; opacity: number; geos: THREE.BufferGeometry[] }
+    >()
+    for (const s of this.pendingContactShadows.splice(0)) {
+      const opacityKey = Math.round(s.opacity * 100)
+      const key = `${s.tex.uuid}:${opacityKey}`
+      let bucket = buckets.get(key)
+      if (!bucket) {
+        bucket = { tex: s.tex, opacity: opacityKey / 100, geos: [] }
+        buckets.set(key, bucket)
+      }
+      const geo = new THREE.PlaneGeometry(s.w, s.d)
+      geo.rotateX(-Math.PI / 2)
+      geo.translate(s.wx, 0.009, s.wz)
+      bucket.geos.push(geo)
+    }
+    for (const bucket of buckets.values()) {
+      const merged = mergeIndexedGeometries(bucket.geos, { disposeInputs: true })
+      if (!merged) continue
+      const mat = new THREE.MeshBasicMaterial({
+        map: bucket.tex,
+        transparent: true,
+        opacity: bucket.opacity,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+      })
+      const mesh = new THREE.Mesh(merged, mat)
+      mesh.name = "floor-contact-shadows"
+      this.staticGroup.add(mesh)
+    }
   }
 
   private mountTickerStrip(wx: number, wz: number, width: number): THREE.Texture {
@@ -738,7 +879,7 @@ export class FloorWorld3D {
       housingMat
     )
     housing.position.set(wx, tickerY, wz - 0.05)
-    this.group.add(housing)
+    this.staticGroup.add(housing)
 
     const screenMat = new THREE.MeshStandardMaterial({
       map: tex,
@@ -753,7 +894,7 @@ export class FloorWorld3D {
       screenMat
     )
     screen.position.set(wx, tickerY, wz + 0.01)
-    this.group.add(screen)
+    this.staticGroup.add(screen)
     return tex
   }
 
@@ -784,12 +925,15 @@ export class FloorWorld3D {
     const floorCenterZ = (wallZ + southZ) / 2 // +1.75
 
     // 1. Luminous cream marble floor
-    const marbleTex = cloneRepeatedTexture(
-      createFloorTexture("marble_cream"),
+    const baseMarbleTex = createFloorTexture("marble_cream")
+    retainCachedTexture(baseMarbleTex)
+    this.retainedCachedTextures.push(baseMarbleTex)
+    const marbleTex = cloneSharedRepeatedTexture(
+      baseMarbleTex,
       8,
-      4.625
+      4.625,
+      this.lite ? 2 : 8
     )
-    marbleTex.anisotropy = this.lite ? 2 : 8
     const floorMat = new THREE.MeshStandardMaterial({
       map: marbleTex,
       roughness: 0.42,
@@ -802,7 +946,7 @@ export class FloorWorld3D {
     floor.rotation.x = -Math.PI / 2
     floor.position.set(0, 0, floorCenterZ)
     floor.receiveShadow = true
-    this.group.add(floor)
+    this.staticGroup.add(floor)
 
     // Architectural dark-navy surround apron so shakes/ultrawide edges never reveal harsh seams
     const surroundApron = new THREE.Mesh(
@@ -811,7 +955,7 @@ export class FloorWorld3D {
     )
     surroundApron.rotation.x = -Math.PI / 2
     surroundApron.position.set(0, -0.04, 0)
-    this.group.add(surroundApron)
+    this.staticGroup.add(surroundApron)
 
     const northBase = new THREE.Mesh(
       new THREE.PlaneGeometry(roomW, roomH - floorDepth),
@@ -819,18 +963,21 @@ export class FloorWorld3D {
     )
     northBase.rotation.x = -Math.PI / 2
     northBase.position.set(0, -0.01, -roomH / 2 + (roomH - floorDepth) / 2)
-    this.group.add(northBase)
+    this.staticGroup.add(northBase)
 
     // 2. Royal crimson red carpet (x=960..1088, y=470..1384) with subtle brass edge inlay
     const carpetW = 128 * FLOOR_WORLD_CONFIG.scale // 2.0
     const carpetLen = (1384 - 470) * FLOOR_WORLD_CONFIG.scale // 14.28
     const carpetPt = logicalToWorld(1024, (470 + 1384) / 2, FLOOR_WORLD_CONFIG)
-    const carpetTex = cloneRepeatedTexture(
-      createFloorTexture("red_carpet"),
+    const baseCarpetTex = createFloorTexture("red_carpet")
+    retainCachedTexture(baseCarpetTex)
+    this.retainedCachedTextures.push(baseCarpetTex)
+    const carpetTex = cloneSharedRepeatedTexture(
+      baseCarpetTex,
       1,
-      6.5
+      6.5,
+      this.lite ? 2 : 8
     )
-    carpetTex.anisotropy = this.lite ? 2 : 8
     const carpetMat = new THREE.MeshStandardMaterial({
       map: carpetTex,
       roughness: 0.78,
@@ -843,9 +990,9 @@ export class FloorWorld3D {
     carpet.rotation.x = -Math.PI / 2
     carpet.position.set(carpetPt.x, 0.014, carpetPt.z)
     carpet.receiveShadow = true
-    this.group.add(carpet)
+    this.staticGroup.add(carpet)
 
-    // 3. Soft ambient-occlusion wall-floor edge strips
+    // 3. Soft ambient-occlusion wall-floor edge strips (merged into 1 draw call)
     const stripAoTex = createContactShadowTexture("strip")
     this.aoTextures.push(stripAoTex)
     const wallAoMat = new THREE.MeshBasicMaterial({
@@ -854,28 +1001,31 @@ export class FloorWorld3D {
       opacity: 0.82,
       depthWrite: false,
     })
-    const northAo = new THREE.Mesh(new THREE.PlaneGeometry(roomW, 0.85), wallAoMat)
-    northAo.rotation.x = -Math.PI / 2
-    northAo.position.set(0, 0.007, wallZ + 0.425)
-    this.group.add(northAo)
-
     const sideThick = SIDE * FLOOR_WORLD_CONFIG.scale // 0.375
+    const wallAoGeos: THREE.BufferGeometry[] = []
+    const northAoGeo = new THREE.PlaneGeometry(roomW, 0.85)
+    northAoGeo.rotateX(-Math.PI / 2)
+    northAoGeo.translate(0, 0.007, wallZ + 0.425)
+    wallAoGeos.push(northAoGeo)
     for (const side of [-1, 1] as const) {
-      const sideAo = new THREE.Mesh(
-        new THREE.PlaneGeometry(floorDepth, 0.65),
-        wallAoMat
-      )
-      sideAo.rotation.x = -Math.PI / 2
-      sideAo.rotation.z = side === -1 ? Math.PI / 2 : -Math.PI / 2
-      sideAo.position.set(
+      const sideAoGeo = new THREE.PlaneGeometry(floorDepth, 0.65)
+      sideAoGeo.rotateZ(side === -1 ? Math.PI / 2 : -Math.PI / 2)
+      sideAoGeo.rotateX(-Math.PI / 2)
+      sideAoGeo.translate(
         side * (roomW / 2 - sideThick - 0.32),
         0.007,
         floorCenterZ
       )
-      this.group.add(sideAo)
+      wallAoGeos.push(sideAoGeo)
+    }
+    const mergedWallAo = mergeIndexedGeometries(wallAoGeos, {
+      disposeInputs: true,
+    })
+    if (mergedWallAo) {
+      this.staticGroup.add(new THREE.Mesh(mergedWallAo, wallAoMat))
     }
 
-    // 4. Overhead ceiling-light warm glow pools on the marble floor
+    // 4. Overhead ceiling-light warm glow pools on the marble floor (merged into 1 draw call)
     const glowPoolTex = createGlowPoolTexture("rgba(255, 234, 178, 0.55)")
     this.aoTextures.push(glowPoolTex)
     const poolMat = new THREE.MeshBasicMaterial({
@@ -891,12 +1041,19 @@ export class FloorWorld3D {
       [420, 780, 7.4, 5.6], // Lounge warm ceiling light
       [1650, 860, 8.6, 5.8], // Hall of Fame gallery ceiling glow
     ]
+    const poolGeos: THREE.BufferGeometry[] = []
     for (const [lx, ly, pw, pd] of lightPools) {
       const pt = logicalToWorld(lx, ly, FLOOR_WORLD_CONFIG)
-      const pool = new THREE.Mesh(new THREE.PlaneGeometry(pw, pd), poolMat)
-      pool.rotation.x = -Math.PI / 2
-      pool.position.set(pt.x, 0.013, pt.z)
-      this.group.add(pool)
+      const geo = new THREE.PlaneGeometry(pw, pd)
+      geo.rotateX(-Math.PI / 2)
+      geo.translate(pt.x, 0.013, pt.z)
+      poolGeos.push(geo)
+    }
+    const mergedPools = mergeIndexedGeometries(poolGeos, {
+      disposeInputs: true,
+    })
+    if (mergedPools) {
+      this.staticGroup.add(new THREE.Mesh(mergedPools, poolMat))
     }
 
     // 5. Batched static architecture: walls, skirting baseboards, recessed dado trims,
@@ -1091,7 +1248,7 @@ export class FloorWorld3D {
       )
     }
 
-    batcher.flush(this.group)
+    batcher.flush(this.staticGroup)
   }
 
   private buildZoneDecals(): void {
@@ -1109,22 +1266,22 @@ export class FloorWorld3D {
       plane.rotation.x = -Math.PI / 2
       const pt = logicalToWorld(label.x, label.y, FLOOR_WORLD_CONFIG)
       plane.position.set(pt.x, 0.018, pt.z)
-      this.group.add(plane)
+      this.staticGroup.add(plane)
     }
   }
 
   private placeFurniture(
     p: Placement,
-    ovalShadowTex: THREE.Texture,
+    _ovalShadowTex: THREE.Texture,
     boxShadowTex: THREE.Texture
-  ): void {
+  ): DisposableProp | null {
     const s = FLOOR_WORLD_CONFIG.scale
     let prop: DisposableProp | null = null
     let centerY = p.foot ? p.y - p.foot[1] / 2 : p.y - p.h / 2
     let shadowSpec: { w: number; d: number; tex: THREE.Texture; opacity: number } | null = null
 
     if (p.id === "offering") {
-      prop = createOfferingAltar(3.05, 1.05)
+      prop = createOfferingAltar(3.05, 1.05, { lite: this.lite })
       centerY = p.y - (p.foot ? p.foot[1] / 2 : 35)
       shadowSpec = { w: 3.65, d: 1.55, tex: boxShadowTex, opacity: 0.7 }
     } else if (p.id === "rug") {
@@ -1148,29 +1305,23 @@ export class FloorWorld3D {
       prop = createRug(p.w * s, p.h * s, rugOpts)
       centerY = 885
     } else if (p.id === "sofa") {
-      prop = createSofa(p.w * s, 1.15, "#23395d")
+      prop = createSofa(p.w * s, 1.15, "#23395d", { lite: this.lite })
       shadowSpec = { w: p.w * s + 0.55, d: 1.65, tex: boxShadowTex, opacity: 0.65 }
     } else if (p.id === "coffee-table") {
-      prop = createCoffeeTable(p.w * s, 0.92)
+      prop = createCoffeeTable(p.w * s, 0.92, { lite: this.lite })
       shadowSpec = { w: p.w * s + 0.45, d: 1.38, tex: boxShadowTex, opacity: 0.55 }
     } else if (p.id === "pantry") {
-      prop = createPantryCounter(p.w * s, 0.92)
+      prop = createPantryCounter(p.w * s, 0.92, { lite: this.lite })
       shadowSpec = { w: p.w * s + 0.5, d: 1.4, tex: boxShadowTex, opacity: 0.65 }
     } else if (p.id === "reception") {
-      prop = createReceptionDesk(p.w * s, 0.86)
+      prop = createReceptionDesk(p.w * s, 0.86, { lite: this.lite })
       shadowSpec = { w: p.w * s + 0.55, d: 1.38, tex: boxShadowTex, opacity: 0.68 }
-    } else if (p.placeholder === "plant" || p.art === "plant_tall") {
-      prop = createPottedPlant("tall")
-      shadowSpec = { w: 1.05, d: 1.05, tex: ovalShadowTex, opacity: 0.62 }
-    } else if (p.placeholder === "plant-small" || p.art === "plant_small") {
-      prop = createPottedPlant("small")
-      shadowSpec = { w: 0.78, d: 0.78, tex: ovalShadowTex, opacity: 0.58 }
     }
 
-    if (!prop) return
+    if (!prop) return null
     const pt = logicalToWorld(p.x, centerY, FLOOR_WORLD_CONFIG)
     prop.group.position.set(pt.x, 0, pt.z)
-    this.group.add(prop.group)
+    this.staticGroup.add(prop.group)
     this.props.push(prop)
 
     if (shadowSpec) {
@@ -1187,6 +1338,7 @@ export class FloorWorld3D {
     if (p.interact) {
       this.registerHotspot(prop.group, p.interact, p.y)
     }
+    return prop
   }
 
   private buildStatues(
@@ -1211,8 +1363,9 @@ export class FloorWorld3D {
       hitGroup.position.set(pt.x, 0, pt.z)
       this.group.add(hitGroup)
 
-      const podium = createStatuePodium(rank, 1.85, 1.05)
+      const podium = createStatuePodium(rank, 1.85, 1.05, { lite: this.lite })
       hitGroup.add(podium.group)
+      freezeStaticSubtree(podium.group)
       this.props.push(podium)
 
       // Contact shadow + subtle metallic rank accent floor ring beneath each podium
@@ -1229,7 +1382,7 @@ export class FloorWorld3D {
       )
       glowRing.rotation.x = -Math.PI / 2
       glowRing.position.set(pt.x, 0.022, pt.z)
-      this.group.add(glowRing)
+      this.staticGroup.add(glowRing)
 
       if (p.interact) {
         this.registerHotspot(hitGroup, p.interact, p.y)
@@ -1280,6 +1433,39 @@ export class FloorWorld3D {
     slot.rig = rig
     slot.rigAvatar = avatarId
     slot.rigFilled = filled
+    this.hostBridge?.markShadowDirty()
+  }
+
+  private computeMarketSignature(
+    indices: readonly IndexQuote[] | null,
+    vn30: readonly Quote[] | null
+  ): string {
+    let sig = "I:"
+    if (indices?.length) {
+      for (let i = 0; i < indices.length; i += 1) {
+        const idx = indices[i]!
+        sig += `${idx.code}=${idx.value ?? ""},${idx.pct ?? ""};`
+      }
+    }
+    sig += "|V:"
+    if (vn30?.length) {
+      for (let i = 0; i < vn30.length; i += 1) {
+        const q = vn30[i]!
+        sig += `${q.symbol}=${q.price ?? q.ref ?? ""},${q.pct ?? ""};`
+      }
+    }
+    return sig
+  }
+
+  private computePostsSignature(posts: readonly PostCard[]): string {
+    if (!posts.length) return "empty"
+    let sig = ""
+    const limit = Math.min(3, posts.length)
+    for (let i = 0; i < limit; i += 1) {
+      const p = posts[i]!
+      sig += `${p.id}|${p.sacoName}|${p.headline}|${p.editedAt ?? ""};`
+    }
+    return sig
   }
 
   /** Re-flags dynamic canvas textures after a WebGL context restore. */
@@ -1288,25 +1474,34 @@ export class FloorWorld3D {
     this.ledBoard.update()
     this.sacoBoard.update()
     this.tickerTexture.needsUpdate = true
+    this.hostBridge?.requestFrame()
   }
 
-  /** Repaints the VN30 10×3 LED wall board and live ticker strip canvas textures. */
+  /** Repaints the VN30 10×3 LED wall board and live ticker strip canvas textures only on content change. */
   updateMarket(
     indices: readonly IndexQuote[] | null,
     vn30: readonly Quote[] | null
   ): void {
     if (this.disposed) return
+    const sig = this.computeMarketSignature(indices, vn30)
+    if (sig === this.lastMarketSig) return
+    this.lastMarketSig = sig
     drawLedMarketBoard(this.ledCanvas, indices, vn30)
     this.ledBoard.update()
     drawTickerStrip(this.tickerCanvas, indices, vn30)
     this.tickerTexture.needsUpdate = true
+    this.hostBridge?.requestFrame()
   }
 
-  /** Repaints the SACO Nhận định wall board canvas texture. */
+  /** Repaints the SACO Nhận định wall board canvas texture only on content change. */
   updatePosts(posts: readonly PostCard[]): void {
     if (this.disposed) return
+    const sig = this.computePostsSignature(posts)
+    if (sig === this.lastPostsSig) return
+    this.lastPostsSig = sig
     drawSacoBoard(this.sacoCanvas, posts)
     this.sacoBoard.update()
+    this.hostBridge?.requestFrame()
   }
 
   /** Syncs the 3 Hall of Fame metallic Chibi statues and plaques with `world.leaderboard`. */
@@ -1341,21 +1536,19 @@ export class FloorWorld3D {
   celebrate(luck: number, elapsedS: number): void {
     if (this.disposed) return
     const reduced = prefersReducedMotion()
+    const waveDur = reduced ? 1.2 : 2.3
     this.deityWaveUntilS = Math.max(
       this.deityWaveUntilS,
-      elapsedS + (reduced ? 1.2 : 2.3)
+      elapsedS + waveDur
     )
+    this.hostBridge?.markActive(Math.round(waveDur * 1000))
     this.shrinePulseS = reduced ? 0 : 0.65
     const baseBurst = 18 + Math.max(1, Math.min(5, luck)) * 8
     const burst = Math.max(
       4,
       Math.round(baseBurst * (this.lite ? 0.45 : 1) * (reduced ? 0.45 : 1))
     )
-    const pt = logicalToWorld(
-      this.deityLogical.x,
-      this.deityLogical.y,
-      FLOOR_WORLD_CONFIG
-    )
+    const pt = this.deityWorldPt
     for (let i = 0; i < burst; i += 1) {
       const a = Math.random() * Math.PI * 2
       const r = 0.3 + Math.random() * 1.4
@@ -1382,8 +1575,10 @@ export class FloorWorld3D {
     overlay: OverlayLayer
   ): void {
     if (this.disposed) return
-    const present = new Set<string>()
-    for (const v of visitors) {
+    const present = this.presentVisitorsScratch
+    present.clear()
+    for (let i = 0; i < visitors.length; i += 1) {
+      const v = visitors[i]!
       present.add(v.id)
       const d = Math.hypot(v.x - GREET.x, v.y - GREET.y)
       if (d < GREET.r && !this.nearDeity.has(v.id)) {
@@ -1393,21 +1588,29 @@ export class FloorWorld3D {
         this.nearDeity.delete(v.id)
       }
     }
-    for (const id of [...this.nearDeity]) {
-      if (!present.has(id)) this.nearDeity.delete(id)
+    if (this.nearDeity.size > 0) {
+      for (const id of this.nearDeity) {
+        if (!present.has(id)) this.nearDeity.delete(id)
+      }
     }
     const deityActing = elapsedS < this.deityWaveUntilS
     if (!this.greetQueue.length || nowMs < this.deityFreeAtMs || deityActing) {
       return
     }
-    const names = [...new Set(this.greetQueue)]
-    this.greetQueue = []
+    const dedup = this.greetDedupScratch
+    dedup.clear()
+    for (let i = 0; i < this.greetQueue.length; i += 1) {
+      dedup.add(this.greetQueue[i]!)
+    }
+    this.greetQueue.length = 0
+    const names = [...dedup]
     const who =
       names.length > 3
         ? `${names.slice(0, 3).join(", ")} và mọi người`
         : names.join(", ")
     const tpl = GREETINGS[Math.floor(Math.random() * GREETINGS.length)]!
     this.deityWaveUntilS = elapsedS + 2.0
+    this.hostBridge?.markActive(2000)
     overlay.showBubble("npc:deity", tpl(who), "right", nowMs)
     this.deityFreeAtMs = nowMs + GREET.gapMs
   }
@@ -1422,35 +1625,41 @@ export class FloorWorld3D {
     life: number,
     baseScale = 1
   ): void {
-    const cap = this.lite ? 14 : 48
-    if (this.shrineSparks.length >= cap) {
-      const oldest = this.shrineSparks.shift()
-      if (oldest) {
-        this.group.remove(oldest.mesh)
-        oldest.mat.dispose()
+    let sp: ShrineSpark
+    if (this.shrineSparks.length >= this.shrineSparkCap) {
+      sp = this.shrineSparks.shift()!
+    } else {
+      sp = this.shrineSparkPool.pop() ?? {
+        x: 0,
+        y: 0,
+        z: 0,
+        rotY: 0,
+        vx: 0,
+        vy: 0,
+        vz: 0,
+        age: 0,
+        life: 1,
+        baseScale: 1,
+        r: 1,
+        g: 1,
+        b: 1,
       }
     }
-    const mat = new THREE.MeshBasicMaterial({
-      color: Math.random() < 0.5 ? 0xfff3b0 : 0xffcf40,
-      transparent: true,
-      opacity: 0.92,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    })
-    const mesh = new THREE.Mesh(this.shrineSparkGeo, mat)
-    mesh.position.set(wx, wy, wz)
-    mesh.scale.setScalar(baseScale)
-    this.group.add(mesh)
-    this.shrineSparks.push({
-      mesh,
-      mat,
-      vx,
-      vy,
-      vz,
-      age: 0,
-      life,
-      baseScale,
-    })
+    const col = Math.random() < 0.5 ? SPARK_COLOR_LIGHT : SPARK_COLOR_GOLD
+    sp.x = wx
+    sp.y = wy
+    sp.z = wz
+    sp.rotY = 0
+    sp.vx = vx
+    sp.vy = vy
+    sp.vz = vz
+    sp.age = 0
+    sp.life = life
+    sp.baseScale = baseScale
+    sp.r = col.r
+    sp.g = col.g
+    sp.b = col.b
+    this.shrineSparks.push(sp)
   }
 
   update(
@@ -1474,14 +1683,13 @@ export class FloorWorld3D {
 
     // 1. Animate Thần Tài NPC & shrine light
     const waving = elapsedS < this.deityWaveUntilS
-    this.deityRig.update(dt, {
-      anim: waving ? "wave" : "idle",
-      facingRad: facingToRadians("s"),
-      animTime: reduced && !waving ? 0 : elapsedS,
-    })
+    this.deityUpdateState.anim = waving ? "wave" : "idle"
+    this.deityUpdateState.animTime = reduced && !waving ? 0 : elapsedS
+    this.deityRig.update(dt, this.deityUpdateState)
 
     if (this.shrinePulseS > 0) {
       this.shrinePulseS = Math.max(0, this.shrinePulseS - dt)
+      this.hostBridge?.markActive(250)
     }
     if (this.shrineLight) {
       const pulseBoost = Math.sin((this.shrinePulseS / 0.65) * Math.PI) * 2.2
@@ -1495,11 +1703,7 @@ export class FloorWorld3D {
       this.shrineSparkAccum += dt
       if (this.shrineSparkAccum >= sparkInterval) {
         this.shrineSparkAccum = 0
-        const pt = logicalToWorld(
-          this.deityLogical.x,
-          this.deityLogical.y,
-          FLOOR_WORLD_CONFIG
-        )
+        const pt = this.deityWorldPt
         this.spawnShrineSpark(
           pt.x + (Math.random() * 2 - 1) * 1.4,
           0.55 + Math.random() * 0.45,
@@ -1517,32 +1721,55 @@ export class FloorWorld3D {
       const sp = this.shrineSparks[i]!
       sp.age += dt
       if (sp.age >= sp.life) {
-        this.group.remove(sp.mesh)
-        sp.mat.dispose()
         this.shrineSparks.splice(i, 1)
+        this.shrineSparkPool.push(sp)
         continue
       }
-      const t = sp.age / sp.life
-      sp.mesh.position.x += sp.vx * dt
-      sp.mesh.position.y += sp.vy * dt
-      sp.mesh.position.z += sp.vz * dt
-      sp.mesh.rotation.y += dt * 3.2
-      sp.mesh.scale.setScalar(sp.baseScale * (1 - t * 0.85))
-      sp.mat.opacity = 0.92 * (1 - t)
+      sp.x += sp.vx * dt
+      sp.y += sp.vy * dt
+      sp.z += sp.vz * dt
+      sp.rotY += dt * 3.2
     }
 
-    // Position Thần Tài speech bubble right beside his head
-    overlay.positionBubble(
-      "npc:deity",
-      projectLogical(this.deityLogical.x + 56, this.deityLogical.y, 2.35)
-    )
+    const activeSparks = this.shrineSparks.length
+    if (activeSparks > 0 || this.shrineSparkLastCount > 0) {
+      for (let i = 0; i < activeSparks; i += 1) {
+        const sp = this.shrineSparks[i]!
+        const t = sp.age / sp.life
+        const sc = sp.baseScale * (1 - t * 0.85)
+        sparkScratchPos.set(sp.x, sp.y, sp.z)
+        sparkScratchEuler.set(0, sp.rotY, 0)
+        sparkScratchQuat.setFromEuler(sparkScratchEuler)
+        sparkScratchScale.set(sc, sc, sc)
+        sparkScratchMatrix.compose(
+          sparkScratchPos,
+          sparkScratchQuat,
+          sparkScratchScale
+        )
+        this.shrineSparkMesh.setMatrixAt(i, sparkScratchMatrix)
+        const fade = Math.max(0, 1 - t)
+        sparkScratchColor.setRGB(sp.r * fade, sp.g * fade, sp.b * fade)
+        this.shrineSparkMesh.setColorAt(i, sparkScratchColor)
+      }
+      this.shrineSparkMesh.count = activeSparks
+      this.shrineSparkMesh.instanceMatrix.needsUpdate = true
+      if (this.shrineSparkMesh.instanceColor) {
+        this.shrineSparkMesh.instanceColor.needsUpdate = true
+      }
+      this.shrineSparkLastCount = activeSparks
+    }
+
+    // Position Thần Tài speech bubble right beside his head (skip projection when no bubble active)
+    if (overlay.hasBubble("npc:deity")) {
+      overlay.positionBubble(
+        "npc:deity",
+        projectLogical(this.deityLogical.x + 56, this.deityLogical.y, 2.35)
+      )
+    }
 
     // 2. Animate Receptionist NPC & project her nameplate
-    this.receptionistRig.update(dt, {
-      anim: "idle",
-      facingRad: facingToRadians(RECEPTIONIST.facing),
-      animTime: reduced ? 0 : elapsedS + 1.3,
-    })
+    this.receptionistUpdateState.animTime = reduced ? 0 : elapsedS + 1.3
+    this.receptionistRig.update(dt, this.receptionistUpdateState)
     overlay.positionNameplate(
       "npc:reception",
       projectLogical(
@@ -1554,12 +1781,14 @@ export class FloorWorld3D {
     )
 
     // 3. Animate Hall of Fame statues (rotating floating medals) & project plaques
-    for (const slot of this.statues) {
-      slot.rig?.update(dt, {
-        anim: "statue",
-        facingRad: facingToRadians("s"),
-        animTime: reduced ? 0 : elapsedS + slot.rank * 0.7,
-      })
+    for (let i = 0; i < this.statues.length; i += 1) {
+      const slot = this.statues[i]!
+      if (slot.rig) {
+        this.statueUpdateState.animTime = reduced
+          ? 0
+          : elapsedS + slot.rank * 0.7
+        slot.rig.update(dt, this.statueUpdateState)
+      }
       overlay.positionStatuePlaque(
         slot.rank,
         projectLogical(slot.placement.x, slot.placement.y + 12, 0.08)
@@ -1570,10 +1799,10 @@ export class FloorWorld3D {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
-    for (const sp of this.shrineSparks.splice(0)) {
-      this.group.remove(sp.mesh)
-      sp.mat.dispose()
-    }
+    this.shrineSparks.length = 0
+    this.shrineSparkPool.length = 0
+    this.shrineSparkMesh.dispose()
+    this.shrineSparkMat.dispose()
     this.shrineSparkGeo.dispose()
     this.tickerTexture.dispose()
     for (const tex of this.aoTextures.splice(0)) {
@@ -1589,6 +1818,9 @@ export class FloorWorld3D {
       prop.dispose()
     }
     disposeObject3D(this.group)
+    for (const tex of this.retainedCachedTextures.splice(0)) {
+      releaseCachedTexture(tex)
+    }
     this.group.parent?.remove(this.group)
   }
 }

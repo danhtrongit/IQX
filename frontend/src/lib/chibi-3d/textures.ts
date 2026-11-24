@@ -148,6 +148,15 @@ export function markStaticCanvasTexture<T extends THREE.Texture>(
     }
     tex.onUpdate = null
   }
+  const origDispose = tex.dispose.bind(tex)
+  tex.dispose = () => {
+    if (!meta.released && canvas.width > 0) {
+      releaseCanvasBackingStore(canvas)
+      meta.released = true
+    }
+    tex.onUpdate = null
+    origDispose()
+  }
   return tex
 }
 
@@ -158,8 +167,11 @@ function attachCloneReleaseHook(
 ): void {
   const canvas = base.image as HTMLCanvasElement | undefined
   if (!canvas) return
+  let pending = true
   meta.pendingUploads += 1
-  tex.onUpdate = () => {
+  const finish = (): void => {
+    if (!pending) return
+    pending = false
     meta.pendingUploads = Math.max(0, meta.pendingUploads - 1)
     if (!meta.released && meta.pendingUploads <= 0) {
       if (canvas.width > 0 && canvas.height > 0) {
@@ -169,6 +181,16 @@ function attachCloneReleaseHook(
       base.onUpdate = null
     }
     tex.onUpdate = null
+  }
+  tex.onUpdate = finish
+  const origDispose = tex.dispose.bind(tex)
+  tex.dispose = (): void => {
+    if (pending) {
+      pending = false
+      meta.pendingUploads = Math.max(0, meta.pendingUploads - 1)
+      tex.onUpdate = null
+    }
+    origDispose()
   }
 }
 

@@ -136,6 +136,10 @@ export class OverlayLayer {
   private readonly popups: PlusXuPopup[] = []
   private readonly visibleScratch: NameplateEntry[] = []
   private readonly boxesScratch: TagBox[] = []
+  private readonly onWindowResize: () => void
+  private resizeObserver: ResizeObserver | null = null
+  private cachedVpW = 0
+  private cachedVpH = 0
   private nextId = 1
   private nextDeclutterMs = 0
   private declutterDirty = false
@@ -147,6 +151,17 @@ export class OverlayLayer {
     el.setAttribute("aria-hidden", "true")
     container.appendChild(el)
     this.root = el
+    this.onWindowResize = () => {
+      this.cachedVpW = 0
+      this.cachedVpH = 0
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", this.onWindowResize)
+    }
+    if (typeof ResizeObserver !== "undefined") {
+      this.resizeObserver = new ResizeObserver(this.onWindowResize)
+      this.resizeObserver.observe(el)
+    }
   }
 
   /** Creates or updates a character nameplate DOM node (text & IT/SACO pills). */
@@ -213,19 +228,33 @@ export class OverlayLayer {
   }
 
   private getViewportWidth(): number {
-    return Math.max(
-      1,
-      this.root.clientWidth ||
-        (typeof window !== "undefined" ? window.innerWidth : 1280)
-    )
+    if (this.cachedVpW <= 0) {
+      const w = this.root.clientWidth
+      if (w > 0) {
+        this.cachedVpW = w
+      } else {
+        return Math.max(
+          1,
+          typeof window !== "undefined" ? window.innerWidth : 1280
+        )
+      }
+    }
+    return this.cachedVpW
   }
 
   private getViewportHeight(): number {
-    return Math.max(
-      1,
-      this.root.clientHeight ||
-        (typeof window !== "undefined" ? window.innerHeight : 720)
-    )
+    if (this.cachedVpH <= 0) {
+      const h = this.root.clientHeight
+      if (h > 0) {
+        this.cachedVpH = h
+      } else {
+        return Math.max(
+          1,
+          typeof window !== "undefined" ? window.innerHeight : 720
+        )
+      }
+    }
+    return this.cachedVpH
   }
 
   /** Updates screen coordinates for a nameplate after projecting its 3D anchor. */
@@ -797,6 +826,11 @@ export class OverlayLayer {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
+    this.resizeObserver?.disconnect()
+    this.resizeObserver = null
+    if (typeof window !== "undefined") {
+      window.removeEventListener("resize", this.onWindowResize)
+    }
     this.nameplates.clear()
     this.bubbles.clear()
     this.plaques.clear()
