@@ -137,6 +137,12 @@ function createFakeHost(
     renderOnce: vi.fn(),
     resize: vi.fn(),
     dispose: vi.fn(),
+    setSuspended: vi.fn(),
+    isSuspended: () => false,
+    getSuspendReasons: () => [],
+    requestFrame: vi.fn(),
+    markActive: vi.fn(),
+    markShadowDirty: vi.fn(),
   }
 
   let elapsed = 0
