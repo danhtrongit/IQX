@@ -449,7 +449,7 @@ export class OfficeAccessService {
       `select s.user_id, to_char(s.assigned_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as assigned_date
          from tf_sacos s
          join users u on u.id = s.user_id and u.status = 'active' and u.deleted_at is null
-        where s.lead_user_id = $1 and s.active = true
+        where s.lead_user_id = $1 and s.active = true and s.user_id <> $1
         order by s.assigned_at asc, s.id asc`,
       [bossUserId],
     );
@@ -589,7 +589,7 @@ export class OfficeAccessService {
         `select s.user_id, to_char(s.assigned_at at time zone 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as assigned_date
            from tf_sacos s
            join users u on u.id = s.user_id and u.status = 'active' and u.deleted_at is null
-          where s.lead_user_id = $1 and s.active = true
+          where s.lead_user_id = $1 and s.active = true and s.user_id <> $1
           order by s.assigned_at asc, s.id asc`,
         [bossUserId],
       );
