@@ -5,14 +5,16 @@
  * statues, architectural skirting/columns/sconces/ceiling glow pools, and soft contact shadows.
  */
 import * as THREE from "three"
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js"
 
-import { createChibiCharacter } from "@/lib/chibi-3d/character-builder.ts"
+import {
+  createChibiCharacter,
+  prefersReducedMotion,
+} from "@/lib/chibi-3d/character-builder.ts"
 import {
   createCoffeeTable,
+  createInstancedPottedPlants,
   createOfferingAltar,
   createPantryCounter,
-  createPottedPlant,
   createReceptionDesk,
   createRug,
   createSofa,
@@ -20,14 +22,19 @@ import {
   createThanTaiShrine,
   createWallBoardFrame,
   type DisposableProp,
+  type InstancedPropTransform,
   type LiveBoardProp,
   type RugOptions,
 } from "@/lib/chibi-3d/furniture-builder.ts"
 import {
+  cloneSharedRepeatedTexture,
   createFloorDecalTexture,
   createFloorTexture,
   drawLedMarketBoard,
   drawSacoBoard,
+  markStaticCanvasTexture,
+  releaseCachedTexture,
+  retainCachedTexture,
   safeGet2DContext,
 } from "@/lib/chibi-3d/textures.ts"
 import {
@@ -36,9 +43,15 @@ import {
   createMetalMaterial,
   disposeObject3D,
   facingToRadians,
+  freezeStaticSubtree,
+  getSceneHostBridge,
+  isSharedResourceObj,
   logicalToWorld,
+  mergeIndexedGeometries,
   type ChibiCharacterSpec,
   type ChibiRig,
+  type ChibiSceneHostBridge,
+  type ChibiUpdateState,
   type ProjectedPoint,
   type WorldTransformConfig,
 } from "@/lib/chibi-3d/types.ts"
@@ -67,7 +80,6 @@ import {
 } from "./layout.ts"
 import { NavGrid } from "./nav.ts"
 import type { OverlayLayer } from "./overlay-layer.ts"
-import { prefersReducedMotion } from "./reduced-motion.ts"
 
 export const FLOOR_WORLD_CONFIG: WorldTransformConfig = {
   logicalW: WORLD_W,
@@ -102,15 +114,38 @@ export interface FloorHotspot {
 }
 
 interface ShrineSpark {
-  mesh: THREE.Mesh
-  mat: THREE.MeshBasicMaterial
+  x: number
+  y: number
+  z: number
+  rotY: number
   vx: number
   vy: number
   vz: number
   age: number
   life: number
   baseScale: number
+  r: number
+  g: number
+  b: number
 }
+
+interface PendingContactShadow {
+  wx: number
+  wz: number
+  w: number
+  d: number
+  tex: THREE.Texture
+  opacity: number
+}
+
+const sparkScratchMatrix = new THREE.Matrix4()
+const sparkScratchPos = new THREE.Vector3()
+const sparkScratchQuat = new THREE.Quaternion()
+const sparkScratchEuler = new THREE.Euler()
+const sparkScratchScale = new THREE.Vector3()
+const sparkScratchColor = new THREE.Color()
+const SPARK_COLOR_LIGHT = new THREE.Color(0xfff3b0)
+const SPARK_COLOR_GOLD = new THREE.Color(0xffcf40)
 
 interface StatueSlot {
   rank: 1 | 2 | 3
@@ -154,20 +189,7 @@ export function buildFloorNavGrid(): NavGrid {
   return nav
 }
 
-function cloneRepeatedTexture(
-  base: THREE.Texture,
-  repeatX: number,
-  repeatY: number
-): THREE.Texture {
-  const tex = base.clone()
-  tex.wrapS = THREE.RepeatWrapping
-  tex.wrapT = THREE.RepeatWrapping
-  tex.repeat.set(repeatX, repeatY)
-  tex.needsUpdate = true
-  return tex
-}
-
-/** Batches static architectural parts by material into merged BufferGeometries to minimize draw calls. */
+/** Batches static architectural parts by material into merged indexed BufferGeometries to minimize draw calls & RAM. */
 class StaticGeometryBatcher {
   private readonly buckets = new Map<
     string,
@@ -199,10 +221,8 @@ class StaticGeometryBatcher {
     const bucket = this.buckets.get(key)
     if (!bucket) return
     const geo = new THREE.BoxGeometry(w, h, d)
-    const nonIdx = geo.index ? geo.toNonIndexed() : geo
-    if (nonIdx !== geo) geo.dispose()
-    nonIdx.translate(x, y, z)
-    bucket.geos.push(nonIdx)
+    geo.translate(x, y, z)
+    bucket.geos.push(geo)
   }
 
   addCylinder(
@@ -218,10 +238,8 @@ class StaticGeometryBatcher {
     const bucket = this.buckets.get(key)
     if (!bucket) return
     const geo = new THREE.CylinderGeometry(rt, rb, h, segs)
-    const nonIdx = geo.index ? geo.toNonIndexed() : geo
-    if (nonIdx !== geo) geo.dispose()
-    nonIdx.translate(x, y, z)
-    bucket.geos.push(nonIdx)
+    geo.translate(x, y, z)
+    bucket.geos.push(geo)
   }
 
   addSphere(
@@ -236,10 +254,8 @@ class StaticGeometryBatcher {
     const bucket = this.buckets.get(key)
     if (!bucket) return
     const geo = new THREE.SphereGeometry(r, wSegs, hSegs)
-    const nonIdx = geo.index ? geo.toNonIndexed() : geo
-    if (nonIdx !== geo) geo.dispose()
-    nonIdx.translate(x, y, z)
-    bucket.geos.push(nonIdx)
+    geo.translate(x, y, z)
+    bucket.geos.push(geo)
   }
 
   flush(parent: THREE.Object3D): void {
@@ -248,8 +264,7 @@ class StaticGeometryBatcher {
         bucket.material.dispose()
         continue
       }
-      const merged = mergeGeometries(bucket.geos, false)
-      for (const g of bucket.geos) g.dispose()
+      const merged = mergeIndexedGeometries(bucket.geos, { disposeInputs: true })
       bucket.geos.length = 0
       if (!merged) {
         bucket.material.dispose()
@@ -265,14 +280,72 @@ class StaticGeometryBatcher {
   }
 }
 
+/** Merges non-instanced static prop meshes per `(material, castShadow, receiveShadow)` while preserving ref-counted prop disposal. */
+function mergeStaticPropsInto(
+  props: readonly DisposableProp[],
+  parent: THREE.Object3D
+): void {
+  const buckets = new Map<
+    string,
+    {
+      material: THREE.Material
+      castShadow: boolean
+      receiveShadow: boolean
+      geos: THREE.BufferGeometry[]
+    }
+  >()
+
+  for (const prop of props) {
+    prop.group.updateMatrixWorld(true)
+    const toRemove: THREE.Mesh[] = []
+    prop.group.traverse((node) => {
+      if (!(node instanceof THREE.Mesh) || node instanceof THREE.InstancedMesh) {
+        return
+      }
+      if (!node.geometry || Array.isArray(node.material) || !node.material) {
+        return
+      }
+      const cloned = node.geometry.clone()
+      cloned.applyMatrix4(node.matrixWorld)
+      const key = `${node.material.uuid}:${node.castShadow ? 1 : 0}:${node.receiveShadow ? 1 : 0}`
+      let bucket = buckets.get(key)
+      if (!bucket) {
+        bucket = {
+          material: node.material,
+          castShadow: node.castShadow,
+          receiveShadow: node.receiveShadow,
+          geos: [],
+        }
+        buckets.set(key, bucket)
+      }
+      bucket.geos.push(cloned)
+      toRemove.push(node)
+    })
+
+    for (const mesh of toRemove) {
+      mesh.parent?.remove(mesh)
+      if (mesh.geometry && !isSharedResourceObj(mesh.geometry)) {
+        mesh.geometry.dispose()
+      }
+    }
+  }
+
+  for (const bucket of buckets.values()) {
+    const merged = mergeIndexedGeometries(bucket.geos, { disposeInputs: true })
+    if (!merged) continue
+    const mesh = new THREE.Mesh(merged, bucket.material)
+    mesh.castShadow = bucket.castShadow
+    mesh.receiveShadow = bucket.receiveShadow
+    parent.add(mesh)
+  }
+}
+
 /** Creates a soft radial contact-shadow texture on Canvas2D (AO blob shadow under props). */
 function createContactShadowTexture(kind: "oval" | "box" | "strip"): THREE.Texture {
   const size = 128
-  const canvas = document.createElement("canvas")
-  canvas.width = size
-  canvas.height = size
-  const ctx = safeGet2DContext(canvas)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     ctx.clearRect(0, 0, size, size)
     if (kind === "oval") {
       const grad = ctx.createRadialGradient(
@@ -312,9 +385,16 @@ function createContactShadowTexture(kind: "oval" | "box" | "strip"): THREE.Textu
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, size, size)
     }
+    return true
   }
-  const tex: THREE.Texture = ctx
-    ? new THREE.CanvasTexture(canvas)
+  const canvas = document.createElement("canvas")
+  canvas.width = size
+  canvas.height = size
+  const hasCtx = paint(canvas)
+  const tex: THREE.Texture = hasCtx
+    ? markStaticCanvasTexture(new THREE.CanvasTexture(canvas), (c) => {
+        paint(c)
+      })
     : new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1, THREE.RGBAFormat)
   tex.colorSpace = THREE.SRGBColorSpace
   tex.needsUpdate = true
@@ -324,11 +404,9 @@ function createContactShadowTexture(kind: "oval" | "box" | "strip"): THREE.Textu
 /** Creates a warm radial overhead ceiling-light glow pool texture for the marble floor. */
 function createGlowPoolTexture(hexInner: string): THREE.Texture {
   const size = 128
-  const canvas = document.createElement("canvas")
-  canvas.width = size
-  canvas.height = size
-  const ctx = safeGet2DContext(canvas)
-  if (ctx) {
+  const paint = (canvas: HTMLCanvasElement): boolean => {
+    const ctx = safeGet2DContext(canvas)
+    if (!ctx) return false
     ctx.clearRect(0, 0, size, size)
     const grad = ctx.createRadialGradient(
       size / 2,
@@ -343,9 +421,16 @@ function createGlowPoolTexture(hexInner: string): THREE.Texture {
     grad.addColorStop(1, "rgba(255, 224, 152, 0)")
     ctx.fillStyle = grad
     ctx.fillRect(0, 0, size, size)
+    return true
   }
-  const tex: THREE.Texture = ctx
-    ? new THREE.CanvasTexture(canvas)
+  const canvas = document.createElement("canvas")
+  canvas.width = size
+  canvas.height = size
+  const hasCtx = paint(canvas)
+  const tex: THREE.Texture = hasCtx
+    ? markStaticCanvasTexture(new THREE.CanvasTexture(canvas), (c) => {
+        paint(c)
+      })
     : new THREE.DataTexture(new Uint8Array([255, 232, 170, 0]), 1, 1, THREE.RGBAFormat)
   tex.colorSpace = THREE.SRGBColorSpace
   tex.needsUpdate = true

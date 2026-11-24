@@ -2,11 +2,14 @@
  * Crisp DOM projection layer mounted over the Trading Floor WebGL canvas.
  * Renders retina-sharp Vietnamese nameplates (with IT/SACO badges + decluttering),
  * speech bubbles, Hall of Fame statue plaques, FX banners (Gáy / Khấn), and "+10 xu" popups.
+ *
+ * Throttles DOM style writes to >= 0.5 px movement deltas, caches bubble dimensions to avoid
+ * per-frame layout reflows, skips off-screen elements, and reuses scratch arrays.
  */
+import { prefersReducedMotion } from "@/lib/chibi-3d/character-builder.ts"
 import type { ProjectedPoint } from "@/lib/chibi-3d/types.ts"
 
 import type { NameBadge } from "../net/types.ts"
-import { prefersReducedMotion } from "./reduced-motion.ts"
 import { liftTags, type TagBox } from "./tags.ts"
 
 export type NameplateKind = "self" | "peer" | "npc"
@@ -40,17 +43,26 @@ interface NameplateEntry {
   visible: boolean
   lift: number
   liftTarget: number
+  lastDisplayed: boolean
+  lastDomX: number
+  lastDomY: number
+  lastZIndex: number
 }
 
 interface BubbleEntry {
   id: string
   side: BubbleSide
   el: HTMLDivElement
+  width: number
+  height: number
   expiresAt: number
   fadeStarted: boolean
   screenX: number
   screenY: number
   visible: boolean
+  lastDisplayed: boolean
+  lastDomX: number
+  lastDomY: number
 }
 
 interface StatuePlaqueEntry {
@@ -59,6 +71,9 @@ interface StatuePlaqueEntry {
   el: HTMLDivElement
   nameEl: HTMLDivElement
   subEl: HTMLDivElement
+  lastDisplayed: boolean
+  lastDomX: number
+  lastDomY: number
 }
 
 interface FloatingBanner {
@@ -70,6 +85,11 @@ interface FloatingBanner {
   bornAt: number
   stayMs: number
   fadeMs: number
+  lastDisplayed: boolean
+  lastDomX: number
+  lastDomY: number
+  lastAlpha: string
+  lastScale: string
 }
 
 interface PlusXuPopup {
@@ -80,6 +100,10 @@ interface PlusXuPopup {
   el: HTMLDivElement
   bornAt: number
   durationMs: number
+  lastDisplayed: boolean
+  lastDomX: number
+  lastDomY: number
+  lastAlpha: string
 }
 
 const TAG_DECLUTTER_MS = 120
@@ -87,13 +111,19 @@ const TAG_GAP_PX = 4
 const TAG_MAX_STEPS = 4
 const BUBBLE_STAY_MS = 4200
 const BUBBLE_FADE_MS = 300
+const DOM_MOVE_THRESHOLD_PX = 0.5
 
 function badgeSignature(
   name: string,
   kind: NameplateKind,
   badges: readonly NameBadge[]
 ): string {
-  const b = badges.map((item) => `${item.tone}:${item.text}`).join(",")
+  if (badges.length === 0) return `${kind}|${name}|`
+  let b = ""
+  for (let i = 0; i < badges.length; i += 1) {
+    if (i > 0) b += ","
+    b += `${badges[i]!.tone}:${badges[i]!.text}`
+  }
   return `${kind}|${name}|${b}`
 }
 
@@ -104,8 +134,11 @@ export class OverlayLayer {
   private readonly plaques = new Map<1 | 2 | 3, StatuePlaqueEntry>()
   private readonly banners: FloatingBanner[] = []
   private readonly popups: PlusXuPopup[] = []
+  private readonly visibleScratch: NameplateEntry[] = []
+  private readonly boxesScratch: TagBox[] = []
   private nextId = 1
   private nextDeclutterMs = 0
+  private declutterDirty = false
   private disposed = false
 
   constructor(container: HTMLElement) {
@@ -157,6 +190,10 @@ export class OverlayLayer {
         visible: false,
         lift: 0,
         liftTarget: 0,
+        lastDisplayed: false,
+        lastDomX: Number.NaN,
+        lastDomY: Number.NaN,
+        lastZIndex: -1,
       })
     } else {
       existing.kind = spec.kind
@@ -164,6 +201,7 @@ export class OverlayLayer {
       existing.width = 0
       existing.height = 0
     }
+    this.declutterDirty = true
   }
 
   removeNameplate(id: string): void {
@@ -171,16 +209,23 @@ export class OverlayLayer {
     if (!entry) return
     entry.el.remove()
     this.nameplates.delete(id)
+    this.declutterDirty = true
   }
 
-  private getViewportSize(): { vw: number; vh: number } {
-    const vw =
+  private getViewportWidth(): number {
+    return Math.max(
+      1,
       this.root.clientWidth ||
-      (typeof window !== "undefined" ? window.innerWidth : 1280)
-    const vh =
+        (typeof window !== "undefined" ? window.innerWidth : 1280)
+    )
+  }
+
+  private getViewportHeight(): number {
+    return Math.max(
+      1,
       this.root.clientHeight ||
-      (typeof window !== "undefined" ? window.innerHeight : 720)
-    return { vw: Math.max(1, vw), vh: Math.max(1, vh) }
+        (typeof window !== "undefined" ? window.innerHeight : 720)
+    )
   }
 
   /** Updates screen coordinates for a nameplate after projecting its 3D anchor. */
@@ -191,30 +236,67 @@ export class OverlayLayer {
   ): void {
     const entry = this.nameplates.get(id)
     if (!entry) return
-    entry.visible = pt.visible
-    entry.screenY = pt.y
-    entry.depth = sortDepth
     if (!pt.visible) {
       entry.screenX = pt.x
-      entry.el.style.display = "none"
+      entry.screenY = pt.y
+      entry.depth = sortDepth
+      if (entry.visible || entry.lastDisplayed) {
+        entry.visible = false
+        entry.lastDisplayed = false
+        entry.el.style.display = "none"
+        this.declutterDirty = true
+      }
       return
     }
-    entry.el.style.display = "inline-flex"
+
+    const wasVisible = entry.visible
+    entry.visible = true
+    if (!entry.lastDisplayed) {
+      entry.el.style.display = "inline-flex"
+      entry.lastDisplayed = true
+    }
     if (entry.width <= 0 || entry.height <= 0) {
       entry.width = Math.max(44, entry.el.offsetWidth || 72)
       entry.height = Math.max(20, entry.el.offsetHeight || 22)
     }
-    const { vw } = this.getViewportSize()
+
+    const vw = this.getViewportWidth()
     const halfW = entry.width / 2
     const padX = 6
     let clampedX = pt.x
     if (pt.x >= 0 && pt.x <= vw && halfW + padX < vw - halfW - padX) {
       clampedX = Math.max(halfW + padX, Math.min(vw - halfW - padX, pt.x))
     }
+
+    const movedScreen =
+      !wasVisible ||
+      Math.abs(clampedX - entry.screenX) >= DOM_MOVE_THRESHOLD_PX ||
+      Math.abs(pt.y - entry.screenY) >= DOM_MOVE_THRESHOLD_PX ||
+      Math.abs(sortDepth - entry.depth) >= 1
+    if (movedScreen) {
+      this.declutterDirty = true
+    }
+
     entry.screenX = clampedX
+    entry.screenY = pt.y
+    entry.depth = sortDepth
+
     const y = pt.y - entry.lift
-    entry.el.style.transform = `translate3d(${Math.round(clampedX)}px, ${Math.round(y)}px, 0) translate(-50%, -100%)`
-    entry.el.style.zIndex = String(100 + Math.round(sortDepth * 0.1))
+    if (
+      Number.isNaN(entry.lastDomX) ||
+      Math.abs(clampedX - entry.lastDomX) >= DOM_MOVE_THRESHOLD_PX ||
+      Math.abs(y - entry.lastDomY) >= DOM_MOVE_THRESHOLD_PX
+    ) {
+      entry.lastDomX = clampedX
+      entry.lastDomY = y
+      entry.el.style.transform = `translate3d(${Math.round(clampedX)}px, ${Math.round(y)}px, 0) translate(-50%, -100%)`
+    }
+
+    const nextZ = 100 + Math.round(sortDepth * 0.1)
+    if (nextZ !== entry.lastZIndex) {
+      entry.lastZIndex = nextZ
+      entry.el.style.zIndex = String(nextZ)
+    }
   }
 
   /** Returns the current CSS hit box of a nameplate (used for SACO direct-chat tap targets). */
@@ -229,6 +311,11 @@ export class OverlayLayer {
       w,
       h,
     }
+  }
+
+  /** Returns true when `id` currently has an active speech bubble. */
+  hasBubble(id: string): boolean {
+    return this.bubbles.has(id)
   }
 
   /** Shows or replaces a speech bubble over/beside a character (`4200ms` stay + `300ms` fade). */
@@ -253,11 +340,16 @@ export class OverlayLayer {
       id,
       side,
       el,
+      width: 0,
+      height: 0,
       expiresAt: nowMs + BUBBLE_STAY_MS,
       fadeStarted: false,
       screenX: existing?.screenX ?? 0,
       screenY: existing?.screenY ?? 0,
       visible: false,
+      lastDisplayed: existing?.lastDisplayed ?? false,
+      lastDomX: Number.NaN,
+      lastDomY: Number.NaN,
     })
   }
 
@@ -271,18 +363,33 @@ export class OverlayLayer {
   positionBubble(id: string, pt: ProjectedPoint): void {
     const entry = this.bubbles.get(id)
     if (!entry) return
-    entry.visible = pt.visible
-    entry.screenX = pt.x
-    entry.screenY = pt.y
     if (!pt.visible) {
-      entry.el.style.display = "none"
+      entry.screenX = pt.x
+      entry.screenY = pt.y
+      if (entry.visible || entry.lastDisplayed) {
+        entry.visible = false
+        entry.lastDisplayed = false
+        entry.el.style.display = "none"
+      }
       return
     }
-    // Display before reading offsetWidth/offsetHeight so clamping uses live measured size
-    entry.el.style.display = "block"
-    const { vw, vh } = this.getViewportSize()
-    const bubbleW = Math.max(48, entry.el.offsetWidth || 200)
-    const bubbleH = Math.max(28, entry.el.offsetHeight || 42)
+    entry.visible = true
+    entry.screenX = pt.x
+    entry.screenY = pt.y
+
+    if (!entry.lastDisplayed) {
+      entry.el.style.display = "block"
+      entry.lastDisplayed = true
+    }
+    // Measure bubble dimensions once after content is shown to avoid per-frame layout reflows
+    if (entry.width <= 0 || entry.height <= 0) {
+      entry.width = Math.max(48, entry.el.offsetWidth || 200)
+      entry.height = Math.max(28, entry.el.offsetHeight || 42)
+    }
+    const vw = this.getViewportWidth()
+    const vh = this.getViewportHeight()
+    const bubbleW = entry.width
+    const bubbleH = entry.height
     const padX = 10
     const compact = vw <= 640
     const minTop = vw <= 540 ? 114 : compact ? 104 : 68
@@ -328,7 +435,15 @@ export class OverlayLayer {
       top = Math.max(minTop, Math.min(maxTop, top))
     }
 
-    entry.el.style.transform = `translate3d(${Math.round(left)}px, ${Math.round(top)}px, 0)`
+    if (
+      Number.isNaN(entry.lastDomX) ||
+      Math.abs(left - entry.lastDomX) >= DOM_MOVE_THRESHOLD_PX ||
+      Math.abs(top - entry.lastDomY) >= DOM_MOVE_THRESHOLD_PX
+    ) {
+      entry.lastDomX = left
+      entry.lastDomY = top
+      entry.el.style.transform = `translate3d(${Math.round(left)}px, ${Math.round(top)}px, 0)`
+    }
   }
 
   /** Creates or updates a Hall of Fame statue plaque beneath its podium. */
@@ -362,6 +477,9 @@ export class OverlayLayer {
         el,
         nameEl,
         subEl,
+        lastDisplayed: false,
+        lastDomX: Number.NaN,
+        lastDomY: Number.NaN,
       }
       this.plaques.set(rank, entry)
       this.applyStatuePlaqueContent(entry, name, subtitle, filled)
@@ -392,11 +510,26 @@ export class OverlayLayer {
     const entry = this.plaques.get(rank)
     if (!entry) return
     if (!pt.visible) {
-      entry.el.style.display = "none"
+      if (entry.lastDisplayed) {
+        entry.lastDisplayed = false
+        entry.el.style.display = "none"
+      }
       return
     }
-    entry.el.style.display = "flex"
-    entry.el.style.transform = `translate3d(${Math.round(pt.x)}px, ${Math.round(pt.y + 6)}px, 0) translate(-50%, 0)`
+    if (!entry.lastDisplayed) {
+      entry.lastDisplayed = true
+      entry.el.style.display = "flex"
+    }
+    const nextY = pt.y + 6
+    if (
+      Number.isNaN(entry.lastDomX) ||
+      Math.abs(pt.x - entry.lastDomX) >= DOM_MOVE_THRESHOLD_PX ||
+      Math.abs(nextY - entry.lastDomY) >= DOM_MOVE_THRESHOLD_PX
+    ) {
+      entry.lastDomX = pt.x
+      entry.lastDomY = nextY
+      entry.el.style.transform = `translate3d(${Math.round(pt.x)}px, ${Math.round(nextY)}px, 0) translate(-50%, 0)`
+    }
   }
 
   /** Shows a celebratory dark-red & gold banner for "gáy" (5s) or "khấn" (4.5s). */
@@ -432,6 +565,11 @@ export class OverlayLayer {
       bornAt: nowMs,
       stayMs,
       fadeMs: 350,
+      lastDisplayed: false,
+      lastDomX: Number.NaN,
+      lastDomY: Number.NaN,
+      lastAlpha: "",
+      lastScale: "",
     })
   }
 
@@ -457,6 +595,10 @@ export class OverlayLayer {
       el,
       bornAt: nowMs,
       durationMs: 760,
+      lastDisplayed: false,
+      lastDomX: Number.NaN,
+      lastDomY: Number.NaN,
+      lastAlpha: "",
     })
   }
 
@@ -474,28 +616,45 @@ export class OverlayLayer {
   ): void {
     if (this.disposed) return
 
-    // 1. Declutter overlapping nameplates every 120ms (front-most figure stays anchored)
-    if (nowMs >= this.nextDeclutterMs) {
+    // 1. Declutter overlapping nameplates every 120ms only when positions/visibility changed
+    if (this.declutterDirty && nowMs >= this.nextDeclutterMs) {
       this.nextDeclutterMs = nowMs + TAG_DECLUTTER_MS
-      const visibleEntries: NameplateEntry[] = []
+      this.declutterDirty = false
+      const visibleEntries = this.visibleScratch
+      visibleEntries.length = 0
       for (const entry of this.nameplates.values()) {
         if (entry.visible) visibleEntries.push(entry)
       }
-      visibleEntries.sort((a, b) => b.depth - a.depth)
-      const boxes: TagBox[] = visibleEntries.map((e) => {
-        const w = e.width || 72
-        const h = e.height || 22
-        return {
-          x: e.screenX - w / 2,
-          y: e.screenY - h,
-          w,
-          h,
+      if (visibleEntries.length > 1) {
+        visibleEntries.sort((a, b) => b.depth - a.depth)
+        const boxes = this.boxesScratch
+        boxes.length = visibleEntries.length
+        for (let i = 0; i < visibleEntries.length; i += 1) {
+          const e = visibleEntries[i]!
+          const w = e.width || 72
+          const h = e.height || 22
+          const box = boxes[i]
+          if (box) {
+            box.x = e.screenX - w / 2
+            box.y = e.screenY - h
+            box.w = w
+            box.h = h
+          } else {
+            boxes[i] = {
+              x: e.screenX - w / 2,
+              y: e.screenY - h,
+              w,
+              h,
+            }
+          }
         }
-      })
-      const lifts = liftTags(boxes, TAG_GAP_PX, TAG_MAX_STEPS)
-      visibleEntries.forEach((e, idx) => {
-        e.liftTarget = lifts[idx] ?? 0
-      })
+        const lifts = liftTags(boxes, TAG_GAP_PX, TAG_MAX_STEPS)
+        for (let i = 0; i < visibleEntries.length; i += 1) {
+          visibleEntries[i]!.liftTarget = lifts[i] ?? 0
+        }
+      } else if (visibleEntries.length === 1) {
+        visibleEntries[0]!.liftTarget = 0
+      }
     }
 
     // Smoothly ease lift offsets
@@ -505,20 +664,35 @@ export class OverlayLayer {
         const gap = entry.liftTarget - entry.lift
         entry.lift =
           Math.abs(gap) < 0.4 ? entry.liftTarget : entry.lift + gap * ease
+        if (entry.visible) {
+          const nextY = entry.screenY - entry.lift
+          if (
+            Number.isNaN(entry.lastDomY) ||
+            Math.abs(nextY - entry.lastDomY) >= DOM_MOVE_THRESHOLD_PX
+          ) {
+            entry.lastDomY = nextY
+            entry.lastDomX = entry.screenX
+            entry.el.style.transform = `translate3d(${Math.round(entry.screenX)}px, ${Math.round(nextY)}px, 0) translate(-50%, -100%)`
+          }
+        }
       }
     }
 
-    // 2. Expire speech bubbles gracefully
-    for (const [id, bubble] of [...this.bubbles]) {
-      const remaining = bubble.expiresAt - nowMs
-      if (remaining <= -BUBBLE_FADE_MS) {
-        bubble.el.remove()
-        this.bubbles.delete(id)
-      } else if (remaining <= 0 && !bubble.fadeStarted) {
-        bubble.fadeStarted = true
-        bubble.el.style.opacity = "0"
+    // 2. Expire speech bubbles gracefully (zero-alloc direct Map iteration)
+    if (this.bubbles.size > 0) {
+      for (const [id, bubble] of this.bubbles) {
+        const remaining = bubble.expiresAt - nowMs
+        if (remaining <= -BUBBLE_FADE_MS) {
+          bubble.el.remove()
+          this.bubbles.delete(id)
+        } else if (remaining <= 0 && !bubble.fadeStarted) {
+          bubble.fadeStarted = true
+          bubble.el.style.opacity = "0"
+        }
       }
     }
+
+    if (this.banners.length === 0 && this.popups.length === 0) return
 
     const reducedMotion = prefersReducedMotion()
 
@@ -533,7 +707,10 @@ export class OverlayLayer {
       }
       const pt = projectLogical(b.lx, b.ly, b.heightWorld)
       if (!pt.visible) {
-        b.el.style.display = "none"
+        if (b.lastDisplayed) {
+          b.lastDisplayed = false
+          b.el.style.display = "none"
+        }
         continue
       }
       const riseT = Math.min(1, age / 500)
@@ -551,9 +728,28 @@ export class OverlayLayer {
           : age < 250
             ? 1.06 - ((age - 140) / 110) * 0.06
             : 1
-      b.el.style.display = "flex"
-      b.el.style.opacity = alpha.toFixed(3)
-      b.el.style.transform = `translate3d(${Math.round(pt.x)}px, ${Math.round(pt.y - risePx)}px, 0) translate(-50%, -100%) scale(${popScale.toFixed(3)})`
+      if (!b.lastDisplayed) {
+        b.lastDisplayed = true
+        b.el.style.display = "flex"
+      }
+      const alphaStr = alpha.toFixed(3)
+      if (alphaStr !== b.lastAlpha) {
+        b.lastAlpha = alphaStr
+        b.el.style.opacity = alphaStr
+      }
+      const nextY = pt.y - risePx
+      const scaleStr = popScale.toFixed(3)
+      if (
+        Number.isNaN(b.lastDomX) ||
+        Math.abs(pt.x - b.lastDomX) >= DOM_MOVE_THRESHOLD_PX ||
+        Math.abs(nextY - b.lastDomY) >= DOM_MOVE_THRESHOLD_PX ||
+        scaleStr !== b.lastScale
+      ) {
+        b.lastDomX = pt.x
+        b.lastDomY = nextY
+        b.lastScale = scaleStr
+        b.el.style.transform = `translate3d(${Math.round(pt.x)}px, ${Math.round(nextY)}px, 0) translate(-50%, -100%) scale(${scaleStr})`
+      }
     }
 
     // 4. Project & animate "+10 xu" popups
@@ -567,15 +763,34 @@ export class OverlayLayer {
       }
       const pt = projectLogical(p.lx, p.ly, p.heightWorld)
       if (!pt.visible) {
-        p.el.style.display = "none"
+        if (p.lastDisplayed) {
+          p.lastDisplayed = false
+          p.el.style.display = "none"
+        }
         continue
       }
       const t = age / p.durationMs
       const floatPx = reducedMotion ? 12 : 38 * (1 - (1 - t) * (1 - t))
       const alpha = t < 0.55 ? 1 : Math.max(0, 1 - (t - 0.55) / 0.45)
-      p.el.style.display = "block"
-      p.el.style.opacity = alpha.toFixed(3)
-      p.el.style.transform = `translate3d(${Math.round(pt.x)}px, ${Math.round(pt.y - floatPx)}px, 0) translate(-50%, -100%)`
+      if (!p.lastDisplayed) {
+        p.lastDisplayed = true
+        p.el.style.display = "block"
+      }
+      const alphaStr = alpha.toFixed(3)
+      if (alphaStr !== p.lastAlpha) {
+        p.lastAlpha = alphaStr
+        p.el.style.opacity = alphaStr
+      }
+      const nextY = pt.y - floatPx
+      if (
+        Number.isNaN(p.lastDomX) ||
+        Math.abs(pt.x - p.lastDomX) >= DOM_MOVE_THRESHOLD_PX ||
+        Math.abs(nextY - p.lastDomY) >= DOM_MOVE_THRESHOLD_PX
+      ) {
+        p.lastDomX = pt.x
+        p.lastDomY = nextY
+        p.el.style.transform = `translate3d(${Math.round(pt.x)}px, ${Math.round(nextY)}px, 0) translate(-50%, -100%)`
+      }
     }
   }
 
@@ -587,6 +802,8 @@ export class OverlayLayer {
     this.plaques.clear()
     this.banners.length = 0
     this.popups.length = 0
+    this.visibleScratch.length = 0
+    this.boxesScratch.length = 0
     this.root.remove()
   }
 }

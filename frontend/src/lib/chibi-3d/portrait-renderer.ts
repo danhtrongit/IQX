@@ -16,6 +16,24 @@ import {
 } from "./types.ts"
 
 const portraitCache = new Map<string, string>()
+const MAX_PORTRAIT_CACHE = 96
+
+function cachePortrait(key: string, url: string): string {
+  if (portraitCache.size >= MAX_PORTRAIT_CACHE) {
+    const oldest = portraitCache.keys().next().value
+    if (oldest !== undefined) portraitCache.delete(oldest)
+  }
+  portraitCache.set(key, url)
+  return url
+}
+
+export function getPortraitCacheSize(): number {
+  return portraitCache.size
+}
+
+export function clearPortraitCache(): void {
+  portraitCache.clear()
+}
 
 /** Minimum pixel density multiplier for portrait data URLs so tiles stay sharp at devicePixelRatio 2. */
 export const PORTRAIT_MIN_DPR = 2
@@ -710,8 +728,7 @@ export function renderChibiPortraitDataUrl(
   const ctx = safeGet2DContext(canvas)
   if (!ctx) {
     const fallback = buildSvgChibiPortraitDataUrl(preset, resolvedHex, size)
-    portraitCache.set(cacheKey, fallback)
-    return fallback
+    return cachePortrait(cacheKey, fallback)
   }
 
   ctx.save()
@@ -905,8 +922,9 @@ export function renderChibiPortraitDataUrl(
 
   ctx.restore()
   const url = canvas.toDataURL("image/png")
-  portraitCache.set(cacheKey, url)
-  return url
+  canvas.width = 0
+  canvas.height = 0
+  return cachePortrait(cacheKey, url)
 }
 
 /** Generates crisp Chibi portrait data URLs for all 11 canonical Trading Floor avatars. */
@@ -1054,12 +1072,53 @@ export function mountChibi3DPreview(
   let dragging = false
   let lastX = 0
   let contextLost = false
+  let hidden = typeof document !== "undefined" ? document.hidden : false
+  let visibleInViewport = true
   let rafId = 0
   let lastTs = performance.now()
+  let lastRenderTs = -1
 
   // Present initial frame immediately facing front 3/4
   rig.update(0, { anim: currentAnim, facingRad: baseYaw })
   renderer.render(scene, camera)
+
+  const stopLoop = (): void => {
+    if (rafId !== 0) {
+      cancelAnimationFrame(rafId)
+      rafId = 0
+    }
+  }
+
+  const startLoop = (): void => {
+    if (disposed || contextLost || hidden || !visibleInViewport || rafId !== 0) {
+      return
+    }
+    lastTs = performance.now()
+    lastRenderTs = -1
+    rafId = requestAnimationFrame(tick)
+  }
+
+  const onVisibilityChange = (): void => {
+    if (typeof document === "undefined") return
+    hidden = document.hidden
+    if (hidden) stopLoop()
+    else startLoop()
+  }
+
+  let intersectionObserver: IntersectionObserver | null = null
+  if (typeof IntersectionObserver !== "undefined") {
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[entries.length - 1]
+        if (!entry) return
+        visibleInViewport = entry.isIntersecting
+        if (visibleInViewport) startLoop()
+        else stopLoop()
+      },
+      { threshold: 0 }
+    )
+    intersectionObserver.observe(dom)
+  }
 
   const onPointerDown = (e: PointerEvent): void => {
     if (initial.interactive === false) return
@@ -1069,6 +1128,7 @@ export function mountChibi3DPreview(
     swayTime = 0
     dragging = true
     lastX = e.clientX
+    lastRenderTs = -1
     dom.style.cursor = "grabbing"
     dom.setPointerCapture?.(e.pointerId)
   }
@@ -1085,13 +1145,18 @@ export function mountChibi3DPreview(
   const onContextLost = (e: Event): void => {
     e.preventDefault()
     contextLost = true
+    stopLoop()
     initial.onContextLost?.()
   }
   const onContextRestored = (): void => {
     contextLost = false
     syncRendererSize()
+    startLoop()
   }
 
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", onVisibilityChange)
+  }
   dom.addEventListener("pointerdown", onPointerDown)
   dom.addEventListener("pointermove", onPointerMove)
   dom.addEventListener("pointerup", onPointerUp)
@@ -1100,9 +1165,16 @@ export function mountChibi3DPreview(
   dom.addEventListener("webglcontextrestored", onContextRestored)
 
   const tick = (now: number): void => {
-    if (disposed) return
+    if (disposed || contextLost || hidden || !visibleInViewport) {
+      rafId = 0
+      return
+    }
     rafId = requestAnimationFrame(tick)
-    if (contextLost) return
+    // Pace gentle idle sway at ~30 fps while keeping instant full rate during drag
+    if (!dragging && lastRenderTs >= 0 && now - lastRenderTs < 31.5) {
+      return
+    }
+    lastRenderTs = now
     const dt = Math.min(0.05, Math.max(0, (now - lastTs) / 1000))
     lastTs = now
     const reduced = prefersReducedMotion()
@@ -1118,7 +1190,7 @@ export function mountChibi3DPreview(
     })
     renderer.render(scene, camera)
   }
-  rafId = requestAnimationFrame(tick)
+  startLoop()
 
   return {
     update: (next) => {
@@ -1144,16 +1216,22 @@ export function mountChibi3DPreview(
         baseYaw = PREVIEW_INITIAL_YAW
         swayTime = 0
         rig.update(0, { anim: currentAnim, facingRad: baseYaw })
+        lastRenderTs = -1
       } else if (nextColor !== currentColorHex) {
         currentColorHex = nextColor
         rig.setOutfitColor(currentColorHex)
+        lastRenderTs = -1
       }
     },
     dispose: () => {
       if (disposed) return
       disposed = true
-      cancelAnimationFrame(rafId)
+      stopLoop()
       resizeObserver?.disconnect()
+      intersectionObserver?.disconnect()
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisibilityChange)
+      }
       dom.removeEventListener("pointerdown", onPointerDown)
       dom.removeEventListener("pointermove", onPointerMove)
       dom.removeEventListener("pointerup", onPointerUp)
@@ -1165,6 +1243,11 @@ export function mountChibi3DPreview(
       ring.geometry.dispose()
       ringMat.dispose()
       renderer.dispose()
+      try {
+        renderer.forceContextLoss()
+      } catch {
+        // Headless or mocked WebGL contexts may not expose WEBGL_lose_context.
+      }
       if (dom.parentNode === container) {
         container.removeChild(dom)
       }

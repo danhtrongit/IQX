@@ -10,9 +10,12 @@
  */
 import * as THREE from "three"
 
+import { prefersReducedMotion } from "@/lib/chibi-3d/character-builder.ts"
 import {
+  getSceneHostBridge,
   logicalToWorld,
   type ChibiAnimMode,
+  type ChibiSceneHostBridge,
   type ProjectedPoint,
   type WorldTransformConfig,
 } from "@/lib/chibi-3d/types.ts"
@@ -20,7 +23,6 @@ import {
 import type { Rain } from "../net/types.ts"
 import { playFx, type FxSoundKey } from "./fx-sound.ts"
 import type { OverlayLayer } from "./overlay-layer.ts"
-import { prefersReducedMotion } from "./reduced-motion.ts"
 
 const FIREWORK_COLORS = [0xffd84d, 0xff4d5a, 0xff6ec7, 0x4df3ff, 0x7cff50]
 const CONFETTI_COLORS = [0xffd84d, 0xfff1a8, 0xff5e6c, 0x34d399, 0x60a5fa]

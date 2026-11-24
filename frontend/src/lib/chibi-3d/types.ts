@@ -1,4 +1,5 @@
 import * as THREE from "three"
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js"
 
 import type {
   AvatarGender,
@@ -433,13 +434,156 @@ export function shortestAngleDiff(from: number, to: number): number {
   return diff - Math.PI
 }
 
+// ---------- Scene Host Activity Bridge & Static Subtree / Geometry Helpers ----------
+
+export const SCENE_HOST_BRIDGE_KEY = "__chibiHostBridge"
+
+export interface ChibiSceneHostBridge {
+  markActive: (holdMs?: number) => void
+  requestFrame: () => void
+  markShadowDirty: () => void
+}
+
+/** Walks up the scene graph to locate an active `ChibiSceneHostBridge` on the owning Scene. */
+export function getSceneHostBridge(
+  obj: THREE.Object3D | null | undefined
+): ChibiSceneHostBridge | null {
+  let cur: THREE.Object3D | null | undefined = obj
+  while (cur) {
+    const bridge = (cur.userData as Record<string, unknown> | undefined)?.[
+      SCENE_HOST_BRIDGE_KEY
+    ] as ChibiSceneHostBridge | undefined
+    if (bridge) return bridge
+    cur = cur.parent
+  }
+  return null
+}
+
+/** Updates world matrices once and disables per-frame `matrixAutoUpdate` on all nodes in a static subtree. */
+export function freezeStaticSubtree(root: THREE.Object3D): void {
+  root.updateMatrixWorld(true)
+  root.traverse((node) => {
+    node.matrixAutoUpdate = false
+  })
+}
+
+/** Ensures a geometry has an index buffer so `mergeGeometries` stays compactly indexed instead of expanding 3x-5x. */
+export function ensureIndexedGeometry(
+  geom: THREE.BufferGeometry
+): THREE.BufferGeometry {
+  if (geom.index) return geom
+  const pos = geom.getAttribute("position")
+  const count = pos ? pos.count : 0
+  if (count === 0) return geom
+  const idxArray =
+    count < 65536 ? new Uint16Array(count) : new Uint32Array(count)
+  for (let i = 0; i < count; i += 1) {
+    idxArray[i] = i
+  }
+  geom.setIndex(new THREE.BufferAttribute(idxArray, 1))
+  return geom
+}
+
+/**
+ * Normalizes attributes (`position`, `normal`, `uv`, optional `color`) and merges geometries
+ * while preserving indexed buffers to save ~60% geometry RAM and GPU vertex bandwidth.
+ * Disposes all input geometries when `disposeInputs` is true.
+ */
+export function mergeIndexedGeometries(
+  geoms: THREE.BufferGeometry[],
+  opts?: { includeVertexColors?: boolean; disposeInputs?: boolean }
+): THREE.BufferGeometry | null {
+  const includeVertexColors = opts?.includeVertexColors ?? false
+  const disposeInputs = opts?.disposeInputs ?? true
+  if (geoms.length === 0) return null
+
+  const normalizeOne = (g: THREE.BufferGeometry): THREE.BufferGeometry => {
+    if (!g.getAttribute("normal")) {
+      g.computeVertexNormals()
+    }
+    const pos = g.getAttribute("position")
+    if (!g.getAttribute("uv") && pos) {
+      g.setAttribute(
+        "uv",
+        new THREE.Float32BufferAttribute(new Float32Array(pos.count * 2), 2)
+      )
+    }
+    if (includeVertexColors) {
+      if (!g.getAttribute("color") && pos) {
+        const white = new Float32Array(pos.count * 3)
+        white.fill(1)
+        g.setAttribute("color", new THREE.Float32BufferAttribute(white, 3))
+      }
+    } else if (g.getAttribute("color")) {
+      g.deleteAttribute("color")
+    }
+    for (const key of Object.keys(g.attributes)) {
+      if (
+        key !== "position" &&
+        key !== "normal" &&
+        key !== "uv" &&
+        !(includeVertexColors && key === "color")
+      ) {
+        g.deleteAttribute(key)
+      }
+    }
+    return g
+  }
+
+  if (geoms.length === 1) {
+    return normalizeOne(geoms[0]!)
+  }
+
+  const anyIndexed = geoms.some((g) => g.index !== null)
+  const prepared: THREE.BufferGeometry[] = []
+  for (const src of geoms) {
+    const g = normalizeOne(src)
+    if (anyIndexed && !g.index) {
+      ensureIndexedGeometry(g)
+    }
+    prepared.push(g)
+  }
+
+  const merged = mergeGeometries(prepared, false)
+  if (merged) {
+    if (disposeInputs) {
+      for (const g of prepared) g.dispose()
+    }
+    return merged
+  }
+
+  // Fallback: non-indexed merge if an unusual attribute layout failed indexed merge
+  const fallbackList: THREE.BufferGeometry[] = []
+  for (const g of prepared) {
+    if (g.index) {
+      const ni = g.toNonIndexed()
+      if (disposeInputs) g.dispose()
+      fallbackList.push(ni)
+    } else {
+      fallbackList.push(g)
+    }
+  }
+  const fallbackMerged = mergeGeometries(fallbackList, false)
+  if (disposeInputs) {
+    for (const g of fallbackList) g.dispose()
+  }
+  return fallbackMerged
+}
+
 // ---------- Material Factories & Safe GPU Cleanup ----------
 
 export const SHARED_TEXTURE_FLAG = "__chibiSharedTexture"
+export const SHARED_RESOURCE_FLAG = "__chibiSharedResource"
 
 export function markSharedTexture<T extends THREE.Texture>(tex: T): T {
   ;(tex.userData as Record<string, unknown>)[SHARED_TEXTURE_FLAG] = true
   return tex
+}
+
+export function isSharedResourceObj(obj: {
+  userData?: Record<string, unknown>
+}): boolean {
+  return Boolean(obj.userData?.[SHARED_RESOURCE_FLAG])
 }
 
 export function createMatteMaterial(
@@ -511,6 +655,7 @@ export function createGlowMaterial(
 }
 
 function disposeMaterial(mat: THREE.Material): void {
+  if (isSharedResourceObj(mat)) return
   const std = mat as THREE.MeshStandardMaterial & {
     map?: THREE.Texture | null
     emissiveMap?: THREE.Texture | null
@@ -542,10 +687,15 @@ function disposeMaterial(mat: THREE.Material): void {
 
 /** Safely disposes geometries, materials, and non-shared textures under `root`. */
 export function disposeObject3D(root: THREE.Object3D): void {
+  const geometries = new Set<THREE.BufferGeometry>()
+  const materials = new Set<THREE.Material>()
   root.traverse((node) => {
+    if (node instanceof THREE.InstancedMesh) {
+      node.dispose()
+    }
     const mesh = node as THREE.Mesh
-    if (mesh.geometry) {
-      mesh.geometry.dispose()
+    if (mesh.geometry && !isSharedResourceObj(mesh.geometry)) {
+      geometries.add(mesh.geometry)
     }
     const material = mesh.material as
       | THREE.Material
@@ -553,10 +703,12 @@ export function disposeObject3D(root: THREE.Object3D): void {
       | undefined
     if (Array.isArray(material)) {
       for (const m of material) {
-        if (m) disposeMaterial(m)
+        if (m && !isSharedResourceObj(m)) materials.add(m)
       }
-    } else if (material) {
-      disposeMaterial(material)
+    } else if (material && !isSharedResourceObj(material)) {
+      materials.add(material)
     }
   })
+  for (const g of geometries) g.dispose()
+  for (const m of materials) disposeMaterial(m)
 }

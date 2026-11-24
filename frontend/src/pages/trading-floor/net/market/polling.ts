@@ -20,14 +20,32 @@ const MIN_DELAY_MS = 1_000
 /** A poll shortly after the open or close picks up the first or last numbers. */
 const PHASE_SLACK_MS = 2_000
 
+export const IDLE_BACKOFF_THRESHOLDS = {
+  /** After 5 minutes without user input, halve polling frequency. */
+  moderateMs: 5 * 60_000,
+  /** After 15 minutes without user input, quarter polling frequency (capped at closed interval). */
+  longMs: 15 * 60_000,
+} as const
+
 export interface PollInput {
   now: number
   /** Consecutive failed refreshes. */
   failures: number
   /** True while the WebSocket has delivered data recently. */
   socketLive?: boolean
+  /** Milliseconds elapsed since the last user input on this tab. */
+  idleMs?: number
   /** Random source in [0, 1). */
   random?: () => number
+}
+
+/** Multiplier applied to the base poll interval when the tab has been idle for a long time. */
+export function idleBackoffMultiplier(idleMs = 0): number {
+  if (!Number.isFinite(idleMs) || idleMs < IDLE_BACKOFF_THRESHOLDS.moderateMs) {
+    return 1
+  }
+  if (idleMs < IDLE_BACKOFF_THRESHOLDS.longMs) return 2
+  return 4
 }
 
 /** Interval between refreshes for the current time of day, ignoring failures. */
@@ -53,9 +71,15 @@ export function nextPollDelay({
   now,
   failures,
   socketLive = false,
+  idleMs = 0,
   random = Math.random,
 }: PollInput): number {
-  let delay = backoff(basePollInterval(now, socketLive), failures)
+  const base = basePollInterval(now, socketLive)
+  const idleAdjusted = Math.min(
+    POLL_MS.closed,
+    base * idleBackoffMultiplier(idleMs)
+  )
+  let delay = backoff(idleAdjusted, failures)
   if (failures === 0) {
     // Do not sleep through the open or the close.
     const untilPhase = msToNextPhase(now)
