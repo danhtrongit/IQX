@@ -370,6 +370,18 @@ export function OfficeHud({
     </HudCard>
   )
 
+  const doorButton = onGoTradingFloor ? (
+    <button
+      type="button"
+      className="of-door-btn"
+      data-testid="office-go-floor-btn"
+      onClick={onGoTradingFloor}
+    >
+      <DoorOpen size={17} aria-hidden="true" />
+      <span>Về Khu giao dịch</span>
+    </button>
+  ) : null
+
   return (
     <>
       <div className="of-hud of-hud-tl">
@@ -377,17 +389,7 @@ export function OfficeHud({
           <span className="of-pill-gold">IQX</span>
           <span>Văn phòng · Nhóm {bossName}</span>
         </div>
-        {onGoTradingFloor && (
-          <button
-            type="button"
-            className="of-door-btn"
-            data-testid="office-go-floor-btn"
-            onClick={onGoTradingFloor}
-          >
-            <DoorOpen size={17} aria-hidden="true" />
-            <span>Về Khu giao dịch</span>
-          </button>
-        )}
+        {!isMobile && doorButton}
         {!isMobile && bossCards && (
           <div className="of-hud-stack">{bossCards}</div>
         )}
@@ -429,6 +431,10 @@ export function OfficeHud({
           −
         </button>
       </div>
+
+      {isMobile && doorButton && (
+        <div className="of-hud of-hud-br">{doorButton}</div>
+      )}
 
       <div className="of-hint" aria-hidden="true">
         Nhấn chuột để đi · WASD / mũi tên · E để mở · cuộn để phóng to

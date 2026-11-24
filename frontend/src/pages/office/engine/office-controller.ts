@@ -254,17 +254,26 @@ interface NameplateDom {
   signature: string
 }
 
-function isTypingTarget(target: EventTarget | null): boolean {
+function isEditableNode(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false
   const tag = target.tagName
   if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true
   return target.isContentEditable
 }
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  return (
+    isEditableNode(target) ||
+    (typeof document !== "undefined" && isEditableNode(document.activeElement))
+  )
+}
+
 function isHudOrModalTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false
   return Boolean(
-    target.closest(".of-hud, .of-zoom, .of-prompt, .of-ov, .of-hint")
+    target.closest(
+      ".of-hud, .of-door-btn, .of-zoom, .of-prompt, .of-ov, .of-hint"
+    )
   )
 }
 
@@ -541,7 +550,31 @@ export class OfficeController {
       }
     }
 
+    let lastHoverMs = 0
+    const onPointerMove = (event: PointerEvent): void => {
+      if (event.pointerType === "touch") return
+      const dom = this.host.renderer?.domElement
+      if (!dom?.style) return
+      if (
+        this.disposed ||
+        this.modalOpen ||
+        this.doorExit ||
+        !this.selfActor ||
+        isHudOrModalTarget(event.target)
+      ) {
+        if (dom.style.cursor) dom.style.cursor = ""
+        return
+      }
+      const now = performance.now()
+      if (now - lastHoverMs < 60) return
+      lastHoverMs = now
+      dom.style.cursor = this.isExitDoorHit(event.clientX, event.clientY)
+        ? "pointer"
+        : ""
+    }
+
     this.container.addEventListener("pointerdown", onPointerDown)
+    this.container.addEventListener("pointermove", onPointerMove)
     this.container.addEventListener("wheel", onWheel, { passive: false })
     window.addEventListener("keydown", onKeyDown)
     window.addEventListener("keyup", onKeyUp)
@@ -549,7 +582,10 @@ export class OfficeController {
     document.addEventListener("visibilitychange", onVisibilityChange)
 
     this.cleanups.push(() => {
+      const dom = this.host.renderer?.domElement
+      if (dom?.style) dom.style.cursor = ""
       this.container.removeEventListener("pointerdown", onPointerDown)
+      this.container.removeEventListener("pointermove", onPointerMove)
       this.container.removeEventListener("wheel", onWheel)
       window.removeEventListener("keydown", onKeyDown)
       window.removeEventListener("keyup", onKeyUp)

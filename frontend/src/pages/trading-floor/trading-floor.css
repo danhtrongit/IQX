@@ -805,7 +805,7 @@
   border-radius: 999px;
   pointer-events: none;
 }
-@media (pointer: coarse), (hover: none), (max-width: 1120px) {
+@media (pointer: coarse), (hover: none), (max-width: 1380px) {
   .tf-root .help {
     display: none;
   }

@@ -44,8 +44,8 @@ test.describe("Bố cục v1.3 · máy tính", () => {
   test("N01 thanh trên cùng: Giới thiệu · Luyện tập · Flashback · Chiến lược, không còn Demo Trading, Học viện", async ({ page }) => {
     await page.goto("/")
     const nav = page.getByRole("banner").getByRole("navigation", { name: "Điều hướng chính" })
-    // "Khu giao dịch" (2026-11-14) and "Văn phòng" (2026-11-23) stay after Chiến lược.
-    await expect(nav.getByRole("link")).toHaveText([/^Giới thiệu$/i, /^Luyện tập$/i, /^Flashback$/i, /^Chiến lược$/i, /^Khu giao dịch$/i, /^Văn phòng$/i])
+    // "Khu giao dịch" (unified route hosting both Trading Floor & Office) stays after Chiến lược.
+    await expect(nav.getByRole("link")).toHaveText([/^Giới thiệu$/i, /^Luyện tập$/i, /^Flashback$/i, /^Chiến lược$/i, /^Khu giao dịch$/i])
     await expect(nav.getByRole("link", { name: /Demo Trading|Học viện/i })).toHaveCount(0)
     await shot(page, "N01-header-1440")
   })

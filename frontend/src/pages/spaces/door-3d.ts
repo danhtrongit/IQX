@@ -236,36 +236,50 @@ export function createChibiPortalDoor(
     transparent: true,
     opacity: 0.52,
   })
-  const portalGlowMat = createGlowMaterial("#ffe4a8", 0.72, 0.96)
+  const portalGlowMat = createGlowMaterial(
+    "#ffe4a8",
+    0.72,
+    doubleSidedSign ? 0.14 : 0.96
+  )
+  if (doubleSidedSign) {
+    portalGlowMat.side = THREE.DoubleSide
+    portalGlowMat.depthWrite = false
+  }
   const lampGlowMat = createGlowMaterial("#fff0be", 1.15)
   const arrowGlowMat = createGlowMaterial(accentHex, 1.05)
 
   // 1. Frame: left/right rounded jambs, navy plinths, gold capitals, top lintel & crown
+  const plinthGeo = createRoundedGeo(
+    jambW + 0.06,
+    0.22,
+    frameD + 0.08,
+    0.025,
+    lite
+  )
+  const jambGeo = createRoundedGeo(jambW, openH, frameD, 0.03, lite)
+  const goldRingGeo = createRoundedGeo(
+    jambW + 0.05,
+    0.06,
+    frameD + 0.06,
+    0.015,
+    lite
+  )
   for (const side of [-1, 1] as const) {
     const jx = side * (openW / 2 + jambW / 2)
 
-    const plinth = new THREE.Mesh(
-      createRoundedGeo(jambW + 0.06, 0.22, frameD + 0.08, 0.025, lite),
-      navyMat
-    )
+    const plinth = new THREE.Mesh(plinthGeo, navyMat)
     plinth.position.set(jx, 0.11, 0)
     plinth.castShadow = !lite
     plinth.receiveShadow = true
     group.add(plinth)
 
-    const jamb = new THREE.Mesh(
-      createRoundedGeo(jambW, openH, frameD, 0.03, lite),
-      walnutMat
-    )
+    const jamb = new THREE.Mesh(jambGeo, walnutMat)
     jamb.position.set(jx, openH / 2, 0)
     jamb.castShadow = !lite
     jamb.receiveShadow = true
     group.add(jamb)
 
-    const goldRing = new THREE.Mesh(
-      createRoundedGeo(jambW + 0.05, 0.06, frameD + 0.06, 0.015, lite),
-      goldMat
-    )
+    const goldRing = new THREE.Mesh(goldRingGeo, goldMat)
     goldRing.position.set(jx, openH - 0.02, 0)
     group.add(goldRing)
   }
@@ -317,22 +331,28 @@ export function createChibiPortalDoor(
   matInner.position.set(0, 0.012, frameD / 2 + 0.3)
   group.add(matInner)
 
-  // 2. Warm glowing portal interior backdrop (revealed as the door leaf swings open)
+  // 2. Warm glowing portal interior backdrop (revealed as the door leaf swings open).
+  // Cutaway South-wall doors (`doubleSidedSign`) omit the opaque outer back-cap so the wooden/glass
+  // door leaf, brass handle, and glowing open portal remain unobstructed from the camera side (-Z).
   const portalBack = new THREE.Mesh(
     new THREE.PlaneGeometry(openW - 0.02, openH - 0.02),
     portalGlowMat
   )
+  portalBack.name = "door-portal-glow"
   portalBack.position.set(0, openH / 2, -frameD * 0.24)
   group.add(portalBack)
 
-  // Subtle dark outer back-cap behind portal glow so it looks solid from rear angles too
-  const portalOuterCap = new THREE.Mesh(
-    new THREE.PlaneGeometry(openW + 0.02, openH + 0.02),
-    woodDarkMat
-  )
-  portalOuterCap.rotation.y = Math.PI
-  portalOuterCap.position.set(0, openH / 2, -frameD * 0.32)
-  group.add(portalOuterCap)
+  if (!doubleSidedSign) {
+    // Solid dark outer back-cap behind portal glow for full-height side walls
+    const portalOuterCap = new THREE.Mesh(
+      new THREE.PlaneGeometry(openW + 0.02, openH + 0.02),
+      woodDarkMat
+    )
+    portalOuterCap.name = "door-outer-cap"
+    portalOuterCap.rotation.y = Math.PI
+    portalOuterCap.position.set(0, openH / 2, -frameD * 0.32)
+    group.add(portalOuterCap)
+  }
 
   // 3. Animated Door Leaf on a vertical hinge pivot at the +X jamb (swings into +Z cleanly)
   const leafW = openW - 0.04
@@ -359,11 +379,15 @@ export function createChibiPortalDoor(
   hingePivot.add(lowerLeaf)
 
   // Raised decorative recessed panel on both front & back of lower leaf
+  const insetGeo = createRoundedGeo(
+    leafW - 0.24,
+    lowerPanelH - 0.22,
+    0.02,
+    0.01,
+    lite
+  )
   for (const faceSign of [-1, 1] as const) {
-    const inset = new THREE.Mesh(
-      createRoundedGeo(leafW - 0.24, lowerPanelH - 0.22, 0.02, 0.01, lite),
-      leafPanelMat
-    )
+    const inset = new THREE.Mesh(insetGeo, leafPanelMat)
     inset.position.set(
       -leafW / 2,
       lowerPanelH / 2 + 0.02,
@@ -375,11 +399,9 @@ export function createChibiPortalDoor(
   // Left & right upper wooden stiles flanking the glass window
   const stileW = (leafW - glassW) / 2
   const upperH = leafH - lowerPanelH
+  const stileGeo = createRoundedGeo(stileW, upperH, leafD, 0.014, lite)
   for (const sx of [-stileW / 2, -(leafW - stileW / 2)]) {
-    const stile = new THREE.Mesh(
-      createRoundedGeo(stileW, upperH, leafD, 0.014, lite),
-      leafWoodMat
-    )
+    const stile = new THREE.Mesh(stileGeo, leafWoodMat)
     stile.position.set(sx, lowerPanelH + upperH / 2 + 0.02, 0)
     stile.castShadow = !lite
     hingePivot.add(stile)
@@ -417,11 +439,9 @@ export function createChibiPortalDoor(
   hingePivot.add(mullionH)
 
   // Brass hinges along pivot edge
+  const hingeGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.11, segs)
   for (const hy of [0.36, leafH - 0.36]) {
-    const hinge = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.022, 0.022, 0.11, segs),
-      goldMat
-    )
+    const hinge = new THREE.Mesh(hingeGeo, goldMat)
     hinge.position.set(0.01, hy, leafD * 0.45)
     hingePivot.add(hinge)
   }
@@ -429,26 +449,20 @@ export function createChibiPortalDoor(
   // Brass push-plate + chibi lever handle on both front (+Z) and back (-Z) faces
   const handleX = -leafW + 0.15
   const handleY = lowerPanelH + 0.02
+  const plateGeo = createRoundedGeo(0.08, 0.22, 0.02, 0.008, lite)
+  const stemGeo = new THREE.CylinderGeometry(0.018, 0.018, 0.07, segs)
+  const leverGeo = createRoundedGeo(0.14, 0.036, 0.034, 0.012, lite)
   for (const faceSign of [-1, 1] as const) {
-    const plate = new THREE.Mesh(
-      createRoundedGeo(0.08, 0.22, 0.02, 0.008, lite),
-      goldMat
-    )
+    const plate = new THREE.Mesh(plateGeo, goldMat)
     plate.position.set(handleX, handleY, faceSign * (leafD / 2 + 0.01))
     hingePivot.add(plate)
 
-    const stem = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.018, 0.018, 0.07, segs),
-      goldMat
-    )
+    const stem = new THREE.Mesh(stemGeo, goldMat)
     stem.rotation.x = Math.PI / 2
     stem.position.set(handleX, handleY, faceSign * (leafD / 2 + 0.045))
     hingePivot.add(stem)
 
-    const lever = new THREE.Mesh(
-      createRoundedGeo(0.14, 0.036, 0.034, 0.012, lite),
-      goldMat
-    )
+    const lever = new THREE.Mesh(leverGeo, goldMat)
     lever.position.set(handleX + 0.055, handleY, faceSign * (leafD / 2 + 0.075))
     hingePivot.add(lever)
   }
@@ -460,11 +474,9 @@ export function createChibiPortalDoor(
   const signCenterY = totalH + 0.34
 
   // Twin brass stanchions connecting crown to sign frame
+  const postGeo = new THREE.CylinderGeometry(0.026, 0.026, 0.22, segs)
   for (const sx of [-signW * 0.32, signW * 0.32]) {
-    const post = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.026, 0.026, 0.22, segs),
-      goldMat
-    )
+    const post = new THREE.Mesh(postGeo, goldMat)
     post.position.set(sx, totalH + 0.12, 0)
     group.add(post)
   }
@@ -492,30 +504,31 @@ export function createChibiPortalDoor(
     metalness: 0.06,
   })
 
-  const signFront = new THREE.Mesh(
-    new THREE.PlaneGeometry(signW, signH),
-    signFaceMat
-  )
+  const signFaceGeo = new THREE.PlaneGeometry(signW, signH)
+  const signFront = new THREE.Mesh(signFaceGeo, signFaceMat)
   signFront.position.set(0, signCenterY, signD / 2 + 0.006)
   group.add(signFront)
 
   if (doubleSidedSign) {
-    const signBack = new THREE.Mesh(
-      new THREE.PlaneGeometry(signW, signH),
-      signFaceMat
-    )
+    const signBack = new THREE.Mesh(signFaceGeo, signFaceMat)
     signBack.rotation.y = Math.PI
     signBack.position.set(0, signCenterY, -(signD / 2 + 0.006))
     group.add(signBack)
   }
 
-  // 5. Overhead warm brass doorway sconce lamp + floating glowing arrow beacon
-  const lampOrb = new THREE.Mesh(
-    new THREE.SphereGeometry(0.075, segs, segs),
-    lampGlowMat
-  )
+  // 5. Overhead warm brass doorway sconce lamp(s) + floating glowing arrow beacon
+  const lampGeo = new THREE.SphereGeometry(0.075, segs, segs)
+  const lampOrb = new THREE.Mesh(lampGeo, lampGlowMat)
+  lampOrb.name = "door-sconce-front"
   lampOrb.position.set(0, openH + lintelH * 0.45, frameD / 2 + 0.08)
   group.add(lampOrb)
+
+  if (doubleSidedSign) {
+    const lampOrbBack = new THREE.Mesh(lampGeo, lampGlowMat)
+    lampOrbBack.name = "door-sconce-back"
+    lampOrbBack.position.set(0, openH + lintelH * 0.45, -(frameD / 2 + 0.08))
+    group.add(lampOrbBack)
+  }
 
   const beaconGroup = new THREE.Group()
   beaconGroup.name = "door-arrow-beacon"
@@ -559,6 +572,9 @@ export function createChibiPortalDoor(
     const eased = easeOutCubic(openProgress)
     hingePivot.rotation.y = eased * MAX_OPEN_RAD
     portalGlowMat.emissiveIntensity = 0.68 + eased * 0.62
+    if (doubleSidedSign) {
+      portalGlowMat.opacity = 0.14 + eased * 0.56
+    }
   }
 
   const update = (

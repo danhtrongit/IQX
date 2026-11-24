@@ -241,6 +241,10 @@ describe("Procedural 3D Portal Door & shared transition logic", () => {
       expect(door.hitTarget).toBeTruthy()
       expect(door.getOpenProgress()).toBe(0)
 
+      // Side-wall doors include an outer back-cap; cutaway South-wall doors omit it and add a camera-facing sconce
+      expect(Boolean(door.group.getObjectByName("door-outer-cap"))).toBe(!lite)
+      expect(Boolean(door.group.getObjectByName("door-sconce-back"))).toBe(lite)
+
       door.setOpenProgress(0.5)
       expect(door.getOpenProgress()).toBeCloseTo(0.5, 5)
       door.setOpenProgress(1.5)
@@ -386,6 +390,53 @@ describe("Trading Floor door collision, nav reachability, interaction radius & e
     controller.dispose()
     container.remove()
   })
+
+  it("hides Floor door hint outside interaction radius (> 84u) and ignores KeyE while typing in an input", () => {
+    mockReducedMotion(false)
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    ui.profile.set({ name: "Minh", avatar: "male01", color: "default" })
+
+    // 1. Default SPAWN (1024, 540) is far outside the West door radius (84u)
+    const onDoorHintChangeFar = vi.fn()
+    const onDoorRequestFar = vi.fn()
+    const farRun = createFakeHost(FLOOR_WORLD_CONFIG)
+    const farCtrl = new FloorController(farRun.host, container, {
+      arrivedViaDoor: false,
+      onDoorHintChange: onDoorHintChangeFar,
+      onDoorRequest: onDoorRequestFar,
+    })
+    farRun.step(0.05)
+    expect(onDoorHintChangeFar).not.toHaveBeenCalledWith(true)
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyE" }))
+    expect(onDoorRequestFar).not.toHaveBeenCalled()
+    // Reset bridge panel state (KeyE at SPAWN opens Thần Tài) before testing door proximity
+    ui.panel.set(null)
+    farCtrl.dispose()
+
+    // 2. Near the door, KeyE is ignored while an input has focus
+    const onDoorRequestNear = vi.fn()
+    const nearRun = createFakeHost(FLOOR_WORLD_CONFIG)
+    const nearCtrl = new FloorController(nearRun.host, container, {
+      arrivedViaDoor: true,
+      onDoorRequest: onDoorRequestNear,
+    })
+    for (let i = 0; i < 20; i += 1) nearRun.step(0.05)
+
+    const input = document.createElement("input")
+    document.body.appendChild(input)
+    input.focus()
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyE" }))
+    expect(onDoorRequestNear).not.toHaveBeenCalled()
+
+    input.blur()
+    input.remove()
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyE" }))
+    expect(onDoorRequestNear).toHaveBeenCalledTimes(1)
+
+    nearCtrl.dispose()
+    container.remove()
+  })
 })
 
 describe("Office door placement, reachability, interaction radius & exit choreography", () => {
@@ -525,5 +576,59 @@ describe("Office door placement, reachability, interaction radius & exit choreog
     expect(immediateFade).toHaveBeenCalledTimes(1)
     ctrl2.dispose()
     c2.remove()
+  })
+
+  it("hides Office door prompt outside 95 px radius and ignores KeyE while typing in an input", () => {
+    mockReducedMotion(false)
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const onDoorRequestFar = vi.fn()
+
+    // 1. Default staff desk spawn is far (> 95 px) from the South exit door
+    const farRun = createFakeHost({
+      logicalW: OFFICE_BASE_W,
+      logicalH: OFFICE_BASE_H,
+      scale: OFFICE_WORLD_SCALE,
+    })
+    const farCtrl = new OfficeController(farRun.host, container, {
+      arrivedViaDoor: false,
+      onDoorRequest: onDoorRequestFar,
+    })
+    farCtrl.updateTeam(makeOfficeMe())
+    farRun.step(0.05)
+    expect(
+      container.querySelector('[data-testid="office-door-prompt"]')
+    ).toBeNull()
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyE" }))
+    expect(onDoorRequestFar).not.toHaveBeenCalled()
+    farCtrl.dispose()
+
+    // 2. Near the Office exit door, KeyE is ignored while typing in an <input>
+    const onDoorRequestNear = vi.fn()
+    const nearRun = createFakeHost({
+      logicalW: OFFICE_BASE_W,
+      logicalH: OFFICE_BASE_H,
+      scale: OFFICE_WORLD_SCALE,
+    })
+    const nearCtrl = new OfficeController(nearRun.host, container, {
+      arrivedViaDoor: true,
+      onDoorRequest: onDoorRequestNear,
+    })
+    nearCtrl.updateTeam(makeOfficeMe())
+    for (let i = 0; i < 20; i += 1) nearRun.step(0.05)
+
+    const input = document.createElement("input")
+    document.body.appendChild(input)
+    input.focus()
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyE" }))
+    expect(onDoorRequestNear).not.toHaveBeenCalled()
+
+    input.blur()
+    input.remove()
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyE" }))
+    expect(onDoorRequestNear).toHaveBeenCalledTimes(1)
+
+    nearCtrl.dispose()
+    container.remove()
   })
 })

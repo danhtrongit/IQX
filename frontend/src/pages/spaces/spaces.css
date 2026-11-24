@@ -16,6 +16,24 @@
   font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
 }
 
+@keyframes sp-veil-to-dark {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sp-veil-to-clear {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 .sp-veil {
   position: absolute;
   inset: 0;
@@ -34,7 +52,11 @@
   text-align: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+}
+
+.sp-veil.is-to-dark {
+  pointer-events: auto;
+  animation: sp-veil-to-dark 0.35s ease forwards;
 }
 
 .sp-veil.is-dark {
@@ -43,13 +65,12 @@
 }
 
 .sp-veil.is-fading-in {
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 0.32s ease;
+  animation: sp-veil-to-clear 0.32s ease forwards;
 }
 
 .sp-veil.is-reduced {
-  transition: opacity 0.15s ease;
+  animation-duration: 0.15s;
 }
 
 .sp-veil-icon {
@@ -79,6 +100,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sp-veil {
-    transition-duration: 0.15s;
+    animation-duration: 0.15s;
   }
 }

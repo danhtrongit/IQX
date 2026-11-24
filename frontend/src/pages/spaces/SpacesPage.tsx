@@ -62,10 +62,15 @@ export function SpacesPage() {
   const accessCheckRef = useRef(false)
   const lastCheckedUserIdRef = useRef<string | null>(null)
   const pendingTargetRef = useRef<SpaceRoom | null>(null)
+  const urlRoomRef = useRef<SpaceRoom>(urlRoom)
   const veilPhaseRef = useRef<VeilPhase>("idle")
   const mountedRef = useRef(true)
   const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set())
   const arrivalNonceRef = useRef(0)
+
+  useEffect(() => {
+    urlRoomRef.current = urlRoom
+  }, [urlRoom])
 
   const updateVeilPhase = useCallback((next: VeilPhase) => {
     veilPhaseRef.current = next
@@ -129,7 +134,8 @@ export function SpacesPage() {
       // 1. Unmount current room completely so its WebGL context, rAF, sockets & pollers dispose cleanly.
       setMountedRoom(null)
 
-      if (pushHistory) {
+      if (pushHistory && urlRoomRef.current !== targetRoom) {
+        urlRoomRef.current = targetRoom
         navigate(buildSpaceUrl(targetRoom), { replace: false })
       }
 
@@ -138,7 +144,7 @@ export function SpacesPage() {
         arrivalNonceRef.current += 1
         setArrival({
           room: targetRoom,
-          viaDoor: viaDoor && !reduced,
+          viaDoor,
           nonce: arrivalNonceRef.current,
         })
         setMountedRoom(targetRoom)
@@ -273,7 +279,8 @@ export function SpacesPage() {
   const veilVisible = veilPhase !== "idle"
   const veilClass = [
     "sp-veil",
-    veilPhase === "to-dark" || veilPhase === "switching" ? "is-dark" : "",
+    veilPhase === "to-dark" ? "is-to-dark" : "",
+    veilPhase === "switching" ? "is-dark" : "",
     veilPhase === "to-clear" ? "is-fading-in" : "",
     veilReduced ? "is-reduced" : "",
   ]

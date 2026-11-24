@@ -230,6 +230,14 @@
   align-items: flex-end;
 }
 
+.of-hud-br {
+  right: calc(10px + var(--of-safe-r));
+  bottom: calc(12px + var(--of-safe-b));
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
 .of-hud-stack {
   display: flex;
   flex-direction: column;
@@ -2247,10 +2255,10 @@
 
   .of-door-btn {
     min-height: 44px;
-    padding: 8px 11px;
-    font-size: 12px;
-    gap: 6px;
-    max-width: calc(100vw - 224px - var(--of-safe-l) - var(--of-safe-r));
+    padding: 8px 13px;
+    font-size: 13px;
+    gap: 7px;
+    max-width: calc(100vw - 72px - var(--of-safe-l) - var(--of-safe-r));
     overflow: hidden;
   }
 
@@ -2291,7 +2299,7 @@
   }
 
   .of-hc.is-mini {
-    width: min(204px, calc(100vw - 20px - var(--of-safe-l) - var(--of-safe-r)));
+    width: min(224px, calc(100vw - 20px - var(--of-safe-l) - var(--of-safe-r)));
   }
 
   .of-hc.is-mini .of-hc-head {
@@ -2305,7 +2313,7 @@
   }
 
   .of-toast {
-    bottom: calc(20px + var(--of-safe-b));
+    bottom: calc(68px + var(--of-safe-b));
   }
 
   .of-ov {

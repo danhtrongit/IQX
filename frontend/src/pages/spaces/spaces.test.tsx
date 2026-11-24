@@ -312,6 +312,7 @@ function renderSpaces(initialEntries: string[]) {
       <MemoryRouter initialEntries={initialEntries}>
         <LocationProbe />
         <Routes>
+          <Route path="/" element={<div data-testid="home-page">Home</div>} />
           <Route path="/khu-giao-dich" element={<SpacesPage />} />
           <Route path="/van-phong" element={<LegacyOfficeRedirectProbe />} />
           <Route
@@ -445,22 +446,34 @@ describe("spaces-url helpers & legacy route redirects", () => {
   })
 
   it("redirects /van-phong?modal=mine and /van-phong-ao?from=share with replace preserving other query params", async () => {
-    const view1 = renderSpaces(["/van-phong?modal=mine&source=bell"])
+    const user = userEvent.setup()
+    const view1 = renderSpaces(["/", "/van-phong?modal=mine&source=bell"])
     await waitFor(() =>
       expect(screen.getByTestId("space-url").textContent).toBe(
         "/khu-giao-dich?phong=van-phong&modal=mine&source=bell"
       )
     )
     expect(await screen.findByTestId("office-page")).toBeTruthy()
+    // Verify `replace: true`: pressing Back returns directly to "/", not a redirect loop on "/van-phong".
+    await user.click(screen.getByTestId("history-back"))
+    await waitFor(() =>
+      expect(screen.getByTestId("space-url").textContent).toBe("/")
+    )
+    expect(await screen.findByTestId("home-page")).toBeTruthy()
     view1.unmount()
 
-    renderSpaces(["/van-phong-ao?from=share"])
+    const view2 = renderSpaces(["/", "/van-phong-ao?from=share"])
     await waitFor(() =>
       expect(screen.getByTestId("space-url").textContent).toBe(
         "/khu-giao-dich?from=share"
       )
     )
     expect(await screen.findByTestId("trading-floor-page")).toBeTruthy()
+    await user.click(screen.getByTestId("history-back"))
+    await waitFor(() =>
+      expect(screen.getByTestId("space-url").textContent).toBe("/")
+    )
+    view2.unmount()
   })
 })
 
@@ -592,5 +605,38 @@ describe("SpacesPage room switch, full teardown, back/forward, and access rules"
       expect(screen.getByTestId("space-url").textContent).toBe("/khu-giao-dich")
     )
     expect(await screen.findByTestId("trading-floor-page")).toBeTruthy()
+  })
+
+  it("shows floor JoinScreen only for the floor and keeps office ?modal= working under /khu-giao-dich?phong=van-phong", async () => {
+    // Guest opening Office directly sees NonMemberGate (never JoinScreen)
+    mocks.auth.user = null
+    mocks.auth.isAuthenticated = false
+    const officeGuest = renderSpaces(["/khu-giao-dich?phong=van-phong"])
+    expect(
+      await screen.findByRole("heading", { name: "Đăng nhập để vào Văn phòng" })
+    ).toBeTruthy()
+    expect(screen.queryByRole("heading", { name: /Vào Khu giao dịch/i })).toBeNull()
+    expect(screen.getByTestId("office-gate-go-floor-btn")).toBeTruthy()
+    officeGuest.unmount()
+
+    // Member opening Office with ?modal=meet opens the Meeting modal directly while preserving ?phong=van-phong
+    mocks.auth.user = {
+      id: "u-1",
+      email: "hanh@iqx.vn",
+      username: "hanh",
+      full_name: "Lê Ngọc Hạnh",
+      role: "user",
+    }
+    mocks.auth.isAuthenticated = true
+    mocks.officeApiMe.mockResolvedValue(MEMBER_ME)
+
+    const officeModalView = renderSpaces([
+      "/khu-giao-dich?phong=van-phong&modal=meet",
+    ])
+    expect(await screen.findByTestId("office-modal-meet")).toBeTruthy()
+    expect(screen.getByTestId("space-url").textContent).toBe(
+      "/khu-giao-dich?phong=van-phong&modal=meet"
+    )
+    officeModalView.unmount()
   })
 })
