@@ -1,5 +1,6 @@
 import * as THREE from "three"
 
+import { yieldToMain } from "./chunked-build.ts"
 import { restoreStaticTextures } from "./textures.ts"
 import {
   SCENE_HOST_BRIDGE_KEY,
@@ -242,9 +243,30 @@ export interface ChibiSceneHostOptions {
   idleAfterMs?: number
   deepIdleAfterMs?: number
   dynamicResolution?: boolean
+  /**
+   * Keeps the visible render loop (and `renderOnce`) on hold until `prepare()` has warmed up shader
+   * programs and textures behind the loading screen, so the first visible frame never stalls.
+   */
+  holdUntilPrepared?: boolean
   onContextLost?: () => void
   onContextRestored?: () => void
   onResize?: (width: number, height: number, dpr: number) => void
+}
+
+export interface ScenePrepareProgress {
+  /** "shaders" while programs compile in parallel, "textures" while GPU uploads run. */
+  phase: "shaders" | "textures"
+  /** 0..1 within the phase. */
+  fraction: number
+  ready: number
+  total: number
+}
+
+export interface ScenePrepareOptions {
+  onProgress?: (progress: ScenePrepareProgress) => void
+  isCancelled?: () => boolean
+  /** Upper bound for waiting on parallel shader compilation (default 10 s). */
+  compileTimeoutMs?: number
 }
 
 export interface ChibiSceneLights {
@@ -404,6 +426,14 @@ export interface ChibiSceneHost {
     out?: ProjectedPoint
   ) => ProjectedPoint
   start: (onFrame: (dt: number, elapsed: number) => void) => void
+  /**
+   * Warm-up behind the loading screen: compiles every shader program in parallel
+   * (`renderer.compileAsync`), uploads textures, renders one hidden frame including the shadow pass,
+   * then releases the `holdUntilPrepared` hold so the visible loop starts. Best effort: never throws.
+   */
+  prepare: (options?: ScenePrepareOptions) => Promise<void>
+  /** Resolves after the next rendered loop frame, immediately when the loop cannot run, or after `timeoutMs`. */
+  waitForFirstFrame: (timeoutMs?: number) => Promise<void>
   renderOnce: () => void
   resize: () => void
   dispose: () => void
@@ -474,6 +504,10 @@ export function createChibiSceneHost(
   // Lite mode uses contact/blob shadows by default to avoid Safari iOS WebGL memory pressure;
   // callers explicitly enabling shadows in lite mode get a compact 512px shadow map.
   const shadows = (opts.shadows ?? !lite) && !softwareWebGL
+  // Shader error checks call getProgramInfoLog synchronously, which blocks on every program link.
+  if (renderer.debug) {
+    renderer.debug.checkShaderErrors = import.meta.env.DEV
+  }
   renderer.outputColorSpace = THREE.SRGBColorSpace
   renderer.toneMapping = THREE.AgXToneMapping
   renderer.toneMappingExposure = 1.08
@@ -564,6 +598,12 @@ export function createChibiSceneHost(
   let contextLost = false
   let paused = false
   const suspendReasons = new Set<string>()
+  let booting = opts.holdUntilPrepared === true
+  if (booting) {
+    suspendReasons.add("boot")
+  }
+  let preparePromise: Promise<void> | null = null
+  const frameWaiters = new Set<() => void>()
   let rafId = 0
   let started = false
   let frameCallback: ((dt: number, elapsedS: number) => void) | null = null
@@ -703,8 +743,10 @@ export function createChibiSceneHost(
     cameraDirty = false
   }
 
-  const renderFrame = (): void => {
+  const renderFrame = (force = false): void => {
     if (disposed || contextLost) return
+    // While booting, only the warm-up's hidden frame may render (it compiles nothing synchronously).
+    if (booting && !force) return
     if (shadows && shadowDirty) {
       renderer.shadowMap.needsUpdate = true
       shadowDirty = false
@@ -1037,6 +1079,7 @@ export function createChibiSceneHost(
     renderFrame()
     const workMs = performance.now() - workStartMs
     renderedFrames += 1
+    flushFrameWaiters()
 
     const mode = pacer.getMode(now)
     const sampleRes = dynRes.sample(
@@ -1065,6 +1108,178 @@ export function createChibiSceneHost(
     lastFrameMs = now
     pacer.reset(now)
     scheduleLoopIfNeeded()
+  }
+
+  const flushFrameWaiters = (): void => {
+    if (frameWaiters.size === 0) return
+    const waiters = [...frameWaiters]
+    frameWaiters.clear()
+    for (const resolve of waiters) resolve()
+  }
+
+  const collectSceneTextures = (): THREE.Texture[] => {
+    const found = new Set<THREE.Texture>()
+    const addFromMaterial = (material: THREE.Material): void => {
+      for (const value of Object.values(material)) {
+        if (value && (value as THREE.Texture).isTexture) {
+          found.add(value as THREE.Texture)
+        }
+      }
+      const uniforms = (material as THREE.ShaderMaterial).uniforms
+      if (uniforms) {
+        for (const uniform of Object.values(uniforms)) {
+          const v = uniform?.value as THREE.Texture | undefined
+          if (v && v.isTexture) found.add(v)
+        }
+      }
+    }
+    scene.traverse((object) => {
+      const material = (object as THREE.Mesh).material as
+        | THREE.Material
+        | THREE.Material[]
+        | undefined
+      if (!material) return
+      if (Array.isArray(material)) {
+        for (const m of material) addFromMaterial(m)
+      } else {
+        addFromMaterial(material)
+      }
+    })
+    // Only textures with pending data need an upload; version 0 means "no image yet".
+    return [...found].filter((tex) => tex.version > 0 && !tex.isRenderTargetTexture)
+  }
+
+  const readProgramStatus = (): { ready: number; total: number } => {
+    const programs = (renderer.info?.programs ?? []) as unknown as Array<{
+      isReady?: () => boolean
+    }>
+    let ready = 0
+    for (const program of programs) {
+      try {
+        if (typeof program.isReady !== "function" || program.isReady()) ready += 1
+      } catch {
+        ready += 1
+      }
+    }
+    return { ready, total: programs.length }
+  }
+
+  const releaseBootHold = (): void => {
+    if (!booting) return
+    booting = false
+    setSuspended("boot", false)
+  }
+
+  const runPrepare = async (popts: ScenePrepareOptions): Promise<void> => {
+    const cancelled = (): boolean => disposed || popts.isCancelled?.() === true
+    try {
+      if (contextLost || cancelled()) return
+      cameraDirty = true
+      applyCameraTransform()
+      scene.updateMatrixWorld()
+
+      // 1. Parallel shader compilation (KHR_parallel_shader_compile) with ready/total progress polling.
+      if (typeof renderer.compileAsync === "function") {
+        const compile = renderer.compileAsync(scene, camera)
+        let settled = false
+        const timeoutMs = Math.max(500, popts.compileTimeoutMs ?? 10_000)
+        await new Promise<void>((resolve) => {
+          const finish = (): void => {
+            if (settled) return
+            settled = true
+            clearTimeout(timeoutId)
+            clearInterval(pollId)
+            resolve()
+          }
+          const timeoutId = setTimeout(finish, timeoutMs)
+          const pollId = setInterval(() => {
+            if (cancelled()) {
+              finish()
+              return
+            }
+            const { ready, total } = readProgramStatus()
+            popts.onProgress?.({
+              phase: "shaders",
+              fraction: total > 0 ? ready / total : 1,
+              ready,
+              total,
+            })
+          }, 60)
+          compile.then(finish, finish)
+        })
+        const { ready, total } = readProgramStatus()
+        popts.onProgress?.({ phase: "shaders", fraction: 1, ready, total })
+      }
+      if (cancelled() || contextLost) return
+
+      // 2. Texture uploads, a few per slice so the loading screen keeps animating.
+      if (typeof renderer.initTexture === "function") {
+        const textures = collectSceneTextures()
+        let sliceStart = performance.now()
+        for (let i = 0; i < textures.length; i += 1) {
+          const tex = textures[i]
+          if (tex) {
+            try {
+              renderer.initTexture(tex)
+            } catch {
+              // An undecodable image uploads (or fails) on first render as before.
+            }
+          }
+          if (performance.now() - sliceStart >= 10) {
+            popts.onProgress?.({
+              phase: "textures",
+              fraction: (i + 1) / textures.length,
+              ready: i + 1,
+              total: textures.length,
+            })
+            await yieldToMain()
+            if (cancelled() || contextLost) return
+            sliceStart = performance.now()
+          }
+        }
+        popts.onProgress?.({
+          phase: "textures",
+          fraction: 1,
+          ready: textures.length,
+          total: textures.length,
+        })
+      }
+
+      // 3. One hidden frame (covered by the loading screen) including the static shadow-map pass.
+      cameraDirty = true
+      applyCameraTransform()
+      renderFrame(true)
+    } catch {
+      // Warm-up is an optimisation only; the visible loop still renders (and compiles) everything.
+    } finally {
+      releaseBootHold()
+    }
+  }
+
+  const prepare = (popts: ScenePrepareOptions = {}): Promise<void> => {
+    if (disposed) return Promise.resolve()
+    if (!preparePromise) {
+      preparePromise = runPrepare(popts)
+    }
+    return preparePromise
+  }
+
+  const waitForFirstFrame = (timeoutMs = 1500): Promise<void> => {
+    if (disposed || !started || contextLost || isSuspendedNow()) {
+      return Promise.resolve()
+    }
+    return new Promise<void>((resolve) => {
+      let done = false
+      const finish = (): void => {
+        if (done) return
+        done = true
+        clearTimeout(timer)
+        frameWaiters.delete(finish)
+        resolve()
+      }
+      const timer = setTimeout(finish, Math.max(0, timeoutMs))
+      frameWaiters.add(finish)
+    })
   }
 
   const readSpaceStats = (): SpacePerfStats => {
@@ -1123,6 +1338,7 @@ export function createChibiSceneHost(
     disposed = true
     stopLoop()
     frameCallback = null
+    flushFrameWaiters()
     resizeObserver?.disconnect()
     intersectionObserver?.disconnect()
     if (typeof document !== "undefined") {
@@ -1197,6 +1413,8 @@ export function createChibiSceneHost(
     projectToScreen,
     projectLogicalToScreen,
     start,
+    prepare,
+    waitForFirstFrame,
     renderOnce,
     resize,
     dispose,

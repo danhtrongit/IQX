@@ -9,13 +9,24 @@
  *   and phones (`<= 720px`) with zoom range strictly `0.55×–1.5×` (Spec §3.3).
  * - Releases the WebGL context cleanly on dispose (`renderer.forceContextLoss()`).
  * - Survives React StrictMode double-mount & reports WebGL unavailability cleanly via `onError`.
+ * - Boots behind the loading screen without long stalls: architecture and desk pods are built in
+ *   ~10 ms slices, shaders compile in parallel and textures upload before the visible loop starts
+ *   (`host.prepare()`); `onReady` fires after the first real frame, `onProgress` reports 0..1 + stage.
  */
 import * as THREE from "three"
 
+import { yieldToMain } from "@/lib/chibi-3d/chunked-build.ts"
 import {
   createChibiSceneHost,
   type ChibiSceneHost,
 } from "@/lib/chibi-3d/scene-host.ts"
+import {
+  BOOT_RANGES,
+  BOOT_STAGES,
+  createBootReporter,
+  phaseProgress,
+  type BootProgressFn,
+} from "@/pages/spaces/loading/boot-progress.ts"
 
 import type {
   OfficeAttendanceToday,
@@ -39,10 +50,14 @@ import {
   OFFICE_WORLD_SCALE,
   computeOfficeDimensions,
 } from "./office-layout.ts"
+import { OfficeWorld3D } from "./office-world-3d.ts"
 
 export interface OfficeEngineCallbacks extends OfficeControllerCallbacks {
   initialStaffCount?: number
+  /** Fires once the office is built, warmed up and its first visible frame has rendered. */
   onReady?: () => void
+  /** Boot progress 0..1 with a Vietnamese stage label (for the loading screen). */
+  onProgress?: BootProgressFn
 }
 
 export interface OfficeEngineHandle {
@@ -96,7 +111,14 @@ export function startOffice(
 ): OfficeEngineHandle {
   let disposed = false
   let host: ChibiSceneHost | null = null
+  // Owned for disposal as soon as it exists; handle calls reach it only once `live` (boot finished
+  // building), so a React push can never start a synchronous rebuild in the middle of the sliced one.
   let controller: OfficeController | null = null
+  let live = false
+  let pendingWorld: OfficeWorld3D | null = null
+  const progress = createBootReporter(callbacks.onProgress)
+  const isDisposed = (): boolean => disposed
+  const liveController = (): OfficeController | null => (live ? controller : null)
 
   // Buffer pre-ready snapshots so React effects can push state immediately on mount
   const buffered: {
@@ -118,8 +140,10 @@ export function startOffice(
   }
 
   void (async () => {
+    progress.report(BOOT_RANGES.fonts[0], BOOT_STAGES.fonts)
     await fontsReady()
     if (disposed) return
+    progress.report(BOOT_RANGES.gpu[0], BOOT_STAGES.gpu)
 
     const staffCount = buffered.team
       ? buffered.team.members.filter((member) => member.role === "staff").length
@@ -149,8 +173,12 @@ export function startOffice(
       initialZoom,
       cameraLerp: 0.18,
       boundsMargin: 0.5,
+      holdUntilPrepared: true,
       onResize: (width) => {
         controller?.handleViewportResize(width)
+      },
+      onContextRestored: () => {
+        if (!disposed) controller?.handleContextRestored()
       },
     })
 
@@ -167,10 +195,43 @@ export function startOffice(
     host.lights.sun.intensity = 1.65
     host.lights.rim.intensity = 0.72
 
-    controller = new OfficeController(host, container, callbacks)
+    // Time-sliced architecture build (walls, rooms, decor) behind the loading screen.
+    progress.report(BOOT_RANGES.build[0], BOOT_STAGES.officeBuild)
+    pendingWorld = new OfficeWorld3D(host.scene, host.world, host.lite, {
+      deferBuild: true,
+    })
+    const built = await pendingWorld.buildAsync({
+      onProgress: (f) =>
+        progress.report(phaseProgress(BOOT_RANGES.build, f), BOOT_STAGES.officeBuild),
+      isCancelled: isDisposed,
+    })
+    if (disposed || !built) return
+
+    progress.report(BOOT_RANGES.actors[0], BOOT_STAGES.officeActors)
+    await yieldToMain()
+    if (disposed) return
+
+    controller = new OfficeController(host, container, callbacks, pendingWorld)
+    pendingWorld = null
+    controller.setModalOpen(buffered.modalOpen)
+    // Desk pods + boss desk + team banner, time-sliced too.
+    const bootTeam = buffered.team
+    if (bootTeam) {
+      const teamBuilt = await controller.updateTeamAsync(bootTeam, {
+        onProgress: (f) =>
+          progress.report(
+            phaseProgress(BOOT_RANGES.actors, f),
+            BOOT_STAGES.officeActors
+          ),
+        isCancelled: isDisposed,
+      })
+      if (disposed || !teamBuilt) return
+    }
+    live = true
     controller.setModalOpen(buffered.modalOpen)
     if (buffered.team) {
-      controller.updateTeam(buffered.team)
+      // Same snapshot as the sliced build is a no-op for the layout; a newer one applies normally.
+      if (buffered.team !== bootTeam) controller.updateTeam(buffered.team)
       buffered.resendSelf = false
     } else if (buffered.resendSelf) {
       controller.resendSelfState()
@@ -187,61 +248,76 @@ export function startOffice(
       controller.updateStandee(buffered.standee)
     }
 
-    callbacks.onReady?.()
-
     if (import.meta.env.DEV) {
       Object.assign(window, { __iqxOffice: { host, controller } })
     }
+
+    // Parallel shader compile + texture upload + hidden shadow frame, then the visible loop starts.
+    progress.report(BOOT_RANGES.lights[0], BOOT_STAGES.lights)
+    await host.prepare({
+      onProgress: progress.reportPrepare,
+      isCancelled: isDisposed,
+    })
+    if (disposed) return
+    await host.waitForFirstFrame()
+    if (disposed) return
+    progress.report(BOOT_RANGES.images[1], BOOT_STAGES.images)
+    callbacks.onReady?.()
   })().catch((error: unknown) => {
     if (!disposed) callbacks.onError?.(error)
   })
 
   return {
     setZoomDelta: (delta) => {
-      controller?.setZoomDelta(delta)
+      liveController()?.setZoomDelta(delta)
     },
     updateTeam: (me) => {
       buffered.team = me
-      controller?.updateTeam(me)
+      liveController()?.updateTeam(me)
     },
     updateOnlinePeers: (peers) => {
       buffered.peers = peers
-      controller?.updateOnlinePeers(peers)
+      liveController()?.updateOnlinePeers(peers)
     },
     updateAttendance: (attendance) => {
       buffered.attendance = attendance
-      controller?.updateAttendance(attendance)
+      liveController()?.updateAttendance(attendance)
     },
     updateMeeting: (meeting) => {
       buffered.meeting = meeting
-      controller?.updateMeeting(meeting)
+      liveController()?.updateMeeting(meeting)
     },
     updateStandee: (leaderboard) => {
       buffered.standee = leaderboard
-      controller?.updateStandee(leaderboard)
+      liveController()?.updateStandee(leaderboard)
     },
     setModalOpen: (open) => {
       buffered.modalOpen = open
-      controller?.setModalOpen(open)
+      liveController()?.setModalOpen(open)
     },
     resendSelfState: () => {
-      if (controller) {
-        controller.resendSelfState()
+      const ctrl = liveController()
+      if (ctrl) {
+        ctrl.resendSelfState()
       } else {
         buffered.resendSelf = true
       }
     },
     beginDoorExit: (onFadeStart) => {
-      if (controller) {
-        controller.beginDoorExit(onFadeStart)
+      const ctrl = liveController()
+      if (ctrl) {
+        ctrl.beginDoorExit(onFadeStart)
       } else {
         onFadeStart()
       }
     },
     dispose: () => {
       disposed = true
+      live = false
       controller?.dispose()
       controller = null
+      pendingWorld?.dispose()
+      pendingWorld = null
       if (host) {
         disposeHostAndContext(host)
         host = null

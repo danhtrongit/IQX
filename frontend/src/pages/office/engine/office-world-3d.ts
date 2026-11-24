@@ -29,6 +29,13 @@
  * - Click-to-move golden target ring (respects `prefers-reduced-motion`)
  */
 import * as THREE from "three"
+
+import {
+  runBuildChunked,
+  runBuildSync,
+  type BuildSteps,
+  type ChunkedBuildOptions,
+} from "@/lib/chibi-3d/chunked-build.ts"
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js"
 
 import { prefersReducedMotion } from "@/lib/chibi-3d/character-builder.ts"
@@ -1012,8 +1019,15 @@ export class OfficeWorld3D {
 
   private currentWorldH: number
   private disposed = false
+  /** Pending (or partially run) architecture build; null once built. */
+  private buildSteps: BuildSteps | null = null
 
-  constructor(scene: THREE.Scene, world: WorldTransformConfig, lite = false) {
+  constructor(
+    scene: THREE.Scene,
+    world: WorldTransformConfig,
+    lite = false,
+    opts: { deferBuild?: boolean } = {}
+  ) {
     this.world = world
     this.lite = lite
     this.hostBridge = getSceneHostBridge(scene)
@@ -1088,7 +1102,27 @@ export class OfficeWorld3D {
     this.targetRing.visible = false
     this.group.add(this.targetRing)
 
-    this.buildArchitectureAndStaticProps(this.currentWorldH)
+    this.buildSteps = this.buildArchitectureSteps(this.currentWorldH)
+    if (!opts.deferBuild) {
+      this.finishBuildSync()
+    }
+  }
+
+  /** Runs the pending architecture build in ~10 ms slices; resolves false if cancelled first. */
+  async buildAsync(opts: ChunkedBuildOptions = {}): Promise<boolean> {
+    const steps = this.buildSteps
+    if (!steps || this.disposed) return true
+    const finished = await runBuildChunked(steps, opts)
+    if (finished && this.buildSteps === steps) this.buildSteps = null
+    return finished && !this.disposed
+  }
+
+  /** Completes any pending architecture build synchronously. */
+  finishBuildSync(): void {
+    const steps = this.buildSteps
+    if (!steps) return
+    this.buildSteps = null
+    runBuildSync(steps)
   }
 
   private retainArchTex(tex: THREE.Texture): THREE.Texture {
@@ -1142,7 +1176,7 @@ export class OfficeWorld3D {
     }
   }
 
-  private buildArchitectureAndStaticProps(worldH: number): void {
+  private *buildArchitectureSteps(worldH: number): BuildSteps {
     this.clearStaticProps()
     const s = OFFICE_WORLD_SCALE
     const zones = getOfficeZones(worldH)
@@ -1206,6 +1240,8 @@ export class OfficeWorld3D {
       return mat
     }
 
+    yield 0.037
+
     // 1. Exterior architectural studio surround apron + framing plinth
     const staffFloorW = OFFICE_BASE_W * s
     const staffFloorH = worldH * s
@@ -1241,6 +1277,8 @@ export class OfficeWorld3D {
       false
     )
 
+    yield 0.074
+
     // 1b. Base Khu Nhân Viên floor (cream ceramic grid)
     const baseCeramicTex = this.retainArchTex(createFloorTexture("ceramic_cream"))
     const ceramicTex = cloneSharedRepeatedTexture(
@@ -1261,6 +1299,8 @@ export class OfficeWorld3D {
     baseFloor.position.set(staffFloorCenter.x, 0, staffFloorCenter.z)
     baseFloor.receiveShadow = true
     this.archGroup.add(baseFloor)
+
+    yield 0.111
 
     // 2. Three upper room floors (parquet, slate carpet, warm sand tiles)
     const roomMaterials: Record<
@@ -1301,6 +1341,8 @@ export class OfficeWorld3D {
       this.archGroup.add(plane)
     }
 
+    yield 0.148
+
     // 2b. Per-zone rugs, pod-band carpets & corridor runner (composed from furniture-builder.ts)
     for (const rugSpec of getZoneRugs(worldH)) {
       const rug = createRug(rugSpec.w * s, rugSpec.h * s, {
@@ -1314,6 +1356,8 @@ export class OfficeWorld3D {
       rug.group.position.set(pt.x, 0.008, pt.z)
       this.mountStaticProp(rug)
     }
+
+    yield 0.185
 
     // 3. Crisp Floor Zone Decals
     const decals: readonly {
@@ -1379,6 +1423,8 @@ export class OfficeWorld3D {
       this.archGroup.add(mesh)
     }
 
+    yield 0.222
+
     // 4. Cutaway Architectural Walls with Baseboards, Dado, Chair Rails & Crown Trims
     const t = OFFICE_WALL_THICK * s // 0.16u
     const northH = 2.68
@@ -1428,6 +1474,8 @@ export class OfficeWorld3D {
     archBatch.addBox(OFFICE_BASE_W * s, southH, t, wallNavyMat, southPt.x, southH / 2, southPt.z, false)
     archBatch.addBox(OFFICE_BASE_W * s, 0.05, t + 0.06, goldMat, southPt.x, southH + 0.025, southPt.z, false)
 
+    yield 0.259
+
     // 4b. Framed Glass Interior Dividers (vertical x = 740, 1560 & horizontal y = 540)
     for (const vx of [740, 1560]) {
       const spanLen = 524 * s
@@ -1469,6 +1517,8 @@ export class OfficeWorld3D {
         archBatch.addBox(0.055, 0.84, t * 0.78, frameMetalMat, mx, 1.36, pt.z, false)
       }
     }
+
+    yield 0.296
 
     // 4c. Doorway Frames, Thresholds, Swung-Open Wood/Glass Doors & Room Plaques
     const doorNames: Record<"boss" | "meet" | "docs", string> = {
@@ -1559,6 +1609,8 @@ export class OfficeWorld3D {
       plaqueFace.position.set(plaquePt.x, 1.14, plaquePt.z + 0.034)
       this.archGroup.add(plaqueFace)
     }
+
+    yield 0.333
 
     // 4d. Architectural Windows with Warm Sunlight Pools (batched into archBatch)
     for (const win of getOfficeWindows(worldH)) {
@@ -1674,6 +1726,8 @@ export class OfficeWorld3D {
       }
     }
 
+    yield 0.37
+
     // 4e. Ceiling Light Coves & Warm Brass Wall Sconces
     const ceilingBars: readonly { x: number; w: number }[] = [
       { x: 380, w: 3.4 },
@@ -1726,6 +1780,8 @@ export class OfficeWorld3D {
     }
 
     // 5. Room Decorations & Static Furniture Props across all 4 zones
+
+    yield 0.407
 
     // ----- PHÒNG SẾP -----
     const bossShelf = createBookshelf(2.0, 1.82, 0.46, { lite: this.lite })
@@ -1824,6 +1880,8 @@ export class OfficeWorld3D {
     bossLamp.position.set(bossLightPt.x, 3.2, bossLightPt.z)
     this.archGroup.add(bossLamp)
 
+    yield 0.444
+
     // ----- PHÒNG HỌP -----
     const slatCenter = logicalToWorld(1160, OFFICE_WALL_THICK + 3, this.world)
     const slatCount = this.lite ? 10 : 18
@@ -1886,6 +1944,8 @@ export class OfficeWorld3D {
       this.archGroup.add(meetLight)
     }
 
+    yield 0.481
+
     // ----- PHÒNG TÀI LIỆU -----
     for (const bx of [1610, 1860, 2110]) {
       const shelf = createBookshelf(2.2, 1.88, 0.6, { lite: this.lite })
@@ -1933,6 +1993,8 @@ export class OfficeWorld3D {
       this.archGroup.add(docsLamp)
     }
 
+    yield 0.519
+
     // ----- GÓC CÀ PHÊ & STANDEE (Right Side of Staff Area per Spec §3) -----
     const coffeeBar = createPantryCounter(1.7, 0.6, { lite: this.lite })
     const coffeePt = this.toWorldCenter(1860, 640, 170, 60)
@@ -1954,6 +2016,8 @@ export class OfficeWorld3D {
     )
     menuFace.position.set(menuPt.x, 1.32, menuPt.z + 0.045)
     this.archGroup.add(menuFace)
+
+    yield 0.556
 
     // Batched Staff Area purposeful decor (merged directly into archBatch)
     const decorBatch = archBatch
@@ -1986,6 +2050,8 @@ export class OfficeWorld3D {
       createMatteMaterial("#d97706", { roughness: 0.52 }),
       createMatteMaterial("#10b981", { roughness: 0.52 }),
     ]
+
+    yield 0.593
 
     // Water Dispenser Cooler with hot/cold taps & side cup tube
     const coolerPt = this.toWorldCenter(
@@ -2039,6 +2105,8 @@ export class OfficeWorld3D {
     jug.castShadow = true
     this.archGroup.add(jug)
 
+    yield 0.63
+
     // Cafe Bistro Table + 2 high stools
     const bistroPt = this.toWorldCenter(
       OFFICE_COFFEE_TABLE_RECT.x,
@@ -2067,6 +2135,8 @@ export class OfficeWorld3D {
     const cafeLamp = new THREE.PointLight(0xffdfb0, 1.05, 9, 1.55)
     cafeLamp.position.set(coffeePt.x + 0.6, 2.8, coffeePt.z + 0.6)
     this.archGroup.add(cafeLamp)
+
+    yield 0.667
 
     // Twin Brass Stanchions flanking the Achievement Standee
     const standeeCenter = logicalToWorld(2195, 1066, this.world)
@@ -2101,6 +2171,8 @@ export class OfficeWorld3D {
       standeeLight.position.set(standeeCenter.x, 3.1, standeeCenter.z + 1.0)
       this.archGroup.add(standeeLight)
     }
+
+    yield 0.704
 
     // ----- PERSONAL STAFF LOCKERS (West & East Walls) -----
     for (const locker of getOfficeLockers(worldH)) {
@@ -2158,6 +2230,8 @@ export class OfficeWorld3D {
         }
       }
     }
+
+    yield 0.741
 
     // ----- PRINTER / COPIER & SUPPLY STATION -----
     const printer = getPrinterStationRect(worldH)
@@ -2257,6 +2331,8 @@ export class OfficeWorld3D {
       )
     })
 
+    yield 0.778
+
     // ----- SOUTH-CENTER MAGAZINE & SUPPLY CREDENZA -----
     const cred = getSouthCredenzaRect(worldH)
     const crPt = this.toWorldCenter(cred.x, cred.y, cred.w, cred.h)
@@ -2316,6 +2392,8 @@ export class OfficeWorld3D {
       [crPt.x + crW * 0.36, crTopY + 0.16, crPt.z]
     )
 
+    yield 0.815
+
     // ----- SOUTH-CENTER-RIGHT COLLABORATIVE HUDDLE NOOK -----
     const huddle = getHuddleNookPositions(worldH)
     const huddleRug = createRug(huddle.rug.w * s, huddle.rug.h * s, {
@@ -2361,6 +2439,8 @@ export class OfficeWorld3D {
         [sx, 0.32, huddleTablePt.z]
       )
     }
+
+    yield 0.852
 
     // ----- KHU NHÂN VIÊN: SOUTH-WEST LOUNGE + READING LAMP -----
     const lounge = getLoungePositions(worldH)
@@ -2440,6 +2520,8 @@ export class OfficeWorld3D {
       false
     )
 
+    yield 0.889
+
     // ----- FRAMED OFFICE WALL ART ON WEST & EAST STAFF WALLS -----
     for (const art of getOfficeWallArt(worldH)) {
       const isWest = art.wall === "west"
@@ -2462,8 +2544,12 @@ export class OfficeWorld3D {
 
     archBatch.flushInto(this.archGroup)
 
+    yield 0.926
+
     // Merge static non-instanced prop meshes (rugs, sofas, tables, pantry, shelf frames) per material
     mergeStaticPropsInto(this.staticProps, this.archGroup)
+
+    yield 0.963
 
     // ----- INSTANCED POTTED PLANT CLUSTERS -----
     const tallPlantTransforms: InstancedPropTransform[] = []
@@ -2505,11 +2591,11 @@ export class OfficeWorld3D {
    * (shared desk bodies, ergonomic swivel chairs, ON/OFF monitor screens, acoustic
    * pod dividers, mugs, and neutral "Bàn trống" plates) plus unique member nameplates.
    */
-  private buildInstancedStaffPods(
+  private *buildInstancedStaffPodsSteps(
     slots: readonly OfficeDeskSlot[],
     podBands: number,
     selfUserId: string | null
-  ): void {
+  ): BuildSteps {
     if (slots.length === 0) return
 
     const s = OFFICE_WORLD_SCALE
@@ -2546,6 +2632,8 @@ export class OfficeWorld3D {
       inst.receiveShadow = spec.receiveShadow
       return inst
     })
+
+    yield 0.55
 
     // 2. Instanced Ergonomic Swivel Chairs (tucked-in on empty desks, slightly pulled out on occupied)
     const chairMeshes = chairSpecs.map((spec) => {
@@ -2605,6 +2693,8 @@ export class OfficeWorld3D {
       inst.computeBoundingSphere()
       this.teamPropsGroup.add(inst)
     }
+
+    yield 0.62
 
     // 3. Instanced Monitor Screens & Status LEDs: ON (glowing) vs OFF (powered-off dark matte)
     const screenGeo = new THREE.PlaneGeometry(0.51, 0.28)
@@ -2691,6 +2781,8 @@ export class OfficeWorld3D {
     screenGeo.dispose()
     ledGeo.dispose()
 
+    yield 0.7
+
     // 4. Instanced Coffee Mugs (only on occupied desks with hasMug = true)
     if (mugSlots.length > 0) {
       const mugSeg = this.lite ? 8 : 12
@@ -2737,6 +2829,8 @@ export class OfficeWorld3D {
       this.teamPropsGroup.add(mugInst, coffeeInst)
     }
 
+    yield 0.76
+
     // 5. Instanced Low Acoustic Pod Dividers between back-to-back rows
     const podDividers = getOfficePodDividers(podBands)
     if (podDividers.length > 0) {
@@ -2763,6 +2857,8 @@ export class OfficeWorld3D {
         this.teamPropsGroup.add(inst)
       }
     }
+
+    yield 0.82
 
     // 6. Instanced Neutral "Bàn trống" Nameplates on all empty desks (2 draw calls total!)
     const plateW = 0.96
@@ -2839,6 +2935,8 @@ export class OfficeWorld3D {
       emptyFaceInst.computeBoundingSphere()
       this.teamPropsGroup.add(emptyFaceInst)
     }
+
+    yield 0.9
 
     // 7. Member Desk Nameplates (packed into ONE atlas texture, 1-2 draw calls total!)
     if (occupiedSlots.length > 0) {
@@ -2955,6 +3053,19 @@ export class OfficeWorld3D {
     worldH: number,
     totalDesks?: number
   ): void {
+    runBuildSync(
+      this.rebuildTeamPropsSteps(bossName, desks, selfUserId, worldH, totalDesks)
+    )
+  }
+
+  /** Step-wise `rebuildTeamProps` (yields between desk-pod layers) for time-sliced boot builds. */
+  *rebuildTeamPropsSteps(
+    bossName: string,
+    desks: readonly OfficeDeskPlacement[],
+    selfUserId: string | null,
+    worldH: number,
+    totalDesks?: number
+  ): BuildSteps {
     if (this.disposed) return
 
     if (worldH !== this.currentWorldH) {
@@ -2972,10 +3083,11 @@ export class OfficeWorld3D {
       this.standeeBoard.group.position.set(standeePt.x, 0, standeePt.z)
       this.standeeBoard.group.updateMatrix()
       this.standeeBoard.group.updateMatrixWorld(true)
-      this.buildArchitectureAndStaticProps(worldH)
+      yield* this.buildArchitectureSteps(worldH)
     }
 
     this.clearTeamProps()
+    yield 0.1
 
     // 1. Boss Desk with dual monitors, coffee mug, swivel chair & walnut nameplate
     const bossLabel = bossName.trim()
@@ -2996,6 +3108,7 @@ export class OfficeWorld3D {
     bossDesk.group.position.set(bossPt.x, 0, bossPt.z)
     this.teamPropsGroup.add(bossDesk.group)
     this.teamProps.push(bossDesk)
+    yield 0.3
 
     // 2. Big Walkable Team Banner Rug ("IQX · NHÓM {TÊN SẾP}") centered on the Staff Promenade
     const s = OFFICE_WORLD_SCALE
@@ -3045,7 +3158,8 @@ export class OfficeWorld3D {
     const resolvedTotal = totalDesks ?? dims.totalDesks
     const podBands = Math.max(dims.podBands, Math.ceil(resolvedTotal / 12))
     const allSlots = buildAllDeskSlots(desks, resolvedTotal)
-    this.buildInstancedStaffPods(allSlots, podBands, selfUserId)
+    yield 0.45
+    yield* this.buildInstancedStaffPodsSteps(allSlots, podBands, selfUserId)
 
     freezeStaticSubtree(this.teamPropsGroup)
     this.hostBridge?.markShadowDirty()
@@ -3185,6 +3299,11 @@ export class OfficeWorld3D {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
+    // A build abandoned mid-way (room left while loading) stops here; clear only what exists.
+    if (this.buildSteps) {
+      this.buildSteps.return()
+      this.buildSteps = null
+    }
     this.clearStaticProps()
     this.clearTeamProps()
     this.meetingBoard.dispose()

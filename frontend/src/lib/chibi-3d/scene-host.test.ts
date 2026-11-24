@@ -34,6 +34,14 @@ vi.mock("three", async (importOriginal) => {
     getContext = vi.fn(() => ({
       getExtension: () => null,
     }))
+    debug = { checkShaderErrors: true }
+    info = {
+      programs: [] as Array<{ isReady: () => boolean }>,
+      memory: { geometries: 0, textures: 0 },
+      render: { calls: 0, triangles: 0, points: 0, lines: 0, frame: 0 },
+    }
+    compileAsync = vi.fn(() => Promise.resolve())
+    initTexture = vi.fn()
 
     constructor(opts?: THREE.WebGLRendererParameters) {
       mockRendererState.ctorOpts.push(opts)
@@ -332,5 +340,92 @@ describe("Trading Floor responsive camera framing", () => {
     expect(pPlayer.sx).toBeCloseTo(0.5, 2)
     expect(pPlayer.sy).toBeGreaterThan(0.35)
     expect(pPlayer.sy).toBeLessThan(0.55)
+  })
+})
+
+describe("createChibiSceneHost warm-up (prepare) before the visible loop", () => {
+  const world: WorldTransformConfig = {
+    logicalW: 2048,
+    logicalH: 1408,
+    scale: 1 / 64,
+  }
+
+  it("holds the loop and renderOnce until prepare compiles shaders, uploads textures and renders one hidden frame", async () => {
+    const rafSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation(() => 1)
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const host = createChibiSceneHost({
+      container,
+      world,
+      lite: false,
+      holdUntilPrepared: true,
+    })
+    const renderer = mockRendererState.instances.at(-1)! as unknown as {
+      render: ReturnType<typeof vi.fn>
+      compileAsync: ReturnType<typeof vi.fn>
+      initTexture: ReturnType<typeof vi.fn>
+      debug: { checkShaderErrors: boolean }
+    }
+    // Production builds skip the blocking getProgramInfoLog checks (tests run in DEV mode).
+    expect(renderer.debug.checkShaderErrors).toBe(import.meta.env.DEV)
+
+    expect(host.getSuspendReasons()).toContain("boot")
+    host.start(() => undefined)
+    host.renderOnce()
+    expect(renderer.render).not.toHaveBeenCalled()
+    expect(rafSpy).not.toHaveBeenCalled()
+
+    const canvas = document.createElement("canvas")
+    const tex = new THREE.CanvasTexture(canvas)
+    host.scene.add(
+      new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({ map: tex })
+      )
+    )
+    const phases: string[] = []
+    await host.prepare({ onProgress: (p) => phases.push(p.phase) })
+
+    expect(renderer.compileAsync).toHaveBeenCalledWith(host.scene, host.camera)
+    expect(renderer.initTexture).toHaveBeenCalledWith(tex)
+    expect(renderer.render).toHaveBeenCalledTimes(1)
+    expect(phases).toContain("shaders")
+    expect(phases).toContain("textures")
+    expect(host.getSuspendReasons()).not.toContain("boot")
+    expect(rafSpy).toHaveBeenCalled()
+
+    // prepare is idempotent
+    await host.prepare()
+    expect(renderer.compileAsync).toHaveBeenCalledTimes(1)
+    host.dispose()
+    container.remove()
+  })
+
+  it("releases the hold even when warm-up fails, and waitForFirstFrame never hangs when the loop cannot run", async () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation(() => 1)
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const host = createChibiSceneHost({
+      container,
+      world,
+      lite: false,
+      holdUntilPrepared: true,
+    })
+    const renderer = mockRendererState.instances.at(-1)! as unknown as {
+      compileAsync: ReturnType<typeof vi.fn>
+    }
+    renderer.compileAsync.mockImplementation(() => {
+      throw new Error("lost")
+    })
+    host.start(() => undefined)
+    await host.prepare()
+    expect(host.getSuspendReasons()).not.toContain("boot")
+
+    host.setPaused(true)
+    await expect(host.waitForFirstFrame(10_000)).resolves.toBeUndefined()
+    host.dispose()
+    container.remove()
   })
 })

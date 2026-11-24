@@ -7,6 +7,13 @@
 import * as THREE from "three"
 
 import {
+  runBuildChunked,
+  runBuildSync,
+  type BuildSteps,
+  type ChunkedBuildOptions,
+} from "@/lib/chibi-3d/chunked-build.ts"
+
+import {
   createChibiCharacter,
   prefersReducedMotion,
 } from "@/lib/chibi-3d/character-builder.ts"
@@ -105,6 +112,8 @@ type RugOptionsWithLite = RugOptions & { lite?: boolean }
 
 export interface FloorWorld3DOptions {
   lite?: boolean
+  /** Leave the heavy scene build pending until `buildAsync()` (time-sliced behind the loading screen). */
+  deferBuild?: boolean
 }
 
 export interface FloorHotspot {
@@ -535,20 +544,20 @@ export class FloorWorld3D {
   private readonly props: DisposableProp[] = []
   private readonly retainedCachedTextures: THREE.Texture[] = []
   private readonly pendingContactShadows: PendingContactShadow[] = []
-  private readonly ledCanvas: HTMLCanvasElement
-  private readonly sacoCanvas: HTMLCanvasElement
-  private readonly tickerCanvas: HTMLCanvasElement
-  private readonly tickerTexture: THREE.Texture
-  private readonly ledBoard: LiveBoardProp
-  private readonly sacoBoard: LiveBoardProp
+  private ledCanvas!: HTMLCanvasElement
+  private sacoCanvas!: HTMLCanvasElement
+  private tickerCanvas!: HTMLCanvasElement
+  private tickerTexture!: THREE.Texture
+  private ledBoard!: LiveBoardProp
+  private sacoBoard!: LiveBoardProp
   private readonly aoTextures: THREE.Texture[] = []
   private lastMarketSig = ""
   private lastPostsSig = ""
 
-  private readonly deityRig: ChibiRig
+  private deityRig!: ChibiRig
   private readonly deityLogical = { x: 1024, y: 360 }
   private readonly deityWorldPt: { x: number; z: number }
-  private readonly shrineLight: THREE.PointLight | null
+  private shrineLight: THREE.PointLight | null = null
   private readonly shrineSparkGeo: THREE.OctahedronGeometry
   private readonly shrineSparkMat: THREE.MeshBasicMaterial
   private readonly shrineSparkMesh: THREE.InstancedMesh
@@ -580,9 +589,11 @@ export class FloorWorld3D {
   private greetQueue: string[] = []
   private deityFreeAtMs = 0
 
-  private readonly receptionistRig: ChibiRig
+  private receptionistRig!: ChibiRig
   private readonly statues: StatueSlot[] = []
   private disposed = false
+  /** Pending (or partially run) scene build; null once the world is fully built. */
+  private buildSteps: BuildSteps | null = null
 
   constructor(
     scene: THREE.Scene,
@@ -624,8 +635,33 @@ export class FloorWorld3D {
     this.shrineSparkMesh.frustumCulled = false
     this.group.add(this.shrineSparkMesh)
 
-    this.buildArchitecture()
+    this.buildSteps = this.buildWorldSteps(overlay)
+    if (!opts?.deferBuild) {
+      this.finishBuildSync()
+    }
+  }
+
+  /** Runs the pending scene build in ~10 ms slices; resolves false if cancelled before finishing. */
+  async buildAsync(opts: ChunkedBuildOptions = {}): Promise<boolean> {
+    const steps = this.buildSteps
+    if (!steps || this.disposed) return true
+    const finished = await runBuildChunked(steps, opts)
+    if (finished && this.buildSteps === steps) this.buildSteps = null
+    return finished && !this.disposed
+  }
+
+  /** Completes any pending build synchronously (also used before disposing a half-built world). */
+  finishBuildSync(): void {
+    const steps = this.buildSteps
+    if (!steps) return
+    this.buildSteps = null
+    runBuildSync(steps)
+  }
+
+  private *buildWorldSteps(overlay: OverlayLayer): BuildSteps {
+    yield* this.buildArchitectureSteps()
     this.buildZoneDecals()
+    yield 0.24
 
     // Live VN30 LED wall board + architectural surround + live scrolling ticker strip
     this.ledCanvas = document.createElement("canvas")
@@ -647,6 +683,7 @@ export class FloorWorld3D {
     drawTickerStrip(this.tickerCanvas, null, null)
     this.tickerTexture = this.mountTickerStrip(ledPt.x, ledPt.z + 0.17, 10.95)
     this.lastMarketSig = this.computeMarketSignature(null, null)
+    yield 0.27
 
     // Live SACO Nhận định wall board
     this.sacoCanvas = document.createElement("canvas")
@@ -662,6 +699,7 @@ export class FloorWorld3D {
     this.props.push(this.sacoBoard)
     this.registerHotspot(this.sacoBoard.group, BOARDS.saco.interact, 10)
     this.lastPostsSig = this.computePostsSignature([])
+    yield 0.3
 
     // Mount contact shadows under props & wall edges
     const ovalShadowTex = createContactShadowTexture("oval")
@@ -673,7 +711,8 @@ export class FloorWorld3D {
     const smallPlantTransforms: InstancedPropTransform[] = []
     const mergeableProps: DisposableProp[] = []
 
-    for (const p of PLACEMENTS) {
+    for (let placementIndex = 0; placementIndex < PLACEMENTS.length; placementIndex += 1) {
+      const p = PLACEMENTS[placementIndex]!
       if (p.id.startsWith("statue-") || p.id === "thantai") continue
       const isTallPlant =
         !p.interact && (p.placeholder === "plant" || p.art === "plant_tall")
@@ -696,6 +735,7 @@ export class FloorWorld3D {
       if (mounted && !p.interact) {
         mergeableProps.push(mounted)
       }
+      yield 0.3 + (0.4 * (placementIndex + 1)) / PLACEMENTS.length
     }
 
     if (tallPlantTransforms.length > 0) {
@@ -714,9 +754,11 @@ export class FloorWorld3D {
       this.staticGroup.add(smallInst.group)
       this.props.push(smallInst)
     }
+    yield 0.72
     if (mergeableProps.length > 0) {
       mergeStaticPropsInto(mergeableProps, this.staticGroup)
     }
+    yield 0.76
 
     // Mount Thần Tài Shrine archway + animated Thần Tài NPC + dais contact shadow
     const thanTaiPlacement = PLACEMENTS.find((p) => p.id === "thantai")!
@@ -731,6 +773,7 @@ export class FloorWorld3D {
     this.staticGroup.add(shrineProp.group)
     this.props.push(shrineProp)
     this.addContactShadow(shrinePt.x, shrinePt.z - 0.25, 5.1, 2.25, boxShadowTex, 0.72)
+    yield 0.8
 
     const deitySpec: CharacterSpecWithLite = {
       avatarId: "thantai",
@@ -745,6 +788,7 @@ export class FloorWorld3D {
       this.deityWorldPt.z
     )
     this.group.add(this.deityRig.root)
+    yield 0.84
 
     if (thanTaiPlacement.interact) {
       this.registerHotspot(shrineProp.group, thanTaiPlacement.interact, 372)
@@ -767,6 +811,8 @@ export class FloorWorld3D {
     } else {
       this.shrineLight = null
     }
+
+    yield 0.86
 
     // Mount Receptionist NPC behind reception desk
     const recSpec: CharacterSpecWithLite = {
@@ -797,8 +843,10 @@ export class FloorWorld3D {
       )
     }
 
+    yield 0.88
+
     // Mount 3 Hall of Fame podiums & initial empty statues
-    this.buildStatues(overlay, boxShadowTex)
+    yield* this.buildStatuesSteps(overlay, boxShadowTex)
 
     // Flush batched contact shadows and lock static matrices once
     this.flushContactShadows()
@@ -916,7 +964,7 @@ export class FloorWorld3D {
     }
   }
 
-  private buildArchitecture(): void {
+  private *buildArchitectureSteps(): BuildSteps {
     const roomW = WORLD_W * FLOOR_WORLD_CONFIG.scale // 32
     const roomH = WORLD_H * FLOOR_WORLD_CONFIG.scale // 22
     const wallZ = logicalToWorld(0, WALL_H, FLOOR_WORLD_CONFIG).z // -7.5
@@ -965,6 +1013,8 @@ export class FloorWorld3D {
     northBase.position.set(0, -0.01, -roomH / 2 + (roomH - floorDepth) / 2)
     this.staticGroup.add(northBase)
 
+    yield 0.04
+
     // 2. Royal crimson red carpet (x=960..1088, y=470..1384) with subtle brass edge inlay
     const carpetW = 128 * FLOOR_WORLD_CONFIG.scale // 2.0
     const carpetLen = (1384 - 470) * FLOOR_WORLD_CONFIG.scale // 14.28
@@ -991,6 +1041,8 @@ export class FloorWorld3D {
     carpet.position.set(carpetPt.x, 0.014, carpetPt.z)
     carpet.receiveShadow = true
     this.staticGroup.add(carpet)
+
+    yield 0.07
 
     // 3. Soft ambient-occlusion wall-floor edge strips (merged into 1 draw call)
     const stripAoTex = createContactShadowTexture("strip")
@@ -1025,6 +1077,8 @@ export class FloorWorld3D {
       this.staticGroup.add(new THREE.Mesh(mergedWallAo, wallAoMat))
     }
 
+    yield 0.1
+
     // 4. Overhead ceiling-light warm glow pools on the marble floor (merged into 1 draw call)
     const glowPoolTex = createGlowPoolTexture("rgba(255, 234, 178, 0.55)")
     this.aoTextures.push(glowPoolTex)
@@ -1055,6 +1109,8 @@ export class FloorWorld3D {
     if (mergedPools) {
       this.staticGroup.add(new THREE.Mesh(mergedPools, poolMat))
     }
+
+    yield 0.13
 
     // 5. Batched static architecture: walls, skirting baseboards, recessed dado trims,
     //    fluted columns, brass sconces, cornice light cove, LED/SACO header beams, floor brass inlays.
@@ -1155,6 +1211,8 @@ export class FloorWorld3D {
     batcher.addBox("obsidian", 7.66, 0.2, 0.2, sacoX, 4.12, wallZ + 0.12)
     batcher.addBox("warm-glow", 5.8, 0.045, 0.06, sacoX, 4.0, wallZ + 0.24)
 
+    yield 0.16
+
     // 4 Grand Fluted North Wall Columns (flanking LED board, Shrine, SACO board) + warm brass wall sconces
     for (const lx of [36, 864, 1184, 2012]) {
       const px = logicalToWorld(lx, WALL_H, FLOOR_WORLD_CONFIG).x
@@ -1186,6 +1244,8 @@ export class FloorWorld3D {
       batcher.addCylinder("gold-trim", 0.02, 0.045, 0.2, cylSegs, lx, 2.88, lz)
     }
 
+    yield 0.19
+
     // West & East cutaway walls with skirting, chair rail, top trim, and periodic decorative ribs
     const sideH = 1.48
     const sideDepth = floorDepth
@@ -1206,6 +1266,8 @@ export class FloorWorld3D {
         batcher.addBox("gold-trim", 0.14, 0.08, 0.34, innerFaceX - side * 0.04, sideH + 0.06, zOff)
       }
     }
+
+    yield 0.21
 
     // South cutaway wall with skirting, gold trim & grand entrance door frame (936..1112)
     const southH = 0.44
@@ -1341,10 +1403,10 @@ export class FloorWorld3D {
     return prop
   }
 
-  private buildStatues(
+  private *buildStatuesSteps(
     overlay: OverlayLayer,
     boxShadowTex: THREE.Texture
-  ): void {
+  ): BuildSteps {
     const podiumHeights: Readonly<Record<1 | 2 | 3, number>> = {
       1: 0.77,
       2: 0.61,
@@ -1402,6 +1464,7 @@ export class FloorWorld3D {
       this.statues.push(slot)
       this.mountStatueRig(slot, "male01", false)
       overlay.setStatuePlaque(rank, "Chưa có", null, false)
+      yield 0.88 + rank * 0.035
     }
   }
 
@@ -1799,17 +1862,22 @@ export class FloorWorld3D {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
+    // A build abandoned mid-way (room left while loading) stops here; dispose only what exists.
+    if (this.buildSteps) {
+      this.buildSteps.return()
+      this.buildSteps = null
+    }
     this.shrineSparks.length = 0
     this.shrineSparkPool.length = 0
     this.shrineSparkMesh.dispose()
     this.shrineSparkMat.dispose()
     this.shrineSparkGeo.dispose()
-    this.tickerTexture.dispose()
+    ;(this.tickerTexture as THREE.Texture | undefined)?.dispose()
     for (const tex of this.aoTextures.splice(0)) {
       tex.dispose()
     }
-    this.deityRig.dispose()
-    this.receptionistRig.dispose()
+    ;(this.deityRig as ChibiRig | undefined)?.dispose()
+    ;(this.receptionistRig as ChibiRig | undefined)?.dispose()
     for (const slot of this.statues) {
       slot.rig?.dispose()
       slot.rig = null

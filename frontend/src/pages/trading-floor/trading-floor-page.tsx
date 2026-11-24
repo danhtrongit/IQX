@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api"
 import { buildAllChibiPortraits } from "@/lib/chibi-3d/portrait-renderer.ts"
 import type { RoomDoorHandle } from "@/pages/spaces/door-transition.ts"
+import type { BootProgressFn } from "@/pages/spaces/loading/boot-progress.ts"
 
 import { resetBridge, toast, ui } from "./bridge.ts"
 import { floorApi } from "./net/api.ts"
@@ -23,6 +24,8 @@ export interface TradingFloorPageProps {
   onRequestOffice?: () => void
   /** Called once the floor stage (or fallback gate) is ready to reveal. */
   onRoomReady?: () => void
+  /** Boot progress 0..1 + Vietnamese stage label while the 3D floor loads. */
+  onRoomProgress?: BootProgressFn
   /** Publishes the active controller's door exit handle to the Spaces shell. */
   onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
 }
@@ -76,6 +79,7 @@ function Floor({
   arrivedViaDoor = false,
   onRequestOffice,
   onRoomReady,
+  onRoomProgress,
   onDoorHandleReady,
 }: {
   me: MeResponse
@@ -83,6 +87,7 @@ function Floor({
   arrivedViaDoor?: boolean
   onRequestOffice?: () => void
   onRoomReady?: () => void
+  onRoomProgress?: BootProgressFn
   onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
 }) {
   const stage = useRef<HTMLDivElement>(null)
@@ -91,6 +96,7 @@ function Floor({
 
   const onRequestOfficeRef = useRef(onRequestOffice)
   const onRoomReadyRef = useRef(onRoomReady)
+  const onRoomProgressRef = useRef(onRoomProgress)
   const onDoorHandleReadyRef = useRef(onDoorHandleReady)
   useEffect(() => {
     onRequestOfficeRef.current = onRequestOffice
@@ -99,6 +105,9 @@ function Floor({
     onRoomReadyRef.current = onRoomReady
   }, [onRoomReady])
   useEffect(() => {
+    onRoomProgressRef.current = onRoomProgress
+  }, [onRoomProgress])
+  useEffect(() => {
     onDoorHandleReadyRef.current = onDoorHandleReady
   }, [onDoorHandleReady])
 
@@ -106,6 +115,8 @@ function Floor({
   useLayoutEffect(() => {
     ui.guest.set(me.guest === true)
     ui.profile.set(me.profile)
+    // Only now may the join card show: a returning player must never see it flash up.
+    ui.profileKnown.set(true)
     if (Object.keys(ui.avatarImages.get()).length === 0) {
       ui.avatarImages.set(buildAllChibiPortraits())
     }
@@ -144,6 +155,9 @@ function Floor({
             },
             onReady: () => {
               if (!cancelled) onRoomReadyRef.current?.()
+            },
+            onProgress: (progress, stage) => {
+              if (!cancelled) onRoomProgressRef.current?.(progress, stage)
             },
             onError: () => {
               if (!cancelled) {
@@ -204,12 +218,14 @@ function Entry({
   arrivedViaDoor,
   onRequestOffice,
   onRoomReady,
+  onRoomProgress,
   onDoorHandleReady,
 }: {
   userId: string | null
   arrivedViaDoor?: boolean
   onRequestOffice?: () => void
   onRoomReady?: () => void
+  onRoomProgress?: BootProgressFn
   onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
 }) {
   // Read once: the token appears later only through the join card, which keeps this page mounted.
@@ -250,6 +266,7 @@ function Entry({
         arrivedViaDoor={arrivedViaDoor}
         onRequestOffice={onRequestOffice}
         onRoomReady={onRoomReady}
+        onRoomProgress={onRoomProgress}
         onDoorHandleReady={onDoorHandleReady}
       />
     )
@@ -288,6 +305,7 @@ function Entry({
       arrivedViaDoor={arrivedViaDoor}
       onRequestOffice={onRequestOffice}
       onRoomReady={onRoomReady}
+      onRoomProgress={onRoomProgress}
       onDoorHandleReady={onDoorHandleReady}
     />
   )
@@ -297,6 +315,7 @@ export function TradingFloorPage({
   arrivedViaDoor = false,
   onRequestOffice,
   onRoomReady,
+  onRoomProgress,
   onDoorHandleReady,
 }: TradingFloorPageProps = {}) {
   const { user, isLoading } = useAuth()
@@ -313,6 +332,7 @@ export function TradingFloorPage({
       arrivedViaDoor={arrivedViaDoor}
       onRequestOffice={onRequestOffice}
       onRoomReady={onRoomReady}
+      onRoomProgress={onRoomProgress}
       onDoorHandleReady={onDoorHandleReady}
     />
   )
