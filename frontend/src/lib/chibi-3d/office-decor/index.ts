@@ -4,6 +4,7 @@ export {
   chibiBevelBox,
   createDecorCanvasTexture,
   createOfficeDecorPalette,
+  createVertexColorProxy,
   type MergedSpec,
   type OfficeDecorPalette,
 } from "./palette.ts"

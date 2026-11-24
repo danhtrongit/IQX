@@ -77,6 +77,7 @@ import {
   createOfficeDecorPalette,
   createOfficeGlowPoolTexture,
   createOfficeStockTickerTexture,
+  createVertexColorProxy,
   createWallArtPrintTexture,
   drawTeamLedBoard,
   mountBorderedZoneRug,
@@ -308,7 +309,7 @@ function createEmptyDeskPlateTexture(lite: boolean): THREE.Texture {
   )
 }
 
-/** Builds merged prototype geometry specs for an instanced open-plan staff desk (cable-free tidy look). */
+/** Builds merged prototype geometry specs for an instanced open-plan staff desk (3 draw calls total!). */
 function createStaffDeskPrototypeSpecs(
   width: number,
   depth: number,
@@ -324,180 +325,68 @@ function createStaffDeskPrototypeSpecs(
     roughness: 0.46,
     metalness: 0.05,
   })
-  const drawerBodyMat = createMatteMaterial("#8a633b", {
-    roughness: 0.58,
-    metalness: 0.04,
+  const vcMatte = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    roughness: 0.54,
+    metalness: 0.08,
   })
-  const drawerFaceMat = createMatteMaterial("#a3784a", {
-    roughness: 0.52,
-    metalness: 0.05,
+  const vcMetal = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    roughness: 0.3,
+    metalness: 0.72,
   })
-  const legMat = createMetalMaterial("#27334a", {
-    roughness: 0.34,
-    metalness: 0.68,
-  })
-  const handleMat = createMetalMaterial("#b8c4d4", {
-    roughness: 0.24,
-    metalness: 0.84,
-  })
-  const bezelMat = createMatteMaterial("#161f33", {
-    roughness: 0.34,
-    metalness: 0.22,
-  })
-  const blotterMat = createMatteMaterial("#253147", {
-    roughness: 0.72,
-    metalness: 0.06,
-  })
-  const keyMat = createMatteMaterial("#eef2f7", {
-    roughness: 0.52,
-    metalness: 0.04,
-  })
+  const drawerBodyMat = createVertexColorProxy(vcMatte, "#8a633b")
+  const drawerFaceMat = createVertexColorProxy(vcMatte, "#a3784a")
+  const legMat = createVertexColorProxy(vcMetal, "#27334a")
+  const handleMat = createVertexColorProxy(vcMetal, "#b8c4d4")
+  const bezelMat = createVertexColorProxy(vcMatte, "#161f33")
+  const blotterMat = createVertexColorProxy(vcMatte, "#253147")
+  const keyMat = createVertexColorProxy(vcMatte, "#eef2f7")
 
   const deskH = 0.76
   const topThick = 0.064
   const topSurfaceY = deskH + topThick / 2
 
-  // Right 3-drawer pedestal
   const pedW = Math.min(0.4, width * 0.22)
   const pedH = deskH - 0.08
   const pedD = depth * 0.82
   const pedX = width / 2 - pedW / 2 - 0.05
-  batcher.addBox(pedW - 0.04, 0.04, pedD - 0.04, legMat, pedX, 0.02, 0, false)
-  batcher.addBevelBox(
-    pedW,
-    pedH,
-    pedD,
-    0.018,
-    drawerBodyMat,
-    pedX,
-    0.04 + pedH / 2,
-    0,
-    lite
-  )
+  batcher.addBox(pedW - 0.04, 0.04, pedD - 0.04, legMat, pedX, 0.02, 0, true)
+  batcher.addBevelBox(pedW, pedH, pedD, 0.018, drawerBodyMat, pedX, 0.04 + pedH / 2, 0, lite, true)
   const slotH = (pedH - 0.08) / 3
   for (let i = 0; i < 3; i += 1) {
     const dy = 0.08 + (i + 0.5) * slotH
-    batcher.addBox(
-      pedW - 0.05,
-      slotH - 0.024,
-      0.022,
-      drawerFaceMat,
-      pedX,
-      dy,
-      pedD / 2 + 0.008,
-      false
-    )
-    batcher.addBox(
-      pedW * 0.34,
-      0.016,
-      0.02,
-      handleMat,
-      pedX,
-      dy + slotH * 0.14,
-      pedD / 2 + 0.022,
-      false
-    )
+    batcher.addBox(pedW - 0.05, slotH - 0.024, 0.022, drawerFaceMat, pedX, dy, pedD / 2 + 0.008, true)
+    batcher.addBox(pedW * 0.34, 0.016, 0.02, handleMat, pedX, dy + slotH * 0.14, pedD / 2 + 0.022, true)
   }
 
-  // Left modern steel sled leg + rear modesty panel
   const leftX = -width / 2 + 0.085
-  batcher.addBox(0.05, 0.04, depth * 0.84, legMat, leftX, 0.02, 0, false)
+  batcher.addBox(0.05, 0.04, depth * 0.84, legMat, leftX, 0.02, 0, true)
   for (const sz of [-1, 1] as const) {
-    batcher.addBox(
-      0.05,
-      deskH - 0.05,
-      0.05,
-      legMat,
-      leftX,
-      deskH / 2,
-      sz * (depth * 0.36),
-      true
-    )
+    batcher.addBox(0.05, deskH - 0.05, 0.05, legMat, leftX, deskH / 2, sz * (depth * 0.36), true)
   }
-  batcher.addBox(
-    width - pedW - 0.18,
-    deskH * 0.54,
-    0.036,
-    drawerBodyMat,
-    -pedW * 0.44,
-    deskH * 0.48,
-    -depth * 0.34,
-    false
-  )
+  batcher.addBox(width - pedW - 0.18, deskH * 0.54, 0.036, drawerBodyMat, -pedW * 0.44, deskH * 0.48, -depth * 0.34, true)
+  batcher.addBevelBox(width, topThick, depth, 0.02, topWoodMat, 0, deskH, 0, lite, true)
+  batcher.addBox(Math.min(width * 0.54, 1.02), 0.008, Math.min(depth * 0.44, 0.36), blotterMat, 0, topSurfaceY + 0.004, depth * 0.1, true)
 
-  // Bevelled oak wood-grained desktop slab
-  batcher.addBevelBox(width, topThick, depth, 0.02, topWoodMat, 0, deskH, 0, lite)
-
-  // Leather desk blotter pad
-  batcher.addBox(
-    Math.min(width * 0.54, 1.02),
-    0.008,
-    Math.min(depth * 0.44, 0.36),
-    blotterMat,
-    0,
-    topSurfaceY + 0.004,
-    depth * 0.1,
-    false
-  )
-
-  // Widescreen monitor housing & stand near spine (-Z in local south-facing space)
   const mz = -depth * 0.24
-  batcher.addBox(0.2, 0.016, 0.13, handleMat, 0, topSurfaceY + 0.008, mz, false)
-  batcher.addBox(
-    0.046,
-    0.155,
-    0.03,
-    handleMat,
-    0,
-    topSurfaceY + 0.088,
-    mz - 0.02,
-    false,
-    true,
-    [-0.08, 0, 0]
-  )
-  batcher.addBevelBox(
-    0.56,
-    0.33,
-    0.032,
-    0.012,
-    bezelMat,
-    0,
-    topSurfaceY + 0.255,
-    mz,
-    lite
-  )
+  batcher.addBox(0.2, 0.016, 0.13, handleMat, 0, topSurfaceY + 0.008, mz, true)
+  batcher.addBox(0.046, 0.155, 0.03, handleMat, 0, topSurfaceY + 0.088, mz - 0.02, true, true, [-0.08, 0, 0])
+  batcher.addBevelBox(0.56, 0.33, 0.032, 0.012, bezelMat, 0, topSurfaceY + 0.255, mz, lite, true)
 
-  // Wireless keyboard + sculpted mouse (cable-free tidy look)
   const kz = depth * 0.14
-  batcher.addBox(
-    0.39,
-    0.016,
-    0.125,
-    keyMat,
-    -0.04,
-    topSurfaceY + 0.012,
-    kz,
-    false,
-    true,
-    [0.08, 0, 0]
-  )
-  batcher.addBevelBox(
-    0.056,
-    0.024,
-    0.09,
-    0.01,
-    keyMat,
-    0.24,
-    topSurfaceY + 0.014,
-    kz + 0.01,
-    lite,
-    false
-  )
+  batcher.addBox(0.39, 0.016, 0.125, keyMat, -0.04, topSurfaceY + 0.012, kz, true, true, [0.08, 0, 0])
+  batcher.addBevelBox(0.056, 0.024, 0.09, 0.01, keyMat, 0.24, topSurfaceY + 0.014, kz + 0.01, lite, true)
 
+  for (const p of [drawerBodyMat, drawerFaceMat, legMat, handleMat, bezelMat, blotterMat, keyMat]) {
+    p.dispose()
+  }
   return batcher.flushToSpecs()
 }
 
-/** Builds merged prototype geometry specs for an instanced ergonomic swivel chair (facing +Z). */
+/** Builds merged prototype geometry specs for an instanced ergonomic swivel chair (2 draw calls total!). */
 function createSwivelChairPrototypeSpecs(
   lite: boolean,
   retainTex: (tex: THREE.Texture) => void
@@ -511,72 +400,38 @@ function createSwivelChairPrototypeSpecs(
     roughness: 0.76,
     metalness: 0.03,
   })
-  const darkMat = createMatteMaterial("#182032", {
-    roughness: 0.52,
-    metalness: 0.24,
+  const vcFrame = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    roughness: 0.42,
+    metalness: 0.48,
   })
-  const chromeMat = createMetalMaterial("#a4b3c6", {
-    roughness: 0.24,
-    metalness: 0.84,
-  })
+  const darkMat = createVertexColorProxy(vcFrame, "#182032")
+  const chromeMat = createVertexColorProxy(vcFrame, "#a4b3c6")
   const seg = lite ? 6 : 8
 
-  batcher.addCylinder(0.03, 0.034, 0.22, seg, chromeMat, 0, 0.19, 0, false)
-  batcher.addCylinder(0.052, 0.064, 0.085, seg, darkMat, 0, 0.095, 0, false)
+  batcher.addCylinder(0.03, 0.034, 0.22, seg, chromeMat, 0, 0.19, 0, false, true)
+  batcher.addCylinder(0.052, 0.064, 0.085, seg, darkMat, 0, 0.095, 0, false, true)
   for (let i = 0; i < 5; i += 1) {
     const a = (i * Math.PI * 2) / 5
     const cos = Math.cos(a)
     const sin = Math.sin(a)
-    batcher.addBox(
-      0.22,
-      0.032,
-      0.038,
-      darkMat,
-      cos * 0.12,
-      0.068,
-      sin * 0.12,
-      false,
-      true,
-      [0, -a, -0.14]
-    )
-    batcher.addCylinder(
-      0.022,
-      0.022,
-      0.024,
-      6,
-      darkMat,
-      cos * 0.22,
-      0.022,
-      sin * 0.22,
-      false,
-      false,
-      [Math.PI / 2, 0, -a]
-    )
+    batcher.addBox(0.22, 0.032, 0.038, darkMat, cos * 0.12, 0.068, sin * 0.12, false, true, [0, -a, -0.14])
+    batcher.addCylinder(0.022, 0.022, 0.024, 6, darkMat, cos * 0.22, 0.022, sin * 0.22, false, true, [Math.PI / 2, 0, -a])
   }
 
-  batcher.addBox(0.43, 0.032, 0.41, darkMat, 0, 0.32, 0.01, false)
-  batcher.addBevelBox(0.45, 0.082, 0.43, 0.028, fabricMat, 0, 0.368, 0.01, lite)
+  batcher.addBox(0.43, 0.032, 0.41, darkMat, 0, 0.32, 0.01, false, true)
+  batcher.addBevelBox(0.45, 0.082, 0.43, 0.028, fabricMat, 0, 0.368, 0.01, lite, true)
   batcher.addBox(0.065, 0.32, 0.04, darkMat, 0, 0.47, -0.225, false, true, [-0.14, 0, 0])
-  batcher.addBevelBox(
-    0.41,
-    0.39,
-    0.076,
-    0.026,
-    fabricMat,
-    0,
-    0.59,
-    -0.2,
-    lite,
-    true,
-    true,
-    [-0.12, 0, 0]
-  )
+  batcher.addBevelBox(0.41, 0.39, 0.076, 0.026, fabricMat, 0, 0.59, -0.2, lite, true, true, [-0.12, 0, 0])
   for (const side of [-1, 1] as const) {
     const ax = side * 0.24
-    batcher.addBox(0.03, 0.19, 0.034, darkMat, ax, 0.42, -0.04, false)
-    batcher.addBox(0.056, 0.03, 0.26, darkMat, ax, 0.515, -0.01, false)
+    batcher.addBox(0.03, 0.19, 0.034, darkMat, ax, 0.42, -0.04, false, true)
+    batcher.addBox(0.056, 0.03, 0.26, darkMat, ax, 0.515, -0.01, false, true)
   }
 
+  darkMat.dispose()
+  chromeMat.dispose()
   return batcher.flushToSpecs()
 }
 
@@ -2034,6 +1889,7 @@ export class OfficeWorld3D {
     bossDesk.group.position.set(bossPt.x, 0, bossPt.z)
     this.teamPropsGroup.add(bossDesk.group)
     this.teamProps.push(bossDesk)
+    mergeStaticPropsInto([bossDesk], this.teamPropsGroup)
     yield 0.28
 
     // 2. Walkable Team Banner Rug ("IQX · NHÓM {TÊN SẾP}") centered on the Staff Promenade

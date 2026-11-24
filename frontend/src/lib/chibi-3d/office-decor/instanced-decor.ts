@@ -12,7 +12,6 @@ import * as THREE from "three"
 import { markStaticCanvasTexture, safeGet2DContext } from "@/lib/chibi-3d/textures.ts"
 import {
   createMatteMaterial,
-  createMetalMaterial,
   mergeIndexedGeometries,
 } from "@/lib/chibi-3d/types.ts"
 
@@ -21,6 +20,7 @@ import {
   OfficeDecorBatcher,
   chibiBevelBox,
   createDecorCanvasTexture,
+  createVertexColorProxy,
   type MergedSpec,
 } from "./palette.ts"
 
@@ -153,51 +153,61 @@ export function createCandlestickMonitorTexture(lite: boolean): THREE.Texture {
 function buildFiddleTreeSpecs(lite: boolean): MergedSpec[] {
   const batch = new OfficeDecorBatcher()
   const seg = lite ? 7 : 10
-  const potMat = createMatteMaterial("#ebe3d6", { roughness: 0.42 })
-  const rimMat = createMetalMaterial("#e9b949", { roughness: 0.28, metalness: 0.78 })
-  const soilMat = createMatteMaterial("#402d20", { roughness: 0.9 })
-  const trunkMat = createMatteMaterial("#734f32", { roughness: 0.74 })
-  const leafDark = createMatteMaterial("#266c3b", { roughness: 0.56 })
-  const leafMid = createMatteMaterial("#3b914c", { roughness: 0.5 })
-  const leafLight = createMatteMaterial("#5db85f", { roughness: 0.48 })
+  const vcMat = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    roughness: 0.54,
+    metalness: 0.06,
+  })
+  const potMat = createVertexColorProxy(vcMat, "#ebe3d6")
+  const rimMat = createVertexColorProxy(vcMat, "#e9b949")
+  const soilMat = createVertexColorProxy(vcMat, "#402d20")
+  const trunkMat = createVertexColorProxy(vcMat, "#734f32")
+  const leafDark = createVertexColorProxy(vcMat, "#266c3b")
+  const leafMid = createVertexColorProxy(vcMat, "#3b914c")
+  const leafLight = createVertexColorProxy(vcMat, "#5db85f")
 
-  // Tapered ribbed ceramic planter + gold rim + soil
   batch.addCylinder(0.24, 0.18, 0.42, seg, potMat, 0, 0.21, 0, true, true)
-  batch.addCylinder(0.255, 0.248, 0.04, seg, rimMat, 0, 0.42, 0, false)
-  batch.addCylinder(0.21, 0.21, 0.03, seg, soilMat, 0, 0.41, 0, false)
+  batch.addCylinder(0.255, 0.248, 0.04, seg, rimMat, 0, 0.42, 0, true, true)
+  batch.addCylinder(0.21, 0.21, 0.03, seg, soilMat, 0, 0.41, 0, true, true)
 
-  // Sculpted wooden trunk + 2 upper branches
-  batch.addCylinder(0.036, 0.052, 0.72, 6, trunkMat, 0, 0.74, 0, true)
-  batch.addCylinder(0.022, 0.032, 0.34, 5, trunkMat, -0.1, 1.06, 0.04, false, true, [0.1, 0, 0.42])
-  batch.addCylinder(0.022, 0.032, 0.32, 5, trunkMat, 0.11, 1.08, -0.05, false, true, [-0.15, 0, -0.38])
+  batch.addCylinder(0.036, 0.052, 0.72, 6, trunkMat, 0, 0.74, 0, true, true)
+  batch.addCylinder(0.022, 0.032, 0.34, 5, trunkMat, -0.1, 1.06, 0.04, true, true, [0.1, 0, 0.42])
+  batch.addCylinder(0.022, 0.032, 0.32, 5, trunkMat, 0.11, 1.08, -0.05, true, true, [-0.15, 0, -0.38])
 
-  // Layered chibi rounded foliage puffs (fiddle-leaf tree canopy)
   const wSeg = lite ? 7 : 10
   const hSeg = lite ? 5 : 8
   batch.addSphere(0.32, wSeg, hSeg, leafDark, 0, 1.24, 0, true, true, [1.1, 0.88, 1.1])
   batch.addSphere(0.24, wSeg, hSeg, leafMid, -0.22, 1.18, 0.14, true, true, [1.05, 0.9, 1.0])
   batch.addSphere(0.23, wSeg, hSeg, leafMid, 0.22, 1.22, -0.1, true, true, [1.0, 0.92, 1.05])
-  batch.addSphere(0.21, wSeg, hSeg, leafLight, 0.04, 1.46, 0.05, false, true, [1.05, 0.85, 1.05])
-  batch.addSphere(0.16, wSeg, hSeg, leafLight, -0.15, 1.38, -0.12, false, false)
+  batch.addSphere(0.21, wSeg, hSeg, leafLight, 0.04, 1.46, 0.05, true, true, [1.05, 0.85, 1.05])
+  batch.addSphere(0.16, wSeg, hSeg, leafLight, -0.15, 1.38, -0.12, true, true)
 
+  for (const p of [potMat, rimMat, soilMat, trunkMat, leafDark, leafMid, leafLight]) {
+    p.dispose()
+  }
   return batch.flushToSpecs()
 }
 
 function buildMonsteraPlantSpecs(lite: boolean): MergedSpec[] {
   const batch = new OfficeDecorBatcher()
   const seg = lite ? 7 : 10
-  const potMat = createMatteMaterial("#203457", { roughness: 0.46 })
-  const rimMat = createMetalMaterial("#e9b949", { roughness: 0.28, metalness: 0.8 })
-  const soilMat = createMatteMaterial("#402d20", { roughness: 0.9 })
-  const leafDark = createMatteMaterial("#236e42", { roughness: 0.52 })
-  const leafBright = createMatteMaterial("#45a858", { roughness: 0.48 })
+  const vcMat = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    roughness: 0.52,
+    metalness: 0.06,
+  })
+  const potMat = createVertexColorProxy(vcMat, "#203457")
+  const rimMat = createVertexColorProxy(vcMat, "#e9b949")
+  const soilMat = createVertexColorProxy(vcMat, "#402d20")
+  const leafDark = createVertexColorProxy(vcMat, "#236e42")
+  const leafBright = createVertexColorProxy(vcMat, "#45a858")
 
-  // Navy ceramic pot with gold band
   batch.addCylinder(0.2, 0.15, 0.32, seg, potMat, 0, 0.16, 0, true, true)
-  batch.addCylinder(0.21, 0.205, 0.032, seg, rimMat, 0, 0.31, 0, false)
-  batch.addCylinder(0.18, 0.18, 0.03, seg, soilMat, 0, 0.305, 0, false)
+  batch.addCylinder(0.21, 0.205, 0.032, seg, rimMat, 0, 0.31, 0, true, true)
+  batch.addCylinder(0.18, 0.18, 0.03, seg, soilMat, 0, 0.305, 0, true, true)
 
-  // Radiating broad tropical monstera fronds
   const frondCount = lite ? 5 : 7
   for (let i = 0; i < frondCount; i += 1) {
     const a = (i * Math.PI * 2) / frondCount + 0.3
@@ -211,28 +221,35 @@ function buildMonsteraPlantSpecs(lite: boolean): MergedSpec[] {
       [cos * 0.2, 0.54 + (i % 2) * 0.12, sin * 0.2],
       [sin * tilt, -a, -cos * tilt],
       [1.25, 0.24, 0.92],
-      !lite,
+      true,
       true
     )
   }
-  batch.addSphere(0.14, lite ? 6 : 8, 6, leafBright, 0, 0.58, 0, false, false, [1.0, 0.72, 1.0])
+  batch.addSphere(0.14, lite ? 6 : 8, 6, leafBright, 0, 0.58, 0, true, true, [1.0, 0.72, 1.0])
+  for (const p of [potMat, rimMat, soilMat, leafDark, leafBright]) {
+    p.dispose()
+  }
   return batch.flushToSpecs()
 }
 
 function buildSnakePlantSpecs(lite: boolean): MergedSpec[] {
   const batch = new OfficeDecorBatcher()
   const seg = lite ? 7 : 10
-  const potMat = createMatteMaterial("#c8724e", { roughness: 0.64 })
-  const soilMat = createMatteMaterial("#402d20", { roughness: 0.9 })
-  const bladeDeep = createMatteMaterial("#2a7043", { roughness: 0.48 })
-  const bladeRim = createMatteMaterial("#86c959", { roughness: 0.46 })
+  const vcMat = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    roughness: 0.54,
+    metalness: 0.04,
+  })
+  const potMat = createVertexColorProxy(vcMat, "#c8724e")
+  const soilMat = createVertexColorProxy(vcMat, "#402d20")
+  const bladeDeep = createVertexColorProxy(vcMat, "#2a7043")
+  const bladeRim = createVertexColorProxy(vcMat, "#86c959")
 
-  // Terracotta pot
   batch.addCylinder(0.17, 0.13, 0.28, seg, potMat, 0, 0.14, 0, true, true)
-  batch.addCylinder(0.18, 0.175, 0.045, seg, potMat, 0, 0.27, 0, false)
-  batch.addCylinder(0.15, 0.15, 0.025, seg, soilMat, 0, 0.275, 0, false)
+  batch.addCylinder(0.18, 0.175, 0.045, seg, potMat, 0, 0.27, 0, true, true)
+  batch.addCylinder(0.15, 0.15, 0.025, seg, soilMat, 0, 0.275, 0, true, true)
 
-  // Upright sword blades with cute lime tips
   const blades: readonly [number, number, number, number, number][] = [
     [0, 0, 0.56, 0.06, 0],
     [-0.06, 0.04, 0.48, -0.14, 0.5],
@@ -248,9 +265,12 @@ function buildSnakePlantSpecs(lite: boolean): MergedSpec[] {
       [bx, 0.28 + bh / 2, bz],
       [lean, yaw, lean * 0.5],
       [1.0, 1.0, 0.35],
-      false,
+      true,
       true
     )
+  }
+  for (const p of [potMat, soilMat, bladeDeep, bladeRim]) {
+    p.dispose()
   }
   return batch.flushToSpecs()
 }
@@ -336,15 +356,40 @@ export function mountInstancedDeskClutter(
     if (slot.occupied) penCupSlots.push(slot)
   }
 
-  // 1. Coffee mugs (ceramic cup + coffee top)
+  // Shared vertex-colored matte material for all desk clutter (1 draw call per clutter type!)
+  const makeVcClutter = (
+    build: (
+      batch: OfficeDecorBatcher,
+      c: (hex: string) => THREE.MeshStandardMaterial
+    ) => void
+  ): MergedSpec[] => {
+    const vcMat = new THREE.MeshStandardMaterial({
+      color: "#ffffff",
+      vertexColors: true,
+      roughness: 0.48,
+      metalness: 0.06,
+    })
+    const proxies: THREE.MeshStandardMaterial[] = []
+    const c = (hex: string): THREE.MeshStandardMaterial => {
+      const p = createVertexColorProxy(vcMat, hex)
+      proxies.push(p)
+      return p
+    }
+    const batch = new OfficeDecorBatcher()
+    build(batch, c)
+    for (const p of proxies) p.dispose()
+    return batch.flushToSpecs()
+  }
+
+  // 1. Coffee mugs (ceramic cup + coffee top -> 1 draw call!)
   if (mugSlots.length > 0) {
-    const mugBatch = new OfficeDecorBatcher()
-    const mugMat = createMatteMaterial("#faf8f5", { roughness: 0.24, metalness: 0.06 })
-    const coffeeMat = createMatteMaterial("#3f1f0e", { roughness: 0.3 })
-    mugBatch.addCylinder(0.044, 0.038, 0.086, seg, mugMat, 0, 0.043, 0, false)
-    mugBatch.addBox(0.022, 0.048, 0.014, mugMat, 0.046, 0.045, 0, false)
-    mugBatch.addCylinder(0.036, 0.036, 0.01, seg, coffeeMat, 0, 0.084, 0, false)
-    const specs = mugBatch.flushToSpecs()
+    const specs = makeVcClutter((batch, c) => {
+      const mugMat = c("#faf8f5")
+      const coffeeMat = c("#3f1f0e")
+      batch.addCylinder(0.044, 0.038, 0.086, seg, mugMat, 0, 0.043, 0, false)
+      batch.addBox(0.022, 0.048, 0.014, mugMat, 0.046, 0.045, 0, false)
+      batch.addCylinder(0.036, 0.036, 0.01, seg, coffeeMat, 0, 0.084, 0, false)
+    })
     for (const spec of specs) {
       const inst = new THREE.InstancedMesh(spec.geometry, spec.material, mugSlots.length)
       inst.name = "office-desk-mugs-instanced"
@@ -365,14 +410,12 @@ export function mountInstancedDeskClutter(
     }
   }
 
-  // 2. Mini desk succulents (terracotta mini pot + cute green crown)
+  // 2. Mini desk succulents (1 draw call!)
   if (succulentSlots.length > 0) {
-    const sucBatch = new OfficeDecorBatcher()
-    const potMat = createMatteMaterial("#c8724e", { roughness: 0.62 })
-    const greenMat = createMatteMaterial("#46a856", { roughness: 0.5 })
-    sucBatch.addCylinder(0.046, 0.035, 0.072, seg, potMat, 0, 0.036, 0, false)
-    sucBatch.addSphere(0.058, seg, 5, greenMat, 0, 0.092, 0, false, false, [1.1, 0.78, 1.1])
-    const specs = sucBatch.flushToSpecs()
+    const specs = makeVcClutter((batch, c) => {
+      batch.addCylinder(0.046, 0.035, 0.072, seg, c("#c8724e"), 0, 0.036, 0, false)
+      batch.addSphere(0.058, seg, 5, c("#46a856"), 0, 0.092, 0, false, true, [1.1, 0.78, 1.1])
+    })
     for (const spec of specs) {
       const inst = new THREE.InstancedMesh(spec.geometry, spec.material, succulentSlots.length)
       inst.name = "office-desk-succulents-instanced"
@@ -392,14 +435,12 @@ export function mountInstancedDeskClutter(
     }
   }
 
-  // 3. Stacked colorful folders / notebooks (tidy 2-layer stack)
+  // 3. Stacked colorful folders / notebooks (1 draw call!)
   if (folderSlots.length > 0) {
-    const foldBatch = new OfficeDecorBatcher()
-    const blueMat = createMatteMaterial("#2b68c9", { roughness: 0.52 })
-    const creamMat = createMatteMaterial("#f5e6c8", { roughness: 0.62 })
-    foldBatch.add(chibiBevelBox(0.24, 0.022, 0.18, 0.004, lite), blueMat, [0, 0.011, 0], undefined, undefined, false)
-    foldBatch.add(chibiBevelBox(0.21, 0.02, 0.16, 0.004, lite), creamMat, [0.01, 0.032, 0], [0, 0.12, 0], undefined, false)
-    const specs = foldBatch.flushToSpecs()
+    const specs = makeVcClutter((batch, c) => {
+      batch.add(chibiBevelBox(0.24, 0.022, 0.18, 0.004, lite), c("#2b68c9"), [0, 0.011, 0], undefined, undefined, false)
+      batch.add(chibiBevelBox(0.21, 0.02, 0.16, 0.004, lite), c("#f5e6c8"), [0.01, 0.032, 0], [0, 0.12, 0], undefined, false)
+    })
     for (const spec of specs) {
       const inst = new THREE.InstancedMesh(spec.geometry, spec.material, folderSlots.length)
       inst.name = "office-desk-folders-instanced"
@@ -451,15 +492,13 @@ export function mountInstancedDeskClutter(
     parent.add(noteInst)
   }
 
-  // 5. Tidy pen cup on occupied desks
+  // 5. Tidy pen cup on occupied desks (1 draw call!)
   if (penCupSlots.length > 0) {
-    const cupBatch = new OfficeDecorBatcher()
-    const cupMat = createMatteMaterial("#1f3359", { roughness: 0.45 })
-    const penMat = createMatteMaterial("#e9b949", { roughness: 0.35 })
-    cupBatch.addCylinder(0.032, 0.028, 0.09, 7, cupMat, 0, 0.045, 0, false)
-    cupBatch.addCylinder(0.006, 0.006, 0.13, 5, penMat, -0.01, 0.075, 0, false, false, [0, 0, 0.14])
-    cupBatch.addCylinder(0.006, 0.006, 0.125, 5, penMat, 0.01, 0.072, 0.008, false, false, [0.1, 0, -0.14])
-    const specs = cupBatch.flushToSpecs()
+    const specs = makeVcClutter((batch, c) => {
+      batch.addCylinder(0.032, 0.028, 0.09, 7, c("#1f3359"), 0, 0.045, 0, false)
+      batch.addCylinder(0.006, 0.006, 0.13, 5, c("#e9b949"), -0.01, 0.075, 0, false, true, [0, 0, 0.14])
+      batch.addCylinder(0.006, 0.006, 0.125, 5, c("#e9b949"), 0.01, 0.072, 0.008, false, true, [0.1, 0, -0.14])
+    })
     for (const spec of specs) {
       const inst = new THREE.InstancedMesh(spec.geometry, spec.material, penCupSlots.length)
       inst.name = "office-desk-pencups-instanced"
@@ -594,9 +633,10 @@ export class ContactShadowBatcher {
     w: number,
     d: number,
     tex: THREE.Texture,
-    opacity = 0.6
+    opacity = 0.56
   ): void {
-    this.items.push({ wx, wz, w, d, tex, opacity })
+    // Quantize opacity to 1 uniform AO level so all shadows per texture merge into 1 draw call
+    this.items.push({ wx, wz, w, d, tex, opacity: opacity > 0 ? 0.56 : 0 })
   }
 
   flushInto(parent: THREE.Object3D): void {

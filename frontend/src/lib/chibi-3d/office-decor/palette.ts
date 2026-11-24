@@ -11,10 +11,7 @@ import {
   safeGet2DContext,
 } from "@/lib/chibi-3d/textures.ts"
 import {
-  createClothMaterial,
   createGlowMaterial,
-  createMatteMaterial,
-  createMetalMaterial,
   isSharedResourceObj,
   mergeIndexedGeometries,
 } from "@/lib/chibi-3d/types.ts"
@@ -27,6 +24,44 @@ const scratchPos = new THREE.Vector3()
 const scratchQuat = new THREE.Quaternion()
 const scratchEuler = new THREE.Euler()
 const scratchScale = new THREE.Vector3()
+const scratchColor = new THREE.Color()
+
+const VC_PROXY_KEY = "__officeVcProxy"
+
+interface VcProxyMeta {
+  target: THREE.Material
+  hex: string
+}
+
+/** Tags a placeholder material so `OfficeDecorBatcher` bakes its hex color into vertex colors on `target`. */
+export function createVertexColorProxy(
+  target: THREE.Material,
+  hex: string
+): THREE.MeshStandardMaterial {
+  const proxy = new THREE.MeshStandardMaterial({ color: hex })
+  ;(proxy.userData as Record<string, unknown>)[VC_PROXY_KEY] = {
+    target,
+    hex,
+  } satisfies VcProxyMeta
+  return proxy
+}
+
+function paintGeometryVertexColor(
+  geom: THREE.BufferGeometry,
+  hex: string
+): void {
+  const pos = geom.getAttribute("position")
+  if (!pos) return
+  scratchColor.set(hex)
+  const arr = new Float32Array(pos.count * 3)
+  for (let i = 0; i < pos.count; i += 1) {
+    const o = i * 3
+    arr[o] = scratchColor.r
+    arr[o + 1] = scratchColor.g
+    arr[o + 2] = scratchColor.b
+  }
+  geom.setAttribute("color", new THREE.BufferAttribute(arr, 3))
+}
 
 export interface MergedSpec {
   geometry: THREE.BufferGeometry
@@ -135,11 +170,19 @@ export class OfficeDecorBatcher {
     scratchMatrix.compose(scratchPos, scratchQuat, scratchScale)
     geom.applyMatrix4(scratchMatrix)
 
-    const key = `${material.uuid}:${castShadow ? 1 : 0}:${receiveShadow ? 1 : 0}`
+    const vcMeta = (material.userData as Record<string, unknown> | undefined)?.[
+      VC_PROXY_KEY
+    ] as VcProxyMeta | undefined
+    const resolvedMat = vcMeta ? vcMeta.target : material
+    if (vcMeta) {
+      paintGeometryVertexColor(geom, vcMeta.hex)
+    }
+
+    const key = `${resolvedMat.uuid}:${castShadow ? 1 : 0}:${receiveShadow ? 1 : 0}`
     let bucket = this.buckets.get(key)
     if (!bucket) {
       bucket = {
-        material,
+        material: resolvedMat,
         castShadow,
         receiveShadow,
         geometries: [],
@@ -321,7 +364,7 @@ export interface OfficeDecorPalette {
   disposeUnused: (used: ReadonlySet<THREE.Material>) => void
 }
 
-/** Creates ONE shared chibi PBR material palette for the entire static open-floor office. */
+/** Creates ONE shared chibi PBR material palette (vertex-colored matte & metal batches for ultra-low draw calls). */
 export function createOfficeDecorPalette(
   lite: boolean,
   retainTex: (tex: THREE.Texture) => void
@@ -329,66 +372,58 @@ export function createOfficeDecorPalette(
   const oakTex = createWoodSurfaceTexture("oak")
   retainTex(oakTex)
 
-  const wallCream = createMatteMaterial("#ece4d6", { roughness: 0.66 })
-  const wallDadoNavy = createMatteMaterial("#18274a", { roughness: 0.46 })
-  const skirtingDark = createMatteMaterial("#0f1a33", {
-    roughness: 0.44,
-    metalness: 0.16,
+  // Two master vertex-colored PBR materials collapse 28+ solid colors into 2-4 draw calls total!
+  const sharedMatteVc = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    roughness: 0.56,
+    metalness: 0.05,
   })
-  const pilasterCream = createMatteMaterial("#e2d7c5", { roughness: 0.54 })
-  const pilasterFlute = createMatteMaterial("#cfc1aa", { roughness: 0.62 })
-  const gold = createMetalMaterial("#e9b949", {
-    roughness: 0.25,
-    metalness: 0.84,
-  })
-  const silver = createMetalMaterial("#cbd5e1", {
-    roughness: 0.24,
-    metalness: 0.84,
-  })
-  const bronze = createMetalMaterial("#c97e48", {
-    roughness: 0.3,
+  const sharedMetalVc = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    roughness: 0.28,
     metalness: 0.78,
   })
-  const brassDark = createMetalMaterial("#a67c2e", {
-    roughness: 0.34,
-    metalness: 0.72,
-  })
-  const obsidian = createMatteMaterial("#0d1526", {
-    roughness: 0.38,
-    metalness: 0.32,
-  })
-  const frameMetal = createMetalMaterial("#273654", {
-    roughness: 0.36,
-    metalness: 0.65,
-  })
+  const matte = (hex: string) => createVertexColorProxy(sharedMatteVc, hex)
+  const metal = (hex: string) => createVertexColorProxy(sharedMetalVc, hex)
+
+  const wallCream = matte("#ece4d6")
+  const wallDadoNavy = matte("#18274a")
+  const skirtingDark = matte("#0f1a33")
+  const pilasterCream = matte("#e2d7c5")
+  const pilasterFlute = matte("#cfc1aa")
+  const gold = metal("#e9b949")
+  const silver = metal("#cbd5e1")
+  const bronze = metal("#c97e48")
+  const brassDark = metal("#a67c2e")
+  const obsidian = metal("#121b30")
+  const frameMetal = metal("#2a3c5e")
   const oakWood = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     map: oakTex,
     roughness: 0.48,
     metalness: 0.05,
   })
-  const walnutWood = createMatteMaterial("#6f4929", { roughness: 0.54 })
-  const slatWood = createMatteMaterial("#9c6b3d", { roughness: 0.56 })
-  const whiteCeramic = createMatteMaterial("#f4f6fa", { roughness: 0.3 })
-  const marbleLight = createMatteMaterial("#f1eadf", {
-    roughness: 0.34,
-    metalness: 0.06,
-  })
-  const slateFabric = createClothMaterial("#364a6e")
-  const navyFabric = createClothMaterial("#1f3359")
-  const creamFabric = createClothMaterial("#efe2cc")
-  const terracotta = createMatteMaterial("#c26a48", { roughness: 0.66 })
-  const soilDark = createMatteMaterial("#402d20", { roughness: 0.9 })
-  const leafDeep = createMatteMaterial("#286e3c", { roughness: 0.56 })
-  const leafMid = createMatteMaterial("#3a914c", { roughness: 0.52 })
-  const leafBright = createMatteMaterial("#59b35d", { roughness: 0.5 })
-  const feltGreen = createMatteMaterial("#1f8a5b", { roughness: 0.78 })
-  const redAccent = createMatteMaterial("#dc4c54", { roughness: 0.44 })
-  const blueAccent = createMatteMaterial("#2d6fe8", { roughness: 0.46 })
-  const amberAccent = createMatteMaterial("#e89a2c", { roughness: 0.48 })
-  const emeraldAccent = createMatteMaterial("#19a974", { roughness: 0.46 })
-  const pinkAccent = createMatteMaterial("#e879a0", { roughness: 0.5 })
-  const paperWhite = createMatteMaterial("#f8fafc", { roughness: 0.68 })
+  const walnutWood = matte("#6f4929")
+  const slatWood = matte("#9c6b3d")
+  const whiteCeramic = matte("#f4f6fa")
+  const marbleLight = matte("#f1eadf")
+  const slateFabric = matte("#364a6e")
+  const navyFabric = matte("#1f3359")
+  const creamFabric = matte("#efe2cc")
+  const terracotta = matte("#c26a48")
+  const soilDark = matte("#402d20")
+  const leafDeep = matte("#286e3c")
+  const leafMid = matte("#3a914c")
+  const leafBright = matte("#59b35d")
+  const feltGreen = matte("#1f8a5b")
+  const redAccent = matte("#dc4c54")
+  const blueAccent = matte("#2d6fe8")
+  const amberAccent = matte("#e89a2c")
+  const emeraldAccent = matte("#19a974")
+  const pinkAccent = matte("#e879a0")
+  const paperWhite = matte("#f8fafc")
   const warmGlow = createGlowMaterial("#ffe4a3", lite ? 0.85 : 1.08)
   const lampShadeGlow = createGlowMaterial("#fff0c8", 0.78)
   const ledGreen = createGlowMaterial("#34d399", 1.1)
@@ -408,6 +443,8 @@ export function createOfficeDecorPalette(
   })
 
   const allMaterials: THREE.Material[] = [
+    sharedMatteVc,
+    sharedMetalVc,
     wallCream,
     wallDadoNavy,
     skirtingDark,

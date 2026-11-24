@@ -48,6 +48,7 @@ function measureScene(
   uniqueMaterials: number
   uniqueTextures: number
   instancedMeshes: number
+  byGroup: Record<string, number>
 } {
   root.updateMatrixWorld(true)
   let frustum: THREE.Frustum | null = null
@@ -68,8 +69,17 @@ function measureScene(
   const geos = new Set<THREE.BufferGeometry>()
   const mats = new Set<THREE.Material>()
   const texs = new Set<THREE.Texture>()
+  const byGroup: Record<string, number> = {}
   const box = new THREE.Box3()
   const sphere = new THREE.Sphere()
+
+  const topGroupName = (obj: THREE.Object3D): string => {
+    let cur: THREE.Object3D | null = obj
+    while (cur && cur.parent && cur.parent !== root) {
+      cur = cur.parent
+    }
+    return cur?.name || cur?.type || "root"
+  }
 
   root.traverse((obj) => {
     if (!obj.visible) return
@@ -83,6 +93,8 @@ function measureScene(
     const tris = countGeometryTriangles(mesh.geometry) * instanceCount
     totalDrawCalls += 1
     totalTriangles += tris
+    const grpKey = `${topGroupName(obj)}:${obj.name || (isInst ? "InstancedMesh" : "Mesh")}`
+    byGroup[grpKey] = (byGroup[grpKey] ?? 0) + 1
     if (isInst) instancedMeshes += 1
 
     geos.add(mesh.geometry)
@@ -134,6 +146,7 @@ function measureScene(
     uniqueMaterials: mats.size,
     uniqueTextures: texs.size,
     instancedMeshes,
+    byGroup,
   }
 }
 
@@ -233,8 +246,9 @@ describe("Office 3D performance budget (1440x900 default cover zoom)", () => {
       )
     }
 
-    expect(worldOnly.totalDrawCalls).toBeLessThanOrEqual(245)
+    expect(worldOnly.totalDrawCalls).toBeLessThanOrEqual(200)
     expect(worldOnly.uniqueTextures).toBeLessThanOrEqual(60)
+    expect(fullScene.totalDrawCalls).toBeLessThanOrEqual(260)
     expect(fullScene.visibleDrawCalls).toBeLessThanOrEqual(260)
     expect(fullScene.totalTriangles).toBeLessThanOrEqual(700_000)
 
