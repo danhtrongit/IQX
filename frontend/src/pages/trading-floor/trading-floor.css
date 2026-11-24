@@ -2912,36 +2912,91 @@
   box-shadow: 0 0 8px rgba(46, 230, 200, 0.44);
 }
 
+/* Chat bubble = a soft cream cloud: puffs on top, two little "thought" dots as the tail.
+   The outline comes from drop-shadow filters so the body, puffs and dots read as one shape. */
 .tf-root .tf-bubble {
+  --cloud: #fffaf0;
+  --cloud-edge: #e9b949;
   position: absolute;
   top: 0;
   left: 0;
   max-width: min(240px, calc(100cqw - 24px));
-  padding: 6px 11px;
-  border-radius: 11px;
-  background: #fff6dc;
+  padding: 8px 16px 9px;
+  margin-top: 6px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff 0%, var(--cloud) 70%, #fff1d2 100%);
   color: #101522;
-  border: 1.5px solid #e3b341;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.35;
   text-align: center;
   overflow-wrap: anywhere;
+  filter: drop-shadow(0 0 0.7px var(--cloud-edge)) drop-shadow(0 0 0.7px var(--cloud-edge))
+    drop-shadow(0 6px 9px rgba(0, 0, 0, 0.34));
   transition: opacity 300ms ease;
+  animation: tf-cloud-pop 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform, opacity;
   z-index: 400;
+}
+/* Puffs along the top edge. */
+.tf-root .tf-bubble::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: -10px;
+  height: 22px;
+  z-index: -1;
+  pointer-events: none;
+  /* Circle centres sit 12px below the pseudo's top = 2px inside the cloud, so each puff rises 4-9px. */
+  background:
+    radial-gradient(circle at 12% 12px, #ffffff 7px, transparent 7.5px),
+    radial-gradient(circle at 34% 12px, #ffffff 11px, transparent 11.5px),
+    radial-gradient(circle at 60% 12px, #ffffff 9px, transparent 9.5px),
+    radial-gradient(circle at 85% 12px, #ffffff 6.5px, transparent 7px);
+}
+/* Tail: one small dot under the cloud and a tinier one toward the speaker. */
+.tf-root .tf-bubble::after {
+  content: "";
+  position: absolute;
+  left: calc(50% - 4px);
+  bottom: -9px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--cloud);
+  box-shadow: -7px 7px 0 -2px var(--cloud);
+  pointer-events: none;
 }
 .tf-root .tf-bubble-right {
   text-align: left;
   max-width: min(260px, calc(100cqw - 24px));
+}
+.tf-root .tf-bubble-right::after {
+  left: -8px;
+  top: calc(50% - 4px);
+  bottom: auto;
+  box-shadow: -7px 5px 0 -2px var(--cloud);
+}
+@keyframes tf-cloud-pop {
+  from {
+    scale: 0.82;
+  }
+  to {
+    scale: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tf-root .tf-bubble {
+    animation: none;
+  }
 }
 @media (max-width: 640px) {
   .tf-root .tf-bubble,
   .tf-root .tf-bubble-right {
     max-width: min(230px, calc(100vw - 24px));
     font-size: 12.5px;
-    padding: 5px 10px;
+    padding: 6px 13px 7px;
   }
 }
 
