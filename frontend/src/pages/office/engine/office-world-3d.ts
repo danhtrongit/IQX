@@ -1,32 +1,34 @@
 /**
- * Procedural Cute & Crisp Chibi 3D World for Khu Văn phòng.
+ * Procedural Cute & Crisp Chibi 3D Open-Floor World for Khu Văn phòng (KGD style).
  *
- * 100% procedural Three.js built on `frontend/src/lib/chibi-3d/` (zero external models/images):
- * - 4 distinct floor zones (`parquet`, `carpet_slate`, `stone_sand`, `ceramic_cream`),
- *   per-band woven carpets, corridor runner, VIP standee carpet, Big Team Banner Rug
- *   ("IQX · NHÓM {TÊN SẾP}"), and floor zone decals
- * - Cutaway architectural walls with baseboards, navy wainscoting, gold chair/crown rails,
- *   pilasters, sunlit windows with light pools, ceiling light coves, wall sconces & wall art
- * - Framed glass partitions (corridor + interior dividers) with metallic mullions, privacy
- *   frosting bands, and open wooden/glass doorway doors with brass hardware & room plaques
- * - Phòng Sếp (dual-monitor walnut desk, bookshelf, sofa, executive rug, wall frames,
- *   standing floor lamp, trophy & globe)
- * - Phòng Họp (live Wall Screen w/ acoustic slat backdrop & AV credenza, pill conference
- *   table + 8 chairs w/ notebooks & speakerphone, wall whiteboard, meeting rug)
- * - Phòng Tài Liệu (3 north + 1 east bookshelves, reading desk w/ brass banker's lamp &
- *   archive binders, archive wall plaque, documents rug)
- * - Khu Nhân Viên:
- *   - Full open-plan desk pod grid (24+ desks in back-to-back pods with low acoustic
- *     dividers), rendered via `InstancedMesh` + merged geometries for tight draw-call budgets
- *   - Occupied desks: glowing monitor ON, slightly pulled ergonomic chair, optional mug,
- *     member nameplate (yellow highlighted for self per Spec §3.1)
- *   - Empty desks: powered-off dark matte monitor, neatly tucked-in chair, shared neutral
- *     "Bàn trống" nameplate
- *   - Purposeful decor: personal staff lockers, multifunction printer/copier & supply station,
- *     south-center magazine credenza, compact huddle nook, SW lounge + floor lamp, lush plant
- *     clusters, wall art, Coffee Corner (pantry, espresso, water cooler w/ cup dispenser,
- *     bistro table + stools, Cafe menu chalkboard), and Achievement Standee
- * - Click-to-move golden target ring (respects `prefers-reduced-motion`)
+ * 100% procedural Three.js built on `frontend/src/lib/chibi-3d/` & `office-decor/`:
+ * - Open luminous cream stone/marble tile floor (extending seamlessly past playable bounds so
+ *   zero empty dark margins ever appear), brass floor perimeter trim, soft AO contact shadows,
+ *   and warm overhead ceiling-light glow pools.
+ * - ONE grand North back wall (KGD architecture: warm ivory plaster, navy wainscoting dado,
+ *   brushed gold skirting/chair rail/crown cornice, fluted pilasters with warm brass wall sconces,
+ *   recessed light cove) carrying:
+ *   - Grand live Team LED Board ("IQX · {Tên nhóm}" + live monthly Top 3 Leaderboard / KPI strip)
+ *   - Stock-Ticker LED Ribbon below the Team Board
+ *   - 3 World Market Wall Clocks (VN · TYO · NYC)
+ *   - Panoramic City-Skyline Window Strips with warm floor sunlight pools
+ *   - Live Meeting Room Wall Screen + acoustic slat backdrop
+ *   - Award & Archive Bookshelves against the back wall + framed corporate wall art
+ *   - Ceiling-less hanging pendant lamp silhouettes near the north wall
+ * - 6 open zones marked by bordered KGD-style rugs + painted bronze floor decals:
+ *   - "BÀN SẾP": executive walnut dual-monitor desk, guest sofa, award shelf, standing lamp
+ *   - "PHÒNG HỌP": pill conference table + 8 chairs, mobile whiteboard easel, low planter soft border (no glass!)
+ *   - "TÀI LIỆU": archive bookshelves + reading desk with banker's lamp
+ *   - "KHU LÀM VIỆC": 24-desk open-plan pod grid (InstancedMesh, dynamic >24 expansion),
+ *     candlestick chart monitors, cable-free chibi desk clutter (mugs, mini succulents, sticky
+ *     notes, stacked folders, pen cups), packed 1-atlas member nameplates, "Bàn trống" plates,
+ *     and woven "IQX · NHÓM {TÊN SẾP}" Team Banner Rug
+ *   - "GÓC NGHỈ": cozy sofa + coffee table + floor lamp, espresso bar, water cooler, snack shelf,
+ *     chibi foosball table & mini arcade cabinet
+ *   - "GÓC THÀNH TÍCH": 3 tiered marble/gold trophy pedestals, twin framed certificate easels,
+ *     and live Achievement Standee with brass stanchions
+ * - 3 distinct instanced plant varieties (fiddle-leaf corner trees, monstera bushes, snake plants)
+ * - Step-wise chunked build (`buildAsync`, `rebuildTeamPropsSteps`) + static shadow baking
  */
 import * as THREE from "three"
 
@@ -36,7 +38,6 @@ import {
   type BuildSteps,
   type ChunkedBuildOptions,
 } from "@/lib/chibi-3d/chunked-build.ts"
-import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js"
 
 import { prefersReducedMotion } from "@/lib/chibi-3d/character-builder.ts"
 import {
@@ -44,35 +45,62 @@ import {
   createBookshelf,
   createCoffeeTable,
   createConferenceTable,
-  createInstancedPottedPlants,
   createOfficeDesk,
   createPantryCounter,
-  createRug,
   createSofa,
   createWallBoardFrame,
   type DisposableProp,
-  type InstancedPropTransform,
   type LiveBoardProp,
 } from "@/lib/chibi-3d/furniture-builder.ts"
+import {
+  ContactShadowBatcher,
+  OFFICE_DECOR_FONT_STACK,
+  OfficeDecorBatcher,
+  addCertificateEasel,
+  addFoosballTableToBatch,
+  addHangingPendantsToBatch,
+  addLowPlanterToBatch,
+  addMiniArcadeCabinet,
+  addPrinterCredenzaToBatch,
+  addSkylineWindowToBatch,
+  addSnackShelfToBatch,
+  addStandingLampToBatch,
+  addTrophyPedestalsToBatch,
+  addWaterCoolerToBatch,
+  addWhiteboardEasel,
+  addWorldClocks,
+  chibiBevelBox,
+  createCandlestickMonitorTexture,
+  createCitySkylineTexture,
+  createDecorCanvasTexture,
+  createOfficeContactShadowTexture,
+  createOfficeDecorPalette,
+  createOfficeGlowPoolTexture,
+  createOfficeStockTickerTexture,
+  createWallArtPrintTexture,
+  drawTeamLedBoard,
+  mountBorderedZoneRug,
+  mountInstancedDeskClutter,
+  mountInstancedOfficePlants,
+  type DeskClutterSlot,
+  type MergedSpec,
+  type OfficePlantTransform,
+} from "@/lib/chibi-3d/office-decor/index.ts"
 import {
   cloneSharedRepeatedTexture,
   createFabricSurfaceTexture,
   createFloorDecalTexture,
   createFloorTexture,
-  createMonitorScreenTexture,
   createNameplateAtlasTexture,
   createSignTexture,
   createWoodSurfaceTexture,
   drawOfficeMeetingScreen,
   drawOfficeStandee,
-  markStaticCanvasTexture,
   releaseCachedTexture,
   retainCachedTexture,
-  safeGet2DContext,
   type NameplateAtlasEntry,
 } from "@/lib/chibi-3d/textures.ts"
 import {
-  createClothMaterial,
   createGlowMaterial,
   createMatteMaterial,
   createMetalMaterial,
@@ -90,156 +118,38 @@ import {
 import type { OfficeLeaderboard, OfficeMeeting } from "../types.ts"
 import { formatMeetingScheduleVi } from "../utils.ts"
 import {
+  OFFICE_AWARDS_PROPS,
   OFFICE_BASE_W,
-  OFFICE_COFFEE_COOLER_RECT,
-  OFFICE_COFFEE_TABLE_RECT,
   OFFICE_DESK_H,
   OFFICE_DESK_W,
-  OFFICE_DIVIDER_Y,
-  OFFICE_DOORWAYS,
+  OFFICE_LOUNGE_PROPS,
+  OFFICE_NORTH_PROPS,
+  OFFICE_NORTH_WALL_Y,
   OFFICE_POD_DIVIDER_H,
   OFFICE_POD_W,
-  OFFICE_WALL_THICK,
   OFFICE_WORLD_SCALE,
   buildAllDeskSlots,
   computeOfficeDimensions,
-  getHuddleNookPositions,
-  getLoungePositions,
-  getOfficeLockers,
+  getMeetingPlanters,
+  getOfficeFloorLabels,
+  getOfficeNorthWindows,
   getOfficePlants,
   getOfficePodDividers,
-  getOfficeWallArt,
-  getOfficeWindows,
-  getOfficeZones,
   getPrinterStationRect,
-  getSouthCredenzaRect,
   getTeamBannerRugRect,
   getZoneRugs,
   type OfficeDeskPlacement,
   type OfficeDeskSlot,
 } from "./office-layout.ts"
 
-const FONT_STACK =
-  '"Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+const NORTH_WALL_H = 4.35
+const NORTH_WALL_EXTEND_U = 10.0
 
 const scratchMatrix = new THREE.Matrix4()
 const scratchPos = new THREE.Vector3()
 const scratchQuat = new THREE.Quaternion()
 const scratchEuler = new THREE.Euler()
 const scratchScale = new THREE.Vector3()
-
-interface MergedSpec {
-  geometry: THREE.BufferGeometry
-  material: THREE.Material
-  castShadow: boolean
-  receiveShadow: boolean
-}
-
-interface BatchBucket {
-  material: THREE.Material
-  castShadow: boolean
-  receiveShadow: boolean
-  geometries: THREE.BufferGeometry[]
-}
-
-class MeshBatcher {
-  private readonly buckets = new Map<string, BatchBucket>()
-
-  add(
-    raw: THREE.BufferGeometry,
-    material: THREE.Material,
-    pos: readonly [number, number, number],
-    rot?: readonly [number, number, number],
-    scale?: readonly [number, number, number],
-    castShadow = true,
-    receiveShadow = true
-  ): void {
-    const geom = isSharedResourceObj(raw) ? raw.clone() : raw
-    if (isSharedResourceObj(geom)) {
-      geom.userData = {}
-    }
-    scratchPos.set(pos[0], pos[1], pos[2])
-    if (rot) {
-      scratchEuler.set(rot[0], rot[1], rot[2])
-      scratchQuat.setFromEuler(scratchEuler)
-    } else {
-      scratchQuat.identity()
-    }
-    if (scale) {
-      scratchScale.set(scale[0], scale[1], scale[2])
-    } else {
-      scratchScale.set(1, 1, 1)
-    }
-    scratchMatrix.compose(scratchPos, scratchQuat, scratchScale)
-    geom.applyMatrix4(scratchMatrix)
-
-    const key = `${material.uuid}:${castShadow ? 1 : 0}:${receiveShadow ? 1 : 0}`
-    let bucket = this.buckets.get(key)
-    if (!bucket) {
-      bucket = {
-        material,
-        castShadow,
-        receiveShadow,
-        geometries: [],
-      }
-      this.buckets.set(key, bucket)
-    }
-    bucket.geometries.push(geom)
-  }
-
-  addBox(
-    w: number,
-    h: number,
-    d: number,
-    material: THREE.Material,
-    x: number,
-    y: number,
-    z: number,
-    castShadow = true,
-    receiveShadow = true,
-    rot?: readonly [number, number, number]
-  ): void {
-    this.add(
-      new THREE.BoxGeometry(w, h, d),
-      material,
-      [x, y, z],
-      rot,
-      undefined,
-      castShadow,
-      receiveShadow
-    )
-  }
-
-  flushToSpecs(): MergedSpec[] {
-    const specs: MergedSpec[] = []
-    for (const bucket of this.buckets.values()) {
-      if (bucket.geometries.length === 0) continue
-      const merged = mergeIndexedGeometries(bucket.geometries, {
-        disposeInputs: true,
-      })
-      if (merged) {
-        merged.computeBoundingSphere()
-        specs.push({
-          geometry: merged,
-          material: bucket.material,
-          castShadow: bucket.castShadow,
-          receiveShadow: bucket.receiveShadow,
-        })
-      }
-    }
-    this.buckets.clear()
-    return specs
-  }
-
-  flushInto(parent: THREE.Object3D): void {
-    for (const spec of this.flushToSpecs()) {
-      const mesh = new THREE.Mesh(spec.geometry, spec.material)
-      mesh.castShadow = spec.castShadow
-      mesh.receiveShadow = spec.receiveShadow
-      parent.add(mesh)
-    }
-  }
-}
 
 /** Merges non-instanced static prop meshes per `(material, castShadow, receiveShadow)` while keeping `InstancedMesh` intact. */
 function mergeStaticPropsInto(
@@ -306,269 +216,6 @@ function mergeStaticPropsInto(
   }
 }
 
-function roundedBox(
-  w: number,
-  h: number,
-  d: number,
-  radius: number,
-  lite: boolean
-): THREE.BufferGeometry {
-  const sw = Math.max(0.008, w)
-  const sh = Math.max(0.008, h)
-  const sd = Math.max(0.008, d)
-  const r = Math.max(0.002, Math.min(radius, Math.min(sw, sh, sd) * 0.42))
-  return new RoundedBoxGeometry(sw, sh, sd, lite ? 1 : 2, r)
-}
-
-function createCanvasTextureSafe(
-  w: number,
-  h: number,
-  draw: (ctx: CanvasRenderingContext2D, width: number, height: number) => void,
-  anisotropy = 4
-): THREE.Texture {
-  const paint = (canvas: HTMLCanvasElement): boolean => {
-    const ctx = safeGet2DContext(canvas)
-    if (!ctx) return false
-    draw(ctx, w, h)
-    return true
-  }
-  const canvas = document.createElement("canvas")
-  canvas.width = w
-  canvas.height = h
-  const hasCtx = paint(canvas)
-  if (hasCtx) {
-    const tex = markStaticCanvasTexture(new THREE.CanvasTexture(canvas), (c) => {
-      paint(c)
-    })
-    tex.colorSpace = THREE.SRGBColorSpace
-    tex.anisotropy = Math.min(8, anisotropy)
-    tex.needsUpdate = true
-    return tex
-  }
-  const fallback = new THREE.DataTexture(
-    new Uint8Array([235, 240, 248, 255]),
-    1,
-    1,
-    THREE.RGBAFormat
-  )
-  fallback.colorSpace = THREE.SRGBColorSpace
-  fallback.needsUpdate = true
-  return fallback
-}
-
-function createWhiteboardTexture(): THREE.Texture {
-  return createCanvasTextureSafe(384, 224, (ctx, w, h) => {
-    ctx.fillStyle = "#f7f9fc"
-    ctx.fillRect(0, 0, w, h)
-
-    ctx.strokeStyle = "rgba(148, 163, 184, 0.22)"
-    ctx.lineWidth = 1
-    for (let x = 24; x < w; x += 24) {
-      ctx.beginPath()
-      ctx.moveTo(x, 12)
-      ctx.lineTo(x, h - 12)
-      ctx.stroke()
-    }
-    for (let y = 24; y < h; y += 24) {
-      ctx.beginPath()
-      ctx.moveTo(12, y)
-      ctx.lineTo(w - 12, y)
-      ctx.stroke()
-    }
-
-    ctx.fillStyle = "#16244a"
-    ctx.font = `800 18px ${FONT_STACK}`
-    ctx.fillText("KẾ HOẠCH TUẦN · KPI", 22, 34)
-
-    ctx.strokeStyle = "#16a34a"
-    ctx.lineWidth = 4
-    ctx.lineCap = "round"
-    ctx.lineJoin = "round"
-    ctx.beginPath()
-    ctx.moveTo(28, 175)
-    ctx.lineTo(78, 152)
-    ctx.lineTo(124, 160)
-    ctx.lineTo(176, 118)
-    ctx.lineTo(222, 126)
-    ctx.lineTo(278, 76)
-    ctx.lineTo(342, 60)
-    ctx.stroke()
-
-    const bars = [
-      { x: 40, h: 42, c: "#3b82f6" },
-      { x: 64, h: 60, c: "#3b82f6" },
-      { x: 88, h: 52, c: "#e9b949" },
-      { x: 112, h: 74, c: "#16a34a" },
-    ]
-    for (const b of bars) {
-      ctx.fillStyle = b.c
-      ctx.fillRect(b.x + 215, 196 - b.h, 16, b.h)
-    }
-
-    ctx.fillStyle = "#fde68a"
-    ctx.fillRect(28, 56, 74, 48)
-    ctx.fillStyle = "#bfdbfe"
-    ctx.fillRect(114, 56, 74, 48)
-    ctx.fillStyle = "#1e293b"
-    ctx.fillRect(36, 70, 52, 5)
-    ctx.fillRect(36, 82, 42, 5)
-    ctx.fillRect(122, 70, 52, 5)
-    ctx.fillRect(122, 82, 38, 5)
-  })
-}
-
-function createCafeMenuTexture(): THREE.Texture {
-  return createCanvasTextureSafe(320, 192, (ctx, w, h) => {
-    ctx.fillStyle = "#1a2335"
-    ctx.fillRect(0, 0, w, h)
-    ctx.strokeStyle = "#e9b949"
-    ctx.lineWidth = 5
-    ctx.strokeRect(8, 8, w - 16, h - 16)
-
-    ctx.textAlign = "center"
-    ctx.fillStyle = "#f6d27a"
-    ctx.font = `800 26px ${FONT_STACK}`
-    ctx.fillText("IQX CAFÉ", w / 2, 44)
-
-    ctx.strokeStyle = "rgba(233, 185, 73, 0.45)"
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(40, 58)
-    ctx.lineTo(w - 40, 58)
-    ctx.stroke()
-
-    ctx.textAlign = "left"
-    ctx.fillStyle = "#f1f5f9"
-    ctx.font = `600 17px ${FONT_STACK}`
-    const items = [
-      ["Cà phê sữa đá", "MIỄN PHÍ"],
-      ["Cold Brew cam sả", "MIỄN PHÍ"],
-      ["Trà đào mật ong", "MIỄN PHÍ"],
-      ["Matcha sữa hạt", "MIỄN PHÍ"],
-    ]
-    items.forEach(([name, tag], idx) => {
-      const y = 88 + idx * 25
-      ctx.fillStyle = "#f1f5f9"
-      ctx.fillText(name, 26, y)
-      ctx.textAlign = "right"
-      ctx.fillStyle = "#34c38f"
-      ctx.font = `700 13px ${FONT_STACK}`
-      ctx.fillText(tag, w - 26, y)
-      ctx.textAlign = "left"
-      ctx.font = `600 17px ${FONT_STACK}`
-    })
-  })
-}
-
-function createArtFrameTexture(
-  variant: "chart" | "crest" | "mountain" | "motto" | "target"
-): THREE.Texture {
-  return createCanvasTextureSafe(320, 210, (ctx, w, h) => {
-    const grad = ctx.createLinearGradient(0, 0, 0, h)
-    if (variant === "crest" || variant === "motto" || variant === "target") {
-      grad.addColorStop(0, "#152548")
-      grad.addColorStop(1, "#0c152b")
-    } else if (variant === "chart") {
-      grad.addColorStop(0, "#172a4f")
-      grad.addColorStop(1, "#0e1a33")
-    } else {
-      grad.addColorStop(0, "#fef3c7")
-      grad.addColorStop(1, "#fde68a")
-    }
-    ctx.fillStyle = grad
-    ctx.fillRect(0, 0, w, h)
-
-    if (variant === "crest") {
-      ctx.strokeStyle = "#e9b949"
-      ctx.lineWidth = 4
-      ctx.strokeRect(14, 14, w - 28, h - 28)
-      ctx.fillStyle = "#f6d27a"
-      ctx.textAlign = "center"
-      ctx.textBaseline = "middle"
-      ctx.font = `900 48px ${FONT_STACK}`
-      ctx.fillText("IQX", w / 2, h * 0.44)
-      ctx.fillStyle = "#c9d6e4"
-      ctx.font = `700 17px ${FONT_STACK}`
-      ctx.fillText("CHỨNG NHẬN XUẤT SẮC", w / 2, h * 0.74)
-    } else if (variant === "motto") {
-      ctx.strokeStyle = "#e9b949"
-      ctx.lineWidth = 4
-      ctx.strokeRect(14, 14, w - 28, h - 28)
-      ctx.fillStyle = "#f6d27a"
-      ctx.textAlign = "center"
-      ctx.textBaseline = "middle"
-      ctx.font = `800 26px ${FONT_STACK}`
-      ctx.fillText("KỶ LUẬT · TỐC ĐỘ", w / 2, h * 0.42)
-      ctx.strokeStyle = "rgba(246, 210, 122, 0.5)"
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.moveTo(64, h * 0.58)
-      ctx.lineTo(w - 64, h * 0.58)
-      ctx.stroke()
-      ctx.fillStyle = "#f1f5f9"
-      ctx.font = `600 16px ${FONT_STACK}`
-      ctx.fillText("ĐỒNG HÀNH TĂNG TRƯỞNG", w / 2, h * 0.74)
-    } else if (variant === "target") {
-      ctx.strokeStyle = "#34c38f"
-      ctx.lineWidth = 4
-      ctx.strokeRect(14, 14, w - 28, h - 28)
-      ctx.fillStyle = "#34c38f"
-      ctx.textAlign = "center"
-      ctx.textBaseline = "middle"
-      ctx.font = `800 22px ${FONT_STACK}`
-      ctx.fillText("MỤC TIÊU QUÝ", w / 2, h * 0.36)
-      ctx.fillStyle = "#f6d27a"
-      ctx.font = `900 32px ${FONT_STACK}`
-      ctx.fillText("BỨT PHÁ KPI", w / 2, h * 0.62)
-      ctx.fillStyle = "#c9d6e4"
-      ctx.font = `600 14px ${FONT_STACK}`
-      ctx.fillText("SACO · IQX", w / 2, h * 0.82)
-    } else if (variant === "chart") {
-      ctx.strokeStyle = "rgba(246, 210, 122, 0.2)"
-      ctx.lineWidth = 1.5
-      for (let y = 36; y < h - 24; y += 30) {
-        ctx.beginPath()
-        ctx.moveTo(20, y)
-        ctx.lineTo(w - 20, y)
-        ctx.stroke()
-      }
-      ctx.strokeStyle = "#34c38f"
-      ctx.lineWidth = 5
-      ctx.lineCap = "round"
-      ctx.beginPath()
-      ctx.moveTo(28, 162)
-      ctx.lineTo(86, 140)
-      ctx.lineTo(140, 146)
-      ctx.lineTo(204, 92)
-      ctx.lineTo(284, 52)
-      ctx.stroke()
-      ctx.fillStyle = "#f6d27a"
-      ctx.beginPath()
-      ctx.arc(284, 52, 8, 0, Math.PI * 2)
-      ctx.fill()
-    } else {
-      ctx.fillStyle = "#f59e0b"
-      ctx.beginPath()
-      ctx.arc(224, 68, 28, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = "#2b426d"
-      ctx.beginPath()
-      ctx.moveTo(0, h)
-      ctx.lineTo(96, 98)
-      ctx.lineTo(192, h)
-      ctx.closePath()
-      ctx.fill()
-      ctx.fillStyle = "#1b2d52"
-      ctx.beginPath()
-      ctx.moveTo(118, h)
-      ctx.lineTo(234, 108)
-      ctx.lineTo(w, h)
-      ctx.closePath()
-      ctx.fill()
-    }
-  })
-}
-
 /** High-DPI woven Team Banner Rug texture (`"IQX · NHÓM {TÊN SẾP}"`). */
 function createTeamBannerRugTexture(
   bossName: string,
@@ -579,11 +226,10 @@ function createTeamBannerRugTexture(
     ? `IQX · NHÓM ${cleanBoss.toUpperCase()}`
     : "IQX · VĂN PHÒNG"
 
-  return createCanvasTextureSafe(
+  return createDecorCanvasTexture(
     lite ? 512 : 1024,
     lite ? 96 : 192,
     (ctx, w, h) => {
-      // Deep executive navy woven base
       const bg = ctx.createLinearGradient(0, 0, w, h)
       bg.addColorStop(0, "#152546")
       bg.addColorStop(0.5, "#1c315a")
@@ -591,7 +237,6 @@ function createTeamBannerRugTexture(
       ctx.fillStyle = bg
       ctx.fillRect(0, 0, w, h)
 
-      // Subtle carpet weave lines
       ctx.fillStyle = "rgba(255, 255, 255, 0.035)"
       const step = lite ? 4 : 6
       for (let y = 0; y < h; y += step) {
@@ -601,7 +246,6 @@ function createTeamBannerRugTexture(
         ctx.fillRect(x, 0, 1, h)
       }
 
-      // Outer & inner brushed-gold carpet borders
       const padOuter = h * 0.08
       const padInner = h * 0.16
       ctx.strokeStyle = "#e9b949"
@@ -612,7 +256,6 @@ function createTeamBannerRugTexture(
       ctx.lineWidth = Math.max(1, h * 0.014)
       ctx.strokeRect(padInner, padInner, w - padInner * 2, h - padInner * 2)
 
-      // Decorative flanking gold diamonds
       const drawDiamond = (cx: number, cy: number, r: number): void => {
         ctx.fillStyle = "#e9b949"
         ctx.beginPath()
@@ -626,13 +269,12 @@ function createTeamBannerRugTexture(
       drawDiamond(w * 0.08, h * 0.5, h * 0.12)
       drawDiamond(w * 0.92, h * 0.5, h * 0.12)
 
-      // Crisp centered banner text, auto-fitted to rug interior
       const maxTextW = w * 0.74
       let fontSize = Math.round(h * 0.42)
-      ctx.font = `800 ${fontSize}px ${FONT_STACK}`
+      ctx.font = `800 ${fontSize}px ${OFFICE_DECOR_FONT_STACK}`
       while (fontSize > 16 && ctx.measureText(title).width > maxTextW) {
         fontSize -= 2
-        ctx.font = `800 ${fontSize}px ${FONT_STACK}`
+        ctx.font = `800 ${fontSize}px ${OFFICE_DECOR_FONT_STACK}`
       }
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
@@ -641,13 +283,13 @@ function createTeamBannerRugTexture(
       ctx.fillStyle = "#f6d27a"
       ctx.fillText(title, w / 2, h * 0.51)
     },
-    lite ? 4 : 12
+    lite ? 4 : 8
   )
 }
 
 /** Shared neutral "Bàn trống" plate texture for all unassigned staff desks. */
 function createEmptyDeskPlateTexture(lite: boolean): THREE.Texture {
-  return createCanvasTextureSafe(
+  return createDecorCanvasTexture(
     lite ? 192 : 256,
     lite ? 48 : 64,
     (ctx, w, h) => {
@@ -659,21 +301,21 @@ function createEmptyDeskPlateTexture(lite: boolean): THREE.Texture {
       ctx.fillStyle = "#c9d6e4"
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
-      ctx.font = `700 ${Math.round(h * 0.42)}px ${FONT_STACK}`
+      ctx.font = `700 ${Math.round(h * 0.42)}px ${OFFICE_DECOR_FONT_STACK}`
       ctx.fillText("Bàn trống", w / 2, h * 0.52)
     },
     lite ? 4 : 8
   )
 }
 
-/** Builds merged prototype geometry buckets for an instanced open-plan staff desk. */
+/** Builds merged prototype geometry specs for an instanced open-plan staff desk (cable-free tidy look). */
 function createStaffDeskPrototypeSpecs(
   width: number,
   depth: number,
   lite: boolean,
   retainTex: (tex: THREE.Texture) => void
 ): MergedSpec[] {
-  const batcher = new MeshBatcher()
+  const batcher = new OfficeDecorBatcher()
   const oakTex = createWoodSurfaceTexture("oak")
   retainTex(oakTex)
   const topWoodMat = new THREE.MeshStandardMaterial({
@@ -720,120 +362,147 @@ function createStaffDeskPrototypeSpecs(
   const pedH = deskH - 0.08
   const pedD = depth * 0.82
   const pedX = width / 2 - pedW / 2 - 0.05
-  batcher.add(
-    roundedBox(pedW - 0.04, 0.04, pedD - 0.04, 0.01, lite),
-    legMat,
-    [pedX, 0.02, 0]
-  )
-  batcher.add(
-    roundedBox(pedW, pedH, pedD, 0.02, lite),
+  batcher.addBox(pedW - 0.04, 0.04, pedD - 0.04, legMat, pedX, 0.02, 0, false)
+  batcher.addBevelBox(
+    pedW,
+    pedH,
+    pedD,
+    0.018,
     drawerBodyMat,
-    [pedX, 0.04 + pedH / 2, 0]
+    pedX,
+    0.04 + pedH / 2,
+    0,
+    lite
   )
   const slotH = (pedH - 0.08) / 3
   for (let i = 0; i < 3; i += 1) {
     const dy = 0.08 + (i + 0.5) * slotH
-    batcher.add(
-      roundedBox(pedW - 0.05, slotH - 0.024, 0.022, 0.008, lite),
+    batcher.addBox(
+      pedW - 0.05,
+      slotH - 0.024,
+      0.022,
       drawerFaceMat,
-      [pedX, dy, pedD / 2 + 0.008]
+      pedX,
+      dy,
+      pedD / 2 + 0.008,
+      false
     )
-    batcher.add(
-      roundedBox(pedW * 0.34, 0.016, 0.022, 0.006, lite),
+    batcher.addBox(
+      pedW * 0.34,
+      0.016,
+      0.02,
       handleMat,
-      [pedX, dy + slotH * 0.14, pedD / 2 + 0.022]
+      pedX,
+      dy + slotH * 0.14,
+      pedD / 2 + 0.022,
+      false
     )
   }
 
   // Left modern steel sled leg + rear modesty panel
   const leftX = -width / 2 + 0.085
-  batcher.add(
-    roundedBox(0.05, 0.04, depth * 0.84, 0.012, lite),
-    legMat,
-    [leftX, 0.02, 0]
-  )
+  batcher.addBox(0.05, 0.04, depth * 0.84, legMat, leftX, 0.02, 0, false)
   for (const sz of [-1, 1] as const) {
-    batcher.add(
-      roundedBox(0.05, deskH - 0.05, 0.05, 0.012, lite),
+    batcher.addBox(
+      0.05,
+      deskH - 0.05,
+      0.05,
       legMat,
-      [leftX, deskH / 2, sz * (depth * 0.36)]
+      leftX,
+      deskH / 2,
+      sz * (depth * 0.36),
+      true
     )
   }
-  batcher.add(
-    roundedBox(width - pedW - 0.18, deskH * 0.54, 0.036, 0.01, lite),
+  batcher.addBox(
+    width - pedW - 0.18,
+    deskH * 0.54,
+    0.036,
     drawerBodyMat,
-    [-pedW * 0.44, deskH * 0.48, -depth * 0.34]
+    -pedW * 0.44,
+    deskH * 0.48,
+    -depth * 0.34,
+    false
   )
 
   // Bevelled oak wood-grained desktop slab
-  batcher.add(
-    roundedBox(width, topThick, depth, 0.022, lite),
-    topWoodMat,
-    [0, deskH, 0]
-  )
+  batcher.addBevelBox(width, topThick, depth, 0.02, topWoodMat, 0, deskH, 0, lite)
 
   // Leather desk blotter pad
-  batcher.add(
-    roundedBox(Math.min(width * 0.54, 1.02), 0.008, Math.min(depth * 0.44, 0.36), 0.003, lite),
+  batcher.addBox(
+    Math.min(width * 0.54, 1.02),
+    0.008,
+    Math.min(depth * 0.44, 0.36),
     blotterMat,
-    [0, topSurfaceY + 0.004, depth * 0.1],
-    undefined,
-    undefined,
+    0,
+    topSurfaceY + 0.004,
+    depth * 0.1,
     false
   )
 
   // Widescreen monitor housing & stand near spine (-Z in local south-facing space)
   const mz = -depth * 0.24
-  batcher.add(
-    roundedBox(0.2, 0.016, 0.13, 0.006, lite),
+  batcher.addBox(0.2, 0.016, 0.13, handleMat, 0, topSurfaceY + 0.008, mz, false)
+  batcher.addBox(
+    0.046,
+    0.155,
+    0.03,
     handleMat,
-    [0, topSurfaceY + 0.008, mz]
-  )
-  batcher.add(
-    roundedBox(0.046, 0.155, 0.03, 0.008, lite),
-    handleMat,
-    [0, topSurfaceY + 0.088, mz - 0.02],
+    0,
+    topSurfaceY + 0.088,
+    mz - 0.02,
+    false,
+    true,
     [-0.08, 0, 0]
   )
-  batcher.add(
-    roundedBox(0.56, 0.33, 0.032, 0.014, lite),
+  batcher.addBevelBox(
+    0.56,
+    0.33,
+    0.032,
+    0.012,
     bezelMat,
-    [0, topSurfaceY + 0.255, mz]
-  )
-  batcher.add(
-    roundedBox(0.3, 0.14, 0.02, 0.008, lite),
-    bezelMat,
-    [0, topSurfaceY + 0.245, mz - 0.02]
+    0,
+    topSurfaceY + 0.255,
+    mz,
+    lite
   )
 
-  // Sloped keyboard + sculpted mouse
+  // Wireless keyboard + sculpted mouse (cable-free tidy look)
   const kz = depth * 0.14
-  batcher.add(
-    roundedBox(0.4, 0.018, 0.13, 0.006, lite),
+  batcher.addBox(
+    0.39,
+    0.016,
+    0.125,
     keyMat,
-    [-0.04, topSurfaceY + 0.014, kz],
-    [0.08, 0, 0],
-    undefined,
-    false
+    -0.04,
+    topSurfaceY + 0.012,
+    kz,
+    false,
+    true,
+    [0.08, 0, 0]
   )
-  batcher.add(
-    roundedBox(0.06, 0.026, 0.095, 0.012, lite),
+  batcher.addBevelBox(
+    0.056,
+    0.024,
+    0.09,
+    0.01,
     keyMat,
-    [0.25, topSurfaceY + 0.015, kz + 0.01],
-    undefined,
-    undefined,
+    0.24,
+    topSurfaceY + 0.014,
+    kz + 0.01,
+    lite,
     false
   )
 
   return batcher.flushToSpecs()
 }
 
-/** Builds merged prototype geometry buckets for an instanced ergonomic swivel chair (facing +Z). */
+/** Builds merged prototype geometry specs for an instanced ergonomic swivel chair (facing +Z). */
 function createSwivelChairPrototypeSpecs(
   lite: boolean,
   retainTex: (tex: THREE.Texture) => void
 ): MergedSpec[] {
-  const batcher = new MeshBatcher()
+  const batcher = new OfficeDecorBatcher()
   const fabricTex = createFabricSurfaceTexture("#2f3e60", "weave")
   retainTex(fabricTex)
   const fabricMat = new THREE.MeshStandardMaterial({
@@ -850,85 +519,75 @@ function createSwivelChairPrototypeSpecs(
     roughness: 0.24,
     metalness: 0.84,
   })
-  const seg = lite ? 7 : 12
+  const seg = lite ? 6 : 8
 
-  // Pneumatic stem + hub + 5-star caster legs
-  batcher.add(
-    new THREE.CylinderGeometry(0.03, 0.034, 0.22, seg),
-    chromeMat,
-    [0, 0.19, 0]
-  )
-  batcher.add(
-    new THREE.CylinderGeometry(0.052, 0.064, 0.085, seg),
-    darkMat,
-    [0, 0.095, 0]
-  )
+  batcher.addCylinder(0.03, 0.034, 0.22, seg, chromeMat, 0, 0.19, 0, false)
+  batcher.addCylinder(0.052, 0.064, 0.085, seg, darkMat, 0, 0.095, 0, false)
   for (let i = 0; i < 5; i += 1) {
     const a = (i * Math.PI * 2) / 5
     const cos = Math.cos(a)
     const sin = Math.sin(a)
-    batcher.add(
-      roundedBox(0.22, 0.034, 0.04, 0.01, lite),
+    batcher.addBox(
+      0.22,
+      0.032,
+      0.038,
       darkMat,
-      [cos * 0.12, 0.068, sin * 0.12],
+      cos * 0.12,
+      0.068,
+      sin * 0.12,
+      false,
+      true,
       [0, -a, -0.14]
     )
-    batcher.add(
-      new THREE.CylinderGeometry(0.022, 0.022, 0.026, 6),
+    batcher.addCylinder(
+      0.022,
+      0.022,
+      0.024,
+      6,
       darkMat,
-      [cos * 0.22, 0.022, sin * 0.22],
+      cos * 0.22,
+      0.022,
+      sin * 0.22,
+      false,
+      false,
       [Math.PI / 2, 0, -a]
     )
   }
 
-  // Contoured seat pan + cushion + spine + ergonomic backrest + padded armrests
-  batcher.add(
-    roundedBox(0.43, 0.034, 0.41, 0.012, lite),
-    darkMat,
-    [0, 0.32, 0.01]
-  )
-  batcher.add(
-    roundedBox(0.45, 0.082, 0.43, 0.032, lite),
+  batcher.addBox(0.43, 0.032, 0.41, darkMat, 0, 0.32, 0.01, false)
+  batcher.addBevelBox(0.45, 0.082, 0.43, 0.028, fabricMat, 0, 0.368, 0.01, lite)
+  batcher.addBox(0.065, 0.32, 0.04, darkMat, 0, 0.47, -0.225, false, true, [-0.14, 0, 0])
+  batcher.addBevelBox(
+    0.41,
+    0.39,
+    0.076,
+    0.026,
     fabricMat,
-    [0, 0.368, 0.01]
-  )
-  batcher.add(
-    roundedBox(0.065, 0.32, 0.04, 0.014, lite),
-    darkMat,
-    [0, 0.47, -0.225],
-    [-0.14, 0, 0]
-  )
-  batcher.add(
-    roundedBox(0.41, 0.39, 0.078, 0.03, lite),
-    fabricMat,
-    [0, 0.59, -0.2],
+    0,
+    0.59,
+    -0.2,
+    lite,
+    true,
+    true,
     [-0.12, 0, 0]
   )
   for (const side of [-1, 1] as const) {
     const ax = side * 0.24
-    batcher.add(
-      roundedBox(0.032, 0.19, 0.036, 0.01, lite),
-      darkMat,
-      [ax, 0.42, -0.04]
-    )
-    batcher.add(
-      roundedBox(0.058, 0.032, 0.27, 0.012, lite),
-      darkMat,
-      [ax, 0.515, -0.01]
-    )
+    batcher.addBox(0.03, 0.19, 0.034, darkMat, ax, 0.42, -0.04, false)
+    batcher.addBox(0.056, 0.03, 0.26, darkMat, ax, 0.515, -0.01, false)
   }
 
   return batcher.flushToSpecs()
 }
 
-/** Builds merged prototype geometry buckets for an instanced back-to-back pod divider. */
+/** Builds merged prototype geometry specs for an instanced low acoustic pod divider spine. */
 function createPodDividerPrototypeSpecs(
   width: number,
   depth: number,
   lite: boolean,
   retainTex: (tex: THREE.Texture) => void
 ): MergedSpec[] {
-  const batcher = new MeshBatcher()
+  const batcher = new OfficeDecorBatcher()
   const feltTex = createFabricSurfaceTexture("#32476b", "weave")
   retainTex(feltTex)
   const feltMat = new THREE.MeshStandardMaterial({
@@ -954,39 +613,33 @@ function createPodDividerPrototypeSpecs(
     metalness: 0.65,
   })
 
-  // Lower cable-management modesty spine between back-to-back desks
-  batcher.add(
-    roundedBox(width - 0.06, 0.72, depth * 0.58, 0.012, lite),
-    metalMat,
-    [0, 0.36, 0]
-  )
-  // Low acoustic fabric privacy screen rising gently above desktops (y = 0.76..1.10)
-  batcher.add(
-    roundedBox(width - 0.02, 0.33, depth * 0.54, 0.016, lite),
+  batcher.addBox(width - 0.06, 0.72, depth * 0.58, metalMat, 0, 0.36, 0, false)
+  batcher.addBevelBox(
+    width - 0.02,
+    0.33,
+    depth * 0.54,
+    0.014,
     feltMat,
-    [0, 0.93, 0]
+    0,
+    0.93,
+    0,
+    lite
   )
-  // Warm oak divider frame cap + subtle brushed gold top accent strip
-  batcher.add(
-    roundedBox(width + 0.02, 0.038, depth * 0.74, 0.012, lite),
+  batcher.addBevelBox(
+    width + 0.02,
+    0.038,
+    depth * 0.74,
+    0.01,
     railMat,
-    [0, 1.11, 0]
-  )
-  batcher.add(
-    roundedBox(width, 0.014, depth * 0.42, 0.004, lite),
-    goldMat,
-    [0, 1.132, 0],
-    undefined,
-    undefined,
+    0,
+    1.11,
+    0,
+    lite,
     false
   )
-  // End trim posts & center seam post framing the 2-desk cluster
+  batcher.addBox(width, 0.014, depth * 0.42, goldMat, 0, 1.132, 0, false)
   for (const px of [-width / 2 + 0.01, 0, width / 2 - 0.01]) {
-    batcher.add(
-      roundedBox(0.044, 0.38, depth * 0.72, 0.01, lite),
-      metalMat,
-      [px, 0.93, 0]
-    )
+    batcher.addBox(0.044, 0.38, depth * 0.72, metalMat, px, 0.93, 0, false)
   }
 
   return batcher.flushToSpecs()
@@ -1004,10 +657,13 @@ export class OfficeWorld3D {
   private readonly archRetainedTextures: THREE.Texture[] = []
   private readonly teamRetainedTextures: THREE.Texture[] = []
 
+  private readonly teamBoardCanvas: HTMLCanvasElement
+  private readonly teamBoard: LiveBoardProp
   private readonly meetingCanvas: HTMLCanvasElement
   private readonly standeeCanvas: HTMLCanvasElement
   private readonly meetingBoard: LiveBoardProp
   private readonly standeeBoard: LiveBoardProp
+  private lastTeamBoardSig = ""
   private lastMeetingSig = ""
   private lastStandeeSig = ""
 
@@ -1045,7 +701,27 @@ export class OfficeWorld3D {
     this.teamPropsGroup.name = "office-team-props"
     this.group.add(this.teamPropsGroup)
 
-    // Live Meeting Room Wall Screen (640x160)
+    // 1. Grand North Back Wall Team LED Board ("IQX · {Tên nhóm}" + live Top 3 / KPI strip)
+    this.teamBoardCanvas = document.createElement("canvas")
+    this.teamBoardCanvas.width = 1024
+    this.teamBoardCanvas.height = 320
+    drawTeamLedBoard(this.teamBoardCanvas, {
+      teamTitle: "IQX · VĂN PHÒNG",
+      monthLabel: "Mục tiêu tháng",
+      top3: [],
+    })
+    this.lastTeamBoardSig = "init:empty"
+    this.teamBoard = createWallBoardFrame(
+      4.7,
+      1.5,
+      this.teamBoardCanvas,
+      "#e9b949",
+      { lite }
+    )
+    this.teamBoard.group.name = "office-team-led-board"
+    this.group.add(this.teamBoard.group)
+
+    // 2. Live Meeting Room Wall Screen (640x160) mounted on North wall behind PHÒNG HỌP
     this.meetingCanvas = document.createElement("canvas")
     this.meetingCanvas.width = 640
     this.meetingCanvas.height = 160
@@ -1056,18 +732,16 @@ export class OfficeWorld3D {
     )
     this.lastMeetingSig = "init:empty"
     this.meetingBoard = createWallBoardFrame(
-      3.2,
-      0.96,
+      3.05,
+      1.0,
       this.meetingCanvas,
       "#e9b949",
       { lite }
     )
-    const meetScreenPt = logicalToWorld(1160, 26, this.world)
-    this.meetingBoard.group.position.set(meetScreenPt.x, 1.58, meetScreenPt.z)
+    this.meetingBoard.group.name = "office-meeting-screen"
     this.group.add(this.meetingBoard.group)
-    freezeStaticSubtree(this.meetingBoard.group)
 
-    // Live Freestanding Gold-Trimmed Achievement Standee (460x748)
+    // 3. Live Freestanding Gold-Trimmed Achievement Standee (460x748) in GÓC THÀNH TÍCH
     this.standeeCanvas = document.createElement("canvas")
     this.standeeCanvas.width = 460
     this.standeeCanvas.height = 748
@@ -1081,20 +755,23 @@ export class OfficeWorld3D {
     this.lastStandeeSig = "init:empty"
     this.standeeBoard = createAchievementStandee(
       this.standeeCanvas,
-      2.3,
-      3.65,
+      2.15,
+      3.45,
       { lite }
     )
-    const standeePt = logicalToWorld(2195, 1066, this.world)
-    this.standeeBoard.group.position.set(standeePt.x, 0, standeePt.z)
+    this.standeeBoard.group.name = "office-achievement-standee"
     this.group.add(this.standeeBoard.group)
+
+    this.positionLiveBoards()
+    freezeStaticSubtree(this.teamBoard.group)
+    freezeStaticSubtree(this.meetingBoard.group)
     freezeStaticSubtree(this.standeeBoard.group)
 
     // Golden click-to-move destination ring
     this.targetRingMat = createGlowMaterial("#f6d27a", 1.1, 0)
     this.targetRingMat.side = THREE.DoubleSide
     this.targetRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.16, 0.24, lite ? 18 : 28),
+      new THREE.RingGeometry(0.16, 0.24, lite ? 16 : 24),
       this.targetRingMat
     )
     this.targetRing.rotation.x = -Math.PI / 2
@@ -1106,6 +783,29 @@ export class OfficeWorld3D {
     if (!opts.deferBuild) {
       this.finishBuildSync()
     }
+  }
+
+  private positionLiveBoards(): void {
+    const wallFaceZ = logicalToWorld(0, OFFICE_NORTH_WALL_Y, this.world).z
+    const teamPt = logicalToWorld(1040, OFFICE_NORTH_WALL_Y, this.world)
+    this.teamBoard.group.position.set(teamPt.x, 2.55, wallFaceZ + 0.14)
+    this.teamBoard.group.updateMatrix()
+    this.teamBoard.group.updateMatrixWorld(true)
+
+    const meetPt = logicalToWorld(1470, OFFICE_NORTH_WALL_Y, this.world)
+    this.meetingBoard.group.position.set(meetPt.x, 2.08, wallFaceZ + 0.14)
+    this.meetingBoard.group.updateMatrix()
+    this.meetingBoard.group.updateMatrixWorld(true)
+
+    const standeePt = this.toWorldCenter(
+      OFFICE_AWARDS_PROPS.standee.x,
+      OFFICE_AWARDS_PROPS.standee.y,
+      OFFICE_AWARDS_PROPS.standee.w,
+      OFFICE_AWARDS_PROPS.standee.h
+    )
+    this.standeeBoard.group.position.set(standeePt.x, 0, standeePt.z)
+    this.standeeBoard.group.updateMatrix()
+    this.standeeBoard.group.updateMatrixWorld(true)
   }
 
   /** Runs the pending architecture build in ~10 ms slices; resolves false if cancelled first. */
@@ -1137,10 +837,12 @@ export class OfficeWorld3D {
     return tex
   }
 
-  private toWorldCenter(x: number, y: number, w: number, h: number): {
-    x: number
-    z: number
-  } {
+  private toWorldCenter(
+    x: number,
+    y: number,
+    w: number,
+    h: number
+  ): { x: number; z: number } {
     return logicalToWorld(x + w / 2, y + h / 2, this.world)
   }
 
@@ -1179,1403 +881,647 @@ export class OfficeWorld3D {
   private *buildArchitectureSteps(worldH: number): BuildSteps {
     this.clearStaticProps()
     const s = OFFICE_WORLD_SCALE
-    const zones = getOfficeZones(worldH)
-    const seg = this.lite ? 10 : 16
+    const roomW = OFFICE_BASE_W * s // 24.0u
+    const roomH = worldH * s // 15.6u+
+    const wallFaceZ = logicalToWorld(0, OFFICE_NORTH_WALL_Y, this.world).z
+    const southZ = roomH / 2
+    const seg = this.lite ? 8 : 12
 
-    // Shared architectural materials (reused across walls, frames, glass & trims)
-    const wallNavyMat = createMatteMaterial("#1f3052", { roughness: 0.5 })
-    const wallDarkBaseMat = createMatteMaterial("#131f38", { roughness: 0.62 })
-    const wallUpperMat = createMatteMaterial("#ebe2d4", { roughness: 0.66 })
-    const pilasterMat = createMatteMaterial("#dfd3c0", { roughness: 0.56 })
-    const woodTrimMat = createMatteMaterial("#7a5230", { roughness: 0.52 })
-    const woodSlatMat = createMatteMaterial("#9c6b3d", { roughness: 0.56 })
-    const frameMetalMat = createMetalMaterial("#273654", {
-      roughness: 0.36,
-      metalness: 0.65,
-    })
-    const goldMat = createMetalMaterial("#e9b949", {
-      roughness: 0.26,
-      metalness: 0.82,
-    })
-    const glassMat = new THREE.MeshStandardMaterial({
-      color: "#b7dcfb",
-      transparent: true,
-      opacity: 0.24,
-      roughness: 0.12,
-      metalness: 0.18,
-    })
-    const glassFrostMat = new THREE.MeshStandardMaterial({
-      color: "#e6f2ff",
-      transparent: true,
-      opacity: 0.36,
-      roughness: 0.42,
-      metalness: 0.05,
-    })
-    const windowGlassMat = createGlowMaterial("#d8eeff", 0.52, 0.92)
-    const sunPoolMat = new THREE.MeshBasicMaterial({
-      color: "#fff3d1",
-      transparent: true,
-      opacity: 0.14,
-      depthWrite: false,
-    })
-    const ceilingLightMat = createGlowMaterial("#fff4d8", 1.35)
-    const lampShadeMat = createGlowMaterial("#fff0c8", 0.75)
-
-    const archBatch = new MeshBatcher()
-    const artMaterials = new Map<
-      "chart" | "crest" | "mountain" | "motto" | "target",
-      THREE.MeshStandardMaterial
-    >()
-    const getArtMaterial = (
-      variant: "chart" | "crest" | "mountain" | "motto" | "target"
-    ): THREE.MeshStandardMaterial => {
-      let mat = artMaterials.get(variant)
-      if (!mat) {
-        mat = new THREE.MeshStandardMaterial({
-          map: createArtFrameTexture(variant),
-          roughness: 0.36,
-        })
-        artMaterials.set(variant, mat)
-      }
-      return mat
-    }
-
-    yield 0.037
-
-    // 1. Exterior architectural studio surround apron + framing plinth
-    const staffFloorW = OFFICE_BASE_W * s
-    const staffFloorH = worldH * s
-    const staffFloorCenter = this.toWorldCenter(0, 0, OFFICE_BASE_W, worldH)
-    const surroundApron = new THREE.Mesh(
-      new THREE.PlaneGeometry(staffFloorW + 48, staffFloorH + 48),
-      createMatteMaterial("#141D32", { roughness: 0.92 })
+    const palette = createOfficeDecorPalette(this.lite, (t) =>
+      this.retainArchTex(t)
     )
-    surroundApron.rotation.x = -Math.PI / 2
-    surroundApron.position.set(staffFloorCenter.x, -0.055, staffFloorCenter.z)
-    this.archGroup.add(surroundApron)
+    const archBatch = new OfficeDecorBatcher()
+    const shadows = new ContactShadowBatcher()
+    const ovalShadowTex = createOfficeContactShadowTexture("oval")
+    const boxShadowTex = createOfficeContactShadowTexture("box")
+    const stripAoTex = createOfficeContactShadowTexture("strip")
 
-    const outerTrimMat = createMatteMaterial("#2A3D63", { roughness: 0.7 })
-    const plinthMat = createMatteMaterial("#1B2846", { roughness: 0.78 })
-    archBatch.addBox(
-      staffFloorW + 1.08,
-      0.014,
-      staffFloorH + 1.08,
-      outerTrimMat,
-      staffFloorCenter.x,
-      -0.044,
-      staffFloorCenter.z,
-      false
-    )
-    archBatch.addBox(
-      staffFloorW + 0.92,
-      0.04,
-      staffFloorH + 0.92,
-      plinthMat,
-      staffFloorCenter.x,
-      -0.025,
-      staffFloorCenter.z,
-      false
-    )
+    yield 0.06
 
-    yield 0.074
+    // 1. Open luminous cream marble/stone tile floor (KGD quality!) extending seamlessly beyond
+    //    playable bounds on West, East & South so ultrawide or edge camera angles NEVER show dark void.
+    const floorExtendX = NORTH_WALL_EXTEND_U * 2
+    const floorExtendSouth = 12.0
+    const floorTotalW = roomW + floorExtendX
+    const floorDepth = southZ - wallFaceZ + floorExtendSouth
+    const floorCenterZ = wallFaceZ + floorDepth / 2
 
-    // 1b. Base Khu Nhân Viên floor (cream ceramic grid)
-    const baseCeramicTex = this.retainArchTex(createFloorTexture("ceramic_cream"))
-    const ceramicTex = cloneSharedRepeatedTexture(
-      baseCeramicTex,
-      OFFICE_BASE_W / 256,
-      worldH / 256,
+    const baseMarbleTex = this.retainArchTex(createFloorTexture("marble_cream"))
+    const marbleTex = cloneSharedRepeatedTexture(
+      baseMarbleTex,
+      floorTotalW / 3.4,
+      floorDepth / 3.4,
       this.lite ? 2 : 8
     )
-    const baseFloor = new THREE.Mesh(
-      new THREE.PlaneGeometry(staffFloorW, staffFloorH),
+    const openFloor = new THREE.Mesh(
+      new THREE.PlaneGeometry(floorTotalW, floorDepth),
       new THREE.MeshStandardMaterial({
-        map: ceramicTex,
-        roughness: 0.5,
-        metalness: 0.04,
+        map: marbleTex,
+        roughness: 0.44,
+        metalness: 0.06,
       })
     )
-    baseFloor.rotation.x = -Math.PI / 2
-    baseFloor.position.set(staffFloorCenter.x, 0, staffFloorCenter.z)
-    baseFloor.receiveShadow = true
-    this.archGroup.add(baseFloor)
+    openFloor.name = "office-open-stone-floor"
+    openFloor.rotation.x = -Math.PI / 2
+    openFloor.position.set(0, 0, floorCenterZ)
+    openFloor.receiveShadow = true
+    this.archGroup.add(openFloor)
 
-    yield 0.111
+    // Subtle brushed-brass floor inlay border framing the playable open-floor perimeter (flat, walkable!)
+    const playMinX = logicalToWorld(28, 0, this.world).x
+    const playMaxX = logicalToWorld(OFFICE_BASE_W - 28, 0, this.world).x
+    const playMaxZ = logicalToWorld(0, worldH - 22, this.world).z
+    const playSpanW = playMaxX - playMinX
+    const playSpanD = playMaxZ - wallFaceZ
+    const playMidZ = (wallFaceZ + playMaxZ) / 2
+    archBatch.addBox(playSpanW, 0.008, 0.045, palette.brassDark, 0, 0.005, playMaxZ, false)
+    archBatch.addBox(0.045, 0.008, playSpanD, palette.brassDark, playMinX, 0.005, playMidZ, false)
+    archBatch.addBox(0.045, 0.008, playSpanD, palette.brassDark, playMaxX, 0.005, playMidZ, false)
 
-    // 2. Three upper room floors (parquet, slate carpet, warm sand tiles)
-    const roomMaterials: Record<
-      "boss" | "meet" | "docs",
-      {
-        style: "parquet" | "carpet_slate" | "stone_sand"
-        rough: number
-        tilePx: number
-      }
-    > = {
-      boss: { style: "parquet", rough: 0.45, tilePx: 220 },
-      meet: { style: "carpet_slate", rough: 0.84, tilePx: 180 },
-      docs: { style: "stone_sand", rough: 0.6, tilePx: 192 },
+    // Dark exterior cap strictly behind the North back wall
+    const northBackdrop = new THREE.Mesh(
+      new THREE.PlaneGeometry(floorTotalW + 8, 12),
+      createMatteMaterial("#101829", { roughness: 0.92 })
+    )
+    northBackdrop.rotation.x = -Math.PI / 2
+    northBackdrop.position.set(0, -0.02, wallFaceZ - 6)
+    this.archGroup.add(northBackdrop)
+
+    // Soft ambient-occlusion strip along the base of the North back wall
+    const northAoGeo = new THREE.PlaneGeometry(floorTotalW, 0.9)
+    northAoGeo.rotateX(-Math.PI / 2)
+    northAoGeo.translate(0, 0.007, wallFaceZ + 0.45)
+    const northAoMesh = new THREE.Mesh(
+      northAoGeo,
+      new THREE.MeshBasicMaterial({
+        map: stripAoTex,
+        transparent: true,
+        opacity: 0.78,
+        depthWrite: false,
+      })
+    )
+    northAoMesh.name = "office-north-wall-ao"
+    this.archGroup.add(northAoMesh)
+
+    yield 0.14
+
+    // 2. Warm overhead ceiling-light glow pools on the cream stone floor (merged into 1 draw call!)
+    const glowPoolTex = createOfficeGlowPoolTexture()
+    const poolGeos: THREE.BufferGeometry[] = []
+    const lightPools: readonly [number, number, number, number][] = [
+      [440, 290, 5.4, 4.2], // Bàn sếp
+      [1210, 310, 6.2, 4.6], // Phòng họp
+      [930, 820, 9.6, 5.2], // Khu làm việc Band 0
+      [930, 1200, 9.6, 5.2], // Khu làm việc Band 1
+      [2060, 760, 5.4, 4.8], // Góc nghỉ
+      [2070, 1240, 5.2, 4.4], // Góc thành tích
+    ]
+    for (const [lx, ly, pw, pd] of lightPools) {
+      const pt = logicalToWorld(lx, ly, this.world)
+      const geo = new THREE.PlaneGeometry(pw, pd)
+      geo.rotateX(-Math.PI / 2)
+      geo.translate(pt.x, 0.014, pt.z)
+      poolGeos.push(geo)
     }
-
-    for (const zone of zones) {
-      if (zone.id === "staff") continue
-      const cfg = roomMaterials[zone.id]
-      const baseRoomTex = this.retainArchTex(createFloorTexture(cfg.style))
-      const tex = cloneSharedRepeatedTexture(
-        baseRoomTex,
-        zone.w / cfg.tilePx,
-        zone.h / cfg.tilePx,
-        this.lite ? 2 : 8
-      )
-      const pt = this.toWorldCenter(zone.x, zone.y, zone.w, zone.h)
-      const plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(zone.w * s, zone.h * s),
-        new THREE.MeshStandardMaterial({
-          map: tex,
-          roughness: cfg.rough,
-          metalness: 0.04,
+    const mergedPools = mergeIndexedGeometries(poolGeos, { disposeInputs: true })
+    if (mergedPools) {
+      const poolMesh = new THREE.Mesh(
+        mergedPools,
+        new THREE.MeshBasicMaterial({
+          map: glowPoolTex,
+          transparent: true,
+          opacity: this.lite ? 0.12 : 0.18,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
         })
       )
-      plane.rotation.x = -Math.PI / 2
-      plane.position.set(pt.x, 0.006, pt.z)
-      plane.receiveShadow = true
-      this.archGroup.add(plane)
+      poolMesh.name = "office-glow-pools"
+      this.archGroup.add(poolMesh)
     }
 
-    yield 0.148
+    yield 0.2
 
-    // 2b. Per-zone rugs, pod-band carpets & corridor runner (composed from furniture-builder.ts)
-    for (const rugSpec of getZoneRugs(worldH)) {
-      const rug = createRug(rugSpec.w * s, rugSpec.h * s, {
-        shape: rugSpec.shape,
-        colorHex: rugSpec.colorHex,
-        borderHex: rugSpec.borderHex,
-        borderWidth: rugSpec.borderWidth,
+    // 3. Large Bordered Zone Rugs (KGD style) + Painted Floor Zone Decals
+    for (const rug of getZoneRugs(worldH)) {
+      const pt = this.toWorldCenter(rug.x, rug.y, rug.w, rug.h)
+      mountBorderedZoneRug(this.archGroup, {
+        wx: pt.x,
+        wz: pt.z,
+        widthU: rug.w * s,
+        depthU: rug.h * s,
+        shape: rug.shape,
+        fillHex: rug.colorHex,
+        borderHex: rug.borderHex,
+        innerBorderHex: rug.innerBorderHex,
+        y: 0.011,
         lite: this.lite,
       })
-      const pt = this.toWorldCenter(rugSpec.x, rugSpec.y, rugSpec.w, rugSpec.h)
-      rug.group.position.set(pt.x, 0.008, pt.z)
-      this.mountStaticProp(rug)
     }
 
-    yield 0.185
-
-    // 3. Crisp Floor Zone Decals
-    const decals: readonly {
-      text: string
-      x: number
-      y: number
-      w: number
-      h: number
-      color: string
-    }[] = [
-      {
-        text: "PHÒNG SẾP",
-        x: 175,
-        y: 492,
-        w: 2.7,
-        h: 0.68,
-        color: "rgba(255,250,240,0.78)",
-      },
-      {
-        text: "PHÒNG HỌP",
-        x: 925,
-        y: 492,
-        w: 2.7,
-        h: 0.68,
-        color: "rgba(255,255,255,0.72)",
-      },
-      {
-        text: "PHÒNG TÀI LIỆU",
-        x: 1740,
-        y: 492,
-        w: 3.3,
-        h: 0.7,
-        color: "rgba(92,62,24,0.7)",
-      },
-      {
-        text: "KHU NHÂN VIÊN",
-        x: 245,
-        y: 660,
-        w: 3.1,
-        h: 0.62,
-        color: "rgba(110,72,28,0.62)",
-      },
-      {
-        text: "GÓC CÀ PHÊ",
-        x: 1945,
-        y: 604,
-        w: 2.1,
-        h: 0.5,
-        color: "rgba(96,60,22,0.72)",
-      },
-    ]
-    for (const d of decals) {
-      const tex = createFloorDecalTexture(d.text, d.color)
+    for (const label of getOfficeFloorLabels()) {
+      const tex = createFloorDecalTexture(label.text, "#7a5324")
       const mat = new THREE.MeshBasicMaterial({
         map: tex,
         transparent: true,
+        opacity: 0.68,
         depthWrite: false,
       })
-      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(d.w, d.h), mat)
+      const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(label.widthU, label.heightU),
+        mat
+      )
+      mesh.name = `office-zone-label-${label.id}`
       mesh.rotation.x = -Math.PI / 2
-      const pt = logicalToWorld(d.x, d.y, this.world)
-      mesh.position.set(pt.x, 0.028, pt.z)
+      const pt = logicalToWorld(label.x, label.y, this.world)
+      mesh.position.set(pt.x, 0.022, pt.z)
       this.archGroup.add(mesh)
     }
 
-    yield 0.222
+    yield 0.28
 
-    // 4. Cutaway Architectural Walls with Baseboards, Dado, Chair Rails & Crown Trims
-    const t = OFFICE_WALL_THICK * s // 0.16u
-    const northH = 2.68
-    const sideH = 2.04
-    const innerH = 1.84
-    const southH = 0.34
+    // 4. ONE Grand North Back Wall (matching KGD architectural detailing: cream plaster,
+    //    navy wainscoting dado, dark skirting, gold chair rail & crown cornice, fluted pilasters,
+    //    warm brass wall sconces, recessed light cove, extended wings past ±roomW/2).
+    const wallSpanW = roomW + NORTH_WALL_EXTEND_U * 2
+    const wallThick = 0.44
+    const wallCenterZ = wallFaceZ - wallThick / 2
 
-    // North outer wall
-    const northPt = this.toWorldCenter(0, 0, OFFICE_BASE_W, OFFICE_WALL_THICK)
-    archBatch.addBox(OFFICE_BASE_W * s, northH, t, wallUpperMat, northPt.x, northH / 2, northPt.z, false)
-    archBatch.addBox(OFFICE_BASE_W * s, 0.82, t + 0.04, wallNavyMat, northPt.x, 0.41, northPt.z, false)
-    archBatch.addBox(OFFICE_BASE_W * s, 0.14, t + 0.07, wallDarkBaseMat, northPt.x, 0.07, northPt.z, false)
-    archBatch.addBox(OFFICE_BASE_W * s, 0.05, t + 0.08, goldMat, northPt.x, 0.84, northPt.z, false)
-    archBatch.addBox(OFFICE_BASE_W * s + 0.1, 0.14, t + 0.1, wallNavyMat, northPt.x, northH + 0.05, northPt.z, false)
-    archBatch.addBox(OFFICE_BASE_W * s + 0.14, 0.06, t + 0.12, goldMat, northPt.x, northH - 0.02, northPt.z, false)
+    archBatch.addBox(wallSpanW, NORTH_WALL_H, wallThick, palette.wallCream, 0, NORTH_WALL_H / 2, wallCenterZ, false)
+    archBatch.addBox(wallSpanW, 0.96, 0.08, palette.wallDadoNavy, 0, 0.48, wallFaceZ + 0.02, false)
+    archBatch.addBox(wallSpanW, 0.2, 0.12, palette.skirtingDark, 0, 0.1, wallFaceZ + 0.05, false)
+    archBatch.addBox(wallSpanW, 0.032, 0.135, palette.gold, 0, 0.21, wallFaceZ + 0.055, false)
+    archBatch.addBox(wallSpanW, 0.068, 0.12, palette.gold, 0, 0.98, wallFaceZ + 0.035, false)
+    archBatch.addBox(wallSpanW + 0.2, 0.22, wallThick + 0.16, palette.wallDadoNavy, 0, NORTH_WALL_H + 0.07, wallCenterZ + 0.04, false)
+    archBatch.addBox(wallSpanW + 0.24, 0.07, 0.14, palette.gold, 0, NORTH_WALL_H - 0.03, wallFaceZ + 0.08, false)
+    // Recessed ceiling-light cove glow strip beneath the north cornice
+    archBatch.addBox(wallSpanW - 0.8, 0.05, 0.08, palette.warmGlow, 0, NORTH_WALL_H - 0.14, wallFaceZ + 0.07, false)
 
-    // Architectural pilasters along North wall
-    for (const pxLogical of [24, 740, 1560, 2376]) {
-      const px = logicalToWorld(pxLogical, OFFICE_WALL_THICK, this.world)
-      archBatch.addBox(0.26, northH, 0.16, pilasterMat, px.x, northH / 2, px.z + 0.04, false)
-      archBatch.addBox(0.3, 0.08, 0.2, goldMat, px.x, northH - 0.14, px.z + 0.05, false)
+    // Recessed dado molding frames along lower north wall bays
+    for (const [x0, x1] of [
+      [270, 710],
+      [810, 1260],
+      [1310, 1650],
+    ] as const) {
+      const mid = logicalToWorld((x0 + x1) / 2, OFFICE_NORTH_WALL_Y, this.world).x
+      const span = (x1 - x0) * s
+      archBatch.addBox(span, 0.48, 0.03, palette.skirtingDark, mid, 0.58, wallFaceZ + 0.065, false)
+      archBatch.addBox(span + 0.06, 0.028, 0.04, palette.brassDark, mid, 0.83, wallFaceZ + 0.07, false)
+      archBatch.addBox(span + 0.06, 0.028, 0.04, palette.brassDark, mid, 0.33, wallFaceZ + 0.07, false)
     }
 
-    // West & East cutaway walls
-    const westPt = this.toWorldCenter(0, 0, OFFICE_WALL_THICK, worldH)
-    const eastPt = this.toWorldCenter(
-      OFFICE_BASE_W - OFFICE_WALL_THICK,
-      0,
-      OFFICE_WALL_THICK,
-      worldH
-    )
-    for (const pt of [westPt, eastPt]) {
-      archBatch.addBox(t, sideH, worldH * s, wallUpperMat, pt.x, sideH / 2, pt.z, false)
-      archBatch.addBox(t + 0.04, 0.82, worldH * s, wallNavyMat, pt.x, 0.41, pt.z, false)
-      archBatch.addBox(t + 0.07, 0.13, worldH * s, wallDarkBaseMat, pt.x, 0.065, pt.z, false)
-      archBatch.addBox(t + 0.07, 0.045, worldH * s, goldMat, pt.x, 0.84, pt.z, false)
-      archBatch.addBox(t + 0.08, 0.07, worldH * s, goldMat, pt.x, sideH + 0.03, pt.z, false)
+    // 5 Fluted Cream Pilasters with tiered plinths, gold capitals & warm brass wall sconces
+    for (const lx of [24, 748, 1292, 1666, 2376]) {
+      const px = logicalToWorld(lx, OFFICE_NORTH_WALL_Y, this.world).x
+      archBatch.addBox(0.5, 0.3, 0.28, palette.skirtingDark, px, 0.15, wallFaceZ + 0.09, false)
+      archBatch.addBox(0.46, 0.065, 0.26, palette.gold, px, 0.32, wallFaceZ + 0.09, false)
+      archBatch.addBox(0.38, NORTH_WALL_H - 0.52, 0.22, palette.pilasterCream, px, 0.34 + (NORTH_WALL_H - 0.52) / 2, wallFaceZ + 0.07, false)
+      archBatch.addBox(0.065, NORTH_WALL_H - 1.1, 0.04, palette.pilasterFlute, px - 0.09, NORTH_WALL_H / 2 + 0.08, wallFaceZ + 0.18, false)
+      archBatch.addBox(0.065, NORTH_WALL_H - 1.1, 0.04, palette.pilasterFlute, px + 0.09, NORTH_WALL_H / 2 + 0.08, wallFaceZ + 0.18, false)
+      archBatch.addBox(0.48, 0.1, 0.28, palette.gold, px, NORTH_WALL_H - 0.2, wallFaceZ + 0.09, false)
+      archBatch.addBox(0.52, 0.065, 0.32, palette.gold, px, NORTH_WALL_H - 0.08, wallFaceZ + 0.1, false)
+      // Warm glowing brass sconce
+      archBatch.addBox(0.11, 0.22, 0.08, palette.brassDark, px, 3.05, wallFaceZ + 0.2, false)
+      archBatch.addCylinder(0.068, 0.06, 0.3, seg, palette.warmGlow, px, 3.1, wallFaceZ + 0.27, false)
+      archBatch.addCylinder(0.082, 0.082, 0.04, seg, palette.gold, px, 3.26, wallFaceZ + 0.27, false)
+      archBatch.addCylinder(0.078, 0.078, 0.04, seg, palette.gold, px, 2.94, wallFaceZ + 0.27, false)
     }
 
-    // Low South cutaway curb
-    const southPt = this.toWorldCenter(
-      0,
-      worldH - OFFICE_WALL_THICK,
-      OFFICE_BASE_W,
-      OFFICE_WALL_THICK
-    )
-    archBatch.addBox(OFFICE_BASE_W * s, southH, t, wallNavyMat, southPt.x, southH / 2, southPt.z, false)
-    archBatch.addBox(OFFICE_BASE_W * s, 0.05, t + 0.06, goldMat, southPt.x, southH + 0.025, southPt.z, false)
+    yield 0.36
 
-    yield 0.259
-
-    // 4b. Framed Glass Interior Dividers (vertical x = 740, 1560 & horizontal y = 540)
-    for (const vx of [740, 1560]) {
-      const spanLen = 524 * s
-      const pt = this.toWorldCenter(vx, 16, OFFICE_WALL_THICK, 524)
-      archBatch.addBox(t, 0.92, spanLen, wallNavyMat, pt.x, 0.46, pt.z)
-      archBatch.addBox(t + 0.05, 0.11, spanLen, wallDarkBaseMat, pt.x, 0.055, pt.z, false)
-      archBatch.addBox(t + 0.04, 0.045, spanLen, woodTrimMat, pt.x, 0.94, pt.z, false)
-      archBatch.addBox(t * 0.36, 0.78, spanLen, glassMat, pt.x, 1.35, pt.z, false)
-      archBatch.addBox(t * 0.4, 0.16, spanLen, glassFrostMat, pt.x, 1.32, pt.z, false)
-      archBatch.addBox(t + 0.04, 0.08, spanLen, frameMetalMat, pt.x, innerH - 0.04, pt.z, false)
-      archBatch.addBox(t + 0.06, 0.045, spanLen, goldMat, pt.x, innerH + 0.02, pt.z, false)
-      const frameCount = 4
-      for (let i = 0; i <= frameCount; i += 1) {
-        const mz =
-          pt.z - spanLen / 2 + 0.08 + (i * (spanLen - 0.16)) / frameCount
-        archBatch.addBox(t * 0.78, 0.84, 0.055, frameMetalMat, pt.x, 1.36, mz, false)
-      }
-    }
-
-    const corridorSegments: readonly [number, number][] = [
-      [16, 304],
-      [450, 640],
-      [1230, 680],
-      [2040, 344],
-    ]
-    for (const [sx, sw] of corridorSegments) {
-      const segW = sw * s
-      const pt = this.toWorldCenter(sx, OFFICE_DIVIDER_Y, sw, OFFICE_WALL_THICK)
-      archBatch.addBox(segW, 0.92, t, wallNavyMat, pt.x, 0.46, pt.z)
-      archBatch.addBox(segW, 0.11, t + 0.05, wallDarkBaseMat, pt.x, 0.055, pt.z, false)
-      archBatch.addBox(segW, 0.045, t + 0.05, woodTrimMat, pt.x, 0.94, pt.z, false)
-      archBatch.addBox(segW, 0.78, t * 0.36, glassMat, pt.x, 1.35, pt.z, false)
-      archBatch.addBox(segW, 0.18, t * 0.42, glassFrostMat, pt.x, 1.32, pt.z, false)
-      archBatch.addBox(segW, 0.085, t + 0.04, frameMetalMat, pt.x, innerH - 0.04, pt.z, false)
-      archBatch.addBox(segW, 0.045, t + 0.06, goldMat, pt.x, innerH + 0.02, pt.z, false)
-      const bays = Math.max(2, Math.round(segW / 1.55))
-      for (let i = 0; i <= bays; i += 1) {
-        const mx = pt.x - segW / 2 + 0.06 + (i * (segW - 0.12)) / bays
-        archBatch.addBox(0.055, 0.84, t * 0.78, frameMetalMat, mx, 1.36, pt.z, false)
-      }
-    }
-
-    yield 0.296
-
-    // 4c. Doorway Frames, Thresholds, Swung-Open Wood/Glass Doors & Room Plaques
-    const doorNames: Record<"boss" | "meet" | "docs", string> = {
-      boss: "PHÒNG SẾP",
-      meet: "PHÒNG HỌP",
-      docs: "PHÒNG TÀI LIỆU",
-    }
-    const doorAngle = Math.PI * 0.43
-    const doorCos = Math.cos(doorAngle)
-    const doorSin = Math.sin(doorAngle)
-    const doorRot: readonly [number, number, number] = [0, doorAngle, 0]
-
-    for (const door of OFFICE_DOORWAYS) {
-      const doorW = (door.x2 - door.x1) * s
-      for (const edgeX of [door.x1, door.x2]) {
-        const jambPt = logicalToWorld(
-          edgeX,
-          door.y + OFFICE_WALL_THICK / 2,
-          this.world
-        )
-        archBatch.addBox(0.1, innerH + 0.06, t + 0.1, woodTrimMat, jambPt.x, (innerH + 0.06) / 2, jambPt.z)
-        archBatch.addBox(0.12, 0.06, t + 0.12, goldMat, jambPt.x, innerH + 0.06, jambPt.z, false)
-      }
-
-      const threshPt = this.toWorldCenter(
-        door.x1,
-        door.y,
-        door.x2 - door.x1,
-        OFFICE_WALL_THICK
-      )
-      archBatch.addBox(doorW, 0.022, t + 0.06, goldMat, threshPt.x, 0.011, threshPt.z, false)
-
-      const leafW = Math.min(0.86, doorW * 0.68)
-      const leafH = innerH - 0.06
-      const hingePt = logicalToWorld(
-        door.x2 - 4,
-        door.y + OFFICE_WALL_THICK * 0.2,
-        this.world
-      )
-      const addDoorLeafBox = (
-        bw: number,
-        bh: number,
-        bd: number,
-        mat: THREE.Material,
-        lx: number,
-        ly: number
-      ): void => {
-        archBatch.addBox(
-          bw,
-          bh,
-          bd,
-          mat,
-          hingePt.x + lx * doorCos,
-          ly,
-          hingePt.z - lx * doorSin,
-          false,
-          true,
-          doorRot
-        )
-      }
-      addDoorLeafBox(leafW, 0.74, 0.055, woodTrimMat, -leafW / 2, 0.37)
-      addDoorLeafBox(leafW, 0.1, 0.055, woodTrimMat, -leafW / 2, leafH - 0.05)
-      addDoorLeafBox(0.08, leafH - 0.74, 0.055, woodTrimMat, -0.04, 0.74 + (leafH - 0.74) / 2)
-      addDoorLeafBox(0.08, leafH - 0.74, 0.055, woodTrimMat, -leafW + 0.04, 0.74 + (leafH - 0.74) / 2)
-      addDoorLeafBox(leafW - 0.16, leafH - 0.84, 0.025, glassMat, -leafW / 2, 0.74 + (leafH - 0.84) / 2)
-      addDoorLeafBox(0.12, 0.028, 0.11, goldMat, -leafW + 0.12, 0.84)
-
-      const plaqueTex = createSignTexture(doorNames[door.id], {
-        style: "navy_gold",
-        width: 360,
-        height: 96,
-      })
-      const plaqueMat = new THREE.MeshStandardMaterial({
-        map: plaqueTex,
-        roughness: 0.34,
-        metalness: 0.18,
-      })
-      const plaquePt = logicalToWorld(
-        door.x1 - 58,
-        door.y + OFFICE_WALL_THICK + 2,
-        this.world
-      )
-      archBatch.addBox(0.92, 0.24, 0.03, frameMetalMat, plaquePt.x, 1.14, plaquePt.z + 0.015, false)
-      const plaqueFace = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.86, 0.2),
-        plaqueMat
-      )
-      plaqueFace.position.set(plaquePt.x, 1.14, plaquePt.z + 0.034)
-      this.archGroup.add(plaqueFace)
-    }
-
-    yield 0.333
-
-    // 4d. Architectural Windows with Warm Sunlight Pools (batched into archBatch)
-    for (const win of getOfficeWindows(worldH)) {
-      const spanU = win.span * s
-      if (win.wall === "north") {
-        const pt = logicalToWorld(win.pos, OFFICE_WALL_THICK, this.world)
-        archBatch.add(
-          new THREE.BoxGeometry(spanU + 0.14, win.heightU + 0.14, 0.08),
-          frameMetalMat,
-          [pt.x, win.centerY, pt.z + 0.02],
-          undefined,
-          undefined,
-          false
-        )
-        archBatch.add(
-          new THREE.BoxGeometry(spanU + 0.22, 0.06, 0.16),
-          woodTrimMat,
-          [pt.x, win.centerY - win.heightU / 2 - 0.05, pt.z + 0.06],
-          undefined,
-          undefined,
-          false
-        )
-        archBatch.add(
-          new THREE.PlaneGeometry(spanU, win.heightU),
-          windowGlassMat,
-          [pt.x, win.centerY, pt.z + 0.064],
-          undefined,
-          undefined,
-          false,
-          false
-        )
-        archBatch.add(
-          new THREE.BoxGeometry(0.045, win.heightU, 0.04),
-          frameMetalMat,
-          [pt.x, win.centerY, pt.z + 0.065],
-          undefined,
-          undefined,
-          false
-        )
-        if (win.heightU > 0.7) {
-          archBatch.add(
-            new THREE.BoxGeometry(spanU, 0.04, 0.04),
-            frameMetalMat,
-            [pt.x, win.centerY + 0.08, pt.z + 0.065],
-            undefined,
-            undefined,
-            false
-          )
-        }
-        if (win.sunPool) {
-          archBatch.add(
-            new THREE.PlaneGeometry(spanU * 1.08, 1.75),
-            sunPoolMat,
-            [pt.x, 0.025, pt.z + 1.05],
-            [-Math.PI / 2, 0, 0],
-            undefined,
-            false,
-            false
-          )
-        }
-      } else {
-        const isWest = win.wall === "west"
-        const pt = logicalToWorld(
-          isWest ? OFFICE_WALL_THICK : OFFICE_BASE_W - OFFICE_WALL_THICK,
-          win.pos,
-          this.world
-        )
-        const dir = isWest ? 1 : -1
-        archBatch.add(
-          new THREE.BoxGeometry(0.08, win.heightU + 0.14, spanU + 0.14),
-          frameMetalMat,
-          [pt.x + dir * 0.02, win.centerY, pt.z],
-          undefined,
-          undefined,
-          false
-        )
-        archBatch.add(
-          new THREE.BoxGeometry(0.14, 0.055, spanU + 0.22),
-          woodTrimMat,
-          [pt.x + dir * 0.06, win.centerY - win.heightU / 2 - 0.05, pt.z],
-          undefined,
-          undefined,
-          false
-        )
-        archBatch.add(
-          new THREE.PlaneGeometry(spanU, win.heightU),
-          windowGlassMat,
-          [pt.x + dir * 0.065, win.centerY, pt.z],
-          [0, isWest ? Math.PI / 2 : -Math.PI / 2, 0],
-          undefined,
-          false,
-          false
-        )
-        archBatch.add(
-          new THREE.BoxGeometry(0.04, win.heightU, 0.045),
-          frameMetalMat,
-          [pt.x + dir * 0.065, win.centerY, pt.z],
-          undefined,
-          undefined,
-          false
-        )
-        if (win.sunPool) {
-          archBatch.add(
-            new THREE.PlaneGeometry(1.55, spanU * 1.04),
-            sunPoolMat,
-            [pt.x + dir * 0.95, 0.025, pt.z],
-            [-Math.PI / 2, 0, 0],
-            undefined,
-            false,
-            false
-          )
-        }
-      }
-    }
-
-    yield 0.37
-
-    // 4e. Ceiling Light Coves & Warm Brass Wall Sconces
-    const ceilingBars: readonly { x: number; w: number }[] = [
-      { x: 380, w: 3.4 },
-      { x: 1160, w: 4.2 },
-      { x: 1960, w: 3.6 },
-    ]
-    for (const bar of ceilingBars) {
-      const pt = logicalToWorld(bar.x, OFFICE_WALL_THICK + 12, this.world)
-      archBatch.add(
-        new THREE.BoxGeometry(bar.w + 0.16, 0.09, 0.24),
-        frameMetalMat,
-        [pt.x, northH - 0.12, pt.z + 0.12],
-        undefined,
-        undefined,
-        false
-      )
-      archBatch.add(
-        new THREE.BoxGeometry(bar.w, 0.045, 0.16),
-        ceilingLightMat,
-        [pt.x, northH - 0.17, pt.z + 0.14],
-        undefined,
-        undefined,
+    // 5. North Back Wall Features:
+    //    - Team LED Board header beam + live status LEDs + Stock-Ticker LED Ribbon below it
+    //    - 3 World Market Clocks (VN · TYO · NYC)
+    //    - Panoramic City-Skyline Window Strips + sunlit floor pools
+    //    - Framed Wall Art & Acoustic wood slats behind Meeting Screen
+    //    - Ceiling-less Hanging Pendant Lamp silhouettes near North wall
+    const teamX = logicalToWorld(1040, OFFICE_NORTH_WALL_Y, this.world).x
+    archBatch.addBox(4.92, 0.18, 0.2, palette.obsidian, teamX, 3.4, wallFaceZ + 0.12, false)
+    archBatch.addBox(4.98, 0.04, 0.22, palette.gold, teamX, 3.5, wallFaceZ + 0.13, false)
+    for (let i = 0; i < 3; i += 1) {
+      archBatch.addSphere(
+        0.036,
+        seg,
+        seg,
+        i === 0 ? palette.ledGreen : palette.warmGlow,
+        teamX - 2.2 + i * 0.18,
+        3.4,
+        wallFaceZ + 0.23,
         false
       )
     }
 
-    const sconceXs = [170, 620, 910, 1400, 1740, 2220]
-    for (const sx of sconceXs) {
-      const pt = logicalToWorld(
-        sx,
-        OFFICE_DIVIDER_Y + OFFICE_WALL_THICK,
-        this.world
-      )
-      archBatch.add(
-        new THREE.CylinderGeometry(0.055, 0.055, 0.05, seg),
-        goldMat,
-        [pt.x, 1.62, pt.z + 0.03],
-        [Math.PI / 2, 0, 0],
-        undefined,
-        false
-      )
-      archBatch.add(
-        new THREE.SphereGeometry(0.075, seg, Math.max(6, seg - 4)),
-        ceilingLightMat,
-        [pt.x, 1.62, pt.z + 0.09],
-        undefined,
-        undefined,
-        false
-      )
-    }
-
-    // 5. Room Decorations & Static Furniture Props across all 4 zones
-
-    yield 0.407
-
-    // ----- PHÒNG SẾP -----
-    const bossShelf = createBookshelf(2.0, 1.82, 0.46, { lite: this.lite })
-    const bossShelfPt = this.toWorldCenter(40, 40, 200, 46)
-    bossShelf.group.position.set(bossShelfPt.x, 0, bossShelfPt.z)
-    this.mountStaticProp(bossShelf)
-
-    archBatch.add(
-      new THREE.CylinderGeometry(0.11, 0.06, 0.18, seg),
-      goldMat,
-      [bossShelfPt.x - 0.45, 1.98, bossShelfPt.z],
-      undefined,
-      undefined,
-      false
-    )
-    archBatch.add(
-      new THREE.BoxGeometry(0.16, 0.06, 0.16),
-      wallDarkBaseMat,
-      [bossShelfPt.x - 0.45, 1.86, bossShelfPt.z],
-      undefined,
-      undefined,
-      false
-    )
-    const globeMat = createMatteMaterial("#3b82f6", { roughness: 0.42 })
-    archBatch.add(
-      new THREE.SphereGeometry(0.11, seg, seg),
-      globeMat,
-      [bossShelfPt.x + 0.48, 2.02, bossShelfPt.z],
-      undefined,
-      undefined,
-      false
-    )
-    archBatch.add(
-      new THREE.BoxGeometry(0.14, 0.05, 0.14),
-      goldMat,
-      [bossShelfPt.x + 0.48, 1.86, bossShelfPt.z],
-      undefined,
-      undefined,
-      false
-    )
-    const lampPt = logicalToWorld(716, 355, this.world)
-    archBatch.add(
-      new THREE.CylinderGeometry(0.14, 0.16, 0.04, seg),
-      goldMat,
-      [lampPt.x, 0.02, lampPt.z],
-      undefined,
-      undefined,
-      false
-    )
-    archBatch.add(
-      new THREE.CylinderGeometry(0.022, 0.026, 1.42, 8),
-      goldMat,
-      [lampPt.x, 0.73, lampPt.z],
-      undefined,
-      undefined,
-      false
-    )
-    archBatch.add(
-      new THREE.CylinderGeometry(0.14, 0.22, 0.28, seg),
-      lampShadeMat,
-      [lampPt.x, 1.48, lampPt.z],
-      undefined,
-      undefined,
-      false
-    )
-
-    const bossFrames: readonly {
-      x: number
-      w: number
-      h: number
-      variant: "crest" | "chart"
-    }[] = [
-      { x: 325, w: 1.05, h: 0.78, variant: "crest" },
-      { x: 445, w: 1.05, h: 0.78, variant: "chart" },
-    ]
-    for (const f of bossFrames) {
-      const fPt = logicalToWorld(f.x, OFFICE_WALL_THICK + 2, this.world)
-      archBatch.addBox(f.w + 0.1, f.h + 0.1, 0.04, goldMat, fPt.x, 1.64, fPt.z + 0.02, false)
-      archBatch.add(
-        new THREE.PlaneGeometry(f.w, f.h),
-        getArtMaterial(f.variant),
-        [fPt.x, 1.64, fPt.z + 0.044],
-        undefined,
-        undefined,
-        false
-      )
-    }
-
-    const bossSofa = createSofa(1.5, 0.7, "#24365e", { lite: this.lite })
-    const bossSofaPt = this.toWorldCenter(560, 330, 150, 70)
-    bossSofa.group.position.set(bossSofaPt.x, 0, bossSofaPt.z)
-    this.mountStaticProp(bossSofa)
-
-    const bossLamp = new THREE.PointLight(0xffe7bd, 1.25, 11, 1.5)
-    const bossLightPt = logicalToWorld(440, 230, this.world)
-    bossLamp.position.set(bossLightPt.x, 3.2, bossLightPt.z)
-    this.archGroup.add(bossLamp)
-
-    yield 0.444
-
-    // ----- PHÒNG HỌP -----
-    const slatCenter = logicalToWorld(1160, OFFICE_WALL_THICK + 3, this.world)
-    const slatCount = this.lite ? 10 : 18
-    for (let i = 0; i < slatCount; i += 1) {
-      const offset = -1.9 + (i * 3.8) / Math.max(1, slatCount - 1)
-      archBatch.add(
-        new THREE.BoxGeometry(0.07, 1.56, 0.035),
-        woodSlatMat,
-        [slatCenter.x + offset, 1.58, slatCenter.z + 0.01],
-        undefined,
-        undefined,
-        false
-      )
-    }
-
-    const credenzaPt = this.toWorldCenter(1015, 22, 290, 52)
-    archBatch.add(new THREE.BoxGeometry(2.9, 0.56, 0.48), wallNavyMat, [
-      credenzaPt.x,
-      0.28,
-      credenzaPt.z,
-    ])
-    archBatch.add(
-      new THREE.BoxGeometry(2.96, 0.05, 0.52),
-      woodTrimMat,
-      [credenzaPt.x, 0.585, credenzaPt.z],
-      undefined,
-      undefined,
-      false
-    )
-    archBatch.add(
-      new THREE.BoxGeometry(1.1, 0.075, 0.11),
-      wallDarkBaseMat,
-      [credenzaPt.x, 0.65, credenzaPt.z + 0.08],
-      undefined,
-      undefined,
-      false
-    )
-
-    const wbPt = logicalToWorld(758, 275, this.world)
-    archBatch.addBox(0.05, 0.92, 1.68, frameMetalMat, wbPt.x + 0.03, 1.26, wbPt.z, false)
-    const wbFace = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.58, 0.84),
-      new THREE.MeshStandardMaterial({
-        map: createWhiteboardTexture(),
-        roughness: 0.3,
-      })
-    )
-    wbFace.rotation.y = Math.PI / 2
-    wbFace.position.set(wbPt.x + 0.06, 1.26, wbPt.z)
-    this.archGroup.add(wbFace)
-
-    const confTable = createConferenceTable(4.2, 1.5, 8, { lite: this.lite })
-    const confPt = this.toWorldCenter(948, 200, 420, 150)
-    confTable.group.position.set(confPt.x, 0, confPt.z)
-    this.mountStaticProp(confTable)
-
-    if (!this.lite) {
-      const meetLight = new THREE.PointLight(0xf6f8ff, 0.9, 10, 1.6)
-      meetLight.position.set(confPt.x, 3.2, confPt.z)
-      this.archGroup.add(meetLight)
-    }
-
-    yield 0.481
-
-    // ----- PHÒNG TÀI LIỆU -----
-    for (const bx of [1610, 1860, 2110]) {
-      const shelf = createBookshelf(2.2, 1.88, 0.6, { lite: this.lite })
-      const pt = this.toWorldCenter(bx, 40, 220, 60)
-      shelf.group.position.set(pt.x, 0, pt.z)
-      this.mountStaticProp(shelf)
-    }
-    const eastShelf = createBookshelf(2.4, 1.88, 0.6, { lite: this.lite })
-    const eastShelfPt = this.toWorldCenter(2300, 140, 60, 240)
-    eastShelf.group.position.set(eastShelfPt.x, 0, eastShelfPt.z)
-    eastShelf.group.rotation.y = -Math.PI / 2
-    this.mountStaticProp(eastShelf)
-
-    const readingDesk = createOfficeDesk({
-      variant: "reading",
-      width: 2.0,
-      depth: 0.9,
-      withChair: false,
-      hasMug: false,
-      lite: this.lite,
+    // Small Stock-Ticker LED Ribbon directly below the Team Board (zero per-frame work!)
+    const tickerW = 4.78
+    const tickerH = 0.28
+    const tickerY = 1.54
+    archBatch.addBox(tickerW + 0.14, tickerH + 0.07, 0.1, palette.obsidian, teamX, tickerY, wallFaceZ + 0.09, false)
+    const tickerTex = createOfficeStockTickerTexture(this.lite)
+    const tickerMat = new THREE.MeshStandardMaterial({
+      map: tickerTex,
+      emissive: new THREE.Color("#ffffff"),
+      emissiveMap: tickerTex,
+      emissiveIntensity: 0.52,
+      roughness: 0.28,
+      metalness: 0.05,
     })
-    const readPt = this.toWorldCenter(1840, 240, 200, 90)
-    readingDesk.group.position.set(readPt.x, 0, readPt.z)
-    this.mountStaticProp(readingDesk)
+    const tickerMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(tickerW, tickerH),
+      tickerMat
+    )
+    tickerMesh.name = "office-stock-ticker-ribbon"
+    tickerMesh.position.set(teamX, tickerY, wallFaceZ + 0.15)
+    this.archGroup.add(tickerMesh)
 
-    const docsSignPt = logicalToWorld(1578, 275, this.world)
+    // 3 World Market Clocks above the Team Board
+    addWorldClocks(archBatch, palette, this.archGroup, teamX, wallFaceZ, 3.84, this.lite)
+
+    // Panoramic City-Skyline Window Strips along the North back wall
+    const skylineTex = createCitySkylineTexture(this.lite)
+    const skylineMat = new THREE.MeshStandardMaterial({
+      map: skylineTex,
+      emissive: new THREE.Color("#fff7e8"),
+      emissiveMap: skylineTex,
+      emissiveIntensity: 0.34,
+      roughness: 0.24,
+      metalness: 0.08,
+    })
+    for (const win of getOfficeNorthWindows()) {
+      const wx = logicalToWorld(win.x, OFFICE_NORTH_WALL_Y, this.world).x
+      addSkylineWindowToBatch(archBatch, palette, skylineMat, {
+        wx,
+        wallFaceZ,
+        widthU: win.span * s,
+        heightU: win.heightU,
+        centerY: win.centerY,
+        mullions: win.mullions,
+        sunPool: win.sunPool,
+      })
+    }
+
+    // Framed Wall Art above Boss Award Shelf & Archive Bookshelves
+    const bossArtX = logicalToWorld(168, OFFICE_NORTH_WALL_Y, this.world).x
+    archBatch.addBox(1.42, 0.88, 0.04, palette.gold, bossArtX, 2.66, wallFaceZ + 0.04, false)
+    const crestMat = new THREE.MeshStandardMaterial({
+      map: createWallArtPrintTexture("crest"),
+      roughness: 0.36,
+    })
+    const crestFace = new THREE.Mesh(new THREE.PlaneGeometry(1.32, 0.78), crestMat)
+    crestFace.position.set(bossArtX, 2.66, wallFaceZ + 0.068)
+    this.archGroup.add(crestFace)
+
+    const docsSignX = logicalToWorld(1888, OFFICE_NORTH_WALL_Y, this.world).x
     const docsSignTex = createSignTexture("KHO TÀI LIỆU IQX", {
       style: "navy_gold",
       subtext: "Quy trình · Báo cáo · KPI",
       width: 384,
-      height: 128,
+      height: 112,
     })
-    archBatch.addBox(0.04, 0.56, 1.36, goldMat, docsSignPt.x + 0.02, 1.32, docsSignPt.z, false)
+    archBatch.addBox(1.78, 0.56, 0.04, palette.gold, docsSignX, 2.54, wallFaceZ + 0.04, false)
     const docsSignFace = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.28, 0.48),
+      new THREE.PlaneGeometry(1.7, 0.48),
       new THREE.MeshStandardMaterial({ map: docsSignTex, roughness: 0.35 })
     )
-    docsSignFace.rotation.y = Math.PI / 2
-    docsSignFace.position.set(docsSignPt.x + 0.046, 1.32, docsSignPt.z)
+    docsSignFace.position.set(docsSignX, 2.54, wallFaceZ + 0.068)
     this.archGroup.add(docsSignFace)
 
-    if (!this.lite) {
-      const docsLamp = new THREE.PointLight(0xffe5b8, 0.85, 8.5, 1.6)
-      docsLamp.position.set(readPt.x, 2.8, readPt.z)
-      this.archGroup.add(docsLamp)
+    // Acoustic wood slat backdrop behind the Meeting Room Live Screen
+    const meetX = logicalToWorld(1470, OFFICE_NORTH_WALL_Y, this.world).x
+    const slatCount = this.lite ? 9 : 15
+    for (let i = 0; i < slatCount; i += 1) {
+      const offset = -1.68 + (i * 3.36) / Math.max(1, slatCount - 1)
+      archBatch.addBox(0.068, 1.85, 0.035, palette.slatWood, meetX + offset, 2.02, wallFaceZ + 0.035, false)
     }
 
-    yield 0.519
+    // Ceiling-less Hanging Pendant Lamps near the North back wall
+    const pendantXs = [440, 1040, 1470, 1890].map(
+      (lx) => logicalToWorld(lx, OFFICE_NORTH_WALL_Y, this.world).x
+    )
+    addHangingPendantsToBatch(archBatch, palette, pendantXs, wallFaceZ + 1.1, this.lite)
 
-    // ----- GÓC CÀ PHÊ & STANDEE (Right Side of Staff Area per Spec §3) -----
-    const coffeeBar = createPantryCounter(1.7, 0.6, { lite: this.lite })
-    const coffeePt = this.toWorldCenter(1860, 640, 170, 60)
+    yield 0.46
+
+    // 6. North-Zone Furniture (ZERO walls or glass partitions between them!):
+    //    - BÀN SẾP: Award Bookshelf (w/ golden trophy & globe), Guest Sofa, Standing Floor Lamp
+    const bossShelf = createBookshelf(1.84, 1.82, 0.48, { lite: this.lite })
+    const bossShelfPt = this.toWorldCenter(
+      OFFICE_NORTH_PROPS.bossShelf.x,
+      OFFICE_NORTH_PROPS.bossShelf.y,
+      OFFICE_NORTH_PROPS.bossShelf.w,
+      OFFICE_NORTH_PROPS.bossShelf.h
+    )
+    bossShelf.group.position.set(bossShelfPt.x, 0, bossShelfPt.z)
+    this.mountStaticProp(bossShelf)
+    shadows.add(bossShelfPt.x, bossShelfPt.z + 0.06, 2.1, 0.8, boxShadowTex, 0.55)
+
+    // Trophy & Blue Globe perched atop Boss Award Shelf
+    archBatch.addCylinder(0.1, 0.055, 0.16, seg, palette.gold, bossShelfPt.x - 0.42, 1.96, bossShelfPt.z, false)
+    archBatch.addBox(0.15, 0.055, 0.15, palette.skirtingDark, bossShelfPt.x - 0.42, 1.85, bossShelfPt.z, false)
+    archBatch.addSphere(0.1, seg, seg, palette.blueAccent, bossShelfPt.x + 0.42, 1.99, bossShelfPt.z, false)
+    archBatch.addBox(0.14, 0.045, 0.14, palette.gold, bossShelfPt.x + 0.42, 1.85, bossShelfPt.z, false)
+
+    const bossSofa = createSofa(1.32, 0.64, "#24365e", { lite: this.lite })
+    const bossSofaPt = this.toWorldCenter(
+      OFFICE_NORTH_PROPS.bossSofa.x,
+      OFFICE_NORTH_PROPS.bossSofa.y,
+      OFFICE_NORTH_PROPS.bossSofa.w,
+      OFFICE_NORTH_PROPS.bossSofa.h
+    )
+    bossSofa.group.position.set(bossSofaPt.x, 0, bossSofaPt.z)
+    this.mountStaticProp(bossSofa)
+    shadows.add(bossSofaPt.x, bossSofaPt.z, 1.62, 0.96, boxShadowTex, 0.58)
+
+    const bossLampPt = logicalToWorld(744, 344, this.world)
+    addStandingLampToBatch(archBatch, palette, bossLampPt.x, bossLampPt.z, this.lite)
+
+    yield 0.54
+
+    //    - PHÒNG HỌP: AV Credenza, Pill Conference Table + 8 Chairs, Low Planter Soft Border, Whiteboard Easel
+    const credPt = this.toWorldCenter(
+      OFFICE_NORTH_PROPS.meetCredenza.x,
+      OFFICE_NORTH_PROPS.meetCredenza.y,
+      OFFICE_NORTH_PROPS.meetCredenza.w,
+      OFFICE_NORTH_PROPS.meetCredenza.h
+    )
+    archBatch.addBevelBox(2.7, 0.54, 0.46, 0.02, palette.wallDadoNavy, credPt.x, 0.27, credPt.z, this.lite)
+    archBatch.addBox(2.76, 0.048, 0.5, palette.oakWood, credPt.x, 0.564, credPt.z, false)
+    archBatch.addBox(1.05, 0.07, 0.11, palette.obsidian, credPt.x, 0.625, credPt.z + 0.08, false)
+
+    const confTable = createConferenceTable(4.1, 1.46, 8, { lite: this.lite })
+    const confPt = this.toWorldCenter(
+      OFFICE_NORTH_PROPS.conferenceTable.x,
+      OFFICE_NORTH_PROPS.conferenceTable.y,
+      OFFICE_NORTH_PROPS.conferenceTable.w,
+      OFFICE_NORTH_PROPS.conferenceTable.h
+    )
+    confTable.group.position.set(confPt.x, 0, confPt.z)
+    this.mountStaticProp(confTable)
+    shadows.add(confPt.x, confPt.z, 4.5, 1.9, boxShadowTex, 0.6)
+
+    // Low wooden planter boxes forming a soft green open-floor border around PHÒNG HỌP
+    for (const pl of getMeetingPlanters()) {
+      const pt = this.toWorldCenter(pl.x, pl.y, pl.w, pl.h)
+      addLowPlanterToBatch(archBatch, palette, pt.x, pt.z, pl.w * s, pl.h * s, this.lite)
+      shadows.add(pt.x, pt.z, pl.w * s + 0.2, pl.h * s + 0.2, boxShadowTex, 0.48)
+    }
+
+    const wbPt = this.toWorldCenter(
+      OFFICE_NORTH_PROPS.whiteboard.x,
+      OFFICE_NORTH_PROPS.whiteboard.y,
+      OFFICE_NORTH_PROPS.whiteboard.w,
+      OFFICE_NORTH_PROPS.whiteboard.h
+    )
+    addWhiteboardEasel(archBatch, palette, this.archGroup, wbPt.x, wbPt.z, -Math.PI / 2, this.lite)
+
+    yield 0.62
+
+    //    - TÀI LIỆU: 2 Archive Bookshelves flush against North wall + Reading Desk
+    for (const sh of [OFFICE_NORTH_PROPS.docsShelf1, OFFICE_NORTH_PROPS.docsShelf2]) {
+      const shelf = createBookshelf(sh.w * s, 1.86, sh.h * s, { lite: this.lite })
+      const pt = this.toWorldCenter(sh.x, sh.y, sh.w, sh.h)
+      shelf.group.position.set(pt.x, 0, pt.z)
+      this.mountStaticProp(shelf)
+      shadows.add(pt.x, pt.z + 0.06, sh.w * s + 0.24, sh.h * s + 0.3, boxShadowTex, 0.55)
+    }
+    const readingDesk = createOfficeDesk({
+      variant: "reading",
+      width: OFFICE_NORTH_PROPS.readingDesk.w * s,
+      depth: OFFICE_NORTH_PROPS.readingDesk.h * s,
+      withChair: false,
+      hasMug: false,
+      lite: this.lite,
+    })
+    const readPt = this.toWorldCenter(
+      OFFICE_NORTH_PROPS.readingDesk.x,
+      OFFICE_NORTH_PROPS.readingDesk.y,
+      OFFICE_NORTH_PROPS.readingDesk.w,
+      OFFICE_NORTH_PROPS.readingDesk.h
+    )
+    readingDesk.group.position.set(readPt.x, 0, readPt.z)
+    this.mountStaticProp(readingDesk)
+    shadows.add(readPt.x, readPt.z, 2.25, 1.15, boxShadowTex, 0.56)
+
+    yield 0.7
+
+    // 7. GÓC NGHỈ (East Break Zone: Espresso Bar, Water Cooler, Snack Shelf, Sofa, Coffee Table,
+    //    Standing Lamp, Chibi Foosball Table & Mini Retro Arcade Cabinet!)
+    const coffeeBar = createPantryCounter(
+      OFFICE_LOUNGE_PROPS.coffeeBar.w * s,
+      OFFICE_LOUNGE_PROPS.coffeeBar.h * s,
+      { lite: this.lite }
+    )
+    const coffeePt = this.toWorldCenter(
+      OFFICE_LOUNGE_PROPS.coffeeBar.x,
+      OFFICE_LOUNGE_PROPS.coffeeBar.y,
+      OFFICE_LOUNGE_PROPS.coffeeBar.w,
+      OFFICE_LOUNGE_PROPS.coffeeBar.h
+    )
     coffeeBar.group.position.set(coffeePt.x, 0, coffeePt.z)
     this.mountStaticProp(coffeeBar)
+    shadows.add(coffeePt.x, coffeePt.z, 1.95, 0.9, boxShadowTex, 0.56)
 
-    const menuPt = logicalToWorld(
-      1945,
-      OFFICE_DIVIDER_Y + OFFICE_WALL_THICK + 2,
-      this.world
-    )
-    archBatch.addBox(1.26, 0.76, 0.04, woodTrimMat, menuPt.x, 1.32, menuPt.z + 0.02, false)
-    const menuFace = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.16, 0.68),
-      new THREE.MeshStandardMaterial({
-        map: createCafeMenuTexture(),
-        roughness: 0.42,
-      })
-    )
-    menuFace.position.set(menuPt.x, 1.32, menuPt.z + 0.045)
-    this.archGroup.add(menuFace)
-
-    yield 0.556
-
-    // Batched Staff Area purposeful decor (merged directly into archBatch)
-    const decorBatch = archBatch
-    const coolerMat = createMatteMaterial("#eef2f7", { roughness: 0.34 })
-    const waterJugMat = new THREE.MeshStandardMaterial({
-      color: "#60a5fa",
-      transparent: true,
-      opacity: 0.78,
-      roughness: 0.16,
-      metalness: 0.1,
-    })
-    const redTapMat = createMatteMaterial("#ef4444", { roughness: 0.35 })
-    const blueTapMat = createMatteMaterial("#3b82f6", { roughness: 0.35 })
-    const stoolSeatMat = createClothMaterial("#2c416b")
-    const oakTopTex = this.retainArchTex(createWoodSurfaceTexture("oak"))
-    const oakSlabMat = new THREE.MeshStandardMaterial({
-      color: "#ffffff",
-      map: oakTopTex,
-      roughness: 0.5,
-      metalness: 0.05,
-    })
-    const lockerDoorMat = createMatteMaterial("#283d66", { roughness: 0.46 })
-    const paperMat = createMatteMaterial("#f8fafc", { roughness: 0.68 })
-    const printerBodyMat = createMatteMaterial("#e8edf4", { roughness: 0.36 })
-    const printerAccentMat = createMatteMaterial("#334155", { roughness: 0.48 })
-    const screenCyanMat = createGlowMaterial("#38bdf8", 0.9)
-    const leafSmallMat = createMatteMaterial("#419c42", { roughness: 0.54 })
-    const folderColors = [
-      createMatteMaterial("#2563eb", { roughness: 0.52 }),
-      createMatteMaterial("#d97706", { roughness: 0.52 }),
-      createMatteMaterial("#10b981", { roughness: 0.52 }),
-    ]
-
-    yield 0.593
-
-    // Water Dispenser Cooler with hot/cold taps & side cup tube
     const coolerPt = this.toWorldCenter(
-      OFFICE_COFFEE_COOLER_RECT.x,
-      OFFICE_COFFEE_COOLER_RECT.y,
-      OFFICE_COFFEE_COOLER_RECT.w,
-      OFFICE_COFFEE_COOLER_RECT.h
+      OFFICE_LOUNGE_PROPS.waterCooler.x,
+      OFFICE_LOUNGE_PROPS.waterCooler.y,
+      OFFICE_LOUNGE_PROPS.waterCooler.w,
+      OFFICE_LOUNGE_PROPS.waterCooler.h
     )
-    decorBatch.add(
-      roundedBox(0.44, 0.92, 0.44, 0.022, this.lite),
-      coolerMat,
-      [coolerPt.x, 0.46, coolerPt.z]
-    )
-    decorBatch.add(
-      roundedBox(0.34, 0.22, 0.06, 0.01, this.lite),
-      wallDarkBaseMat,
-      [coolerPt.x, 0.7, coolerPt.z + 0.2],
-      undefined,
-      undefined,
-      false
-    )
-    decorBatch.add(
-      new THREE.BoxGeometry(0.045, 0.05, 0.05),
-      redTapMat,
-      [coolerPt.x - 0.07, 0.74, coolerPt.z + 0.23],
-      undefined,
-      undefined,
-      false
-    )
-    decorBatch.add(
-      new THREE.BoxGeometry(0.045, 0.05, 0.05),
-      blueTapMat,
-      [coolerPt.x + 0.07, 0.74, coolerPt.z + 0.23],
-      undefined,
-      undefined,
-      false
-    )
-    decorBatch.add(
-      new THREE.CylinderGeometry(0.042, 0.042, 0.36, 8),
-      coolerMat,
-      [coolerPt.x + 0.24, 0.72, coolerPt.z],
-      undefined,
-      undefined,
-      false
-    )
-    const jug = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.15, 0.15, 0.42, seg),
-      waterJugMat
-    )
-    jug.position.set(coolerPt.x, 1.13, coolerPt.z)
-    jug.castShadow = true
-    this.archGroup.add(jug)
+    addWaterCoolerToBatch(archBatch, palette, coolerPt.x, coolerPt.z, this.lite)
+    shadows.add(coolerPt.x, coolerPt.z, 0.72, 0.72, ovalShadowTex, 0.52)
 
-    yield 0.63
-
-    // Cafe Bistro Table + 2 high stools
-    const bistroPt = this.toWorldCenter(
-      OFFICE_COFFEE_TABLE_RECT.x,
-      OFFICE_COFFEE_TABLE_RECT.y,
-      OFFICE_COFFEE_TABLE_RECT.w,
-      OFFICE_COFFEE_TABLE_RECT.h
+    const snackPt = this.toWorldCenter(
+      OFFICE_LOUNGE_PROPS.snackShelf.x,
+      OFFICE_LOUNGE_PROPS.snackShelf.y,
+      OFFICE_LOUNGE_PROPS.snackShelf.w,
+      OFFICE_LOUNGE_PROPS.snackShelf.h
     )
-    const bistroTable = createCoffeeTable(0.95, 0.72, { lite: this.lite })
-    bistroTable.group.position.set(bistroPt.x, 0, bistroPt.z)
-    this.mountStaticProp(bistroTable)
-
-    for (const side of [-1, 1] as const) {
-      const sx = bistroPt.x + side * 0.68
-      decorBatch.add(
-        new THREE.CylinderGeometry(0.025, 0.035, 0.34, 8),
-        frameMetalMat,
-        [sx, 0.17, bistroPt.z]
-      )
-      decorBatch.add(
-        new THREE.CylinderGeometry(0.17, 0.16, 0.07, seg),
-        stoolSeatMat,
-        [sx, 0.36, bistroPt.z]
-      )
-    }
-
-    const cafeLamp = new THREE.PointLight(0xffdfb0, 1.05, 9, 1.55)
-    cafeLamp.position.set(coffeePt.x + 0.6, 2.8, coffeePt.z + 0.6)
-    this.archGroup.add(cafeLamp)
-
-    yield 0.667
-
-    // Twin Brass Stanchions flanking the Achievement Standee
-    const standeeCenter = logicalToWorld(2195, 1066, this.world)
-    for (const side of [-1, 1] as const) {
-      const px = standeeCenter.x + side * 1.42
-      const pz = standeeCenter.z + 0.16
-      decorBatch.add(
-        new THREE.CylinderGeometry(0.11, 0.12, 0.04, seg),
-        goldMat,
-        [px, 0.02, pz],
-        undefined,
-        undefined,
-        false
-      )
-      decorBatch.add(
-        new THREE.CylinderGeometry(0.028, 0.032, 0.72, 8),
-        goldMat,
-        [px, 0.38, pz]
-      )
-      decorBatch.add(
-        new THREE.SphereGeometry(0.048, 8, 8),
-        goldMat,
-        [px, 0.76, pz],
-        undefined,
-        undefined,
-        false
-      )
-    }
-
-    if (!this.lite) {
-      const standeeLight = new THREE.PointLight(0xffdf9a, 0.9, 7.5, 1.6)
-      standeeLight.position.set(standeeCenter.x, 3.1, standeeCenter.z + 1.0)
-      this.archGroup.add(standeeLight)
-    }
-
-    yield 0.704
-
-    // ----- PERSONAL STAFF LOCKERS (West & East Walls) -----
-    for (const locker of getOfficeLockers(worldH)) {
-      const pt = this.toWorldCenter(locker.x, locker.y, locker.w, locker.h)
-      const lw = locker.w * s
-      const ld = locker.h * s
-      const lh = 1.18
-      const faceDir = locker.wall === "west" ? 1 : -1
-
-      // Carcass + oak counter top + plinth
-      decorBatch.add(
-        roundedBox(lw - 0.04, 0.08, ld - 0.04, 0.01, this.lite),
-        wallDarkBaseMat,
-        [pt.x, 0.04, pt.z]
-      )
-      decorBatch.add(
-        roundedBox(lw, lh - 0.08, ld, 0.02, this.lite),
-        wallNavyMat,
-        [pt.x, 0.08 + (lh - 0.08) / 2, pt.z]
-      )
-      decorBatch.add(
-        roundedBox(lw + 0.05, 0.048, ld + 0.05, 0.014, this.lite),
-        oakSlabMat,
-        [pt.x, lh + 0.024, pt.z]
-      )
-
-      const baySpan = (ld - 0.1) / locker.bays
-      for (let b = 0; b < locker.bays; b += 1) {
-        const bz = pt.z - (ld - 0.1) / 2 + (b + 0.5) * baySpan
-        const doorX = pt.x + faceDir * (lw / 2 + 0.012)
-        // Upper & lower locker doors
-        for (const dy of [0.36, 0.88]) {
-          decorBatch.add(
-            roundedBox(0.024, 0.45, baySpan - 0.04, 0.008, this.lite),
-            lockerDoorMat,
-            [doorX, dy, bz]
-          )
-          // Brass handle + name card slot
-          decorBatch.add(
-            roundedBox(0.02, 0.08, 0.018, 0.004, this.lite),
-            goldMat,
-            [doorX + faceDir * 0.016, dy, bz + baySpan * 0.3],
-            undefined,
-            undefined,
-            false
-          )
-          decorBatch.add(
-            new THREE.BoxGeometry(0.01, 0.036, 0.085),
-            paperMat,
-            [doorX + faceDir * 0.014, dy + 0.14, bz],
-            undefined,
-            undefined,
-            false
-          )
-        }
-      }
-    }
-
-    yield 0.741
-
-    // ----- PRINTER / COPIER & SUPPLY STATION -----
-    const printer = getPrinterStationRect(worldH)
-    const prPt = this.toWorldCenter(printer.x, printer.y, printer.w, printer.h)
-    const prW = printer.w * s
-    const prD = printer.h * s
-    const prBaseH = 0.72
-    // Supply cabinet base + oak top
-    decorBatch.add(
-      roundedBox(prW - 0.06, 0.06, prD - 0.06, 0.01, this.lite),
-      wallDarkBaseMat,
-      [prPt.x, 0.03, prPt.z]
+    addSnackShelfToBatch(
+      archBatch,
+      palette,
+      snackPt.x,
+      snackPt.z,
+      OFFICE_LOUNGE_PROPS.snackShelf.w * s,
+      OFFICE_LOUNGE_PROPS.snackShelf.h * s,
+      this.lite
     )
-    decorBatch.add(
-      roundedBox(prW, prBaseH - 0.06, prD, 0.022, this.lite),
-      wallNavyMat,
-      [prPt.x, 0.06 + (prBaseH - 0.06) / 2, prPt.z]
-    )
-    decorBatch.add(
-      roundedBox(prW + 0.06, 0.052, prD + 0.06, 0.016, this.lite),
-      oakSlabMat,
-      [prPt.x, prBaseH + 0.026, prPt.z]
-    )
-    for (const side of [-1, 1] as const) {
-      decorBatch.add(
-        roundedBox(prW * 0.44, prBaseH - 0.18, 0.022, 0.008, this.lite),
-        lockerDoorMat,
-        [prPt.x + side * (prW * 0.24), prBaseH * 0.52, prPt.z + prD / 2 + 0.008]
-      )
-      decorBatch.add(
-        roundedBox(0.09, 0.018, 0.02, 0.004, this.lite),
-        goldMat,
-        [prPt.x + side * (prW * 0.24), prBaseH * 0.72, prPt.z + prD / 2 + 0.022],
-        undefined,
-        undefined,
-        false
-      )
-    }
-    const prTopY = prBaseH + 0.052
-    // Multifunction copier machine (left side of cabinet)
-    const cx = prPt.x - prW * 0.17
-    decorBatch.add(
-      roundedBox(0.76, 0.44, 0.54, 0.028, this.lite),
-      printerBodyMat,
-      [cx, prTopY + 0.22, prPt.z - 0.02]
-    )
-    decorBatch.add(
-      roundedBox(0.78, 0.07, 0.52, 0.018, this.lite),
-      printerAccentMat,
-      [cx, prTopY + 0.47, prPt.z - 0.03]
-    )
-    // Paper feed tray slots + glowing status LCD + printed sheet in tray
-    decorBatch.add(
-      roundedBox(0.56, 0.09, 0.03, 0.008, this.lite),
-      printerAccentMat,
-      [cx, prTopY + 0.12, prPt.z + 0.25],
-      undefined,
-      undefined,
-      false
-    )
-    decorBatch.add(
-      roundedBox(0.18, 0.08, 0.03, 0.006, this.lite),
-      screenCyanMat,
-      [cx + 0.22, prTopY + 0.36, prPt.z + 0.255],
-      [-0.35, 0, 0],
-      undefined,
-      false
-    )
-    decorBatch.add(
-      new THREE.BoxGeometry(0.28, 0.012, 0.22),
-      paperMat,
-      [cx - 0.08, prTopY + 0.34, prPt.z + 0.28],
-      [0.14, 0, 0],
-      undefined,
-      false
-    )
-    // Stacked A4 paper reams & colorful file organizer (right side of cabinet)
-    const sx = prPt.x + prW * 0.27
-    for (let r = 0; r < 3; r += 1) {
-      decorBatch.add(
-        roundedBox(0.3, 0.055, 0.22, 0.006, this.lite),
-        paperMat,
-        [sx, prTopY + 0.028 + r * 0.06, prPt.z + 0.04],
-        [0, (r - 1) * 0.05, 0],
-        undefined,
-        false
-      )
-    }
-    folderColors.forEach((mat, idx) => {
-      decorBatch.add(
-        roundedBox(0.065, 0.26, 0.22, 0.008, this.lite),
-        mat,
-        [sx + 0.22 + idx * 0.072, prTopY + 0.13, prPt.z - 0.08],
-        undefined,
-        undefined,
-        false
-      )
-    })
-
-    yield 0.778
-
-    // ----- SOUTH-CENTER MAGAZINE & SUPPLY CREDENZA -----
-    const cred = getSouthCredenzaRect(worldH)
-    const crPt = this.toWorldCenter(cred.x, cred.y, cred.w, cred.h)
-    const crW = cred.w * s
-    const crD = cred.h * s
-    const crH = 0.64
-    // Tapered brass feet + walnut cabinet + oak slab top
-    for (const fx of [-1, 1] as const) {
-      for (const fz of [-1, 1] as const) {
-        decorBatch.add(
-          new THREE.CylinderGeometry(0.026, 0.02, 0.12, 8),
-          goldMat,
-          [crPt.x + fx * (crW * 0.44), 0.06, crPt.z + fz * (crD * 0.36)]
-        )
-      }
-    }
-    decorBatch.add(
-      roundedBox(crW, crH - 0.12, crD, 0.024, this.lite),
-      woodTrimMat,
-      [crPt.x, 0.12 + (crH - 0.12) / 2, crPt.z]
-    )
-    decorBatch.add(
-      roundedBox(crW + 0.06, 0.048, crD + 0.06, 0.016, this.lite),
-      oakSlabMat,
-      [crPt.x, crH + 0.024, crPt.z]
-    )
-    const crTopY = crH + 0.048
-    // Colorful binders, stacked journals, gold orb & mini succulent on credenza
-    folderColors.forEach((mat, idx) => {
-      decorBatch.add(
-        roundedBox(0.07, 0.26, 0.22, 0.008, this.lite),
-        mat,
-        [crPt.x - crW * 0.34 + idx * 0.085, crTopY + 0.13, crPt.z - 0.04]
-      )
-    })
-    decorBatch.add(
-      roundedBox(0.38, 0.04, 0.26, 0.006, this.lite),
-      paperMat,
-      [crPt.x + 0.04, crTopY + 0.02, crPt.z + 0.02],
-      [0, 0.08, 0],
-      undefined,
-      false
-    )
-    decorBatch.add(
-      new THREE.SphereGeometry(0.085, seg, seg),
-      goldMat,
-      [crPt.x + 0.56, crTopY + 0.085, crPt.z]
-    )
-    decorBatch.add(
-      new THREE.CylinderGeometry(0.075, 0.058, 0.11, seg),
-      paperMat,
-      [crPt.x + crW * 0.36, crTopY + 0.055, crPt.z]
-    )
-    decorBatch.add(
-      new THREE.SphereGeometry(0.11, seg, Math.max(6, seg - 4)),
-      leafSmallMat,
-      [crPt.x + crW * 0.36, crTopY + 0.16, crPt.z]
-    )
-
-    yield 0.815
-
-    // ----- SOUTH-CENTER-RIGHT COLLABORATIVE HUDDLE NOOK -----
-    const huddle = getHuddleNookPositions(worldH)
-    const huddleRug = createRug(huddle.rug.w * s, huddle.rug.h * s, {
-      shape: "rounded",
-      colorHex: "#ece0cb",
-      borderHex: "#24365e",
-      borderWidth: 0.12,
-      lite: this.lite,
-    })
-    const huddleRugPt = this.toWorldCenter(
-      huddle.rug.x,
-      huddle.rug.y,
-      huddle.rug.w,
-      huddle.rug.h
-    )
-    huddleRug.group.position.set(huddleRugPt.x, 0.01, huddleRugPt.z)
-    this.mountStaticProp(huddleRug)
-
-    const huddleTable = createCoffeeTable(
-      huddle.table.w * s,
-      huddle.table.h * s,
-      { lite: this.lite }
-    )
-    const huddleTablePt = this.toWorldCenter(
-      huddle.table.x,
-      huddle.table.y,
-      huddle.table.w,
-      huddle.table.h
-    )
-    huddleTable.group.position.set(huddleTablePt.x, 0, huddleTablePt.z)
-    this.mountStaticProp(huddleTable)
-
-    for (const side of [-1, 1] as const) {
-      const sx = huddleTablePt.x + side * 0.78
-      decorBatch.add(
-        new THREE.CylinderGeometry(0.032, 0.04, 0.28, 8),
-        goldMat,
-        [sx, 0.14, huddleTablePt.z]
-      )
-      decorBatch.add(
-        new THREE.CylinderGeometry(0.21, 0.2, 0.11, seg),
-        stoolSeatMat,
-        [sx, 0.32, huddleTablePt.z]
-      )
-    }
-
-    yield 0.852
-
-    // ----- KHU NHÂN VIÊN: SOUTH-WEST LOUNGE + READING LAMP -----
-    const lounge = getLoungePositions(worldH)
-    const rug = createRug(lounge.rug.w * s, lounge.rug.h * s, {
-      shape: "oval",
-      colorHex: "#f1e6d2",
-      borderHex: "#22325a",
-      borderWidth: 0.14,
-      lite: this.lite,
-    })
-    const rugPt = this.toWorldCenter(
-      lounge.rug.x,
-      lounge.rug.y,
-      lounge.rug.w,
-      lounge.rug.h
-    )
-    rug.group.position.set(rugPt.x, 0.01, rugPt.z)
-    this.mountStaticProp(rug)
+    shadows.add(snackPt.x, snackPt.z, 1.9, 0.8, boxShadowTex, 0.52)
 
     const loungeSofa = createSofa(
-      lounge.sofa.w * s,
-      lounge.sofa.h * s,
-      "#24365e",
+      OFFICE_LOUNGE_PROPS.sofa.w * s,
+      OFFICE_LOUNGE_PROPS.sofa.h * s,
+      "#23395d",
       { lite: this.lite }
     )
-    const sofaPt = this.toWorldCenter(
-      lounge.sofa.x,
-      lounge.sofa.y,
-      lounge.sofa.w,
-      lounge.sofa.h
+    const loungeSofaPt = this.toWorldCenter(
+      OFFICE_LOUNGE_PROPS.sofa.x,
+      OFFICE_LOUNGE_PROPS.sofa.y,
+      OFFICE_LOUNGE_PROPS.sofa.w,
+      OFFICE_LOUNGE_PROPS.sofa.h
     )
-    loungeSofa.group.position.set(sofaPt.x, 0, sofaPt.z)
+    loungeSofa.group.position.set(loungeSofaPt.x, 0, loungeSofaPt.z)
     this.mountStaticProp(loungeSofa)
+    shadows.add(loungeSofaPt.x, loungeSofaPt.z, 2.2, 1.0, boxShadowTex, 0.58)
 
     const loungeTable = createCoffeeTable(
-      lounge.table.w * s,
-      lounge.table.h * s,
+      OFFICE_LOUNGE_PROPS.coffeeTable.w * s,
+      OFFICE_LOUNGE_PROPS.coffeeTable.h * s,
       { lite: this.lite }
     )
     const loungeTablePt = this.toWorldCenter(
-      lounge.table.x,
-      lounge.table.y,
-      lounge.table.w,
-      lounge.table.h
+      OFFICE_LOUNGE_PROPS.coffeeTable.x,
+      OFFICE_LOUNGE_PROPS.coffeeTable.y,
+      OFFICE_LOUNGE_PROPS.coffeeTable.w,
+      OFFICE_LOUNGE_PROPS.coffeeTable.h
     )
     loungeTable.group.position.set(loungeTablePt.x, 0, loungeTablePt.z)
     this.mountStaticProp(loungeTable)
+    shadows.add(loungeTablePt.x, loungeTablePt.z, 1.4, 0.78, boxShadowTex, 0.5)
 
-    // Warm standing floor lamp beside SW lounge sofa
-    const loungeLampPt = logicalToWorld(
-      lounge.sofa.x + lounge.sofa.w + 18,
-      lounge.sofa.y + 24,
-      this.world
+    const loungeLampPt = logicalToWorld(2052, 756, this.world)
+    addStandingLampToBatch(archBatch, palette, loungeLampPt.x, loungeLampPt.z, this.lite)
+
+    const foosPt = this.toWorldCenter(
+      OFFICE_LOUNGE_PROPS.foosball.x,
+      OFFICE_LOUNGE_PROPS.foosball.y,
+      OFFICE_LOUNGE_PROPS.foosball.w,
+      OFFICE_LOUNGE_PROPS.foosball.h
     )
-    decorBatch.add(
-      new THREE.CylinderGeometry(0.13, 0.15, 0.04, seg),
-      goldMat,
-      [loungeLampPt.x, 0.02, loungeLampPt.z],
-      undefined,
-      undefined,
-      false
+    addFoosballTableToBatch(
+      archBatch,
+      palette,
+      foosPt.x,
+      foosPt.z,
+      OFFICE_LOUNGE_PROPS.foosball.w * s,
+      OFFICE_LOUNGE_PROPS.foosball.h * s,
+      this.lite
     )
-    decorBatch.add(
-      new THREE.CylinderGeometry(0.02, 0.024, 1.32, 8),
-      goldMat,
-      [loungeLampPt.x, 0.68, loungeLampPt.z],
-      undefined,
-      undefined,
-      false
+    shadows.add(foosPt.x, foosPt.z, 1.78, 1.15, boxShadowTex, 0.55)
+
+    const arcPt = this.toWorldCenter(
+      OFFICE_LOUNGE_PROPS.arcade.x,
+      OFFICE_LOUNGE_PROPS.arcade.y,
+      OFFICE_LOUNGE_PROPS.arcade.w,
+      OFFICE_LOUNGE_PROPS.arcade.h
     )
-    decorBatch.add(
-      new THREE.CylinderGeometry(0.13, 0.2, 0.25, seg),
-      lampShadeMat,
-      [loungeLampPt.x, 1.38, loungeLampPt.z],
-      undefined,
-      undefined,
-      false
+    addMiniArcadeCabinet(archBatch, palette, this.archGroup, arcPt.x, arcPt.z, this.lite)
+    shadows.add(arcPt.x, arcPt.z, 0.8, 0.8, boxShadowTex, 0.55)
+
+    yield 0.78
+
+    // 8. GÓC THÀNH TÍCH (3 Tiered Marble/Gold Trophy Pedestals, Twin Framed Certificate Easels,
+    //    and Brass Stanchions flanking the Live Achievement Standee!)
+    const pedPt = this.toWorldCenter(
+      OFFICE_AWARDS_PROPS.pedestals.x,
+      OFFICE_AWARDS_PROPS.pedestals.y,
+      OFFICE_AWARDS_PROPS.pedestals.w,
+      OFFICE_AWARDS_PROPS.pedestals.h
+    )
+    addTrophyPedestalsToBatch(archBatch, palette, pedPt.x, pedPt.z, this.lite)
+    shadows.add(pedPt.x, pedPt.z, 2.35, 0.9, boxShadowTex, 0.58)
+
+    const standeeCenter = this.toWorldCenter(
+      OFFICE_AWARDS_PROPS.standee.x,
+      OFFICE_AWARDS_PROPS.standee.y,
+      OFFICE_AWARDS_PROPS.standee.w,
+      OFFICE_AWARDS_PROPS.standee.h
+    )
+    for (const side of [-1, 1] as const) {
+      const px = standeeCenter.x + side * 1.24
+      const pz = standeeCenter.z + 0.14
+      archBatch.addCylinder(0.095, 0.11, 0.04, seg, palette.gold, px, 0.02, pz, false)
+      archBatch.addCylinder(0.024, 0.028, 0.68, 7, palette.gold, px, 0.36, pz, true)
+      archBatch.addSphere(0.044, 7, 6, palette.gold, px, 0.72, pz, false)
+    }
+    shadows.add(standeeCenter.x, standeeCenter.z, 2.3, 0.82, boxShadowTex, 0.6)
+
+    const easelWPt = this.toWorldCenter(
+      OFFICE_AWARDS_PROPS.easelWest.x,
+      OFFICE_AWARDS_PROPS.easelWest.y,
+      OFFICE_AWARDS_PROPS.easelWest.w,
+      OFFICE_AWARDS_PROPS.easelWest.h
+    )
+    addCertificateEasel(
+      archBatch,
+      palette,
+      this.archGroup,
+      easelWPt.x,
+      easelWPt.z,
+      "CHỨNG NHẬN",
+      "NHÓM XUẤT SẮC QUÝ",
+      0.32,
+      this.lite
     )
 
-    yield 0.889
+    const easelEPt = this.toWorldCenter(
+      OFFICE_AWARDS_PROPS.easelEast.x,
+      OFFICE_AWARDS_PROPS.easelEast.y,
+      OFFICE_AWARDS_PROPS.easelEast.w,
+      OFFICE_AWARDS_PROPS.easelEast.h
+    )
+    addCertificateEasel(
+      archBatch,
+      palette,
+      this.archGroup,
+      easelEPt.x,
+      easelEPt.z,
+      "VINH DANH KPI",
+      "SACO TIÊU BIỂU",
+      -0.32,
+      this.lite
+    )
 
-    // ----- FRAMED OFFICE WALL ART ON WEST & EAST STAFF WALLS -----
-    for (const art of getOfficeWallArt(worldH)) {
-      const isWest = art.wall === "west"
-      const dir = isWest ? 1 : -1
-      const pt = logicalToWorld(
-        isWest ? OFFICE_WALL_THICK + 2 : OFFICE_BASE_W - OFFICE_WALL_THICK - 2,
-        art.pos,
-        this.world
-      )
-      archBatch.addBox(0.04, art.heightU + 0.08, art.widthU + 0.08, goldMat, pt.x + dir * 0.02, art.centerY, pt.z, false)
-      archBatch.add(
-        new THREE.PlaneGeometry(art.widthU, art.heightU),
-        getArtMaterial(art.variant),
-        [pt.x + dir * 0.046, art.centerY, pt.z],
-        [0, isWest ? Math.PI / 2 : -Math.PI / 2, 0],
-        undefined,
-        false
-      )
+    // South tidy supply & copier credenza
+    const printer = getPrinterStationRect(worldH)
+    const prPt = this.toWorldCenter(printer.x, printer.y, printer.w, printer.h)
+    addPrinterCredenzaToBatch(
+      archBatch,
+      palette,
+      prPt.x,
+      prPt.z,
+      printer.w * s,
+      printer.h * s,
+      this.lite
+    )
+    shadows.add(prPt.x, prPt.z, printer.w * s + 0.32, printer.h * s + 0.32, boxShadowTex, 0.54)
+
+    // Subtle warm accent lights (desktop only to keep mobile shader/fill light fast)
+    if (!this.lite) {
+      const teamGlow = new THREE.PointLight(0xffe6b3, 1.05, 11, 1.55)
+      teamGlow.position.set(teamX, 3.1, wallFaceZ + 2.2)
+      this.archGroup.add(teamGlow)
+
+      const loungeGlow = new THREE.PointLight(0xffdfb0, 0.85, 9.5, 1.6)
+      loungeGlow.position.set(loungeSofaPt.x + 0.5, 2.8, loungeSofaPt.z)
+      this.archGroup.add(loungeGlow)
     }
 
-    archBatch.flushInto(this.archGroup)
+    yield 0.86
 
-    yield 0.926
+    // Flush batched architecture & zone props into minimal merged draw calls, disposing unused palette mats
+    const usedMats = archBatch.flushInto(this.archGroup)
+    palette.disposeUnused(usedMats)
 
-    // Merge static non-instanced prop meshes (rugs, sofas, tables, pantry, shelf frames) per material
+    // Merge static furniture-builder props per material
     mergeStaticPropsInto(this.staticProps, this.archGroup)
 
-    yield 0.963
+    yield 0.94
 
-    // ----- INSTANCED POTTED PLANT CLUSTERS -----
-    const tallPlantTransforms: InstancedPropTransform[] = []
-    const smallPlantTransforms: InstancedPropTransform[] = []
-    for (const plantSpec of getOfficePlants(worldH)) {
-      const pt = logicalToWorld(plantSpec.x + 28, plantSpec.y + 52, this.world)
-      if (plantSpec.tall) {
-        tallPlantTransforms.push({ x: pt.x, z: pt.z })
-      } else {
-        smallPlantTransforms.push({ x: pt.x, z: pt.z })
-      }
+    // 9. Instanced Potted Plants & Corner Trees (3 distinct varieties: fiddle, monstera, snake!)
+    const plantTransforms: OfficePlantTransform[] = []
+    for (const p of getOfficePlants(worldH)) {
+      const pt = logicalToWorld(p.x, p.y, this.world)
+      plantTransforms.push({
+        x: pt.x,
+        z: pt.z,
+        kind: p.kind,
+        scale: p.scale,
+      })
+      const r = p.kind === "fiddle" ? 0.92 : p.kind === "monstera" ? 0.82 : 0.66
+      shadows.add(pt.x, pt.z, r, r, ovalShadowTex, 0.54)
     }
-    if (tallPlantTransforms.length > 0) {
-      this.mountStaticProp(
-        createInstancedPottedPlants("tall", tallPlantTransforms, {
-          lite: this.lite,
-        })
-      )
-    }
-    if (smallPlantTransforms.length > 0) {
-      this.mountStaticProp(
-        createInstancedPottedPlants("small", smallPlantTransforms, {
-          lite: this.lite,
-        })
-      )
-    }
+    mountInstancedOfficePlants(this.archGroup, plantTransforms, this.lite)
+
+    // Flush all contact shadows into 1–2 merged draw calls
+    shadows.flushInto(this.archGroup)
 
     freezeStaticSubtree(this.archGroup)
     this.hostBridge?.markShadowDirty()
@@ -2587,9 +1533,11 @@ export class OfficeWorld3D {
   }
 
   /**
-   * Builds all open-plan staff desk pods (`totalDesks >= 24`) via `InstancedMesh`
-   * (shared desk bodies, ergonomic swivel chairs, ON/OFF monitor screens, acoustic
-   * pod dividers, mugs, and neutral "Bàn trống" plates) plus unique member nameplates.
+   * Builds all open-plan staff desk pods (`totalDesks >= 24`) via `InstancedMesh`:
+   * - Shared beveled oak desks, ergonomic swivel chairs, candlestick chart monitors (ON/OFF),
+   *   low acoustic pod dividers, rich cable-free desk clutter (mugs, mini succulents, stacked
+   *   folders, pastel sticky notes, pen cups), "Bàn trống" plates, and ONE packed atlas for all
+   *   member nameplates!
    */
   private *buildInstancedStaffPodsSteps(
     slots: readonly OfficeDeskSlot[],
@@ -2620,7 +1568,7 @@ export class OfficeWorld3D {
       retainTeam
     )
 
-    // 1. Instanced Desk Bodies (all occupied + empty slots in ~7 draw calls total)
+    // 1. Instanced Desk Bodies
     const deskMeshes = deskSpecs.map((spec) => {
       const inst = new THREE.InstancedMesh(
         spec.geometry,
@@ -2633,9 +1581,9 @@ export class OfficeWorld3D {
       return inst
     })
 
-    yield 0.55
+    yield 0.54
 
-    // 2. Instanced Ergonomic Swivel Chairs (tucked-in on empty desks, slightly pulled out on occupied)
+    // 2. Instanced Ergonomic Swivel Chairs
     const chairMeshes = chairSpecs.map((spec) => {
       const inst = new THREE.InstancedMesh(
         spec.geometry,
@@ -2650,7 +1598,7 @@ export class OfficeWorld3D {
 
     const occupiedSlots: OfficeDeskSlot[] = []
     const emptySlots: OfficeDeskSlot[] = []
-    const mugSlots: OfficeDeskSlot[] = []
+    const clutterSlots: DeskClutterSlot[] = []
 
     for (let i = 0; i < slots.length; i += 1) {
       const slot = slots[i]!
@@ -2667,7 +1615,6 @@ export class OfficeWorld3D {
         inst.setMatrixAt(i, scratchMatrix)
       }
 
-      // Chair: tucked neatly under desk when empty, slightly pulled out with natural angle when occupied
       const chairOffset = deskD / 2 + (slot.occupied ? 0.2 : 0.05)
       const chairZ = isSouth ? pt.z + chairOffset : pt.z - chairOffset
       const jitter = slot.occupied ? (((i * 7) % 5) - 2) * 0.045 : 0
@@ -2680,9 +1627,20 @@ export class OfficeWorld3D {
         inst.setMatrixAt(i, scratchMatrix)
       }
 
+      clutterSlots.push({
+        wx: pt.x,
+        wz: pt.z,
+        deskW,
+        deskD,
+        topY: topSurfaceY,
+        facingSouth: isSouth,
+        index: slot.index,
+        occupied: slot.occupied,
+        hasMug: Boolean(slot.member?.hasMug),
+      })
+
       if (slot.occupied) {
         occupiedSlots.push(slot)
-        if (slot.member?.hasMug) mugSlots.push(slot)
       } else {
         emptySlots.push(slot)
       }
@@ -2696,9 +1654,9 @@ export class OfficeWorld3D {
 
     yield 0.62
 
-    // 3. Instanced Monitor Screens & Status LEDs: ON (glowing) vs OFF (powered-off dark matte)
+    // 3. Instanced Monitor Screens (Candlestick Charts ON vs dark standby OFF) + Status LEDs
     const screenGeo = new THREE.PlaneGeometry(0.51, 0.28)
-    const ledGeo = new THREE.SphereGeometry(0.0085, 6, 6)
+    const ledGeo = new THREE.SphereGeometry(0.0085, 6, 5)
     const screenLocalZ = -deskD * 0.24 + 0.019
     const screenLocalY = topSurfaceY + 0.258
     const ledLocalY = topSurfaceY + 0.105
@@ -2757,12 +1715,12 @@ export class OfficeWorld3D {
     }
 
     if (occupiedSlots.length > 0) {
-      const onTex = this.retainTeamTex(createMonitorScreenTexture("staff"))
+      const candleTex = createCandlestickMonitorTexture(this.lite)
       const monitorOnMat = new THREE.MeshStandardMaterial({
-        map: onTex,
+        map: candleTex,
         emissive: new THREE.Color("#ffffff"),
-        emissiveMap: onTex,
-        emissiveIntensity: 0.54,
+        emissiveMap: candleTex,
+        emissiveIntensity: 0.56,
         roughness: 0.22,
         metalness: 0.08,
       })
@@ -2783,51 +1741,8 @@ export class OfficeWorld3D {
 
     yield 0.7
 
-    // 4. Instanced Coffee Mugs (only on occupied desks with hasMug = true)
-    if (mugSlots.length > 0) {
-      const mugSeg = this.lite ? 8 : 12
-      const mugBodyGeo = new THREE.CylinderGeometry(0.044, 0.038, 0.086, mugSeg)
-      const mugBodyMat = createMatteMaterial("#faf8f5", {
-        roughness: 0.24,
-        metalness: 0.06,
-      })
-      const mugTopGeo = new THREE.CylinderGeometry(0.036, 0.036, 0.01, mugSeg)
-      const mugTopMat = createMatteMaterial("#3f1f0e", { roughness: 0.3 })
-
-      const mugInst = new THREE.InstancedMesh(
-        mugBodyGeo,
-        mugBodyMat,
-        mugSlots.length
-      )
-      const coffeeInst = new THREE.InstancedMesh(
-        mugTopGeo,
-        mugTopMat,
-        mugSlots.length
-      )
-      for (let i = 0; i < mugSlots.length; i += 1) {
-        const slot = mugSlots[i]!
-        const pt = this.toWorldCenter(slot.x, slot.y, slot.w, slot.h)
-        const dir = slot.facing === "south" ? 1 : -1
-        scratchPos.set(
-          pt.x + dir * (deskW * 0.34),
-          topSurfaceY + 0.043,
-          pt.z + dir * (deskD * 0.14)
-        )
-        scratchQuat.identity()
-        scratchScale.set(1, 1, 1)
-        scratchMatrix.compose(scratchPos, scratchQuat, scratchScale)
-        mugInst.setMatrixAt(i, scratchMatrix)
-
-        scratchPos.y = topSurfaceY + 0.084
-        scratchMatrix.compose(scratchPos, scratchQuat, scratchScale)
-        coffeeInst.setMatrixAt(i, scratchMatrix)
-      }
-      mugInst.instanceMatrix.needsUpdate = true
-      mugInst.computeBoundingSphere()
-      coffeeInst.instanceMatrix.needsUpdate = true
-      coffeeInst.computeBoundingSphere()
-      this.teamPropsGroup.add(mugInst, coffeeInst)
-    }
+    // 4. Instanced Cable-Free Chibi Desk Clutter (mugs, mini succulents, folders, sticky notes, pen cups)
+    mountInstancedDeskClutter(this.teamPropsGroup, clutterSlots, this.lite)
 
     yield 0.76
 
@@ -2860,7 +1775,7 @@ export class OfficeWorld3D {
 
     yield 0.82
 
-    // 6. Instanced Neutral "Bàn trống" Nameplates on all empty desks (2 draw calls total!)
+    // 6. Instanced Neutral "Bàn trống" Nameplates on all empty desks
     const plateW = 0.96
     const plateH = 0.2
 
@@ -2870,16 +1785,20 @@ export class OfficeWorld3D {
         roughness: 0.34,
         metalness: 0.22,
       })
-      const holderBatch = new MeshBatcher()
-      holderBatch.add(
-        roundedBox(plateW + 0.04, 0.024, 0.088, 0.008, this.lite),
-        emptyBaseMat,
-        [0, 0.012, 0]
-      )
-      holderBatch.add(
-        roundedBox(plateW, plateH, 0.036, 0.012, this.lite),
+      const holderBatch = new OfficeDecorBatcher()
+      holderBatch.addBox(plateW + 0.04, 0.024, 0.088, emptyBaseMat, 0, 0.012, 0, false)
+      holderBatch.addBevelBox(
+        plateW,
+        plateH,
+        0.036,
+        0.01,
         emptyBezelMat,
-        [0, 0.1, 0],
+        0,
+        0.1,
+        0,
+        this.lite,
+        false,
+        true,
         [-0.24, 0, 0]
       )
       const holderSpecs = holderBatch.flushToSpecs()
@@ -2938,7 +1857,7 @@ export class OfficeWorld3D {
 
     yield 0.9
 
-    // 7. Member Desk Nameplates (packed into ONE atlas texture, 1-2 draw calls total!)
+    // 7. Member Desk Nameplates packed into ONE atlas texture (self + others share `.material`)
     if (occupiedSlots.length > 0) {
       const validSlots = occupiedSlots.filter((slot) => Boolean(slot.member))
       if (validSlots.length > 0) {
@@ -2976,7 +1895,7 @@ export class OfficeWorld3D {
           metalness: 0.16,
         })
 
-        const memberHolderBatch = new MeshBatcher()
+        const memberHolderBatch = new OfficeDecorBatcher()
         const otherPlateGeos: THREE.BufferGeometry[] = []
 
         for (let i = 0; i < validSlots.length; i += 1) {
@@ -2989,16 +1908,23 @@ export class OfficeWorld3D {
               ? pt.z + deskD * 0.4
               : pt.z - deskD * 0.38
 
-          memberHolderBatch.add(
-            roundedBox(plateW + 0.05, 0.026, 0.092, 0.008, this.lite),
+          memberHolderBatch.addBox(
+            plateW + 0.05,
+            0.026,
+            0.092,
             (isSelf ? plateGoldBaseMat : plateBaseMat)!,
-            [pt.x, topSurfaceY + 0.013, plateZ]
+            pt.x,
+            topSurfaceY + 0.013,
+            plateZ,
+            false
           )
           memberHolderBatch.add(
-            roundedBox(plateW + 0.02, plateH + 0.01, 0.04, 0.012, this.lite),
+            chibiBevelBox(plateW + 0.02, plateH + 0.01, 0.04, 0.01, this.lite),
             (isSelf ? plateGoldBaseMat : plateBezelMat)!,
             [pt.x, topSurfaceY + 0.105, plateZ],
-            [-0.24, 0, 0]
+            [-0.24, 0, 0],
+            undefined,
+            false
           )
 
           const faceGeo = new THREE.PlaneGeometry(plateW - 0.04, plateH - 0.025)
@@ -3043,8 +1969,8 @@ export class OfficeWorld3D {
   }
 
   /**
-   * Rebuilds Boss Desk, Big Team Banner Rug ("IQX · NHÓM {TÊN SẾP}"), and ALL
-   * furnished open-plan staff desk pods (expanding architecture if `worldH` grew).
+   * Rebuilds Boss Desk, Team Banner Rug ("IQX · NHÓM {TÊN SẾP}"), and ALL furnished
+   * open-plan staff desk pods (expanding architecture if `worldH` grew).
    */
   rebuildTeamProps(
     bossName: string,
@@ -3054,7 +1980,13 @@ export class OfficeWorld3D {
     totalDesks?: number
   ): void {
     runBuildSync(
-      this.rebuildTeamPropsSteps(bossName, desks, selfUserId, worldH, totalDesks)
+      this.rebuildTeamPropsSteps(
+        bossName,
+        desks,
+        selfUserId,
+        worldH,
+        totalDesks
+      )
     )
   }
 
@@ -3071,32 +2003,21 @@ export class OfficeWorld3D {
     if (worldH !== this.currentWorldH) {
       this.currentWorldH = worldH
       this.world.logicalH = worldH
-      const meetScreenPt = logicalToWorld(1160, 26, this.world)
-      this.meetingBoard.group.position.set(
-        meetScreenPt.x,
-        1.58,
-        meetScreenPt.z
-      )
-      this.meetingBoard.group.updateMatrix()
-      this.meetingBoard.group.updateMatrixWorld(true)
-      const standeePt = logicalToWorld(2195, 1066, this.world)
-      this.standeeBoard.group.position.set(standeePt.x, 0, standeePt.z)
-      this.standeeBoard.group.updateMatrix()
-      this.standeeBoard.group.updateMatrixWorld(true)
+      this.positionLiveBoards()
       yield* this.buildArchitectureSteps(worldH)
     }
 
     this.clearTeamProps()
     yield 0.1
 
-    // 1. Boss Desk with dual monitors, coffee mug, swivel chair & walnut nameplate
+    // 1. Boss Executive Desk with dual monitors, mug, swivel chair & walnut nameplate
     const bossLabel = bossName.trim()
       ? `Bàn sếp · ${bossName.trim()}`
       : "Bàn sếp"
     const bossDesk = createOfficeDesk({
       variant: "boss",
-      width: 2.8,
-      depth: 1.0,
+      width: OFFICE_NORTH_PROPS.bossDesk.w * OFFICE_WORLD_SCALE,
+      depth: OFFICE_NORTH_PROPS.bossDesk.h * OFFICE_WORLD_SCALE,
       dualMonitor: true,
       hasMug: true,
       withChair: true,
@@ -3104,13 +2025,18 @@ export class OfficeWorld3D {
       highlightGold: false,
       lite: this.lite,
     })
-    const bossPt = this.toWorldCenter(300, 180, 280, 100)
+    const bossPt = this.toWorldCenter(
+      OFFICE_NORTH_PROPS.bossDesk.x,
+      OFFICE_NORTH_PROPS.bossDesk.y,
+      OFFICE_NORTH_PROPS.bossDesk.w,
+      OFFICE_NORTH_PROPS.bossDesk.h
+    )
     bossDesk.group.position.set(bossPt.x, 0, bossPt.z)
     this.teamPropsGroup.add(bossDesk.group)
     this.teamProps.push(bossDesk)
-    yield 0.3
+    yield 0.28
 
-    // 2. Big Walkable Team Banner Rug ("IQX · NHÓM {TÊN SẾP}") centered on the Staff Promenade
+    // 2. Walkable Team Banner Rug ("IQX · NHÓM {TÊN SẾP}") centered on the Staff Promenade
     const s = OFFICE_WORLD_SCALE
     const bannerRect = getTeamBannerRugRect()
     const bannerPt = this.toWorldCenter(
@@ -3125,31 +2051,13 @@ export class OfficeWorld3D {
       roughness: 0.78,
       metalness: 0.08,
     })
-    const bannerBaseMat = createMatteMaterial("#e9b949", {
-      roughness: 0.42,
-      metalness: 0.35,
-    })
-    const bannerPlinth = new THREE.Mesh(
-      roundedBox(
-        bannerRect.w * s + 0.08,
-        0.018,
-        bannerRect.h * s + 0.08,
-        0.008,
-        this.lite
-      ),
-      bannerBaseMat
-    )
-    bannerPlinth.position.set(bannerPt.x, 0.009, bannerPt.z)
-    bannerPlinth.receiveShadow = true
-    this.teamPropsGroup.add(bannerPlinth)
-
     const bannerFace = new THREE.Mesh(
       new THREE.PlaneGeometry(bannerRect.w * s, bannerRect.h * s),
       bannerMat
     )
     bannerFace.name = "office-team-banner-rug"
     bannerFace.rotation.x = -Math.PI / 2
-    bannerFace.position.set(bannerPt.x, 0.02, bannerPt.z)
+    bannerFace.position.set(bannerPt.x, 0.018, bannerPt.z)
     bannerFace.receiveShadow = true
     this.teamPropsGroup.add(bannerFace)
 
@@ -3158,7 +2066,7 @@ export class OfficeWorld3D {
     const resolvedTotal = totalDesks ?? dims.totalDesks
     const podBands = Math.max(dims.podBands, Math.ceil(resolvedTotal / 12))
     const allSlots = buildAllDeskSlots(desks, resolvedTotal)
-    yield 0.45
+    yield 0.44
     yield* this.buildInstancedStaffPodsSteps(allSlots, podBands, selfUserId)
 
     freezeStaticSubtree(this.teamPropsGroup)
@@ -3169,6 +2077,7 @@ export class OfficeWorld3D {
   /** Re-flags dynamic canvas textures after a WebGL context restore. */
   refreshDynamicTextures(): void {
     if (this.disposed) return
+    this.teamBoard.update()
     this.meetingBoard.update()
     this.standeeBoard.update()
     this.hostBridge?.requestFrame()
@@ -3193,7 +2102,10 @@ export class OfficeWorld3D {
     this.hostBridge?.requestFrame()
   }
 
-  /** Repaints the live Freestanding Achievement Standee canvas texture only on content change. */
+  /**
+   * Repaints both the live Freestanding Achievement Standee AND the Grand North-Wall Team LED Board
+   * ("IQX · {Tên nhóm}" + monthly Top 3 / KPI strip) only on content change.
+   */
   updateStandee(
     leaderboard: OfficeLeaderboard | null,
     fallbackTeamName: string,
@@ -3205,6 +2117,15 @@ export class OfficeWorld3D {
         ? `IQX · ${fallbackTeamName.toUpperCase()}`
         : "IQX · VĂN PHÒNG"
       const sig = `empty|${teamTitle}`
+      if (sig !== this.lastTeamBoardSig) {
+        this.lastTeamBoardSig = sig
+        drawTeamLedBoard(this.teamBoardCanvas, {
+          teamTitle,
+          monthLabel: "Mục tiêu tháng",
+          top3: [],
+        })
+        this.teamBoard.update()
+      }
       if (sig === this.lastStandeeSig) return
       this.lastStandeeSig = sig
       drawOfficeStandee(this.standeeCanvas, {
@@ -3240,9 +2161,22 @@ export class OfficeWorld3D {
 
     const teamTitle = `IQX · ${(leaderboard.teamName || fallbackTeamName).toUpperCase()}`
     const monthLabel = `Thành tích tháng ${leaderboard.monthNumber}`
-    const sig = `${teamTitle}|${monthLabel}|${top3.map((e) => `${e.rank}:${e.name}:${e.points}`).join(",")}|${personalRank ? `${personalRank.rank}:${personalRank.points}` : ""}`
-    if (sig === this.lastStandeeSig) return
-    this.lastStandeeSig = sig
+    const boardSig = `${teamTitle}|${monthLabel}|${top3.map((e) => `${e.rank}:${e.name}:${e.points}`).join(",")}`
+    const standeeSig = `${boardSig}|${personalRank ? `${personalRank.rank}:${personalRank.points}` : ""}`
+
+    if (boardSig !== this.lastTeamBoardSig) {
+      this.lastTeamBoardSig = boardSig
+      drawTeamLedBoard(this.teamBoardCanvas, {
+        teamTitle,
+        monthLabel: `Tháng ${leaderboard.monthNumber}`,
+        top3,
+        totalRanked: leaderboard.totalRanked,
+      })
+      this.teamBoard.update()
+    }
+
+    if (standeeSig === this.lastStandeeSig) return
+    this.lastStandeeSig = standeeSig
 
     drawOfficeStandee(this.standeeCanvas, {
       teamTitle,
@@ -3299,13 +2233,13 @@ export class OfficeWorld3D {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
-    // A build abandoned mid-way (room left while loading) stops here; clear only what exists.
     if (this.buildSteps) {
       this.buildSteps.return()
       this.buildSteps = null
     }
     this.clearStaticProps()
     this.clearTeamProps()
+    this.teamBoard.dispose()
     this.meetingBoard.dispose()
     this.standeeBoard.dispose()
     disposeObject3D(this.group)

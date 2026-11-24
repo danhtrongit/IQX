@@ -1,0 +1,47 @@
+export {
+  OFFICE_DECOR_FONT_STACK,
+  OfficeDecorBatcher,
+  chibiBevelBox,
+  createDecorCanvasTexture,
+  createOfficeDecorPalette,
+  type MergedSpec,
+  type OfficeDecorPalette,
+} from "./palette.ts"
+export {
+  addHangingPendantsToBatch,
+  addSkylineWindowToBatch,
+  addWorldClocks,
+  createCitySkylineTexture,
+  createOfficeStockTickerTexture,
+  createWallArtPrintTexture,
+  createWallClockFaceTexture,
+  drawTeamLedBoard,
+  type TeamBoardDrawPayload,
+} from "./back-wall-props.ts"
+export {
+  addCertificateEasel,
+  addFoosballTableToBatch,
+  addLowPlanterToBatch,
+  addMiniArcadeCabinet,
+  addPrinterCredenzaToBatch,
+  addSnackShelfToBatch,
+  addStandingLampToBatch,
+  addTrophyPedestalsToBatch,
+  addWaterCoolerToBatch,
+  addWhiteboardEasel,
+  createArcadeScreenTexture,
+  createCertificateTexture,
+  createMeetingWhiteboardTexture,
+  mountBorderedZoneRug,
+} from "./zone-props.ts"
+export {
+  ContactShadowBatcher,
+  createCandlestickMonitorTexture,
+  createOfficeContactShadowTexture,
+  createOfficeGlowPoolTexture,
+  mountInstancedDeskClutter,
+  mountInstancedOfficePlants,
+  type DeskClutterSlot,
+  type OfficePlantKind,
+  type OfficePlantTransform,
+} from "./instanced-decor.ts"

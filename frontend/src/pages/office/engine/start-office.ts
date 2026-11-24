@@ -1,17 +1,12 @@
 /**
- * Boots the Procedural Chibi Three.js 3D Engine for Khu Văn phòng inside `container`.
+ * Boots the Procedural Chibi Three.js 3D Engine for Open-Floor Khu Văn phòng inside `container`.
  *
- * - Waits briefly for "Be Vietnam Pro" so procedural canvas textures (Wall Screen, Standee,
- *   Desk Nameplates, Team Banner Rug, Zone Decals) render with sharp Vietnamese glyphs.
- * - Buffers `updateTeam`, `updateOnlinePeers`, `updateAttendance`, `updateMeeting`,
- *   `updateStandee`, and `setModalOpen` calls made before async boot completes.
- * - Configures HUD-aware camera framing across desktop (`>= 1101px`), tablet (`721–1100px`),
- *   and phones (`<= 720px`) with zoom range strictly `0.55×–1.5×` (Spec §3.3).
+ * - Waits briefly for "Be Vietnam Pro" so procedural canvas textures (Team LED Board, Ticker,
+ *   Meeting Screen, Standee, Desk Nameplates, Team Banner Rug, Floor Decals) render sharply.
+ * - Configures KGD-style open-floor camera framing: default zoom = cover (fills canvas, zero
+ *   empty margins), wheel/pinch zoom `0.72×–2.3×`, HUD-aware clamping across desktop/tablet/phone.
+ * - Chunked ~10 ms build + parallel shader warm-up & texture upload via `host.prepare()`.
  * - Releases the WebGL context cleanly on dispose (`renderer.forceContextLoss()`).
- * - Survives React StrictMode double-mount & reports WebGL unavailability cleanly via `onError`.
- * - Boots behind the loading screen without long stalls: architecture and desk pods are built in
- *   ~10 ms slices, shaders compile in parallel and textures upload before the visible loop starts
- *   (`host.prepare()`); `onReady` fires after the first real frame, `onProgress` reports 0..1 + stage.
  */
 import * as THREE from "three"
 
@@ -38,11 +33,14 @@ import type {
 import {
   OFFICE_CAMERA_BASE_DISTANCE,
   OFFICE_CAMERA_FOV,
+  OFFICE_CAMERA_NORTH_MARGIN,
   OFFICE_CAMERA_PITCH_DEG,
-  OFFICE_DEFAULT_DESKTOP_ZOOM,
-  OFFICE_DEFAULT_MOBILE_ZOOM,
-  OFFICE_MOBILE_BREAKPOINT_PX,
+  OFFICE_CAMERA_SOUTH_MARGIN,
+  OFFICE_MAX_ZOOM,
+  OFFICE_MIN_ZOOM,
   OfficeController,
+  computeOfficeCoverMinZoom,
+  computeOfficeResponsiveZoom,
   type OfficeControllerCallbacks,
 } from "./office-controller.ts"
 import {
@@ -111,16 +109,14 @@ export function startOffice(
 ): OfficeEngineHandle {
   let disposed = false
   let host: ChibiSceneHost | null = null
-  // Owned for disposal as soon as it exists; handle calls reach it only once `live` (boot finished
-  // building), so a React push can never start a synchronous rebuild in the middle of the sliced one.
   let controller: OfficeController | null = null
   let live = false
   let pendingWorld: OfficeWorld3D | null = null
   const progress = createBootReporter(callbacks.onProgress)
   const isDisposed = (): boolean => disposed
-  const liveController = (): OfficeController | null => (live ? controller : null)
+  const liveController = (): OfficeController | null =>
+    live ? controller : null
 
-  // Buffer pre-ready snapshots so React effects can push state immediately on mount
   const buffered: {
     team: OfficeMe | null
     peers: readonly OfficeOnlinePeer[] | null
@@ -151,11 +147,22 @@ export function startOffice(
     const dims = computeOfficeDimensions(staffCount)
     const initialW =
       container.clientWidth ||
-      (typeof window !== "undefined" ? window.innerWidth : 1280)
-    const initialZoom =
-      initialW <= OFFICE_MOBILE_BREAKPOINT_PX
-        ? OFFICE_DEFAULT_MOBILE_ZOOM
-        : OFFICE_DEFAULT_DESKTOP_ZOOM
+      (typeof window !== "undefined" ? window.innerWidth : 1440)
+    const initialH =
+      container.clientHeight ||
+      (typeof window !== "undefined" ? window.innerHeight : 900)
+    const coverMinZoom = computeOfficeCoverMinZoom(
+      initialW,
+      initialH,
+      dims.width,
+      dims.height
+    )
+    const initialZoom = computeOfficeResponsiveZoom(
+      1.0,
+      initialW,
+      initialH,
+      coverMinZoom
+    )
 
     host = createChibiSceneHost({
       container,
@@ -164,18 +171,20 @@ export function startOffice(
         logicalH: dims.height,
         scale: OFFICE_WORLD_SCALE,
       },
-      backgroundHex: 0x141d32,
+      backgroundHex: 0x0c111b,
       fov: OFFICE_CAMERA_FOV,
       pitchDeg: OFFICE_CAMERA_PITCH_DEG,
       baseDistance: OFFICE_CAMERA_BASE_DISTANCE,
-      minZoom: 0.55,
-      maxZoom: 1.5,
+      minZoom: OFFICE_MIN_ZOOM,
+      maxZoom: OFFICE_MAX_ZOOM,
       initialZoom,
-      cameraLerp: 0.18,
-      boundsMargin: 0.5,
+      cameraLerp: 0.14,
+      boundsMargin: 0.6,
+      northMargin: OFFICE_CAMERA_NORTH_MARGIN,
+      southMargin: OFFICE_CAMERA_SOUTH_MARGIN,
       holdUntilPrepared: true,
-      onResize: (width) => {
-        controller?.handleViewportResize(width)
+      onResize: () => {
+        controller?.handleViewportResize()
       },
       onContextRestored: () => {
         if (!disposed) controller?.handleContextRestored()
@@ -188,21 +197,24 @@ export function startOffice(
       return
     }
 
-    // Tone mapping & warm studio lighting consistent with Khu giao dịch
+    // Bright, crisp warm studio lighting consistent with Khu giao dịch
     host.renderer.toneMapping = THREE.ACESFilmicToneMapping
     host.renderer.toneMappingExposure = 1.08
-    host.lights.hemi.intensity = 1.22
-    host.lights.sun.intensity = 1.65
-    host.lights.rim.intensity = 0.72
+    host.lights.hemi.intensity = 1.18
+    host.lights.sun.intensity = 1.74
+    host.lights.rim.intensity = 0.68
 
-    // Time-sliced architecture build (walls, rooms, decor) behind the loading screen.
+    // Time-sliced architecture & open-floor decor build behind the loading screen
     progress.report(BOOT_RANGES.build[0], BOOT_STAGES.officeBuild)
     pendingWorld = new OfficeWorld3D(host.scene, host.world, host.lite, {
       deferBuild: true,
     })
     const built = await pendingWorld.buildAsync({
       onProgress: (f) =>
-        progress.report(phaseProgress(BOOT_RANGES.build, f), BOOT_STAGES.officeBuild),
+        progress.report(
+          phaseProgress(BOOT_RANGES.build, f),
+          BOOT_STAGES.officeBuild
+        ),
       isCancelled: isDisposed,
     })
     if (disposed || !built) return
@@ -214,7 +226,7 @@ export function startOffice(
     controller = new OfficeController(host, container, callbacks, pendingWorld)
     pendingWorld = null
     controller.setModalOpen(buffered.modalOpen)
-    // Desk pods + boss desk + team banner, time-sliced too.
+
     const bootTeam = buffered.team
     if (bootTeam) {
       const teamBuilt = await controller.updateTeamAsync(bootTeam, {
@@ -230,7 +242,6 @@ export function startOffice(
     live = true
     controller.setModalOpen(buffered.modalOpen)
     if (buffered.team) {
-      // Same snapshot as the sliced build is a no-op for the layout; a newer one applies normally.
       if (buffered.team !== bootTeam) controller.updateTeam(buffered.team)
       buffered.resendSelf = false
     } else if (buffered.resendSelf) {
@@ -252,7 +263,7 @@ export function startOffice(
       Object.assign(window, { __iqxOffice: { host, controller } })
     }
 
-    // Parallel shader compile + texture upload + hidden shadow frame, then the visible loop starts.
+    // Parallel shader compile + texture upload + hidden shadow frame, then visible loop starts
     progress.report(BOOT_RANGES.lights[0], BOOT_STAGES.lights)
     await host.prepare({
       onProgress: progress.reportPrepare,
