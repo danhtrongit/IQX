@@ -725,62 +725,62 @@ export function addHangingPendantsToBatch(
     batch.addCylinder(
       0.014,
       0.014,
-      1.15,
+      0.95,
       6,
       palette.obsidian,
       wx,
-      4.18,
+      4.34,
       zPos,
       false,
       false
     )
     // Brass collar
     batch.addCylinder(
-      0.06,
-      0.08,
-      0.08,
+      0.056,
+      0.074,
+      0.075,
       seg,
       palette.gold,
       wx,
-      3.58,
+      3.84,
       zPos,
       false,
       false
     )
     // Sleek navy conical bell dome
     batch.addCylinder(
-      0.09,
-      0.28,
-      0.22,
+      0.085,
+      0.26,
+      0.2,
       seg,
       palette.wallDadoNavy,
       wx,
-      3.44,
+      3.71,
       zPos,
       false,
       false
     )
     // Gold lower rim ring
     batch.addCylinder(
-      0.285,
-      0.29,
-      0.028,
+      0.265,
+      0.27,
+      0.026,
       seg,
       palette.gold,
       wx,
-      3.33,
+      3.61,
       zPos,
       false,
       false
     )
     // Warm glowing filament bulb peeking out below rim
     batch.addSphere(
-      0.09,
+      0.082,
       seg,
       Math.max(6, seg - 4),
       palette.warmGlow,
       wx,
-      3.29,
+      3.57,
       zPos,
       false,
       false

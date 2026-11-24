@@ -51,6 +51,9 @@ import {
   getOfficePlants,
   getOfficePodDividers,
   getOfficeZones,
+  getPrinterStationRect,
+  getSouthLoungeRect,
+  getSouthWelcomeDeskRect,
   getTeamBannerRugRect,
   getZoneRugs,
   isOfficeBlocked,
@@ -240,11 +243,56 @@ describe("office-layout open-floor geometry, zones, collision & 24-desk pods", (
       ])
     )
 
-    expect(getZoneRugs().length).toBeGreaterThanOrEqual(7)
+    expect(getZoneRugs().length).toBeGreaterThanOrEqual(10)
     expect(getOfficeNorthWindows().length).toBeGreaterThanOrEqual(3)
 
     const plantKinds = new Set(getOfficePlants().map((p) => p.kind))
     expect(plantKinds).toEqual(new Set(["fiddle", "monstera", "snake"]))
+
+    // Floor labels must sit in clear open floor space (zero overlap with obstacles or each other)
+    const obs24 = buildOfficeObstacles(MAX_STAFF_DESKS)
+    const floorLabels = getOfficeFloorLabels()
+    for (let i = 0; i < floorLabels.length; i += 1) {
+      const lbl = floorLabels[i]!
+      const halfW = (lbl.widthU * 100) / 2
+      const halfH = (lbl.heightU * 100) / 2
+      const lx1 = lbl.x - halfW
+      const lx2 = lbl.x + halfW
+      const ly1 = lbl.y - halfH
+      const ly2 = lbl.y + halfH
+      for (const o of obs24) {
+        const overlaps =
+          lx1 < o.x + o.w && lx2 > o.x && ly1 < o.y + o.h && ly2 > o.y
+        expect(
+          overlaps,
+          `floor label "${lbl.text}" must not overlap obstacle "${o.label ?? "unnamed"}"`
+        ).toBe(false)
+      }
+      for (let j = i + 1; j < floorLabels.length; j += 1) {
+        const other = floorLabels[j]!
+        const ow = (other.widthU * 100) / 2
+        const oh = (other.heightU * 100) / 2
+        const labelOverlap =
+          lx1 < other.x + ow &&
+          lx2 > other.x - ow &&
+          ly1 < other.y + oh &&
+          ly2 > other.y - oh
+        expect(
+          labelOverlap,
+          `floor label "${lbl.text}" must not overlap "${other.text}"`
+        ).toBe(false)
+      }
+    }
+
+    // Deliberate south welcome & support strip sits cleanly south of Band 1 and scales with worldHeight
+    const welcome = getSouthWelcomeDeskRect(OFFICE_BASE_H)
+    const printer = getPrinterStationRect(OFFICE_BASE_H)
+    const southLounge = getSouthLoungeRect(OFFICE_BASE_H)
+    expect(welcome.x + welcome.w).toBeLessThan(printer.x - 100)
+    expect(printer.x + printer.w).toBeLessThan(southLounge.x - 100)
+    expect(
+      getSouthWelcomeDeskRect(OFFICE_BASE_H + OFFICE_EXTRA_BAND_STEP).y
+    ).toBe(welcome.y + OFFICE_EXTRA_BAND_STEP)
   })
 
   it("slides smoothly along X and Y axes when pushing diagonally into the north wall or furniture", () => {

@@ -273,18 +273,18 @@ export function getOfficeZones(
 /** Painted floor zone decals (same KGD bronze typography as "PHÒNG CHỜ" / "VINH DANH TOP DỰ ĐOÁN"). */
 export function getOfficeFloorLabels(): readonly OfficeFloorLabelSpec[] {
   return [
-    { id: "boss", text: "BÀN SẾP", x: 440, y: 474, widthU: 3.1, heightU: 0.72 },
-    { id: "meet", text: "PHÒNG HỌP", x: 1210, y: 498, widthU: 3.4, heightU: 0.74 },
-    { id: "docs", text: "TÀI LIỆU", x: 1890, y: 426, widthU: 2.9, heightU: 0.68 },
-    { id: "work", text: "KHU LÀM VIỆC", x: 930, y: 590, widthU: 4.1, heightU: 0.8 },
-    { id: "lounge", text: "GÓC NGHỈ", x: 2070, y: 536, widthU: 3.2, heightU: 0.72 },
+    { id: "boss", text: "BÀN SẾP", x: 440, y: 476, widthU: 3.0, heightU: 0.66 },
+    { id: "meet", text: "PHÒNG HỌP", x: 1210, y: 486, widthU: 3.1, heightU: 0.64 },
+    { id: "docs", text: "TÀI LIỆU", x: 1890, y: 428, widthU: 2.8, heightU: 0.64 },
+    { id: "work", text: "KHU LÀM VIỆC", x: 929, y: 554, widthU: 3.7, heightU: 0.62 },
+    { id: "lounge", text: "GÓC NGHỈ", x: 1955, y: 1018, widthU: 2.9, heightU: 0.62 },
     {
       id: "awards",
       text: "GÓC THÀNH TÍCH",
-      x: 2072,
-      y: 1054,
-      widthU: 4.3,
-      heightU: 0.78,
+      x: 1995,
+      y: 1426,
+      widthU: 3.8,
+      heightU: 0.64,
     },
   ]
 }
@@ -444,8 +444,8 @@ export function getMeetingPlanters(): readonly OfficeRect[] {
   return [
     { x: 860, y: 205, w: 44, h: 195, label: "meeting-planter-w" },
     { x: 1516, y: 205, w: 44, h: 195, label: "meeting-planter-e" },
-    { x: 924, y: 440, w: 112, h: 36, label: "meeting-planter-sw" },
-    { x: 1384, y: 440, w: 112, h: 36, label: "meeting-planter-se" },
+    { x: 924, y: 426, w: 112, h: 34, label: "meeting-planter-sw" },
+    { x: 1384, y: 426, w: 112, h: 34, label: "meeting-planter-se" },
   ]
 }
 
@@ -466,38 +466,63 @@ export function getOfficePlants(
     // Corner trees (fiddle-leaf fig)
     { x: 56, y: 152, kind: "fiddle", scale: 1.08 },
     { x: 2346, y: 156, kind: "fiddle", scale: 1.05 },
-    { x: 72, y: worldHeight - 116, kind: "fiddle", scale: 1.1 },
-    { x: 2334, y: worldHeight - 98, kind: "fiddle", scale: 1.08 },
+    { x: 112, y: worldHeight - 110, kind: "fiddle", scale: 1.08 },
+    { x: 2334, y: worldHeight - 102, kind: "fiddle", scale: 1.08 },
     // Flanking north open-zone transitions
     { x: 772, y: 128, kind: "fiddle", scale: 0.96 },
     { x: 1646, y: 128, kind: "fiddle", scale: 0.96 },
-    // Tropical Monstera clusters along open promenades
+    // Tropical Monstera clusters along open promenades & south welcome strip
     { x: 76, y: 540, kind: "monstera", scale: 1.02 },
     { x: 76, y: 976, kind: "monstera", scale: 1.0 },
-    { x: 2328, y: 622, kind: "monstera", scale: 0.98 },
+    { x: 2328, y: 636, kind: "monstera", scale: 0.98 },
     { x: 2328, y: 1016, kind: "monstera", scale: 0.98 },
-    { x: 460, y: worldHeight - 102, kind: "monstera", scale: 0.96 },
-    { x: 1410, y: worldHeight - 102, kind: "monstera", scale: 0.96 },
+    { x: 688, y: worldHeight - 114, kind: "monstera", scale: 0.96 },
+    { x: 1648, y: worldHeight - 114, kind: "monstera", scale: 0.96 },
     // Architectural Snake Plants accenting zones
     { x: 238, y: 378, kind: "snake", scale: 1.0 },
     { x: 2120, y: 132, kind: "snake", scale: 0.96 },
-    { x: 1790, y: 622, kind: "snake", scale: 0.95 },
+    { x: 1790, y: 636, kind: "snake", scale: 0.95 },
     { x: 1782, y: 1170, kind: "snake", scale: 0.98 },
-    { x: 730, y: worldHeight - 102, kind: "snake", scale: 0.95 },
-    { x: 1156, y: worldHeight - 102, kind: "snake", scale: 0.95 },
+    { x: 1188, y: worldHeight - 114, kind: "snake", scale: 0.95 },
   ]
 }
 
-/** Low supply & copier credenza along the south open strip (moves with expanded map height). */
+/** Welcome / check-in reception desk on the south-west welcome rug (moves with expanded map height). */
+export function getSouthWelcomeDeskRect(
+  worldHeight = OFFICE_BASE_H
+): OfficeRect {
+  return {
+    x: 350,
+    y: worldHeight - 134,
+    w: 230,
+    h: 58,
+    label: "welcome-desk",
+  }
+}
+
+/** Low supply & copier credenza along the south-center support rug (moves with expanded map height). */
 export function getPrinterStationRect(
   worldHeight = OFFICE_BASE_H
 ): OfficeRect {
   return {
-    x: 800,
-    y: worldHeight - 118,
-    w: 290,
+    x: 795,
+    y: worldHeight - 134,
+    w: 285,
     h: 58,
     label: "printer-station",
+  }
+}
+
+/** Cozy waiting bench & bistro side table on the south-east guest rug (moves with expanded map height). */
+export function getSouthLoungeRect(
+  worldHeight = OFFICE_BASE_H
+): OfficeRect {
+  return {
+    x: 1295,
+    y: worldHeight - 134,
+    w: 240,
+    h: 58,
+    label: "south-lounge",
   }
 }
 
@@ -514,21 +539,21 @@ export function getTeamBannerRugRect(): OfficeRect {
 
 /** Góc nghỉ (Break Zone) furniture coordinates: sofa, coffee table, espresso bar, water cooler, snack shelf, foosball & mini arcade. */
 export const OFFICE_LOUNGE_PROPS = {
-  coffeeBar: { x: 1845, y: 594, w: 166, h: 58, label: "coffee-bar" } as OfficeRect,
-  waterCooler: { x: 2032, y: 598, w: 50, h: 50, label: "water-cooler" } as OfficeRect,
-  snackShelf: { x: 2106, y: 592, w: 168, h: 54, label: "snack-shelf" } as OfficeRect,
-  sofa: { x: 1845, y: 742, w: 186, h: 64, label: "lounge-sofa" } as OfficeRect,
-  coffeeTable: { x: 1882, y: 834, w: 112, h: 46, label: "lounge-table" } as OfficeRect,
-  foosball: { x: 2116, y: 736, w: 146, h: 86, label: "foosball-table" } as OfficeRect,
-  arcade: { x: 2258, y: 862, w: 56, h: 56, label: "arcade-cabinet" } as OfficeRect,
+  coffeeBar: { x: 1845, y: 606, w: 166, h: 58, label: "coffee-bar" } as OfficeRect,
+  waterCooler: { x: 2032, y: 610, w: 50, h: 50, label: "water-cooler" } as OfficeRect,
+  snackShelf: { x: 2106, y: 604, w: 168, h: 54, label: "snack-shelf" } as OfficeRect,
+  sofa: { x: 1845, y: 748, w: 186, h: 64, label: "lounge-sofa" } as OfficeRect,
+  coffeeTable: { x: 1882, y: 838, w: 112, h: 46, label: "lounge-table" } as OfficeRect,
+  foosball: { x: 2102, y: 742, w: 146, h: 86, label: "foosball-table" } as OfficeRect,
+  arcade: { x: 2236, y: 864, w: 56, h: 56, label: "arcade-cabinet" } as OfficeRect,
 } as const
 
 /** Góc thành tích (Achievement Zone) furniture coordinates: 3 trophy pedestals, standee, 2 certificate easels. */
 export const OFFICE_AWARDS_PROPS = {
-  pedestals: { x: 1848, y: 1132, w: 208, h: 60, label: "trophy-pedestals" } as OfficeRect,
-  standee: { x: 2104, y: 1128, w: 204, h: 44, label: "standee-base" } as OfficeRect,
-  easelWest: { x: 1848, y: 1326, w: 56, h: 44, label: "certificate-easel-1" } as OfficeRect,
-  easelEast: { x: 2248, y: 1326, w: 56, h: 44, label: "certificate-easel-2" } as OfficeRect,
+  pedestals: { x: 1836, y: 1152, w: 200, h: 60, label: "trophy-pedestals" } as OfficeRect,
+  standee: { x: 2076, y: 1146, w: 192, h: 42, label: "standee-base" } as OfficeRect,
+  easelWest: { x: 1844, y: 1296, w: 56, h: 44, label: "certificate-easel-1" } as OfficeRect,
+  easelEast: { x: 2210, y: 1296, w: 56, h: 44, label: "certificate-easel-2" } as OfficeRect,
 } as const
 
 /** North-wall & North-zone static furniture coordinates. */
@@ -579,9 +604,9 @@ export function getZoneRugs(
     {
       id: "meet-rug",
       x: 922,
-      y: 162,
+      y: 160,
       w: 576,
-      h: 294,
+      h: 286,
       shape: "rounded",
       colorHex: "#364a6d",
       borderHex: "#c9a24b",
@@ -603,9 +628,9 @@ export function getZoneRugs(
     {
       id: "lounge-rug",
       x: 1806,
-      y: 564,
+      y: 578,
       w: 524,
-      h: 416,
+      h: 402,
       shape: "rounded",
       colorHex: "#efe2cc",
       borderHex: "#243760",
@@ -614,14 +639,48 @@ export function getZoneRugs(
     // GÓC THÀNH TÍCH: VIP crimson/gold-trimmed showcase rug (echoing KGD Hall of Fame!)
     {
       id: "awards-rug",
-      x: 1814,
-      y: 1086,
-      w: 516,
-      h: 350,
+      x: 1806,
+      y: 1096,
+      w: 500,
+      h: 294,
       shape: "rounded",
       colorHex: "#f2e5ce",
       borderHex: "#9b1c26",
       innerBorderHex: "#e9b949",
+    },
+    // South Welcome & Support Strip rugs (deliberate reception / printer / guest islands)
+    {
+      id: "south-welcome-rug",
+      x: 245,
+      y: worldHeight - 176,
+      w: 400,
+      h: 122,
+      shape: "rounded",
+      colorHex: "#203457",
+      borderHex: "#d9a03a",
+      innerBorderHex: "rgba(246, 210, 122, 0.42)",
+    },
+    {
+      id: "south-printer-rug",
+      x: 736,
+      y: worldHeight - 176,
+      w: 402,
+      h: 122,
+      shape: "rounded",
+      colorHex: "#ede0ca",
+      borderHex: "#8c653c",
+      innerBorderHex: "rgba(140, 101, 60, 0.35)",
+    },
+    {
+      id: "south-lounge-rug",
+      x: 1228,
+      y: worldHeight - 176,
+      w: 382,
+      h: 122,
+      shape: "oval",
+      colorHex: "#efe2cc",
+      borderHex: "#243760",
+      innerBorderHex: "rgba(36, 55, 96, 0.28)",
     },
   ]
 
@@ -661,11 +720,11 @@ export interface OfficeNorthWindowSpec {
 export function getOfficeNorthWindows(): readonly OfficeNorthWindowSpec[] {
   return [
     // Bay 1 (behind Bàn sếp): panoramic city skyline window
-    { x: 475, span: 365, centerY: 2.32, heightU: 1.56, mullions: 4, sunPool: true },
+    { x: 475, span: 365, centerY: 2.18, heightU: 1.44, mullions: 4, sunPool: true },
     // Bay 3 (above Phòng họp live screen): clerestory city skyline strip
-    { x: 1470, span: 300, centerY: 3.44, heightU: 0.66, mullions: 3, sunPool: false },
+    { x: 1470, span: 300, centerY: 3.16, heightU: 0.56, mullions: 3, sunPool: false },
     // Bay 4 (above Archive bookshelves): clerestory city skyline strip
-    { x: 1890, span: 350, centerY: 3.44, heightU: 0.66, mullions: 3, sunPool: false },
+    { x: 1890, span: 350, centerY: 3.16, heightU: 0.56, mullions: 3, sunPool: false },
   ]
 }
 
@@ -673,7 +732,7 @@ export function getOfficeNorthWindows(): readonly OfficeNorthWindowSpec[] {
  * Builds the exact static + dynamic AABB collision boxes for the open-floor office:
  * - ONE North back wall (`y = 0..76`) — ZERO side walls, ZERO south wall, ZERO interior room partitions!
  * - All zone furniture, low meeting planters, ALL furnished staff desks (occupied & empty),
- *   pod dividers, south printer credenza, exit portal door frame, and potted plants.
+ *   pod dividers, south welcome/printer/lounge strip, exit portal door frame, and potted plants.
  */
 export function buildOfficeObstacles(
   staffCountOrDesks: number | readonly OfficeDeskPlacement[] = MAX_STAFF_DESKS
@@ -687,7 +746,9 @@ export function buildOfficeObstacles(
   const podDividers = getOfficePodDividers(dims.podBands)
   const plants = getOfficePlants(worldH)
   const planters = getMeetingPlanters()
+  const welcomeDesk = getSouthWelcomeDeskRect(worldH)
   const printer = getPrinterStationRect(worldH)
+  const southLounge = getSouthLoungeRect(worldH)
   const exitDoor = getOfficeExitDoor(worldH)
 
   const obstacles: OfficeRect[] = [
@@ -729,8 +790,10 @@ export function buildOfficeObstacles(
     OFFICE_AWARDS_PROPS.easelWest,
     OFFICE_AWARDS_PROPS.easelEast,
 
-    // South supply & copier credenza + North-wall portal door frame
+    // South welcome reception, printer credenza, guest lounge + North-wall portal door frame
+    welcomeDesk,
     printer,
+    southLounge,
     exitDoor.obstacle,
   ]
 

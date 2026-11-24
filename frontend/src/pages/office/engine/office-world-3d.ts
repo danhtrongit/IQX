@@ -64,9 +64,11 @@ import {
   addPrinterCredenzaToBatch,
   addSkylineWindowToBatch,
   addSnackShelfToBatch,
+  addSouthLoungeSetToBatch,
   addStandingLampToBatch,
   addTrophyPedestalsToBatch,
   addWaterCoolerToBatch,
+  addWelcomeCounterToBatch,
   addWhiteboardEasel,
   addWorldClocks,
   chibiBevelBox,
@@ -137,13 +139,15 @@ import {
   getOfficePlants,
   getOfficePodDividers,
   getPrinterStationRect,
+  getSouthLoungeRect,
+  getSouthWelcomeDeskRect,
   getTeamBannerRugRect,
   getZoneRugs,
   type OfficeDeskPlacement,
   type OfficeDeskSlot,
 } from "./office-layout.ts"
 
-const NORTH_WALL_H = 4.35
+const NORTH_WALL_H = 4.45
 const NORTH_WALL_EXTEND_U = 10.0
 
 const scratchMatrix = new THREE.Matrix4()
@@ -207,7 +211,13 @@ function mergeStaticPropsInto(
   }
 
   for (const bucket of buckets.values()) {
-    const merged = mergeIndexedGeometries(bucket.geos, { disposeInputs: true })
+    const includeVertexColors = Boolean(
+      (bucket.material as { vertexColors?: boolean }).vertexColors
+    )
+    const merged = mergeIndexedGeometries(bucket.geos, {
+      includeVertexColors,
+      disposeInputs: true,
+    })
     if (!merged) continue
     merged.computeBoundingSphere()
     const mesh = new THREE.Mesh(merged, bucket.material)
@@ -334,8 +344,8 @@ function createStaffDeskPrototypeSpecs(
   const vcMetal = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     vertexColors: true,
-    roughness: 0.3,
-    metalness: 0.72,
+    roughness: 0.34,
+    metalness: 0.52,
   })
   const drawerBodyMat = createVertexColorProxy(vcMatte, "#8a633b")
   const drawerFaceMat = createVertexColorProxy(vcMatte, "#a3784a")
@@ -403,8 +413,8 @@ function createSwivelChairPrototypeSpecs(
   const vcFrame = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     vertexColors: true,
-    roughness: 0.42,
-    metalness: 0.48,
+    roughness: 0.44,
+    metalness: 0.36,
   })
   const darkMat = createVertexColorProxy(vcFrame, "#182032")
   const chromeMat = createVertexColorProxy(vcFrame, "#a4b3c6")
@@ -568,7 +578,7 @@ export class OfficeWorld3D {
     this.lastTeamBoardSig = "init:empty"
     this.teamBoard = createWallBoardFrame(
       4.7,
-      1.5,
+      1.42,
       this.teamBoardCanvas,
       "#e9b949",
       { lite }
@@ -588,7 +598,7 @@ export class OfficeWorld3D {
     this.lastMeetingSig = "init:empty"
     this.meetingBoard = createWallBoardFrame(
       3.05,
-      1.0,
+      0.98,
       this.meetingCanvas,
       "#e9b949",
       { lite }
@@ -610,8 +620,8 @@ export class OfficeWorld3D {
     this.lastStandeeSig = "init:empty"
     this.standeeBoard = createAchievementStandee(
       this.standeeCanvas,
-      2.15,
-      3.45,
+      1.92,
+      2.65,
       { lite }
     )
     this.standeeBoard.group.name = "office-achievement-standee"
@@ -643,12 +653,12 @@ export class OfficeWorld3D {
   private positionLiveBoards(): void {
     const wallFaceZ = logicalToWorld(0, OFFICE_NORTH_WALL_Y, this.world).z
     const teamPt = logicalToWorld(1040, OFFICE_NORTH_WALL_Y, this.world)
-    this.teamBoard.group.position.set(teamPt.x, 2.55, wallFaceZ + 0.14)
+    this.teamBoard.group.position.set(teamPt.x, 2.25, wallFaceZ + 0.14)
     this.teamBoard.group.updateMatrix()
     this.teamBoard.group.updateMatrixWorld(true)
 
     const meetPt = logicalToWorld(1470, OFFICE_NORTH_WALL_Y, this.world)
-    this.meetingBoard.group.position.set(meetPt.x, 2.08, wallFaceZ + 0.14)
+    this.meetingBoard.group.position.set(meetPt.x, 1.98, wallFaceZ + 0.14)
     this.meetingBoard.group.updateMatrix()
     this.meetingBoard.group.updateMatrixWorld(true)
 
@@ -782,17 +792,6 @@ export class OfficeWorld3D {
     openFloor.receiveShadow = true
     this.archGroup.add(openFloor)
 
-    // Subtle brushed-brass floor inlay border framing the playable open-floor perimeter (flat, walkable!)
-    const playMinX = logicalToWorld(28, 0, this.world).x
-    const playMaxX = logicalToWorld(OFFICE_BASE_W - 28, 0, this.world).x
-    const playMaxZ = logicalToWorld(0, worldH - 22, this.world).z
-    const playSpanW = playMaxX - playMinX
-    const playSpanD = playMaxZ - wallFaceZ
-    const playMidZ = (wallFaceZ + playMaxZ) / 2
-    archBatch.addBox(playSpanW, 0.008, 0.045, palette.brassDark, 0, 0.005, playMaxZ, false)
-    archBatch.addBox(0.045, 0.008, playSpanD, palette.brassDark, playMinX, 0.005, playMidZ, false)
-    archBatch.addBox(0.045, 0.008, playSpanD, palette.brassDark, playMaxX, 0.005, playMidZ, false)
-
     // Dark exterior cap strictly behind the North back wall
     const northBackdrop = new THREE.Mesh(
       new THREE.PlaneGeometry(floorTotalW + 8, 12),
@@ -828,6 +827,7 @@ export class OfficeWorld3D {
       [1210, 310, 6.2, 4.6], // Phòng họp
       [930, 820, 9.6, 5.2], // Khu làm việc Band 0
       [930, 1200, 9.6, 5.2], // Khu làm việc Band 1
+      [930, worldH - 110, 11.2, 3.2], // South Welcome & Support Strip
       [2060, 760, 5.4, 4.8], // Góc nghỉ
       [2070, 1240, 5.2, 4.4], // Góc thành tích
     ]
@@ -924,6 +924,20 @@ export class OfficeWorld3D {
       archBatch.addBox(span + 0.06, 0.028, 0.04, palette.brassDark, mid, 0.33, wallFaceZ + 0.07, false)
     }
 
+    // Subtle warm upper wall paneling frames (KGD light warm plaster & wood trim depth)
+    for (const [x0, x1] of [
+      [-520, -40],
+      [60, 720],
+      [780, 1260],
+      [1700, 2140],
+      [2420, 2940],
+    ] as const) {
+      const mid = logicalToWorld((x0 + x1) / 2, OFFICE_NORTH_WALL_Y, this.world).x
+      const span = (x1 - x0) * s
+      archBatch.addBox(span, 0.032, 0.035, palette.pilasterFlute, mid, 3.88, wallFaceZ + 0.025, false)
+      archBatch.addBox(span, 0.032, 0.035, palette.pilasterFlute, mid, 1.18, wallFaceZ + 0.025, false)
+    }
+
     // 5 Fluted Cream Pilasters with tiered plinths, gold capitals & warm brass wall sconces
     for (const lx of [24, 748, 1292, 1666, 2376]) {
       const px = logicalToWorld(lx, OFFICE_NORTH_WALL_Y, this.world).x
@@ -935,10 +949,10 @@ export class OfficeWorld3D {
       archBatch.addBox(0.48, 0.1, 0.28, palette.gold, px, NORTH_WALL_H - 0.2, wallFaceZ + 0.09, false)
       archBatch.addBox(0.52, 0.065, 0.32, palette.gold, px, NORTH_WALL_H - 0.08, wallFaceZ + 0.1, false)
       // Warm glowing brass sconce
-      archBatch.addBox(0.11, 0.22, 0.08, palette.brassDark, px, 3.05, wallFaceZ + 0.2, false)
-      archBatch.addCylinder(0.068, 0.06, 0.3, seg, palette.warmGlow, px, 3.1, wallFaceZ + 0.27, false)
-      archBatch.addCylinder(0.082, 0.082, 0.04, seg, palette.gold, px, 3.26, wallFaceZ + 0.27, false)
-      archBatch.addCylinder(0.078, 0.078, 0.04, seg, palette.gold, px, 2.94, wallFaceZ + 0.27, false)
+      archBatch.addBox(0.11, 0.22, 0.08, palette.brassDark, px, 2.86, wallFaceZ + 0.2, false)
+      archBatch.addCylinder(0.068, 0.06, 0.3, seg, palette.warmGlow, px, 2.91, wallFaceZ + 0.27, false)
+      archBatch.addCylinder(0.082, 0.082, 0.04, seg, palette.gold, px, 3.07, wallFaceZ + 0.27, false)
+      archBatch.addCylinder(0.078, 0.078, 0.04, seg, palette.gold, px, 2.75, wallFaceZ + 0.27, false)
     }
 
     yield 0.36
@@ -950,8 +964,8 @@ export class OfficeWorld3D {
     //    - Framed Wall Art & Acoustic wood slats behind Meeting Screen
     //    - Ceiling-less Hanging Pendant Lamp silhouettes near North wall
     const teamX = logicalToWorld(1040, OFFICE_NORTH_WALL_Y, this.world).x
-    archBatch.addBox(4.92, 0.18, 0.2, palette.obsidian, teamX, 3.4, wallFaceZ + 0.12, false)
-    archBatch.addBox(4.98, 0.04, 0.22, palette.gold, teamX, 3.5, wallFaceZ + 0.13, false)
+    archBatch.addBox(4.92, 0.16, 0.2, palette.obsidian, teamX, 3.04, wallFaceZ + 0.12, false)
+    archBatch.addBox(4.98, 0.04, 0.22, palette.gold, teamX, 3.13, wallFaceZ + 0.13, false)
     for (let i = 0; i < 3; i += 1) {
       archBatch.addSphere(
         0.036,
@@ -959,7 +973,7 @@ export class OfficeWorld3D {
         seg,
         i === 0 ? palette.ledGreen : palette.warmGlow,
         teamX - 2.2 + i * 0.18,
-        3.4,
+        3.04,
         wallFaceZ + 0.23,
         false
       )
@@ -967,8 +981,8 @@ export class OfficeWorld3D {
 
     // Small Stock-Ticker LED Ribbon directly below the Team Board (zero per-frame work!)
     const tickerW = 4.78
-    const tickerH = 0.28
-    const tickerY = 1.54
+    const tickerH = 0.26
+    const tickerY = 1.3
     archBatch.addBox(tickerW + 0.14, tickerH + 0.07, 0.1, palette.obsidian, teamX, tickerY, wallFaceZ + 0.09, false)
     const tickerTex = createOfficeStockTickerTexture(this.lite)
     const tickerMat = new THREE.MeshStandardMaterial({
@@ -988,7 +1002,7 @@ export class OfficeWorld3D {
     this.archGroup.add(tickerMesh)
 
     // 3 World Market Clocks above the Team Board
-    addWorldClocks(archBatch, palette, this.archGroup, teamX, wallFaceZ, 3.84, this.lite)
+    addWorldClocks(archBatch, palette, this.archGroup, teamX, wallFaceZ, 3.44, this.lite)
 
     // Panoramic City-Skyline Window Strips along the North back wall
     const skylineTex = createCitySkylineTexture(this.lite)
@@ -1015,13 +1029,13 @@ export class OfficeWorld3D {
 
     // Framed Wall Art above Boss Award Shelf & Archive Bookshelves
     const bossArtX = logicalToWorld(168, OFFICE_NORTH_WALL_Y, this.world).x
-    archBatch.addBox(1.42, 0.88, 0.04, palette.gold, bossArtX, 2.66, wallFaceZ + 0.04, false)
+    archBatch.addBox(1.42, 0.86, 0.04, palette.gold, bossArtX, 2.48, wallFaceZ + 0.04, false)
     const crestMat = new THREE.MeshStandardMaterial({
       map: createWallArtPrintTexture("crest"),
       roughness: 0.36,
     })
-    const crestFace = new THREE.Mesh(new THREE.PlaneGeometry(1.32, 0.78), crestMat)
-    crestFace.position.set(bossArtX, 2.66, wallFaceZ + 0.068)
+    const crestFace = new THREE.Mesh(new THREE.PlaneGeometry(1.32, 0.76), crestMat)
+    crestFace.position.set(bossArtX, 2.48, wallFaceZ + 0.068)
     this.archGroup.add(crestFace)
 
     const docsSignX = logicalToWorld(1888, OFFICE_NORTH_WALL_Y, this.world).x
@@ -1031,12 +1045,12 @@ export class OfficeWorld3D {
       width: 384,
       height: 112,
     })
-    archBatch.addBox(1.78, 0.56, 0.04, palette.gold, docsSignX, 2.54, wallFaceZ + 0.04, false)
+    archBatch.addBox(1.78, 0.54, 0.04, palette.gold, docsSignX, 2.4, wallFaceZ + 0.04, false)
     const docsSignFace = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.7, 0.48),
+      new THREE.PlaneGeometry(1.7, 0.46),
       new THREE.MeshStandardMaterial({ map: docsSignTex, roughness: 0.35 })
     )
-    docsSignFace.position.set(docsSignX, 2.54, wallFaceZ + 0.068)
+    docsSignFace.position.set(docsSignX, 2.4, wallFaceZ + 0.068)
     this.archGroup.add(docsSignFace)
 
     // Acoustic wood slat backdrop behind the Meeting Room Live Screen
@@ -1044,14 +1058,14 @@ export class OfficeWorld3D {
     const slatCount = this.lite ? 9 : 15
     for (let i = 0; i < slatCount; i += 1) {
       const offset = -1.68 + (i * 3.36) / Math.max(1, slatCount - 1)
-      archBatch.addBox(0.068, 1.85, 0.035, palette.slatWood, meetX + offset, 2.02, wallFaceZ + 0.035, false)
+      archBatch.addBox(0.068, 1.72, 0.035, palette.slatWood, meetX + offset, 1.94, wallFaceZ + 0.035, false)
     }
 
-    // Ceiling-less Hanging Pendant Lamps near the North back wall
-    const pendantXs = [440, 1040, 1470, 1890].map(
+    // Ceiling-less Hanging Pendant Lamps near the North back wall (aligned over transitions, never blocking boards!)
+    const pendantXs = [250, 748, 1292, 1666, 2110].map(
       (lx) => logicalToWorld(lx, OFFICE_NORTH_WALL_Y, this.world).x
     )
-    addHangingPendantsToBatch(archBatch, palette, pendantXs, wallFaceZ + 1.1, this.lite)
+    addHangingPendantsToBatch(archBatch, palette, pendantXs, wallFaceZ + 1.05, this.lite)
 
     yield 0.46
 
@@ -1280,13 +1294,13 @@ export class OfficeWorld3D {
       OFFICE_AWARDS_PROPS.standee.h
     )
     for (const side of [-1, 1] as const) {
-      const px = standeeCenter.x + side * 1.24
+      const px = standeeCenter.x + side * 1.1
       const pz = standeeCenter.z + 0.14
       archBatch.addCylinder(0.095, 0.11, 0.04, seg, palette.gold, px, 0.02, pz, false)
       archBatch.addCylinder(0.024, 0.028, 0.68, 7, palette.gold, px, 0.36, pz, true)
       archBatch.addSphere(0.044, 7, 6, palette.gold, px, 0.72, pz, false)
     }
-    shadows.add(standeeCenter.x, standeeCenter.z, 2.3, 0.82, boxShadowTex, 0.6)
+    shadows.add(standeeCenter.x, standeeCenter.z, 2.1, 0.78, boxShadowTex, 0.6)
 
     const easelWPt = this.toWorldCenter(
       OFFICE_AWARDS_PROPS.easelWest.x,
@@ -1324,7 +1338,25 @@ export class OfficeWorld3D {
       this.lite
     )
 
-    // South tidy supply & copier credenza
+    // South Welcome & Support Strip: Reception Check-in Desk + Printer Credenza + Waiting Bench & Bistro Table
+    const welcomeDesk = getSouthWelcomeDeskRect(worldH)
+    const wlPt = this.toWorldCenter(
+      welcomeDesk.x,
+      welcomeDesk.y,
+      welcomeDesk.w,
+      welcomeDesk.h
+    )
+    addWelcomeCounterToBatch(
+      archBatch,
+      palette,
+      wlPt.x,
+      wlPt.z,
+      welcomeDesk.w * s,
+      welcomeDesk.h * s,
+      this.lite
+    )
+    shadows.add(wlPt.x, wlPt.z, welcomeDesk.w * s + 0.32, welcomeDesk.h * s + 0.32, boxShadowTex, 0.56)
+
     const printer = getPrinterStationRect(worldH)
     const prPt = this.toWorldCenter(printer.x, printer.y, printer.w, printer.h)
     addPrinterCredenzaToBatch(
@@ -1338,10 +1370,28 @@ export class OfficeWorld3D {
     )
     shadows.add(prPt.x, prPt.z, printer.w * s + 0.32, printer.h * s + 0.32, boxShadowTex, 0.54)
 
+    const southLounge = getSouthLoungeRect(worldH)
+    const slPt = this.toWorldCenter(
+      southLounge.x,
+      southLounge.y,
+      southLounge.w,
+      southLounge.h
+    )
+    addSouthLoungeSetToBatch(
+      archBatch,
+      palette,
+      slPt.x,
+      slPt.z,
+      southLounge.w * s,
+      southLounge.h * s,
+      this.lite
+    )
+    shadows.add(slPt.x, slPt.z, southLounge.w * s + 0.3, southLounge.h * s + 0.3, boxShadowTex, 0.54)
+
     // Subtle warm accent lights (desktop only to keep mobile shader/fill light fast)
     if (!this.lite) {
-      const teamGlow = new THREE.PointLight(0xffe6b3, 1.05, 11, 1.55)
-      teamGlow.position.set(teamX, 3.1, wallFaceZ + 2.2)
+      const teamGlow = new THREE.PointLight(0xffe8ba, 1.25, 13.5, 1.45)
+      teamGlow.position.set(teamX, 3.0, wallFaceZ + 2.4)
       this.archGroup.add(teamGlow)
 
       const loungeGlow = new THREE.PointLight(0xffdfb0, 0.85, 9.5, 1.6)

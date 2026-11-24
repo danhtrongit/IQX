@@ -86,8 +86,8 @@ import { OfficeWorld3D } from "./office-world-3d.ts"
 
 export const OFFICE_CAMERA_FOV = 36
 export const OFFICE_CAMERA_PITCH_DEG = 48
-export const OFFICE_CAMERA_BASE_DISTANCE = 17.6
-export const OFFICE_CAMERA_NORTH_MARGIN = 5.0
+export const OFFICE_CAMERA_BASE_DISTANCE = 18.8
+export const OFFICE_CAMERA_NORTH_MARGIN = 6.4
 export const OFFICE_CAMERA_SOUTH_MARGIN = 0.85
 export const OFFICE_DESKTOP_BREAKPOINT_PX = 1101
 export const OFFICE_MOBILE_BREAKPOINT_PX = 720
@@ -95,13 +95,15 @@ export const OFFICE_DESKTOP_HUD_COL_PX = 330 + 14
 export const OFFICE_TABLET_HUD_COL_PX = 290 + 14
 export const OFFICE_MIN_ZOOM = 0.72
 export const OFFICE_MAX_ZOOM = 2.3
-export const OFFICE_DEFAULT_DESKTOP_ZOOM = 1.04
+export const OFFICE_DEFAULT_DESKTOP_ZOOM = 0.96
 export const OFFICE_DEFAULT_MOBILE_ZOOM = 1.24
 
 const ARRIVAL_PX = 4
 const PEER_TELEPORT_PX = 280
 const PEER_SMOOTH_RATE = 12
 const HALF_FOV_TAN = Math.tan(((OFFICE_CAMERA_FOV / 2) * Math.PI) / 180)
+const OFFICE_MAX_USER_ZOOM =
+  OFFICE_MAX_ZOOM / Math.min(1, OFFICE_DEFAULT_DESKTOP_ZOOM)
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v))
@@ -231,7 +233,12 @@ export function computeOfficeCameraTarget(
       ? worldW / 2 + hudOffsetLogical
       : Math.max(minEdgeX, Math.min(maxEdgeX, desiredX))
 
-  return { x: targetX, y: ly - 25 }
+  // At default/wide cover zoom, bias look target gently northward (KGD-like framing) so the
+  // North back wall & LED boards read cleanly across the top even when spawned at Desk #0;
+  // taper smoothly back to player-centered framing when zoomed in closely.
+  const wideT = clamp((1.75 - safeZoom) / 0.75, 0, 1)
+  const verticalOffset = 30 + wideT * 240
+  return { x: targetX, y: ly - verticalOffset }
 }
 
 const MOVE_KEY_CODES: ReadonlySet<string> = new Set([
@@ -609,7 +616,7 @@ export class OfficeController {
       this.userZoom = clamp(
         this.userZoom * factor,
         OFFICE_MIN_ZOOM,
-        OFFICE_MAX_ZOOM
+        OFFICE_MAX_USER_ZOOM
       )
       this.applyResponsiveZoom(false)
     }
@@ -696,7 +703,7 @@ export class OfficeController {
           this.userZoom = clamp(
             this.pinchStartZoom * (dist / this.pinchStartDist),
             OFFICE_MIN_ZOOM,
-            OFFICE_MAX_ZOOM
+            OFFICE_MAX_USER_ZOOM
           )
           this.applyResponsiveZoom(false)
         }
@@ -891,7 +898,7 @@ export class OfficeController {
     this.userZoom = clamp(
       this.userZoom * factor,
       OFFICE_MIN_ZOOM,
-      OFFICE_MAX_ZOOM
+      OFFICE_MAX_USER_ZOOM
     )
     this.applyResponsiveZoom(false)
   }

@@ -845,3 +845,96 @@ export function addPrinterCredenzaToBatch(
   batch.addCylinder(0.072, 0.056, 0.1, seg, palette.whiteCeramic, sx, topY + 0.05, wz, false)
   batch.addSphere(0.1, seg, 6, palette.leafMid, sx, topY + 0.14, wz, false)
 }
+
+/** Adds a sleek chibi Welcome / Check-in Reception Desk for the south open strip (0 extra draw calls). */
+export function addWelcomeCounterToBatch(
+  batch: OfficeDecorBatcher,
+  palette: OfficeDecorPalette,
+  wx: number,
+  wz: number,
+  widthU: number,
+  depthU: number,
+  lite: boolean
+): void {
+  const seg = lite ? 7 : 10
+  const bodyH = 0.82
+  // Navy plinth + beveled navy reception body + warm oak transaction top
+  batch.addBox(widthU - 0.06, 0.08, depthU - 0.04, palette.skirtingDark, wx, 0.04, wz, false)
+  batch.addBevelBox(widthU, bodyH - 0.08, depthU, 0.024, palette.wallDadoNavy, wx, 0.08 + (bodyH - 0.08) / 2, wz, lite)
+  // Decorative gold vertical fluting slats along both north & south faces (visible from 48° camera!)
+  const slatCount = lite ? 6 : 10
+  for (let i = 0; i < slatCount; i += 1) {
+    const t = i / (slatCount - 1) - 0.5
+    const sx = wx + t * (widthU - 0.34)
+    batch.addBox(0.032, bodyH - 0.24, 0.024, palette.gold, sx, bodyH * 0.52, wz + depthU / 2 + 0.008, false)
+    batch.addBox(0.032, bodyH - 0.24, 0.024, palette.gold, sx, bodyH * 0.52, wz - depthU / 2 - 0.008, false)
+  }
+  // Brushed gold waist trim + oak counter top + raised marble check-in ledge
+  batch.addBox(widthU + 0.04, 0.036, depthU + 0.04, palette.gold, wx, bodyH - 0.02, wz, false)
+  batch.addBevelBox(widthU + 0.08, 0.056, depthU + 0.08, 0.016, palette.oakWood, wx, bodyH + 0.028, wz, lite)
+  const topY = bodyH + 0.056
+  batch.addBevelBox(widthU * 0.62, 0.12, 0.16, 0.014, palette.marbleLight, wx, topY + 0.06, wz + depthU * 0.28, lite, false)
+  batch.addBox(widthU * 0.64, 0.024, 0.18, palette.gold, wx, topY + 0.13, wz + depthU * 0.28, false)
+
+  // Compact check-in kiosk screen + gold table lamp + visitor guestbook + mini succulent
+  const kx = wx - widthU * 0.24
+  batch.addBox(0.14, 0.018, 0.1, palette.silver, kx, topY + 0.009, wz - 0.04, false)
+  batch.addBevelBox(0.32, 0.22, 0.028, 0.01, palette.obsidian, kx, topY + 0.15, wz - 0.05, lite, false, true, [0.22, 0, 0])
+  batch.addBox(0.28, 0.17, 0.012, palette.screenCyan, kx, topY + 0.15, wz - 0.032, false, false, [0.22, 0, 0])
+
+  // Open visitor binder + golden bell on center-right
+  batch.addBevelBox(0.28, 0.026, 0.2, 0.006, palette.paperWhite, wx + 0.14, topY + 0.013, wz - 0.04, lite, false, true, [0, -0.08, 0])
+  batch.addCylinder(0.055, 0.075, 0.05, seg, palette.gold, wx + 0.44, topY + 0.025, wz - 0.06, false)
+  // Cute mini ceramic plant on right corner
+  const px = wx + widthU * 0.39
+  batch.addCylinder(0.072, 0.056, 0.1, seg, palette.terracotta, px, topY + 0.05, wz - 0.02, false)
+  batch.addSphere(0.11, seg, 6, palette.leafBright, px, topY + 0.15, wz - 0.02, false)
+}
+
+/** Adds a cozy Guest Waiting Bench + Round Bistro Side Table with coffee mugs for the south open strip. */
+export function addSouthLoungeSetToBatch(
+  batch: OfficeDecorBatcher,
+  palette: OfficeDecorPalette,
+  wx: number,
+  wz: number,
+  widthU: number,
+  depthU: number,
+  lite: boolean
+): void {
+  const seg = lite ? 7 : 10
+  // Cozy 2-seat plush waiting bench on left 62% of the footprint
+  const benchW = widthU * 0.58
+  const benchX = wx - widthU * 0.2
+  for (const sx of [-1, 1] as const) {
+    for (const sz of [-1, 1] as const) {
+      batch.addCylinder(
+        0.026,
+        0.02,
+        0.24,
+        6,
+        palette.walnutWood,
+        benchX + sx * (benchW * 0.42),
+        0.12,
+        wz + sz * (depthU * 0.34),
+        true
+      )
+    }
+  }
+  batch.addBevelBox(benchW, 0.07, depthU * 0.88, 0.016, palette.oakWood, benchX, 0.27, wz, lite)
+  batch.addBevelBox(benchW - 0.04, 0.14, depthU * 0.84, 0.042, palette.navyFabric, benchX, 0.37, wz, lite)
+  // Two soft cream accent throw cushions resting on the bench
+  batch.addBevelBox(0.28, 0.12, 0.26, 0.036, palette.creamFabric, benchX - benchW * 0.26, 0.48, wz - 0.04, lite, false, true, [0.16, 0.14, 0])
+  batch.addBevelBox(0.28, 0.12, 0.26, 0.036, palette.amberAccent, benchX + benchW * 0.24, 0.48, wz - 0.04, lite, false, true, [0.14, -0.18, 0])
+
+  // Sleek round oak & gold bistro side table on right 34% with ceramic mugs & magazine
+  const tx = wx + widthU * 0.31
+  const tableH = 0.52
+  batch.addCylinder(0.18, 0.22, 0.035, seg, palette.gold, tx, 0.018, wz, false)
+  batch.addCylinder(0.035, 0.04, tableH - 0.06, seg, palette.frameMetal, tx, tableH / 2, wz, false)
+  batch.addCylinder(0.32, 0.32, 0.045, seg, palette.oakWood, tx, tableH, wz, true)
+  batch.addCylinder(0.33, 0.33, 0.016, seg, palette.gold, tx, tableH - 0.02, wz, false)
+  // Two ceramic cups + stacked magazine on table
+  batch.addCylinder(0.04, 0.034, 0.078, seg, palette.whiteCeramic, tx - 0.11, tableH + 0.062, wz + 0.04, false)
+  batch.addCylinder(0.04, 0.034, 0.078, seg, palette.amberAccent, tx + 0.09, tableH + 0.062, wz - 0.06, false)
+  batch.addBevelBox(0.2, 0.022, 0.15, 0.004, palette.blueAccent, tx + 0.04, tableH + 0.034, wz + 0.11, lite, false, true, [0, 0.2, 0])
+}

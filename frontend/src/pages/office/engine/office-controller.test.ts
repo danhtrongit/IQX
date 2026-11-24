@@ -609,6 +609,94 @@ describe("OfficeController & startOffice open-floor KGD camera, interactions & i
     for (let i = 0; i < 30; i += 1) controller.setZoomDelta(1)
     expect(host.getTargetZoom()).toBeCloseTo(OFFICE_MAX_ZOOM, 4)
 
+    // 5. Default desktop framing shows North Back Wall Team LED Board & Meeting Screen even when
+    //    staff spawns at Desk #0, and keeps the back wall covering the top edge with zero void.
+    const pitchRad = (OFFICE_CAMERA_PITCH_DEG * Math.PI) / 180
+    for (const [vpW, vpH] of [
+      [1440, 900],
+      [1440, 850],
+    ] as const) {
+      const aspect = vpW / vpH
+      const coverMin = computeOfficeCoverMinZoom(vpW, vpH)
+      for (const zoom of [
+        computeOfficeResponsiveZoom(1.0, vpW, vpH, coverMin),
+        coverMin,
+      ]) {
+        const bounds = computeCameraClampBounds({
+          roomW: OFFICE_BASE_W * OFFICE_WORLD_SCALE,
+          roomH: OFFICE_BASE_H * OFFICE_WORLD_SCALE,
+          baseDistance: OFFICE_CAMERA_BASE_DISTANCE,
+          zoom,
+          fovDeg: OFFICE_CAMERA_FOV,
+          pitchRad,
+          aspect,
+          boundsMargin: 0.6,
+          northMargin: OFFICE_CAMERA_NORTH_MARGIN,
+          southMargin: OFFICE_CAMERA_SOUTH_MARGIN,
+        })
+        const target = computeOfficeCameraTarget({
+          lx: desk0.home.x,
+          ly: desk0.home.y,
+          worldW: OFFICE_BASE_W,
+          worldH: OFFICE_BASE_H,
+          viewportW: vpW,
+          viewportH: vpH,
+          zoom,
+          role: "staff",
+        })
+        const worldCfg = {
+          logicalW: OFFICE_BASE_W,
+          logicalH: OFFICE_BASE_H,
+          scale: OFFICE_WORLD_SCALE,
+        }
+        const targetPt = logicalToWorld(target.x, target.y, worldCfg)
+        const cx = Math.max(bounds.minX, Math.min(bounds.maxX, targetPt.x))
+        const cz = Math.max(bounds.minZ, Math.min(bounds.maxZ, targetPt.z))
+        const dist = OFFICE_CAMERA_BASE_DISTANCE / zoom
+        const cam = new THREE.PerspectiveCamera(
+          OFFICE_CAMERA_FOV,
+          aspect,
+          0.2,
+          220
+        )
+        cam.position.set(
+          cx,
+          dist * Math.sin(pitchRad),
+          cz + dist * Math.cos(pitchRad)
+        )
+        cam.lookAt(cx, 0, cz)
+        cam.updateMatrixWorld(true)
+        cam.updateProjectionMatrix()
+
+        const wallFaceZ = logicalToWorld(0, 76, worldCfg).z
+        const teamX = logicalToWorld(1040, 76, worldCfg).x
+        const teamBoardTop = new THREE.Vector3(
+          teamX,
+          2.96,
+          wallFaceZ + 0.14
+        ).project(cam)
+        const teamBoardBot = new THREE.Vector3(
+          teamX,
+          1.54,
+          wallFaceZ + 0.14
+        ).project(cam)
+        const wallTop = new THREE.Vector3(cx, 4.45, wallFaceZ).project(cam)
+
+        expect(
+          teamBoardTop.y,
+          `Team LED Board top must be inside viewport at ${vpW}x${vpH} zoom=${zoom.toFixed(2)}`
+        ).toBeLessThanOrEqual(1.0)
+        expect(
+          teamBoardBot.y,
+          `Team LED Board bottom must be in upper screen band at ${vpW}x${vpH} zoom=${zoom.toFixed(2)}`
+        ).toBeGreaterThan(0.2)
+        expect(
+          wallTop.y,
+          `North wall top must reach >= top edge (no black void above wall) at ${vpW}x${vpH} zoom=${zoom.toFixed(2)}`
+        ).toBeGreaterThanOrEqual(0.98)
+      }
+    }
+
     controller.dispose()
     container.remove()
   })
@@ -769,6 +857,125 @@ describe("OfficeController & startOffice open-floor KGD camera, interactions & i
     expect(sig(slicedScene)).toEqual(sig(syncScene))
     syncWorld.dispose()
     slicedWorld.dispose()
+  })
+
+  it("guarantees every vertexColors mesh carries a non-zero color attribute and no InstancedMesh expects missing/zeroed instanceColor", () => {
+    const members24: OfficeMember[] = Array.from(
+      { length: MAX_STAFF_DESKS },
+      (_, idx) => ({
+        id: `m-${idx + 1}`,
+        userId: `u-${idx + 1}`,
+        role: "staff",
+        displayName: `Nhân viên ${idx + 1}`,
+        avatar: null,
+        avatarColor: null,
+        deskIndex: idx,
+        accentColor: "#1D6FE8",
+        online: idx < 4,
+      })
+    )
+    const desks = buildDeskPositions(members24)
+
+    for (const lite of [false, true]) {
+      const scene = new THREE.Scene()
+      const world = new OfficeWorld3D(
+        scene,
+        {
+          logicalW: OFFICE_BASE_W,
+          logicalH: OFFICE_BASE_H,
+          scale: OFFICE_WORLD_SCALE,
+        },
+        lite
+      )
+      world.rebuildTeamProps("Lê Huy", desks, "u-1", OFFICE_BASE_H, MAX_STAFF_DESKS)
+
+      let vertexColorMeshCount = 0
+      let instancedMeshCount = 0
+
+      scene.traverse((obj) => {
+        const mesh = obj as THREE.Mesh
+        if (!mesh.isMesh || !mesh.geometry) return
+
+        const mats = Array.isArray(mesh.material)
+          ? mesh.material
+          : mesh.material
+            ? [mesh.material]
+            : []
+
+        const posAttr = mesh.geometry.getAttribute("position")
+        expect(posAttr, `mesh "${mesh.name}" must have position attribute`).toBeTruthy()
+
+        for (const mat of mats) {
+          const std = mat as THREE.MeshStandardMaterial & {
+            defines?: Record<string, unknown>
+          }
+          if (std.vertexColors) {
+            vertexColorMeshCount += 1
+            const colorAttr = mesh.geometry.getAttribute("color")
+            expect(
+              colorAttr,
+              `vertexColors mesh "${mesh.name || "unnamed"}" (lite=${lite}) is missing geometry "color" attribute`
+            ).toBeTruthy()
+            expect(colorAttr.itemSize).toBeGreaterThanOrEqual(3)
+            expect(colorAttr.count).toBe(posAttr.count)
+            expect(colorAttr.count).toBeGreaterThan(0)
+
+            let nonZeroVertices = 0
+            let zeroVertices = 0
+            for (let i = 0; i < colorAttr.count; i += 1) {
+              const sum =
+                colorAttr.getX(i) + colorAttr.getY(i) + colorAttr.getZ(i)
+              if (sum > 0) {
+                nonZeroVertices += 1
+              } else {
+                zeroVertices += 1
+              }
+            }
+            expect(
+              nonZeroVertices,
+              `vertexColors mesh "${mesh.name || "unnamed"}" (lite=${lite}) has all-zero color attribute`
+            ).toBeGreaterThan(0)
+            expect(
+              zeroVertices,
+              `vertexColors mesh "${mesh.name || "unnamed"}" (lite=${lite}) has ${zeroVertices} zero-colored vertices`
+            ).toBe(0)
+          }
+
+          if (mesh instanceof THREE.InstancedMesh) {
+            const expectsInstColor = Boolean(
+              std.defines && "USE_INSTANCING_COLOR" in std.defines
+            )
+            if (expectsInstColor) {
+              expect(
+                mesh.instanceColor,
+                `InstancedMesh "${mesh.name}" expects USE_INSTANCING_COLOR but has no instanceColor`
+              ).toBeTruthy()
+            }
+          }
+        }
+
+        if (mesh instanceof THREE.InstancedMesh) {
+          instancedMeshCount += 1
+          expect(mesh.count).toBeGreaterThan(0)
+          if (mesh.instanceColor) {
+            expect(mesh.instanceColor.count).toBe(mesh.count)
+            for (let i = 0; i < mesh.count; i += 1) {
+              const r = mesh.instanceColor.getX(i)
+              const g = mesh.instanceColor.getY(i)
+              const b = mesh.instanceColor.getZ(i)
+              expect(
+                r + g + b,
+                `InstancedMesh "${mesh.name}" instance ${i} has zeroed instanceColor`
+              ).toBeGreaterThan(0)
+            }
+          }
+        }
+      })
+
+      expect(vertexColorMeshCount).toBeGreaterThanOrEqual(8)
+      expect(instancedMeshCount).toBeGreaterThanOrEqual(10)
+      world.dispose()
+    }
   })
 
   it("respects prefers-reduced-motion and releases WebGL context on dispose", async () => {

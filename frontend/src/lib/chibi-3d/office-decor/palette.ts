@@ -176,6 +176,11 @@ export class OfficeDecorBatcher {
     const resolvedMat = vcMeta ? vcMeta.target : material
     if (vcMeta) {
       paintGeometryVertexColor(geom, vcMeta.hex)
+    } else if (
+      Boolean((resolvedMat as { vertexColors?: boolean }).vertexColors) &&
+      !geom.getAttribute("color")
+    ) {
+      paintGeometryVertexColor(geom, "#ffffff")
     }
 
     const key = `${resolvedMat.uuid}:${castShadow ? 1 : 0}:${receiveShadow ? 1 : 0}`
@@ -291,7 +296,11 @@ export class OfficeDecorBatcher {
     const specs: MergedSpec[] = []
     for (const bucket of this.buckets.values()) {
       if (bucket.geometries.length === 0) continue
+      const includeVertexColors = Boolean(
+        (bucket.material as { vertexColors?: boolean }).vertexColors
+      )
       const merged = mergeIndexedGeometries(bucket.geometries, {
+        includeVertexColors,
         disposeInputs: true,
       })
       if (merged) {
@@ -382,23 +391,23 @@ export function createOfficeDecorPalette(
   const sharedMetalVc = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     vertexColors: true,
-    roughness: 0.28,
-    metalness: 0.78,
+    roughness: 0.3,
+    metalness: 0.54,
   })
   const matte = (hex: string) => createVertexColorProxy(sharedMatteVc, hex)
   const metal = (hex: string) => createVertexColorProxy(sharedMetalVc, hex)
 
-  const wallCream = matte("#ece4d6")
-  const wallDadoNavy = matte("#18274a")
-  const skirtingDark = matte("#0f1a33")
-  const pilasterCream = matte("#e2d7c5")
-  const pilasterFlute = matte("#cfc1aa")
-  const gold = metal("#e9b949")
-  const silver = metal("#cbd5e1")
-  const bronze = metal("#c97e48")
-  const brassDark = metal("#a67c2e")
-  const obsidian = metal("#121b30")
-  const frameMetal = metal("#2a3c5e")
+  const wallCream = matte("#f0e8da")
+  const wallDadoNavy = matte("#1a2c54")
+  const skirtingDark = matte("#13203d")
+  const pilasterCream = matte("#e7dcc9")
+  const pilasterFlute = matte("#d4c6b0")
+  const gold = metal("#ebb946")
+  const silver = metal("#d0dae6")
+  const bronze = metal("#cf844c")
+  const brassDark = metal("#b38636")
+  const obsidian = matte("#1b2640")
+  const frameMetal = matte("#2e4166")
   const oakWood = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     map: oakTex,
