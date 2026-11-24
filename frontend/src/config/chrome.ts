@@ -97,7 +97,6 @@ export const HEADER_NAV: readonly { to: string; label: string; hidden?: boolean 
   { to: "/chien-luoc", label: "Chiến lược" },
   { to: "/bai-hoc", label: "Bài học", hidden: !SHOW_LESSONS_NAV },
   { to: "/khu-giao-dich", label: "Khu giao dịch" },
-  { to: "/van-phong", label: "Văn phòng" },
 ]
 
 /** Tool slugs of LUYỆN TẬP. */

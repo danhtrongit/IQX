@@ -1,0 +1,84 @@
+/* ==========================================================================
+   Unified Spaces Shell (Khu giao dịch <-> Khu Văn phòng)
+   Cross-fade & short loading veil between room teardown and boot.
+   ========================================================================== */
+
+.sp-shell {
+  position: relative;
+  display: flex;
+  flex: 1 1 0%;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #0c111b;
+  font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+}
+
+.sp-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: radial-gradient(
+    circle at 50% 42%,
+    rgba(21, 35, 63, 0.98),
+    rgba(10, 15, 27, 0.995) 72%
+  );
+  color: #f1f5f9;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.sp-veil.is-dark {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sp-veil.is-fading-in {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.32s ease;
+}
+
+.sp-veil.is-reduced {
+  transition: opacity 0.15s ease;
+}
+
+.sp-veil-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #f6d27a, #d9a03a);
+  color: #2a1c00;
+  box-shadow: 0 12px 30px rgba(233, 185, 73, 0.32);
+}
+
+.sp-veil-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.sp-veil-sub {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #c9d6e4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-veil {
+    transition-duration: 0.15s;
+  }
+}

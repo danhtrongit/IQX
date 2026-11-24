@@ -35,6 +35,7 @@ import {
   type NotificationItem,
   type NotificationType,
 } from "@/pages/notifications/api"
+import { normalizeSpaceLink } from "@/pages/spaces/spaces-url"
 
 type NotificationVisual = {
   icon: LucideIcon
@@ -108,7 +109,8 @@ function BellMenu() {
   function openItem(item: NotificationItem) {
     if (!item.read_at) markRead.mutate({ id: item.id })
     setOpen(false)
-    const target = item.link.trim() || FALLBACK_LINK[item.type] || "/"
+    const rawTarget = item.link.trim() || FALLBACK_LINK[item.type] || "/"
+    const target = normalizeSpaceLink(rawTarget) || "/"
     const current = `${location.pathname}${location.search}`
     navigate(target, {
       replace: current === target,

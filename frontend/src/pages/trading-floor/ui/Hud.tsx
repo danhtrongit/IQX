@@ -1,6 +1,7 @@
 import {
   ChartCandlestick,
   ClipboardList,
+  DoorOpen,
   Inbox,
   Landmark,
   MessagesSquare,
@@ -12,6 +13,7 @@ import {
 import { useNavigate } from "react-router"
 
 import { useAuth } from "@/hooks/use-auth"
+import { FLOOR_OFFICE_DOOR } from "../engine/layout.ts"
 
 import {
   commands,
@@ -40,7 +42,15 @@ const SHORTCUTS: { kind: InteractKind; icon: LucideIcon; label: string }[] = [
   { kind: "leaderboard", icon: Trophy, label: "Vinh danh" },
 ]
 
-export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
+export function Hud({
+  onEditProfile,
+  doorNear = false,
+  onRequestOffice,
+}: {
+  onEditProfile: () => void
+  doorNear?: boolean
+  onRequestOffice?: () => void
+}) {
   const navigate = useNavigate()
   const { openAuth, user } = useAuth()
   const guest = useStore(ui.guest)
@@ -118,13 +128,20 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
         </div>
       </div>
 
-      {hint && !panel && !posts.open && (
+      {(doorNear || hint) && !panel && !posts.open && (
         <button
           type="button"
           className="hint"
-          onClick={() => openInteract(hint.kind, hint.data)}
+          data-testid={doorNear ? "floor-door-hint" : undefined}
+          onClick={() => {
+            if (doorNear) {
+              onRequestOffice?.()
+            } else if (hint) {
+              openInteract(hint.kind, hint.data)
+            }
+          }}
         >
-          <span>{hint.label}</span>
+          <span>{doorNear ? FLOOR_OFFICE_DOOR.label : hint?.label}</span>
           <kbd>{touch ? "Chạm để mở" : "E"}</kbd>
         </button>
       )}
@@ -142,6 +159,21 @@ export function Hud({ onEditProfile }: { onEditProfile: () => void }) {
             <small>{s.label}</small>
           </button>
         ))}
+        {onRequestOffice && (
+          <>
+            <span className="shortcut-sep" aria-hidden="true" />
+            <button
+              type="button"
+              className="shortcut shortcut-door"
+              data-testid="floor-go-office-btn"
+              onClick={onRequestOffice}
+              title="Sang Văn phòng nhóm"
+            >
+              <DoorOpen size={20} aria-hidden="true" />
+              <small>Sang Văn phòng</small>
+            </button>
+          </>
+        )}
       </nav>
       <FxBar />
 

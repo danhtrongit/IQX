@@ -23,6 +23,20 @@ import {
   type ChibiRig,
 } from "@/lib/chibi-3d/types.ts"
 
+import {
+  createChibiPortalDoor,
+  type ChibiPortalDoor,
+} from "@/pages/spaces/door-3d.ts"
+import {
+  DOOR_MAX_WALK_SECONDS,
+  DOOR_STEP_THROUGH_S,
+  DOOR_SWING_CLOSE_S,
+  DOOR_SWING_OPEN_S,
+  findOfficeDoorPath,
+  shouldAutoWalkToDoor,
+} from "@/pages/spaces/door-transition.ts"
+import type { Point } from "@/pages/trading-floor/engine/nav.ts"
+
 import type {
   OfficeAttendanceDisplayState,
   OfficeAttendanceToday,
@@ -51,6 +65,7 @@ import {
   buildOfficeStations,
   computeOfficeDimensions,
   findNearestStation,
+  getOfficeExitDoor,
   moveWithSlide,
   officeFacingFromDelta,
   officeFacingToRadians,
@@ -178,10 +193,29 @@ const MODIFIER_KEY_CODES: ReadonlySet<string> = new Set([
 ])
 
 export interface OfficeControllerCallbacks {
+  arrivedViaDoor?: boolean
   onStationTrigger?: (action: OfficeStationAction) => void
+  onDoorRequest?: () => void
   onCloseModal?: () => void
   onSelfState?: (state: OfficeSelfStatePayload) => void
   onError?: (error: unknown) => void
+}
+
+interface OfficeDoorExitState {
+  phase: "walking" | "opening" | "entering" | "opening-skip" | "fading"
+  phaseS: number
+  walkElapsedS: number
+  waypoints: Point[]
+  startX: number
+  startY: number
+  onFadeStart: () => void
+  fadeTriggered: boolean
+}
+
+interface OfficeDoorArrivalState {
+  stepActive: boolean
+  elapsedS: number
+  closeS: number
 }
 
 interface SelfActor {
@@ -260,6 +294,7 @@ export class OfficeController {
   private readonly container: HTMLElement
   private readonly callbacks: OfficeControllerCallbacks
   private readonly world3d: OfficeWorld3D
+  private readonly exitDoor: ChibiPortalDoor
   private readonly overlayEl: HTMLDivElement
   private readonly promptBtn: HTMLButtonElement
   private readonly promptLabelEl: HTMLSpanElement
@@ -289,6 +324,11 @@ export class OfficeController {
   private latestLeaderboard: OfficeLeaderboard | null = null
 
   private activeStation: OfficeStation | null = null
+  private activeDoor = false
+  private pendingDoorArrival = false
+  private doorExit: OfficeDoorExitState | null = null
+  private doorArrival: OfficeDoorArrivalState | null = null
+  private elapsedS = 0
   private modalOpen = false
   private userZoomed = false
   private lastMobileViewport = false
@@ -305,7 +345,20 @@ export class OfficeController {
     this.host = host
     this.container = container
     this.callbacks = callbacks
+    this.pendingDoorArrival = Boolean(callbacks.arrivedViaDoor)
     this.world3d = new OfficeWorld3D(host.scene, host.world, host.lite)
+    this.exitDoor = createChibiPortalDoor({
+      signText: "KHU GIAO DỊCH",
+      signSubtext: "LỐI RA",
+      openingWidth: 1.22,
+      openingHeight: 1.66,
+      frameDepth: 0.28,
+      doubleSidedSign: true,
+      lite: host.lite,
+    })
+    this.positionExitDoor()
+    host.scene.add(this.exitDoor.group)
+
     this.lastMobileViewport =
       host.getViewportSize().width <= OFFICE_MOBILE_BREAKPOINT_PX
 
@@ -327,7 +380,12 @@ export class OfficeController {
 
     const onPromptClick = (event: MouseEvent): void => {
       event.stopPropagation()
-      if (!this.activeStation || this.modalOpen) return
+      if (this.modalOpen || this.doorExit) return
+      if (this.activeDoor) {
+        this.callbacks.onDoorRequest?.()
+        return
+      }
+      if (!this.activeStation) return
       this.triggerStation(this.activeStation)
     }
     const onPromptPointerDown = (event: PointerEvent): void => {
@@ -389,9 +447,15 @@ export class OfficeController {
 
   private bindInput(): void {
     const onPointerDown = (event: PointerEvent): void => {
-      if (this.disposed || this.modalOpen || !this.selfActor) return
+      if (this.disposed || this.modalOpen || this.doorExit || !this.selfActor)
+        return
       if (event.button !== 0 && event.pointerType === "mouse") return
       if (isHudOrModalTarget(event.target)) return
+
+      if (this.isExitDoorHit(event.clientX, event.clientY)) {
+        this.callbacks.onDoorRequest?.()
+        return
+      }
 
       const pt = this.host.screenToLogical(event.clientX, event.clientY)
       if (!pt) return
@@ -432,7 +496,7 @@ export class OfficeController {
         this.heldKeys.clear()
         return
       }
-      if (this.modalOpen || isTypingTarget(event.target)) return
+      if (this.modalOpen || this.doorExit || isTypingTarget(event.target)) return
 
       const code = event.code
       if (MOVE_KEY_CODES.has(code)) {
@@ -446,9 +510,16 @@ export class OfficeController {
         return
       }
 
-      if (code === "KeyE" && !event.repeat && this.activeStation) {
-        event.preventDefault()
-        this.triggerStation(this.activeStation)
+      if (code === "KeyE" && !event.repeat) {
+        if (this.activeDoor) {
+          event.preventDefault()
+          this.callbacks.onDoorRequest?.()
+          return
+        }
+        if (this.activeStation) {
+          event.preventDefault()
+          this.triggerStation(this.activeStation)
+        }
       }
     }
 
@@ -485,6 +556,111 @@ export class OfficeController {
       window.removeEventListener("blur", onBlur)
       document.removeEventListener("visibilitychange", onVisibilityChange)
     })
+  }
+
+  private positionExitDoor(): void {
+    const door = getOfficeExitDoor(this.worldH)
+    const pt = logicalToWorld(door.x, door.y, this.host.world)
+    this.exitDoor.group.position.set(pt.x, 0, pt.z)
+    this.exitDoor.group.rotation.y = Math.PI
+  }
+
+  private isExitDoorHit(clientX: number, clientY: number): boolean {
+    return (
+      this.host.pickObjects(clientX, clientY, [this.exitDoor.hitTarget])
+        .length > 0
+    )
+  }
+
+  /**
+   * Starts the animated exit through the Office -> Trading Floor portal door:
+   * - `prefers-reduced-motion`: immediate fade callback with zero walk or hinge swing.
+   * - Reachable within ~4 s via A* around desks/walls: auto-walk, swing open (~0.35 s), step through, fade.
+   * - Blocked or > 4 s away: skip walk, swing open + fade immediately.
+   */
+  beginDoorExit(onFadeStart: () => void): void {
+    if (this.disposed || this.doorExit) return
+    this.doorArrival = null
+    this.heldKeys.clear()
+    this.activeStation = null
+    this.activeDoor = false
+    this.promptBtn.style.display = "none"
+    this.world3d.hideTargetRing()
+    if (this.selfActor) {
+      this.selfActor.target = null
+    }
+
+    const self = this.selfActor
+    if (prefersReducedMotion() || !self) {
+      this.doorExit = {
+        phase: "fading",
+        phaseS: 0,
+        walkElapsedS: 0,
+        waypoints: [],
+        startX: self?.x ?? 0,
+        startY: self?.y ?? 0,
+        onFadeStart,
+        fadeTriggered: true,
+      }
+      onFadeStart()
+      return
+    }
+
+    const door = getOfficeExitDoor(this.worldH)
+    const start = { x: self.x, y: self.y }
+    const waypoints = findOfficeDoorPath(
+      start,
+      door.access,
+      this.obstacles,
+      this.worldW,
+      this.worldH
+    )
+    const decision = shouldAutoWalkToDoor(
+      start,
+      door.access,
+      waypoints,
+      OFFICE_WALK_SPEED,
+      DOOR_MAX_WALK_SECONDS,
+      36
+    )
+
+    if (decision.mode === "walk") {
+      this.doorExit = {
+        phase: "walking",
+        phaseS: 0,
+        walkElapsedS: 0,
+        waypoints,
+        startX: self.x,
+        startY: self.y,
+        onFadeStart,
+        fadeTriggered: false,
+      }
+      this.world3d.showTargetRing(door.access.x, door.access.y)
+    } else if (decision.mode === "at-door") {
+      self.facing = "down"
+      self.moving = false
+      this.doorExit = {
+        phase: "opening",
+        phaseS: 0,
+        walkElapsedS: 0,
+        waypoints: [],
+        startX: self.x,
+        startY: self.y,
+        onFadeStart,
+        fadeTriggered: false,
+      }
+    } else {
+      this.doorExit = {
+        phase: "opening-skip",
+        phaseS: 0,
+        walkElapsedS: 0,
+        waypoints: [],
+        startX: self.x,
+        startY: self.y,
+        onFadeStart,
+        fadeTriggered: false,
+      }
+    }
   }
 
   private triggerStation(station: OfficeStation): void {
@@ -593,6 +769,7 @@ export class OfficeController {
         this.worldH,
         dims.totalDesks
       )
+      this.positionExitDoor()
     }
 
     const selfDesk = this.deskByUserId.get(me.self.userId) ?? null
@@ -613,7 +790,7 @@ export class OfficeController {
       resolveOutfitHex(me.self.avatarColor) ??
       resolveOutfitHex(me.self.accentColor)
 
-    const spawn =
+    const defaultSpawn =
       me.self.role === "boss"
         ? { x: OFFICE_BOSS_SPAWN.x, y: OFFICE_BOSS_SPAWN.y }
         : selfDesk
@@ -624,6 +801,14 @@ export class OfficeController {
             }
 
     if (!this.selfActor || this.selfActor.userId !== me.self.userId) {
+      const arrivedViaDoor = this.pendingDoorArrival
+      this.pendingDoorArrival = false
+      const exitDoorSpec = getOfficeExitDoor(this.worldH)
+      const spawn = arrivedViaDoor
+        ? { x: exitDoorSpec.spawnInside.x, y: exitDoorSpec.spawnInside.y }
+        : defaultSpawn
+      const initialFacing: OfficeFacing = arrivedViaDoor ? "up" : "down"
+
       if (this.selfActor) {
         this.host.scene.remove(this.selfActor.rig.root)
         this.selfActor.rig.dispose()
@@ -647,16 +832,22 @@ export class OfficeController {
         rig,
         x: spawn.x,
         y: spawn.y,
-        facing: "down",
+        facing: initialFacing,
         moving: false,
         target: null,
+      }
+      if (arrivedViaDoor && !prefersReducedMotion()) {
+        this.exitDoor.setOpenProgress(1)
+        this.doorArrival = { stepActive: true, elapsedS: 0, closeS: 0 }
+      } else {
+        this.exitDoor.setOpenProgress(0)
       }
       const camTarget = this.computeCameraFollowLogical(spawn.x, spawn.y)
       this.host.followLogical(camTarget.x, camTarget.y, true)
       this.callbacks.onSelfState?.({
         x: spawn.x,
         y: spawn.y,
-        facing: "down",
+        facing: initialFacing,
         moving: false,
       })
     } else {
@@ -921,19 +1112,212 @@ export class OfficeController {
     return true
   }
 
+  private stepDoorExit(
+    self: SelfActor,
+    dt: number,
+    reducedMotion: boolean
+  ): void {
+    const exit = this.doorExit
+    if (!exit) return
+    const door = getOfficeExitDoor(this.worldH)
+
+    let moved = false
+    if (exit.phase === "walking") {
+      exit.walkElapsedS += dt
+      let budget = OFFICE_WALK_SPEED * dt
+      let x = self.x
+      let y = self.y
+
+      while (budget > 0 && exit.waypoints.length > 0) {
+        const target = exit.waypoints[0]!
+        const dx = target.x - x
+        const dy = target.y - y
+        const dist = Math.hypot(dx, dy)
+        if (dist > 0.5) self.facing = officeFacingFromDelta(dx, dy)
+        if (dist <= budget) {
+          x = target.x
+          y = target.y
+          budget -= dist
+          exit.waypoints.shift()
+        } else {
+          x += (dx / dist) * budget
+          y += (dy / dist) * budget
+          budget = 0
+        }
+      }
+
+      self.x = x
+      self.y = y
+      moved = exit.waypoints.length > 0
+
+      if (
+        exit.waypoints.length === 0 ||
+        exit.walkElapsedS >= DOOR_MAX_WALK_SECONDS + 0.5
+      ) {
+        this.world3d.hideTargetRing()
+        self.facing = "down"
+        moved = false
+        exit.phase = "opening"
+        exit.phaseS = 0
+        exit.startX = self.x
+        exit.startY = self.y
+      }
+    } else if (exit.phase === "opening") {
+      exit.phaseS += dt
+      this.exitDoor.setOpenProgress(Math.min(1, exit.phaseS / DOOR_SWING_OPEN_S))
+      self.facing = "down"
+      if (exit.phaseS >= DOOR_SWING_OPEN_S) {
+        exit.phase = "entering"
+        exit.phaseS = 0
+        exit.startX = self.x
+        exit.startY = self.y
+      }
+    } else if (exit.phase === "entering") {
+      exit.phaseS += dt
+      const t = Math.min(1, exit.phaseS / DOOR_STEP_THROUGH_S)
+      self.x = exit.startX + (door.through.x - exit.startX) * t
+      self.y = exit.startY + (door.through.y - exit.startY) * t
+      self.facing = "down"
+      moved = t < 1
+      if (exit.phaseS >= DOOR_STEP_THROUGH_S) {
+        exit.phase = "fading"
+        exit.phaseS = 0
+        if (!exit.fadeTriggered) {
+          exit.fadeTriggered = true
+          exit.onFadeStart()
+        }
+      }
+    } else if (exit.phase === "opening-skip") {
+      exit.phaseS += dt
+      this.exitDoor.setOpenProgress(Math.min(1, exit.phaseS / DOOR_SWING_OPEN_S))
+      if (!exit.fadeTriggered && exit.phaseS >= DOOR_SWING_OPEN_S * 0.55) {
+        exit.fadeTriggered = true
+        exit.onFadeStart()
+      }
+      if (exit.phaseS >= DOOR_SWING_OPEN_S) {
+        exit.phase = "fading"
+      }
+    }
+
+    self.moving = moved
+    const pt = logicalToWorld(self.x, self.y, this.host.world)
+    self.rig.root.position.set(pt.x, 0, pt.z)
+    self.rig.update(dt, {
+      anim: reducedMotion ? "walk" : moved ? "walk" : "idle",
+      moveFactor: reducedMotion ? 0 : 1,
+      facingRad: officeFacingToRadians(self.facing),
+    })
+
+    if (moved) {
+      this.callbacks.onSelfState?.({
+        x: self.x,
+        y: self.y,
+        facing: self.facing,
+        moving: true,
+      })
+    }
+
+    const camTarget = this.computeCameraFollowLogical(self.x, self.y)
+    this.host.followLogical(camTarget.x, camTarget.y)
+    this.updateActorNameplate(
+      self.userId,
+      self.name,
+      self.role,
+      true,
+      self.x,
+      self.y,
+      self.rig.headHeight
+    )
+    this.activeStation = null
+    this.activeDoor = false
+    this.promptBtn.style.display = "none"
+  }
+
+  private stepDoorArrival(
+    self: SelfActor,
+    dt: number,
+    reducedMotion: boolean
+  ): boolean {
+    const arrival = this.doorArrival
+    if (!arrival) return false
+
+    if (this.heldKeys.size > 0 || self.target !== null) {
+      arrival.stepActive = false
+    }
+
+    arrival.elapsedS += dt
+    const STEP_DELAY_S = 0.16
+    const STEP_DUR_S = 0.24
+    const door = getOfficeExitDoor(this.worldH)
+
+    if (arrival.stepActive) {
+      if (arrival.elapsedS >= STEP_DELAY_S) {
+        const t = Math.min(1, (arrival.elapsedS - STEP_DELAY_S) / STEP_DUR_S)
+        self.x =
+          door.spawnInside.x + (door.access.x - door.spawnInside.x) * t
+        self.y =
+          door.spawnInside.y + (door.access.y - door.spawnInside.y) * t
+        self.facing = "up"
+        self.moving = t < 1
+        const pt = logicalToWorld(self.x, self.y, this.host.world)
+        self.rig.root.position.set(pt.x, 0, pt.z)
+        self.rig.update(dt, {
+          anim: reducedMotion ? "walk" : t < 1 ? "walk" : "idle",
+          moveFactor: reducedMotion ? 0 : 1,
+          facingRad: officeFacingToRadians(self.facing),
+        })
+        if (t >= 1) {
+          arrival.stepActive = false
+          self.moving = false
+          this.callbacks.onSelfState?.({
+            x: self.x,
+            y: self.y,
+            facing: self.facing,
+            moving: false,
+          })
+        }
+      } else {
+        self.rig.update(dt, {
+          anim: "idle",
+          moveFactor: 0,
+          facingRad: officeFacingToRadians("up"),
+        })
+      }
+    }
+
+    if (arrival.elapsedS >= STEP_DELAY_S + 0.08) {
+      arrival.closeS += dt
+      const openLeft = Math.max(0, 1 - arrival.closeS / DOOR_SWING_CLOSE_S)
+      this.exitDoor.setOpenProgress(openLeft)
+      if (openLeft <= 0 && !arrival.stepActive) {
+        this.doorArrival = null
+      }
+    }
+
+    return arrival.stepActive
+  }
+
   private tick(dt: number): void {
     if (this.disposed) return
 
+    this.elapsedS += dt
     this.world3d.update(dt)
     const reducedMotion = prefersReducedMotion()
+    this.exitDoor.update(dt, this.elapsedS, reducedMotion)
 
     // 1. Update local self movement (WASD/Arrows or click-to-move)
-    if (this.selfActor) {
+    if (this.selfActor && this.doorExit) {
+      this.stepDoorExit(this.selfActor, dt, reducedMotion)
+    } else if (this.selfActor) {
       const self = this.selfActor
+      const arrivalStepping = this.doorArrival
+        ? this.stepDoorArrival(self, dt, reducedMotion)
+        : false
+
       let vx = 0
       let vy = 0
 
-      if (!this.modalOpen) {
+      if (!this.modalOpen && !arrivalStepping) {
         if (this.heldKeys.has("KeyW") || this.heldKeys.has("ArrowUp")) vy -= 1
         if (this.heldKeys.has("KeyS") || this.heldKeys.has("ArrowDown"))
           vy += 1
@@ -944,34 +1328,12 @@ export class OfficeController {
       }
 
       let moved = false
-      if (vx !== 0 || vy !== 0) {
-        const len = Math.hypot(vx, vy)
-        const step = OFFICE_WALK_SPEED * dt
-        const dx = (vx / len) * step
-        const dy = (vy / len) * step
-        self.facing = officeFacingFromDelta(dx, dy)
-        const res = moveWithSlide(
-          self.x,
-          self.y,
-          dx,
-          dy,
-          this.obstacles,
-          this.worldW,
-          this.worldH
-        )
-        self.x = res.x
-        self.y = res.y
-        moved = res.moved
-      } else if (self.target && !this.modalOpen) {
-        const rx = self.target.x - self.x
-        const ry = self.target.y - self.y
-        const dist = Math.hypot(rx, ry)
-        if (dist < ARRIVAL_PX) {
-          self.target = null
-        } else {
-          const step = Math.min(dist, OFFICE_WALK_SPEED * dt)
-          const dx = (rx / dist) * step
-          const dy = (ry / dist) * step
+      if (!arrivalStepping) {
+        if (vx !== 0 || vy !== 0) {
+          const len = Math.hypot(vx, vy)
+          const step = OFFICE_WALK_SPEED * dt
+          const dx = (vx / len) * step
+          const dy = (vy / len) * step
           self.facing = officeFacingFromDelta(dx, dy)
           const res = moveWithSlide(
             self.x,
@@ -985,29 +1347,53 @@ export class OfficeController {
           self.x = res.x
           self.y = res.y
           moved = res.moved
-          if (!moved) {
+        } else if (self.target && !this.modalOpen) {
+          const rx = self.target.x - self.x
+          const ry = self.target.y - self.y
+          const dist = Math.hypot(rx, ry)
+          if (dist < ARRIVAL_PX) {
             self.target = null
+          } else {
+            const step = Math.min(dist, OFFICE_WALK_SPEED * dt)
+            const dx = (rx / dist) * step
+            const dy = (ry / dist) * step
+            self.facing = officeFacingFromDelta(dx, dy)
+            const res = moveWithSlide(
+              self.x,
+              self.y,
+              dx,
+              dy,
+              this.obstacles,
+              this.worldW,
+              this.worldH
+            )
+            self.x = res.x
+            self.y = res.y
+            moved = res.moved
+            if (!moved) {
+              self.target = null
+            }
           }
         }
-      }
 
-      const wasMoving = self.moving
-      self.moving = moved
-      const pt = logicalToWorld(self.x, self.y, this.host.world)
-      self.rig.root.position.set(pt.x, 0, pt.z)
-      self.rig.update(dt, {
-        anim: reducedMotion ? "walk" : moved ? "walk" : "idle",
-        moveFactor: reducedMotion ? 0 : 1,
-        facingRad: officeFacingToRadians(self.facing),
-      })
-
-      if (moved || wasMoving) {
-        this.callbacks.onSelfState?.({
-          x: self.x,
-          y: self.y,
-          facing: self.facing,
-          moving: moved,
+        const wasMoving = self.moving
+        self.moving = moved
+        const pt = logicalToWorld(self.x, self.y, this.host.world)
+        self.rig.root.position.set(pt.x, 0, pt.z)
+        self.rig.update(dt, {
+          anim: reducedMotion ? "walk" : moved ? "walk" : "idle",
+          moveFactor: reducedMotion ? 0 : 1,
+          facingRad: officeFacingToRadians(self.facing),
         })
+
+        if (moved || wasMoving) {
+          this.callbacks.onSelfState?.({
+            x: self.x,
+            y: self.y,
+            facing: self.facing,
+            moving: moved,
+          })
+        }
       }
 
       const camTarget = this.computeCameraFollowLogical(self.x, self.y)
@@ -1022,8 +1408,8 @@ export class OfficeController {
         self.rig.headHeight
       )
 
-      // Proximity station check (< 95 px)
-      const nearest = this.modalOpen
+      // Proximity station & exit-door check (< 95 px)
+      const nearestStation = this.modalOpen
         ? null
         : findNearestStation(
             self.x,
@@ -1031,8 +1417,31 @@ export class OfficeController {
             this.stations,
             OFFICE_STATION_RADIUS
           )
-      this.activeStation = nearest
-      if (nearest) {
+      const exitDoorSpec = getOfficeExitDoor(this.worldH)
+      const doorDist = this.modalOpen
+        ? Infinity
+        : Math.hypot(
+            self.x - exitDoorSpec.access.x,
+            self.y - exitDoorSpec.access.y
+          )
+      const stationDist = nearestStation
+        ? Math.hypot(self.x - nearestStation.x, self.y - nearestStation.y)
+        : Infinity
+      const doorCloser = doorDist < exitDoorSpec.radius && doorDist <= stationDist
+
+      this.activeDoor = doorCloser
+      this.activeStation = doorCloser ? null : nearestStation
+
+      const promptTarget = doorCloser
+        ? {
+            id: "exit-door" as const,
+            x: exitDoorSpec.access.x,
+            y: exitDoorSpec.access.y,
+            label: exitDoorSpec.label,
+          }
+        : nearestStation
+
+      if (promptTarget) {
         const vp = this.host.getViewportSize()
         const isMobile = vp.width <= OFFICE_MOBILE_BREAKPOINT_PX
         const selfPlatePt = this.host.projectLogicalToScreen(
@@ -1042,21 +1451,28 @@ export class OfficeController {
         )
         // Anchor below feet for own desk, boss desk, and on phones so the E label never covers the avatar or top HUD cards
         const anchorBelowFeet =
-          nearest.id === "mydesk" || nearest.id === "boss" || isMobile
-        const promptAnchorX = anchorBelowFeet ? self.x : nearest.x
-        const promptAnchorY = anchorBelowFeet ? self.y : nearest.y
+          promptTarget.id === "mydesk" ||
+          promptTarget.id === "boss" ||
+          isMobile
+        const promptAnchorX = anchorBelowFeet ? self.x : promptTarget.x
+        const promptAnchorY = anchorBelowFeet ? self.y : promptTarget.y
         const promptPt = this.host.projectLogicalToScreen(
           promptAnchorX,
           promptAnchorY,
           anchorBelowFeet ? 0.0 : 1.55
         )
         if (promptPt.visible) {
-          if (this.promptLabelEl.textContent !== nearest.label) {
-            this.promptLabelEl.textContent = nearest.label
+          if (this.promptLabelEl.textContent !== promptTarget.label) {
+            this.promptLabelEl.textContent = promptTarget.label
             this.promptBtn.setAttribute(
               "aria-label",
-              `${nearest.label} (nhấn E để mở)`
+              `${promptTarget.label} (nhấn E để mở)`
             )
+          }
+          if (doorCloser) {
+            this.promptBtn.dataset.testid = "office-door-prompt"
+          } else {
+            delete this.promptBtn.dataset.testid
           }
           // Display first so offsetWidth/offsetHeight reflect the live pill dimensions
           if (this.promptBtn.style.display === "none") {
@@ -1175,6 +1591,8 @@ export class OfficeController {
     this.nameplates.clear()
 
     this.overlayEl.remove()
+    this.host.scene.remove(this.exitDoor.group)
+    this.exitDoor.dispose()
     this.world3d.dispose()
   }
 }

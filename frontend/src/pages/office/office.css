@@ -271,6 +271,40 @@
   flex: none;
 }
 
+.of-door-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  background: rgba(14, 24, 48, 0.94);
+  border: 1px solid rgba(233, 185, 73, 0.6);
+  color: var(--of-tx);
+  font-weight: 700;
+  font-size: 13.5px;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.08s ease;
+}
+
+.of-door-btn svg {
+  color: var(--of-gold2);
+  flex: none;
+}
+
+.of-door-btn:hover {
+  background: #1c2f58;
+  border-color: var(--of-gold2);
+}
+
+.of-door-btn:active {
+  transform: scale(0.98);
+}
+
 .of-hc {
   width: 330px;
   background: rgba(14, 24, 48, 0.95);
@@ -2098,6 +2132,20 @@
   line-height: 1.55;
 }
 
+.of-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.of-gate-actions .of-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+}
+
 .of-fallback {
   position: absolute;
   inset: 0;
@@ -2197,10 +2245,26 @@
     min-width: 0;
   }
 
+  .of-door-btn {
+    min-height: 44px;
+    padding: 8px 11px;
+    font-size: 12px;
+    gap: 6px;
+    max-width: calc(100vw - 224px - var(--of-safe-l) - var(--of-safe-r));
+    overflow: hidden;
+  }
+
+  .of-door-btn > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
   .of-hud-tr {
     right: calc(10px + var(--of-safe-r));
     top: calc(10px + var(--of-safe-t));
     gap: 8px;
+    z-index: 14;
     max-width: calc(100vw - 20px - var(--of-safe-l) - var(--of-safe-r));
   }
 
@@ -2227,7 +2291,7 @@
   }
 
   .of-hc.is-mini {
-    width: min(224px, calc(100vw - 20px - var(--of-safe-l) - var(--of-safe-r)));
+    width: min(204px, calc(100vw - 20px - var(--of-safe-l) - var(--of-safe-r)));
   }
 
   .of-hc.is-mini .of-hc-head {

@@ -93,6 +93,51 @@ export interface OfficeDoorway {
   readonly y: number
 }
 
+export interface OfficeExitDoorSpec {
+  /** Center of the doorway along the South staff-area entrance outer wall. */
+  readonly x: number
+  readonly y: number
+  /** Solid door-frame collision box along the South outer wall. */
+  readonly obstacle: OfficeRect
+  /** Walkable point in front of the door where E prompt activates. */
+  readonly access: { readonly x: number; readonly y: number }
+  /** Threshold point stepped into as the door swings open during exit. */
+  readonly through: { readonly x: number; readonly y: number }
+  /** Spawn point just inside the door when arriving from Khu giao dịch. */
+  readonly spawnInside: { readonly x: number; readonly y: number }
+  readonly label: string
+  readonly radius: number
+}
+
+/**
+ * Staff-area outer-wall entrance door connecting Khu Văn phòng <-> Khu giao dịch.
+ * Placed at the foot of the 202 px main boulevard (`x = 1715`) on the South outer wall,
+ * cleanly clear of Pod 2 (`x <= 1658`), Huddle Nook (`x <= 1565`), and Printer (`x >= 1850`)
+ * across both canonical (`2400 × 1560`) and dynamically expanded (`> 24` staff) layouts.
+ */
+export function getOfficeExitDoor(
+  worldHeight = OFFICE_BASE_H
+): OfficeExitDoorSpec {
+  const x = 1715
+  const wallY = worldHeight - OFFICE_WALL_THICK
+  return {
+    x,
+    y: wallY,
+    obstacle: {
+      x: x - 76,
+      y: worldHeight - 32,
+      w: 152,
+      h: 16,
+      label: "office-exit-door",
+    },
+    access: { x, y: worldHeight - 70 },
+    through: { x, y: worldHeight - 22 },
+    spawnInside: { x, y: worldHeight - 54 },
+    label: "Khu giao dịch",
+    radius: OFFICE_STATION_RADIUS,
+  }
+}
+
 export const OFFICE_DOORWAYS: readonly OfficeDoorway[] = [
   { id: "boss", x1: 320, x2: 450, y: OFFICE_DIVIDER_Y },
   { id: "meet", x1: 1090, x2: 1230, y: OFFICE_DIVIDER_Y },
@@ -800,6 +845,7 @@ export function buildOfficeObstacles(
     credenza,
     huddle.obstacle,
     printer,
+    getOfficeExitDoor(worldH).obstacle,
   ]
 
   for (const locker of lockers) {

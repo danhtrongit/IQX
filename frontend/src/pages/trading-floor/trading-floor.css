@@ -722,6 +722,29 @@
 .tf-root .shortcut:hover {
   background: var(--raise);
 }
+.tf-root .shortcut-sep {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.14);
+  margin: 0 2px;
+  flex: none;
+}
+.tf-root .shortcut-door {
+  min-width: 82px;
+  padding: 2px 10px;
+  background: rgba(227, 179, 65, 0.14);
+  border: 1px solid rgba(246, 210, 122, 0.44);
+  color: var(--accent-2);
+  white-space: nowrap;
+}
+.tf-root .shortcut-door small {
+  color: var(--fg);
+  font-weight: 700;
+}
+.tf-root .shortcut-door:hover {
+  background: rgba(227, 179, 65, 0.24);
+  border-color: var(--accent-2);
+}
 .tf-root .emote-wrap {
   position: absolute;
   right: calc(12px + var(--safe-r));
@@ -782,7 +805,7 @@
   border-radius: 999px;
   pointer-events: none;
 }
-@media (pointer: coarse), (hover: none), (max-width: 980px) {
+@media (pointer: coarse), (hover: none), (max-width: 1120px) {
   .tf-root .help {
     display: none;
   }
@@ -1065,21 +1088,36 @@
     max-width: 114px;
     gap: 4px;
   }
-  /* Four shortcuts must stay clear of the Chat SACO button at the right edge on a 390px phone. */
+  /* Shortcuts + door button stay clear of the Chat SACO button at the right edge on a 390px phone. */
   .tf-root .shortcuts {
     gap: 2px;
     padding: 3px;
     left: calc(8px + var(--safe-l));
     bottom: calc(10px + var(--safe-b));
     height: 50px;
+    max-width: calc(100cqw - 74px - var(--safe-l) - var(--safe-r));
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tf-root .shortcuts::-webkit-scrollbar {
+    display: none;
   }
   .tf-root .shortcut {
-    min-width: 52px;
+    min-width: 48px;
     height: 44px;
     padding: 2px 4px;
+    flex: none;
   }
   .tf-root .shortcut small {
     font-size: 10px;
+  }
+  .tf-root .shortcut-sep {
+    height: 24px;
+    margin: 0 1px;
+  }
+  .tf-root .shortcut-door {
+    min-width: 72px;
+    padding: 2px 6px;
   }
   .tf-root .emote-wrap {
     right: calc(8px + var(--safe-r));
@@ -1111,7 +1149,12 @@
 }
 @media (max-width: 480px) {
   .tf-root .shortcut {
-    min-width: 48px;
+    min-width: 44px;
+    padding: 2px 3px;
+  }
+  .tf-root .shortcut-door {
+    min-width: 66px;
+    padding: 2px 5px;
   }
 }
 /* ---------- Thần Tài ---------- */

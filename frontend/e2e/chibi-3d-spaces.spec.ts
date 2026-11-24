@@ -1,7 +1,7 @@
 /**
  * Independent Playwright E2E & Visual WebGL Verification Suite for:
  *  - Upgraded 3D Procedural Chibi Khu giao dịch (`/khu-giao-dich`)
- *  - New 3D Procedural Chibi Khu Văn phòng (`/van-phong`)
+ *  - New 3D Procedural Chibi Khu Văn phòng (`/khu-giao-dich?phong=van-phong`)
  *
  * Strictly zero production edits; all REST & WebSocket frames are schema-exact mocks.
  */
@@ -1976,7 +1976,7 @@ test("Test 3 — Khu Văn phòng Non-Member Gate exact Spec §2 copy", async ({
   const watchers = attachWatchers(page)
   await setupOfficeMocks(page, { role: "none" })
 
-  await page.goto("/van-phong", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong", { waitUntil: "domcontentloaded" })
 
   await expect(
     page.getByText(
@@ -2001,7 +2001,7 @@ test("Test 4 — Khu Văn phòng Staff 3D World, HUD, NHIỆM VỤ CỦA TÔI & 
   const watchers = attachWatchers(page)
   await setupOfficeMocks(page, { role: "staff" })
 
-  await page.goto("/van-phong", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong", { waitUntil: "domcontentloaded" })
 
   // 1. Verify Three.js 4-zone Office <canvas> mounts with non-blank multi-color 3D pixels
   const officeCanvas = page.locator(".of-canvas-host canvas").first()
@@ -2145,7 +2145,7 @@ test("Test 4 — Khu Văn phòng Staff 3D World, HUD, NHIỆM VỤ CỦA TÔI & 
   await expect(mineModal).toBeHidden()
 
   // 4. Open shared modals: PHÒNG HỌP, PHÒNG TÀI LIỆU, THÀNH TÍCH THÁNG cleanly
-  await page.goto("/van-phong?modal=meet", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong&modal=meet", { waitUntil: "domcontentloaded" })
   const meetModal = page.getByTestId("office-modal-meet")
   await expect(meetModal).toBeVisible({ timeout: 10_000 })
   await expect(meetModal).toContainText("Họp nhóm tuần")
@@ -2153,7 +2153,7 @@ test("Test 4 — Khu Văn phòng Staff 3D World, HUD, NHIỆM VỤ CỦA TÔI & 
   await page.keyboard.press("Escape")
   await expect(meetModal).toBeHidden()
 
-  await page.goto("/van-phong?modal=docs", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong&modal=docs", { waitUntil: "domcontentloaded" })
   const docsModal = page.getByTestId("office-modal-docs")
   await expect(docsModal).toBeVisible({ timeout: 10_000 })
   await expect(docsModal).toContainText("Sổ tay quy trình tư vấn SACO 2026")
@@ -2161,7 +2161,7 @@ test("Test 4 — Khu Văn phòng Staff 3D World, HUD, NHIỆM VỤ CỦA TÔI & 
   await page.keyboard.press("Escape")
   await expect(docsModal).toBeHidden()
 
-  await page.goto("/van-phong?modal=stand", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong&modal=stand", { waitUntil: "domcontentloaded" })
   const standModal = page.getByTestId("office-modal-stand")
   await expect(standModal).toBeVisible({ timeout: 10_000 })
   await expect(standModal).toContainText("THÀNH TÍCH THÁNG 11")
@@ -2186,7 +2186,7 @@ test("Test 5 — Khu Văn phòng Boss HUD, QUẢN LÝ & HỒ SƠ NHÂN VIÊN (14
   const watchers = attachWatchers(page)
   const server = await setupOfficeMocks(page, { role: "boss" })
 
-  await page.goto("/van-phong", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong", { waitUntil: "domcontentloaded" })
 
   // Verify Boss HUD cards (QUẢN LÝ, HỒ SƠ NHÂN VIÊN, ĐIỂM DANH) & no Staff card
   const mgrCard = page.getByTestId("office-hud-card-mgr")
@@ -2266,7 +2266,7 @@ test("Test 6 — Khu Văn phòng IQX Light-Theme Invariance (1440×900)", async 
   const watchers = attachWatchers(page)
   await setupOfficeMocks(page, { role: "staff", theme: "light" })
 
-  await page.goto("/van-phong", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong", { waitUntil: "domcontentloaded" })
 
   // Verify IQX app really is in html.light mode
   await expect
@@ -2347,7 +2347,7 @@ test("Test 7 — Khu Văn phòng Responsive Tablet (900×900) & Mobile (390×844
 
   // 1. Tablet 900×900
   await page.setViewportSize({ width: 900, height: 900 })
-  await page.goto("/van-phong", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong", { waitUntil: "domcontentloaded" })
   const mineCardTablet = page.getByTestId("office-hud-card-mine")
   await expect(mineCardTablet).toBeVisible({ timeout: 30_000 })
   const tabletCardBox = await mineCardTablet.boundingBox()
@@ -2356,7 +2356,7 @@ test("Test 7 — Khu Văn phòng Responsive Tablet (900×900) & Mobile (390×844
 
   // 2. Mobile 390×844 (Staff): HUD cards MUST start collapsed + zero horizontal overflow on stage & inside NHIỆM VỤ CỦA TÔI
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto("/van-phong", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong", { waitUntil: "domcontentloaded" })
 
   const mineCardMob = page.getByTestId("office-hud-card-mine")
   const attCardMob = page.getByTestId("office-hud-card-att")
@@ -2390,7 +2390,7 @@ test("Test 7 — Khu Văn phòng Responsive Tablet (900×900) & Mobile (390×844
 
   // 3. Mobile 390×844 (Boss): open QUẢN LÝ modal -> assert zero horizontal overflow
   await setupOfficeMocks(page, { role: "boss" })
-  await page.goto("/van-phong?modal=mgr", { waitUntil: "domcontentloaded" })
+  await page.goto("/khu-giao-dich?phong=van-phong&modal=mgr", { waitUntil: "domcontentloaded" })
   const mgrModal = page.getByTestId("office-modal-mgr")
   await expect(mgrModal).toBeVisible({ timeout: 25_000 })
   await assertNoHorizontalOverflow(page, "Office mobile 390x844 QUẢN LÝ")
@@ -2407,7 +2407,7 @@ test("Test 7 — Khu Văn phòng Responsive Tablet (900×900) & Mobile (390×844
  * TEST 8 — Notification Bell Click-to-Open-Modal (1440×900)
  * ========================================================================== */
 
-test("Test 8 — Notification Bell click-to-open-modal navigates to /van-phong?modal=mine", async ({
+test("Test 8 — Notification Bell click-to-open-modal navigates to /khu-giao-dich?phong=van-phong&modal=mine", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
@@ -2442,13 +2442,13 @@ test("Test 8 — Notification Bell click-to-open-modal navigates to /van-phong?m
   await expect(typeLabel).toBeVisible()
   await expect(typeLabel).toHaveText("Giao nhiệm vụ")
 
-  // Click notification item -> navigates to /van-phong?modal=mine and opens NHIỆM VỤ CỦA TÔI
+  // Click notification item -> navigates to /khu-giao-dich?phong=van-phong&modal=mine and opens NHIỆM VỤ CỦA TÔI
   await page
     .locator('button[data-notification-type="office_task_assigned"]')
     .first()
     .click()
 
-  await expect(page).toHaveURL(/\/van-phong\?modal=mine/)
+  await expect(page).toHaveURL(/\/khu-giao-dich\?phong=van-phong&modal=mine/)
   await expect(page.getByTestId("office-modal-mine")).toBeVisible({
     timeout: 12_000,
   })

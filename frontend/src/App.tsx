@@ -8,6 +8,7 @@ import { emptyChrome, flashbackChrome, practiceChrome } from "@/config/chrome"
 import { demoRouteRedirect } from "@/lib/demo-route-redirect"
 import { AcademyMetricRedirect, AcademyRedirect } from "@/pages/demo-trading/academy-redirect"
 import { legacyWorkspaceLoader, workspaceLoader } from "@/pages/demo-trading/workspace-url"
+import { redirectLegacyOfficeUrl, redirectLegacyVirtualOfficeUrl } from "@/pages/spaces/spaces-url"
 import { MaintenancePage, NotFoundPage } from "@/pages/system/route-states"
 
 
@@ -76,8 +77,7 @@ const VTAccountsPage = lazyPage(() => import("@/pages/admin/trading/vt-accounts-
 const VTAccountDetailPage = lazyPage(() => import("@/pages/admin/trading/vt-account-detail-page").then(module => ({ default: module.VTAccountDetailPage })))
 const VTConfigPage = lazyPage(() => import("@/pages/admin/trading/vt-config-page").then(module => ({ default: module.VTConfigPage })))
 const CoursesPage = lazyPage(() => import("@/pages/admin/learning/courses-page").then(module => ({ default: module.CoursesPage })))
-const TradingFloorPage = lazyPage(() => import("@/pages/trading-floor/trading-floor-page").then(module => ({ default: module.TradingFloorPage })))
-const OfficePage = lazyPage(() => import("@/pages/office/office-page").then(module => ({ default: module.OfficePage })))
+const SpacesPage = lazyPage(() => import("@/pages/spaces/SpacesPage").then(module => ({ default: module.SpacesPage })))
 const UnsubscribePage = lazyPage(() => import("@/pages/notifications/unsubscribe-page").then(module => ({ default: module.UnsubscribePage })))
 const AboutPage = lazyPage(() => import("@/pages/about/about-page").then(module => ({ default: module.AboutPage })))
 const CourseEditPage = lazyPage(() => import("@/pages/admin/learning/course-edit-page").then(module => ({ default: module.CourseEditPage })))
@@ -107,6 +107,30 @@ function DemoContentRedirect({ content }: { content: "chart" | "board" | "ai-ana
   return <Navigate replace to={demoRouteRedirect(content, location.search, location.hash)} />
 }
 
+/** Legacy `/van-phong?...` -> `/khu-giao-dich?phong=van-phong&...` keeping other params, hash & navigation state. */
+function LegacyOfficeRedirect() {
+  const location = useLocation()
+  return (
+    <Navigate
+      replace
+      to={redirectLegacyOfficeUrl(location.search, location.hash)}
+      state={location.state}
+    />
+  )
+}
+
+/** Legacy `/van-phong-ao?...` -> `/khu-giao-dich?...` keeping query params, hash & navigation state. */
+function LegacyVirtualOfficeRedirect() {
+  const location = useLocation()
+  return (
+    <Navigate
+      replace
+      to={redirectLegacyVirtualOfficeUrl(location.search, location.hash)}
+      state={location.state}
+    />
+  )
+}
+
 export const routes: RouteObject[] = [
   {
     path: "/",
@@ -131,9 +155,9 @@ export const routes: RouteObject[] = [
       { path: "backtest", element: <RedirectWithSearch to="/chien-luoc" tab="backtest" />, handle: { chrome: emptyChrome } },
       { path: "backtest/:symbol", Component: BacktestSymbolRedirect, handle: { chrome: emptyChrome } },
       { path: "thong-bao/tat", Component: UnsubscribePage, handle: { chrome: emptyChrome } },
-      { path: "khu-giao-dich", Component: TradingFloorPage, handle: { chrome: emptyChrome } },
-      { path: "van-phong", Component: OfficePage, handle: { chrome: emptyChrome } },
-      { path: "van-phong-ao", element: <Navigate to="/khu-giao-dich" replace />, handle: { chrome: emptyChrome } },
+      { path: "khu-giao-dich", Component: SpacesPage, handle: { chrome: emptyChrome } },
+      { path: "van-phong", Component: LegacyOfficeRedirect, handle: { chrome: emptyChrome } },
+      { path: "van-phong-ao", Component: LegacyVirtualOfficeRedirect, handle: { chrome: emptyChrome } },
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug", Component: CourseDetailPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug/:episodeId", Component: EpisodeViewerPage, handle: { chrome: emptyChrome } },

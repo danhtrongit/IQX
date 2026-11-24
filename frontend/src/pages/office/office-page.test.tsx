@@ -445,7 +445,7 @@ function makeLeaderboard(
   }
 }
 
-function renderOffice(initialUrl = "/van-phong") {
+function renderOffice(initialUrl = "/khu-giao-dich?phong=van-phong") {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -456,7 +456,7 @@ function renderOffice(initialUrl = "/van-phong") {
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[initialUrl]}>
         <Routes>
-          <Route path="/van-phong" element={<OfficePage />} />
+          <Route path="/khu-giao-dich" element={<OfficePage />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>
@@ -1111,7 +1111,7 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
     apiMocks.createMeeting.mockResolvedValue(makeMeetings().today[0])
 
     // 1. PHÒNG HỌP (?modal=meet)
-    const { unmount } = renderOffice("/van-phong?modal=meet")
+    const { unmount } = renderOffice("/khu-giao-dich?phong=van-phong&modal=meet")
     const meetModal = await screen.findByTestId("office-modal-meet")
     expect(await within(meetModal).findByText("Họp nhóm tuần")).toBeTruthy()
     await user.click(
@@ -1138,7 +1138,7 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
     unmount()
 
     // 2. PHÒNG TÀI LIỆU (?modal=docs) — enforce > 20 MB limit client-side
-    const docsView = renderOffice("/van-phong?modal=docs")
+    const docsView = renderOffice("/khu-giao-dich?phong=van-phong&modal=docs")
     const docsModal = await screen.findByTestId("office-modal-docs")
     expect(await within(docsModal).findByText("Sổ tay tư vấn SACO")).toBeTruthy()
     const oversizedFile = new File(["x"], "huge.pdf", {
@@ -1164,7 +1164,7 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
         myRank: null,
       })
     )
-    renderOffice("/van-phong?modal=stand")
+    renderOffice("/khu-giao-dich?phong=van-phong&modal=stand")
     const standModal = await screen.findByTestId("office-modal-stand")
     expect(within(standModal).getByText("THÀNH TÍCH THÁNG 12")).toBeTruthy()
     expect(within(standModal).getByText("reset ngày 01/01")).toBeTruthy()
@@ -1189,12 +1189,12 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
     apiMocks.listStickyNotes.mockResolvedValue({ items: [], maxNotes: 50 })
 
     // Staff arriving with ?modal=mine opens NHIỆM VỤ CỦA TÔI automatically
-    const staffView = renderOffice("/van-phong?modal=mine")
+    const staffView = renderOffice("/khu-giao-dich?phong=van-phong&modal=mine")
     expect(await screen.findByTestId("office-modal-mine")).toBeTruthy()
     staffView.unmount()
 
     // Staff attempting ?modal=mgr is blocked by client role guard
-    renderOffice("/van-phong?modal=mgr")
+    renderOffice("/khu-giao-dich?phong=van-phong&modal=mgr")
     await screen.findByTestId("office-hud-card-mine")
     expect(screen.queryByTestId("office-modal-mgr")).toBeNull()
   })
@@ -1271,7 +1271,7 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
       notes: [],
     })
 
-    renderOffice("/van-phong?modal=mgr")
+    renderOffice("/khu-giao-dich?phong=van-phong&modal=mgr")
     const mgrModal = await screen.findByTestId("office-modal-mgr")
 
     // [U-M6]: With "Cả nhóm" active, all staff chips are pressed; clicking one deselects ONLY that staff
@@ -1546,7 +1546,7 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
     authState.isLoading = false
     apiMocks.me.mockResolvedValue(makeBossMe())
 
-    renderOffice("/van-phong?modal=meet")
+    renderOffice("/khu-giao-dich?phong=van-phong&modal=meet")
     const meetModal = await screen.findByTestId("office-modal-meet")
     await user.click(
       within(meetModal).getByRole("button", { name: /Tạo lịch họp/ })
@@ -1616,7 +1616,7 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
       return { ok: true }
     })
 
-    const staffView = renderOffice("/van-phong?modal=mine")
+    const staffView = renderOffice("/khu-giao-dich?phong=van-phong&modal=mine")
     const mineModal = await screen.findByTestId("office-modal-mine")
 
     // Done task badge shows "+15 điểm", empty task boxes show "Chưa có nhiệm vụ."
@@ -1751,7 +1751,7 @@ describe("OfficePage — gates, Staff workflows, Boss workflows, shared modals &
       joinDate: "2024-06-01",
     })
 
-    const mgrView = renderOffice("/van-phong?modal=mgr")
+    const mgrView = renderOffice("/khu-giao-dich?phong=van-phong&modal=mgr")
     const mgrModal = await screen.findByTestId("office-modal-mgr")
     expect(await within(mgrModal).findByText(/^Bạn đã trả lời/)).toBeTruthy()
     await user.click(
