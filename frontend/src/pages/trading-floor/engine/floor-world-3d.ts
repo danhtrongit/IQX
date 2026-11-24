@@ -18,6 +18,11 @@ import {
   prefersReducedMotion,
 } from "@/lib/chibi-3d/character-builder.ts"
 import {
+  FLOOR_DECOR_OBSTACLES,
+  createFloorDecorSteps,
+  type FloorDecorMount,
+} from "@/lib/chibi-3d/floor-decor/index.ts"
+import {
   createCoffeeTable,
   createInstancedPottedPlants,
   createOfferingAltar,
@@ -194,6 +199,14 @@ export function buildFloorNavGrid(): NavGrid {
         p.foot[1]
       )
     }
+  }
+  for (const obs of FLOOR_DECOR_OBSTACLES) {
+    nav.blockRect(
+      obs.cx - obs.footW / 2,
+      obs.cy - obs.footH / 2,
+      obs.footW,
+      obs.footH
+    )
   }
   return nav
 }
@@ -591,6 +604,8 @@ export class FloorWorld3D {
 
   private receptionistRig!: ChibiRig
   private readonly statues: StatueSlot[] = []
+  private floorDecor: FloorDecorMount | null = null
+  private fountainSparkAccum = 0
   private disposed = false
   /** Pending (or partially run) scene build; null once the world is fully built. */
   private buildSteps: BuildSteps | null = null
@@ -770,9 +785,16 @@ export class FloorWorld3D {
     const shrinePt = logicalToWorld(1024, 344, FLOOR_WORLD_CONFIG)
     shrineProp.group.position.set(shrinePt.x, 0, shrinePt.z)
     shrineProp.group.scale.setScalar(1.06)
+    // Consolidate duplicate materials across shrine body & twin hanging lanterns (keeps raycasting intact!)
+    const shrineMerged = new THREE.Group()
+    shrineMerged.name = "shrine-merged-parts"
+    mergeStaticPropsInto([shrineProp], shrineMerged)
+    shrineProp.group.position.set(0, 0, 0)
+    shrineProp.group.scale.setScalar(1)
+    shrineProp.group.add(shrineMerged)
     this.staticGroup.add(shrineProp.group)
     this.props.push(shrineProp)
-    this.addContactShadow(shrinePt.x, shrinePt.z - 0.25, 5.1, 2.25, boxShadowTex, 0.72)
+    this.addContactShadow(shrinePt.x, shrinePt.z - 0.25, 5.1, 2.25, boxShadowTex, 0.66)
     yield 0.8
 
     const deitySpec: CharacterSpecWithLite = {
@@ -848,6 +870,38 @@ export class FloorWorld3D {
     // Mount 3 Hall of Fame podiums & initial empty statues
     yield* this.buildStatuesSteps(overlay, boxShadowTex)
 
+    // Mount rich chibi floor decor (islands, koi fountain, bull/bear, coffee corner, newsstand,
+    // kiosks, benches, planters, clocks, framed charts, 2nd ticker, blossom trees, bamboo, lucky cats, decals)
+    const decorOut: { mount: FloorDecorMount | null } = { mount: null }
+    for (const frac of createFloorDecorSteps(
+      {
+        world: FLOOR_WORLD_CONFIG,
+        lite: this.lite,
+        wallH: WALL_H,
+        side: SIDE,
+      },
+      decorOut
+    )) {
+      if (typeof frac === "number") {
+        yield 0.92 + frac * 0.07
+      }
+    }
+    if (decorOut.mount) {
+      this.floorDecor = decorOut.mount
+      this.staticGroup.add(decorOut.mount.staticGroup)
+      this.group.add(decorOut.mount.animatedGroup)
+      for (const cs of decorOut.mount.contactShadows) {
+        this.addContactShadow(
+          cs.wx,
+          cs.wz,
+          cs.w,
+          cs.d,
+          cs.kind === "oval" ? ovalShadowTex : boxShadowTex,
+          cs.opacity
+        )
+      }
+    }
+
     // Flush batched contact shadows and lock static matrices once
     this.flushContactShadows()
     freezeStaticSubtree(this.staticGroup)
@@ -872,11 +926,11 @@ export class FloorWorld3D {
       { tex: THREE.Texture; opacity: number; geos: THREE.BufferGeometry[] }
     >()
     for (const s of this.pendingContactShadows.splice(0)) {
-      const opacityKey = Math.round(s.opacity * 100)
-      const key = `${s.tex.uuid}:${opacityKey}`
+      // Bucket by texture only (using crisp unified AO opacity per shape) to avoid 8+ near-identical shadow draw calls
+      const key = s.tex.uuid
       let bucket = buckets.get(key)
       if (!bucket) {
-        bucket = { tex: s.tex, opacity: opacityKey / 100, geos: [] }
+        bucket = { tex: s.tex, opacity: s.opacity, geos: [] }
         buckets.set(key, bucket)
       }
       const geo = new THREE.PlaneGeometry(s.w, s.d)
@@ -996,22 +1050,24 @@ export class FloorWorld3D {
     floor.receiveShadow = true
     this.staticGroup.add(floor)
 
-    // Architectural dark-navy surround apron so shakes/ultrawide edges never reveal harsh seams
-    const surroundApron = new THREE.Mesh(
-      new THREE.PlaneGeometry(roomW + 24, roomH + 24),
-      createMatteMaterial("#101829", { roughness: 0.92 })
-    )
-    surroundApron.rotation.x = -Math.PI / 2
-    surroundApron.position.set(0, -0.04, 0)
-    this.staticGroup.add(surroundApron)
-
-    const northBase = new THREE.Mesh(
-      new THREE.PlaneGeometry(roomW, roomH - floorDepth),
-      createMatteMaterial("#131d34", { roughness: 0.9 })
-    )
-    northBase.rotation.x = -Math.PI / 2
-    northBase.position.set(0, -0.01, -roomH / 2 + (roomH - floorDepth) / 2)
-    this.staticGroup.add(northBase)
+    // Architectural dark-navy surround apron + north base merged into 1 draw call
+    const apronGeo = new THREE.PlaneGeometry(roomW + 24, roomH + 24)
+    apronGeo.rotateX(-Math.PI / 2)
+    apronGeo.translate(0, -0.04, 0)
+    const northBaseGeo = new THREE.PlaneGeometry(roomW, roomH - floorDepth)
+    northBaseGeo.rotateX(-Math.PI / 2)
+    northBaseGeo.translate(0, -0.01, -roomH / 2 + (roomH - floorDepth) / 2)
+    const mergedApron = mergeIndexedGeometries([apronGeo, northBaseGeo], {
+      disposeInputs: true,
+    })
+    if (mergedApron) {
+      this.staticGroup.add(
+        new THREE.Mesh(
+          mergedApron,
+          createMatteMaterial("#11192d", { roughness: 0.91 })
+        )
+      )
+    }
 
     yield 0.04
 
@@ -1314,21 +1370,69 @@ export class FloorWorld3D {
   }
 
   private buildZoneDecals(): void {
-    for (const label of ZONE_LABELS) {
-      const tex = createFloorDecalTexture(label.text, "#7a5324")
-      const mat = new THREE.MeshBasicMaterial({
-        map: tex,
-        transparent: true,
-        opacity: 0.65,
-        depthWrite: false,
-      })
+    // Pack both zone floor labels onto ONE compact 512×256 texture & ONE merged mesh (saves 1 texture + 1 draw call)
+    const canvas = document.createElement("canvas")
+    canvas.width = 512
+    canvas.height = 256
+    const paint = (c: HTMLCanvasElement): boolean => {
+      const ctx = safeGet2DContext(c)
+      if (!ctx) return false
+      ctx.clearRect(0, 0, c.width, c.height)
+      ctx.textAlign = "center"
+      ctx.textBaseline = "middle"
+      ctx.fillStyle = "#7a5324"
+      for (let i = 0; i < ZONE_LABELS.length; i += 1) {
+        const label = ZONE_LABELS[i]!
+        const cy = i * 128 + 64
+        const fontSize = label.text.length > 14 ? 30 : 38
+        ctx.font = `800 ${fontSize}px ${FONT_STACK}`
+        ctx.fillText(label.text, 256, cy, 488)
+      }
+      return true
+    }
+    const ok = paint(canvas)
+    const tex: THREE.Texture = ok
+      ? markStaticCanvasTexture(new THREE.CanvasTexture(canvas), (c) => {
+          paint(c)
+        })
+      : createFloorDecalTexture(ZONE_LABELS[0]?.text ?? "", "#7a5324")
+    tex.colorSpace = THREE.SRGBColorSpace
+    tex.anisotropy = this.lite ? 2 : 8
+    tex.needsUpdate = true
+
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0.65,
+      depthWrite: false,
+    })
+    const geos: THREE.BufferGeometry[] = []
+    for (let i = 0; i < ZONE_LABELS.length; i += 1) {
+      const label = ZONE_LABELS[i]!
       const w = label.text.length > 14 ? 5.8 : 4.1
       const h = w * 0.25
-      const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat)
-      plane.rotation.x = -Math.PI / 2
+      const geo = new THREE.PlaneGeometry(w, h)
+      const uv = geo.getAttribute("uv")
+      const yHi = 1 - i * 0.5
+      const yLo = 1 - (i + 1) * 0.5
+      uv.setXY(0, 0, yHi)
+      uv.setXY(1, 1, yHi)
+      uv.setXY(2, 0, yLo)
+      uv.setXY(3, 1, yLo)
+      uv.needsUpdate = true
+      geo.rotateX(-Math.PI / 2)
       const pt = logicalToWorld(label.x, label.y, FLOOR_WORLD_CONFIG)
-      plane.position.set(pt.x, 0.018, pt.z)
+      geo.translate(pt.x, 0.018, pt.z)
+      geos.push(geo)
+    }
+    const merged = mergeIndexedGeometries(geos, { disposeInputs: true })
+    if (merged) {
+      const plane = new THREE.Mesh(merged, mat)
+      plane.name = "floor-zone-labels"
       this.staticGroup.add(plane)
+    } else {
+      mat.dispose()
+      tex.dispose()
     }
   }
 
@@ -1417,6 +1521,8 @@ export class FloorWorld3D {
       2: 0xcfd5de,
       3: 0xc98a52,
     }
+    const ringGeos: THREE.BufferGeometry[] = []
+    const ringColor = new THREE.Color()
     for (const rank of [1, 2, 3] as const) {
       const p = PLACEMENTS.find((item) => item.id === `statue-${rank}`)!
       const centerY = p.foot ? p.y - p.foot[1] / 2 : p.y - 30
@@ -1431,20 +1537,20 @@ export class FloorWorld3D {
       this.props.push(podium)
 
       // Contact shadow + subtle metallic rank accent floor ring beneath each podium
-      this.addContactShadow(pt.x, pt.z, 2.4, 1.55, boxShadowTex, 0.68)
-      const glowRingMat = new THREE.MeshBasicMaterial({
-        color: ringColors[rank],
-        transparent: true,
-        opacity: rank === 1 ? 0.34 : 0.22,
-        depthWrite: false,
-      })
-      const glowRing = new THREE.Mesh(
-        new THREE.RingGeometry(1.06, 1.15, this.lite ? 20 : 32),
-        glowRingMat
-      )
-      glowRing.rotation.x = -Math.PI / 2
-      glowRing.position.set(pt.x, 0.022, pt.z)
-      this.staticGroup.add(glowRing)
+      this.addContactShadow(pt.x, pt.z, 2.4, 1.55, boxShadowTex, 0.66)
+      const ringGeo = new THREE.RingGeometry(1.06, 1.15, this.lite ? 20 : 32)
+      ringGeo.rotateX(-Math.PI / 2)
+      ringGeo.translate(pt.x, 0.022, pt.z)
+      ringColor.setHex(ringColors[rank])
+      const vCount = ringGeo.getAttribute("position").count
+      const cols = new Float32Array(vCount * 3)
+      for (let vi = 0; vi < vCount; vi += 1) {
+        cols[vi * 3] = ringColor.r
+        cols[vi * 3 + 1] = ringColor.g
+        cols[vi * 3 + 2] = ringColor.b
+      }
+      ringGeo.setAttribute("color", new THREE.BufferAttribute(cols, 3))
+      ringGeos.push(ringGeo)
 
       if (p.interact) {
         this.registerHotspot(hitGroup, p.interact, p.y)
@@ -1464,7 +1570,23 @@ export class FloorWorld3D {
       this.statues.push(slot)
       this.mountStatueRig(slot, "male01", false)
       overlay.setStatuePlaque(rank, "Chưa có", null, false)
-      yield 0.88 + rank * 0.035
+      yield 0.88 + rank * 0.015
+    }
+    const mergedRings = mergeIndexedGeometries(ringGeos, {
+      includeVertexColors: true,
+      disposeInputs: true,
+    })
+    if (mergedRings) {
+      const glowRingMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.28,
+        depthWrite: false,
+      })
+      const glowRing = new THREE.Mesh(mergedRings, glowRingMat)
+      glowRing.name = "statue-rank-rings"
+      this.staticGroup.add(glowRing)
     }
   }
 
@@ -1537,6 +1659,7 @@ export class FloorWorld3D {
     this.ledBoard.update()
     this.sacoBoard.update()
     this.tickerTexture.needsUpdate = true
+    this.floorDecor?.refreshDynamicTextures()
     this.hostBridge?.requestFrame()
   }
 
@@ -1743,6 +1866,27 @@ export class FloorWorld3D {
       this.tickerTexture.offset.x =
         (this.tickerTexture.offset.x + dt * 0.045) % 1
     }
+    this.floorDecor?.update(dt, elapsedS, reduced)
+
+    // Occasional coin-toss sparkle over the koi wishing fountain (reuses shrineSparkMesh: 0 extra draw calls)
+    if (!reduced && this.floorDecor) {
+      const fInterval = this.lite ? 1.5 : 0.75
+      this.fountainSparkAccum += dt
+      if (this.fountainSparkAccum >= fInterval) {
+        this.fountainSparkAccum = 0
+        const fp = this.floorDecor.fountainSparkPos
+        this.spawnShrineSpark(
+          fp.x + (Math.random() * 2 - 1) * 0.45,
+          fp.y + Math.random() * 0.25,
+          fp.z + (Math.random() * 2 - 1) * 0.45,
+          (Math.random() * 2 - 1) * 0.12,
+          0.36 + Math.random() * 0.35,
+          (Math.random() * 2 - 1) * 0.12,
+          1.3 + Math.random() * 0.8,
+          0.65
+        )
+      }
+    }
 
     // 1. Animate Thần Tài NPC & shrine light
     const waving = elapsedS < this.deityWaveUntilS
@@ -1885,6 +2029,8 @@ export class FloorWorld3D {
     for (const prop of this.props.splice(0)) {
       prop.dispose()
     }
+    this.floorDecor?.dispose()
+    this.floorDecor = null
     disposeObject3D(this.group)
     for (const tex of this.retainedCachedTextures.splice(0)) {
       releaseCachedTexture(tex)
