@@ -36,7 +36,9 @@ const OFFICE_CASES: ReadonlyArray<{
   iconClass: string
   title: string
   body: string
-  expectedLink: "/van-phong?modal=mine" | "/van-phong?modal=mgr"
+  expectedLink:
+    | "/khu-giao-dich?phong=van-phong&modal=mine"
+    | "/khu-giao-dich?phong=van-phong&modal=mgr"
 }> = [
   {
     id: "00000000-0000-4000-8000-000000000101",
@@ -45,7 +47,7 @@ const OFFICE_CASES: ReadonlyArray<{
     iconClass: "text-primary",
     title: "Nhiệm vụ mới",
     body: 'Sếp giao nhiệm vụ ngày "Gọi 10 khách hàng"',
-    expectedLink: "/van-phong?modal=mine",
+    expectedLink: "/khu-giao-dich?phong=van-phong&modal=mine",
   },
   {
     id: "00000000-0000-4000-8000-000000000102",
@@ -54,7 +56,7 @@ const OFFICE_CASES: ReadonlyArray<{
     iconClass: "text-price-up",
     title: "Nhiệm vụ đã được duyệt",
     body: 'Sếp đã duyệt "Gọi 10 khách hàng" · +10 điểm',
-    expectedLink: "/van-phong?modal=mine",
+    expectedLink: "/khu-giao-dich?phong=van-phong&modal=mine",
   },
   {
     id: "00000000-0000-4000-8000-000000000103",
@@ -63,7 +65,7 @@ const OFFICE_CASES: ReadonlyArray<{
     iconClass: "text-destructive",
     title: "Nhiệm vụ cần làm lại",
     body: 'Sếp trả lại "Chia sẻ bản tin lên nhóm Zalo"',
-    expectedLink: "/van-phong?modal=mine",
+    expectedLink: "/khu-giao-dich?phong=van-phong&modal=mine",
   },
   {
     id: "00000000-0000-4000-8000-000000000104",
@@ -72,7 +74,7 @@ const OFFICE_CASES: ReadonlyArray<{
     iconClass: "text-price-floor",
     title: "Sếp đã trả lời đề xuất",
     body: "Sếp đã trả lời đề xuất của bạn",
-    expectedLink: "/van-phong?modal=mine",
+    expectedLink: "/khu-giao-dich?phong=van-phong&modal=mine",
   },
   {
     id: "00000000-0000-4000-8000-000000000105",
@@ -81,7 +83,7 @@ const OFFICE_CASES: ReadonlyArray<{
     iconClass: "text-status-warning",
     title: "Chờ xác nhận nhiệm vụ",
     body: 'Lê Ngọc Hạnh gửi xác nhận "Gọi 10 khách hàng"',
-    expectedLink: "/van-phong?modal=mgr",
+    expectedLink: "/khu-giao-dich?phong=van-phong&modal=mgr",
   },
   {
     id: "00000000-0000-4000-8000-000000000106",
@@ -90,7 +92,7 @@ const OFFICE_CASES: ReadonlyArray<{
     iconClass: "text-accent",
     title: "Đề xuất mới",
     body: "Trần Thị Bình gửi đề xuất mới",
-    expectedLink: "/van-phong?modal=mgr",
+    expectedLink: "/khu-giao-dich?phong=van-phong&modal=mgr",
   },
 ]
 
@@ -263,13 +265,13 @@ describe("Header bell (v2.0 §8.3 & Khu Văn phòng §12)", () => {
     },
   )
 
-  it("navigates cleanly to /van-phong?modal=mine and /van-phong?modal=mgr even when already on /van-phong", async () => {
+  it("normalizes legacy /van-phong links and navigates cleanly to /khu-giao-dich?phong=van-phong&modal=mine|mgr even when already in the office", async () => {
     const first = OFFICE_CASES[0]!
     const second = OFFICE_CASES[1]!
     const boss = OFFICE_CASES[4]!
     world.notifications = [
       item({ id: first.id, type: first.type, title: first.title, body: first.body, link: "/van-phong?modal=mine" }),
-      item({ id: second.id, type: second.type, title: second.title, body: second.body, link: "/van-phong?modal=mine" }),
+      item({ id: second.id, type: second.type, title: second.title, body: second.body, link: "/khu-giao-dich?phong=van-phong&modal=mine" }),
       item({ id: boss.id, type: boss.type, title: boss.title, body: boss.body, link: "/van-phong?modal=mgr" }),
     ]
 
@@ -279,30 +281,30 @@ describe("Header bell (v2.0 §8.3 & Khu Văn phòng §12)", () => {
         <NotificationBell />
         <LocationStateProbe />
       </>,
-      "/van-phong",
+      "/khu-giao-dich?phong=van-phong",
     )
 
-    // 1. From /van-phong -> /van-phong?modal=mine
+    // 1. From /khu-giao-dich?phong=van-phong -> normalized /khu-giao-dich?phong=van-phong&modal=mine
     await user.click(await screen.findByTestId("notification-bell"))
     let list = await screen.findByRole("list", { name: "Danh sách thông báo" })
     await user.click(within(list).getAllByRole("button")[0]!)
-    await waitFor(() => expect(screen.getByTestId("location").textContent).toBe("/van-phong?modal=mine"))
+    await waitFor(() => expect(screen.getByTestId("location").textContent).toBe("/khu-giao-dich?phong=van-phong&modal=mine"))
     expect(screen.getByTestId("location-notification-id").textContent).toBe(first.id)
     const firstKey = screen.getByTestId("location-key").textContent
 
-    // 2. Already on /van-phong?modal=mine -> another /van-phong?modal=mine notification still emits fresh navigation state/key
+    // 2. Already on /khu-giao-dich?phong=van-phong&modal=mine -> another notification still emits fresh navigation state/key
     await user.click(screen.getByTestId("notification-bell"))
     list = await screen.findByRole("list", { name: "Danh sách thông báo" })
     await user.click(within(list).getAllByRole("button")[1]!)
     await waitFor(() => expect(screen.getByTestId("location-notification-id").textContent).toBe(second.id))
-    expect(screen.getByTestId("location").textContent).toBe("/van-phong?modal=mine")
+    expect(screen.getByTestId("location").textContent).toBe("/khu-giao-dich?phong=van-phong&modal=mine")
     expect(screen.getByTestId("location-key").textContent).not.toBe(firstKey)
 
-    // 3. Already on /van-phong?modal=mine -> /van-phong?modal=mgr
+    // 3. Already on modal=mine -> legacy /van-phong?modal=mgr normalizes to /khu-giao-dich?phong=van-phong&modal=mgr
     await user.click(screen.getByTestId("notification-bell"))
     list = await screen.findByRole("list", { name: "Danh sách thông báo" })
     await user.click(within(list).getAllByRole("button")[2]!)
-    await waitFor(() => expect(screen.getByTestId("location").textContent).toBe("/van-phong?modal=mgr"))
+    await waitFor(() => expect(screen.getByTestId("location").textContent).toBe("/khu-giao-dich?phong=van-phong&modal=mgr"))
     expect(screen.getByTestId("location-notification-id").textContent).toBe(boss.id)
     await waitFor(() => expect(callsTo(world, "POST", "/me/notifications/read")).toHaveLength(3))
   })

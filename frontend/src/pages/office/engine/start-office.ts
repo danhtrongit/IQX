@@ -54,6 +54,7 @@ export interface OfficeEngineHandle {
   updateStandee: (leaderboard: OfficeLeaderboard | null) => void
   setModalOpen: (open: boolean) => void
   resendSelfState: () => void
+  beginDoorExit?: (onFadeStart: () => void) => void
   dispose: () => void
 }
 
@@ -228,6 +229,13 @@ export function startOffice(
         controller.resendSelfState()
       } else {
         buffered.resendSelf = true
+      }
+    },
+    beginDoorExit: (onFadeStart) => {
+      if (controller) {
+        controller.beginDoorExit(onFadeStart)
+      } else {
+        onFadeStart()
       }
     },
     dispose: () => {

@@ -60,7 +60,6 @@ const SHARED_NAV = [
   ["Flashback", "/flashback?tool=flashback"],
   ["Chiến lược", "/chien-luoc"],
   ["Khu giao dịch", "/khu-giao-dich"],
-  ["Văn phòng", "/van-phong"],
 ] as const
 
 describe("Header", () => {

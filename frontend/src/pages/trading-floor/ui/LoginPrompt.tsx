@@ -41,8 +41,9 @@ export function LoginPrompt() {
         </div>
         <h1 id="login-prompt-title">{message}</h1>
         <p className="muted small">
-          Bạn đang vào bằng nhân vật khách. Đăng nhập bằng tài khoản IQX để thả
-          tim và bình luận nhận định.
+          {message === "Đăng nhập để vào Văn phòng nhóm"
+            ? "Bạn đang vào bằng nhân vật khách. Đăng nhập bằng tài khoản IQX để truy cập không gian làm việc nhóm."
+            : "Bạn đang vào bằng nhân vật khách. Đăng nhập bằng tài khoản IQX để thả tim và bình luận nhận định."}
         </p>
         <div className="gate-actions">
           <button

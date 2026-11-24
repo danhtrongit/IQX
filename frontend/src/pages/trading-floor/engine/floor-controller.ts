@@ -66,6 +66,19 @@ import {
 } from "./floor-world-3d.ts"
 import { distanceVolume, playFx } from "./fx-sound.ts"
 import {
+  createChibiPortalDoor,
+  type ChibiPortalDoor,
+} from "@/pages/spaces/door-3d.ts"
+import {
+  DOOR_MAX_WALK_SECONDS,
+  DOOR_STEP_THROUGH_S,
+  DOOR_SWING_CLOSE_S,
+  DOOR_SWING_OPEN_S,
+  shouldAutoWalkToDoor,
+} from "@/pages/spaces/door-transition.ts"
+
+import {
+  FLOOR_OFFICE_DOOR,
   SPAWN,
   WALK_SPEED,
   WORLD_H,
@@ -189,12 +202,40 @@ interface RemotePeerActor {
   rigInitialized: boolean
 }
 
+export interface FloorControllerOptions {
+  /** Spawn player just inside the West portal door with open->close door animation. */
+  arrivedViaDoor?: boolean
+  /** Notified when player enters or leaves proximity of the Floor -> Office portal door. */
+  onDoorHintChange?: (near: boolean) => void
+  /** Invoked when the player clicks the 3D door or presses E while near it. */
+  onDoorRequest?: () => void
+}
+
+interface FloorDoorExitState {
+  phase: "walking" | "opening" | "entering" | "opening-skip" | "fading"
+  phaseS: number
+  walkElapsedS: number
+  waypoints: Point[]
+  startX: number
+  startY: number
+  onFadeStart: () => void
+  fadeTriggered: boolean
+}
+
+interface FloorDoorArrivalState {
+  stepActive: boolean
+  elapsedS: number
+  closeS: number
+}
+
 export class FloorController {
   private readonly host: ChibiSceneHost
   private readonly nav: NavGrid
   private readonly overlay: OverlayLayer
   private readonly world3d: FloorWorld3D
   private readonly fx3d: FloorFx3D
+  private readonly officeDoor: ChibiPortalDoor
+  private readonly options: FloorControllerOptions
   private readonly hotspotByRoot = new Map<THREE.Object3D, Interact>()
   private readonly hotspotRoots: THREE.Object3D[] = []
 
@@ -207,6 +248,10 @@ export class FloorController {
   private readonly heldKeys = new Set<string>()
   private lastSent = { t: 0, facing: "s" as Facing, moving: false }
   private hintKey = ""
+  private doorNear = false
+  private pendingDoorArrival = false
+  private doorExit: FloorDoorExitState | null = null
+  private doorArrival: FloorDoorArrivalState | null = null
   private lastGrabCheckMs = 0
   private readonly recentGrab = new Map<string, number>()
 
@@ -222,9 +267,18 @@ export class FloorController {
   private readonly disposers: (() => void)[] = []
   private disposed = false
 
-  constructor(host: ChibiSceneHost, container: HTMLElement) {
+  constructor(
+    host: ChibiSceneHost,
+    container: HTMLElement,
+    options: FloorControllerOptions = {}
+  ) {
     this.host = host
+    this.options = options
+    this.pendingDoorArrival = Boolean(options.arrivedViaDoor)
     this.nav = buildFloorNavGrid()
+    const doorObs = FLOOR_OFFICE_DOOR.obstacle
+    this.nav.blockRect(doorObs.x, doorObs.y, doorObs.w, doorObs.h)
+
     this.overlay = new OverlayLayer(container)
     this.world3d = new FloorWorld3D(host.scene, this.overlay, {
       lite: host.lite,
@@ -233,13 +287,39 @@ export class FloorController {
       lite: host.lite,
     })
 
+    // Attach procedural chibi portal door to the West side wall near Phòng chờ
+    this.officeDoor = createChibiPortalDoor({
+      signText: "VĂN PHÒNG NHÓM",
+      signSubtext: "LỐI VÀO",
+      openingWidth: 1.24,
+      openingHeight: 1.72,
+      frameDepth: 0.36,
+      lite: host.lite,
+    })
+    const doorPt = logicalToWorld(
+      FLOOR_OFFICE_DOOR.x + 8,
+      FLOOR_OFFICE_DOOR.y,
+      FLOOR_WORLD_CONFIG
+    )
+    this.officeDoor.group.position.set(doorPt.x, 0, doorPt.z)
+    this.officeDoor.group.rotation.y = Math.PI / 2
+    host.scene.add(this.officeDoor.group)
+
     for (const h of this.world3d.hotspots) {
       this.hotspotByRoot.set(h.root, h.interact)
       this.hotspotRoots.push(h.root)
     }
 
     this.applyZoom(true)
-    host.followLogical(1024, 580, true)
+    if (this.pendingDoorArrival) {
+      host.followLogical(
+        FLOOR_OFFICE_DOOR.spawnInside.x,
+        FLOOR_OFFICE_DOOR.spawnInside.y,
+        true
+      )
+    } else {
+      host.followLogical(1024, 580, true)
+    }
 
     this.setupInput()
     this.bindWorldData()
@@ -362,7 +442,15 @@ export class FloorController {
       return
     }
 
-    const at = this.spawnPoint()
+    const arrivedViaDoor = this.pendingDoorArrival
+    this.pendingDoorArrival = false
+    const at = arrivedViaDoor
+      ? {
+          x: FLOOR_OFFICE_DOOR.spawnInside.x,
+          y: FLOOR_OFFICE_DOOR.spawnInside.y,
+          facing: FLOOR_OFFICE_DOOR.enterFace,
+        }
+      : this.spawnPoint()
     const rig = this.createCharacterRig(avatarId, outfitHex)
     this.host.scene.add(rig.root)
     this.player = {
@@ -378,6 +466,12 @@ export class FloorController {
     }
     this.setActorPosition(this.player, at.x, at.y)
     this.host.followLogical(at.x, at.y, true)
+    if (arrivedViaDoor && !prefersReducedMotion()) {
+      this.officeDoor.setOpenProgress(1)
+      this.doorArrival = { stepActive: true, elapsedS: 0, closeS: 0 }
+    } else {
+      this.officeDoor.setOpenProgress(0)
+    }
     this.overlay.setNameplate({
       id: "self",
       name: profile.name,
@@ -531,13 +625,18 @@ export class FloorController {
         this.heldKeys.clear()
         return
       }
-      if (!keysFree()) {
+      if (!keysFree() || this.doorExit) {
         this.heldKeys.clear()
         return
       }
       const code = e.code
       if (code === "KeyE") {
         if (e.repeat) return
+        if (this.doorNear) {
+          e.preventDefault()
+          this.options.onDoorRequest?.()
+          return
+        }
         const hint = ui.hint.get()
         if (hint) {
           e.preventDefault()
@@ -620,6 +719,7 @@ export class FloorController {
 
       if (
         !this.player ||
+        this.doorExit ||
         ui.panel.get() ||
         ui.posts.get().open ||
         ui.loginPrompt.get() ||
@@ -660,7 +760,11 @@ export class FloorController {
         return
       }
 
-      // Priority 3: Interactive 3D hotspot (boards, Thần Tài, altar, statues, reception)
+      // Priority 3: Interactive 3D hotspot (portal door, boards, Thần Tài, altar, statues, reception)
+      if (this.isDoorHitAtClient(e.clientX, e.clientY)) {
+        this.options.onDoorRequest?.()
+        return
+      }
       const hot = this.hotAtClient(e.clientX, e.clientY)
       if (hot) {
         this.goInteract(hot)
@@ -722,7 +826,8 @@ export class FloorController {
         (groundPt !== null &&
           this.fx3d.coins.findCoinNear(groundPt.x, groundPt.y, 30) !== null)
       const overSaco = this.sacoAtScreen(localX, localY) !== null
-      const overHot = this.hotAtClient(e.clientX, e.clientY) !== null
+      const overDoor = this.isDoorHitAtClient(e.clientX, e.clientY)
+      const overHot = overDoor || this.hotAtClient(e.clientX, e.clientY) !== null
       dom.style.cursor = overCoin || overSaco || overHot ? "pointer" : ""
     }
 
@@ -818,6 +923,101 @@ export class FloorController {
       }
     }
     return found?.sacoId ?? null
+  }
+
+  /** True when the pointer ray hits the Floor -> Office 3D portal door mesh. */
+  private isDoorHitAtClient(clientX: number, clientY: number): boolean {
+    return (
+      this.host.pickObjects(clientX, clientY, [this.officeDoor.hitTarget])
+        .length > 0
+    )
+  }
+
+  /**
+   * Starts the animated exit through the Floor -> Office portal door:
+   * - `prefers-reduced-motion`: immediate cross-fade callback, zero walk/swing animation.
+   * - Reachable within ~4 s: auto-walk via `NavGrid`, swing open (~0.35 s), step through, fade.
+   * - Blocked or > 4 s away: skip walk, swing open + fade immediately.
+   */
+  beginDoorExit(onFadeStart: () => void): void {
+    if (this.disposed || this.doorExit) return
+    this.doorArrival = null
+    this.stopMovementAndTarget()
+    this.setDoorNear(false)
+    this.hintKey = ""
+    ui.hint.set(null)
+
+    const me = this.player
+    if (prefersReducedMotion() || !me) {
+      this.doorExit = {
+        phase: "fading",
+        phaseS: 0,
+        walkElapsedS: 0,
+        waypoints: [],
+        startX: me?.x ?? 0,
+        startY: me?.y ?? 0,
+        onFadeStart,
+        fadeTriggered: true,
+      }
+      onFadeStart()
+      return
+    }
+
+    const start = { x: me.x, y: me.y }
+    const waypoints = this.nav.findPath(start, FLOOR_OFFICE_DOOR.access)
+    const decision = shouldAutoWalkToDoor(
+      start,
+      FLOOR_OFFICE_DOOR.access,
+      waypoints,
+      WALK_SPEED,
+      DOOR_MAX_WALK_SECONDS,
+      32
+    )
+
+    if (decision.mode === "walk") {
+      this.doorExit = {
+        phase: "walking",
+        phaseS: 0,
+        walkElapsedS: 0,
+        waypoints,
+        startX: me.x,
+        startY: me.y,
+        onFadeStart,
+        fadeTriggered: false,
+      }
+      const dest = waypoints[waypoints.length - 1]
+      if (dest) this.fx3d.spawnClickRing(dest.x, dest.y)
+    } else if (decision.mode === "at-door") {
+      me.facing = FLOOR_OFFICE_DOOR.face
+      me.moving = false
+      this.doorExit = {
+        phase: "opening",
+        phaseS: 0,
+        walkElapsedS: 0,
+        waypoints: [],
+        startX: me.x,
+        startY: me.y,
+        onFadeStart,
+        fadeTriggered: false,
+      }
+    } else {
+      this.doorExit = {
+        phase: "opening-skip",
+        phaseS: 0,
+        walkElapsedS: 0,
+        waypoints: [],
+        startX: me.x,
+        startY: me.y,
+        onFadeStart,
+        fadeTriggered: false,
+      }
+    }
+  }
+
+  private setDoorNear(near: boolean): void {
+    if (this.doorNear === near) return
+    this.doorNear = near
+    this.options.onDoorHintChange?.(near)
   }
 
   /** Resolves the closest raycasted 3D interactive hotspot under `(clientX, clientY)`. */
@@ -1123,9 +1323,20 @@ export class FloorController {
     const nowMs = performance.now()
     const reducedMotion = prefersReducedMotion()
 
+    this.officeDoor.update(dt, elapsedS, reducedMotion)
+
     if (this.player) {
-      this.stepPlayer(this.player, dt, nowMs, reducedMotion)
-      this.checkCoinAutoGrab(this.player, nowMs)
+      if (this.doorExit) {
+        this.stepDoorExit(this.player, dt, nowMs, reducedMotion)
+      } else {
+        if (this.doorArrival) {
+          this.stepDoorArrival(this.player, dt, reducedMotion)
+        }
+        if (!this.doorArrival?.stepActive) {
+          this.stepPlayer(this.player, dt, nowMs, reducedMotion)
+        }
+        this.checkCoinAutoGrab(this.player, nowMs)
+      }
       this.host.followLogical(this.player.x, this.player.y)
     }
 
@@ -1432,19 +1643,200 @@ export class FloorController {
     })
   }
 
-  private updateHint(): void {
-    const me = this.player
-    let best: Interact | null = null
-    if (me) {
-      let bestD = NEAR
-      for (const i of this.world3d.interacts) {
-        const d = Math.hypot(me.x - i.access.x, me.y - i.access.y)
-        if (d < bestD) {
-          bestD = d
-          best = i
+  private stepDoorExit(
+    me: PlayerActor,
+    dt: number,
+    nowMs: number,
+    reducedMotion: boolean
+  ): void {
+    const exit = this.doorExit
+    if (!exit) return
+
+    let moving = false
+    if (exit.phase === "walking") {
+      exit.walkElapsedS += dt
+      let budget = WALK_SPEED * dt
+      let x = me.x
+      let y = me.y
+      let facing = me.facing
+
+      while (budget > 0 && exit.waypoints.length > 0) {
+        const target = exit.waypoints[0]!
+        const dx = target.x - x
+        const dy = target.y - y
+        const d = Math.hypot(dx, dy)
+        if (d > 0.5) facing = facingOf(dx, dy)
+        if (d <= budget) {
+          x = target.x
+          y = target.y
+          budget -= d
+          exit.waypoints.shift()
+        } else {
+          x += (dx / d) * budget
+          y += (dy / d) * budget
+          budget = 0
         }
       }
+
+      this.setActorPosition(me, x, y)
+      me.facing = facing
+      moving = exit.waypoints.length > 0
+
+      if (
+        exit.waypoints.length === 0 ||
+        exit.walkElapsedS >= DOOR_MAX_WALK_SECONDS + 0.5
+      ) {
+        me.facing = FLOOR_OFFICE_DOOR.face
+        moving = false
+        exit.phase = "opening"
+        exit.phaseS = 0
+        exit.startX = me.x
+        exit.startY = me.y
+      }
+    } else if (exit.phase === "opening") {
+      exit.phaseS += dt
+      const progress = Math.min(1, exit.phaseS / DOOR_SWING_OPEN_S)
+      this.officeDoor.setOpenProgress(progress)
+      me.facing = FLOOR_OFFICE_DOOR.face
+      if (exit.phaseS >= DOOR_SWING_OPEN_S) {
+        exit.phase = "entering"
+        exit.phaseS = 0
+        exit.startX = me.x
+        exit.startY = me.y
+      }
+    } else if (exit.phase === "entering") {
+      exit.phaseS += dt
+      const t = Math.min(1, exit.phaseS / DOOR_STEP_THROUGH_S)
+      const x = exit.startX + (FLOOR_OFFICE_DOOR.through.x - exit.startX) * t
+      const y = exit.startY + (FLOOR_OFFICE_DOOR.through.y - exit.startY) * t
+      this.setActorPosition(me, x, y)
+      me.facing = FLOOR_OFFICE_DOOR.face
+      moving = t < 1
+      if (exit.phaseS >= DOOR_STEP_THROUGH_S) {
+        exit.phase = "fading"
+        exit.phaseS = 0
+        if (!exit.fadeTriggered) {
+          exit.fadeTriggered = true
+          exit.onFadeStart()
+        }
+      }
+    } else if (exit.phase === "opening-skip") {
+      exit.phaseS += dt
+      const progress = Math.min(1, exit.phaseS / DOOR_SWING_OPEN_S)
+      this.officeDoor.setOpenProgress(progress)
+      if (!exit.fadeTriggered && exit.phaseS >= DOOR_SWING_OPEN_S * 0.55) {
+        exit.fadeTriggered = true
+        exit.onFadeStart()
+      }
+      if (exit.phaseS >= DOOR_SWING_OPEN_S) {
+        exit.phase = "fading"
+      }
     }
+
+    me.moving = moving
+    me.rig.update(dt, {
+      anim: moving ? "walk" : "idle",
+      facingRad: facingToRadians(me.facing),
+      moveFactor: reducedMotion ? 0 : moving ? 1 : 0,
+    })
+
+    if (moving && nowMs - this.lastSent.t > SEND_EVERY_MS) {
+      sendState({ x: me.x, y: me.y, facing: me.facing, moving: true })
+      this.lastSent = { t: nowMs, facing: me.facing, moving: true }
+    }
+  }
+
+  private stepDoorArrival(
+    me: PlayerActor,
+    dt: number,
+    reducedMotion: boolean
+  ): void {
+    const arrival = this.doorArrival
+    if (!arrival) return
+
+    // Yield immediately to player input while letting the door finish swinging closed
+    if (this.heldKeys.size > 0 || this.path.length > 0) {
+      arrival.stepActive = false
+    }
+
+    arrival.elapsedS += dt
+    const STEP_DELAY_S = 0.16
+    const STEP_DUR_S = 0.24
+
+    if (arrival.stepActive) {
+      if (arrival.elapsedS >= STEP_DELAY_S) {
+        const t = Math.min(1, (arrival.elapsedS - STEP_DELAY_S) / STEP_DUR_S)
+        const sx = FLOOR_OFFICE_DOOR.spawnInside.x
+        const sy = FLOOR_OFFICE_DOOR.spawnInside.y
+        const tx = FLOOR_OFFICE_DOOR.access.x
+        const ty = FLOOR_OFFICE_DOOR.access.y
+        this.setActorPosition(me, sx + (tx - sx) * t, sy + (ty - sy) * t)
+        me.facing = FLOOR_OFFICE_DOOR.enterFace
+        me.moving = t < 1
+        me.rig.update(dt, {
+          anim: t < 1 ? "walk" : "idle",
+          facingRad: facingToRadians(me.facing),
+          moveFactor: reducedMotion ? 0 : t < 1 ? 1 : 0,
+        })
+        if (t >= 1) {
+          arrival.stepActive = false
+          me.moving = false
+          sendState({ x: me.x, y: me.y, facing: me.facing, moving: false })
+        }
+      } else {
+        me.rig.update(dt, {
+          anim: "idle",
+          facingRad: facingToRadians(FLOOR_OFFICE_DOOR.enterFace),
+          moveFactor: 0,
+        })
+      }
+    }
+
+    if (arrival.elapsedS >= STEP_DELAY_S + 0.08) {
+      arrival.closeS += dt
+      const openLeft = Math.max(0, 1 - arrival.closeS / DOOR_SWING_CLOSE_S)
+      this.officeDoor.setOpenProgress(openLeft)
+      if (openLeft <= 0 && !arrival.stepActive) {
+        this.doorArrival = null
+      }
+    }
+  }
+
+  private updateHint(): void {
+    const me = this.player
+    if (!me || this.doorExit) {
+      this.setDoorNear(false)
+      if (this.hintKey !== "") {
+        this.hintKey = ""
+        ui.hint.set(null)
+      }
+      return
+    }
+
+    let best: Interact | null = null
+    let bestD = NEAR
+    for (const i of this.world3d.interacts) {
+      const d = Math.hypot(me.x - i.access.x, me.y - i.access.y)
+      if (d < bestD) {
+        bestD = d
+        best = i
+      }
+    }
+
+    const doorDist = Math.hypot(
+      me.x - FLOOR_OFFICE_DOOR.access.x,
+      me.y - FLOOR_OFFICE_DOOR.access.y
+    )
+    if (doorDist < FLOOR_OFFICE_DOOR.radius && doorDist <= bestD) {
+      this.setDoorNear(true)
+      if (this.hintKey !== "") {
+        this.hintKey = ""
+        ui.hint.set(null)
+      }
+      return
+    }
+
+    this.setDoorNear(false)
     const key = best ? `${best.kind}:${best.access.x}:${best.access.y}` : ""
     if (key === this.hintKey) return
     this.hintKey = key
@@ -1456,6 +1848,7 @@ export class FloorController {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
+    this.setDoorNear(false)
     for (const off of this.disposers.splice(0)) off()
     this.heldKeys.clear()
     this.activeTouches.clear()
@@ -1466,6 +1859,8 @@ export class FloorController {
       this.player = null
     }
     for (const id of [...this.peers.keys()]) this.removePeer(id)
+    this.host.scene.remove(this.officeDoor.group)
+    this.officeDoor.dispose()
     this.fx3d.dispose()
     this.world3d.dispose()
     this.overlay.dispose()

@@ -1,4 +1,4 @@
-import { ChevronRight, ChevronUp } from "lucide-react"
+import { ChevronRight, ChevronUp, DoorOpen } from "lucide-react"
 import { useEffect, useState, type ReactNode } from "react"
 
 import type {
@@ -25,6 +25,7 @@ export interface OfficeHudProps {
   onlineCount: number
   onOpenModal: (modal: OfficeModalId) => void
   onZoom: (delta: 1 | -1) => void
+  onGoTradingFloor?: () => void
 }
 
 function getInitialMobile(): boolean {
@@ -79,6 +80,7 @@ export function OfficeHud({
   onlineCount,
   onOpenModal,
   onZoom,
+  onGoTradingFloor,
 }: OfficeHudProps) {
   const [isMobile, setIsMobile] = useState<boolean>(getInitialMobile)
   const [desktopMini, setDesktopMini] = useState<Record<string, boolean>>(() =>
@@ -368,6 +370,18 @@ export function OfficeHud({
     </HudCard>
   )
 
+  const doorButton = onGoTradingFloor ? (
+    <button
+      type="button"
+      className="of-door-btn"
+      data-testid="office-go-floor-btn"
+      onClick={onGoTradingFloor}
+    >
+      <DoorOpen size={17} aria-hidden="true" />
+      <span>Về Khu giao dịch</span>
+    </button>
+  ) : null
+
   return (
     <>
       <div className="of-hud of-hud-tl">
@@ -375,6 +389,7 @@ export function OfficeHud({
           <span className="of-pill-gold">IQX</span>
           <span>Văn phòng · Nhóm {bossName}</span>
         </div>
+        {!isMobile && doorButton}
         {!isMobile && bossCards && (
           <div className="of-hud-stack">{bossCards}</div>
         )}
@@ -416,6 +431,10 @@ export function OfficeHud({
           −
         </button>
       </div>
+
+      {isMobile && doorButton && (
+        <div className="of-hud of-hud-br">{doorButton}</div>
+      )}
 
       <div className="of-hint" aria-hidden="true">
         Nhấn chuột để đi · WASD / mũi tên · E để mở · cuộn để phóng to

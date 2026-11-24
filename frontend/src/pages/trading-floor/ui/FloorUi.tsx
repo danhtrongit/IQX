@@ -14,7 +14,15 @@ import { useThanTaiAutoOpen } from "./than-tai/use-auto-open.ts"
 const noop = (): void => undefined
 
 /** Everything HTML that sits over the Three.js 3D canvas: HUD, sheets, overlays, toasts. */
-export function FloorUi({ suggestedName }: { suggestedName: string }) {
+export function FloorUi({
+  suggestedName,
+  doorNear = false,
+  onRequestOffice,
+}: {
+  suggestedName: string
+  doorNear?: boolean
+  onRequestOffice?: () => void
+}) {
   const profile = useStore(ui.profile)
   const panel = useStore(ui.panel)
   const ready = useStore(ui.ready)
@@ -45,7 +53,11 @@ export function FloorUi({ suggestedName }: { suggestedName: string }) {
         />
       )}
       {ready && profile && !editing && (
-        <Hud onEditProfile={() => setEditing(true)} />
+        <Hud
+          onEditProfile={() => setEditing(true)}
+          doorNear={doorNear}
+          onRequestOffice={onRequestOffice}
+        />
       )}
       {ready && profile && !editing && <QuickChat />}
       {ready && profile && !editing && <PostsLayer />}

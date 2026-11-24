@@ -323,3 +323,27 @@ export const ZONE_LABELS = [
   { text: "PHÒNG CHỜ", x: 398, y: 630 },
   { text: "VINH DANH TOP DỰ ĐOÁN", x: 1650, y: 590 },
 ]
+
+/**
+ * Portal door on the West side wall near Phòng chờ connecting Khu giao dịch <-> Văn phòng nhóm.
+ * Obstacle sits flush against the West wall (`x: 24..56, y: 638..752`), completely clear of all
+ * existing furniture (pantry y<=580, sofa x>=283, rug x>=188, plants y>=950) and all 4 bot corridors.
+ */
+export const FLOOR_OFFICE_DOOR = {
+  /** Door center along the West wall inner face. */
+  x: SIDE,
+  y: 695,
+  /** Solid collision footprint so the door reads as part of the West wall. */
+  obstacle: { x: SIDE, y: 638, w: 32, h: 114 },
+  /** Standing point in front of the door (reachable via NavGrid). */
+  access: { x: 96, y: 695 },
+  /** Point inside the open doorway threshold stepped into during exit. */
+  through: { x: 40, y: 695 },
+  /** Spawn point just inside the door when arriving from the Office. */
+  spawnInside: { x: 76, y: 695 },
+  face: "w" as Facing,
+  enterFace: "e" as Facing,
+  label: "Văn phòng nhóm",
+  /** Matches Trading Floor `NEAR = 84` proximity hint radius. */
+  radius: 84,
+} as const

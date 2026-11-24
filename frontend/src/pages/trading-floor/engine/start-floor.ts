@@ -10,6 +10,8 @@ import {
   type ChibiSceneHost,
 } from "@/lib/chibi-3d/scene-host.ts"
 
+import type { RoomDoorHandle } from "@/pages/spaces/door-transition.ts"
+
 import { toast, ui } from "../bridge.ts"
 import { startChat } from "../net/chat.ts"
 import { startLeaderboard } from "../net/leaderboard.ts"
@@ -17,6 +19,29 @@ import { startMarket } from "../net/market.ts"
 import { floorSocket } from "../net/socket.ts"
 import { FloorController } from "./floor-controller.ts"
 import { FLOOR_WORLD_CONFIG } from "./floor-world-3d.ts"
+
+export interface StartFloorOptions {
+  onError?: (error: unknown) => void
+  onReady?: () => void
+  arrivedViaDoor?: boolean
+  onDoorHintChange?: (near: boolean) => void
+  onDoorRequest?: () => void
+  onControllerReady?: (handle: RoomDoorHandle | null) => void
+}
+
+function disposeHostSafely(host: ChibiSceneHost): void {
+  const renderer = host.renderer
+  host.dispose()
+  try {
+    const gl =
+      typeof renderer.getContext === "function" ? renderer.getContext() : null
+    if (!gl || !gl.isContextLost?.()) {
+      renderer.forceContextLoss()
+    }
+  } catch {
+    // Headless or mocked WebGL contexts may not expose WEBGL_lose_context.
+  }
+}
 
 /** Canvas2D textures (LED wall, SACO board, signs) wait briefly for Be Vietnam Pro. */
 async function fontsReady(): Promise<void> {
@@ -39,8 +64,13 @@ async function fontsReady(): Promise<void> {
 
 export function startFloor(
   container: HTMLElement,
-  onError?: (error: unknown) => void
+  onErrorOrOptions?: ((error: unknown) => void) | StartFloorOptions
 ): () => void {
+  const options: StartFloorOptions =
+    typeof onErrorOrOptions === "function"
+      ? { onError: onErrorOrOptions }
+      : (onErrorOrOptions ?? {})
+
   let disposed = false
   let host: ChibiSceneHost | null = null
   let controller: FloorController | null = null
@@ -90,27 +120,44 @@ export function startFloor(
     })
 
     if (disposed) {
-      host.dispose()
+      disposeHostSafely(host)
       host = null
       return
     }
 
-    controller = new FloorController(host, container)
+    controller = new FloorController(host, container, {
+      arrivedViaDoor: options.arrivedViaDoor,
+      onDoorHintChange: options.onDoorHintChange,
+      onDoorRequest: options.onDoorRequest,
+    })
+    options.onControllerReady?.({
+      beginDoorExit: (onFadeStart) => {
+        if (controller) {
+          controller.beginDoorExit(onFadeStart)
+        } else {
+          onFadeStart()
+        }
+      },
+    })
     ui.ready.set(true)
+    options.onReady?.()
 
     if (import.meta.env.DEV) {
       Object.assign(window, { __tradingFloor: { host, controller } })
     }
   })().catch((error: unknown) => {
-    if (!disposed) onError?.(error)
+    if (!disposed) options.onError?.(error)
   })
 
   return () => {
     disposed = true
+    options.onControllerReady?.(null)
     controller?.dispose()
     controller = null
-    host?.dispose()
-    host = null
+    if (host) {
+      disposeHostSafely(host)
+      host = null
+    }
     stopChat()
     stopLeaderboard()
     stopMarket()

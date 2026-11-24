@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api"
 import { buildAllChibiPortraits } from "@/lib/chibi-3d/portrait-renderer.ts"
+import type { RoomDoorHandle } from "@/pages/spaces/door-transition.ts"
 
 import { resetBridge, toast, ui } from "./bridge.ts"
 import { floorApi } from "./net/api.ts"
@@ -14,6 +15,17 @@ import type { MeResponse } from "./net/types.ts"
 import { FloorUi } from "./ui/FloorUi.tsx"
 import { LoginPrompt } from "./ui/LoginPrompt.tsx"
 import "./trading-floor.css"
+
+export interface TradingFloorPageProps {
+  /** Spawn inside the West portal door with open->close door animation. */
+  arrivedViaDoor?: boolean
+  /** Triggered by HUD button, 3D door click, E label click, or E key near the office door. */
+  onRequestOffice?: () => void
+  /** Called once the floor stage (or fallback gate) is ready to reveal. */
+  onRoomReady?: () => void
+  /** Publishes the active controller's door exit handle to the Spaces shell. */
+  onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
+}
 
 /** What a visitor with no saved character starts from: the join card creates a guest character. */
 const NEW_GUEST: MeResponse = {
@@ -58,9 +70,37 @@ function Gate({
  * stays out of the main bundle) and everything it started is undone on unmount, so React StrictMode's
  * double mount and navigating away and back both start clean.
  */
-function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
+function Floor({
+  me,
+  onRetry,
+  arrivedViaDoor = false,
+  onRequestOffice,
+  onRoomReady,
+  onDoorHandleReady,
+}: {
+  me: MeResponse
+  onRetry: () => void
+  arrivedViaDoor?: boolean
+  onRequestOffice?: () => void
+  onRoomReady?: () => void
+  onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
+}) {
   const stage = useRef<HTMLDivElement>(null)
   const [failed, setFailed] = useState(false)
+  const [doorNear, setDoorNear] = useState(false)
+
+  const onRequestOfficeRef = useRef(onRequestOffice)
+  const onRoomReadyRef = useRef(onRoomReady)
+  const onDoorHandleReadyRef = useRef(onDoorHandleReady)
+  useEffect(() => {
+    onRequestOfficeRef.current = onRequestOffice
+  }, [onRequestOffice])
+  useEffect(() => {
+    onRoomReadyRef.current = onRoomReady
+  }, [onRoomReady])
+  useEffect(() => {
+    onDoorHandleReadyRef.current = onDoorHandleReady
+  }, [onDoorHandleReady])
 
   // Before paint, so a returning player never sees the join card flash up and portraits are ready immediately.
   useLayoutEffect(() => {
@@ -90,23 +130,54 @@ function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
     let stop: (() => void) | null = null
     import("./engine/start-floor.ts")
       .then((m) => {
-        if (!cancelled) stop = m.startFloor(el, () => setFailed(true))
+        if (!cancelled) {
+          stop = m.startFloor(el, {
+            arrivedViaDoor,
+            onDoorHintChange: (near) => {
+              if (!cancelled) setDoorNear(near)
+            },
+            onDoorRequest: () => {
+              if (!cancelled) onRequestOfficeRef.current?.()
+            },
+            onControllerReady: (handle) => {
+              if (!cancelled) onDoorHandleReadyRef.current?.(handle)
+            },
+            onReady: () => {
+              if (!cancelled) onRoomReadyRef.current?.()
+            },
+            onError: () => {
+              if (!cancelled) {
+                setFailed(true)
+                onRoomReadyRef.current?.()
+              }
+            },
+          })
+        }
       })
       .catch(() => {
-        if (!cancelled) setFailed(true)
+        if (!cancelled) {
+          setFailed(true)
+          onRoomReadyRef.current?.()
+        }
       })
     return () => {
       cancelled = true
+      onDoorHandleReadyRef.current?.(null)
       stop?.()
       resetBridge()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- arrivedViaDoor is captured once per floor mount
   }, [])
 
   return (
     <>
       <div ref={stage} className="tf-game" />
       <div className="tf-ui">
-        <FloorUi suggestedName={me.suggestedName} />
+        <FloorUi
+          suggestedName={me.suggestedName}
+          doorNear={doorNear}
+          onRequestOffice={onRequestOffice}
+        />
         <LoginPrompt />
       </div>
       {failed && (
@@ -128,7 +199,19 @@ function Floor({ me, onRetry }: { me: MeResponse; onRetry: () => void }) {
  * Loads the character of the visitor (account, or the guest whose token the browser kept) and opens the
  * floor. A visitor with no saved guest token goes straight to the join card.
  */
-function Entry({ userId }: { userId: string | null }) {
+function Entry({
+  userId,
+  arrivedViaDoor,
+  onRequestOffice,
+  onRoomReady,
+  onDoorHandleReady,
+}: {
+  userId: string | null
+  arrivedViaDoor?: boolean
+  onRequestOffice?: () => void
+  onRoomReady?: () => void
+  onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
+}) {
   // Read once: the token appears later only through the join card, which keeps this page mounted.
   const [guestToken] = useState(() =>
     userId === null ? getGuestToken() : null
@@ -152,12 +235,22 @@ function Entry({ userId }: { userId: string | null }) {
     if (guestInvalid) setGuestToken(null)
   }, [guestInvalid])
 
+  useEffect(() => {
+    if (me.isError && !guestInvalid) {
+      onRoomReady?.()
+    }
+  }, [guestInvalid, me.isError, onRoomReady])
+
   if (userId === null && (!enabled || guestInvalid)) {
     return (
       <Floor
         key={attempt}
         me={NEW_GUEST}
         onRetry={() => setAttempt((n) => n + 1)}
+        arrivedViaDoor={arrivedViaDoor}
+        onRequestOffice={onRequestOffice}
+        onRoomReady={onRoomReady}
+        onDoorHandleReady={onDoorHandleReady}
       />
     )
   }
@@ -192,11 +285,20 @@ function Entry({ userId }: { userId: string | null }) {
       onRetry={() => {
         void me.refetch().then(() => setAttempt((n) => n + 1))
       }}
+      arrivedViaDoor={arrivedViaDoor}
+      onRequestOffice={onRequestOffice}
+      onRoomReady={onRoomReady}
+      onDoorHandleReady={onDoorHandleReady}
     />
   )
 }
 
-export function TradingFloorPage() {
+export function TradingFloorPage({
+  arrivedViaDoor = false,
+  onRequestOffice,
+  onRoomReady,
+  onDoorHandleReady,
+}: TradingFloorPageProps = {}) {
   const { user, isLoading } = useAuth()
 
   // No login wall: a visitor who is not signed in enters as a guest with a name and a character.
@@ -205,12 +307,20 @@ export function TradingFloorPage() {
       <p className="muted">Đang kiểm tra đăng nhập…</p>
     </div>
   ) : (
-    <Entry key={user?.id ?? "guest"} userId={user?.id ?? null} />
+    <Entry
+      key={user?.id ?? "guest"}
+      userId={user?.id ?? null}
+      arrivedViaDoor={arrivedViaDoor}
+      onRequestOffice={onRequestOffice}
+      onRoomReady={onRoomReady}
+      onDoorHandleReady={onDoorHandleReady}
+    />
   )
 
   return (
     <div
       className="tf-root relative h-full min-h-0 min-w-0 flex-1 overflow-hidden"
+      data-testid="trading-floor-page"
       data-wasd-world="true"
     >
       {content}

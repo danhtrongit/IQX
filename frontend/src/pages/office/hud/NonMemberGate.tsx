@@ -1,3 +1,5 @@
+import { DoorOpen } from "lucide-react"
+
 export type NonMemberGateMode = "guest" | "non-member" | "loading" | "error"
 
 export interface NonMemberGateProps {
@@ -5,6 +7,7 @@ export interface NonMemberGateProps {
   errorMessage?: string
   onLogin?: () => void
   onRetry?: () => void
+  onGoTradingFloor?: () => void
 }
 
 export function NonMemberGate({
@@ -12,6 +15,7 @@ export function NonMemberGate({
   errorMessage,
   onLogin,
   onRetry,
+  onGoTradingFloor,
 }: NonMemberGateProps) {
   return (
     <div
@@ -35,7 +39,7 @@ export function NonMemberGate({
                 Đăng nhập tài khoản IQX của bạn để truy cập không gian làm việc
                 nhóm, nhiệm vụ hằng ngày và bảng điểm danh.
               </p>
-              <div>
+              <div className="of-gate-actions">
                 <button
                   type="button"
                   className="of-btn is-gold"
@@ -43,6 +47,17 @@ export function NonMemberGate({
                 >
                   Đăng nhập
                 </button>
+                {onGoTradingFloor && (
+                  <button
+                    type="button"
+                    className="of-btn is-ghost"
+                    data-testid="office-gate-go-floor-btn"
+                    onClick={onGoTradingFloor}
+                  >
+                    <DoorOpen size={16} aria-hidden="true" />
+                    <span>Về Khu giao dịch</span>
+                  </button>
+                )}
               </div>
             </>
           )}
@@ -56,6 +71,19 @@ export function NonMemberGate({
                 Bạn chưa thuộc nhóm nào. Liên hệ trưởng nhóm để được thêm vào
                 văn phòng.
               </p>
+              {onGoTradingFloor && (
+                <div className="of-gate-actions">
+                  <button
+                    type="button"
+                    className="of-btn is-gold"
+                    data-testid="office-gate-go-floor-btn"
+                    onClick={onGoTradingFloor}
+                  >
+                    <DoorOpen size={16} aria-hidden="true" />
+                    <span>Về Khu giao dịch</span>
+                  </button>
+                </div>
+              )}
             </>
           )}
 
@@ -67,15 +95,28 @@ export function NonMemberGate({
               <p>
                 {errorMessage || "Không thể kết nối máy chủ. Vui lòng thử lại."}
               </p>
-              {onRetry && (
-                <div>
-                  <button
-                    type="button"
-                    className="of-btn is-gold"
-                    onClick={onRetry}
-                  >
-                    Thử lại
-                  </button>
+              {(onRetry || onGoTradingFloor) && (
+                <div className="of-gate-actions">
+                  {onRetry && (
+                    <button
+                      type="button"
+                      className="of-btn is-gold"
+                      onClick={onRetry}
+                    >
+                      Thử lại
+                    </button>
+                  )}
+                  {onGoTradingFloor && (
+                    <button
+                      type="button"
+                      className="of-btn is-ghost"
+                      data-testid="office-gate-go-floor-btn"
+                      onClick={onGoTradingFloor}
+                    >
+                      <DoorOpen size={16} aria-hidden="true" />
+                      <span>Về Khu giao dịch</span>
+                    </button>
+                  )}
                 </div>
               )}
             </>

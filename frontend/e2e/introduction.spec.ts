@@ -32,8 +32,8 @@ test.describe("introduction landing", () => {
     ]) {
       await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", href)
     }
-    // Layout v1.3 §1: no DEMO TRADING / HỌC VIỆN in the header.
-    await expect(nav.getByRole("link")).toHaveText(["Giới thiệu", "Luyện tập", "Flashback", "Chiến lược", "Khu giao dịch", "Văn phòng"])
+    // Layout v1.3 §1 + unified Spaces route: no DEMO TRADING / HỌC VIỆN / separate Văn phòng in the header.
+    await expect(nav.getByRole("link")).toHaveText(["Giới thiệu", "Luyện tập", "Flashback", "Chiến lược", "Khu giao dịch"])
     await expect(header.getByRole("link", { name: "Bắt đầu ngay" })).toHaveAttribute(
       "href",
       "/luyen-tap?tool=hoc-vien"

@@ -1,8 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useLocation, useSearchParams } from "react-router"
+import { useLocation, useNavigate, useSearchParams } from "react-router"
 
 import { useAuth } from "@/hooks/use-auth"
+import type { RoomDoorHandle } from "@/pages/spaces/door-transition.ts"
+import { SPACES_PATH } from "@/pages/spaces/spaces-url.ts"
 
 import type { OfficeEngineHandle } from "./engine/start-office.ts"
 import {
@@ -65,12 +67,34 @@ function sanitizeModalForRole(
   return null
 }
 
+export interface OfficePageProps {
+  /** Spawn player just inside the South staff-area entrance door with open->close door animation. */
+  arrivedViaDoor?: boolean
+  /** Triggered by HUD button, 3D exit door click, E label/key, or NonMemberGate back button. */
+  onRequestTradingFloor?: (viaDoor?: boolean) => void
+  /** Called once the office 3D world (or gate/fallback) is ready to reveal. */
+  onRoomReady?: () => void
+  /** Publishes the active controller's door exit handle to the Spaces shell. */
+  onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
+}
+
 interface OfficeWorkspaceProps {
   me: OfficeMe
   userId: string
+  arrivedViaDoor: boolean
+  onGoTradingFloor: () => void
+  onRoomReady?: () => void
+  onDoorHandleReady?: (handle: RoomDoorHandle | null) => void
 }
 
-function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
+function OfficeWorkspace({
+  me,
+  userId,
+  arrivedViaDoor,
+  onGoTradingFloor,
+  onRoomReady,
+  onDoorHandleReady,
+}: OfficeWorkspaceProps) {
   const queryClient = useQueryClient()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -165,7 +189,7 @@ function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
     }
   }, [activeModal, rawModalParam, setSearchParams])
 
-  // Refresh relevant Office caches when re-entering via Notification Bell while already on /van-phong
+  // Refresh relevant Office caches when re-entering via Notification Bell while already in the office
   useEffect(() => {
     const state = location.state as { notificationId?: string } | null
     if (!state?.notificationId) return
@@ -178,6 +202,9 @@ function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
 
   const openModalRef = useRef(openModal)
   const closeModalRef = useRef(closeModal)
+  const onGoTradingFloorRef = useRef(onGoTradingFloor)
+  const onRoomReadyRef = useRef(onRoomReady)
+  const onDoorHandleReadyRef = useRef(onDoorHandleReady)
   const latestEngineStateRef = useRef({
     me,
     onlinePeers,
@@ -192,6 +219,15 @@ function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
   useEffect(() => {
     closeModalRef.current = closeModal
   }, [closeModal])
+  useEffect(() => {
+    onGoTradingFloorRef.current = onGoTradingFloor
+  }, [onGoTradingFloor])
+  useEffect(() => {
+    onRoomReadyRef.current = onRoomReady
+  }, [onRoomReady])
+  useEffect(() => {
+    onDoorHandleReadyRef.current = onDoorHandleReady
+  }, [onDoorHandleReady])
   useEffect(() => {
     latestEngineStateRef.current = {
       me,
@@ -261,10 +297,14 @@ function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
         )
         const handle = startOffice(container, {
           initialStaffCount: latestStaffCount || initialStaffCount,
+          arrivedViaDoor,
           onStationTrigger: (action: OfficeStationAction) => {
             openModalRef.current(action.modal, {
               focusProposal: action.focusProposal,
             })
+          },
+          onDoorRequest: () => {
+            if (!cancelled) onGoTradingFloorRef.current()
           },
           onCloseModal: () => {
             closeModalRef.current()
@@ -272,12 +312,27 @@ function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
           onSelfState: (state) => {
             socketRef.current?.sendState(state)
           },
+          onReady: () => {
+            if (!cancelled) onRoomReadyRef.current?.()
+          },
           onError: () => {
-            if (!cancelled) setWebglFailed(true)
+            if (!cancelled) {
+              setWebglFailed(true)
+              onRoomReadyRef.current?.()
+            }
           },
         })
         localHandle = handle
         engineRef.current = handle
+        onDoorHandleReadyRef.current?.({
+          beginDoorExit: (onFadeStart) => {
+            if (handle.beginDoorExit) {
+              handle.beginDoorExit(onFadeStart)
+            } else {
+              onFadeStart()
+            }
+          },
+        })
         handle.setModalOpen(latest.activeModal !== null)
         handle.updateTeam(latest.me)
         handle.updateOnlinePeers(latest.onlinePeers)
@@ -287,11 +342,15 @@ function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
         handle.resendSelfState?.()
       })
       .catch(() => {
-        if (!cancelled) setWebglFailed(true)
+        if (!cancelled) {
+          setWebglFailed(true)
+          onRoomReadyRef.current?.()
+        }
       })
 
     return () => {
       cancelled = true
+      onDoorHandleReadyRef.current?.(null)
       localHandle?.dispose()
       if (engineRef.current === localHandle) {
         engineRef.current = null
@@ -417,6 +476,7 @@ function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
           onlineCount={onlineCount}
           onOpenModal={(modal) => openModal(modal)}
           onZoom={handleZoom}
+          onGoTradingFloor={onGoTradingFloor}
         />
       </div>
 
@@ -466,9 +526,45 @@ function OfficeWorkspace({ me, userId }: OfficeWorkspaceProps) {
   )
 }
 
-export function OfficePage() {
+export function OfficePage({
+  arrivedViaDoor = false,
+  onRequestTradingFloor,
+  onRoomReady,
+  onDoorHandleReady,
+}: OfficePageProps = {}) {
+  const navigate = useNavigate()
   const { user, isAuthenticated, isLoading: authLoading, openAuth } = useAuth()
   const meQuery = useOfficeMe(isAuthenticated)
+
+  const handleGoFloorViaDoor = useCallback(() => {
+    if (onRequestTradingFloor) {
+      onRequestTradingFloor(true)
+    } else {
+      navigate(SPACES_PATH)
+    }
+  }, [navigate, onRequestTradingFloor])
+
+  const handleGoFloorFromGate = useCallback(() => {
+    if (onRequestTradingFloor) {
+      onRequestTradingFloor(false)
+    } else {
+      navigate(SPACES_PATH)
+    }
+  }, [navigate, onRequestTradingFloor])
+
+  const me = meQuery.data
+  const showingGate =
+    !authLoading &&
+    (!isAuthenticated ||
+      !user ||
+      meQuery.isError ||
+      (!meQuery.isLoading && (!me || !me.member || !me.self || !me.team)))
+
+  useEffect(() => {
+    if (showingGate) {
+      onRoomReady?.()
+    }
+  }, [onRoomReady, showingGate])
 
   if (authLoading) {
     return (
@@ -481,7 +577,11 @@ export function OfficePage() {
   if (!isAuthenticated || !user) {
     return (
       <div className="of-root">
-        <NonMemberGate mode="guest" onLogin={() => openAuth("login")} />
+        <NonMemberGate
+          mode="guest"
+          onLogin={() => openAuth("login")}
+          onGoTradingFloor={handleGoFloorFromGate}
+        />
       </div>
     )
   }
@@ -501,16 +601,19 @@ export function OfficePage() {
           mode="error"
           errorMessage={meQuery.error.message}
           onRetry={() => void meQuery.refetch()}
+          onGoTradingFloor={handleGoFloorFromGate}
         />
       </div>
     )
   }
 
-  const me = meQuery.data
   if (!me || !me.member || !me.self || !me.team) {
     return (
       <div className="of-root">
-        <NonMemberGate mode="non-member" />
+        <NonMemberGate
+          mode="non-member"
+          onGoTradingFloor={handleGoFloorFromGate}
+        />
       </div>
     )
   }
@@ -520,6 +623,10 @@ export function OfficePage() {
       key={`${me.team.id}:${me.self.userId}`}
       me={me}
       userId={user.id}
+      arrivedViaDoor={arrivedViaDoor}
+      onGoTradingFloor={handleGoFloorViaDoor}
+      onRoomReady={onRoomReady}
+      onDoorHandleReady={onDoorHandleReady}
     />
   )
 }

@@ -19,8 +19,8 @@ describe("shared header routing", () => {
     ["/flashback", "", "Flashback"],
     ["/chien-luoc", "?tab=backtest", "Chiến lược"],
     ["/khu-giao-dich", "", "Khu giao dịch"],
-    ["/van-phong", "", "Văn phòng"],
-    ["/van-phong", "?modal=mine", "Văn phòng"],
+    ["/khu-giao-dich", "?phong=van-phong", "Khu giao dịch"],
+    ["/khu-giao-dich", "?phong=van-phong&modal=mine", "Khu giao dịch"],
     ["/bai-hoc/course/episode", "", "Bài học"],
   ])("highlights exactly one item for %s%s", (pathname, search, label) => {
     expect(HEADER_NAV.filter(item => isHeaderLinkActive(item.to, { pathname, search })).map(item => item.label)).toEqual([label])

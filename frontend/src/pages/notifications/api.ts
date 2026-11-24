@@ -62,12 +62,12 @@ export const TYPE_LABEL: Record<NotificationType, string> = {
 export const FALLBACK_LINK: Record<NotificationType, string> = {
   bot_trades: "/luyen-tap?tool=bot&bot_tab=lich-su",
   bulletin: "/thi-truong?bt=ban-tin",
-  office_task_assigned: "/van-phong?modal=mine",
-  office_task_approved: "/van-phong?modal=mine",
-  office_task_returned: "/van-phong?modal=mine",
-  office_proposal_replied: "/van-phong?modal=mine",
-  office_task_submitted: "/van-phong?modal=mgr",
-  office_proposal_sent: "/van-phong?modal=mgr",
+  office_task_assigned: "/khu-giao-dich?phong=van-phong&modal=mine",
+  office_task_approved: "/khu-giao-dich?phong=van-phong&modal=mine",
+  office_task_returned: "/khu-giao-dich?phong=van-phong&modal=mine",
+  office_proposal_replied: "/khu-giao-dich?phong=van-phong&modal=mine",
+  office_task_submitted: "/khu-giao-dich?phong=van-phong&modal=mgr",
+  office_proposal_sent: "/khu-giao-dich?phong=van-phong&modal=mgr",
 }
 
 export const notificationKeys = {
